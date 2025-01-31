@@ -1,0 +1,7 @@
+<nav class="container">
+    <ul>
+      <li *ngFor="let navItem of navItems">
+        <a [routerLink]="[]" fragment={{navItem.fragment}}>{{ navItem.name }}</a>
+      </li>
+    </ul>
+  </nav>
