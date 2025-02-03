@@ -13,7 +13,7 @@ export class InitService {
   init() {
     this.authService.getCurrentUser().subscribe((user) =>
     {
-      console.log("HI THIS IS A TEST")
+      console.log("HI THIS IS A TEST 123")
       console.log(user);
       //this.authService.navigateByRole(user.role)
     }
