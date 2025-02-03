@@ -1,0 +1,28 @@
+<table class="container">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Pay</th>
+            <th>Genres of Interest</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let listing of listings; let i = index" class="content">
+            <td>{{ listing?.startDate | date:'yyyy-MM-dd' }}</td>
+            <td>{{ listing?.startDate | date:'shortTime' }} - {{ listing?.endDate | date:'shortTime' }}</td>
+            <td>${{ listing?.pay }}</td>
+            <td>
+                <ul>
+                    <li *ngFor="let genre of listing.genres">{{genre}}</li>
+                </ul>
+            </td>
+            <td *ngIf="authService.isRole('VenueManager')">
+                <button class="btn-delete" (click)="onDelete(listing)">Delete</button>
+            </td>
+            <td *ngIf="authService.isRole('Artist')">
+                <button class="btn-apply" (click)="onDelete(listing)">Apply</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
