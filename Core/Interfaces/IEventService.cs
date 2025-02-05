@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Parameters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace Core.Interfaces
 {
     public interface IEventService
     {
-        Task<IEnumerable<Event>> GetUpcomingEventsByVenueIdAsync(int id);
+        Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
+        Task<IEnumerable<Event>> GetHeadersAsync(SearchParams searchParams);
     }
 }

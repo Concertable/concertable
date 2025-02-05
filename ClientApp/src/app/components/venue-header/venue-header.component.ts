@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { VenueHeader } from '../../models/venue-header';
 
 @Component({
   selector: 'app-venue-header',
@@ -8,5 +9,5 @@ import { Component } from '@angular/core';
   styleUrl: './venue-header.component.scss'
 })
 export class VenueHeaderComponent {
-
+  @Input() header?: VenueHeader;
 }

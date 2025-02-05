@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Parameters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace Core.Interfaces
 {
     public interface IArtistRepository
     {
+        Task<IEnumerable<Artist>> GetHeadersAsync(SearchParams searchParams);
         Task<Artist?> GetByUserIdAsync(int id);
     }
 }

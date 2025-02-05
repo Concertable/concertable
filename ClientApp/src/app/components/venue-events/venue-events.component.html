@@ -2,6 +2,8 @@
     <thead>
         <tr>
             <th>Name</th>
+            <th>Date</th>
+            <th>Time</th>
             <th>Cost</th>
             <th>Details</th>
         </tr>
@@ -9,6 +11,10 @@
     <tbody>
         <tr *ngFor="let event of events">
             <td>{{ event.name }}</td>
+            <td>{{ event.startDate | date: 'MMM d' }}</td>
+            <td>
+                {{ event.startDate | date: 'h:mm a' }} - {{ event.endDate | date: 'h:mm a' }}
+            </td>
             <td>${{ event.price }}</td>
             <td>
                 <button (click)="onViewDetails(event)">View Details</button>

@@ -32,7 +32,7 @@ namespace Infrastructure.Tests.Repositories
         public async Task GetHeadersAsync_ShouldReturnHeaders()
         { 
             // Arrange
-            var venueParams = new VenueParams { Sort = "Name" };
+            var venueParams = new SearchParams { Sort = "Name" };
 
             var venueHeaders = new List<Venue> {
                 new Venue { Id = 1, Name = "Test Venue 1", UserId = 1 }, 

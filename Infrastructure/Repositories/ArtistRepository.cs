@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Interfaces;
+using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,6 +14,22 @@ namespace Infrastructure.Repositories
     public class ArtistRepository : BaseEntityRepository<Artist>, IArtistRepository
     {
         public ArtistRepository(ApplicationDbContext context) : base(context) { }
+
+        public async Task<IEnumerable<Artist>> GetHeadersAsync(SearchParams searchParams)
+        {
+            var query = context.Artists.AsQueryable();
+            query = query.Select(v => new Artist
+            {
+                Id = v.Id,
+                Name = v.Name
+            });
+
+            if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
+            {
+                query = query.OrderBy(v => searchParams.Sort);
+            }
+            return await query.ToListAsync();
+        }
 
         public async Task<Artist?> GetByUserIdAsync(int id)
         {

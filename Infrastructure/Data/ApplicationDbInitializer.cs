@@ -129,19 +129,154 @@ namespace Infrastructure.Data
             //Venue
             if (!context.Listings.Any())
             {
-                var venue = new Venue
+                var venues = new Venue[]
                 {
-                    UserId = 4,
-                    Name = "The Test Venue",
-                    About = "Test Venue",
-                    Longitude = 0,
-                    Latitude = 0,
-                    ImageUrl = "",
-                    County = "Surrey",
-                    Town = "Woking",
-                    Approved = true
-                };
-                context.Venues.Add(venue);
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 1",
+                        About = "Test Venue 1",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 2",
+                        About = "Test Venue 2",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 3",
+                        About = "Test Venue 3",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 4",
+                        About = "Test Venue 4",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 5",
+                        About = "Test Venue 5",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 6",
+                        About = "Test Venue 6",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 7",
+                        About = "Test Venue 7",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 8",
+                        About = "Test Venue 8",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 9",
+                        About = "Test Venue 9",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 10",
+                        About = "Test Venue 10",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 11",
+                        About = "Test Venue 11",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+                    new Venue
+                    {
+                        UserId = 4,
+                        Name = "The Test Venue 12",
+                        About = "Test Venue 12",
+                        Longitude = 0,
+                        Latitude = 0,
+                        ImageUrl = "assets/images/test.jpg",
+                        County = "Surrey",
+                        Town = "Woking",
+                        Approved = true
+                    },
+            };
+                context.Venues.AddRange(venues);
                 await context.SaveChangesAsync();
             }
             //Listings

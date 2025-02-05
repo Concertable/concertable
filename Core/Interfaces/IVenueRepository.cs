@@ -10,7 +10,7 @@ namespace Core.Interfaces
 {
     public interface IVenueRepository : IBaseEntityRepository<Venue>
     {
-        Task<IEnumerable<Venue>> GetHeadersAsync(VenueParams? venueParams);
+        Task<IEnumerable<Venue>> GetHeadersAsync(SearchParams? searchParams);
         Task<Venue?> GetByUserIdAsync(int id);
     }
 }

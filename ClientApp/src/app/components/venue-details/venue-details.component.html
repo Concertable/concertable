@@ -2,7 +2,6 @@
 <div class="container" *ngIf="venue">
     <section class="info">
         <h2 class="heading-venue">Venue Information</h2>
-
         @if (!editMode) {
             <h3 class="heading-name">{{ venue.name }}</h3>
             <p class="text-about">{{ venue.about }}</p>

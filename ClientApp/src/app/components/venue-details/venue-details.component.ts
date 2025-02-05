@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth/auth.service';
   styleUrl: './venue-details.component.scss'
 })
 export class VenueDetailsComponent {
-  @Input() venue: Venue | undefined;
+  @Input() venue?: Venue;
   @Input() editMode?: boolean
 
   navItems: NavItem[] = [

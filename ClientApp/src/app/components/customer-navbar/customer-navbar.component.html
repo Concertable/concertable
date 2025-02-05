@@ -1,6 +1,7 @@
-<app-header>
+<app-navbar>
     <li *ngIf="this.authService.matchesRole(Role.VenueManager)"><a routerLink="/venue">Venue Page</a></li>
+    <li *ngIf="this.authService.matchesRole(Role.ArtistManager)"><a routerLink="/artist">Artist Page</a></li>
     <li><a><a routerLink="/local-events" routerLinkActive="active">Local Events</a></a></li>
     <li><a><a routerLink="/artists" routerLinkActive="active">Find Artists</a></a></li>
     <li><a><a routerLink="/partner" routerLinkActive="active">Partner with Us!</a></a></li>
-</app-header>
+</app-navbar>

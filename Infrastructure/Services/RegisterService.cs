@@ -19,7 +19,7 @@ namespace Infrastructure.Services
             this.artistService = artistService;
         }
 
-        public async Task<IEnumerable<Register>> GetRegistrationsForListingIdAsync(int listingId)
+        public async Task<IEnumerable<Register>> GetAllForListingIdAsync(int listingId)
         {
             return await registerRepository.GetAllForListingIdAsync(listingId);
         }

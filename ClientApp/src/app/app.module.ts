@@ -12,16 +12,24 @@ import { AuthLayoutComponent } from './components/auth-layout/auth-layout.compon
 import { VenueDashboardComponent } from './pages/venue-dashboard/venue-dashboard.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
-import { CustomerHeaderComponent } from "./components/customer-header/customer-header.component";
-import { VenueHeaderComponent } from './components/venue-header/venue-header.component';
+import { CustomerNavbarComponent } from "./components/customer-navbar/customer-navbar.component";
+import { VenueNavbarComponent } from './components/venue-navbar/venue-navbar.component';
 import { YourVenueComponent } from './pages/your-venue/your-venue.component';
-import { HeaderComponent } from './components/header/header.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
+
 import { VenueDetailsComponent } from './components/venue-details/venue-details.component';
 import { ConfigHeaderComponent } from './components/config-header/config-header.component';
 import { ConfigButtonComponent } from './components/config-button/config-button.component';
@@ -31,6 +39,23 @@ import { EditableVenueDetailsComponent } from './components/editable-venue-detai
 import { DetailsComponent } from './components/details/details.component';
 import { ScrollspyComponent } from './components/scrollspy/scrollspy.component';
 import { VenueEventsComponent } from './components/venue-events/venue-events.component';
+import { ArtistDashboardComponent } from './pages/artist-dashboard/artist-dashboard.component';
+import { ArtistNavbarComponent } from './components/artist-navbar/artist-navbar.component';
+import { VenueFindComponent } from './pages/venue-find/venue-find.component';
+import { SearchComponent } from './components/search/search.component';
+import { DatePickerComponent } from './components/date-picker/date-picker.component';
+import { LocationSearchComponent } from './components/location-search/location-search.component';
+import { FindComponent } from './pages/find/find.component';
+import { SearchResultsComponent } from './components/search-results/search-results.component';
+import { SearchResultHeaderComponent } from './components/search-result-header/search-result-header.component';
+import { EventHeaderComponent } from './components/event-header/event-header.component';
+import { HeaderComponent } from './components/header/header.component';
+import { VenueHeaderComponent } from './components/venue-header/venue-header.component';
+import { ArtistHeaderComponent } from './components/artist-header/artist-header.component';
+import { ArtistHeadersComponent } from './components/artist-headers/artist-headers.component';
+import { VenueHeadersComponent } from './components/venue-headers/venue-headers.component';
+import { EventHeadersComponent } from './components/event-headers/event-headers.component';
+import { HeadersComponent } from './components/headers/headers.component';
 
 @NgModule({
   declarations: [
@@ -39,11 +64,11 @@ import { VenueEventsComponent } from './components/venue-events/venue-events.com
     HomeComponent,
     AuthLayoutComponent,
     VenueDashboardComponent,
-    CustomerHeaderComponent,
+    CustomerNavbarComponent,
     YourVenueComponent,
-    VenueHeaderComponent,
+    VenueNavbarComponent,
     YourVenueComponent,
-    HeaderComponent,
+    NavbarComponent,
     ProfileComponent,
     GoogleMapsComponent,
     VenueDetailsComponent,
@@ -54,7 +79,24 @@ import { VenueEventsComponent } from './components/venue-events/venue-events.com
     EditableVenueDetailsComponent,
     DetailsComponent,
     ScrollspyComponent,
-    VenueEventsComponent
+    VenueEventsComponent,
+    ArtistDashboardComponent,
+    ArtistNavbarComponent,
+    VenueFindComponent,
+    SearchComponent,
+    DatePickerComponent,
+    LocationSearchComponent,
+    FindComponent,
+    SearchResultsComponent,
+    SearchResultHeaderComponent,
+    ArtistHeadersComponent,
+    VenueHeadersComponent,
+    EventHeadersComponent,
+    HeaderComponent,
+    ArtistHeaderComponent,
+    VenueHeaderComponent,
+    EventHeaderComponent,
+    HeadersComponent,
   ],
   imports: [
     BrowserModule,
@@ -62,7 +104,12 @@ import { VenueEventsComponent } from './components/venue-events/venue-events.com
     FormsModule,
     MatIconModule,
     MatMenuModule,
-    GoogleMapsModule
+    GoogleMapsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatAutocompleteModule
 ],
   providers: [
     provideHttpClient(

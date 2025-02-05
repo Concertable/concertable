@@ -24,17 +24,17 @@ namespace Infrastructure.Services
             this.authService = authService;
         }
 
-        public async Task<IEnumerable<Venue>> GetVenueHeadersAsync(VenueParams? venueParams)
+        public async Task<IEnumerable<Venue>> GetHeadersAsync(SearchParams? searchParams)
         {
-            return await venueRepository.GetHeadersAsync(venueParams);
+            return await venueRepository.GetHeadersAsync(searchParams);
         }
 
-        public async Task<Venue> GetVenueDetailsByIdAsync(int id)
+        public async Task<Venue> GetDetailsByIdAsync(int id)
         {
             return await venueRepository.GetByIdAsync(id);
         }
 
-        public async void CreateVenue(Venue venue)
+        public async void Create(Venue venue)
         {
             var user = await authService.GetCurrentUser();
             venue.UserId = user.Id;

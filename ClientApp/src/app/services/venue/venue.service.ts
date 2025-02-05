@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Venue } from '../../models/venue';
 import { environment } from '../../../environments/environment';
+import { VenueHeader } from '../../models/venue-header';
 
 @Injectable({
   providedIn: 'root'
@@ -17,9 +18,9 @@ export class VenueService {
     return this.http.get<Venue>(`${this.apiUrl}/${id}`);
   }
 
-  getVenueHeaders() : Observable<Venue[]> {
+  getVenueHeaders() : Observable<VenueHeader[]> {
     let params = new HttpParams();
-    return this.http.get<Venue[]>(`${this.apiUrl}/headers`, { params }); 
+    return this.http.get<VenueHeader[]>(`${this.apiUrl}/headers`, { params }); 
   }
 
   getUserVenue() : Observable<Venue> {

@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth/auth.service';
-import { Router } from '@angular/router';
+import { Component, Input } from '@angular/core';
+import { Header } from '../../models/header';
 
 @Component({
   selector: 'app-header',
@@ -10,9 +9,5 @@ import { Router } from '@angular/router';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  constructor(protected authService: AuthService, private router: Router) { }
-
-  onLogoClick() {
-    this.router.navigateByUrl('/');
-  }
+  @Input() header?: Header;
 }

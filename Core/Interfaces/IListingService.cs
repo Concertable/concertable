@@ -9,7 +9,7 @@ namespace Core.Interfaces
 {
     public interface IListingService
     {
-        void CreateListing(Listing listing);
-        Task<IEnumerable<Listing>> GetActiveListingsByVenueIdAsync(int id);
+        void Create(Listing listing);
+        Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
     }
 }

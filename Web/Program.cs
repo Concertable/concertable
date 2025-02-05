@@ -27,13 +27,23 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-Debug.WriteLine($" ASPNETCORE_ENVIRONMENT: {builder.Environment.EnvironmentName}");
+
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddCors();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials()
+               .WithOrigins("http://localhost:4200", "https://localhost:4200");
+    });
+});
+
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -46,6 +56,7 @@ builder.Services.AddScoped<IArtistService, ArtistService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
 builder.Services.AddScoped<IListingService, ListingService>();
+builder.Services.AddScoped<IHeaderService, HeaderService>();
 
 // Repositories
 builder.Services.AddScoped<IVenueRepository, VenueRepository>();
@@ -81,11 +92,7 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
-
-app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowCredentials()
-    .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -93,7 +100,21 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGroup("/api").MapIdentityApi<ApplicationUser>();
 
-app.MapFallbackToFile("index.html");
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.MapFallback(async context =>
+{
+    // If its an invalid API request
+    if (context.Request.Path.StartsWithSegments("/api"))
+    {
+        // Return a 404 (Useful for debugging purposes and user clarity when returning api data)
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+
+    // If it's not an API request, continue to index.html
+    await context.Response.SendFileAsync("wwwroot/index.html");
+});
 
 app.UseExceptionHandler();
 

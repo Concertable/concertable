@@ -12,12 +12,12 @@ namespace Core.Interfaces
 {
     public interface IVenueService
     {
-        Task<IEnumerable<Venue>> GetVenueHeadersAsync(VenueParams? venueParams);
+        Task<IEnumerable<Venue>> GetHeadersAsync(SearchParams? searchParams);
 
-        Task<Venue> GetVenueDetailsByIdAsync(int id);
+        Task<Venue> GetDetailsByIdAsync(int id);
 
         Task<Venue?> GetUserVenueAsync();
 
-        void CreateVenue(Venue venue);
+        void Create(Venue venue);
     }
 }

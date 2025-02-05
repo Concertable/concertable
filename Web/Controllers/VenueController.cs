@@ -20,16 +20,16 @@ namespace Web.Controllers
         }
 
         [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<Venue>>> GetVenueHeaders([FromQuery] VenueParams venueParams)
+        public async Task<ActionResult<IEnumerable<Venue>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
-            var venues = await venueService.GetVenueHeadersAsync(venueParams);
+            var venues = await venueService.GetHeadersAsync(searchParams);
             return Ok(venues);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Venue>> GetVenueDetailsById(int id)
+        public async Task<ActionResult<Venue>> GetDetailsById(int id)
         {
-            return Ok(await venueService.GetVenueDetailsByIdAsync(id));
+            return Ok(await venueService.GetDetailsByIdAsync(id));
         }
 
         [HttpGet("user-venue")]
@@ -54,7 +54,7 @@ namespace Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Venue>> CreateVenue([FromBody] VenueDto venueDto)
+        public async Task<ActionResult<Venue>> Create([FromBody] VenueDto venueDto)
         {
             //TODO: Talk about security benefits of passing user seperate instead of through the client side
             var venue = new Venue()
@@ -68,8 +68,8 @@ namespace Web.Controllers
                 Town = venueDto.Town,
                 Approved = venueDto.Approved
             };
-            venueService.CreateVenue(venue);
-            return CreatedAtAction(nameof(GetVenueDetailsById), new {Id = venue.Id}, venueDto);
+            venueService.Create(venue);
+            return CreatedAtAction(nameof(GetDetailsById), new {Id = venue.Id}, venueDto);
         }
     }
 }

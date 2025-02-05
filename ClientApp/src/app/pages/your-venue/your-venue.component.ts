@@ -10,7 +10,7 @@ import { AuthService } from '../../services/auth/auth.service';
   templateUrl: './your-venue.component.html',
   styleUrl: './your-venue.component.scss'
 })
-export class YourVenueComponent implements AfterViewInit {
+export class YourVenueComponent implements OnInit {
 
   protected venue: Venue | undefined;
   protected editMode: boolean = false;
@@ -20,7 +20,7 @@ export class YourVenueComponent implements AfterViewInit {
     this.editMode = newValue;
   }
 
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
     this.venueService.getUserVenue().subscribe((venue) => {
       console.log(venue);
       this.venue = venue

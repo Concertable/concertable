@@ -18,9 +18,9 @@ namespace Web.Controllers
 
         [Authorize(Roles = "VenueManager")]
         [HttpGet("all/{listingId}")]
-        public async Task<ActionResult<IEnumerable<Register>>> GetRegistrationsForListingId(int listingId)
+        public async Task<ActionResult<IEnumerable<Register>>> GetAllForListingId(int listingId)
         {
-            var registrations = await registerService.GetRegistrationsForListingIdAsync(listingId);
+            var registrations = await registerService.GetAllForListingIdAsync(listingId);
             return Ok();
         }
 

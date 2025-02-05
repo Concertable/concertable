@@ -29,10 +29,10 @@ namespace Infrastructure.Tests.Services
         }
 
         [Test]
-        public async Task GetVenueHeadersAsync_ShouldReturnHeaders()
+        public async Task GetHeadersAsync_ShouldReturnHeaders()
         {
             // Arrange
-            var venueParams = new VenueParams { Sort = "Name" };
+            var venueParams = new SearchParams { Sort = "Name" };
             IEnumerable<Venue> venueHeaders = new List<Venue>
             {
                 new Venue { Id = 1, Name = "Venue 1" },
@@ -41,7 +41,7 @@ namespace Infrastructure.Tests.Services
             venueRepositoryMock.Setup(m => m.GetHeadersAsync(venueParams)).ReturnsAsync(venueHeaders);
 
             // Act
-            var result = await venueService.GetVenueHeadersAsync(venueParams);
+            var result = await venueService.GetHeadersAsync(venueParams);
 
             // Assert
             Assert.IsNotNull(result);
@@ -64,27 +64,27 @@ namespace Infrastructure.Tests.Services
         }
 
         [Test]
-        public async Task CreateVenue_ShouldAddVenue()
+        public async Task Create_ShouldAddVenue()
         {
             // Arrange
             var user = new ApplicationUser { Id = 1 };
             var venue = new Venue { Name = "Venue 1" };
             authServiceMock.Setup(service => service.GetCurrentUser()).ReturnsAsync(user);
             // Act
-            venueService.CreateVenue(venue);
+            venueService.Create(venue);
             // Assert
             venueRepositoryMock.Verify(m => m.Add(venue), Times.Once);
             Assert.AreEqual(user.Id, venue.UserId);
         }
 
-        public async Task GetVenueDetailsByIdAsync_ShouldReturnVenueDetails()
+        public async Task GetDetailsByIdAsync_ShouldReturnVenueDetails()
         {
             // Arrange
             var venueId = 1;
             var venue = new Venue { Id = 1, Name = "Venue 1" }; 
             venueRepositoryMock.Setup(m => m.GetByIdAsync(venueId)).ReturnsAsync(venue); 
             // Act
-            var result = await venueService.GetVenueDetailsByIdAsync(venueId); 
+            var result = await venueService.GetDetailsByIdAsync(venueId); 
             // Assert
             Assert.NotNull(result); 
             Assert.AreEqual(venue, result); 

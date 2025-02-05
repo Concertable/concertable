@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace Core.Parameters
 {
-    public class VenueParams
+    public class SearchParams
     {
+        public string? SearchTerm { get; set; }
+        public string? Location { get; set; }
+        public DateTime? Date { get; set; }
         public string? Sort {  get; set; }
     }
 }

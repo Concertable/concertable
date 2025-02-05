@@ -7,6 +7,8 @@ import { VenueDashboardComponent } from './pages/venue-dashboard/venue-dashboard
 import { roleGuard } from './guards/role/role.guard';
 import { YourVenueComponent } from './pages/your-venue/your-venue.component';
 import { Role } from './models/role';
+import { ArtistDashboardComponent } from './pages/artist-dashboard/artist-dashboard.component';
+import { VenueFindComponent } from './pages/venue-find/venue-find.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -15,6 +17,10 @@ const routes: Routes = [
     children: [
       { path: 'your-venue', component: YourVenueComponent },
     ] },
+  { path: 'artist', canActivate: [roleGuard], data: { role: Role.ArtistManager }, component: ArtistDashboardComponent,
+    children: [
+      { path: 'find', component: VenueFindComponent },
+    ] },  
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];
 

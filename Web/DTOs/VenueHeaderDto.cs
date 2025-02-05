@@ -1,8 +1,11 @@
 ﻿namespace Web.DTOs
 {
-    public class VenueHeaderDto
+    public class VenueHeaderDto : HeaderDto
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public VenueHeaderDto()
+        {
+            Type = "venue";
+        }
     }
+
 }

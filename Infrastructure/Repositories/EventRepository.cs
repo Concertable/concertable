@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Interfaces;
+using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,6 +14,22 @@ namespace Infrastructure.Repositories
     public class EventRepository : BaseEntityRepository<Event>, IEventRepository
     {
         public EventRepository(ApplicationDbContext context) : base(context) { }
+
+        public async Task<IEnumerable<Event>> GetHeadersAsync(SearchParams searchParams)
+        {
+            var query = context.Events.AsQueryable();
+            query = query.Select(v => new Event
+            {
+                Id = v.Id,
+                Name = v.Name
+            });
+
+            if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
+            {
+                query = query.OrderBy(v => searchParams.Sort);
+            }
+            return await query.ToListAsync();
+        }
 
         public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)
         {

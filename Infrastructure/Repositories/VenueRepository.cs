@@ -16,18 +16,19 @@ namespace Infrastructure.Repositories
     {
         public VenueRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<Venue>> GetHeadersAsync(VenueParams? venueParams)
+        public async Task<IEnumerable<Venue>> GetHeadersAsync(SearchParams? searchParams)
         {
             var query = context.Venues.AsQueryable();
             query = query.Select(v => new Venue
             {
                 Id = v.Id,
-                Name = v.Name
+                Name = v.Name,
+                ImageUrl = v.ImageUrl,
             });
 
-            if (!string.IsNullOrWhiteSpace(venueParams?.Sort))
+            if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
             {
-                query = query.OrderBy(v => venueParams.Sort);
+                query = query.OrderBy(v => searchParams.Sort);
             }
             return await query.ToListAsync();
         }

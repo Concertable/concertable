@@ -19,7 +19,7 @@ namespace Infrastructure.Services
             this.venueService = venueService;
         }
 
-        public async void CreateListing(Listing listing)
+        public async void Create(Listing listing)
         {
             var venue = await venueService.GetUserVenueAsync();
             listing.VenueId = venue.Id;
@@ -27,7 +27,7 @@ namespace Infrastructure.Services
             listingRepository.Add(listing);
         }
 
-        public async Task<IEnumerable<Listing>> GetActiveListingsByVenueIdAsync(int id)
+        public async Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id)
         {
             return await listingRepository.GetActiveByVenueIdAsync(id);
         }

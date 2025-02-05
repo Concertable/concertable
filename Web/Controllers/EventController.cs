@@ -20,10 +20,17 @@ namespace Web.Controllers
             this.eventService = eventService;
         }
 
-        [HttpGet("venue/{id}")]
-        public async Task<ActionResult<IEnumerable<EventDto>>> GetUpcomingEventsByVenueId(int id)
+        [HttpGet("headers")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
-            var events = await eventService.GetUpcomingEventsByVenueIdAsync(id);
+            var venues = await eventService.GetHeadersAsync(searchParams);
+            return Ok(venues);
+        }
+
+        [HttpGet("venue/{id}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetUpcomingByVenueId(int id)
+        {
+            var events = await eventService.GetUpcomingByVenueIdAsync(id);
             var eventDtos = events.Select(e => new EventDto
             {
                 Id = e.Id,

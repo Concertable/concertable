@@ -4,12 +4,12 @@ import { Router } from '@angular/router';
 import { Role } from '../../models/role';
 
 @Component({
-  selector: 'app-customer-header',
+  selector: 'app-customer-navbar',
   standalone: false,
-  templateUrl: './customer-header.component.html',
-  styleUrl: './customer-header.component.scss'
+  templateUrl: './customer-navbar.component.html',
+  styleUrl: './customer-navbar.component.scss'
 })
-export class CustomerHeaderComponent {
+export class CustomerNavbarComponent {
   constructor(public authService: AuthService, private router: Router) { }
 
   Role = Role
