@@ -1,0 +1,40 @@
+@if(venue) {
+    <app-scrollspy [navItems]="navItems"></app-scrollspy>
+    <div class="container" *ngIf="venue">
+        <section [id]="navItems[0].fragment">
+            <app-heading-medium [editMode]="editMode" [content]="venue.name"/>
+            <app-text [editMode]="editMode" [content]="venue.about"/>
+            <app-image [editMode]="editMode" [src]="venue.imageUrl" [alt]="'Venue Image'"/>
+            <app-location 
+                [editMode]="editMode" 
+                [county]="venue.county" 
+                [town]="venue.town"
+                [coordinates]="venue.coordinates"
+            />
+        </section>
+
+        @if (venue.about) {
+            <section [id]="navItems[1].fragment">
+                <h2 class="heading-events">Upcoming Events</h2>
+                <app-venue-events [venue]="venue" />
+            </section>
+        }
+
+        <section [id]="navItems[2].fragment">
+            <h2 class="heading-videos">Videos</h2>
+        </section>
+
+        <section [id]="navItems[3].fragment">
+            <h2 class="reviews">Reviews</h2>
+        </section>
+
+        @if (exists('Listings')) {
+            <section [id]="navItems[4].fragment">
+                <h2 class="heading-listings">Listings</h2>
+                <app-listings [venue]="venue" />
+            </section>
+        }
+    </div>
+}@else {
+    Venue not found
+}

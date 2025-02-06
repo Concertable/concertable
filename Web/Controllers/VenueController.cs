@@ -7,7 +7,6 @@ using Web.DTOs;
 
 namespace Web.Controllers
 {
-    [Authorize(Roles = "VenueManager, Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class VenueController : ControllerBase
@@ -32,6 +31,7 @@ namespace Web.Controllers
             return Ok(await venueService.GetDetailsByIdAsync(id));
         }
 
+        [Authorize(Roles = "VenueManager, Admin")]
         [HttpGet("user-venue")]
         public async Task<ActionResult<VenueDto?>> GetUserVenue()
         {
@@ -53,6 +53,7 @@ namespace Web.Controllers
             } ?? null);
         }
 
+        [Authorize(Roles = "VenueManager, Admin")]
         [HttpPost]
         public async Task<ActionResult<Venue>> Create([FromBody] VenueDto venueDto)
         {

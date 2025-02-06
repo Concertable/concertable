@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { Header } from '../../models/header';
 import { ArtistHeader } from '../../models/artist-header';
+import { ArtistService } from '../../services/artist/artist.service';
 
 @Component({
   selector: 'app-artist-header',

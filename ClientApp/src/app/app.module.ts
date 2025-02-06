@@ -30,7 +30,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
 
-import { VenueDetailsComponent } from './components/venue-details/venue-details.component';
+import { VenueDetailsComponent } from './pages/venue-details/venue-details.component';
 import { ConfigHeaderComponent } from './components/config-header/config-header.component';
 import { ConfigButtonComponent } from './components/config-button/config-button.component';
 import { ListingComponent } from './components/listing/listing.component';
@@ -41,7 +41,7 @@ import { ScrollspyComponent } from './components/scrollspy/scrollspy.component';
 import { VenueEventsComponent } from './components/venue-events/venue-events.component';
 import { ArtistDashboardComponent } from './pages/artist-dashboard/artist-dashboard.component';
 import { ArtistNavbarComponent } from './components/artist-navbar/artist-navbar.component';
-import { VenueFindComponent } from './pages/venue-find/venue-find.component';
+import { ArtistFindComponent } from './pages/venue-find/artist-find.component';
 import { SearchComponent } from './components/search/search.component';
 import { DatePickerComponent } from './components/date-picker/date-picker.component';
 import { LocationSearchComponent } from './components/location-search/location-search.component';
@@ -56,6 +56,18 @@ import { ArtistHeadersComponent } from './components/artist-headers/artist-heade
 import { VenueHeadersComponent } from './components/venue-headers/venue-headers.component';
 import { EventHeadersComponent } from './components/event-headers/event-headers.component';
 import { HeadersComponent } from './components/headers/headers.component';
+import { TextComponent } from './components/config/text/text.component';
+import { TextareaComponent } from './components/config/textarea/textarea.component';
+import { ImageComponent } from './components/config/image/image.component';
+import { HeadingLargeComponent } from './components/config/heading-large/heading-large.component';
+import { HeadingMediumComponent } from './components/config/heading-medium/heading-medium.component';
+import { LocationComponent } from './components/config/location/location.component';
+import { ExtraOptions } from '@angular/router';
+
+const routerOptions: ExtraOptions = {
+  anchorScrolling: 'enabled',
+  scrollPositionRestoration: 'enabled' // Restores scroll position when navigating back
+};
 
 @NgModule({
   declarations: [
@@ -82,7 +94,7 @@ import { HeadersComponent } from './components/headers/headers.component';
     VenueEventsComponent,
     ArtistDashboardComponent,
     ArtistNavbarComponent,
-    VenueFindComponent,
+    ArtistFindComponent,
     SearchComponent,
     DatePickerComponent,
     LocationSearchComponent,
@@ -97,6 +109,12 @@ import { HeadersComponent } from './components/headers/headers.component';
     VenueHeaderComponent,
     EventHeaderComponent,
     HeadersComponent,
+    TextComponent,
+    TextareaComponent,
+    ImageComponent,
+    HeadingLargeComponent,
+    HeadingMediumComponent,
+    LocationComponent,
   ],
   imports: [
     BrowserModule,

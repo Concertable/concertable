@@ -14,11 +14,11 @@ export class VenueService {
 
   private apiUrl = `${environment.apiUrl}/venue`
 
-  getVenueDetailsById(id: number) {
+  getDetailsById(id: number) {
     return this.http.get<Venue>(`${this.apiUrl}/${id}`);
   }
 
-  getVenueHeaders() : Observable<VenueHeader[]> {
+  getHeaders() : Observable<VenueHeader[]> {
     let params = new HttpParams();
     return this.http.get<VenueHeader[]>(`${this.apiUrl}/headers`, { params }); 
   }

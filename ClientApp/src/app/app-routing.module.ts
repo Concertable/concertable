@@ -8,7 +8,8 @@ import { roleGuard } from './guards/role/role.guard';
 import { YourVenueComponent } from './pages/your-venue/your-venue.component';
 import { Role } from './models/role';
 import { ArtistDashboardComponent } from './pages/artist-dashboard/artist-dashboard.component';
-import { VenueFindComponent } from './pages/venue-find/venue-find.component';
+import { ArtistFindComponent } from './pages/venue-find/artist-find.component';
+import { VenueDetailsComponent } from './pages/venue-details/venue-details.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -19,7 +20,8 @@ const routes: Routes = [
     ] },
   { path: 'artist', canActivate: [roleGuard], data: { role: Role.ArtistManager }, component: ArtistDashboardComponent,
     children: [
-      { path: 'find', component: VenueFindComponent },
+      { path: 'find', component: ArtistFindComponent, },
+      { path: 'find/venue', component: VenueDetailsComponent, },
     ] },  
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

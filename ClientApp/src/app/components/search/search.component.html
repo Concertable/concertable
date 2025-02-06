@@ -8,8 +8,7 @@
             matInput
             placeholder="Type your search term"
             [(ngModel)]="searchTerm"
-            [matAutocomplete]="auto"
-            (keyup)="onSearch()">
+            [matAutocomplete]="auto">
         <mat-autocomplete #auto="matAutocomplete">
         </mat-autocomplete>
         </mat-form-field>

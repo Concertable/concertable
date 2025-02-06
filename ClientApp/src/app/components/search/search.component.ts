@@ -14,11 +14,18 @@ import { SearchParams } from '../../models/search-params';
 })
 export class SearchComponent {
   searchTerm: string = '';
-  searchParams?: SearchParams;
+  location: string = '';
+  date?: Date;
+ 
   @Input() searchType?: SearchType;
   @Output() search : EventEmitter<SearchParams>  = new EventEmitter<SearchParams>();
 
   onSearch() {
-    this.search.emit(this.searchParams);
+    const searchParams: SearchParams = {
+      searchTerm: this.searchTerm,
+      location: this.location,
+      date: this.date
+    }
+    this.search.emit(searchParams);
   }
 }

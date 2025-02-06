@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VenueFindComponent } from './venue-find.component';
+import { TextComponent } from './text.component';
 
-describe('VenueFindComponent', () => {
-  let component: VenueFindComponent;
-  let fixture: ComponentFixture<VenueFindComponent>;
+describe('TextComponent', () => {
+  let component: TextComponent;
+  let fixture: ComponentFixture<TextComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [VenueFindComponent]
+      declarations: [TextComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(VenueFindComponent);
+    fixture = TestBed.createComponent(TextComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
