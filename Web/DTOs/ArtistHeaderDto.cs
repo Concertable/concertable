@@ -4,7 +4,7 @@
     {
         public ArtistHeaderDto()
         {
-            Type = "venue";
+            Type = "artist";
         }
     }
 }

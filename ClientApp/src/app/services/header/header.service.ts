@@ -27,11 +27,11 @@ export class HeaderService {
 
   getArtistHeaders(searchParams: SearchParams): Observable<ArtistHeader[]> {
     const params = this.getParams(searchParams);
-    return this.http.get<ArtistHeader[]>(`${this.apiUrl}/venue`);
+    return this.http.get<ArtistHeader[]>(`${this.apiUrl}/artist`);
   }
 
   getEventHeaders(searchParams: SearchParams): Observable<EventHeader[]> {
     const params = this.getParams(searchParams);
-    return this.http.get<EventHeader[]>(`${this.apiUrl}/venue`);
+    return this.http.get<EventHeader[]>(`${this.apiUrl}/event`);
   }
 }

@@ -1,0 +1,44 @@
+.filter-container {
+    width: 300px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: -300px; /* Start hidden */
+    background-color: white;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease-in-out; /* Smooth transition */
+    padding: 20px;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+  
+  .filter-container.open {
+    right: 0; /* Slide in */
+  }
+  
+  /* Close Button */
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  .close-btn:hover {
+    color: red;
+  }
+  
+  /* Filter Options */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  button {
+    margin-top: 10px;
+  }
+  

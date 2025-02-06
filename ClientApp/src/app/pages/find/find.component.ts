@@ -1,5 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { SearchType } from '../../models/search-type';
 import { EventService } from '../../services/event/event.service';
 import { HeaderService } from '../../services/header/header.service';
 import { Observable } from 'rxjs';
@@ -9,6 +8,7 @@ import { VenueHeader } from '../../models/venue-header';
 import { EventHeader } from '../../models/event-header';
 import { SearchParams } from '../../models/search-params';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HeaderType } from '../../models/header-type';
 
 @Component({
   selector: 'app-find',
@@ -18,8 +18,10 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './find.component.scss'
 })
 export class FindComponent implements OnInit {
-  @Input() searchType?: SearchType;
+  @Input() headerType?: HeaderType;
+  @Input() isCustomer?: boolean = false;
   headers: Header[] = [];
+  filterOpen = false; // Track if filter menu is open
 
   constructor(
     private headerService: HeaderService, 
@@ -29,28 +31,38 @@ export class FindComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      if (this.searchType && Object.keys(params).length > 0)
+      if (this.headerType && Object.keys(params).length > 0)
         this.handleSearch(params as SearchParams);
     })
   }
 
-  private headerMethods: Record<SearchType, (searchParams: SearchParams) => Observable<Header[]>> = {
+  private headerMethods: Record<HeaderType, (searchParams: SearchParams) => Observable<Header[]>> = {
       venue: (searchParams) => this.headerService.getVenueHeaders(searchParams),
       artist: (searchParams) => this.headerService.getArtistHeaders(searchParams),
       event: (searchParams) => this.headerService.getEventHeaders(searchParams),
   };
 
   handleSearch(searchParams: SearchParams) {
-    if (this.searchType) {
+    if (this.headerType) {
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: searchParams,
       });
-      this.headerMethods[this.searchType](searchParams).subscribe(h => {
+      this.headerMethods[this.headerType](searchParams).subscribe(h => {
         this.headers = h;
       }
       );
     }
   }
-    
-}
+
+    // Toggle the filter panel
+    toggleFilter() {
+      this.filterOpen = !this.filterOpen;
+    }
+  
+    // Apply Filters and Close Panel
+    applyFilters(filters: SearchParams) {
+      this.handleSearch(filters);
+      this.toggleFilter(); // Close the panel after applying filters
+    }
+  }

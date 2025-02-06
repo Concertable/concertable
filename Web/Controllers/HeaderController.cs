@@ -21,8 +21,8 @@ namespace Web.Controllers
         [HttpGet("venue")]
         public async Task<ActionResult<IEnumerable<VenueHeaderDto>>> GetVenueHeaders([FromQuery] SearchParams searchParams)
         {
-            var venues = await headerService.GetVenueHeadersAsync(searchParams);
-            var headersDto = venues.Select(header => new VenueHeaderDto
+            var venueHeaders = await headerService.GetVenueHeadersAsync(searchParams);
+            var headersDto = venueHeaders.Select(header => new VenueHeaderDto
             {
                 Id = header.Id,
                 ImageUrl = header.ImageUrl,
@@ -33,13 +33,25 @@ namespace Web.Controllers
         [HttpGet("artist")]
         public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetArtistHeaders([FromQuery] SearchParams searchParams)
         {
-            return Ok(await headerService.GetArtistHeadersAsync(searchParams));
+            var artistHeaders = await headerService.GetArtistHeadersAsync(searchParams);
+            var headersDto = artistHeaders.Select(header => new ArtistHeaderDto
+            {
+                Id = header.Id,
+                ImageUrl = header.ImageUrl,
+            });
+            return Ok(headersDto);
         }
 
         [HttpGet("event")]
         public async Task<ActionResult<IEnumerable<EventHeaderDto>>> GetEventHeaders([FromQuery] SearchParams searchParams)
         {
-            return Ok(await headerService.GetEventHeadersAsync(searchParams));
+            var eventHeaders = await headerService.GetArtistHeadersAsync(searchParams);
+            var headersDto = eventHeaders.Select(header => new EventHeaderDto
+            {
+                Id = header.Id,
+                ImageUrl = header.ImageUrl,
+            });
+            return Ok(headersDto);
         }
     }
 }

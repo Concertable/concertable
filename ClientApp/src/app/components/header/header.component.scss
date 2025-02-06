@@ -6,11 +6,16 @@
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     
-    min-height: 250px; // Prevents collapsing & overlap
+    max-height: 250x;
+    max-width: 270px;
     
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     overflow: hidden;
+
+    > img {
+        min-height: 200px;
+    }
 }

@@ -1,1 +1,0 @@
-export type SearchType = 'artist'| 'venue' | 'event';

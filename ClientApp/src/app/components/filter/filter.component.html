@@ -1,0 +1,18 @@
+<div class="filter-container" [class.open]="isOpen">
+    <button class="close-btn" (click)="closeFilter()">✖</button>
+    <h2>Filters</h2>
+  
+    <form (ngSubmit)="applyFilter()">
+      <label>
+        <input type="checkbox" [(ngModel)]="selectedFilters.option1" name="option1">
+        Option 1
+      </label>
+      <label>
+        <input type="checkbox" [(ngModel)]="selectedFilters.option2" name="option2">
+        Option 2
+      </label>
+  
+      <button mat-raised-button type="submit">Apply Filters</button>
+    </form>
+  </div>
+  

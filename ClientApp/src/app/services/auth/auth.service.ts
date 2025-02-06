@@ -22,16 +22,23 @@ export class AuthService {
   isRole = (role: string) => this.currentUser()?.role === role;
   isNotRole = (role: string) => this.currentUser()?.role !== role;
 
-  login(credentials: LoginCredentials) : Observable<any> {
-    let params = new HttpParams();
-    params = params.append('useCookies', true);
-    return this.http.post<any>(`${environment.apiUrl}/login`, credentials, { params });
+  login(credentials: LoginCredentials): Observable<any> {
+    let params = new HttpParams().append('useCookies', true);
+    return this.http.post<any>(`${environment.apiUrl}/login`, credentials, { params }).pipe(
+      tap(() => {
+        this.getCurrentUser().subscribe();
+      })
+    );
   }
+  
 
   logout() : Observable<void> {
     console.log(`${this.apiUrl}/logout`);
     return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
-      tap(() => this.router.navigateByUrl('/'))
+      tap(() => {
+        this.currentUser.set(null);
+        this.router.navigateByUrl('/');
+      })
     )
   }
 

@@ -4,7 +4,7 @@
     {
         public EventHeaderDto()
         {
-            Type = "venue";
+            Type = "event";
         }
     }
 }

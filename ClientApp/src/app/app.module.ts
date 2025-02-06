@@ -26,6 +26,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSelectModule } from '@angular/material/select';
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
@@ -63,6 +64,10 @@ import { HeadingLargeComponent } from './components/config/heading-large/heading
 import { HeadingMediumComponent } from './components/config/heading-medium/heading-medium.component';
 import { LocationComponent } from './components/config/location/location.component';
 import { ExtraOptions } from '@angular/router';
+import { VenueFindComponent } from './components/venue-find/venue-find.component';
+import { ArtistDetailsComponent } from './pages/artist-details/artist-details.component';
+import { CustomerFindComponent } from './components/customer-find/customer-find.component';
+import { FilterComponent } from './components/filter/filter.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -115,6 +120,10 @@ const routerOptions: ExtraOptions = {
     HeadingLargeComponent,
     HeadingMediumComponent,
     LocationComponent,
+    VenueFindComponent,
+    ArtistDetailsComponent,
+    CustomerFindComponent,
+    FilterComponent,
   ],
   imports: [
     BrowserModule,
@@ -127,7 +136,8 @@ const routerOptions: ExtraOptions = {
     MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatSelectModule
 ],
   providers: [
     provideHttpClient(

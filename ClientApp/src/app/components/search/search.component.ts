@@ -1,9 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Header } from '../../models/header';
-import { HeaderService } from '../../services/header/header.service';
-import { SearchType } from '../../models/search-type';
 import { SearchParams } from '../../models/search-params';
+import { HeaderType } from '../../models/header-type';
 
 @Component({
   selector: 'app-search',
@@ -17,15 +14,18 @@ export class SearchComponent {
   location: string = '';
   date?: Date;
  
-  @Input() searchType?: SearchType;
+  @Input() headerType?: HeaderType;
   @Output() search : EventEmitter<SearchParams>  = new EventEmitter<SearchParams>();
 
   onSearch() {
-    const searchParams: SearchParams = {
-      searchTerm: this.searchTerm,
-      location: this.location,
-      date: this.date
+    if(this.headerType) {
+      const searchParams: SearchParams = {
+        searchTerm: this.searchTerm,
+        headerType: this.headerType,
+        location: this.location,
+        date: this.date
+      }
+      this.search.emit(searchParams);
     }
-    this.search.emit(searchParams);
   }
 }
