@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Event } from '../../models/event';
 import { EventHeader } from '../../models/event-header';
+import { Pagination } from '../../models/pagination';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,7 @@ export class EventService {
     return this.http.get<Event>(`${this.apiUrl}/${id}`);
   }
 
-  getHeaders(params: HttpParams): Observable<EventHeader[]> {
-    return this.http.get<EventHeader[]>(`${this.apiUrl}/headers`);
+  getHeaders(params: HttpParams): Observable<Pagination<EventHeader>> {
+    return this.http.get<Pagination<EventHeader>>(`${this.apiUrl}/headers`);
   }
 }

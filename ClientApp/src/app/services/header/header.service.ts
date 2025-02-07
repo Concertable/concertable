@@ -9,6 +9,7 @@ import { SearchParams } from '../../models/search-params';
 import { VenueService } from '../venue/venue.service';
 import { ArtistService } from '../artist/artist.service';
 import { EventService } from '../event/event.service';
+import { Pagination } from '../../models/pagination';
 
 @Injectable({
   providedIn: 'root'
@@ -28,17 +29,17 @@ export class HeaderService {
     return new HttpParams({ fromObject: searchParams as any });
   }
 
-  getVenueHeaders(searchParams: SearchParams): Observable<VenueHeader[]> {
+  getVenueHeaders(searchParams: SearchParams): Observable<Pagination<VenueHeader>> {
     const params = this.getParams(searchParams);
     return this.venueService.getHeaders(params);
   }
 
-  getArtistHeaders(searchParams: SearchParams): Observable<ArtistHeader[]> {
+  getArtistHeaders(searchParams: SearchParams): Observable<Pagination<ArtistHeader>> {
     const params = this.getParams(searchParams);
     return this.artistService.getHeaders(params);
   }
 
-  getEventHeaders(searchParams: SearchParams): Observable<EventHeader[]> {
+  getEventHeaders(searchParams: SearchParams): Observable<Pagination<EventHeader>> {
     const params = this.getParams(searchParams);
     return this.eventService.getHeaders(params);
   }

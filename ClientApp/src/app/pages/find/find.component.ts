@@ -9,6 +9,7 @@ import { EventHeader } from '../../models/event-header';
 import { SearchParams } from '../../models/search-params';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HeaderType } from '../../models/header-type';
+import { Pagination } from '../../models/pagination';
 
 @Component({
   selector: 'app-find',
@@ -36,7 +37,7 @@ export class FindComponent implements OnInit {
     })
   }
 
-  private headerMethods: Record<HeaderType, (searchParams: SearchParams) => Observable<Header[]>> = {
+  private headerMethods: Record<HeaderType, (searchParams: SearchParams) => Observable<Pagination<Header>>> = {
       venue: (searchParams) => this.headerService.getVenueHeaders(searchParams),
       artist: (searchParams) => this.headerService.getArtistHeaders(searchParams),
       event: (searchParams) => this.headerService.getEventHeaders(searchParams),
@@ -49,7 +50,7 @@ export class FindComponent implements OnInit {
         queryParams: searchParams,
       });
       this.headerMethods[this.headerType](searchParams).subscribe(h => {
-        this.headers = h;
+        this.headers = h.data;
       }
       );
     }

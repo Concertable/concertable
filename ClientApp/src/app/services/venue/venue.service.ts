@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Venue } from '../../models/venue';
 import { environment } from '../../../environments/environment';
 import { VenueHeader } from '../../models/venue-header';
+import { Pagination } from '../../models/pagination';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +19,8 @@ export class VenueService {
     return this.http.get<Venue>(`${this.apiUrl}/${id}`);
   }
 
-  getHeaders(params: HttpParams) : Observable<VenueHeader[]> {
-    return this.http.get<VenueHeader[]>(`${this.apiUrl}/headers`, { params }); 
+  getHeaders(params: HttpParams) : Observable<Pagination<VenueHeader>> {
+    return this.http.get<Pagination<VenueHeader>>(`${this.apiUrl}/headers`, { params }); 
   }
 
   getUserVenue() : Observable<Venue> {

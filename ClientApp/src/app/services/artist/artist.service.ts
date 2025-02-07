@@ -4,6 +4,7 @@ import { Artist } from '../../models/artist';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ArtistHeader } from '../../models/artist-header';
+import { Pagination } from '../../models/pagination';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class ArtistService {
     return this.http.get<Artist>(`${this.apiUrl}/${id}`);
   }
 
-  getHeaders(params: HttpParams): Observable<ArtistHeader[]> {
-    return this.http.get<ArtistHeader[]>(`${this.apiUrl}/headers`);
+  getHeaders(params: HttpParams): Observable<Pagination<ArtistHeader>> {
+    return this.http.get<Pagination<ArtistHeader>>(`${this.apiUrl}/headers`);
   }
 }
