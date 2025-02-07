@@ -8,13 +8,21 @@ namespace Core.Parameters
 {
     public class PaginationParams
     {
-        private const int MaxPageSize = 50;
+        private const int MaxPageSize = 100; 
         private int pageSize = 10;
-        public int Page { get; set; }
+        private int pageNumber = 1; 
+
+        public int PageNumber
+        {
+            get => pageNumber;
+            set => pageNumber = (value < 1) ? 1 : value; 
+        }
+
         public int PageSize
         {
             get => pageSize;
-            set => pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+            set => pageSize = (value < 1) ? 10 : (value > MaxPageSize ? MaxPageSize : value);
         }
     }
+
 }

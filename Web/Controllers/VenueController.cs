@@ -5,6 +5,7 @@ using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
+using Core.Responses;
 
 namespace Web.Controllers
 {
@@ -20,7 +21,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<Venue>>> GetHeaders([FromQuery] SearchParams searchParams)
+        public async Task<ActionResult<PaginationResponse<Venue>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
             return Ok(await venueService.GetHeadersAsync(searchParams));
         }

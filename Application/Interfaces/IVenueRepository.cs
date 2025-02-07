@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Parameters;
+using Core.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Application.Interfaces
 {
     public interface IVenueRepository : IBaseEntityRepository<Venue>
     {
-        Task<IEnumerable<Venue>> GetHeadersAsync(SearchParams? searchParams);
+        Task<PaginationResponse<Venue>> GetHeadersAsync(SearchParams? searchParams);
         Task<Venue?> GetByUserIdAsync(int id);
     }
 }

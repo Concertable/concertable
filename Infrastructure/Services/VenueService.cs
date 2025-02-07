@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Core.Responses;
 
 namespace Infrastructure.Services
 {
@@ -28,10 +29,15 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
+        public async Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
         {
-            var headers = await venueRepository.GetHeadersAsync(searchParams);
-            return mapper.Map<IEnumerable<VenueHeaderDto>>(headers);
+            var response = await venueRepository.GetHeadersAsync(searchParams);
+            var headersDtos = mapper.Map<IEnumerable<VenueHeaderDto>>(response.Data);
+            return new PaginationResponse<VenueHeaderDto>(
+                headersDtos,
+                response.TotalCount,
+                response.PageNumber,
+                response.PageSize);
         }
 
         public async Task<Venue> GetDetailsByIdAsync(int id)

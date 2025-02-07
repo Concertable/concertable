@@ -8,12 +8,13 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Core.Responses;
 
 namespace Application.Interfaces
 {
     public interface IVenueService
     {
-        Task<IEnumerable<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams);
+        Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams);
 
         Task<Venue> GetDetailsByIdAsync(int id);
 

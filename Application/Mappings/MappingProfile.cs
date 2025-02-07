@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Core.Responses;
 
 namespace Application.Mappings
 {
@@ -33,6 +34,8 @@ namespace Application.Mappings
             CreateMap<EventDto, Event>();
             CreateMap<Event, EventHeaderDto>();
             CreateMap<EventHeaderDto, Event>();
+
+            CreateMap(typeof(PaginationResponse<>), typeof(PaginationResponse<>));
         }
     }
 }

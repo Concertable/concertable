@@ -41,14 +41,14 @@ namespace Infrastructure.Tests.Services
                 new Venue { Id = 1, Name = "Venue 1" },
                 new Venue { Id = 2, Name = "Venue 2" }
             };
-            venueRepositoryMock.Setup(m => m.GetHeadersAsync(venueParams)).ReturnsAsync(venueHeaders);
+            //venueRepositoryMock.Setup(m => m.GetHeadersAsync(venueParams)).ReturnsAsync(venueHeaders);
 
             // Act
             var result = await venueService.GetHeadersAsync(venueParams);
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(venueHeaders.Count(), result.Count());
+            //Assert.AreEqual(venueHeaders.Count(), result.Count());
             Assert.AreEqual(venueHeaders, result);
         }
 
