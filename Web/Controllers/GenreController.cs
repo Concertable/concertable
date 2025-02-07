@@ -15,6 +15,7 @@ namespace Web.Controllers
             this.genreService = genreService;
         }
 
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<Genre>>> GetAll()
         {
             return Ok(await genreService.GetAllAsync());

@@ -14,7 +14,9 @@ export class HeaderService {
 
   apiUrl = `${environment.apiUrl}/header`
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient
+  ) { }
 
   private getParams(searchParams: SearchParams): HttpParams {
     return new HttpParams({ fromObject: searchParams as any });

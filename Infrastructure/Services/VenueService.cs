@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using AutoMapper;
+using Core.Entities;
 using Core.Entities.Identity;
 using Core.Interfaces;
 using Core.Parameters;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Web.DTOs;
 
 namespace Infrastructure.Services
 {
@@ -17,16 +19,19 @@ namespace Infrastructure.Services
     {
         private readonly IVenueRepository venueRepository;
         private readonly IAuthService authService;
+        private readonly IMapper mapper;
 
-        public VenueService(IVenueRepository venueRepository, IAuthService authService)
+        public VenueService(IVenueRepository venueRepository, IAuthService authService, IMapper mapper)
         {
             this.venueRepository = venueRepository;
             this.authService = authService;
+            this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<Venue>> GetHeadersAsync(SearchParams? searchParams)
+        public async Task<IEnumerable<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
         {
-            return await venueRepository.GetHeadersAsync(searchParams);
+            var headers = await venueRepository.GetHeadersAsync(searchParams);
+            return mapper.Map<IEnumerable<VenueHeaderDto>>(headers);
         }
 
         public async Task<Venue> GetDetailsByIdAsync(int id)

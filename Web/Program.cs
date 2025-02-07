@@ -1,3 +1,4 @@
+using Application.Mappings;
 using Core.Entities.Identity;
 using Core.Interfaces;
 using Infrastructure;
@@ -64,6 +65,8 @@ builder.Services.AddScoped<IArtistRepository, ArtistRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IRegisterRepository, RegisterRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddAuthentication();
 builder.Services.ConfigureApplicationCookie(config =>

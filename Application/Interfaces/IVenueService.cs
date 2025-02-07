@@ -7,12 +7,13 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Web.DTOs;
 
 namespace Core.Interfaces
 {
     public interface IVenueService
     {
-        Task<IEnumerable<Venue>> GetHeadersAsync(SearchParams? searchParams);
+        Task<IEnumerable<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams);
 
         Task<Venue> GetDetailsByIdAsync(int id);
 
