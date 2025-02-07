@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IVenueRepository : IBaseEntityRepository<Venue>
+    public interface IVenueRepository : IRepository<Venue>
     {
         Task<PaginationResponse<Venue>> GetHeadersAsync(SearchParams? searchParams);
         Task<Venue?> GetByUserIdAsync(int id);

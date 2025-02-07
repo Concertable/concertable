@@ -1,7 +1,6 @@
-﻿using Core.Entities;
-using Application.Interfaces;
+﻿using Application.Interfaces;
+using Core.Entities;
 using Infrastructure.Data.Identity;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,35 +9,12 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<T> : BaseRepository<T>, IRepository<T> where T : BaseEntity
     {
-        protected readonly ApplicationDbContext context;
+        public Repository(ApplicationDbContext context) : base(context) { }
 
-        public Repository(ApplicationDbContext context)
-        {
-            this.context = context;
-        }
+        public async Task<T?> GetByIdAsync(int id) => await context.Set<T>().FindAsync(id);
 
-        public void Add(T entity)
-        {
-            context.Set<T>().Add(entity);
-        }
-
-        public async Task<IEnumerable<T>> GetAllAsync()
-        {
-            return await context.Set<T>().ToListAsync();
-        }
-
-        public void Remove(T entity)
-        {
-            context.Set<T>().Remove(entity);
-        }   
-
-        public void Update(T entity)
-        {
-            context.Set<T>().Update(entity);
-        }
+        public bool Exists(int id) => context.Set<T>().Any(e => e.Id == id);
     }
-
-
 }

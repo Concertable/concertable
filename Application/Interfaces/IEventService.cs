@@ -11,7 +11,7 @@ namespace Application.Interfaces
 {
     public interface IEventService
     {
-        Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
+        Task<IEnumerable<EventDto>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams);
     }
 }

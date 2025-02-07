@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IListingRepository : IBaseEntityRepository<Listing>
+    public interface IListingRepository : IRepository<Listing>
     {
         Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
     }

@@ -14,7 +14,7 @@ using Core.Responses;
 
 namespace Infrastructure.Repositories
 {
-    public class VenueRepository : BaseEntityRepository<Venue>, IVenueRepository
+    public class VenueRepository : Repository<Venue>, IVenueRepository
     {
         public VenueRepository(ApplicationDbContext context) : base(context) { }
 

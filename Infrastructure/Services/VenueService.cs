@@ -45,19 +45,22 @@ namespace Infrastructure.Services
             return await venueRepository.GetByIdAsync(id);
         }
 
-        public async void Create(Venue venue)
+        public async void Create(CreateVenueDto venueDto)
         {
+            var venue = mapper.Map<Venue>(venueDto);
+
             var user = await authService.GetCurrentUser();
             venue.UserId = user.Id;
 
             venueRepository.Add(venue);
         }
 
-        public async Task<Venue?> GetUserVenueAsync()
+        public async Task<VenueDto?> GetUserVenueAsync()
         {
             var user = await authService.GetCurrentUser();
-            return await venueRepository.GetByUserIdAsync(user.Id);
+            var venue = await venueRepository.GetByUserIdAsync(user.Id);
 
+            return mapper.Map<VenueDto>(venue);
         }
     }
 }

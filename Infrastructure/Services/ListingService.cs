@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTOs;
+using AutoMapper;
 
 namespace Infrastructure.Services
 {
@@ -12,24 +14,29 @@ namespace Infrastructure.Services
     {
         private readonly IListingRepository listingRepository;
         private readonly IVenueService venueService;
+        private readonly IMapper mapper;
 
-        public ListingService(IListingRepository listingRepository, IVenueService venueService)
+        public ListingService(IListingRepository listingRepository, IVenueService venueService, IMapper mapper)
         {
             this.listingRepository = listingRepository;
             this.venueService = venueService;
+            this.mapper = mapper;
         }
 
-        public async void Create(Listing listing)
+        public async void Create(ListingDto listingDto)
         {
+            var listing = mapper.Map<Listing>(listingDto);
+
             var venue = await venueService.GetUserVenueAsync();
             listing.VenueId = venue.Id;
 
             listingRepository.Add(listing);
         }
 
-        public async Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id)
+        public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)
         {
-            return await listingRepository.GetActiveByVenueIdAsync(id);
+            var listings = await listingRepository.GetActiveByVenueIdAsync(id);
+            return mapper.Map<IEnumerable<ListingDto>>(listings);
         }
     }
 }

@@ -18,8 +18,8 @@ namespace Application.Interfaces
 
         Task<Venue> GetDetailsByIdAsync(int id);
 
-        Task<Venue?> GetUserVenueAsync();
+        Task<VenueDto?> GetUserVenueAsync();
 
-        void Create(Venue venue);
+        void Create(CreateVenueDto venue);
     }
 }

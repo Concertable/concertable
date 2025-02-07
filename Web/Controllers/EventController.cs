@@ -29,20 +29,7 @@ namespace Web.Controllers
         [HttpGet("venue/{id}")]
         public async Task<ActionResult<IEnumerable<EventDto>>> GetUpcomingByVenueId(int id)
         {
-            var events = await eventService.GetUpcomingByVenueIdAsync(id);
-            var eventDtos = events.Select(e => new EventDto
-            {
-                Id = e.Id,
-                Name = e.Name,
-                About = e.About,
-                Price = e.Price,
-                ImageUrl = e.ImageUrl,
-                StartDate = e.Register.Listing.StartDate,
-                EndDate = e.Register.Listing.EndDate,
-                TotalTickets = e.TotalTickets,
-                AvailableTickets = e.AvailableTickets,
-            }).ToList();
-            return Ok(eventDtos);
+            return Ok(await eventService.GetUpcomingByVenueIdAsync(id));
         }
 
     }

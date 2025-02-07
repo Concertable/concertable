@@ -23,9 +23,10 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)
+        public async Task<IEnumerable<EventDto>> GetUpcomingByVenueIdAsync(int id)
         {
-            return await eventRepository.GetUpcomingByVenueIdAsync(id);
+            var events = await eventRepository.GetUpcomingByVenueIdAsync(id);
+            return mapper.Map<IEnumerable<EventDto>>(events);
         }
 
         public async Task<IEnumerable<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams)

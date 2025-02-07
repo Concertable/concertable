@@ -21,6 +21,15 @@ namespace Application.Mappings
             CreateMap<VenueDto, Venue>();
             CreateMap<Venue, VenueHeaderDto>();
             CreateMap<VenueHeaderDto, Venue>();
+            CreateMap<Venue, VenueDto>()
+            .ForMember(
+                dest => dest.Coordinates,
+                opt => opt.MapFrom(src => new CoordinatesDto
+                {
+                    Latitude = src.Latitude,
+                    Longitude = src.Longitude
+                })
+            );
             //Artist
             CreateMap<Artist, ArtistDto>();
             CreateMap<ArtistDto, Artist>();
@@ -29,13 +38,30 @@ namespace Application.Mappings
             //Listing
             CreateMap<Listing, ListingDto>();
             CreateMap<ListingDto, Listing>();
+            CreateMap<Listing, ListingDto>()
+                .ForMember(
+                    dest => dest.Genres,
+                    opts => opts.MapFrom( //Map from one table to another
+                        src => src.ListingGenres
+                            .Select(g => g.Genre.Name)
+                            .ToList()
+                    )
+                );
+
             //Events
             CreateMap<Event, EventDto>();
             CreateMap<EventDto, Event>();
             CreateMap<Event, EventHeaderDto>();
             CreateMap<EventHeaderDto, Event>();
-
-            CreateMap(typeof(PaginationResponse<>), typeof(PaginationResponse<>));
+            CreateMap<Event, EventDto>()
+                .ForMember(
+                    dest => dest.StartDate,
+                    opt => opt.MapFrom(src => src.Register.Listing.StartDate)
+                )
+                .ForMember(
+                    dest => dest.EndDate,
+                    opt => opt.MapFrom(src => src.Register.Listing.EndDate)
+                );
         }
     }
 }

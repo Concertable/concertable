@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Application.DTOs;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Application.Interfaces
 {
     public interface IListingService
     {
-        void Create(Listing listing);
-        Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
+        void Create(ListingDto listingDto);
+        Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id);
     }
 }

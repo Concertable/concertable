@@ -7,12 +7,9 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
     {
-        Task<IEnumerable<T>> GetAllAsync();
-        void Add(T entity);
-        void Update(T entity);
-        void Remove(T entity);
-
+        Task<TEntity?> GetByIdAsync(int id);
+        bool Exists(int id);
     }
 }

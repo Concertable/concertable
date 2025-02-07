@@ -36,41 +36,16 @@ namespace Web.Controllers
         [HttpGet("user-venue")]
         public async Task<ActionResult<VenueDto?>> GetUserVenue()
         {
-            var venue = await venueService.GetUserVenueAsync();
-            return Ok(new VenueDto()
-            {
-                Id = venue.Id,
-                Name = venue.Name,
-                About = venue.About,
-                Coordinates = new CoordinatesDto()
-                {
-                    Latitude = venue.Latitude,
-                    Longitude = venue.Longitude,
-                },
-                ImageUrl = venue.ImageUrl,
-                County = venue.County,
-                Town = venue.Town,
-                Approved = venue.Approved
-            } ?? null);
+            return Ok(await venueService.GetUserVenueAsync());
+            
         }
 
         [Authorize(Roles = "VenueManager, Admin")]
         [HttpPost]
-        public async Task<ActionResult<Venue>> Create([FromBody] VenueDto venueDto)
+        public async Task<IActionResult> Create([FromBody] CreateVenueDto createVenueDto)
         {
             //TODO: Talk about security benefits of passing user seperate instead of through the client side
-            var venue = new Venue()
-            {
-                Name = venueDto.Name,
-                About = venueDto.About,
-                Longitude = venueDto.Coordinates.Longitude,
-                Latitude = venueDto.Coordinates.Latitude,
-                ImageUrl = venueDto.ImageUrl,
-                County = venueDto.County,
-                Town = venueDto.Town,
-                Approved = venueDto.Approved
-            };
-            venueService.Create(venue);
+            var venue = venueService.Create(createVenueDto);
             return CreatedAtAction(nameof(GetDetailsById), new {Id = venue.Id}, venueDto);
         }
     }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class ArtistRepository : BaseEntityRepository<Artist>, IArtistRepository
+    public class ArtistRepository : Repository<Artist>, IArtistRepository
     {
         public ArtistRepository(ApplicationDbContext context) : base(context) { }
 

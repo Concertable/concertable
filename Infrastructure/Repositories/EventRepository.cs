@@ -55,7 +55,7 @@ namespace Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        Task<IEnumerable<Event>> IRepository<Event>.GetAllAsync()
+        Task<IEnumerable<Event>> GetAllAsync()
         {
             throw new NotImplementedException();
         }

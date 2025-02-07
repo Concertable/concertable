@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IArtistRepository
+    public interface IArtistRepository : IRepository<Artist>
     {
         Task<IEnumerable<Artist>> GetHeadersAsync(SearchParams searchParams);
         Task<Artist?> GetByUserIdAsync(int id);

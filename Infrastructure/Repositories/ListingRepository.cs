@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class ListingRepository : BaseEntityRepository<Listing>, IListingRepository
+    public class ListingRepository : Repository<Listing>, IListingRepository
     {
         public ListingRepository(ApplicationDbContext context) : base(context) { }
 
