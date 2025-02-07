@@ -1,10 +1,10 @@
 ﻿using Core.Entities;
-using Core.Interfaces;
+using Application.Interfaces;
 using Core.Parameters;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Web.DTOs;
+using Application.DTOs;
 
 namespace Web.Controllers
 {

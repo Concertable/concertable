@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTOs;
 
-namespace Core.Interfaces
+namespace Application.Interfaces
 {
     public interface IArtistService
     {
-        Task<IEnumerable<Artist>> GetHeadersAsync(SearchParams searchParams);
+        Task<IEnumerable<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams);
         Task<Artist?> GetUserArtist();
     }
 }

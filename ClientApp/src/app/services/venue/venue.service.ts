@@ -18,8 +18,7 @@ export class VenueService {
     return this.http.get<Venue>(`${this.apiUrl}/${id}`);
   }
 
-  getHeaders() : Observable<VenueHeader[]> {
-    let params = new HttpParams();
+  getHeaders(params: HttpParams) : Observable<VenueHeader[]> {
     return this.http.get<VenueHeader[]>(`${this.apiUrl}/headers`, { params }); 
   }
 

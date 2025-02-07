@@ -1,9 +1,9 @@
 ﻿using Core.Entities;
-using Core.Interfaces;
+using Application.Interfaces;
 using Core.Parameters;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
-using Web.DTOs;
+using Application.DTOs;
 
 namespace Web.Controllers
 {
@@ -20,15 +20,9 @@ namespace Web.Controllers
         }
 
         [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<Venue>>> GetHeaders([FromQuery] SearchParams searchParams)
+        public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
-            var artistHeaders = await artistService.GetHeadersAsync(searchParams);
-            var headersDto = artistHeaders.Select(header => new ArtistHeaderDto
-            {
-                Id = header.Id,
-                ImageUrl = header.ImageUrl,
-            });
-            return Ok(headersDto);
+            return Ok(await artistService.GetHeadersAsync(searchParams));
         }
     }
 }

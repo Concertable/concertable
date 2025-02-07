@@ -1,4 +1,4 @@
-﻿namespace Web.DTOs
+﻿namespace Application.DTOs
 {
     public class HeaderDto
     {

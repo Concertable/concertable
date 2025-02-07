@@ -1,11 +1,11 @@
 ﻿using Core.Entities;
-using Core.Interfaces;
+using Application.Interfaces;
 using Core.Parameters;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.Design;
-using Web.DTOs;
+using Application.DTOs;
 
 namespace Web.Controllers
 {
@@ -21,15 +21,9 @@ namespace Web.Controllers
         }
 
         [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<EventDto>>> GetHeaders([FromQuery] SearchParams searchParams)
+        public async Task<ActionResult<IEnumerable<EventHeaderDto>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
-            var eventHeaders = await eventService.GetHeadersAsync(searchParams);
-            var headersDto = eventHeaders.Select(header => new EventHeaderDto
-            {
-                Id = header.Id,
-                ImageUrl = header.ImageUrl,
-            });
-            return Ok(headersDto);
+            return Ok(await eventService.GetHeadersAsync(searchParams));
         }
 
         [HttpGet("venue/{id}")]

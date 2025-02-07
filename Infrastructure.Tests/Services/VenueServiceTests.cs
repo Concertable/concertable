@@ -1,6 +1,7 @@
-﻿using Core.Entities;
+﻿using AutoMapper;
+using Core.Entities;
 using Core.Entities.Identity;
-using Core.Interfaces;
+using Application.Interfaces;
 using Core.Parameters;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -18,6 +19,7 @@ namespace Infrastructure.Tests.Services
     {
         private Mock<IVenueRepository> venueRepositoryMock;
         private Mock<IAuthService> authServiceMock;
+        private Mock<IMapper> mapperMock;
         private VenueService venueService;
 
         [SetUp]
@@ -25,7 +27,8 @@ namespace Infrastructure.Tests.Services
         {
             venueRepositoryMock = new Mock<IVenueRepository>();
             authServiceMock = new Mock<IAuthService>();
-            venueService = new VenueService(venueRepositoryMock.Object, authServiceMock.Object);
+            mapperMock = new Mock<IMapper>();
+            venueService = new VenueService(venueRepositoryMock.Object, authServiceMock.Object, mapperMock.Object);
         }
 
         [Test]

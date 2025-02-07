@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTOs;
 
-namespace Core.Interfaces
+namespace Application.Interfaces
 {
     public interface IEventService
     {
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
-        Task<IEnumerable<Event>> GetHeadersAsync(SearchParams searchParams);
+        Task<IEnumerable<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams);
     }
 }

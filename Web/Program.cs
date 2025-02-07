@@ -1,6 +1,6 @@
 using Application.Mappings;
 using Core.Entities.Identity;
-using Core.Interfaces;
+using Application.Interfaces;
 using Infrastructure;
 using Infrastructure.Data;
 using Infrastructure.Data.Identity;
@@ -57,7 +57,6 @@ builder.Services.AddScoped<IArtistService, ArtistService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IRegisterService, RegisterService>();
 builder.Services.AddScoped<IListingService, ListingService>();
-builder.Services.AddScoped<IHeaderService, HeaderService>();
 
 // Repositories
 builder.Services.AddScoped<IVenueRepository, VenueRepository>();

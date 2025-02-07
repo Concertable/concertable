@@ -1,5 +1,5 @@
 ﻿using Core.Entities;
-using Core.Interfaces;
+using Application.Interfaces;
 using Infrastructure.Data.Identity;
 using System;
 using System.Collections.Generic;

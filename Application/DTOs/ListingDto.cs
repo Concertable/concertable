@@ -1,6 +1,6 @@
 ﻿using Core.Entities;
 
-namespace Web.DTOs
+namespace Application.DTOs
 {
     public class ListingDto
     {

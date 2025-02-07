@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Core.Entities;
 using Core.Entities.Identity;
-using Core.Interfaces;
+using Application.Interfaces;
 using Core.Parameters;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Web.DTOs;
+using Application.DTOs;
 
 namespace Infrastructure.Services
 {
