@@ -27,6 +27,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
@@ -68,6 +70,7 @@ import { VenueFindComponent } from './components/venue-find/venue-find.component
 import { ArtistDetailsComponent } from './pages/artist-details/artist-details.component';
 import { CustomerFindComponent } from './components/customer-find/customer-find.component';
 import { FilterComponent } from './components/filter/filter.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -124,6 +127,7 @@ const routerOptions: ExtraOptions = {
     ArtistDetailsComponent,
     CustomerFindComponent,
     FilterComponent,
+    SidebarComponent,
   ],
   imports: [
     BrowserModule,
@@ -137,7 +141,9 @@ const routerOptions: ExtraOptions = {
     MatDatepickerModule,
     MatNativeDateModule,
     MatAutocompleteModule,
-    MatSelectModule
+    MatSelectModule,
+    MatSidenavModule,
+    MatToolbarModule
 ],
   providers: [
     provideHttpClient(

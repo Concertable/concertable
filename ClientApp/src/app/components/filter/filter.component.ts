@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-filter',
@@ -6,21 +6,16 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   templateUrl: './filter.component.html',
   styleUrls: ['./filter.component.css']
 })
-export class FilterComponent {
-  @Input() isOpen = false;
-  @Output() close = new EventEmitter<void>();
-  @Output() applyFilters = new EventEmitter<any>();
+export class FilterComponent implements OnInit {
+  icon: string = 'tune';
 
-  selectedFilters = {
-    option1: false,
-    option2: false
-  };
+  constructor() { }
 
-  closeFilter() {
-    this.close.emit(); // Close filter
+  ngOnInit(): void {
+    throw new Error('Method not implemented.');
   }
 
-  applyFilter() {
-    this.applyFilters.emit(this.selectedFilters);
+  getGenres() {
+
   }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Parameters
 {
-    public class SearchParams
+    public class SearchParams : PaginationParams
     {
         public string? SearchTerm { get; set; }
         public string? Location { get; set; }

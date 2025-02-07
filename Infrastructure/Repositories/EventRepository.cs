@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class EventRepository : BaseEntityRepository<Event>, IEventRepository
+    public class EventRepository : Repository<Event>, IEventRepository
     {
         public EventRepository(ApplicationDbContext context) : base(context) { }
 
@@ -43,6 +43,21 @@ namespace Infrastructure.Repositories
                         .ThenInclude(r => r.Listing);
 
             return await query.ToListAsync();
+        }
+
+        public void Remove(Event entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(Event entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<IEnumerable<Event>> IRepository<Event>.GetAllAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

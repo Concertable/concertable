@@ -21,7 +21,7 @@ export class FindComponent implements OnInit {
   @Input() headerType?: HeaderType;
   @Input() isCustomer?: boolean = false;
   headers: Header[] = [];
-  filterOpen = false; // Track if filter menu is open
+  isSidebarOpen = false; // Track if filter menu is open
 
   constructor(
     private headerService: HeaderService, 
@@ -54,15 +54,4 @@ export class FindComponent implements OnInit {
       );
     }
   }
-
-    // Toggle the filter panel
-    toggleFilter() {
-      this.filterOpen = !this.filterOpen;
-    }
-  
-    // Apply Filters and Close Panel
-    applyFilters(filters: SearchParams) {
-      this.handleSearch(filters);
-      this.toggleFilter(); // Close the panel after applying filters
-    }
   }

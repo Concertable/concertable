@@ -1,6 +1,7 @@
 ﻿using Core.Entities;
 using Core.Interfaces;
 using Core.Parameters;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.DTOs;
@@ -21,8 +22,13 @@ namespace Web.Controllers
         [HttpGet("headers")]
         public async Task<ActionResult<IEnumerable<Venue>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
-            var venues = await venueService.GetHeadersAsync(searchParams);
-            return Ok(venues);
+            var venueHeaders = await venueService.GetHeadersAsync(searchParams);
+            var headersDto = venueHeaders.Select(header => new VenueHeaderDto
+            {
+                Id = header.Id,
+                ImageUrl = header.ImageUrl,
+            });
+            return Ok(headersDto);
         }
 
         [HttpGet("{id}")]

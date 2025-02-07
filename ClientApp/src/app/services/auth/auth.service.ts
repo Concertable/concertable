@@ -14,10 +14,10 @@ import { Role } from '../../models/role';
 })
 export class AuthService {
 
-  constructor(private http: HttpClient, private router: Router) { }
-
-  apiUrl = `${environment.apiUrl}/auth`
+  private apiUrl = `${environment.apiUrl}/auth`;
   currentUser = signal<User | null>(null);
+
+  constructor(private http: HttpClient, private router: Router) { }
 
   isRole = (role: string) => this.currentUser()?.role === role;
   isNotRole = (role: string) => this.currentUser()?.role !== role;
@@ -30,7 +30,6 @@ export class AuthService {
       })
     );
   }
-  
 
   logout() : Observable<void> {
     console.log(`${this.apiUrl}/logout`);
@@ -58,9 +57,5 @@ export class AuthService {
   navigateByRole(role: Role) : void {
     if (role === Role.VenueManager)
       this.router.navigateByUrl('/venue');
-  }
-
-  matchesRole(role: Role) : boolean {
-    return this.currentUser()?.role === role;
   }
 }

@@ -23,8 +23,13 @@ namespace Web.Controllers
         [HttpGet("headers")]
         public async Task<ActionResult<IEnumerable<EventDto>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
-            var venues = await eventService.GetHeadersAsync(searchParams);
-            return Ok(venues);
+            var eventHeaders = await eventService.GetHeadersAsync(searchParams);
+            var headersDto = eventHeaders.Select(header => new EventHeaderDto
+            {
+                Id = header.Id,
+                ImageUrl = header.ImageUrl,
+            });
+            return Ok(headersDto);
         }
 
         [HttpGet("venue/{id}")]

@@ -1,11 +1,4 @@
-<app-search (search)="handleSearch($event)" [headerType]="headerType"></app-search>
-<button mat-raised-button class="filter-button" (click)="toggleFilter()">
-    <mat-icon>filter_list</mat-icon> Filters
-  </button>
-<app-search-results *ngIf="headers.length>0" [headers]="headers"></app-search-results>
-<app-filter 
-  class="filter-panel" 
-  [isOpen]="filterOpen"
-  (close)="toggleFilter()" 
-  (applyFilters)="applyFilters($event)">
+<app-filter>
+  <app-search (search)="handleSearch($event)" [headerType]="headerType"></app-search>
+  <app-search-results *ngIf="headers.length > 0" [headers]="headers"></app-search-results>
 </app-filter>
