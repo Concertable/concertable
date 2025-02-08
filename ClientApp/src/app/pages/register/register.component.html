@@ -1,0 +1,24 @@
+<app-auth-layout [imageSrc]="'assets/images/register.jpg'">
+    <div class="container">
+      <h1 class="title">Register</h1>
+      <form (ngSubmit)="register()">
+        <div class="form-container">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" [(ngModel)]="credentials.email" required>
+        </div>
+        <div class="form-container">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" [(ngModel)]="credentials.password" required>
+        </div>
+        <div class="form-container">
+            <label for="role">I am a:</label>
+            <select id="role" name="role" [(ngModel)]="credentials.role" required>
+              <option value="Customer">Customer</option>
+              <option value="ArtistManager">Artist Manager</option>
+              <option value="VenueManager">Venue Manager</option>
+            </select>
+          </div>
+        <button mat-flat-button type="submit" class="submit">Submit</button>
+      </form>
+    </div>
+  </app-auth-layout>

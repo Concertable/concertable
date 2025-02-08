@@ -27,7 +27,7 @@ namespace Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ListingDto listingDto)
         {
-            listingService.Create(listingDto);
+            await listingService.CreateAsync(listingDto);
             return CreatedAtAction("", new {Id = 1});
         }
     }

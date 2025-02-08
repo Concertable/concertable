@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class BaseRepository<T> : IBaseRepository<T> where T : class
+    public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
     {
         protected readonly ApplicationDbContext context;
 
@@ -19,25 +19,33 @@ namespace Infrastructure.Repositories
             this.context = context;
         }
 
-        public void Add(T entity)
+        public async Task<TEntity> AddAsync(TEntity entity)
         {
-            context.Set<T>().Add(entity);
+            await context.Set<TEntity>().AddAsync(entity);
+            return entity;
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            return await context.Set<T>().ToListAsync();
+            return await context.Set<TEntity>().ToListAsync();
         }
 
-        public void Remove(T entity)
+        public void Remove(TEntity entity)
         {
-            context.Set<T>().Remove(entity);
-        }   
-
-        public void Update(T entity)
-        {
-            context.Set<T>().Update(entity);
+            context.Set<TEntity>().Remove(entity);
         }
+
+
+        public void Update(TEntity entity)
+        {
+            context.Set<TEntity>().Update(entity);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await context.SaveChangesAsync();
+        }
+
     }
 
 

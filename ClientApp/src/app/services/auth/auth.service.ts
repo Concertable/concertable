@@ -5,7 +5,7 @@ import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { LoginResponse } from '../../models/login-response';
 import { environment } from '../../../environments/environment';
 import { User } from '../../models/user';
-import { RegisterRequest } from '../../models/register-request';
+import { RegisterCredentials } from '../../models/register-credentials';
 import { Router } from '@angular/router';
 import { Role } from '../../models/role';
 
@@ -27,6 +27,7 @@ export class AuthService {
     return this.http.post<any>(`${environment.apiUrl}/login`, credentials, { params }).pipe(
       tap(() => {
         this.getCurrentUser().subscribe();
+        this.router.navigateByUrl('/')
       })
     );
   }
@@ -38,11 +39,16 @@ export class AuthService {
         this.currentUser.set(null);
         this.router.navigateByUrl('/');
       })
-    )
+    );
   }
 
-  register(credentials: RegisterRequest) : Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/register`, credentials);
+  register(credentials: RegisterCredentials) : Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/register`, credentials).pipe(
+      tap(() => {
+        this.getCurrentUser().subscribe();
+        this.router.navigateByUrl('/login');
+      })
+    );
   }
 
   getCurrentUser() : Observable<User> {
@@ -55,7 +61,7 @@ export class AuthService {
   }
 
   navigateByRole(role: Role) : void {
-    if (role === Role.VenueManager)
+    if (role === 'VenueManager')
       this.router.navigateByUrl('/venue');
   }
 }

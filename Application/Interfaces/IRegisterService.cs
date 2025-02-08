@@ -10,6 +10,6 @@ namespace Application.Interfaces
     public interface IRegisterService
     {
         Task<IEnumerable<Register>> GetAllForListingIdAsync(int listingId);
-        Task RegisterForListing(int listingId);
+        Task RegisterForListingAsync(int listingId);
     }
 }

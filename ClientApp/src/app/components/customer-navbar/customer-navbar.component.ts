@@ -12,8 +12,6 @@ import { Role } from '../../models/role';
 export class CustomerNavbarComponent {
   constructor(public authService: AuthService, private router: Router) { }
 
-  Role = Role
-
   logout() {
     console.log("called logout")
     this.authService.logout().subscribe();

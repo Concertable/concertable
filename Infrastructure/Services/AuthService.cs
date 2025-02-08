@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Application.Interfaces;
 using Core.Entities.Identity;
 using Microsoft.AspNetCore.Http;
+using Application.DTOs;
 
 namespace Infrastructure.Services
 {
@@ -32,23 +33,25 @@ namespace Infrastructure.Services
             this.signInManager = signInManager;
         }
 
-        public async Task Register(string email, string password)
+        public async Task Register(RegisterDto registerDto)
         {
-            if (CheckEmailExistsAsync(email).Result)
+            if (CheckEmailExistsAsync(registerDto.Email).Result)
                 throw new BadRequestException("Email already exists");
+            if (registerDto.Role.Equals("Admin"))
+                throw new UnauthorizedException("You cannot make yourself an admin");
 
             var user = new ApplicationUser
             {
-                UserName = email,
-                Email = email
+                UserName = registerDto.Email,
+                Email = registerDto.Email
             };
 
-            var result = await userManager.CreateAsync(user, password);
+            var result = await userManager.CreateAsync(user, registerDto.Password);
 
-            if (!result.Succeeded) 
+            if (!result.Succeeded)
                 throw new BadRequestException("Failed to Register User");
 
-            await userManager.AddToRoleAsync(user, "Customer");
+            await userManager.AddToRoleAsync(user, registerDto.Role);
         }
 
         public async Task Logout()

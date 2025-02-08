@@ -20,6 +20,6 @@ namespace Application.Interfaces
 
         Task<VenueDto?> GetUserVenueAsync();
 
-        void Create(CreateVenueDto venue);
+        Task<VenueDto> CreateAsync(CreateVenueDto venue);
     }
 }

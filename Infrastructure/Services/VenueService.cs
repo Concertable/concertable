@@ -45,14 +45,15 @@ namespace Infrastructure.Services
             return await venueRepository.GetByIdAsync(id);
         }
 
-        public async void Create(CreateVenueDto venueDto)
+        public async Task<VenueDto> CreateAsync(CreateVenueDto venueDto)
         {
             var venue = mapper.Map<Venue>(venueDto);
 
             var user = await authService.GetCurrentUser();
             venue.UserId = user.Id;
 
-            venueRepository.Add(venue);
+            var createdVenue = await venueRepository.AddAsync(venue);
+            return mapper.Map<VenueDto>(createdVenue);
         }
 
         public async Task<VenueDto?> GetUserVenueAsync()

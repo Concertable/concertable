@@ -10,9 +10,9 @@ namespace Application.Interfaces
     public interface IBaseRepository<TEntity> where TEntity : class
     {
         Task<IEnumerable<TEntity>> GetAllAsync();
-        void Add(TEntity entity);
+        Task<TEntity> AddAsync(TEntity entity);
         void Update(TEntity entity);
         void Remove(TEntity entity);
-
+        Task SaveChangesAsync();
     }
 }

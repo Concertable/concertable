@@ -14,7 +14,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { CustomerNavbarComponent } from "./components/customer-navbar/customer-navbar.component";
 import { VenueNavbarComponent } from './components/venue-navbar/venue-navbar.component';
-import { YourVenueComponent } from './pages/your-venue/your-venue.component';
+import { MyVenueComponent } from './pages/my-venue/my-venue.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -71,6 +71,8 @@ import { ArtistDetailsComponent } from './pages/artist-details/artist-details.co
 import { CustomerFindComponent } from './components/customer-find/customer-find.component';
 import { FilterComponent } from './components/filter/filter.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { MyArtistComponent } from './pages/my-artist/my-artist.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -85,9 +87,8 @@ const routerOptions: ExtraOptions = {
     AuthLayoutComponent,
     VenueDashboardComponent,
     CustomerNavbarComponent,
-    YourVenueComponent,
+    MyVenueComponent,
     VenueNavbarComponent,
-    YourVenueComponent,
     NavbarComponent,
     ProfileComponent,
     GoogleMapsComponent,
@@ -128,6 +129,8 @@ const routerOptions: ExtraOptions = {
     CustomerFindComponent,
     FilterComponent,
     SidebarComponent,
+    RegisterComponent,
+    MyArtistComponent,
   ],
   imports: [
     BrowserModule,

@@ -22,11 +22,8 @@ namespace Web.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            await authService.Register(
-                registerDto.Email,
-                registerDto.Password);
-
-            return Ok();
+            await authService.Register(registerDto);
+            return NoContent();
         }
 
         [Authorize]

@@ -23,14 +23,14 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async void Create(ListingDto listingDto)
+        public async Task CreateAsync(ListingDto listingDto)
         {
             var listing = mapper.Map<Listing>(listingDto);
 
             var venue = await venueService.GetUserVenueAsync();
             listing.VenueId = venue.Id;
 
-            listingRepository.Add(listing);
+            await listingRepository.AddAsync(listing);
         }
 
         public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)

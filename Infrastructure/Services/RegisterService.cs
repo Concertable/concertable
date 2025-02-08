@@ -24,7 +24,7 @@ namespace Infrastructure.Services
             return await registerRepository.GetAllForListingIdAsync(listingId);
         }
 
-        public async Task RegisterForListing(int listingId)
+        public async Task RegisterForListingAsync(int listingId)
         {
             var artist = await artistService.GetUserArtist();
             var listing = new Register()
@@ -34,7 +34,7 @@ namespace Infrastructure.Services
                 Approved = false
             };
 
-            registerRepository.Add(listing);
+            await registerRepository.AddAsync(listing);
         }
     }
 }

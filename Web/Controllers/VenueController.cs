@@ -45,8 +45,8 @@ namespace Web.Controllers
         public async Task<IActionResult> Create([FromBody] CreateVenueDto createVenueDto)
         {
             //TODO: Talk about security benefits of passing user seperate instead of through the client side
-            var venue = venueService.Create(createVenueDto);
-            return CreatedAtAction(nameof(GetDetailsById), new {Id = venue.Id}, venueDto);
+            var venueDto = await venueService.CreateAsync(createVenueDto);
+            return CreatedAtAction(nameof(GetDetailsById), new {Id = venueDto.Id}, venueDto);
         }
     }
 }

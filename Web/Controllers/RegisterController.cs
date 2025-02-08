@@ -28,7 +28,7 @@ namespace Web.Controllers
         [HttpPost("{listingId}")]
         public async Task<ActionResult> RegisterForListing(int listingId)
         {
-            await registerService.RegisterForListing(listingId);
+            await registerService.RegisterForListingAsync(listingId);
             return CreatedAtAction("", new { });
         }
     }

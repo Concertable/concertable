@@ -22,15 +22,8 @@ export class LoginComponent {
   login() {
     this.authService.login(this.credentials)
       .subscribe({
-        next: () => {
-          console.log('Login successful');
-          this.router.navigateByUrl('/');
-          console.log("call2")
-        },
-        error: (error) => {
-          console.error('Login failed', error);
-          alert('Login failed. Please check your credentials and try again.');
-        }
+        error: (error) => 
+          alert('Login failed. Please check your credentials and try again.')
       });
   }
 }

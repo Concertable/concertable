@@ -4,13 +4,13 @@ import { Venue } from '../../models/venue';
 import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
-  selector: 'app-your-venue',
+  selector: 'app-my-venue',
   standalone: false,
   
-  templateUrl: './your-venue.component.html',
-  styleUrl: './your-venue.component.scss'
+  templateUrl: './my-venue.component.html',
+  styleUrl: './my-venue.component.scss'
 })
-export class YourVenueComponent implements OnInit {
+export class MyVenueComponent implements OnInit {
 
   protected venue: Venue | undefined;
   protected editMode: boolean = false;

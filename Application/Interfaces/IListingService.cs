@@ -10,7 +10,7 @@ namespace Application.Interfaces
 {
     public interface IListingService
     {
-        void Create(ListingDto listingDto);
+        Task CreateAsync(ListingDto listingDto);
         Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id);
     }
 }
