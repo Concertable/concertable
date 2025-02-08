@@ -30,10 +30,12 @@ namespace Infrastructure.Services
             return mapper.Map<IEnumerable<ArtistHeaderDto>>(headers);
         }
 
-        public async Task<Artist?> GetUserArtist()
+        public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
         {
-            var user = authService.GetCurrentUser();
-            return await artistRepository.GetByUserIdAsync(user.Id);
+            var user = await authService.GetCurrentUserAsync();
+            var artist = await artistRepository.GetByUserIdAsync(user.Id);
+
+            return mapper.Map<ArtistDto?>(artist);
         }
     }
 }

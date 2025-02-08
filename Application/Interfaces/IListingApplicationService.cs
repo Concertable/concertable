@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IRegisterService
+    public interface IListingApplicationService
     {
-        Task<IEnumerable<Register>> GetAllForListingIdAsync(int listingId);
-        Task RegisterForListingAsync(int listingId);
+        Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId);
+        Task ApplyForListingAsync(int listingId);
     }
 }

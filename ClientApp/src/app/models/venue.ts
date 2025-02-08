@@ -9,6 +9,5 @@ export interface Venue {
     imageUrl: string;
     county: string;
     town: string;
-    listings?: Listing[];
     approved: boolean;
 }

@@ -4,6 +4,7 @@ using Core.Parameters;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Web.Controllers
 {
@@ -23,6 +24,13 @@ namespace Web.Controllers
         public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeaders([FromQuery] SearchParams searchParams)
         {
             return Ok(await artistService.GetHeadersAsync(searchParams));
+        }
+
+        [Authorize(Roles = "ArtistManager, Admin")]
+        [HttpGet("user")]
+        public async Task<ActionResult<ArtistDto?>> GetDetailsForCurrentUser()
+        {
+            return Ok(await artistService.GetDetailsForCurrentUserAsync());
         }
     }
 }

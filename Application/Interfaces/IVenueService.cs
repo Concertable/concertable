@@ -16,9 +16,9 @@ namespace Application.Interfaces
     {
         Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams);
 
-        Task<Venue> GetDetailsByIdAsync(int id);
+        Task<VenueDto> GetDetailsByIdAsync(int id);
 
-        Task<VenueDto?> GetUserVenueAsync();
+        Task<VenueDto?> GetDetailsForCurrentUserAsync();
 
         Task<VenueDto> CreateAsync(CreateVenueDto venue);
     }

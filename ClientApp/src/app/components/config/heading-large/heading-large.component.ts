@@ -10,4 +10,5 @@ import { Component, Input } from '@angular/core';
 export class HeadingLargeComponent {
   @Input() editMode? = false;
   @Input() content?: string;
+  @Input() label?: string;
 }

@@ -20,7 +20,7 @@ namespace Infrastructure.Data.Identity
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Listing> Listings { get; set; }
         public DbSet<ListingGenre> ListingGenres { get; set; }
-        public DbSet<Register> Registers { get; set; }
+        public DbSet<ListingApplication> ListingApplications { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<SocialMedia> SocialMedias { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
@@ -60,12 +60,12 @@ namespace Infrastructure.Data.Identity
 
             //Temporary Fix
             modelBuilder.Entity<Event>()
-                .HasOne(e => e.Register)
+                .HasOne(e => e.Application)
                 .WithOne()
-                .HasForeignKey<Event>(e => e.RegisterId)
+                .HasForeignKey<Event>(e => e.ApplicationId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Register>()
+            modelBuilder.Entity<ListingApplication>()
                 .HasOne(r => r.Listing)
                 .WithMany(l => l.Registers)  
                 .HasForeignKey(r => r.ListingId)
@@ -73,7 +73,7 @@ namespace Infrastructure.Data.Identity
                 .OnDelete(DeleteBehavior.NoAction); 
 
             // One-to-Many: An Artist can have multiple Registers
-            modelBuilder.Entity<Register>()
+            modelBuilder.Entity<ListingApplication>()
                 .HasOne(r => r.Artist)
                 .WithMany(a => a.Registers)  
                 .HasForeignKey(r => r.ArtistId)
@@ -88,7 +88,7 @@ namespace Infrastructure.Data.Identity
 
             modelBuilder.Entity<Ticket>()
                 .HasOne(t => t.User)
-                .WithMany() // ✅ No explicit Tickets collection in User
+                .WithMany()
                 .HasForeignKey(t => t.UserId)
                 .IsRequired();
 

@@ -23,7 +23,7 @@ export class VenueService {
     return this.http.get<Pagination<VenueHeader>>(`${this.apiUrl}/headers`, { params }); 
   }
 
-  getUserVenue() : Observable<Venue> {
-    return this.http.get<Venue>(`${this.apiUrl}/user-venue`);
+  getDetailsForCurrentUser() : Observable<Venue> {
+    return this.http.get<Venue>(`${this.apiUrl}/user`);
   }
 }

@@ -10,4 +10,5 @@ import { Component, Input } from '@angular/core';
 export class HeadingMediumComponent {
   @Input() editMode? = false;
   @Input() content?: string;
+  @Input() label?: string;
 }

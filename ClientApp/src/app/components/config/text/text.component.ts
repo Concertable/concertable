@@ -9,4 +9,5 @@ import { Component, Input, ElementRef, AfterViewChecked, ViewChild, AfterViewIni
 export class TextComponent {
   @Input() editMode? = false;
   @Input() content?: string;
+  @Input() label?: string;
 }

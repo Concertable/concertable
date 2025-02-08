@@ -33,31 +33,24 @@ namespace Infrastructure.Repositories
 
         public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)
         {
-            var query = (from events in context.Events
-                        join registers in context.Registers on events.RegisterId equals registers.Id
-                        join listings in context.Listings on registers.ListingId equals listings.Id
-                        join venues in context.Venues on listings.VenueId equals venues.Id
-                        where venues.Id == id && listings.StartDate >= DateTime.Today
-                        select events)
-                        .Include(e => e.Register)
-                        .ThenInclude(r => r.Listing);
+            var query = context.Events //Get all events
+                .Where(e => e.Application.Listing.VenueId == id // That are associated with the venue
+                            && e.Application.Listing.StartDate >= DateTime.Now) // And event hasnt passed yet
+                .Include(e => e.Application)
+                .ThenInclude(a => a.Listing); // To retrieve the start date
 
             return await query.ToListAsync();
         }
 
-        public void Remove(Event entity)
+        public async Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id)
         {
-            throw new NotImplementedException();
-        }
+            var query = context.Events //Get all events
+                .Where(e => e.Application.ArtistId == id // That are associated with the artist
+                            && e.Application.Listing.StartDate >= DateTime.Now) // And event hasnt passed yet
+                .Include(e => e.Application)
+                .ThenInclude(a => a.Listing); // To retrieve the start date
 
-        public void Update(Event entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<IEnumerable<Event>> GetAllAsync()
-        {
-            throw new NotImplementedException();
+            return await query.ToListAsync();
         }
     }
 }

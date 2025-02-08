@@ -19,8 +19,8 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  isRole = (role: string) => this.currentUser()?.role === role;
-  isNotRole = (role: string) => this.currentUser()?.role !== role;
+  isRole = (role: Role) => this.currentUser()?.role === role;
+  isNotRole = (role: Role) => this.currentUser()?.role !== role;
 
   login(credentials: LoginCredentials): Observable<any> {
     let params = new HttpParams().append('useCookies', true);

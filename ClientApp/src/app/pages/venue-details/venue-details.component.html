@@ -3,7 +3,7 @@
     <div class="container" *ngIf="venue">
         <section [id]="navItems[0].fragment">
             <app-heading-medium [editMode]="editMode" [content]="venue.name"/>
-            <app-text [editMode]="editMode" [content]="venue.about"/>
+            <app-text [editMode]="editMode" [label]="'About'" [content]="venue.about"/>
             <app-image [editMode]="editMode" [src]="venue.imageUrl" [alt]="'Venue Image'"/>
             <app-location 
                 [editMode]="editMode" 
@@ -31,7 +31,7 @@
         @if (exists('Listings')) {
             <section [id]="navItems[4].fragment">
                 <h2 class="heading-listings">Listings</h2>
-                <app-listings [venue]="venue" />
+                <app-listings [venue]="venue" [editMode]="editMode" />
             </section>
         }
     </div>

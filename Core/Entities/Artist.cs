@@ -14,7 +14,7 @@ namespace Core.Entities
         public ApplicationUser User { get; set; }
         public ICollection<ArtistGenre> ArtistGenres { get; set; }
         public ICollection<SocialMedia> SocialMedias { get; }
-        public ICollection<Register> Registers { get; }
+        public ICollection<ListingApplication> Registers { get; }
         public ICollection<Video> Videos { get; }
         
     }

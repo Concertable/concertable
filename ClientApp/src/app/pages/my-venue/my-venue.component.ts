@@ -21,7 +21,7 @@ export class MyVenueComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.venueService.getUserVenue().subscribe((venue) => {
+    this.venueService.getDetailsForCurrentUser().subscribe((venue) => {
       console.log(venue);
       this.venue = venue
     });

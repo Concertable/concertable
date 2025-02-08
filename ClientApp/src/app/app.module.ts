@@ -34,7 +34,7 @@ import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
 
 import { VenueDetailsComponent } from './pages/venue-details/venue-details.component';
-import { ConfigHeaderComponent } from './components/config-header/config-header.component';
+import { ConfigNavbarComponent } from './components/config-navbar/config-navbar.component';
 import { ConfigButtonComponent } from './components/config-button/config-button.component';
 import { ListingComponent } from './components/listing/listing.component';
 import { ListingsComponent } from './components/listings/listings.component';
@@ -73,6 +73,9 @@ import { FilterComponent } from './components/filter/filter.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { MyArtistComponent } from './pages/my-artist/my-artist.component';
+import { CreateArtistComponent } from './pages/create-artist/create-artist.component';
+import { CreateVenueComponent } from './pages/create-venue/create-venue.component';
+import { CreateNavbarComponent } from './components/create-navbar/create-navbar.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -93,7 +96,7 @@ const routerOptions: ExtraOptions = {
     ProfileComponent,
     GoogleMapsComponent,
     VenueDetailsComponent,
-    ConfigHeaderComponent,
+    ConfigNavbarComponent,
     ConfigButtonComponent,
     ListingsComponent,
     ListingComponent,
@@ -131,6 +134,9 @@ const routerOptions: ExtraOptions = {
     SidebarComponent,
     RegisterComponent,
     MyArtistComponent,
+    CreateArtistComponent,
+    CreateVenueComponent,
+    CreateNavbarComponent,
   ],
   imports: [
     BrowserModule,

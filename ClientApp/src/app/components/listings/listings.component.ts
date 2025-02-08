@@ -15,7 +15,8 @@ export class ListingsComponent  implements OnChanges {
 
   @Input() venue?: Venue
   @Input() editMode?: boolean
-  protected listings?: Listing[]
+
+  listings? : Listing[];
 
   constructor(private listingService: ListingService, protected authService: AuthService) { }
 
@@ -26,16 +27,20 @@ export class ListingsComponent  implements OnChanges {
 
   getListings() {
     console.log("getActiveListings");
-    if(this.venue?.id) 
-      this.listingService.getActiveListingsByVenueId(this.venue.id).subscribe((listingsResponse) => {console.log("y",listingsResponse); this.listings = listingsResponse})
+    if(this.venue && this.venue?.id)
+      this.listingService.getActiveByVenueId(this.venue.id).subscribe((listings) => this.listings = listings)
   }
 
   createListing(listing: Listing) {
-    this.listingService.createListing(listing).subscribe();
+    this.listingService.create(listing).subscribe();
   }
 
   onDelete(listing: Listing) {
 
+  }
+
+  onApply(listing: Listing) {
+    
   }
   
 }

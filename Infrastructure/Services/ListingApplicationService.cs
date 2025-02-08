@@ -8,29 +8,29 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
-    public class RegisterService : IRegisterService
+    public class ListingApplicationService : IListingApplicationService
     {
         private readonly IRegisterRepository registerRepository;
         private readonly IArtistService artistService;
 
-        public RegisterService(IRegisterRepository registerRepository, IArtistService artistService)
+        public ListingApplicationService(IRegisterRepository registerRepository, IArtistService artistService)
         {
             this.registerRepository = registerRepository;
             this.artistService = artistService;
         }
 
-        public async Task<IEnumerable<Register>> GetAllForListingIdAsync(int listingId)
+        public async Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId)
         {
             return await registerRepository.GetAllForListingIdAsync(listingId);
         }
 
         public async Task RegisterForListingAsync(int listingId)
         {
-            var artist = await artistService.GetUserArtist();
-            var listing = new Register()
+            var artistDto = await artistService.GetDetailsForCurrentUserAsync();
+            var listing = new ListingApplication()
             {
                 ListingId = listingId,
-                ArtistId = artist.Id,
+                ArtistId = artistDto.Id,
                 Approved = false
             };
 

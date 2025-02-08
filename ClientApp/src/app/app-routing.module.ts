@@ -15,6 +15,8 @@ import { CustomerFindComponent } from './components/customer-find/customer-find.
 import { RegisterComponent } from './pages/register/register.component';
 import { MyVenueComponent } from './pages/my-venue/my-venue.component';
 import { MyArtistComponent } from './pages/my-artist/my-artist.component';
+import { CreateArtistComponent } from './pages/create-artist/create-artist.component';
+import { CreateVenueComponent } from './pages/create-venue/create-venue.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent,
@@ -29,12 +31,14 @@ const routes: Routes = [
       { path: 'my', component: MyVenueComponent },
       { path: 'find', component: VenueFindComponent },
       { path: 'find/artist', component: ArtistDetailsComponent },
+      { path: 'create', component: CreateVenueComponent },
     ] },
   { path: 'artist', canActivate: [roleGuard], data: { role: "ArtistManager" }, component: ArtistDashboardComponent,
     children: [
       { path: 'my', component: MyArtistComponent },
       { path: 'find', component: ArtistFindComponent, },
       { path: 'find/venue', component: VenueDetailsComponent, },
+      { path: 'create', component: CreateArtistComponent },
     ] },  
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

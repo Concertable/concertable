@@ -1,2 +1,6 @@
-<app-config-header (editModeChange)="onEditModeChange($event)"></app-config-header>
-<app-venue-details [venue]="venue" [editMode]="editMode"></app-venue-details>
+<app-config-navbar (editModeChange)="onEditModeChange($event)"></app-config-navbar>
+@if (venue) {
+    <app-venue-details *ngIf="venue" [venue]="venue" [editMode]="editMode"></app-venue-details>
+}@else {
+    Create Venue
+}

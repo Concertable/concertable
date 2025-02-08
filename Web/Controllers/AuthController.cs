@@ -39,7 +39,7 @@ namespace Web.Controllers
         [HttpGet("current-user")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
-            var user = await authService.GetCurrentUser();
+            var user = await authService.GetCurrentUserAsync();
 
             if (user == null) return NoContent();
 

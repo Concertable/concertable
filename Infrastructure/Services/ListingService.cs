@@ -27,8 +27,8 @@ namespace Infrastructure.Services
         {
             var listing = mapper.Map<Listing>(listingDto);
 
-            var venue = await venueService.GetUserVenueAsync();
-            listing.VenueId = venue.Id;
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
+            listing.VenueId = venueDto.Id;
 
             await listingRepository.AddAsync(listing);
         }

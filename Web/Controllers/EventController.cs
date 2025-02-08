@@ -26,10 +26,16 @@ namespace Web.Controllers
             return Ok(await eventService.GetHeadersAsync(searchParams));
         }
 
-        [HttpGet("venue/{id}")]
+        [HttpGet("upcoming/venue/{id}")]
         public async Task<ActionResult<IEnumerable<EventDto>>> GetUpcomingByVenueId(int id)
         {
             return Ok(await eventService.GetUpcomingByVenueIdAsync(id));
+        }
+
+        [HttpGet("upcoming/artist/{id}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetUpcomingByArtistId(int id)
+        {
+            return Ok(await eventService.GetUpcomingByArtistIdAsync(id));
         }
 
     }

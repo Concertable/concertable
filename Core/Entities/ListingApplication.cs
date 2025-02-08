@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Core.Entities
 {
-    public  class Register : BaseEntity
+    public  class ListingApplication : BaseEntity
     {
         public int ListingId { get; set; }
         public int ArtistId { get; set; }

@@ -44,7 +44,6 @@ namespace Application.Mappings
                     opts => opts.MapFrom( //Map from one table to another
                         src => src.ListingGenres
                             .Select(g => g.Genre.Name)
-                            .ToList()
                     )
                 );
 
@@ -56,11 +55,11 @@ namespace Application.Mappings
             CreateMap<Event, EventDto>()
                 .ForMember(
                     dest => dest.StartDate,
-                    opt => opt.MapFrom(src => src.Register.Listing.StartDate)
+                    opt => opt.MapFrom(src => src.Application.Listing.StartDate)
                 )
                 .ForMember(
                     dest => dest.EndDate,
-                    opt => opt.MapFrom(src => src.Register.Listing.EndDate)
+                    opt => opt.MapFrom(src => src.Application.Listing.EndDate)
                 );
         }
     }

@@ -13,11 +13,11 @@ export class ListingService {
 
   constructor(private http: HttpClient) { }
 
-  createListing(listing: Listing) : Observable<void> {
+  create(listing: Listing) : Observable<void> {
     return this.http.post<void>(`${this.apiUrl}`, listing);
   }
 
-  getActiveListingsByVenueId(id: number) : Observable<Listing[]> {
+  getActiveByVenueId(id: number) : Observable<Listing[]> {
     return this.http.get<Listing[]>(`${this.apiUrl}/active/venue/${id}`);
   }
 }

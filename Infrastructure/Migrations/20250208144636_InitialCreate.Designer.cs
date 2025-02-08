@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250205203714_InitialCreate")]
+    [Migration("20250208144636_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -82,6 +82,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("AvailableTickets")
                         .HasColumnType("int");
 
@@ -96,15 +99,12 @@ namespace Infrastructure.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.Property<int>("RegisterId")
-                        .HasColumnType("int");
-
                     b.Property<int>("TotalTickets")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RegisterId")
+                    b.HasIndex("ApplicationId")
                         .IsUnique();
 
                     b.ToTable("Events");
@@ -327,6 +327,32 @@ namespace Infrastructure.Migrations
                     b.ToTable("Listings");
                 });
 
+            modelBuilder.Entity("Core.Entities.ListingApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ArtistId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ListingId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.HasIndex("ListingId");
+
+                    b.ToTable("ListingApplications");
+                });
+
             modelBuilder.Entity("Core.Entities.ListingGenre", b =>
                 {
                     b.Property<int>("ListingId")
@@ -373,32 +399,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ToId");
 
                     b.ToTable("Messages");
-                });
-
-            modelBuilder.Entity("Core.Entities.Register", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Approved")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ArtistId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ListingId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArtistId");
-
-                    b.HasIndex("ListingId");
-
-                    b.ToTable("Registers");
                 });
 
             modelBuilder.Entity("Core.Entities.Review", b =>
@@ -710,13 +710,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Event", b =>
                 {
-                    b.HasOne("Core.Entities.Register", "Register")
+                    b.HasOne("Core.Entities.ListingApplication", "Application")
                         .WithOne()
-                        .HasForeignKey("Core.Entities.Event", "RegisterId")
+                        .HasForeignKey("Core.Entities.Event", "ApplicationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Register");
+                    b.Navigation("Application");
                 });
 
             modelBuilder.Entity("Core.Entities.EventGenre", b =>
@@ -758,6 +758,25 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Core.Entities.ListingApplication", b =>
+                {
+                    b.HasOne("Core.Entities.Artist", "Artist")
+                        .WithMany("Registers")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.Listing", "Listing")
+                        .WithMany("Registers")
+                        .HasForeignKey("ListingId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+
+                    b.Navigation("Listing");
                 });
 
             modelBuilder.Entity("Core.Entities.ListingGenre", b =>
@@ -808,25 +827,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("FromUser");
 
                     b.Navigation("ToUser");
-                });
-
-            modelBuilder.Entity("Core.Entities.Register", b =>
-                {
-                    b.HasOne("Core.Entities.Artist", "Artist")
-                        .WithMany("Registers")
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.Listing", "Listing")
-                        .WithMany("Registers")
-                        .HasForeignKey("ListingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Artist");
-
-                    b.Navigation("Listing");
                 });
 
             modelBuilder.Entity("Core.Entities.Review", b =>

@@ -3,7 +3,7 @@ import { Venue } from '../../models/venue';
 import { VenueService } from '../../services/venue/venue.service';
 import { NavItem } from '../../models/nav-item';
 import { AuthService } from '../../services/auth/auth.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-venue-details',
@@ -24,19 +24,24 @@ export class VenueDetailsComponent implements OnInit {
 ];
 
   
-  constructor(private venueService: VenueService, protected authService: AuthService, private route: ActivatedRoute) { }
+  constructor(
+    private venueService: VenueService, 
+    protected authService: AuthService, 
+    private route: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit() {
     if(this.authService.isNotRole('Customer')) {
       this.navItems.push({ name: 'Listings', fragment: 'listings' })
     }
     if (!this.venue) {
-      this.route.queryParams.subscribe(params => {
-        const venueId = params['id'];
-        if (venueId) {
-          this.venueService.getDetailsById(venueId).subscribe(venue => this.venue=venue);
-        }
-      });
+      console.log(this.router.url)
+        this.route.queryParams.subscribe(params => {
+          const venueId = params['id'];
+          if (venueId) {
+            this.venueService.getDetailsById(venueId).subscribe(venue => this.venue=venue);
+          }
+        });
     }
   }
 

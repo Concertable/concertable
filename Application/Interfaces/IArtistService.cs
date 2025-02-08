@@ -12,6 +12,6 @@ namespace Application.Interfaces
     public interface IArtistService
     {
         Task<IEnumerable<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams);
-        Task<Artist?> GetUserArtist();
+        Task<ArtistDto?> GetDetailsForCurrentUserAsync();
     }
 }

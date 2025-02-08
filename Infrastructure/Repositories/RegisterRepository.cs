@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class RegisterRepository : Repository<Register>, IRegisterRepository
+    public class RegisterRepository : Repository<ListingApplication>, IRegisterRepository
     {
         public RegisterRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<Register>> GetAllForListingIdAsync(int listingId)
+        public async Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId)
         {
-            var query = context.Registers.AsQueryable();
+            var query = context.ListingApplications.AsQueryable();
             query = query.Where(v => v.ListingId == listingId);
 
             return await query.ToListAsync();

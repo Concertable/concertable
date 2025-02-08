@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IRegisterRepository : IRepository<Register>
+    public interface IRegisterRepository : IRepository<ListingApplication>
     {
-        Task<IEnumerable<Register>> GetAllForListingIdAsync(int listingId);
+        Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId);
     }
 }

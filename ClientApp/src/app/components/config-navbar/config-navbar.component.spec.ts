@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ConfigHeaderComponent } from './config-header.component';
+import { ConfigHeaderComponent } from './config-navbar.component';
 
 describe('ConfigHeaderComponent', () => {
   let component: ConfigHeaderComponent;

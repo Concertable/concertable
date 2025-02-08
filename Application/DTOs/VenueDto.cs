@@ -8,8 +8,7 @@
         public CoordinatesDto Coordinates { get; set; }
         public string County { get; set; }
         public string Town { get; set; }
-        public string ImageUrl { get; set; }
-        public List<ListingDto>[]? Listings { get; set; } 
+        public string ImageUrl { get; set; } 
         public bool Approved { get; set; }
     }
 }

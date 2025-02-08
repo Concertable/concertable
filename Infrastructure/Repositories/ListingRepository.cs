@@ -17,14 +17,15 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id)
         {
             var query = context.Listings //c
-                .Where(l => l.VenueId == id && l.StartDate >= DateTime.Today)
-                .Where(l => !context.Registers //Listings that DONT have an event
-                    .Where(r => r.ListingId == l.Id) // Find registers linked to the listing
-                    .Join(context.Events, r => r.Id, e => e.RegisterId, (r, e) => e) // Find events linked to those registers
-                    .Any()) // Ensure no event exists
+                .Where(l => l.VenueId == id && l.StartDate >= DateTime.Now)
+                .Where(l => !context.Events.Any(e => e.ApplicationId == //doesnt have any events associated with it
+                    context.ListingApplications //by checking the applications
+                        .Where(la => la.ListingId == l.Id) //that have the same listing
+                        .Select(la => la.Id) 
+                        .FirstOrDefault())
+                )
                 .Include(l => l.ListingGenres) // Include the ListingGenres relationship
                 .ThenInclude(lg => lg.Genre); // Include the related Genre entity
-
 
             return await query.ToListAsync();
         }

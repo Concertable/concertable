@@ -59,7 +59,7 @@ namespace Infrastructure.Services
             await signInManager.SignOutAsync();
         }
 
-        public async Task<ApplicationUser?> GetCurrentUser()
+        public async Task<ApplicationUser?> GetCurrentUserAsync()
         {
             var principal = httpContextAccessor.HttpContext.User;
             return await userManager.GetUserAsync(principal);

@@ -27,16 +27,16 @@ namespace Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Venue>> GetDetailsById(int id)
+        public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
         {
             return Ok(await venueService.GetDetailsByIdAsync(id));
         }
 
         [Authorize(Roles = "VenueManager, Admin")]
-        [HttpGet("user-venue")]
-        public async Task<ActionResult<VenueDto?>> GetUserVenue()
+        [HttpGet("user")]
+        public async Task<ActionResult<VenueDto?>> GetDetailsForCurrentUser()
         {
-            return Ok(await venueService.GetUserVenueAsync());
+            return Ok(await venueService.GetDetailsForCurrentUserAsync());
             
         }
 

@@ -294,16 +294,16 @@ namespace Infrastructure.Data
                     new Listing
                     {
                         VenueId = 1,
-                        StartDate = new DateTime(2025, 2, 8, 20, 30, 0),
-                        EndDate = new DateTime(2025, 2, 8, 20, 30, 0),
+                        StartDate = new DateTime(2025, 3, 10, 20, 30, 0),
+                        EndDate = new DateTime(2025, 3, 10, 20, 30, 0),
                         Pay = 100
 
                     },
                     new Listing
                     {
                         VenueId = 1,
-                        StartDate = new DateTime(2025, 2, 20, 20, 30, 0),
-                        EndDate = new DateTime(2025, 2, 20, 23, 30, 0),
+                        StartDate = new DateTime(2025, 4, 5, 20, 30, 0),
+                        EndDate = new DateTime(2025, 4, 5, 23, 30, 0),
                         Pay = 300
                     },
                 };
@@ -350,22 +350,22 @@ namespace Infrastructure.Data
                 await context.SaveChangesAsync();
             }
             //Registers
-            if(!context.Registers.Any())
+            if(!context.ListingApplications.Any())
             {
-                var registers = new Register[]
+                var registers = new ListingApplication[]
                 {
-                    new Register
+                    new ListingApplication
                     {
                         ArtistId = 1,
                         ListingId = 1
                     },
-                    new Register
+                    new ListingApplication
                     {
                         ArtistId = 1,
                         ListingId = 2
                     }
                 };
-                context.Registers.AddRange(registers);
+                context.ListingApplications.AddRange(registers);
                 await context.SaveChangesAsync();
             }
             //Events
@@ -375,7 +375,7 @@ namespace Infrastructure.Data
                 {
                     new Event
                     {
-                        RegisterId = 1,
+                        ApplicationId = 1,
                         Price = 10.5,
                         Name = "Test Event",
                         About = "A Test Event",
@@ -385,7 +385,7 @@ namespace Infrastructure.Data
                     },
                     new Event
                     {
-                        RegisterId = 2,
+                        ApplicationId = 2,
                         Price = 10.5,
                         Name = "Test Event",
                         About = "A Test Event",

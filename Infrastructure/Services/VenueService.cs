@@ -22,7 +22,10 @@ namespace Infrastructure.Services
         private readonly IAuthService authService;
         private readonly IMapper mapper;
 
-        public VenueService(IVenueRepository venueRepository, IAuthService authService, IMapper mapper)
+        public VenueService(
+            IVenueRepository venueRepository, 
+            IAuthService authService, 
+            IMapper mapper)
         {
             this.venueRepository = venueRepository;
             this.authService = authService;
@@ -40,25 +43,26 @@ namespace Infrastructure.Services
                 response.PageSize);
         }
 
-        public async Task<Venue> GetDetailsByIdAsync(int id)
+        public async Task<VenueDto> GetDetailsByIdAsync(int id)
         {
-            return await venueRepository.GetByIdAsync(id);
+            var venue = await venueRepository.GetByIdAsync(id);
+            return mapper.Map<VenueDto>(venue); 
         }
 
         public async Task<VenueDto> CreateAsync(CreateVenueDto venueDto)
         {
             var venue = mapper.Map<Venue>(venueDto);
 
-            var user = await authService.GetCurrentUser();
+            var user = await authService.GetCurrentUserAsync();
             venue.UserId = user.Id;
 
             var createdVenue = await venueRepository.AddAsync(venue);
             return mapper.Map<VenueDto>(createdVenue);
         }
 
-        public async Task<VenueDto?> GetUserVenueAsync()
+        public async Task<VenueDto?> GetDetailsForCurrentUserAsync()
         {
-            var user = await authService.GetCurrentUser();
+            var user = await authService.GetCurrentUserAsync();
             var venue = await venueRepository.GetByUserIdAsync(user.Id);
 
             return mapper.Map<VenueDto>(venue);

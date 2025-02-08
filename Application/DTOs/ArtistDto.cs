@@ -8,5 +8,7 @@ namespace Application.DTOs
 {
     public class ArtistDto
     {
+        public int Id { get; set; }
+
     }
 }

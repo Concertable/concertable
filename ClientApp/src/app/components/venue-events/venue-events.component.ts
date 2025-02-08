@@ -23,7 +23,7 @@ export class VenueEventsComponent implements OnInit{
 
   getUpcomingEvents() {
     if(this.venue) {
-      this.eventService.getUpComingEventsByVenueId(this.venue.id).subscribe((events) => {console.log("x",events); this.events = events});
+      this.eventService.getUpComingByVenueId(this.venue.id).subscribe((events) => {console.log("x",events); this.events = events});
     }
     
   }

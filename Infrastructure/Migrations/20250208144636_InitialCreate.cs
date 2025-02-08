@@ -360,6 +360,32 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ListingApplications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ListingId = table.Column<int>(type: "int", nullable: false),
+                    ArtistId = table.Column<int>(type: "int", nullable: false),
+                    Approved = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ListingApplications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ListingApplications_Artists_ArtistId",
+                        column: x => x.ArtistId,
+                        principalTable: "Artists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ListingApplications_Listings_ListingId",
+                        column: x => x.ListingId,
+                        principalTable: "Listings",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ListingGenres",
                 columns: table => new
                 {
@@ -384,38 +410,12 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Registers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ListingId = table.Column<int>(type: "int", nullable: false),
-                    ArtistId = table.Column<int>(type: "int", nullable: false),
-                    Approved = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Registers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Registers_Artists_ArtistId",
-                        column: x => x.ArtistId,
-                        principalTable: "Artists",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Registers_Listings_ListingId",
-                        column: x => x.ListingId,
-                        principalTable: "Listings",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Events",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RegisterId = table.Column<int>(type: "int", nullable: false),
+                    ApplicationId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     About = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<double>(type: "float", nullable: false),
@@ -427,9 +427,9 @@ namespace Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Events_Registers_RegisterId",
-                        column: x => x.RegisterId,
-                        principalTable: "Registers",
+                        name: "FK_Events_ListingApplications_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "ListingApplications",
                         principalColumn: "Id");
                 });
 
@@ -596,10 +596,20 @@ namespace Infrastructure.Migrations
                 column: "EventId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Events_RegisterId",
+                name: "IX_Events_ApplicationId",
                 table: "Events",
-                column: "RegisterId",
+                column: "ApplicationId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ListingApplications_ArtistId",
+                table: "ListingApplications",
+                column: "ArtistId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ListingApplications_ListingId",
+                table: "ListingApplications",
+                column: "ListingId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ListingGenres_GenreId",
@@ -620,16 +630,6 @@ namespace Infrastructure.Migrations
                 name: "IX_Messages_ToId",
                 table: "Messages",
                 column: "ToId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Registers_ArtistId",
-                table: "Registers",
-                column: "ArtistId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Registers_ListingId",
-                table: "Registers",
-                column: "ListingId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_TicketId",
@@ -726,7 +726,7 @@ namespace Infrastructure.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
-                name: "Registers");
+                name: "ListingApplications");
 
             migrationBuilder.DropTable(
                 name: "Artists");

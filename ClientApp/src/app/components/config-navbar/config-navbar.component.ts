@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-  selector: 'app-config-header',
+  selector: 'app-config-navbar',
   standalone: false,
   
-  templateUrl: './config-header.component.html',
-  styleUrl: './config-header.component.scss'
+  templateUrl: './config-navbar.component.html',
+  styleUrl: './config-navbar.component.scss'
 })
-export class ConfigHeaderComponent {
+export class ConfigNavbarComponent {
   protected editMode: boolean = false;
   @Output() editModeChange = new EventEmitter<boolean>();
 
