@@ -10,6 +10,7 @@ namespace Application.DTOs
     {
         public string Name { get; set; }
         public string About { get; set; }
+        public CoordinatesDto Coordinates { get; set; }
         public string County { get; set; }
         public string Town { get; set; }
         public string ImageUrl { get; set; }

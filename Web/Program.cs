@@ -59,6 +59,11 @@ builder.Services.AddScoped<IListingApplicationService, ListingApplicationService
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IListingService, ListingService>();
 
+builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
+{
+    client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
+});
+
 // Repositories
 builder.Services.AddScoped<IVenueRepository, VenueRepository>();
 builder.Services.AddScoped<IArtistRepository, ArtistRepository>();

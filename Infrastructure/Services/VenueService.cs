@@ -20,15 +20,18 @@ namespace Infrastructure.Services
     {
         private readonly IVenueRepository venueRepository;
         private readonly IAuthService authService;
+        private readonly IGeocodingService geocodingService;
         private readonly IMapper mapper;
 
         public VenueService(
             IVenueRepository venueRepository, 
             IAuthService authService, 
+            IGeocodingService geocodingService,
             IMapper mapper)
         {
             this.venueRepository = venueRepository;
             this.authService = authService;
+            this.geocodingService = geocodingService;
             this.mapper = mapper;
         }
 
@@ -56,8 +59,13 @@ namespace Infrastructure.Services
             var user = await authService.GetCurrentUserAsync();
             venue.UserId = user.Id;
 
+            var location = await geocodingService.GetLocationAsync(venueDto.Coordinates);
+
+            venue.County = location.County;
+            venue.Town = location.Town;
+
             var createdVenue = await venueRepository.AddAsync(venue);
-            return mapper.Map<VenueDto>(createdVenue);
+            return mapper.Map<VenueDto>(venue);
         }
 
         public async Task<VenueDto?> GetDetailsForCurrentUserAsync()
