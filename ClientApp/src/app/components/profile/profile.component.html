@@ -1,4 +1,4 @@
-@if (authService.currentUser()) {
+@if (authService.currentUser$ | async; as user) {
     <button class="btn-profile" mat-icon-button [matMenuTriggerFor]="menu">
         <mat-icon [matMenuTriggerFor]="menu" fontIcon="account_circle">more_vert</mat-icon>
     </button>

@@ -12,6 +12,8 @@ import { MatMenuModule } from '@angular/material/menu';
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent {
+  
+
   constructor(protected authService: AuthService) { }
 
   onProfile() {

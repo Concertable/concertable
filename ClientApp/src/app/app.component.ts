@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { InitService } from './services/init/init.service';
+import { AuthService } from './services/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,6 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.initService.init();
-    console.log(google);
+    // console.log(google);
   }
 }

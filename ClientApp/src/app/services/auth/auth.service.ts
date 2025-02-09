@@ -15,13 +15,18 @@ import { Role } from '../../models/role';
 export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
-  currentUser = signal<User | null>(null);
-  user = computed(() => this.currentUser());
+  
+  private currentUserSubject = new BehaviorSubject<User | null>(null); 
+  currentUser$ = this.currentUserSubject.asObservable(); // Every subscription will recieve the current user whenever it changes
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  isRole = (role: Role) => this.currentUser()?.role === role;
-  isNotRole = (role: Role) => this.currentUser()?.role !== role;
+  isRole = (role: Role) => this.currentUserSubject.getValue()?.role === role;
+  isNotRole = (role: Role) => this.currentUserSubject.getValue()?.role !== role;
+
+  isAuthenticated(): boolean {
+    return this.currentUserSubject.getValue() !== null;
+  }
 
   login(credentials: LoginCredentials): Observable<any> {
     let params = new HttpParams().append('useCookies', true);
@@ -37,7 +42,7 @@ export class AuthService {
     console.log(`${this.apiUrl}/logout`);
     return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
       tap(() => {
-        this.currentUser.set(null);
+        this.currentUserSubject.next(null);
         this.router.navigateByUrl('/');
       })
     );
@@ -53,10 +58,10 @@ export class AuthService {
   }
 
   getCurrentUser() : Observable<User> {
+    console.log("?");
     return this.http.get<User>(`${this.apiUrl}/current-user`).pipe(
-      map(user => {
-        this.currentUser.set(user);
-        return user;
+      tap(user => {
+        this.currentUserSubject.next(user);
       })
     )
   }
