@@ -23,7 +23,6 @@ export class MailboxComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscriptions.push(this.authService.currentUser$.subscribe(user => {
       if(this.authService.isRole("VenueManager")){
-        console.log("summary");
         this.subscriptions.push(this.messageService.getSummaryForUser().subscribe(messageSummary => {
           this.messages.push(...messageSummary.messages.data);
           this.unreadCount = messageSummary.unreadCount;

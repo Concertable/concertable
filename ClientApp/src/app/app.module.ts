@@ -30,7 +30,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatBadgeModule } from '@angular/material/badge';
-import { MatList, MatListModule } from '@angular/material/list';
+import { MatListModule } from '@angular/material/list';
+import { MatCardModule } from '@angular/material/card'
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
@@ -158,7 +159,8 @@ const routerOptions: ExtraOptions = {
     MatSidenavModule,
     MatToolbarModule,
     MatBadgeModule,
-    MatListModule
+    MatListModule,
+    MatCardModule
 ],
   providers: [
     provideHttpClient(

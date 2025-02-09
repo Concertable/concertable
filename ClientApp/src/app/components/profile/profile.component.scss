@@ -1,0 +1,22 @@
+.info {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+}
+
+.info mat-icon {
+    margin-right: 12px;
+    color: #5a5a5a;
+}
+
+.details h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.user-details p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
