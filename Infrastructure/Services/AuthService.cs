@@ -59,10 +59,15 @@ namespace Infrastructure.Services
             await signInManager.SignOutAsync();
         }
 
-        public async Task<ApplicationUser?> GetCurrentUserAsync()
+        public async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            var principal = httpContextAccessor.HttpContext.User;
-            return await userManager.GetUserAsync(principal);
+            var principal = httpContextAccessor?.HttpContext?.User;
+
+            var user = await userManager.GetUserAsync(principal);
+
+            if (user == null) throw new UnauthorizedException("User not Authenticated");
+
+            return user;
         }
 
         public async Task<string> GetFirstUserRole(ApplicationUser user)

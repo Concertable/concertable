@@ -15,7 +15,7 @@ namespace Application.Interfaces
 
         public Task Logout();
 
-        public Task<ApplicationUser?> GetCurrentUserAsync();
+        public Task<ApplicationUser> GetCurrentUserAsync();
 
         public Task<string> GetFirstUserRole(ApplicationUser user);
     }

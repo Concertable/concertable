@@ -68,6 +68,10 @@ namespace Application.Mappings
 
             //MessageSummary
 
+            //Purchase
+            CreateMap<Purchase, PurchaseDto>();
+            CreateMap<PurchaseDto, Purchase>();
+
         }
     }
 }

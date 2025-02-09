@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using Web;
+using Infrastructure.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
 
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVenueService, VenueService>();
@@ -58,6 +61,9 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IListingApplicationService, ListingApplicationService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IListingService, ListingService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
 {
@@ -71,6 +77,8 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IListingApplicationRepository, ListingApplicationRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
