@@ -26,27 +26,27 @@ namespace Infrastructure.Data
             {
                 var users = new ApplicationUser[]
                 {
-                    new ApplicationUser
+                    new Admin
                     {
                         UserName = "admin@test.com",
                         Email = "admin@test.com",
                     },
-                    new ApplicationUser
+                    new Customer
                     {
                         UserName = "customer@test.com",
                         Email = "customer@test.com",
                     },
-                    new ApplicationUser
+                    new ArtistManager
                     {
                         UserName = "artistmanager@test.com",
                         Email = "artistmanager@test.com",
                     },
-                    new ApplicationUser
+                    new VenueManager
                     {
                         UserName = "venuemanager@test.com",
                         Email = "venuemanager@test.com",
                     },
-                    new ApplicationUser
+                    new Customer
                     {
                         UserName = "customer2@test.com",
                         Email = "customer2@test.com",

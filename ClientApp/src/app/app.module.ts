@@ -29,6 +29,8 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatList, MatListModule } from '@angular/material/list';
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
@@ -76,6 +78,7 @@ import { MyArtistComponent } from './pages/my-artist/my-artist.component';
 import { CreateArtistComponent } from './pages/create-artist/create-artist.component';
 import { CreateVenueComponent } from './pages/create-venue/create-venue.component';
 import { CreateNavbarComponent } from './components/create-navbar/create-navbar.component';
+import { MailboxComponent } from './components/mailbox/mailbox.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -137,6 +140,7 @@ const routerOptions: ExtraOptions = {
     CreateArtistComponent,
     CreateVenueComponent,
     CreateNavbarComponent,
+    MailboxComponent,
   ],
   imports: [
     BrowserModule,
@@ -152,7 +156,9 @@ const routerOptions: ExtraOptions = {
     MatAutocompleteModule,
     MatSelectModule,
     MatSidenavModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatBadgeModule,
+    MatListModule
 ],
   providers: [
     provideHttpClient(

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.Entities.Identity;
+using Application.DTOs;
 
 namespace Infrastructure.Repositories
 {
@@ -28,6 +30,16 @@ namespace Infrastructure.Repositories
                 .ThenInclude(lg => lg.Genre); // Include the related Genre entity
 
             return await query.ToListAsync();
+        }
+
+        public async Task<VenueManager> GetOwnerByIdAsync(int listingId)
+        {
+            var query = context.Users
+                .Where(u => EF.Property<string>(u, "Discriminator") == "VenueManager")
+                .OfType<VenueManager>()
+                .Where(vm => vm.Venue != null && vm.Venue.Listings.Any(l => l.Id == listingId));
+
+            return await query.FirstAsync();
         }
     }
 }

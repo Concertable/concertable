@@ -7,29 +7,29 @@ namespace Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class RegisterController : ControllerBase
+    public class ListingApplicationController : ControllerBase
     {
-        private readonly IRegisterService registerService;
+        private readonly IListingApplicationService applicationService;
 
-        public RegisterController(IRegisterService registerService)
+        public ListingApplicationController(IListingApplicationService applicationService)
         {
-            this.registerService = registerService;
+            this.applicationService = applicationService;
         }
 
         [Authorize(Roles = "VenueManager")]
         [HttpGet("all/{listingId}")]
         public async Task<ActionResult<IEnumerable<ListingApplication>>> GetAllForListingId(int listingId)
         {
-            var registrations = await registerService.GetAllForListingIdAsync(listingId);
+            var registrations = await applicationService.GetAllForListingIdAsync(listingId);
             return Ok();
         }
 
         [Authorize(Roles = "ArtistManager")]
         [HttpPost("{listingId}")]
-        public async Task<ActionResult> RegisterForListing(int listingId)
+        public async Task<IActionResult> ApplyForListing(int listingId)
         {
-            await registerService.RegisterForListingAsync(listingId);
-            return CreatedAtAction("", new { });
+            await applicationService.ApplyForListingAsync(listingId);
+            return NoContent();
         }
     }
 }

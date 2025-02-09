@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250208144636_InitialCreate")]
+    [Migration("20250208220435_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -50,7 +50,8 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Artists");
                 });
@@ -348,7 +349,8 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ArtistId");
 
-                    b.HasIndex("ListingId");
+                    b.HasIndex("ListingId", "ArtistId")
+                        .IsUnique();
 
                     b.ToTable("ListingApplications");
                 });
@@ -376,12 +378,12 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("FromId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MessageContent")
+                    b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FromUserId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("Read")
                         .HasColumnType("bit");
@@ -389,14 +391,14 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("SentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ToId")
+                    b.Property<int>("ToUserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FromId");
+                    b.HasIndex("FromUserId");
 
-                    b.HasIndex("ToId");
+                    b.HasIndex("ToUserId");
 
                     b.ToTable("Messages");
                 });
@@ -519,7 +521,8 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Venues");
                 });
@@ -671,18 +674,25 @@ namespace Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Core.Entities.Identity.Manager", b =>
+            modelBuilder.Entity("Core.Entities.Identity.ArtistManager", b =>
                 {
                     b.HasBaseType("Core.Entities.Identity.ApplicationUser");
 
-                    b.HasDiscriminator().HasValue("Manager");
+                    b.HasDiscriminator().HasValue("ArtistManager");
+                });
+
+            modelBuilder.Entity("Core.Entities.Identity.VenueManager", b =>
+                {
+                    b.HasBaseType("Core.Entities.Identity.ApplicationUser");
+
+                    b.HasDiscriminator().HasValue("VenueManager");
                 });
 
             modelBuilder.Entity("Core.Entities.Artist", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                    b.HasOne("Core.Entities.Identity.ArtistManager", "User")
+                        .WithOne("Artist")
+                        .HasForeignKey("Core.Entities.Artist", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -801,26 +811,14 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entities.Message", b =>
                 {
                     b.HasOne("Core.Entities.Identity.ApplicationUser", "FromUser")
-                        .WithMany()
-                        .HasForeignKey("FromId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.Identity.Manager", null)
                         .WithMany("SentMessages")
-                        .HasForeignKey("FromId")
+                        .HasForeignKey("FromUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Core.Entities.Identity.ApplicationUser", "ToUser")
-                        .WithMany()
-                        .HasForeignKey("ToId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.Identity.Manager", null)
                         .WithMany("ReceivedMessages")
-                        .HasForeignKey("ToId")
+                        .HasForeignKey("ToUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -872,9 +870,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Venue", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                    b.HasOne("Core.Entities.Identity.VenueManager", "User")
+                        .WithOne("Venue")
+                        .HasForeignKey("Core.Entities.Venue", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -979,6 +977,13 @@ namespace Infrastructure.Migrations
                     b.Navigation("EventGenres");
                 });
 
+            modelBuilder.Entity("Core.Entities.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("ReceivedMessages");
+
+                    b.Navigation("SentMessages");
+                });
+
             modelBuilder.Entity("Core.Entities.Listing", b =>
                 {
                     b.Navigation("ListingGenres");
@@ -998,11 +1003,14 @@ namespace Infrastructure.Migrations
                     b.Navigation("Listings");
                 });
 
-            modelBuilder.Entity("Core.Entities.Identity.Manager", b =>
+            modelBuilder.Entity("Core.Entities.Identity.ArtistManager", b =>
                 {
-                    b.Navigation("ReceivedMessages");
+                    b.Navigation("Artist");
+                });
 
-                    b.Navigation("SentMessages");
+            modelBuilder.Entity("Core.Entities.Identity.VenueManager", b =>
+                {
+                    b.Navigation("Venue");
                 });
 #pragma warning restore 612, 618
         }

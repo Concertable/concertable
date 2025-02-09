@@ -16,6 +16,7 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
   currentUser = signal<User | null>(null);
+  user = computed(() => this.currentUser());
 
   constructor(private http: HttpClient, private router: Router) { }
 

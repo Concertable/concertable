@@ -9,9 +9,9 @@ namespace Core.Entities
 {
     public class Message : BaseEntity
     {
-        public string MessageContent { get; set; }
-        public int FromId { get; set; }
-        public int ToId { get; set; }
+        public string Content { get; set; }
+        public int FromUserId { get; set; }
+        public int ToUserId { get; set; }
         public DateTime SentDate { get; set; }
         public bool Read { get; set; }
         public ApplicationUser FromUser { get; set; }

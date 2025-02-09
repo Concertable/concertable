@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
 using AutoMapper;
+using Core.Entities.Identity;
 
 namespace Infrastructure.Services
 {
@@ -37,6 +38,11 @@ namespace Infrastructure.Services
         {
             var listings = await listingRepository.GetActiveByVenueIdAsync(id);
             return mapper.Map<IEnumerable<ListingDto>>(listings);
+        }
+
+        public async Task<VenueManager> GetOwnerByIdAsync(int id)
+        {
+            return await listingRepository.GetOwnerByIdAsync(id); 
         }
     }
 }

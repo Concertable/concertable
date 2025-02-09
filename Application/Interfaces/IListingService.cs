@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Core.Entities;
+using Core.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +13,6 @@ namespace Application.Interfaces
     {
         Task CreateAsync(ListingDto listingDto);
         Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id);
+        Task<VenueManager> GetOwnerByIdAsync(int id);
     }
 }

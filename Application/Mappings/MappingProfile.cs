@@ -61,6 +61,13 @@ namespace Application.Mappings
                     dest => dest.EndDate,
                     opt => opt.MapFrom(src => src.Application.Listing.EndDate)
                 );
+
+            //Messages
+            CreateMap<Message, MessageDto>();
+            CreateMap<MessageDto, Message>();
+
+            //MessageSummary
+
         }
     }
 }

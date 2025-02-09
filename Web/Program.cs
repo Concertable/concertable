@@ -55,15 +55,19 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVenueService, VenueService>();
 builder.Services.AddScoped<IArtistService, ArtistService>();
 builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddScoped<IRegisterService, RegisterService>();
+builder.Services.AddScoped<IListingApplicationService, ListingApplicationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IListingService, ListingService>();
 
 // Repositories
 builder.Services.AddScoped<IVenueRepository, VenueRepository>();
 builder.Services.AddScoped<IArtistRepository, ArtistRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IRegisterRepository, RegisterRepository>();
+builder.Services.AddScoped<IListingApplicationRepository, ListingApplicationRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

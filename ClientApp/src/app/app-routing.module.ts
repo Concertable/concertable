@@ -39,8 +39,7 @@ const routes: Routes = [
       { path: 'find', component: ArtistFindComponent, },
       { path: 'find/venue', component: VenueDetailsComponent, },
       { path: 'create', component: CreateArtistComponent },
-    ] },  
-  { path: '**', redirectTo: '', pathMatch: 'full' }
+    ] }
 ];
 
 @NgModule({

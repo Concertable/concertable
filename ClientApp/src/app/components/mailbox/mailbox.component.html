@@ -1,0 +1,15 @@
+<div class="mail-container" *ngIf="authService.currentUser()">
+    <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" (click)="onMailClick()">
+        <mat-icon>mail</mat-icon>
+    </button>
+
+    <div *ngIf="dropdownOpen" class="dropdown">
+        <mat-list>
+            <mat-list-item *ngFor="let message of messages">
+                <p>{{ message.content }}</p>
+                <button *ngIf="message.action" (click)="handleAction(message.action)">View</button>
+            </mat-list-item>
+        </mat-list>
+        <button *ngIf="messages.length > 0" mat-button (click)="onShowMore()">Show More</button>
+    </div>
+</div>

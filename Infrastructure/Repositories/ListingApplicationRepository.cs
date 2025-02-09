@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class RegisterRepository : Repository<ListingApplication>, IRegisterRepository
+    public class ListingApplicationRepository : Repository<ListingApplication>, IListingApplicationRepository
     {
-        public RegisterRepository(ApplicationDbContext context) : base(context) { }
+        public ListingApplicationRepository(ApplicationDbContext context) : base(context) { }
 
         public async Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId)
         {

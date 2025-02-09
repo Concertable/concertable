@@ -4,6 +4,7 @@ import { Venue } from '../../models/venue';
 import { of } from 'rxjs';
 import { Listing } from '../../models/listing';
 import { AuthService } from '../../services/auth/auth.service';
+import { ListingApplicationService } from '../../services/listing-application/listing-application.service';
 
 @Component({
   selector: 'app-listings',
@@ -18,7 +19,7 @@ export class ListingsComponent  implements OnChanges {
 
   listings? : Listing[];
 
-  constructor(private listingService: ListingService, protected authService: AuthService) { }
+  constructor(private listingService: ListingService, private applicationService: ListingApplicationService, protected authService: AuthService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if(changes['venue'])
@@ -40,7 +41,9 @@ export class ListingsComponent  implements OnChanges {
   }
 
   onApply(listing: Listing) {
-    
+    console.log("applying");
+    if(listing.id)
+      this.applicationService.applyForListingAsync(listing.id).subscribe();
   }
   
 }

@@ -10,30 +10,26 @@ namespace Core.Entities.Identity
 {
     public class ApplicationUser : IdentityUser<int> 
     {
+        public ICollection<Message> SentMessages { get; set; }
+        public ICollection<Message> ReceivedMessages { get; set; }
     }
+
+    public class Admin: ApplicationUser { }
 
     public class Customer : ApplicationUser
     {
         public ICollection<Ticket> Tickets { get; set; }
     }
 
-    public class Manager : ApplicationUser
+    public class VenueManager : ApplicationUser
     {
-        public ICollection<Message> SentMessages { get; set; }
-        public ICollection<Message> ReceivedMessages { get; set; }
+        public Venue? Venue { get; set; }
     }
 
-    public class VenueManager : Manager
-    {
-        public Venue? Venue { get; }
-    }
-
-    public class ArtistManager : Manager
+    public class ArtistManager : ApplicationUser
     {
         public Artist? Artist { get; set; }
     }
 
-    public class ApplicationRole : IdentityRole<int>
-    {
-    }
+    public class ApplicationRole : IdentityRole<int> { }
 }

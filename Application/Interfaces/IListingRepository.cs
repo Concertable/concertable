@@ -1,4 +1,6 @@
-﻿using Core.Entities;
+﻿using Application.DTOs;
+using Core.Entities;
+using Core.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +12,7 @@ namespace Application.Interfaces
     public interface IListingRepository : IRepository<Listing>
     {
         Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
+
+        Task<VenueManager> GetOwnerByIdAsync(int id);
     }
 }

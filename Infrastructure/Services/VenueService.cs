@@ -34,13 +34,13 @@ namespace Infrastructure.Services
 
         public async Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
         {
-            var response = await venueRepository.GetHeadersAsync(searchParams);
-            var headersDtos = mapper.Map<IEnumerable<VenueHeaderDto>>(response.Data);
+            var headers = await venueRepository.GetHeadersAsync(searchParams);
+            var headersDtos = mapper.Map<IEnumerable<VenueHeaderDto>>(headers.Data);
             return new PaginationResponse<VenueHeaderDto>(
                 headersDtos,
-                response.TotalCount,
-                response.PageNumber,
-                response.PageSize);
+                headers.TotalCount,
+                headers.PageNumber,
+                headers.PageSize);
         }
 
         public async Task<VenueDto> GetDetailsByIdAsync(int id)

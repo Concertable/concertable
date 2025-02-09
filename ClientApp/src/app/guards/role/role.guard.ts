@@ -8,7 +8,6 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const role = route.data['role'];
 
-  console.log("call1")
   return authService.getCurrentUser().pipe(
     map(currentUser => {
       if(["Admin", role].includes(currentUser.role)){

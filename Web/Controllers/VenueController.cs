@@ -21,7 +21,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("headers")]
-        public async Task<ActionResult<PaginationResponse<Venue>>> GetHeaders([FromQuery] SearchParams searchParams)
+        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders([FromQuery] SearchParams? searchParams)
         {
             return Ok(await venueService.GetHeadersAsync(searchParams));
         }

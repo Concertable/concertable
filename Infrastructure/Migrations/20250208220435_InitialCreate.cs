@@ -202,9 +202,9 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    MessageContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FromId = table.Column<int>(type: "int", nullable: false),
-                    ToId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FromUserId = table.Column<int>(type: "int", nullable: false),
+                    ToUserId = table.Column<int>(type: "int", nullable: false),
                     SentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Read = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -212,14 +212,14 @@ namespace Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Messages_AspNetUsers_FromId",
-                        column: x => x.FromId,
+                        name: "FK_Messages_AspNetUsers_FromUserId",
+                        column: x => x.FromUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Messages_AspNetUsers_ToId",
-                        column: x => x.ToId,
+                        name: "FK_Messages_AspNetUsers_ToUserId",
+                        column: x => x.ToUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -544,7 +544,8 @@ namespace Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Artists_UserId",
                 table: "Artists",
-                column: "UserId");
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -607,9 +608,10 @@ namespace Infrastructure.Migrations
                 column: "ArtistId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ListingApplications_ListingId",
+                name: "IX_ListingApplications_ListingId_ArtistId",
                 table: "ListingApplications",
-                column: "ListingId");
+                columns: new[] { "ListingId", "ArtistId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ListingGenres_GenreId",
@@ -622,14 +624,14 @@ namespace Infrastructure.Migrations
                 column: "VenueId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_FromId",
+                name: "IX_Messages_FromUserId",
                 table: "Messages",
-                column: "FromId");
+                column: "FromUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_ToId",
+                name: "IX_Messages_ToUserId",
                 table: "Messages",
-                column: "ToId");
+                column: "ToUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_TicketId",
@@ -660,7 +662,8 @@ namespace Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Venues_UserId",
                 table: "Venues",
-                column: "UserId");
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Videos_ArtistId",

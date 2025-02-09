@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Reflection.Metadata;
-using static Core.Entities.Identity.Manager;
 
 namespace Infrastructure.Data.Identity
 {
@@ -34,28 +33,26 @@ namespace Infrastructure.Data.Identity
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Message>()
-                .HasOne<Manager>()
-                .WithMany(e => e.SentMessages)
-                .HasForeignKey(m => m.FromId)
-                .OnDelete(DeleteBehavior.Restrict);
+            /* Create a new index so that an artist
+             * can only register for each listing
+             * once
+             */
+            modelBuilder.Entity<ListingApplication>()
+                .HasIndex(la => new { la.ListingId, la.ArtistId })
+                .IsUnique();
 
-            modelBuilder.Entity<Message>()
-                .HasOne<Manager>()
-                .WithMany(e => e.ReceivedMessages)
-                .HasForeignKey(m => m.ToId)
-                .OnDelete(DeleteBehavior.Restrict);
+            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.FromUser)
-                .WithMany()
-                .HasForeignKey(m => m.FromId)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.FromUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.ToUser)
-                .WithMany()
-                .HasForeignKey(m => m.ToId)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(m => m.ToUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //Temporary Fix
