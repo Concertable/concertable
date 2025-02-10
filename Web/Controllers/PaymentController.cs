@@ -16,7 +16,7 @@ namespace Web.Controllers
         }
 
         [HttpPost("dummy")]
-        public async Task<IActionResult> CreateDummy([FromBody] PaymentParams paymentParams)
+        public async Task<IActionResult> CreateDummy([FromBody] string transactionId)
         {
             //var response = await paymentService.ProcessAsync(paymentParams, 100, "ticket");
             return Ok();

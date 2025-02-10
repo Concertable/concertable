@@ -33,7 +33,7 @@ namespace Infrastructure.Services
             this.authService = authService;
         }
 
-        public async Task<PaymentResponse> ProcessAsync(PaymentParams paymentParams, TransactionDto transactionDto)
+        public async Task<PaymentResponse> ProcessAsync(string paymentMethodId, TransactionDto transactionDto)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace Infrastructure.Services
                 {
                     Amount = amount,
                     Currency = "GBP",
-                    PaymentMethod = paymentParams.PaymentMethodId,
+                    PaymentMethod = paymentMethodId,
                     ConfirmationMethod = "manual",
                     ReceiptEmail = transactionDto.FromUserEmail
                 };

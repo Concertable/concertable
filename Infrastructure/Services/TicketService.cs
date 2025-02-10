@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Core.Exceptions;
 using Core.Parameters;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Infrastructure.Services
 {
@@ -35,7 +36,7 @@ namespace Infrastructure.Services
             this.managerService = managerService;
         }
 
-        public async Task PurchaseAsync(int eventId, PaymentParams paymentParams)
+        public async Task PurchaseAsync(string transactionId, int eventId)
         {
             var ticketRepository = unitOfWork.GetRepository<Ticket>();
             var eventRepository = unitOfWork.GetRepository<Event>();
@@ -61,7 +62,7 @@ namespace Infrastructure.Services
                 throw new BadRequestException("No tickets available");
 
             // Process payment
-            var paymentResponse = await paymentService.ProcessAsync(paymentParams, transactionDto);
+            var paymentResponse = await paymentService.ProcessAsync(transactionId, transactionDto);
             if (!paymentResponse.Success)
                 throw new PaymentRequiredException("Payment failed");
 

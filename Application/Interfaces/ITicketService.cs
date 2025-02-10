@@ -10,6 +10,6 @@ namespace Application.Interfaces
 {
     public interface ITicketService
     {
-        Task PurchaseAsync(int eventId, PaymentParams paymentParams);
+        Task PurchaseAsync(string transactionId, int eventId);
     }
 }
