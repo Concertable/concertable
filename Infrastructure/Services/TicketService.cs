@@ -80,7 +80,7 @@ namespace Infrastructure.Services
             eventEntity.AvailableTickets -= 1;
             eventRepository.Update(eventEntity);
 
-            await unitOfWork.SaveChangesAsync(); // Commit everything
+            await unitOfWork.SaveChangesAsync();
 
         }
     }

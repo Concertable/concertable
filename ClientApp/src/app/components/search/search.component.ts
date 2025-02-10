@@ -21,7 +21,6 @@ export class SearchComponent {
     if(this.headerType) {
       const searchParams: SearchParams = {
         searchTerm: this.searchTerm,
-        headerType: this.headerType,
         location: this.location,
         date: this.date
       }

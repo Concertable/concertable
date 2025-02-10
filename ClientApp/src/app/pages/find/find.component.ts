@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { EventService } from '../../services/event/event.service';
 import { HeaderService } from '../../services/header/header.service';
 import { Observable } from 'rxjs';
@@ -54,5 +54,10 @@ export class FindComponent implements OnInit {
       }
       );
     }
+  }
+  
+  changeHeaderType(headerType?: HeaderType) {
+    this.headerType = headerType;
+    this.headers = [];
   }
   }

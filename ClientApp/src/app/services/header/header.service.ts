@@ -25,22 +25,20 @@ export class HeaderService {
     private eventService: EventService
   ) { }
 
-  private getParams(searchParams: SearchParams): HttpParams {
-    return new HttpParams({ fromObject: searchParams as any });
-  }
-
   getVenueHeaders(searchParams: SearchParams): Observable<Pagination<VenueHeader>> {
-    const params = this.getParams(searchParams);
+    const { date, ...filteredParams } = searchParams; 
+    const params = new HttpParams({ fromObject: filteredParams as any })
     return this.venueService.getHeaders(params);
   }
 
   getArtistHeaders(searchParams: SearchParams): Observable<Pagination<ArtistHeader>> {
-    const params = this.getParams(searchParams);
+    const { date, ...filteredParams } = searchParams; 
+    const params = new HttpParams({ fromObject: filteredParams as any })
     return this.artistService.getHeaders(params);
   }
 
   getEventHeaders(searchParams: SearchParams): Observable<Pagination<EventHeader>> {
-    const params = this.getParams(searchParams);
+    const params = new HttpParams({ fromObject: searchParams as any })
     return this.eventService.getHeaders(params);
   }
 }

@@ -1,6 +1,11 @@
 <app-sidebar [icon]="icon">
   <div sidebar>
     <h3>Filter Content</h3>
+    <div class="header-type" *ngIf="isCustomerRoute()">
+      <select [(ngModel)]="headerType" (change)="onHeaderTypeChange()">
+        <option *ngFor="let type of headerTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
   </div>
   <ng-content></ng-content>
 </app-sidebar>
