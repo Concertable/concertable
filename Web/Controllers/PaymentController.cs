@@ -18,8 +18,8 @@ namespace Web.Controllers
         [HttpPost("dummy")]
         public async Task<IActionResult> CreateDummy([FromBody] PaymentParams paymentParams)
         {
-            var response = await paymentService.ProcessAsync(paymentParams, 100, "ticket");
-            return Ok(response);
+            //var response = await paymentService.ProcessAsync(paymentParams, 100, "ticket");
+            return Ok();
         }
     }
 }

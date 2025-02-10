@@ -20,12 +20,19 @@ namespace Infrastructure.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IPaymentService paymentService;
         private readonly IAuthService authService;
+        private readonly IManagerService managerService;
 
-        public TicketService(IUnitOfWork unitOfWork, IPaymentService paymentService, IAuthService authService)
+        public TicketService(
+            IUnitOfWork unitOfWork, 
+            IPaymentService paymentService, 
+            IAuthService authService,
+            IManagerService managerService
+            )
         {
             this.unitOfWork = unitOfWork;
             this.paymentService = paymentService;
             this.authService = authService;
+            this.managerService = managerService;
         }
 
         public async Task PurchaseAsync(int eventId, PaymentParams paymentParams)
@@ -36,6 +43,17 @@ namespace Infrastructure.Services
             var user = await authService.GetCurrentUserAsync();
             var eventEntity = await eventRepository.GetByIdAsync(eventId);
 
+            var toUserId = await managerService.GetIdByEventIdAsync(eventId);
+
+            var transactionDto = new TransactionDto
+            {
+                FromUserId = user.Id,
+                FromUserEmail = user.Email,
+                ToUserId = toUserId,
+                Amount = eventEntity.Price,
+                PaymentType = "ticket"
+            };
+
             if (eventEntity == null)
                 throw new NotFoundException("Event not found");
 
@@ -43,7 +61,7 @@ namespace Infrastructure.Services
                 throw new BadRequestException("No tickets available");
 
             // Process payment
-            var paymentResponse = await paymentService.ProcessAsync(paymentParams, eventEntity.Price, "ticket");
+            var paymentResponse = await paymentService.ProcessAsync(paymentParams, transactionDto);
             if (!paymentResponse.Success)
                 throw new PaymentRequiredException("Payment failed");
 

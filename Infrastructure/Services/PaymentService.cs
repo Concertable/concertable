@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Core.Enums;
 using Core.Parameters;
 using Core.Responses;
 using Infrastructure.Settings;
@@ -20,8 +21,11 @@ namespace Infrastructure.Services
         private readonly IPurchaseService purchaseService;
         private readonly IAuthService authService;
 
-
-        public PaymentService(IOptions<StripeSettings> stripeSettings, IPurchaseService purchaseService, IAuthService authService)
+        public PaymentService(
+            IOptions<StripeSettings> stripeSettings, 
+            IPurchaseService purchaseService, 
+            IAuthService authService 
+            )
         {
             this.stripeSettings = stripeSettings.Value;
             StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
@@ -29,19 +33,18 @@ namespace Infrastructure.Services
             this.authService = authService;
         }
 
-        public async Task<PaymentResponse> ProcessAsync(PaymentParams paymentParams, double price, string type)
+        public async Task<PaymentResponse> ProcessAsync(PaymentParams paymentParams, TransactionDto transactionDto)
         {
-            var user = await authService.GetCurrentUserAsync();
             try
             {
-                long amount = (long)price * 100;
+                long amount = (long)transactionDto.Amount * 100;
                 var options = new PaymentIntentCreateOptions
                 {
                     Amount = amount,
                     Currency = "GBP",
                     PaymentMethod = paymentParams.PaymentMethodId,
                     ConfirmationMethod = "manual",
-                    ReceiptEmail = user.Email
+                    ReceiptEmail = transactionDto.FromUserEmail
                 };
 
                 var service = new PaymentIntentService();
@@ -51,11 +54,13 @@ namespace Infrastructure.Services
 
                 if (!succeeded) throw new StripeException("Payment confirmation failed");
 
+
                 var purchaseDto = new PurchaseDto
                 {
-                    FromUserId = user.Id,
+                    FromUserId = transactionDto.FromUserId,
+                    ToUserId = transactionDto.ToUserId,
                     TransactionId = paymentIntent.Id,
-                    Type = type,
+                    Type = transactionDto.PaymentType,
                     Amount = amount
                 };
 
