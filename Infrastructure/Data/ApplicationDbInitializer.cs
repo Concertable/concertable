@@ -51,6 +51,41 @@ namespace Infrastructure.Data
                         UserName = "customer2@test.com",
                         Email = "customer2@test.com",
                     },
+                    new VenueManager
+                    {
+                        UserName = "venuemanager2@test.com",
+                        Email = "venuemanager2@test.com",
+                    },
+                    new VenueManager
+                    {
+                        UserName = "venuemanager3@test.com",
+                        Email = "venuemanager3@test.com",
+                    },
+                    new VenueManager
+                    {
+                        UserName = "venuemanager4@test.com",
+                        Email = "venuemanager4@test.com",
+                    },
+                    new VenueManager
+                    {
+                        UserName = "venuemanager5@test.com",
+                        Email = "venuemanager5@test.com",
+                    },
+                    new VenueManager
+                    {
+                        UserName = "venuemanager6@test.com",
+                        Email = "venuemanager6@test.com",
+                    },
+                    new VenueManager
+                    {
+                        UserName = "venuemanager7@test.com",
+                        Email = "venuemanager7@test.com",
+                    },
+                    new VenueManager
+                    {
+                        UserName = "venuemanager8@test.com",
+                        Email = "venuemanager8@test.com",
+                    },
                 };
                 foreach (var user in users)
                 {
@@ -145,7 +180,7 @@ namespace Infrastructure.Data
                     },
                     new Venue
                     {
-                        UserId = 4,
+                        UserId = 6,
                         Name = "The Test Venue 2",
                         About = "Test Venue 2",
                         Longitude = 0,
@@ -157,7 +192,7 @@ namespace Infrastructure.Data
                     },
                     new Venue
                     {
-                        UserId = 4,
+                        UserId = 7,
                         Name = "The Test Venue 3",
                         About = "Test Venue 3",
                         Longitude = 0,
@@ -169,7 +204,7 @@ namespace Infrastructure.Data
                     },
                     new Venue
                     {
-                        UserId = 4,
+                        UserId = 8,
                         Name = "The Test Venue 4",
                         About = "Test Venue 4",
                         Longitude = 0,
@@ -181,7 +216,7 @@ namespace Infrastructure.Data
                     },
                     new Venue
                     {
-                        UserId = 4,
+                        UserId = 9,
                         Name = "The Test Venue 5",
                         About = "Test Venue 5",
                         Longitude = 0,
@@ -193,7 +228,7 @@ namespace Infrastructure.Data
                     },
                     new Venue
                     {
-                        UserId = 4,
+                        UserId = 10,
                         Name = "The Test Venue 6",
                         About = "Test Venue 6",
                         Longitude = 0,
@@ -205,7 +240,7 @@ namespace Infrastructure.Data
                     },
                     new Venue
                     {
-                        UserId = 4,
+                        UserId = 11,
                         Name = "The Test Venue 7",
                         About = "Test Venue 7",
                         Longitude = 0,
@@ -217,57 +252,9 @@ namespace Infrastructure.Data
                     },
                     new Venue
                     {
-                        UserId = 4,
+                        UserId = 12,
                         Name = "The Test Venue 8",
                         About = "Test Venue 8",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 4,
-                        Name = "The Test Venue 9",
-                        About = "Test Venue 9",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 4,
-                        Name = "The Test Venue 10",
-                        About = "Test Venue 10",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 4,
-                        Name = "The Test Venue 11",
-                        About = "Test Venue 11",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 4,
-                        Name = "The Test Venue 12",
-                        About = "Test Venue 12",
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
