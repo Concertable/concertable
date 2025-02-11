@@ -4,6 +4,8 @@ import { VenueService } from '../../services/venue/venue.service';
 import { NavItem } from '../../models/nav-item';
 import { AuthService } from '../../services/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CoreEntityDetailsDirective } from '../../directives/core-entity-details/core-entity-details.directive';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-venue-details',
@@ -12,42 +14,35 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './venue-details.component.html',
   styleUrl: './venue-details.component.scss'
 })
-export class VenueDetailsComponent implements OnInit {
-  @Input() venue?: Venue;
-  @Input() editMode?: boolean
+export class VenueDetailsComponent extends CoreEntityDetailsDirective<Venue> {
+  @Input('venue') declare entity?: Venue;
 
-  navItems: NavItem[] = [
-    { name: 'Info', fragment: 'info' },
-    { name: 'Events', fragment: 'events' },
-    { name: 'Videos', fragment: 'videos' },
-    { name: 'Reviews', fragment: 'reviews' }
-];
-
-  
   constructor(
     private venueService: VenueService, 
-    protected authService: AuthService, 
-    private route: ActivatedRoute,
-    private router: Router) { }
+    authService: AuthService, 
+    route: ActivatedRoute,
+    router: Router
+  ) {
+    super(authService, route, router);
+  }
 
-  ngOnInit() {
+  get venue(): Venue | undefined {
+    return this.entity;
+  }
+
+  set venue(value: Venue | undefined) {
+    this.entity = value;
+  }
+
+  override ngOnInit() {
     if(this.authService.isNotRole('Customer')) {
       this.navItems.push({ name: 'Listings', fragment: 'listings' })
     }
-    if (!this.venue) {
-      console.log(this.router.url)
-        this.route.queryParams.subscribe(params => {
-          const venueId = params['id'];
-          if (venueId) {
-            this.venueService.getDetailsById(venueId).subscribe(venue => this.venue=venue);
-          }
-        });
-    }
+    super.ngOnInit();
   }
 
-  exists(s: string): boolean {
-    return this.navItems.some(n => n.name === s)
+  override loadDetails(id: number): Observable<Venue> {
+    return this.venueService.getDetailsById(id);
   }
-  
 
 }

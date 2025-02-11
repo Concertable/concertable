@@ -44,5 +44,11 @@ namespace Infrastructure.Services
 
             return mapper.Map<ArtistDto?>(artist);
         }
+
+        public async Task<ArtistDto> GetDetailsByIdAsync(int id)
+        {
+            var artist = await artistRepository.GetByIdAsync(id);
+            return mapper.Map<ArtistDto>(artist);
+        }
     }
 }

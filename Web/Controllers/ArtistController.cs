@@ -20,6 +20,12 @@ namespace Web.Controllers
             this.artistService = artistService;
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
+        {
+            return Ok(await artistService.GetDetailsByIdAsync(id));
+        }
+
         [HttpGet("headers")]
         public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeaders([FromQuery] SearchParams searchParams)
         {

@@ -26,6 +26,12 @@ namespace Web.Controllers
             return Ok(await eventService.GetHeadersAsync(searchParams));
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
+        {
+            return Ok(await eventService.GetDetailsByIdAsync(id));
+        }
+
         [HttpGet("upcoming/venue/{id}")]
         public async Task<ActionResult<IEnumerable<EventDto>>> GetUpcomingByVenueId(int id)
         {

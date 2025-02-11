@@ -1,4 +1,6 @@
-export interface Event {
+import { CoreEntity } from "./core-entity";
+
+export interface Event extends CoreEntity {
  id: number;
  name: string;
  about: string;

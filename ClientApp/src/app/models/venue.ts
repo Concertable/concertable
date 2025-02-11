@@ -1,7 +1,8 @@
 import { Coordinates } from "./coordinates";
+import { CoreEntity } from "./core-entity";
 import { Listing } from "./listing";
 
-export interface Venue {
+export interface Venue extends CoreEntity {
     id: number;
     name: string;
     about: string;

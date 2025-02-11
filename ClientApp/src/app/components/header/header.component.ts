@@ -9,8 +9,8 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent {
-  @Input() header?: Header;
+export class HeaderComponent<T extends Header> {
+  @Input() header?: T;
 
   constructor(private router: Router, private route: ActivatedRoute) { }
 

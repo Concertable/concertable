@@ -46,5 +46,11 @@ namespace Infrastructure.Services
             var events = await eventRepository.GetUpcomingByArtistIdAsync(id);
             return mapper.Map<IEnumerable<EventDto>>(events);
         }
+
+        public async Task<EventDto> GetDetailsByIdAsync(int id)
+        {
+            var eventEntity = await eventRepository.GetByIdAsync(id);
+            return mapper.Map<EventDto>(eventEntity);
+        }
     }
 }

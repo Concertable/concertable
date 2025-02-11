@@ -5,6 +5,8 @@ import { AuthService } from '../../services/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from '../../services/event/event.service';
 import { Event } from '../../models/event';
+import { CoreEntityDetailsDirective } from '../../directives/core-entity-details/core-entity-details.directive';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-event-details',
@@ -13,41 +15,32 @@ import { Event } from '../../models/event';
   templateUrl: './event-details.component.html',
   styleUrl: './event-details.component.scss'
 })
-export class EventDetailsComponent {
-  @Input() event?: Event;
-  @Input() editMode?: boolean
-  
-    navItems: NavItem[] = [
-      { name: 'Info', fragment: 'info' },
-      { name: 'Events', fragment: 'events' },
-      { name: 'Videos', fragment: 'videos' },
-      { name: 'Reviews', fragment: 'reviews' }
-  ];
-  
-    
-    constructor(
-      private eventService: EventService, 
-      protected authService: AuthService, 
-      private route: ActivatedRoute,
-      private router: Router) { }
-  
-    ngOnInit() {
-      if(this.authService.isNotRole('Customer')) {
-        this.navItems.push({ name: 'Listings', fragment: 'listings' })
-      }
-      if (!this.event) {
-        console.log(this.router.url)
-          this.route.queryParams.subscribe(params => {
-            const eventId = params['id'];
-            if (eventId) {
-              this.eventService.getDetailsById(eventId).subscribe(event => this.event=event);
-            }
-          });
-      }
-    }
-  
-    exists(s: string): boolean {
-      return this.navItems.some(n => n.name === s)
-    }
+export class EventDetailsComponent extends CoreEntityDetailsDirective<Event> {
+  @Input('event') declare entity?: Event;
+
+  constructor(
+    private eventService: EventService,
+    authService: AuthService,
+    route: ActivatedRoute,
+    router: Router) 
+  { 
+    super(authService, route, router)
+  }
+
+  get event(): Event | undefined {
+    return this.entity;
+  }
+
+  set event(value: Event | undefined) {
+    this.entity = value;
+  }
+
+  override ngOnInit(): void {
+      super.ngOnInit();
+  }
+
+  loadDetails(id: number): Observable<Event> {
+    return this.eventService.getDetailsById(id);
+  }
 
 }

@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ArtistHeader } from '../../models/artist-header';
+import { HeadersComponent } from '../headers/headers.component';
 
 @Component({
   selector: 'app-artist-headers',
@@ -8,6 +9,5 @@ import { ArtistHeader } from '../../models/artist-header';
   templateUrl: './artist-headers.component.html',
   styleUrl: './artist-headers.component.scss'
 })
-export class ArtistHeadersComponent {
-  @Input() headers: ArtistHeader[] = []
+export class ArtistHeadersComponent extends HeadersComponent<ArtistHeader> {
 }

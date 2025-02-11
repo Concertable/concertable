@@ -12,6 +12,7 @@ namespace Application.Interfaces
 {
     public interface IArtistService
     {
+        Task<ArtistDto> GetDetailsByIdAsync(int id);
         Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams);
         Task<ArtistDto?> GetDetailsForCurrentUserAsync();
     }

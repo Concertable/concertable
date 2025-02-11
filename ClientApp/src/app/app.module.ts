@@ -81,6 +81,7 @@ import { CreateVenueComponent } from './pages/create-venue/create-venue.componen
 import { CreateNavbarComponent } from './components/create-navbar/create-navbar.component';
 import { MailboxComponent } from './components/mailbox/mailbox.component';
 import { EventDetailsComponent } from './pages/event-details/event-details.component';
+import { CoreEntityDetailsDirective } from './directives/core-entity-details/core-entity-details.directive';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -143,7 +144,7 @@ const routerOptions: ExtraOptions = {
     CreateVenueComponent,
     CreateNavbarComponent,
     MailboxComponent,
-    EventDetailsComponent,
+    EventDetailsComponent
   ],
   imports: [
     BrowserModule,

@@ -1,6 +1,6 @@
 @if(venue) {
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
-    <div class="container" *ngIf="venue">
+    <div class="container" *ngIf="entity">
         <section [id]="navItems[0].fragment">
             <app-heading-medium [editMode]="editMode" [content]="venue.name"/>
             <app-text [editMode]="editMode" [label]="'About'" [content]="venue.about"/>

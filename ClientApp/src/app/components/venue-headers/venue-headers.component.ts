@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { VenueHeader } from '../../models/venue-header';
+import { HeadersComponent } from '../headers/headers.component';
 
 @Component({
   selector: 'app-venue-headers',
@@ -8,6 +9,5 @@ import { VenueHeader } from '../../models/venue-header';
   templateUrl: './venue-headers.component.html',
   styleUrl: './venue-headers.component.scss'
 })
-export class VenueHeadersComponent {
-  @Input() headers: VenueHeader[] = [];
+export class VenueHeadersComponent extends HeadersComponent<VenueHeader> {
 }
