@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Core.Responses;
 
 namespace Application.Interfaces
 {
@@ -13,6 +14,6 @@ namespace Application.Interfaces
     {
         Task<IEnumerable<EventDto>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id);
-        Task<IEnumerable<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams);
+        Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams);
     }
 }

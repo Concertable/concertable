@@ -17,11 +17,15 @@ import { MyVenueComponent } from './pages/my-venue/my-venue.component';
 import { MyArtistComponent } from './pages/my-artist/my-artist.component';
 import { CreateArtistComponent } from './pages/create-artist/create-artist.component';
 import { CreateVenueComponent } from './pages/create-venue/create-venue.component';
+import { EventDetailsComponent } from './pages/event-details/event-details.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent,
     children: [
-      { path: 'find', component: CustomerFindComponent }
+      { path: 'find', component: CustomerFindComponent },
+      { path: 'find/venue', component: VenueDetailsComponent },
+      { path: 'find/artist', component: ArtistDetailsComponent },
+      { path: 'find/event', component: EventDetailsComponent }
     ]
    },
   { path: 'login', component: LoginComponent },

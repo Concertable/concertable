@@ -1,5 +1,5 @@
-<app-header>
-    <ng-container *ngFor="let header of headers">
+<app-headers>
+    <ng-container class="content" *ngFor="let header of headers">
         <app-event-header [header]="header"></app-event-header>
     </ng-container>
-</app-header>
+</app-headers>

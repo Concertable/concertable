@@ -15,6 +15,7 @@ export class HeaderComponent {
   constructor(private router: Router, private route: ActivatedRoute) { }
 
   onClick(): void {
+    console.log("heee")
     if(this.header)
       this.router.navigate([this.header.type], { 
         relativeTo: this.route,

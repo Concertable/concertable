@@ -1,0 +1,15 @@
+@if(event) {
+    <app-scrollspy [navItems]="navItems"></app-scrollspy>
+    <div class="container" *ngIf="event">
+        <section [id]="navItems[0].fragment">
+            <app-heading-medium [editMode]="editMode" [content]="event.name"/>
+            <app-text [editMode]="editMode" [label]="'About'" [content]="event.about"/>
+            <app-image [editMode]="editMode" [src]="event.imageUrl" [alt]="'Venue Image'"/>
+        </section>
+        <div>
+            Floating ticket page
+        </div>
+    </div>
+}@else {
+    Venue not found
+}

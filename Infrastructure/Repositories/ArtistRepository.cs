@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.Responses;
+using Infrastructure.Helpers;
 
 namespace Infrastructure.Repositories
 {
@@ -15,7 +17,7 @@ namespace Infrastructure.Repositories
     {
         public ArtistRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<Artist>> GetHeadersAsync(SearchParams searchParams)
+        public async Task<PaginationResponse<Artist>> GetHeadersAsync(SearchParams searchParams)
         {
             var query = context.Artists.AsQueryable();
             query = query.Select(v => new Artist
@@ -28,7 +30,7 @@ namespace Infrastructure.Repositories
             {
                 query = query.OrderBy(v => searchParams.Sort);
             }
-            return await query.ToListAsync();
+            return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams.PageNumber, searchParams.PageSize);
         }
 
         public async Task<Artist?> GetByUserIdAsync(int id)

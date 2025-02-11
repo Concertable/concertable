@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Parameters;
+using Core.Responses;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,6 @@ namespace Application.Interfaces
     {
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);
-        Task<IEnumerable<Event>> GetHeadersAsync(SearchParams searchParams);
+        Task<PaginationResponse<Event>> GetHeadersAsync(SearchParams searchParams);
     }
 }

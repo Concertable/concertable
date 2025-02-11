@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { HeaderType } from '../../models/header-type';
 import { ActivatedRoute } from '@angular/router';
+import { CustomerFindComponent } from '../customer-find/customer-find.component';
 
 @Component({
   selector: 'app-filter',
@@ -22,8 +23,7 @@ export class FilterComponent {
   }
 
   isCustomerRoute(): boolean {
-    console.log(this.route.snapshot);
-    return this.route.snapshot.url[0].path === 'find';
+    return this.route.component === CustomerFindComponent;
   }
 
   onHeaderTypeChange() {

@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Core.Responses;
 
 namespace Application.Interfaces
 {
     public interface IArtistService
     {
-        Task<IEnumerable<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams);
+        Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams);
         Task<ArtistDto?> GetDetailsForCurrentUserAsync();
     }
 }

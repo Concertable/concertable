@@ -22,7 +22,6 @@ export class FindComponent implements OnInit {
   @Input() headerType?: HeaderType;
   @Input() isCustomer?: boolean = false;
   headers: Header[] = [];
-  isSidebarOpen = false; // Track if filter menu is open
 
   constructor(
     private headerService: HeaderService, 
@@ -50,6 +49,7 @@ export class FindComponent implements OnInit {
         queryParams: searchParams,
       });
       this.headerMethods[this.headerType](searchParams).subscribe(h => {
+        console.log(h);
         this.headers = h.data;
       }
       );

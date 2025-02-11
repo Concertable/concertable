@@ -80,6 +80,7 @@ import { CreateArtistComponent } from './pages/create-artist/create-artist.compo
 import { CreateVenueComponent } from './pages/create-venue/create-venue.component';
 import { CreateNavbarComponent } from './components/create-navbar/create-navbar.component';
 import { MailboxComponent } from './components/mailbox/mailbox.component';
+import { EventDetailsComponent } from './pages/event-details/event-details.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -142,6 +143,7 @@ const routerOptions: ExtraOptions = {
     CreateVenueComponent,
     CreateNavbarComponent,
     MailboxComponent,
+    EventDetailsComponent,
   ],
   imports: [
     BrowserModule,

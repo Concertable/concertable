@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Infrastructure.Helpers;
+using Core.Responses;
 
 namespace Infrastructure.Repositories
 {
@@ -15,7 +17,7 @@ namespace Infrastructure.Repositories
     {
         public EventRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<Event>> GetHeadersAsync(SearchParams searchParams)
+        public async Task<PaginationResponse<Event>> GetHeadersAsync(SearchParams searchParams)
         {
             var query = context.Events.AsQueryable();
             query = query.Select(v => new Event
@@ -28,7 +30,7 @@ namespace Infrastructure.Repositories
             {
                 query = query.OrderBy(v => searchParams.Sort);
             }
-            return await query.ToListAsync();
+            return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams.PageNumber, searchParams.PageSize);
         }
 
         public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)

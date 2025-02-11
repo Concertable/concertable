@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Core.Responses;
+using Infrastructure.Repositories;
 
 namespace Infrastructure.Services
 {
@@ -24,10 +26,15 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams)
+        public async Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams)
         {
             var headers = await artistRepository.GetHeadersAsync(searchParams);
-            return mapper.Map<IEnumerable<ArtistHeaderDto>>(headers);
+            var headersDtos = mapper.Map<IEnumerable<ArtistHeaderDto>>(headers.Data);
+            return new PaginationResponse<ArtistHeaderDto>(
+                headersDtos,
+                headers.TotalCount,
+                headers.PageNumber,
+                headers.PageSize);
         }
 
         public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()

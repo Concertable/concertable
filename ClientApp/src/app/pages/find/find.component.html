@@ -1,6 +1,4 @@
-<app-filter>
-  <div class="container">
+<app-filter [headerType]="headerType" (headerTypeChange)="changeHeaderType($event)">
     <app-search (search)="handleSearch($event)" [headerType]="headerType"></app-search>
     <app-search-results *ngIf="headers.length > 0" [headers]="headers"></app-search-results>
-  </div>
 </app-filter>

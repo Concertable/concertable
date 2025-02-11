@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Core.Responses;
 
 namespace Infrastructure.Services
 {
@@ -29,10 +30,15 @@ namespace Infrastructure.Services
             return mapper.Map<IEnumerable<EventDto>>(events);
         }
 
-        public async Task<IEnumerable<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams)
+        public async Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams)
         {
             var headers = await eventRepository.GetHeadersAsync(searchParams);
-            return mapper.Map<IEnumerable<EventHeaderDto>>(headers);
+            var headersDtos = mapper.Map<IEnumerable<EventHeaderDto>>(headers.Data);
+            return new PaginationResponse<EventHeaderDto>(
+                headersDtos,
+                headers.TotalCount,
+                headers.PageNumber,
+                headers.PageSize);
         }
 
         public async Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id)
