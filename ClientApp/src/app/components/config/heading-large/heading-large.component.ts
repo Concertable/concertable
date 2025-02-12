@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { ConfigTextDirective } from '../../../directives/config-text/config-text.directive';
 
 @Component({
   selector: 'app-heading-large',
@@ -7,8 +8,5 @@ import { Component, Input } from '@angular/core';
   templateUrl: './heading-large.component.html',
   styleUrl: './heading-large.component.scss'
 })
-export class HeadingLargeComponent {
-  @Input() editMode? = false;
-  @Input() content?: string;
-  @Input() label?: string;
+export class HeadingLargeComponent extends ConfigTextDirective {
 }

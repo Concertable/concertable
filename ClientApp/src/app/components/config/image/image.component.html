@@ -1,11 +1,15 @@
 <div class="image-upload-container">
-    <img [src]="src" [alt]="alt">
-    
+    <img [src]="src" [alt]="alt" *ngIf="src else placeholder">
+
+    <ng-template #placeholder>
+        <div class="placeholder">No Image Selected</div>
+    </ng-template>
+
     <!-- Upload Button (Shown Only in Edit Mode) -->
     <button *ngIf="editMode" class="btn-upload" mat-fab extended (click)="fileInput.click()">
         <mat-icon>upload</mat-icon> Upload
     </button>
 
     <!-- Hidden File Input -->
-    <input #fileInput type="file" (change)="onFileSelected($event)" hidden>
+    <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
 </div>

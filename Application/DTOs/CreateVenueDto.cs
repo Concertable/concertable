@@ -16,7 +16,6 @@ namespace Application.DTOs
         public CoordinatesDto Coordinates { get; set; }
 
         [Required(ErrorMessage = "Image URL is required.")] 
-        [Url(ErrorMessage = "Invalid URL format.")]
         public string ImageUrl { get; set; }
     }
 }

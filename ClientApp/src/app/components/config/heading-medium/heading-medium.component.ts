@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { ConfigTextDirective } from '../../../directives/config-text/config-text.directive';
 
 @Component({
   selector: 'app-heading-medium',
@@ -7,8 +8,5 @@ import { Component, Input } from '@angular/core';
   templateUrl: './heading-medium.component.html',
   styleUrl: './heading-medium.component.scss'
 })
-export class HeadingMediumComponent {
-  @Input() editMode? = false;
-  @Input() content?: string;
-  @Input() label?: string;
+export class HeadingMediumComponent extends ConfigTextDirective {
 }

@@ -1,5 +1,8 @@
 @if(editMode) {
-    <textarea type="text" [(ngModel)]="content" required></textarea>
+    <div class="container">
+        <label *ngIf="label" class="label">{{ label }}</label>
+        <textarea type="text" [(ngModel)]="content" (ngModelChange)="onContentChange($event)"></textarea>
+    </div>
 }@else {
     <p>{{ content }}</p>
 }

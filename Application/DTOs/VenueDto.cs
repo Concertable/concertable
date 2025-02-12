@@ -24,7 +24,7 @@ namespace Application.DTOs
         [StringLength(50, ErrorMessage = "Town cannot exceed 50 characters.")]
         public string Town { get; set; }
 
-        [Url(ErrorMessage = "Invalid URL format.")]
+        [Required(ErrorMessage = "ImageUrl is required.")]
         public string ImageUrl { get; set; }
 
         public bool Approved { get; set; } = false; 

@@ -1,4 +1,4 @@
-import { Directive, Input, OnInit } from '@angular/core';
+import { Directive, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AuthService } from '../../services/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -13,8 +13,8 @@ import { Event } from '../../models/event';
 })
 export abstract class DetailsDirective<T extends Venue | Artist | Event> implements OnInit {
   @Input() entity?: T;
-  originalEntity?: T;
   @Input() editMode?: boolean;
+  @Output() changeDetected = new EventEmitter<void>
 
   navItems: NavItem[] = [
     { name: 'Info', fragment: 'info' },
@@ -43,5 +43,9 @@ export abstract class DetailsDirective<T extends Venue | Artist | Event> impleme
 
   exists(section: string): boolean {
     return this.navItems.some(n => n.name === section);
+  }
+
+  onChangeDetected() {
+    this.changeDetected.emit();
   }
 }

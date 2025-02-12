@@ -84,15 +84,15 @@ namespace Infrastructure.Services
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
             var venue = mapper.Map<Venue>(venueDto);
+            var user = await authService.GetCurrentUserAsync();
+            venue.UserId = user.Id;
 
             var location = await geocodingService.GetLocationAsync(venueDto.Coordinates);
 
-            venueRepository.Update(venue);
-
-            var user = await authService.GetCurrentUserAsync();
             user.County = venueDto.County;
             user.Town = venueDto.Town;
 
+            venueRepository.Update(venue);
             userRepository.Update(user);
 
             await unitOfWork.SaveChangesAsync();

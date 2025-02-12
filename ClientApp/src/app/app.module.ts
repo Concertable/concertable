@@ -83,8 +83,10 @@ import { MailboxComponent } from './components/mailbox/mailbox.component';
 import { EventDetailsComponent } from './pages/event-details/event-details.component';
 import { ManagerItemNotFoundComponent } from './components/manager-item-not-found/manager-item-not-found.component';
 
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; // Required for Toastr
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
 import { ToastrModule } from 'ngx-toastr';
+import { ConfigTextDirective } from './directives/config-text/config-text.directive';
+import { EditTextComponent } from './components/config/edit-text/edit-text.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -147,7 +149,9 @@ const routerOptions: ExtraOptions = {
     CreateNavbarComponent,
     MailboxComponent,
     EventDetailsComponent,
-    ManagerItemNotFoundComponent
+    ManagerItemNotFoundComponent,
+    ConfigTextDirective,
+    EditTextComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

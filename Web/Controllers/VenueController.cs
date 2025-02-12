@@ -41,7 +41,7 @@ namespace Web.Controllers
         }
 
         [Authorize(Roles = "VenueManager, Admin")]
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateVenueDto createVenueDto)
         {
             if (!ModelState.IsValid)
@@ -53,8 +53,8 @@ namespace Web.Controllers
         }
 
         [Authorize(Roles = "VenueManager, Admin")]
-        [HttpPost]
-        public async Task<IActionResult> Update([FromBody] VenueDto proposedVenueDto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] VenueDto proposedVenueDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

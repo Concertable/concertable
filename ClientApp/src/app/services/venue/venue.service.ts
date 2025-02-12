@@ -30,4 +30,8 @@ export class VenueService {
   create(venue: Venue) : Observable<Venue> {
     return this.http.post<Venue>(`${this.apiUrl}/create`, venue);
   }
+
+  update(venue: Venue) : Observable<Venue> {
+    return this.http.put<Venue>(`${this.apiUrl}/${venue.id}`, venue)
+  }
 }

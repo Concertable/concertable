@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { ConfigTextDirective } from '../../../directives/config-text/config-text.directive';
 
 @Component({
   selector: 'app-textarea',
@@ -7,7 +8,5 @@ import { Component, Input } from '@angular/core';
   templateUrl: './textarea.component.html',
   styleUrl: './textarea.component.scss'
 })
-export class TextareaComponent {
-  @Input() editMode? = false;
-  @Input() content = '';
+export class TextareaComponent extends ConfigTextDirective {
 }

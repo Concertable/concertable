@@ -33,7 +33,7 @@ export class CreateVenueComponent {
   createVenue() {
     this.venueService.create(this.venue).subscribe({
       next: (venue) => {
-        this.venueToastService.showVenueCreated(venue.name); 
+        this.venueToastService.showCreated(venue.name); 
         this.router.navigate(['../my'], { relativeTo: this.route });
       },
       error: (err) => {

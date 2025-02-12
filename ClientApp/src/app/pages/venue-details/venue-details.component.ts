@@ -7,7 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DetailsDirective } from '../../directives/details/details.directive';
 import { Observable } from 'rxjs';
 import { Coordinates } from '../../models/coordinates';
-import { cloneDeep}  from 'lodash/cloneDeep';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-venue-details',
@@ -18,6 +18,7 @@ import { cloneDeep}  from 'lodash/cloneDeep';
 })
 export class VenueDetailsComponent extends DetailsDirective<Venue> {
   @Input('venue') declare entity?: Venue;
+
   override navItems: NavItem[] = [
     { name: 'Info', fragment: 'info' },
     { name: 'Location', fragment: 'location' },
@@ -48,7 +49,6 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
       this.navItems.push({ name: 'Listings', fragment: 'listings' })
     }
     super.ngOnInit();
-    this.originalEntity = cloneDeep()
   }
 
   override loadDetails(id: number): Observable<Venue> {
@@ -58,6 +58,20 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
   updateCoordinates(coordinates: Coordinates) {
     if(this.venue)
       this.venue.coordinates = coordinates;
+    this.onChangeDetected();
+    console.log(this.venue?.coordinates)
   }
 
+  updateImage(url: string) {
+    if(this.venue)
+      this.venue.imageUrl = url
+    this.onChangeDetected
+  }
+
+  updateContent(updatedContent: string, field: keyof Venue) {
+    if (this.venue && field in this.venue) {
+      (this.venue as any)[field] = updatedContent;  // ✅ Now TypeScript knows this is safe
+    }
+    this.onChangeDetected()
+  }
 }

@@ -5,15 +5,15 @@ import { ToastService } from '../toast.service';
   providedIn: 'root'
 })
 export class VenueToastService extends ToastService {
-  showVenueCreated(name: string) {
+  showCreated(name: string) {
     this.showSuccess(`Venue "${name}" has been successfully created!`, "Venue Created");
   }
 
-  showVenueUpdated(name: string) {
+  showUpdated(name: string) {
     this.showInfo(`Venue "${name}" has been updated.`, "Venue Updated");
   }
 
-  showVenueDeleted(name: string) {
+  showDeleted(name: string) {
     this.showWarning(`Venue "${name}" has been removed.`, "Venue Deleted");
   }
 }

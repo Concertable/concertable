@@ -37,8 +37,11 @@ namespace Infrastructure.Services
             string county = null;
             string town = null;
 
-            // Google reverse geocoding response structure
-            foreach (var addressComponent in result.results[0].address_components)
+            if (result.results == null || result.results.Count == 0)
+                throw new BadRequestException("No geocoding results found for the provided coordinates.");
+
+                // Google reverse geocoding response structure
+                foreach (var addressComponent in result.results[0].address_components)
             {
                 var types = addressComponent.types.ToObject<List<string>>();
                 if (types.Contains("administrative_area_level_2")) 
