@@ -40,18 +40,25 @@ namespace Infrastructure.Services
             if (result.results == null || result.results.Count == 0)
                 throw new BadRequestException("No geocoding results found for the provided coordinates.");
 
-                // Google reverse geocoding response structure
-                foreach (var addressComponent in result.results[0].address_components)
+            foreach (var resultItem in result.results)
             {
-                var types = addressComponent.types.ToObject<List<string>>();
-                if (types.Contains("administrative_area_level_2")) 
+                foreach (var addressComponent in resultItem.address_components)
                 {
-                    county = addressComponent.long_name;
+                    var types = addressComponent.types.ToObject<List<string>>();
+                    string longName = addressComponent.long_name;
+
+                    if (types.Contains("administrative_area_level_2") && string.IsNullOrEmpty(county))
+                    {
+                        county = longName;
+                    }
+                    else if (types.Contains("postal_town") && string.IsNullOrEmpty(town))
+                    {
+                        town = longName;
+                    }
                 }
-                else if (types.Contains("postal_town")) 
-                {
-                    town = addressComponent.long_name;
-                }
+
+                if (!string.IsNullOrEmpty(county) && !string.IsNullOrEmpty(town))
+                    break;
             }
 
             if (county == null || town == null) throw new BadRequestException("County or Town not found");

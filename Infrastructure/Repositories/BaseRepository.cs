@@ -25,6 +25,12 @@ namespace Infrastructure.Repositories
             return entity;
         }
 
+        public async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities)
+        {
+            await context.Set<TEntity>().AddRangeAsync(entities);
+            return entities;
+        }
+
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             return await context.Set<TEntity>().ToListAsync();

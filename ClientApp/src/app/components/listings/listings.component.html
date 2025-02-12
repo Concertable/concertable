@@ -1,28 +1,59 @@
-<table class="container">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Pay</th>
-            <th>Genres of Interest</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let listing of listings; let i = index" class="content">
-            <td>{{ listing?.startDate | date:'yyyy-MM-dd' }}</td>
-            <td>{{ listing?.startDate | date:'shortTime' }} - {{ listing?.endDate | date:'shortTime' }}</td>
-            <td>${{ listing?.pay }}</td>
-            <td>
-                <ul>
-                    <li *ngFor="let genre of listing.genres">{{genre}}</li>
-                </ul>
-            </td>
-            <td *ngIf="authService.isRole('VenueManager') && editMode">
-                <button class="btn-delete" (click)="onDelete(listing)">Delete</button>
-            </td>
-            <td *ngIf="authService.isRole('ArtistManager')">
-                <button class="btn-apply" (click)="onApply(listing)">Apply</button>
-            </td>
-        </tr>
-    </tbody>
-</table>
+<div class="container">
+    <table class="tbl-container">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Pay</th>
+                <th>Genres of Interest</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let listing of listings; let i = index" class="content">
+                <td>{{ listing?.startDate | date:'yyyy-MM-dd' }}</td>
+                <td>{{ listing?.startDate | date:'shortTime' }} - {{ listing?.endDate | date:'shortTime' }}</td>
+                <td>${{ listing?.pay }}</td>
+                <td>
+                    <ul>
+                        <li *ngFor="let genre of listing.genres">{{genre.name}}</li>
+                    </ul>
+                </td>
+                <td *ngIf="authService.isRole('VenueManager') && editMode">
+                    <button class="btn-delete" (click)="onDelete(listing)">Delete</button>
+                </td>
+                <td *ngIf="authService.isRole('ArtistManager')">
+                    <button class="btn-apply" (click)="onApply(listing)">Apply</button>
+                </td>
+            </tr>
+            <tr *ngIf="addNew && editMode">
+                <td><input type="date" [(ngModel)]="newListing.startDate"></td>
+                <td>
+                    <input type="time" [(ngModel)]="startTime">
+                    -
+                    <input type="time" [(ngModel)]="endTime">
+                </td>
+                <td><input type="number" [(ngModel)]="newListing.pay"></td>
+            
+                <td>
+                    <!-- Genre Dropdown -->
+                    <select [(ngModel)]="newGenre" class="genre-dropdown">
+                        <option value="" disabled selected>Select Genre</option>
+                        <option *ngFor="let genre of genres" [ngValue]="genre">{{ genre.name }}</option> 
+                    </select>
+            
+                    <!-- Add Genre Button -->
+                    <button class="btn-add-genre" (click)="onAddGenre()">+</button>
+            
+                    <!-- Display List of Added Genres -->
+                    <ul class="genre-list">
+                        <li *ngFor="let genre of newListing.genres">{{ genre.name }}</li>
+                    </ul>
+                </td>
+            </tr>            
+        </tbody>
+    </table>
+    <div *ngIf="editMode">
+        <button *ngIf="!addNew" mat-fab extended class="btn-add" (click)="onAdd()"><mat-icon>add</mat-icon>Add</button>
+        <button *ngIf="addNew" mat-fab extended class="btn-save" (click)="onSaveItem()"><mat-icon>add</mat-icon>Save</button>
+    </div>
+</div>

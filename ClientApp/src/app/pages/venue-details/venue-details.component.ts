@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Venue } from '../../models/venue';
 import { VenueService } from '../../services/venue/venue.service';
 import { NavItem } from '../../models/nav-item';
@@ -8,6 +8,7 @@ import { DetailsDirective } from '../../directives/details/details.directive';
 import { Observable } from 'rxjs';
 import { Coordinates } from '../../models/coordinates';
 import { cloneDeep } from 'lodash';
+import { Listing } from '../../models/listing';
 
 @Component({
   selector: 'app-venue-details',
@@ -18,6 +19,7 @@ import { cloneDeep } from 'lodash';
 })
 export class VenueDetailsComponent extends DetailsDirective<Venue> {
   @Input('venue') declare entity?: Venue;
+  @Output() listingCreate = new EventEmitter<Listing>
 
   override navItems: NavItem[] = [
     { name: 'Info', fragment: 'info' },
@@ -74,4 +76,10 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
     }
     this.onChangeDetected()
   }
+
+  onListingCreate(listing: Listing) {
+    this.listingCreate.emit(listing);
+  }
+
+
 }

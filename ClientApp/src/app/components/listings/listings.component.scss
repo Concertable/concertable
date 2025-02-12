@@ -1,0 +1,18 @@
+.container {
+    display: flex;
+    align-items: flex-start; /* Aligns items at the top */
+    gap: 10px; /* Adds space between button and table */
+}
+
+.tbl-container {
+    td {
+        vertical-align: top; 
+    }
+
+    td ul {
+        margin: 5px 0 0 15px; 
+        padding-left: 15px; 
+    }
+}
+
+

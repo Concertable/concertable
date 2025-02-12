@@ -6,6 +6,8 @@ import { cloneDeep } from 'lodash';
 import { MyItemDirective } from '../../directives/my-item/my-item.directive';
 import { Observable } from 'rxjs';
 import { VenueToastService } from '../../services/toast/venue/venue-toast.service';
+import { Listing } from '../../models/listing';
+import { ListingService } from '../../services/listing/listing.service';
 
 @Component({
   selector: 'app-my-venue',
@@ -15,7 +17,12 @@ import { VenueToastService } from '../../services/toast/venue/venue-toast.servic
   styleUrl: './my-venue.component.scss'
 })
 export class MyVenueComponent extends MyItemDirective<Venue> {
-  constructor(private venueService: VenueService, private venueToastService: VenueToastService) {
+  newListings: Listing[] = []
+
+  constructor(
+    private venueService: VenueService, 
+    private venueToastService: VenueToastService,
+    private listingService: ListingService) {
     super();
   }
 
@@ -38,5 +45,14 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
 
   showUpdated(name: string) {
     this.venueToastService.showUpdated(name);
+  }
+
+  addListing(listing: Listing) {
+    this.newListings.push(listing);
+  }
+
+  override saveChanges(): void {
+      super.saveChanges();
+      this.listingService.createMultiple(this.newListings).subscribe();
   }
 }

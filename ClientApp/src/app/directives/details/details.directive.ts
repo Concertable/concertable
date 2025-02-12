@@ -14,7 +14,7 @@ import { Event } from '../../models/event';
 export abstract class DetailsDirective<T extends Venue | Artist | Event> implements OnInit {
   @Input() entity?: T;
   @Input() editMode?: boolean;
-  @Output() changeDetected = new EventEmitter<void>
+  @Output() entityChange = new EventEmitter<T>
 
   navItems: NavItem[] = [
     { name: 'Info', fragment: 'info' },
@@ -46,6 +46,6 @@ export abstract class DetailsDirective<T extends Venue | Artist | Event> impleme
   }
 
   onChangeDetected() {
-    this.changeDetected.emit();
+    this.entityChange.emit(this.entity);
   }
 }

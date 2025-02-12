@@ -1,6 +1,7 @@
 ﻿using Core.Entities;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Application.DTOs;
 
 namespace Web.Controllers
 {
@@ -16,7 +17,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<Genre>>> GetAll()
+        public async Task<ActionResult<IEnumerable<GenreDto>>> GetAll()
         {
             return Ok(await genreService.GetAllAsync());
         }

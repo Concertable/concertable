@@ -37,7 +37,7 @@
         @if (exists('Listings')) {
             <section [id]="navItems[4].fragment">
                 <h2 class="heading-listings">Listings</h2>
-                <app-listings [venueId]="venue.id" [editMode]="editMode" />
+                <app-listings [venueId]="venue.id" [editMode]="editMode" (listingCreate)="onListingCreate($event)" />
             </section>
         }
     </div>

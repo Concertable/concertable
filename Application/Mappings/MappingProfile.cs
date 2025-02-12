@@ -18,7 +18,10 @@ namespace Application.Mappings
         public MappingProfile() 
         {
             //Venue
-            CreateMap<VenueDto, Venue>();
+            CreateMap<VenueDto, Venue>()
+            .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.Coordinates.Latitude))
+            .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.Coordinates.Longitude));
+
             CreateMap<Venue, VenueHeaderDto>();
             CreateMap<VenueHeaderDto, Venue>();
             CreateMap<Venue, VenueDto>()
@@ -57,13 +60,8 @@ namespace Application.Mappings
             CreateMap<Listing, ListingDto>();
             CreateMap<ListingDto, Listing>();
             CreateMap<Listing, ListingDto>()
-                .ForMember(
-                    dest => dest.Genres,
-                    opts => opts.MapFrom( //Map from one table to another
-                        src => src.ListingGenres
-                            .Select(g => g.Genre.Name)
-                    )
-                );
+            .ForMember(dest => dest.Genres, opt => opt.MapFrom(
+                src => src.ListingGenres.Select(lg => new GenreDto { Name = lg.Genre.Name })));
 
             //Events
             CreateMap<EventDto, Event>();
@@ -97,6 +95,10 @@ namespace Application.Mappings
             //Purchase
             CreateMap<Purchase, PurchaseDto>();
             CreateMap<PurchaseDto, Purchase>();
+
+            //Genre
+            CreateMap<Genre, GenreDto>();
+            CreateMap<GenreDto, Genre>();
 
         }
     }

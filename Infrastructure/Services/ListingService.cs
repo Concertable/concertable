@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using AutoMapper;
 using Core.Entities.Identity;
+using System.Runtime.InteropServices;
 
 namespace Infrastructure.Services
 {
@@ -32,6 +33,21 @@ namespace Infrastructure.Services
             listing.VenueId = venueDto.Id;
 
             await listingRepository.AddAsync(listing);
+        }
+
+        public async Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto)
+        {
+            var listings = mapper.Map<IEnumerable<Listing>>(listingsDto);
+
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
+            listings = listings.Select(listing =>
+            {
+                listing.VenueId = venueDto.Id;
+                return listing;
+            });
+
+            await listingRepository.AddRangeAsync(listings);
+            await listingRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)

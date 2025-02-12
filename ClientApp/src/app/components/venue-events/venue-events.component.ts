@@ -3,6 +3,7 @@ import { Venue } from '../../models/venue';
 import { EventService } from '../../services/event/event.service';
 import { Event } from '../../models/event';
 import { AuthService } from '../../services/auth/auth.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-venue-events',
@@ -15,7 +16,12 @@ export class VenueEventsComponent implements OnInit{
   @Input() venue?: Venue
   events: Event[] = [];
 
-  constructor(private eventService: EventService, protected authService: AuthService) { }
+  constructor(
+    private eventService: EventService, 
+    protected authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit(): void {
     this.getUpcomingEvents();
@@ -28,7 +34,10 @@ export class VenueEventsComponent implements OnInit{
     
   }
 
+  //?
   onViewDetails(event: Event) {
-
+    this.router.navigate(['find/event'], { 
+      queryParams: { id: event.id } 
+    });
   }
 }

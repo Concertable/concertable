@@ -30,5 +30,12 @@ namespace Web.Controllers
             await listingService.CreateAsync(listingDto);
             return CreatedAtAction("", new {Id = 1});
         }
+
+        [HttpPost("bulk")]
+        public async Task<IActionResult> CreateMultiple([FromBody] IEnumerable<ListingDto> listingsDto)
+        {
+            await listingService.CreateMultipleAsync(listingsDto);
+            return Created();
+        }
     }
 }

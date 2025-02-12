@@ -14,6 +14,7 @@ export abstract class MyItemDirective<T extends Venue | Artist> implements OnIni
   protected editMode: boolean = false;
   protected saveable: boolean = false;
 
+
   // Abstract method for getting details, to be implemented in child classes
   abstract getDetailsForCurrentUser(): Observable<T>;
 
@@ -35,6 +36,7 @@ export abstract class MyItemDirective<T extends Venue | Artist> implements OnIni
   cancelChanges() {
     this.item = cloneDeep(this.originalItem);
     this.saveable = false;
+    this.editMode = false;
   }
 
   saveChanges() {
@@ -43,7 +45,8 @@ export abstract class MyItemDirective<T extends Venue | Artist> implements OnIni
       this.update(this.item).subscribe(v => this.showUpdated(v.name))
   }
 
-  onChangeDetected() {
+  onEntityChange(entity: T) {
     this.saveable = true;
+    this.item = entity;
   }
 }

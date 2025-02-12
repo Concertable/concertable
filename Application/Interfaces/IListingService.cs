@@ -12,6 +12,7 @@ namespace Application.Interfaces
     public interface IListingService
     {
         Task CreateAsync(ListingDto listingDto);
+        Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto);
         Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id);
         Task<VenueManager> GetOwnerByIdAsync(int id);
     }

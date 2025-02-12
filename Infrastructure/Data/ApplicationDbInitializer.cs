@@ -133,27 +133,43 @@ namespace Infrastructure.Data
             {
                 var genres = new Genre[]
                 {
-                    new Genre
-                    {
-                        Name = "Rock",
-                    },
-                    new Genre
-                    {
-                        Name = "Pop",
-                    },
-                    new Genre
-                    {
-                        Name = "Indie",
-                    },
-                    new Genre
-                    {
-                        Name = "Alternative",
-                    },
-                    new Genre
-                    {
-                        Name = "Electric",
-                    }
+                    new Genre { Name = "Rock" },
+                    new Genre { Name = "Pop" },
+                    new Genre { Name = "Indie" },
+                    new Genre { Name = "Alternative" },
+                    new Genre { Name = "Electronic" },
+                    new Genre { Name = "Hip-Hop" },
+                    new Genre { Name = "R&B" },
+                    new Genre { Name = "Jazz" },
+                    new Genre { Name = "Blues" },
+                    new Genre { Name = "Reggae" },
+                    new Genre { Name = "Country" },
+                    new Genre { Name = "Folk" },
+                    new Genre { Name = "Metal" },
+                    new Genre { Name = "Punk" },
+                    new Genre { Name = "Soul" },
+                    new Genre { Name = "Classical" },
+                    new Genre { Name = "House" },
+                    new Genre { Name = "Techno" },
+                    new Genre { Name = "Trance" },
+                    new Genre { Name = "Drum and Bass" },
+                    new Genre { Name = "Dubstep" },
+                    new Genre { Name = "Afrobeats" },
+                    new Genre { Name = "Latin" },
+                    new Genre { Name = "Ska" },
+                    new Genre { Name = "Gospel" },
+                    new Genre { Name = "Funk" },
+                    new Genre { Name = "K-Pop" },
+                    new Genre { Name = "J-Pop" },
+                    new Genre { Name = "Grime" },
+                    new Genre { Name = "Garage" },
+                    new Genre { Name = "Hardcore" },
+                    new Genre { Name = "EDM" },
+                    new Genre { Name = "Synthwave" },
+                    new Genre { Name = "Acoustic" },
+                    new Genre { Name = "Lo-Fi" }
                 };
+
                 context.Genres.AddRange(genres);
                 await context.SaveChangesAsync();
             }

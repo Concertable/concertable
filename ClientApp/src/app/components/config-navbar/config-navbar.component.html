@@ -1,7 +1,7 @@
 <nav class="config-header-container">
     <div class="config-header-content">
         <ul>
-            <li><button class="btn-save" mat-fab extended (click)="onCancel()">
+            <li><button class="btn-save" mat-fab extended [disabled]="!saveable" (click)="onCancel()">
                 <mat-icon fontIcon="cancel"></mat-icon>Cancel
             </button></li>
             <li><button class="btn-edit" mat-fab extended (click)="onEditModeChange()">

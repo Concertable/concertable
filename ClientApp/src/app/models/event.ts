@@ -5,6 +5,7 @@ import { Venue } from "./venue";
 import { VenueHeader } from "./venue-header";
 
 export interface Event {
+    id: number;
     name: string;
     price: number;
     startDate: Date;

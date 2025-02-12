@@ -89,8 +89,8 @@ namespace Infrastructure.Services
 
             var location = await geocodingService.GetLocationAsync(venueDto.Coordinates);
 
-            user.County = venueDto.County;
-            user.Town = venueDto.Town;
+            user.County = location.County;
+            user.Town = location.Town;
 
             venueRepository.Update(venue);
             userRepository.Update(user);
