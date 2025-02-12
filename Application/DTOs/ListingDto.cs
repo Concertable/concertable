@@ -7,7 +7,7 @@ namespace Application.DTOs
         public int? Id { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public List<string> Genres { get; set; }
+        public IEnumerable<string> Genres { get; set; }
         public double Pay { get; set; }
     }
 }

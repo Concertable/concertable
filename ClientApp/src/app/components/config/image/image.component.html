@@ -1,2 +1,11 @@
-<img [src]="src" [alt]="alt">
-<button *ngIf="editMode">Upload</button>
+<div class="image-upload-container">
+    <img [src]="src" [alt]="alt">
+    
+    <!-- Upload Button (Shown Only in Edit Mode) -->
+    <button *ngIf="editMode" class="btn-upload" mat-fab extended (click)="fileInput.click()">
+        <mat-icon>upload</mat-icon> Upload
+    </button>
+
+    <!-- Hidden File Input -->
+    <input #fileInput type="file" (change)="onFileSelected($event)" hidden>
+</div>

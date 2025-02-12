@@ -9,7 +9,7 @@ namespace Core.Entities
         public int UserId { get; set; }
         public int EventId { get; set; }
         public DateTime PurchaseDate { get; set; }
-        public ApplicationUser User { get; set; }
+        public Customer User { get; set; }
         public Event Event { get; set; }
         public Review? Review { get; set; }
     }

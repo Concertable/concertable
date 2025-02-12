@@ -1,4 +1,8 @@
 
-<app-text [editMode]="editMode" [label]="'County'" [content]="county"/>
-<app-text [editMode]="editMode" [label]="'Town'" [content]="town"/>
-<app-google-maps/>
+<div class="wrapper">
+    <mat-icon class="icon">location_on</mat-icon>
+    <p>{{county}}</p>
+    <span>,</span>
+    <p>{{town}}</p>
+</div>
+<app-google-maps [editMode]="editMode" [lat]="coordinates?.latitude" [lng]="coordinates?.longitude" (coordinatesChange)="onCoordinatesChange($event)" />

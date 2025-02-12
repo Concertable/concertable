@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
   selector: 'app-create-navbar',
@@ -8,5 +8,9 @@ import { Component } from '@angular/core';
   styleUrl: './create-navbar.component.scss'
 })
 export class CreateNavbarComponent {
+  @Output() create = new EventEmitter<void>();
 
+  onCreate() {
+    this.create.emit();
+  }
 }

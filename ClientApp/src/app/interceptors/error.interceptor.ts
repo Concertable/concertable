@@ -1,44 +1,48 @@
-import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
-import { AuthService } from "../services/auth/auth.service";
-import { Observable, catchError, switchMap, throwError } from "rxjs";
 import { Injectable } from "@angular/core";
+import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
+import { AuthService } from "../services/auth/auth.service";
+import { Router } from "@angular/router";
+import { Observable, catchError, throwError } from "rxjs";
+import { ToastrService } from "ngx-toastr";
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
+  
+  constructor(private authService: AuthService, private router: Router, private toastr: ToastrService) {}
 
-  constructor(private authService: AuthService) { }
-
-  intercept(request: HttpRequest<any>, next: HttpHandler) : Observable<HttpEvent<any>> {
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.log("err",err)
+        console.error("HTTP Error:", err); // Logs the full error for debugging
+        console.log(err.status)
         if (err.status === 400) {
           if (err.error.errors) {
             const modelStateErrors = [];
             for (const key in err.error.errors) {
               if (err.error.errors[key]) {
-                modelStateErrors.push(err.error.errors[key])
+                modelStateErrors.push(err.error.errors[key]);
               }
             }
-            throw modelStateErrors.flat();
+            this.toastr.error(modelStateErrors.flat().join(" "), "Validation Error");
           } else {
-            //snackbar.error(err.error.title || err.error);
+            this.toastr.error(err.error.title || err.error.message || "Bad Request", "Error 400");
           }
         }
-        if (err.status === 401) {
-          //snackbar.error(err.error.title || err.error);
+        else if (err.status === 401) {
         }
-        if (err.status === 403) {
-          //snackbar.error('Forbidden');
+        else if (err.status === 403) {
+          
         }
-        if (err.status === 404) {
-          //router.navigateByUrl('/not-found');
+        else if (err.status === 404) {
+          this.router.navigateByUrl("/not-found");
         }
-        if (err.status === 500) {
-          //const navigationExtras: NavigationExtras = {state: {error: err.error}}
-          //router.navigateByUrl('/server-error', navigationExtras);
+        else if (err.status === 500) {
+          this.router.navigateByUrl("/server-error", { state: { error: err.error } });
         }
-        return throwError(() => err)
+        else {
+          this.router.navigateByUrl("/server-error", { state: { error: err.error } });
+        }
+        return throwError(() => err);
       })
     );
   }

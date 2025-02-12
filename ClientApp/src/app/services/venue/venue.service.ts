@@ -26,4 +26,8 @@ export class VenueService {
   getDetailsForCurrentUser() : Observable<Venue> {
     return this.http.get<Venue>(`${this.apiUrl}/user`);
   }
+
+  create(venue: Venue) : Observable<Venue> {
+    return this.http.post<Venue>(`${this.apiUrl}/create`, venue);
+  }
 }

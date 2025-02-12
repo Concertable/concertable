@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
 using Core.Responses;
+using System.Diagnostics;
 
 namespace Infrastructure.Services
 {
@@ -50,6 +51,7 @@ namespace Infrastructure.Services
         public async Task<EventDto> GetDetailsByIdAsync(int id)
         {
             var eventEntity = await eventRepository.GetByIdAsync(id);
+            Debug.WriteLine("Artist: " + (eventEntity.Application.Artist == null ? "null" : "exists"));
             return mapper.Map<EventDto>(eventEntity);
         }
     }

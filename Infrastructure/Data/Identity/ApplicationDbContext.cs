@@ -56,6 +56,18 @@ namespace Infrastructure.Data.Identity
                 .HasForeignKey(m => m.ToUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Purchase>()
+                .HasOne(p => p.FromUser)
+                .WithMany()
+                .HasForeignKey(p => p.FromUserId)
+                .OnDelete(DeleteBehavior.NoAction); 
+
+            modelBuilder.Entity<Purchase>()
+                .HasOne(p => p.ToUser)
+                .WithMany()
+                .HasForeignKey(p => p.ToUserId)
+                .OnDelete(DeleteBehavior.NoAction);  
+
             //Temporary Fix
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.Application)

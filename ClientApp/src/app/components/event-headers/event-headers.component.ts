@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { EventHeader } from '../../models/event-header';
 import { HeadersComponent } from '../headers/headers.component';
+import { HeaderType } from '../../models/header-type';
 
 @Component({
   selector: 'app-event-headers',
@@ -10,4 +11,5 @@ import { HeadersComponent } from '../headers/headers.component';
   styleUrl: './event-headers.component.scss'
 })
 export class EventHeadersComponent extends HeadersComponent<EventHeader> {
+  headerType: HeaderType = 'event';
 }

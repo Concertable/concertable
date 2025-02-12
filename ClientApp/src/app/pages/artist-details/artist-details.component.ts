@@ -2,9 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Artist } from '../../models/artist';
 import { ArtistService } from '../../services/artist/artist.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CoreEntityDetailsDirective } from '../../directives/core-entity-details/core-entity-details.directive';
 import { AuthService } from '../../services/auth/auth.service';
 import { Observable } from 'rxjs';
+import { DetailsDirective } from '../../directives/details/details.directive';
 
 @Component({
   selector: 'app-artist-details',
@@ -13,7 +13,7 @@ import { Observable } from 'rxjs';
   templateUrl: './artist-details.component.html',
   styleUrl: './artist-details.component.scss'
 })
-export class ArtistDetailsComponent extends CoreEntityDetailsDirective<Artist> {
+export class ArtistDetailsComponent extends DetailsDirective<Artist> {
   @Input('artist') declare entity?: Artist;
 
   constructor(

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
 using Core.Responses;
+using System.Diagnostics;
 
 namespace Application.Mappings
 {
@@ -17,7 +18,6 @@ namespace Application.Mappings
         public MappingProfile() 
         {
             //Venue
-            CreateMap<Venue, VenueDto>();
             CreateMap<VenueDto, Venue>();
             CreateMap<Venue, VenueHeaderDto>();
             CreateMap<VenueHeaderDto, Venue>();
@@ -29,9 +29,27 @@ namespace Application.Mappings
                     Latitude = src.Latitude,
                     Longitude = src.Longitude
                 })
-            );
+            )
+            .ForMember(
+                dest => dest.County,
+                opt => opt.MapFrom(src => src.User.County))
+            .ForMember(
+                dest => dest.Town,
+                opt => opt.MapFrom(src => src.User.Town));
             //Artist
-            CreateMap<Artist, ArtistDto>();
+            CreateMap<Artist, ArtistDto>()
+            .ForMember(
+                dest => dest.Genres,
+                opt => opt.MapFrom(src => src.ArtistGenres.Select(ag => ag.Genre.Name))
+            )
+            .ForMember(
+                dest => dest.County,
+                opt => opt.MapFrom(src => src.User.County))
+            .ForMember(
+                dest => dest.Town,
+                opt => opt.MapFrom(src => src.User.Town));
+            CreateMap<CreateVenueDto, Venue>();
+
             CreateMap<ArtistDto, Artist>();
             CreateMap<Artist, ArtistHeaderDto>();
             CreateMap<ArtistHeaderDto, Artist>();
@@ -48,19 +66,27 @@ namespace Application.Mappings
                 );
 
             //Events
-            CreateMap<Event, EventDto>();
             CreateMap<EventDto, Event>();
             CreateMap<Event, EventHeaderDto>();
             CreateMap<EventHeaderDto, Event>();
             CreateMap<Event, EventDto>()
-                .ForMember(
-                    dest => dest.StartDate,
-                    opt => opt.MapFrom(src => src.Application.Listing.StartDate)
-                )
-                .ForMember(
-                    dest => dest.EndDate,
-                    opt => opt.MapFrom(src => src.Application.Listing.EndDate)
-                );
+            .ForMember(
+                dest => dest.StartDate,
+                opt => opt.MapFrom(src => src.Application.Listing.StartDate)
+            )
+            .ForMember(
+                dest => dest.EndDate,
+                opt => opt.MapFrom(src => src.Application.Listing.EndDate)
+            )
+            .ForMember(
+                dest => dest.Venue,
+                opt => opt.MapFrom(src => src.Application.Listing.Venue)
+            )
+            .ForMember(
+                dest => dest.Artist,
+                opt => opt.MapFrom(src => src.Application.Artist == null ? null : src.Application.Artist)
+            );
+
 
             //Messages
             CreateMap<Message, MessageDto>();

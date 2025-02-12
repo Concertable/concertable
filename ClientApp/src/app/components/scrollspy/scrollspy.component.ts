@@ -25,4 +25,8 @@ export class ScrollspyComponent implements OnInit{
         element.scrollIntoView();
     })
   }
+
+  get queryParams() {
+    return this.route.snapshot.queryParams;
+  }
 }

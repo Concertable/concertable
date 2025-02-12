@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { EventHeader } from '../../models/event-header';
 import { HeaderComponent } from '../header/header.component';
+import { HeaderType } from '../../models/header-type';
+import { NavItem } from '../../models/nav-item';
 
 @Component({
   selector: 'app-event-header',
@@ -10,4 +12,5 @@ import { HeaderComponent } from '../header/header.component';
   styleUrl: './event-header.component.scss'
 })
 export class EventHeaderComponent extends HeaderComponent<EventHeader> {
+  override headerType: HeaderType = 'event';
 }

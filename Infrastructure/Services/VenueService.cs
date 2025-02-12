@@ -21,17 +21,20 @@ namespace Infrastructure.Services
         private readonly IVenueRepository venueRepository;
         private readonly IAuthService authService;
         private readonly IGeocodingService geocodingService;
+        private IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
 
         public VenueService(
             IVenueRepository venueRepository, 
             IAuthService authService, 
             IGeocodingService geocodingService,
+            IUnitOfWork unitOfWork,
             IMapper mapper)
         {
             this.venueRepository = venueRepository;
             this.authService = authService;
             this.geocodingService = geocodingService;
+            this.unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
 
@@ -54,6 +57,9 @@ namespace Infrastructure.Services
 
         public async Task<VenueDto> CreateAsync(CreateVenueDto venueDto)
         {
+            var venueRepository = unitOfWork.GetRepository<Venue>();
+            var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
+
             var venue = mapper.Map<Venue>(venueDto);
 
             var user = await authService.GetCurrentUserAsync();
@@ -61,10 +67,36 @@ namespace Infrastructure.Services
 
             var location = await geocodingService.GetLocationAsync(venueDto.Coordinates);
 
-            venue.County = location.County;
-            venue.Town = location.Town;
+            user.County = location.County;
+            user.Town = location.Town;
 
             var createdVenue = await venueRepository.AddAsync(venue);
+            userRepository.Update(user);
+
+            await unitOfWork.SaveChangesAsync();
+
+            return mapper.Map<VenueDto>(venue);
+        }
+
+        public async Task<VenueDto> UpdateAsync(VenueDto venueDto)
+        {
+            var venueRepository = unitOfWork.GetRepository<Venue>();
+            var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
+
+            var venue = mapper.Map<Venue>(venueDto);
+
+            var location = await geocodingService.GetLocationAsync(venueDto.Coordinates);
+
+            venueRepository.Update(venue);
+
+            var user = await authService.GetCurrentUserAsync();
+            user.County = venueDto.County;
+            user.Town = venueDto.Town;
+
+            userRepository.Update(user);
+
+            await unitOfWork.SaveChangesAsync();
+
             return mapper.Map<VenueDto>(venue);
         }
 

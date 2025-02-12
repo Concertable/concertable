@@ -21,9 +21,6 @@ export class LoginComponent {
 
   login() {
     this.authService.login(this.credentials)
-      .subscribe({
-        error: (error) => 
-          alert('Login failed. Please check your credentials and try again.')
-      });
+      .subscribe();
   }
 }

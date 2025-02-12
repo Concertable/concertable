@@ -21,6 +21,7 @@ namespace Infrastructure.Tests.Services
         private Mock<IListingService> listingServiceMock;
         private Mock<IAuthService> authServiceMock;
         private Mock<IGeocodingService> geocodingServiceMock;
+        private Mock<IUnitOfWork> unitOfWorkMock;
         private Mock<IMapper> mapperMock;
         private VenueService venueService;
 
@@ -31,9 +32,10 @@ namespace Infrastructure.Tests.Services
             listingServiceMock = new Mock<IListingService>();
             authServiceMock = new Mock<IAuthService>();
             geocodingServiceMock = new Mock<IGeocodingService>();
+            unitOfWorkMock = new Mock<IUnitOfWork>();
             mapperMock = new Mock<IMapper>();
 
-            venueService = new VenueService(venueRepositoryMock.Object, authServiceMock.Object, geocodingServiceMock.Object, mapperMock.Object);
+            venueService = new VenueService(venueRepositoryMock.Object, authServiceMock.Object, geocodingServiceMock.Object, unitOfWorkMock.Object, mapperMock.Object);
         }
 
         [Test]

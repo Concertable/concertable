@@ -11,4 +11,8 @@ export class ImageComponent {
   @Input() editMode?: boolean;
   @Input() src?: string;
   @Input() alt?: string;
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+  }
 }

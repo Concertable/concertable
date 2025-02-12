@@ -1,1 +1,45 @@
-@use '../../../styles/core-entity-details.scss';
+@use '../../../styles/details.scss';
+
+.container {
+    position: relative;
+    margin: 0 auto; 
+    padding: 20px;
+    display: flex; /* Enable flexbox layout */
+    flex-direction: row; /* Align items in a row (side by side) */
+    justify-content: flex-start; /* Align content to the start of the container */
+    align-items: flex-start; /* Align content to the top */
+    gap: 20px; /* Add space between content and sticky summary */
+}
+
+.sticky-summary {
+    position: sticky; 
+    top: 20px;
+    max-width: 300px;
+    background-color: #fff; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    padding: 20px;
+
+    ::ng-deep app-image > img {
+        width:100%;
+        height:auto;
+    }
+}
+
+.artist-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 800px;
+}
+
+.artist-info {
+    flex-grow: 1;
+}
+
+.artist-info h2 {
+    margin-bottom: 8px;
+}
+
+.artist-info p {
+    margin: 5px 0;
+}

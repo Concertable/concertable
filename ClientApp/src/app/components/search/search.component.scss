@@ -3,32 +3,32 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px;
-    max-width: 800px;
+    padding: 20px;
+    max-width: 1000px;
     margin: 0 auto;
     background: white;
-    border-radius: 50px; /* Rounded ends */
+    border-radius: 50px; /* Rounded edges */
     border: 1px solid #ddd;
+    height: 60px; /* Fixed height for consistent appearance */
 }
 
 .wrapper {
     display: flex;
-    max-width: 750px;
-    align-items: center;
+    align-items: center; 
     justify-content: space-between; 
     width: 100%;
 }
 
 .location-search,
 .search-input,
-.date-picker {
+.date-picker,
+.btn-search {
     display: flex;
-    min-width: 100px;
     align-items: center;
+    justify-content: center;
 }
 
-.location-search,
-.date-picker {
+.location-search {
     flex: 1;
 }
 
@@ -36,16 +36,10 @@
     flex: 3;
 }
 
+.date-picker {
+    flex: 1;
+}
+
 .btn-search {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    margin-left: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
+    margin-left: 5px;
 }

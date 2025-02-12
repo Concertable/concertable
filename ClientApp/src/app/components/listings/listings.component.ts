@@ -14,7 +14,7 @@ import { ListingApplicationService } from '../../services/listing-application/li
 })
 export class ListingsComponent  implements OnChanges {
 
-  @Input() venue?: Venue
+  @Input() venueId?: number
   @Input() editMode?: boolean
 
   listings? : Listing[];
@@ -28,8 +28,8 @@ export class ListingsComponent  implements OnChanges {
 
   getListings() {
     console.log("getActiveListings");
-    if(this.venue && this.venue?.id)
-      this.listingService.getActiveByVenueId(this.venue.id).subscribe((listings) => this.listings = listings)
+    if(this.venueId)
+      this.listingService.getActiveByVenueId(this.venueId).subscribe((listings) => this.listings = listings)
   }
 
   createListing(listing: Listing) {

@@ -1,5 +1,5 @@
 <div class="container" *ngIf="headers.length>0">
-    <ng-container class="content" [ngSwitch]="headers[0].type">
+    <ng-container class="content" [ngSwitch]="headerType">
         <app-artist-headers *ngSwitchCase="'artist'" [headers]="artistHeaders"></app-artist-headers>
         <app-venue-headers *ngSwitchCase="'venue'" [headers]="venueHeaders"></app-venue-headers>
         <app-event-headers *ngSwitchCase="'event'" [headers]="eventHeaders"></app-event-headers>

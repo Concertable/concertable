@@ -41,12 +41,26 @@ namespace Web.Controllers
         }
 
         [Authorize(Roles = "VenueManager, Admin")]
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateVenueDto createVenueDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             //TODO: Talk about security benefits of passing user seperate instead of through the client side
             var venueDto = await venueService.CreateAsync(createVenueDto);
-            return CreatedAtAction(nameof(GetDetailsById), new {Id = venueDto.Id}, venueDto);
+            return CreatedAtAction(nameof(GetDetailsById), new { Id = venueDto.Id }, venueDto);
+        }
+
+        [Authorize(Roles = "VenueManager, Admin")]
+        [HttpPost]
+        public async Task<IActionResult> Update([FromBody] VenueDto proposedVenueDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var venueDto = await venueService.UpdateAsync(proposedVenueDto);
+            return Ok(venueDto);
         }
     }
 }

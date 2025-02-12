@@ -1,7 +1,7 @@
 @if(editMode) {
     <div class="container">
         <label>{{ label }}</label>
-        <input type="text" [(ngModel)]="content">
+        <input type="text" [(ngModel)]="content" required>
     </div>
 }@else {
     <h3>{{ content }}</h3>

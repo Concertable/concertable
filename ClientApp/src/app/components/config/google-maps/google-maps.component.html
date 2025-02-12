@@ -1,0 +1,13 @@
+<div class="container">
+    <!-- Search Bar -->
+    <div *ngIf="editMode">
+        <app-location-search (locationChange)="onLocationChange($event)" [type]="'establishment'"/>
+    </div>
+
+    <!-- Google Map -->
+    <google-map [center]="center" [zoom]="14">
+        <map-marker *ngIf="lat !== undefined && lng !== undefined"
+            [position]="{ lat: lat, lng: lng }">
+        </map-marker>
+    </google-map>
+</div>

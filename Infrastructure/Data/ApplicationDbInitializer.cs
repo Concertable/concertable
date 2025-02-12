@@ -30,61 +30,85 @@ namespace Infrastructure.Data
                     {
                         UserName = "admin@test.com",
                         Email = "admin@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new Customer
                     {
                         UserName = "customer@test.com",
                         Email = "customer@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new ArtistManager
                     {
                         UserName = "artistmanager@test.com",
                         Email = "artistmanager@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager@test.com",
                         Email = "venuemanager@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new Customer
                     {
                         UserName = "customer2@test.com",
                         Email = "customer2@test.com",
+                        County = "Surrey",
+                        Town = "Ashtead"
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager2@test.com",
                         Email = "venuemanager2@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager3@test.com",
                         Email = "venuemanager3@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager4@test.com",
                         Email = "venuemanager4@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager5@test.com",
                         Email = "venuemanager5@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager6@test.com",
                         Email = "venuemanager6@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager7@test.com",
                         Email = "venuemanager7@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                     new VenueManager
                     {
                         UserName = "venuemanager8@test.com",
                         Email = "venuemanager8@test.com",
+                        County = "Surrey",
+                        Town = "Woking",
                     },
                 };
                 foreach (var user in users)
@@ -96,6 +120,13 @@ namespace Infrastructure.Data
                 await userManager.AddToRoleAsync(users[2], "ArtistManager");
                 await userManager.AddToRoleAsync(users[3], "VenueManager");
                 await userManager.AddToRoleAsync(users[4], "Customer");
+                await userManager.AddToRoleAsync(users[5], "VenueManager");
+                await userManager.AddToRoleAsync(users[6], "VenueManager");
+                await userManager.AddToRoleAsync(users[7], "VenueManager");
+                await userManager.AddToRoleAsync(users[8], "VenueManager");
+                await userManager.AddToRoleAsync(users[9], "VenueManager");
+                await userManager.AddToRoleAsync(users[10], "VenueManager");
+
             }
             //Genres
             if (!context.Genres.Any())
@@ -136,7 +167,7 @@ namespace Infrastructure.Data
                         UserId = 3,
                         Name = "The Testys",
                         About = "We are a Rock Band!",
-                        ImageUrl = ""
+                        ImageUrl = "assets/images/test.jpg"
                     },
                 };
                 context.Artists.AddRange(artists);
@@ -174,20 +205,6 @@ namespace Infrastructure.Data
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 6,
-                        Name = "The Test Venue 2",
-                        About = "Test Venue 2",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
                         Approved = true
                     },
                     new Venue
@@ -198,8 +215,6 @@ namespace Infrastructure.Data
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
                         Approved = true
                     },
                     new Venue
@@ -210,8 +225,6 @@ namespace Infrastructure.Data
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
                         Approved = true
                     },
                     new Venue
@@ -222,8 +235,6 @@ namespace Infrastructure.Data
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
                         Approved = true
                     },
                     new Venue
@@ -234,8 +245,6 @@ namespace Infrastructure.Data
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
                         Approved = true
                     },
                     new Venue
@@ -246,8 +255,6 @@ namespace Infrastructure.Data
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
                         Approved = true
                     },
                     new Venue
@@ -258,8 +265,6 @@ namespace Infrastructure.Data
                         Longitude = 0,
                         Latitude = 0,
                         ImageUrl = "assets/images/test.jpg",
-                        County = "Surrey",
-                        Town = "Woking",
                         Approved = true
                     },
             };
@@ -365,20 +370,16 @@ namespace Infrastructure.Data
                         ApplicationId = 1,
                         Price = 10.5,
                         Name = "Test Event",
-                        About = "A Test Event",
                         TotalTickets = 100,
-                        AvailableTickets = 50,
-                        ImageUrl = ""
+                        AvailableTickets = 50
                     },
                     new Event
                     {
                         ApplicationId = 2,
                         Price = 10.5,
                         Name = "Test Event",
-                        About = "A Test Event",
                         TotalTickets = 100,
-                        AvailableTickets = 50,
-                        ImageUrl = ""
+                        AvailableTickets = 50
                     },
                 };
                 context.Events.AddRange(events);

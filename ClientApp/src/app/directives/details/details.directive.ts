@@ -1,21 +1,23 @@
 import { Directive, Input, OnInit } from '@angular/core';
-import { CoreEntity } from '../../models/core-entity';
 import { AuthService } from '../../services/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { NavItem } from '../../models/nav-item';
+import { Venue } from '../../models/venue';
+import { Artist } from '../../models/artist';
+import { Event } from '../../models/event';
 
 @Directive({
-  selector: '[appCoreEntityDetails]',
+  selector: '[appDetails]',
   standalone: false,
 })
-export abstract class CoreEntityDetailsDirective<T extends CoreEntity> implements OnInit {
+export abstract class DetailsDirective<T extends Venue | Artist | Event> implements OnInit {
   @Input() entity?: T;
+  originalEntity?: T;
   @Input() editMode?: boolean;
 
   navItems: NavItem[] = [
     { name: 'Info', fragment: 'info' },
-    { name: 'Events', fragment: 'events' },
     { name: 'Videos', fragment: 'videos' },
     { name: 'Reviews', fragment: 'reviews' }
   ];

@@ -4,6 +4,7 @@ import { VenueHeader } from "./venue-header";
 
 export interface Header {
     id: number;
-    type: 'venue' | 'artist' | 'event';
+    name: string;
+    about: string;
     imageUrl: string;
 }

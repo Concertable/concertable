@@ -10,12 +10,34 @@ using System.Text;
 using System.Threading.Tasks;
 using Infrastructure.Helpers;
 using Core.Responses;
+using Application.DTOs;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Repositories
 {
     public class EventRepository : Repository<Event>, IEventRepository
     {
         public EventRepository(ApplicationDbContext context) : base(context) { }
+
+        public async Task<Event> GetByIdAsync(int id)
+        {
+            var query = context.Events
+            .Where(e => e.Id == id)
+            .Include(e => e.Application)
+                .ThenInclude(la => la.Artist)
+                    .ThenInclude(a => a.User)
+            .Include(e => e.Application)
+                .ThenInclude(la => la.Artist)
+                    .ThenInclude(a => a.ArtistGenres)
+                        .ThenInclude(ag => ag.Genre)
+            .Include(e => e.Application.Listing)
+                .ThenInclude(l => l.Venue)
+                    .ThenInclude(v => v.User); 
+
+
+            return await query.FirstAsync();
+        }
+
 
         public async Task<PaginationResponse<Event>> GetHeadersAsync(SearchParams searchParams)
         {

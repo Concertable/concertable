@@ -1,7 +1,6 @@
 <div class="container">
     <div class="wrapper">
         <app-location-search class="location-search"></app-location-search>
-  
         <mat-form-field appearance="outline" class="search-input">
         <mat-label>Search</mat-label>
         <input
@@ -11,11 +10,9 @@
         <mat-autocomplete #auto="matAutocomplete">
         </mat-autocomplete>
         </mat-form-field>
-    
         <app-date-picker *ngIf="searchTerm==='event'" class="date-picker"></app-date-picker>
-    
-        <button mat-raised-button color="primary" class="btn-search" (click)="onSearch()">
-        <mat-icon>search</mat-icon>
+        <button mat-icon-button color="accent" class="btn-search" (click)="onSearch()">
+            <mat-icon>search</mat-icon>
         </button>
     </div>
 </div>

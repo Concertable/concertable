@@ -13,8 +13,6 @@ namespace Core.Entities
         public ApplicationUser FromUser { get; set; }
         public int ToUserId { get; set; }
         public ApplicationUser ToUser { get; set; }
-        public int EventId { get; set; }  
-        public Event Event { get; set; }  
         public string TransactionId { get; set; }
         public long Amount { get; set; }
         public string Type { get; set; }

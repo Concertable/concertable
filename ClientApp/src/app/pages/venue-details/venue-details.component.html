@@ -2,15 +2,21 @@
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
     <div class="container" *ngIf="entity">
         <section [id]="navItems[0].fragment">
+            <h1>{{navItems[0].name}}</h1>
             <app-heading-medium [editMode]="editMode" [content]="venue.name"/>
             <app-text [editMode]="editMode" [label]="'About'" [content]="venue.about"/>
             <app-image [editMode]="editMode" [src]="venue.imageUrl" [alt]="'Venue Image'"/>
-            <app-location 
-                [editMode]="editMode" 
-                [county]="venue.county" 
-                [town]="venue.town"
+        </section>
+
+        <section [id]="navItems[1].fragment">
+            <h1>{{navItems[1].name}}</h1>
+            <app-location
+                [editMode]="editMode"
                 [coordinates]="venue.coordinates"
-            />
+                [county]="venue.county"
+                [town]="venue.town"
+                (coordinatesChange)="updateCoordinates($event)">
+            </app-location>
         </section>
 
         @if (venue.about) {
@@ -31,7 +37,7 @@
         @if (exists('Listings')) {
             <section [id]="navItems[4].fragment">
                 <h2 class="heading-listings">Listings</h2>
-                <app-listings [venue]="venue" [editMode]="editMode" />
+                <app-listings [venueId]="venue.id" [editMode]="editMode" />
             </section>
         }
     </div>

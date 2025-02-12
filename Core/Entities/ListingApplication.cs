@@ -13,7 +13,6 @@ namespace Core.Entities
     {
         public int ListingId { get; set; }
         public int ArtistId { get; set; }
-        public bool Approved { get; set; }
         public Listing Listing { get; set; }
         public Artist Artist { get; set; }
     }

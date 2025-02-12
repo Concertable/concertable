@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Infrastructure.Helpers;
 using Core.Responses;
+using Core.Entities.Identity;
 
 namespace Infrastructure.Repositories
 {
@@ -35,11 +36,20 @@ namespace Infrastructure.Repositories
             return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams.PageNumber, searchParams.PageSize);
         }
 
+        public async Task<Venue> GetByIdAsync(int id)
+        {
+            var query = context.Venues
+                .Where(v => v.Id == id)
+                .Include(v => v.User);
+
+            return await query.FirstAsync();
+        } 
+
         public async Task<Venue?> GetByUserIdAsync(int id)
         {
-            var query = context.Venues.AsQueryable();
-            query = query.Where(v => v.UserId == id);
-                
+            var query = context.Venues
+                .Where(v => v.UserId == id)
+                .Include(v => v.User);
 
             return await query.FirstOrDefaultAsync();
         }

@@ -21,5 +21,6 @@ namespace Application.Interfaces
         Task<VenueDto?> GetDetailsForCurrentUserAsync();
 
         Task<VenueDto> CreateAsync(CreateVenueDto venue);
+        Task<VenueDto> UpdateAsync(VenueDto venueDto);
     }
 }

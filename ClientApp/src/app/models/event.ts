@@ -1,13 +1,16 @@
+import { Artist } from "./artist";
+import { ArtistHeader } from "./artist-header";
 import { CoreEntity } from "./core-entity";
+import { Venue } from "./venue";
+import { VenueHeader } from "./venue-header";
 
-export interface Event extends CoreEntity {
- id: number;
- name: string;
- about: string;
- price: number;
- startDate: Date;
- endDate: Date;
- totalTickets: number;
- availableTickets: number;
- imageUrl: string;
+export interface Event {
+    name: string;
+    price: number;
+    startDate: Date;
+    endDate: Date;
+    totalTickets: number;
+    availableTickets: number;
+    venue: Venue;
+    artist: Artist
 }

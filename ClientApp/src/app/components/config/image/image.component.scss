@@ -1,0 +1,11 @@
+.image-upload-container {
+    display: flex;
+    align-items: center; /* Ensures vertical alignment */
+    gap: 10px; /* Adds spacing between image and button */
+}
+
+.upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}

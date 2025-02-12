@@ -76,19 +76,11 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("About")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ApplicationId")
                         .HasColumnType("int");
 
                     b.Property<int>("AvailableTickets")
                         .HasColumnType("int");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -236,6 +228,9 @@ namespace Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("County")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasMaxLength(21)
@@ -272,6 +267,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Town")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -332,9 +330,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Approved")
-                        .HasColumnType("bit");
 
                     b.Property<int>("ArtistId")
                         .HasColumnType("int");
@@ -414,7 +409,14 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("EventId")
+                    b.Property<int>("FromUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ToUserId")
                         .HasColumnType("int");
 
                     b.Property<string>("TransactionId")
@@ -425,14 +427,11 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("FromUserId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ToUserId");
 
                     b.ToTable("Purchases");
                 });
@@ -495,6 +494,9 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
@@ -505,6 +507,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("EventId");
 
@@ -528,10 +532,6 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("Approved")
                         .HasColumnType("bit");
 
-                    b.Property<string>("County")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -543,10 +543,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("float");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Town")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -715,6 +711,13 @@ namespace Infrastructure.Migrations
                     b.HasDiscriminator().HasValue("ArtistManager");
                 });
 
+            modelBuilder.Entity("Core.Entities.Identity.Customer", b =>
+                {
+                    b.HasBaseType("Core.Entities.Identity.ApplicationUser");
+
+                    b.HasDiscriminator().HasValue("Customer");
+                });
+
             modelBuilder.Entity("Core.Entities.Identity.VenueManager", b =>
                 {
                     b.HasBaseType("Core.Entities.Identity.ApplicationUser");
@@ -863,21 +866,21 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Purchase", b =>
                 {
-                    b.HasOne("Core.Entities.Event", "Event")
+                    b.HasOne("Core.Entities.Identity.ApplicationUser", "FromUser")
                         .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "User")
+                    b.HasOne("Core.Entities.Identity.ApplicationUser", "ToUser")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ToUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Event");
+                    b.Navigation("FromUser");
 
-                    b.Navigation("User");
+                    b.Navigation("ToUser");
                 });
 
             modelBuilder.Entity("Core.Entities.Review", b =>
@@ -904,13 +907,17 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Ticket", b =>
                 {
+                    b.HasOne("Core.Entities.Identity.Customer", null)
+                        .WithMany("Tickets")
+                        .HasForeignKey("CustomerId");
+
                     b.HasOne("Core.Entities.Event", "Event")
                         .WithMany("Tickets")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "User")
+                    b.HasOne("Core.Entities.Identity.Customer", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1059,6 +1066,11 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entities.Identity.ArtistManager", b =>
                 {
                     b.Navigation("Artist");
+                });
+
+            modelBuilder.Entity("Core.Entities.Identity.Customer", b =>
+                {
+                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("Core.Entities.Identity.VenueManager", b =>

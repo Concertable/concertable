@@ -46,7 +46,6 @@ namespace Infrastructure.Services
             {
                 ListingId = listingId,
                 ArtistId = artistDto.Id,
-                Approved = false
             };
             var user = await authService.GetCurrentUserAsync();
             var listingOwner = await listingService.GetOwnerByIdAsync(listingId);

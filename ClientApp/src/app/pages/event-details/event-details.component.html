@@ -1,14 +1,62 @@
 @if(event) {
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
     <div class="container" *ngIf="event">
-        <section [id]="navItems[0].fragment">
-            <app-heading-medium [editMode]="editMode" [content]="event.name"/>
-            <app-text [editMode]="editMode" [label]="'About'" [content]="event.about"/>
-            <app-image [editMode]="editMode" [src]="event.imageUrl" [alt]="'Venue Image'"/>
-        </section>
-        <div>
-            Floating ticket page
+        <div class="wrapper">
+            <section [id]="navItems[0].fragment">
+                <h1>{{navItems[0].name}}</h1>
+                <app-heading-medium [editMode]="editMode" [content]="event.name"/>
+                <app-text [editMode]="editMode" [label]="'About'" [content]="event.artist.about"/>
+            </section>
+            <section [id]="navItems[1].fragment">
+                <h1>{{navItems[1].name}}</h1>
+                <img [src]="event.venue.imageUrl" />
+                <app-location
+                    [coordinates]="event.venue.coordinates"
+                    [county]="event.venue.county"
+                    [town]="event.venue.town">
+                </app-location>
+            </section>
+            <section [id]="navItems[2].fragment" class="artist-section">
+                <h1>{{ navItems[2].name }}</h1>
+            
+                <div class="artist-container">
+                    <!-- Artist Image -->
+                    <app-image [src]="event.artist.imageUrl" [alt]="'Artist Image'" />
+                    <!-- Artist Information -->
+                    <div class="artist-info">
+                        <h2>{{ event.artist.name }}</h2>
+                        <p><mat-icon>music_note</mat-icon>
+                            <span *ngFor="let genre of event.artist.genres; let i = index">
+                                {{ genre }} {{ i < event.artist.genres.length - 1 ? ', ' : '' }}
+                            </span>
+                        </p>
+                        <p><mat-icon>location_on</mat-icon> {{ event.artist.county }}</p>
+                        <button (click)="onArtistDetailsClick()">View Details</button>
+                    </div>
+                </div>
+            </section>
+            
         </div>
+        <div class="sticky-summary">
+            <h3>{{ event.name }}</h3>
+            <app-image [editMode]="editMode" [src]="event.artist.imageUrl" [alt]="'Artist Image'"></app-image>
+            <p>
+                <mat-icon>calendar_today</mat-icon>
+                {{ event.startDate | date: 'd MMM' }} {{ event.startDate | date: 'HH:mm' }} - 
+                {{ event.endDate | date: 'HH:mm' }}
+            </p>
+            
+            <p>
+                <mat-icon>location_on</mat-icon> 
+                {{ event.venue.name }} in {{ event.venue.county }}
+            </p>
+            <p>
+                <mat-icon>monetization_on</mat-icon> 
+                {{ event.price | currency: 'GBP':'symbol' }}
+            </p>
+            <button class="btn-buy">Buy Tickets</button>
+        </div>
+        
     </div>
 }@else {
     Venue not found

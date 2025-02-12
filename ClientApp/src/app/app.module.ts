@@ -32,9 +32,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card'
+import {MatButtonModule} from '@angular/material/button';
 
 import { GoogleMapsModule } from '@angular/google-maps';
-import { GoogleMapsComponent } from './components/google-maps/google-maps.component';
+import { GoogleMapsComponent } from './components/config/google-maps/google-maps.component';
 
 import { VenueDetailsComponent } from './pages/venue-details/venue-details.component';
 import { ConfigNavbarComponent } from './components/config-navbar/config-navbar.component';
@@ -53,7 +54,6 @@ import { DatePickerComponent } from './components/date-picker/date-picker.compon
 import { LocationSearchComponent } from './components/location-search/location-search.component';
 import { FindComponent } from './pages/find/find.component';
 import { SearchResultsComponent } from './components/search-results/search-results.component';
-import { SearchResultHeaderComponent } from './components/search-result-header/search-result-header.component';
 import { EventHeaderComponent } from './components/event-header/event-header.component';
 import { HeaderComponent } from './components/header/header.component';
 import { VenueHeaderComponent } from './components/venue-header/venue-header.component';
@@ -81,7 +81,10 @@ import { CreateVenueComponent } from './pages/create-venue/create-venue.componen
 import { CreateNavbarComponent } from './components/create-navbar/create-navbar.component';
 import { MailboxComponent } from './components/mailbox/mailbox.component';
 import { EventDetailsComponent } from './pages/event-details/event-details.component';
-import { CoreEntityDetailsDirective } from './directives/core-entity-details/core-entity-details.directive';
+import { ManagerItemNotFoundComponent } from './components/manager-item-not-found/manager-item-not-found.component';
+
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; // Required for Toastr
+import { ToastrModule } from 'ngx-toastr';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -118,7 +121,6 @@ const routerOptions: ExtraOptions = {
     LocationSearchComponent,
     FindComponent,
     SearchResultsComponent,
-    SearchResultHeaderComponent,
     ArtistHeadersComponent,
     VenueHeadersComponent,
     EventHeadersComponent,
@@ -144,9 +146,17 @@ const routerOptions: ExtraOptions = {
     CreateVenueComponent,
     CreateNavbarComponent,
     MailboxComponent,
-    EventDetailsComponent
+    EventDetailsComponent,
+    ManagerItemNotFoundComponent
   ],
   imports: [
+    BrowserAnimationsModule, // Required for animations
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-right', // Position of toast (top-right, bottom-right, etc.)
+      timeOut: 5000, // Auto-dismiss after 3 seconds
+      closeButton: true,
+      progressBar: true
+    }),
     BrowserModule,
     AppRoutingModule,
     FormsModule,
@@ -163,7 +173,8 @@ const routerOptions: ExtraOptions = {
     MatToolbarModule,
     MatBadgeModule,
     MatListModule,
-    MatCardModule
+    MatCardModule,
+    MatButtonModule
 ],
   providers: [
     provideHttpClient(

@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from '../../services/event/event.service';
 import { Event } from '../../models/event';
-import { CoreEntityDetailsDirective } from '../../directives/core-entity-details/core-entity-details.directive';
+import { DetailsDirective } from '../../directives/details/details.directive';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -15,8 +15,16 @@ import { Observable } from 'rxjs';
   templateUrl: './event-details.component.html',
   styleUrl: './event-details.component.scss'
 })
-export class EventDetailsComponent extends CoreEntityDetailsDirective<Event> {
+export class EventDetailsComponent extends DetailsDirective<Event> {
   @Input('event') declare entity?: Event;
+
+  override navItems: NavItem[] = [
+    { name: 'Info', fragment: 'info' },
+    { name: 'Location', fragment: 'location' },
+    { name: 'Artist', fragment: 'artist' },
+    { name: 'Videos', fragment: 'videos' },
+    { name: 'Reviews', fragment: 'reviews' }
+  ];
 
   constructor(
     private eventService: EventService,
@@ -41,6 +49,13 @@ export class EventDetailsComponent extends CoreEntityDetailsDirective<Event> {
 
   loadDetails(id: number): Observable<Event> {
     return this.eventService.getDetailsById(id);
+  }
+
+  onArtistDetailsClick() {
+    this.router.navigate(['../artist'], { 
+      relativeTo: this.route, 
+      queryParams: { id: this.event?.artist.id } 
+    });
   }
 
 }

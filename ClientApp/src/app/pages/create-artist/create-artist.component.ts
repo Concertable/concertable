@@ -9,5 +9,13 @@ import { Artist } from '../../models/artist';
   styleUrl: './create-artist.component.scss'
 })
 export class CreateArtistComponent {
-  artist: Artist = {};
+  artist: Artist = {
+  id: 0,  
+  name: "",
+  about: "",
+  imageUrl: "", 
+  genres: [],
+  county: "",
+  town: ""
+  };
 }

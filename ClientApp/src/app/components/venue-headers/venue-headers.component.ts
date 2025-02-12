@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { VenueHeader } from '../../models/venue-header';
 import { HeadersComponent } from '../headers/headers.component';
+import { HeaderType } from '../../models/header-type';
 
 @Component({
   selector: 'app-venue-headers',
@@ -10,4 +11,5 @@ import { HeadersComponent } from '../headers/headers.component';
   styleUrl: './venue-headers.component.scss'
 })
 export class VenueHeadersComponent extends HeadersComponent<VenueHeader> {
+  headerType: HeaderType = 'venue'
 }

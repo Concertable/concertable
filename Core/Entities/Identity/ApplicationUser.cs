@@ -10,6 +10,8 @@ namespace Core.Entities.Identity
 {
     public class ApplicationUser : IdentityUser<int> 
     {
+        public string? County { get; set; }
+        public string? Town { get; set; }
         public ICollection<Message> SentMessages { get; set; }
         public ICollection<Message> ReceivedMessages { get; set; }
     }

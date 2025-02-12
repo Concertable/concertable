@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-location-search',
@@ -9,10 +9,12 @@ import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } fro
 })
 export class LocationSearchComponent implements AfterViewInit {
   @ViewChild('search', { static: true }) searchElement!: ElementRef;
+  @Input() type: string = '(cities)';
+  @Output() locationChange = new EventEmitter<{ lat: number; lng: number }>();
 
   ngAfterViewInit(): void {
     const options = {
-      types: ['(cities)'], // This limits results to cities. Adjust if needed.
+      types: [this.type], // This limits results to cities. Adjust if needed.
       componentRestrictions: { country: 'gb' } // 'gb' restricts to the United Kingdom.
     };
 
@@ -22,9 +24,10 @@ export class LocationSearchComponent implements AfterViewInit {
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
       if (place && place.geometry) {
-        console.log('Place name:', place.name);
-        console.log('Latitude:', place.geometry.location?.lat());
-        console.log('Longitude:', place.geometry.location?.lng());
+        const lat = place.geometry.location?.lat();
+        const lng = place.geometry.location?.lng();
+        if(lat && lng)
+          this.locationChange.emit({lat, lng});
       }
     });
   }

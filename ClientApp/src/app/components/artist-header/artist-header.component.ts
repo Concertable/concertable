@@ -3,6 +3,7 @@ import { Header } from '../../models/header';
 import { ArtistHeader } from '../../models/artist-header';
 import { ArtistService } from '../../services/artist/artist.service';
 import { HeaderComponent } from '../header/header.component';
+import { HeaderType } from '../../models/header-type';
 
 @Component({
   selector: 'app-artist-header',
@@ -12,4 +13,5 @@ import { HeaderComponent } from '../header/header.component';
   styleUrl: './artist-header.component.scss'
 })
 export class ArtistHeaderComponent extends HeaderComponent<ArtistHeader> {
+  override headerType: HeaderType = 'artist';
 }
