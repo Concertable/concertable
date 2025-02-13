@@ -44,5 +44,12 @@ namespace Web.Controllers
             return Ok(await eventService.GetUpcomingByArtistIdAsync(id));
         }
 
+        [HttpPost("application/{id}")]
+        public async Task<IActionResult> CreateFromApplicationId(int id)
+        {
+            var eventDto = await eventService.CreateFromApplicationIdAsync(id);
+            return CreatedAtAction(nameof(GetDetailsById), new { id = eventDto.Id }, eventDto);
+        }
+
     }
 }

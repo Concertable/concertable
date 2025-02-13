@@ -39,6 +39,7 @@ namespace Application.Mappings
             .ForMember(
                 dest => dest.Town,
                 opt => opt.MapFrom(src => src.User.Town));
+
             //Artist
             CreateMap<Artist, ArtistDto>()
             .ForMember(
@@ -99,6 +100,10 @@ namespace Application.Mappings
             //Genre
             CreateMap<Genre, GenreDto>();
             CreateMap<GenreDto, Genre>();
+
+            //ListingApplications
+            CreateMap<ListingApplication, ListingApplicationDto>()
+            .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist));
 
         }
     }

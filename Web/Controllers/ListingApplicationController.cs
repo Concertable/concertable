@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Application.DTOs;
 
 namespace Web.Controllers
 {
@@ -17,11 +18,10 @@ namespace Web.Controllers
         }
 
         [Authorize(Roles = "VenueManager")]
-        [HttpGet("all/{listingId}")]
-        public async Task<ActionResult<IEnumerable<ListingApplication>>> GetAllForListingId(int listingId)
+        [HttpGet("all/{id}")]
+        public async Task<ActionResult<IEnumerable<ListingApplicationDto>>> GetAllForListingId(int id)
         {
-            var registrations = await applicationService.GetAllForListingIdAsync(listingId);
-            return Ok();
+            return Ok(await applicationService.GetAllForListingIdAsync(id));
         }
 
         [Authorize(Roles = "ArtistManager")]

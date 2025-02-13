@@ -50,12 +50,4 @@ export class EventDetailsComponent extends DetailsDirective<Event> {
   loadDetails(id: number): Observable<Event> {
     return this.eventService.getDetailsById(id);
   }
-
-  onArtistDetailsClick() {
-    this.router.navigate(['../artist'], { 
-      relativeTo: this.route, 
-      queryParams: { id: this.event?.artist.id } 
-    });
-  }
-
 }

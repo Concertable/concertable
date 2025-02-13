@@ -18,6 +18,9 @@ import { MyArtistComponent } from './pages/my-artist/my-artist.component';
 import { CreateArtistComponent } from './pages/create-artist/create-artist.component';
 import { CreateVenueComponent } from './pages/create-venue/create-venue.component';
 import { EventDetailsComponent } from './pages/event-details/event-details.component';
+import { ListingApplicationsComponent } from './pages/listing-applications/listing-applications.component';
+import { MyEventsComponent } from './pages/my-events/my-events.component';
+import { MyEventComponent } from './pages/my-event/my-event.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent,
@@ -36,6 +39,9 @@ const routes: Routes = [
       { path: 'find', component: VenueFindComponent },
       { path: 'find/artist', component: ArtistDetailsComponent },
       { path: 'create', component: CreateVenueComponent },
+      { path: 'my/events', component: MyEventsComponent },
+      { path: 'my/events/event', component: MyEventComponent },
+      { path: 'my/applications', component: ListingApplicationsComponent },
     ] },
   { path: 'artist', canActivate: [roleGuard], data: { role: "ArtistManager" }, component: ArtistDashboardComponent,
     children: [
@@ -43,7 +49,9 @@ const routes: Routes = [
       { path: 'find', component: ArtistFindComponent, },
       { path: 'find/venue', component: VenueDetailsComponent, },
       { path: 'create', component: CreateArtistComponent },
-    ] }
+    ] },
+  
+
 ];
 
 @NgModule({

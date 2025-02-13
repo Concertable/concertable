@@ -1,0 +1,6 @@
+<div class="container">
+    <div class="application" *ngFor="let application of applications">
+        <app-artist-summary [artist]="application.artist"></app-artist-summary>
+        <button mat-flat-button (click)="acceptApplication(application)">Accept</button>
+    </div>
+</div>

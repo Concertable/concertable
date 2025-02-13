@@ -1,0 +1,17 @@
+.container {
+    display: flex;
+    flex-direction: column; /* Stack applications vertically */
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    gap: 16px; /* Adds spacing between applications */
+}
+
+.application {
+    display: flex;
+    align-items: center; /* Keep artist summary + button side by side */
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}

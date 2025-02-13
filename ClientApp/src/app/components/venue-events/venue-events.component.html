@@ -17,7 +17,7 @@
             </td>
             <td>${{ event.price }}</td>
             <td>
-                <button (click)="onViewDetails(event)">View Details</button>
+                <button class="primary" (click)="onViewDetails(event)">View Details</button>
             </td>
             <td *ngIf="authService.isRole('Customer')">
                 <button (click)="onViewDetails(event)">Purchase</button>

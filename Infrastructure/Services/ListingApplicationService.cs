@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTOs;
+using AutoMapper;
 
 namespace Infrastructure.Services
 {
@@ -16,6 +18,7 @@ namespace Infrastructure.Services
         private readonly IMessageService messageService;
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
+        private readonly IMapper mapper;
 
         public ListingApplicationService(
             IListingApplicationRepository applicationRepository,
@@ -23,7 +26,8 @@ namespace Infrastructure.Services
             IAuthService authService,
             IMessageService messageService,
             IListingService listingService,
-            IArtistService artistService)
+            IArtistService artistService,
+            IMapper mapper)
         {
             this.applicationRepository = applicationRepository;
             this.unitOfWork = unitOfWork;
@@ -31,11 +35,14 @@ namespace Infrastructure.Services
             this.messageService = messageService;
             this.listingService = listingService;
             this.artistService = artistService;
+            this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId)
+        public async Task<IEnumerable<ListingApplicationDto>> GetAllForListingIdAsync(int id)
         {
-            return await applicationRepository.GetAllForListingIdAsync(listingId);
+            var applications = await applicationRepository.GetAllForListingIdAsync(id);
+
+            return mapper.Map<IEnumerable<ListingApplicationDto>>(applications);
         }
 
         public async Task ApplyForListingAsync(int listingId)
@@ -63,6 +70,16 @@ namespace Infrastructure.Services
 
             // Save changes after both have executed
             await unitOfWork.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Gets the Artist and Venue from the ListingApplicationId Associated with it
+        /// </summary>
+        public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
+        {
+            var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(id);
+
+            return (mapper.Map<ArtistDto>(artist), mapper.Map<VenueDto>(venue));
         }
     }
 }

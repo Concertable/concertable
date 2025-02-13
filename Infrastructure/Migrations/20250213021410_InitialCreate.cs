@@ -447,7 +447,8 @@ namespace Infrastructure.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<double>(type: "float", nullable: false),
                     TotalTickets = table.Column<int>(type: "int", nullable: false),
-                    AvailableTickets = table.Column<int>(type: "int", nullable: false)
+                    AvailableTickets = table.Column<int>(type: "int", nullable: false),
+                    Posted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

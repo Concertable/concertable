@@ -1,22 +1,22 @@
-import { Directive, OnInit } from '@angular/core';
+import { Directive, EventEmitter, OnInit, Output } from '@angular/core';
 import { cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { Venue } from '../../models/venue';
 import { Artist } from '../../models/artist';
+import { Event } from '../../models/event';
 
 @Directive({
   selector: '[appMyItem]',
   standalone: false
 })
-export abstract class MyItemDirective<T extends Venue | Artist> implements OnInit {
+export abstract class MyItemDirective<T extends Venue | Artist | Event> implements OnInit {
   protected item?: T;
   private originalItem?: T;
   protected editMode: boolean = false;
   protected saveable: boolean = false;
 
-
   // Abstract method for getting details, to be implemented in child classes
-  abstract getDetailsForCurrentUser(): Observable<T>;
+  abstract getDetails(): Observable<T>;
 
   abstract update(item: T): Observable<T>;
 
@@ -27,7 +27,7 @@ export abstract class MyItemDirective<T extends Venue | Artist> implements OnIni
   }
 
   ngOnInit(): void {
-    this.getDetailsForCurrentUser().subscribe((item: T) => {
+    this.getDetails().subscribe((item: T) => {
       this.item = item;
       this.originalItem = cloneDeep(this.item);
     });
@@ -40,7 +40,6 @@ export abstract class MyItemDirective<T extends Venue | Artist> implements OnIni
   }
 
   saveChanges() {
-    console.log(this.item)
     if(this.item)
       this.update(this.item).subscribe(v => this.showUpdated(v.name))
   }

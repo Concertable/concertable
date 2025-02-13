@@ -87,6 +87,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { ConfigTextDirective } from './directives/config-text/config-text.directive';
 import { EditTextComponent } from './components/config/edit-text/edit-text.component';
+import { ListingApplicationsComponent } from './pages/listing-applications/listing-applications.component';
+import { ArtistSummaryComponent } from './components/artist-summary/artist-summary.component';
+import { MyEventsComponent } from './pages/my-events/my-events.component';
+import { MyEventComponent } from './pages/my-event/my-event.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -152,6 +156,10 @@ const routerOptions: ExtraOptions = {
     ManagerItemNotFoundComponent,
     ConfigTextDirective,
     EditTextComponent,
+    ListingApplicationsComponent,
+    ArtistSummaryComponent,
+    MyEventsComponent,
+    MyEventComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

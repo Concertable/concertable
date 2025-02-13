@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Application.DTOs;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,8 @@ namespace Application.Interfaces
 {
     public interface IListingApplicationService
     {
-        Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId);
+        Task<IEnumerable<ListingApplicationDto>> GetAllForListingIdAsync(int id);
         Task ApplyForListingAsync(int listingId);
+        Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);
     }
 }

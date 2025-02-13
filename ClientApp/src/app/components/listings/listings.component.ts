@@ -7,6 +7,8 @@ import { AuthService } from '../../services/auth/auth.service';
 import { ListingApplicationService } from '../../services/listing-application/listing-application.service';
 import { Genre } from '../../models/genre';
 import { GenreService } from '../../services/genre/genre.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ListingToastServiceService } from '../../services/toast/listing/listing-toast-service.service';
 
 @Component({
   selector: 'app-listings',
@@ -38,7 +40,10 @@ export class ListingsComponent  implements OnInit, OnChanges {
     private listingService: ListingService, 
     private applicationService: ListingApplicationService, 
     private genreService: GenreService,
-    protected authService: AuthService) { }
+    protected authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private listingToastService: ListingToastServiceService) { }
 
   ngOnInit(): void {
     this.getListings();
@@ -125,7 +130,17 @@ set endTime(value: string) {
 
   onApply(listing: Listing) {
     if(listing.id)
-      this.applicationService.applyForListingAsync(listing.id).subscribe();
+      this.applicationService.applyForListing(listing.id).subscribe(() => {
+        this.listingToastService.showApplied('');
+    });
+  }
+
+  onViewApplications(listing: Listing) {
+    console.log(listing);
+    this.router.navigate(['applications'], {
+      relativeTo: this.route,
+      queryParams: {listingId: listing.id }
+    });
   }
 
   private createDummyListing() {

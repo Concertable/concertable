@@ -24,22 +24,3 @@
         height:auto;
     }
 }
-
-.artist-container {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    max-width: 800px;
-}
-
-.artist-info {
-    flex-grow: 1;
-}
-
-.artist-info h2 {
-    margin-bottom: 8px;
-}
-
-.artist-info p {
-    margin: 5px 0;
-}

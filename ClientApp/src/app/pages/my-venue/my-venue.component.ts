@@ -34,7 +34,7 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
     this.item = value;
   }
 
-  getDetailsForCurrentUser() : Observable<Venue> {
+  getDetails() : Observable<Venue> {
     return this.venueService.getDetailsForCurrentUser();
   }
 
@@ -49,6 +49,7 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
 
   addListing(listing: Listing) {
     this.newListings.push(listing);
+    this.saveable = true;
   }
 
   override saveChanges(): void {

@@ -21,6 +21,9 @@
                 <td *ngIf="authService.isRole('VenueManager') && editMode">
                     <button class="btn-delete" (click)="onDelete(listing)">Delete</button>
                 </td>
+                <td *ngIf="authService.isRole('VenueManager') && !editMode">
+                    <button class="btn-delete" (click)="onViewApplications(listing)">View Applications</button>
+                </td>
                 <td *ngIf="authService.isRole('ArtistManager')">
                     <button class="btn-apply" (click)="onApply(listing)">Apply</button>
                 </td>

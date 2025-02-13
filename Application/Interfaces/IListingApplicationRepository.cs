@@ -10,5 +10,6 @@ namespace Application.Interfaces
     public interface IListingApplicationRepository : IRepository<ListingApplication>
     {
         Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId);
+        Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id);
     }
 }

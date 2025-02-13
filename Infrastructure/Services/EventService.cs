@@ -17,11 +17,13 @@ namespace Infrastructure.Services
     public class EventService : IEventService
     {
         private readonly IEventRepository eventRepository;
+        private readonly IListingApplicationService applicationService;
         private readonly IMapper mapper;
 
-        public EventService(IEventRepository eventRepository, IMapper mapper)
+        public EventService(IEventRepository eventRepository, IListingApplicationService applicationService, IMapper mapper)
         {
             this.eventRepository = eventRepository;
+            this.applicationService = applicationService;
             this.mapper = mapper;
         }
 
@@ -51,7 +53,27 @@ namespace Infrastructure.Services
         public async Task<EventDto> GetDetailsByIdAsync(int id)
         {
             var eventEntity = await eventRepository.GetByIdAsync(id);
-            Debug.WriteLine("Artist: " + (eventEntity.Application.Artist == null ? "null" : "exists"));
+
+            return mapper.Map<EventDto>(eventEntity);
+        }
+
+        public async Task<EventDto> CreateFromApplicationIdAsync(int id)
+        {
+            var (artistDto, venueDto) = await applicationService.GetArtistAndVenueByIdAsync(id);
+
+            var eventEntity = new Event
+            {
+                ApplicationId = id,
+                Name = $"{artistDto.Name} performing at {venueDto.Name}",
+                Price = 0,
+                TotalTickets = 0,
+                AvailableTickets = 0,
+                Posted = false
+            };
+
+            await eventRepository.AddAsync(eventEntity);
+            await eventRepository.SaveChangesAsync();
+
             return mapper.Map<EventDto>(eventEntity);
         }
     }

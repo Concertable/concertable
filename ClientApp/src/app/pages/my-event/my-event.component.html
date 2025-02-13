@@ -1,0 +1,6 @@
+@if (event) {
+    <app-config-navbar (editModeChange)="onEditModeChange($event)" (cancel)="cancelChanges()" (save)="saveChanges()" [saveable]="saveable"></app-config-navbar>
+    <app-event-details *ngIf="event" [event]="event" [editMode]="editMode" (entityChange)="onEntityChange($event)"></app-event-details>
+} @else {
+    Not Found
+}

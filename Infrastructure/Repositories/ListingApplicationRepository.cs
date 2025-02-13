@@ -14,12 +14,33 @@ namespace Infrastructure.Repositories
     {
         public ListingApplicationRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId)
+        public async Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int id)
         {
-            var query = context.ListingApplications.AsQueryable();
-            query = query.Where(v => v.ListingId == listingId);
+            var query = context.ListingApplications
+            .Where(la => la.ListingId == id)
+            .Include(la => la.Artist)
+                .ThenInclude(a => a.User)
+            .Include(la => la.Artist)
+                .ThenInclude(a => a.ArtistGenres)
+                    .ThenInclude(ag => ag.Genre); 
 
             return await query.ToListAsync();
+
         }
+
+        public async Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id)
+        {
+            var query = await context.ListingApplications
+                .Where(la => la.Id == id)
+                .Select(la => new
+                {
+                    la.Artist,
+                    la.Listing.Venue
+                })
+                .FirstAsync();
+
+            return (query.Artist, query.Venue);
+        }
+
     }
 }

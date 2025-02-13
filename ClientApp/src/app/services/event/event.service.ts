@@ -29,4 +29,8 @@ export class EventService {
   getHeaders(params: HttpParams): Observable<Pagination<EventHeader>> {
     return this.http.get<Pagination<EventHeader>>(`${this.apiUrl}/headers`);
   }
+
+  createFromApplicationId(id: number) : Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/application/${id}`, {});
+  }
 }

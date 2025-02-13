@@ -18,22 +18,7 @@
             </section>
             <section [id]="navItems[2].fragment" class="artist-section">
                 <h1>{{ navItems[2].name }}</h1>
-            
-                <div class="artist-container">
-                    <!-- Artist Image -->
-                    <app-image [src]="event.artist.imageUrl" [alt]="'Artist Image'" />
-                    <!-- Artist Information -->
-                    <div class="artist-info">
-                        <h2>{{ event.artist.name }}</h2>
-                        <p><mat-icon>music_note</mat-icon>
-                            <span *ngFor="let genre of event.artist.genres; let i = index">
-                                {{ genre }} {{ i < event.artist.genres.length - 1 ? ', ' : '' }}
-                            </span>
-                        </p>
-                        <p><mat-icon>location_on</mat-icon> {{ event.artist.county }}</p>
-                        <button (click)="onArtistDetailsClick()">View Details</button>
-                    </div>
-                </div>
+            <app-artist-summary [artist]="event.artist" />
             </section>
             
         </div>
