@@ -48,4 +48,11 @@ export abstract class DetailsDirective<T extends Venue | Artist | Event> impleme
   onChangeDetected() {
     this.entityChange.emit(this.entity);
   }
+  
+  updateContent(updatedContent: string, field: keyof T) {
+    if (this.entity && field in this.entity) {
+      (this.entity as any)[field] = updatedContent;  // ✅ Now TypeScript knows this is safe
+    }
+    this.onChangeDetected()
+  }
 }

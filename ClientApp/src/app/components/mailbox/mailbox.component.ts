@@ -3,6 +3,7 @@ import { AuthService } from '../../services/auth/auth.service';
 import { Message, MessageAction } from '../../models/message';
 import { MessageService } from '../../services/message/message.service';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-mailbox',
@@ -18,7 +19,7 @@ export class MailboxComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
 
-  constructor(protected authService: AuthService, private messageService: MessageService) { }
+  constructor(protected authService: AuthService, private messageService: MessageService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.subscriptions.push(this.authService.currentUser$.subscribe(user => {
@@ -40,7 +41,8 @@ export class MailboxComponent implements OnInit, OnDestroy {
   }
 
   handleAction(action: MessageAction) {
-    
+    if(action === "application") 
+      this.router.navigateByUrl('venue/my/applications');
   }
 
   ngOnDestroy(): void {

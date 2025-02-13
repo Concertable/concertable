@@ -18,7 +18,6 @@ import { Listing } from '../../models/listing';
   styleUrl: './venue-details.component.scss'
 })
 export class VenueDetailsComponent extends DetailsDirective<Venue> {
-  @Input('venue') declare entity?: Venue;
   @Output() listingCreate = new EventEmitter<Listing>
 
   override navItems: NavItem[] = [
@@ -42,6 +41,7 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
     return this.entity;
   }
 
+  @Input()
   set venue(value: Venue | undefined) {
     this.entity = value;
   }
@@ -64,22 +64,14 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
     console.log(this.venue?.coordinates)
   }
 
+  onListingCreate(listing: Listing) {
+    this.listingCreate.emit(listing);
+  }
+
   updateImage(url: string) {
     if(this.venue)
       this.venue.imageUrl = url
     this.onChangeDetected
   }
-
-  updateContent(updatedContent: string, field: keyof Venue) {
-    if (this.venue && field in this.venue) {
-      (this.venue as any)[field] = updatedContent;  // ✅ Now TypeScript knows this is safe
-    }
-    this.onChangeDetected()
-  }
-
-  onListingCreate(listing: Listing) {
-    this.listingCreate.emit(listing);
-  }
-
 
 }

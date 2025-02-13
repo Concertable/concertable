@@ -1,9 +1,10 @@
-.mail-container {
+//c
+
+.message-container {
     display: flex;
-    flex-direction: column; 
-    align-items: flex-start; 
-    gap: 10px; 
-    position: relative; /* Keeps the dropdown attached without pushing */
+    align-items: center;
+    gap: 10px;
+    position: relative;
 }
 
 .dropdown {
@@ -12,15 +13,22 @@
     padding: 10px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     min-width: 250px;
-    max-width: 400px;
-    flex-direction: column;
-    gap: 5px;
-    position: absolute; //keeps it always in same place
-    top: 100%; //directly below mailbox button
+    max-width: 800px;
+    position: absolute;
     right: 0;
-    z-index: 100;
+    z-index: 1000;
+    display: block;
 }
 
-.mail-container.open .dropdown {
-    display: flex; /* Show when dropdownOpen is true */
+.message-text {
+    flex-grow: 1; 
+    min-width: 0; 
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal; 
+}
+
+.message-button {
+    flex-shrink: 0; 
+    white-space: nowrap; 
 }

@@ -1,0 +1,27 @@
+<table class="container">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Cost</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let event of events">
+            <td>{{ event.name }}</td>
+            <td>{{ event.startDate | date: 'MMM d' }}</td>
+            <td>
+                {{ event.startDate | date: 'h:mm a' }} - {{ event.endDate | date: 'h:mm a' }}
+            </td>
+            <td>${{ event.price }}</td>
+            <td>
+                <button class="primary" (click)="onViewDetails(event)">View Details</button>
+            </td>
+            <td *ngIf="authService.isRole('Customer')">
+                <button (click)="onPurchase(event)">Purchase</button>
+            </td>
+        </tr>
+    </tbody>
+</table>

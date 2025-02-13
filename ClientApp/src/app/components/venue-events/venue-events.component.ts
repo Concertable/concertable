@@ -4,6 +4,9 @@ import { EventService } from '../../services/event/event.service';
 import { Event } from '../../models/event';
 import { AuthService } from '../../services/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ItemEventsDirective } from '../../directives/item-events/item-events.directive';
+import { Observable } from 'rxjs';
+import { Artist } from '../../models/artist';
 
 @Component({
   selector: 'app-venue-events',
@@ -12,32 +15,17 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './venue-events.component.html',
   styleUrl: './venue-events.component.scss'
 })
-export class VenueEventsComponent implements OnInit{
-  @Input() venue?: Venue
-  events: Event[] = [];
-
-  constructor(
-    private eventService: EventService, 
-    protected authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) { }
-
-  ngOnInit(): void {
-    this.getUpcomingEvents();
+export class VenueEventsComponent extends ItemEventsDirective<Venue> {
+  getUpcoming(id: number): Observable<Event[]> {
+    return this.eventService.getUpComingByVenueId(id);
   }
 
-  getUpcomingEvents() {
-    if(this.venue) {
-      this.eventService.getUpComingByVenueId(this.venue.id).subscribe((events) => {console.log("x",events); this.events = events});
-    }
-    
+  get venue(): Venue | undefined {
+    return this.item;
   }
 
-  //?
-  onViewDetails(event: Event) {
-    this.router.navigate(['find/event'], { 
-      queryParams: { id: event.id } 
-    });
+  @Input()
+  set venue(venue: Venue) {
+    this.item = venue;
   }
 }

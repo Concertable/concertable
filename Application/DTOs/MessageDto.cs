@@ -10,6 +10,7 @@ namespace Application.DTOs
     {
         public int Id { get; set; }
         public int FromUserId { get; set; }
+        public string Action { get; set; }
         public string Content { get; set; }
     }
 }

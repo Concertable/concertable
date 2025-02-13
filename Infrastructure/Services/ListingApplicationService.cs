@@ -66,7 +66,8 @@ namespace Infrastructure.Services
             await messageService.SendAsync(
                 fromUserId: user.Id, 
                 toUserId: listingOwner.Id,
-                content: "Test Content");
+                content: $"{user.Email} has applied to your listing",
+                action: "application");
 
             // Save changes after both have executed
             await unitOfWork.SaveChangesAsync();

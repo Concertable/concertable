@@ -31,7 +31,7 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task SendAsync(int fromUserId, int toUserId, string content)
+        public async Task SendAsync(int fromUserId, int toUserId, string action, string content)
         {
             var messageRepository = unitOfWork.GetRepository<Message>();
 
@@ -40,6 +40,7 @@ namespace Infrastructure.Services
                 Content = content,
                 FromUserId = fromUserId,
                 ToUserId = toUserId,
+                Action = action,
                 SentDate = DateTime.Now,
                 Read = false
             };

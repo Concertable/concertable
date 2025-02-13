@@ -1,1 +1,26 @@
-<p>artist-details works!</p>
+@if(artist) {
+    <app-scrollspy [navItems]="navItems"></app-scrollspy>
+    <div class="container" *ngIf="artist">
+        <section [id]="navItems[0].fragment">
+            <h1>{{navItems[0].name}}</h1>
+            <app-heading-medium [editMode]="editMode" label="Name" [content]="artist.name" (contentChange)="updateContent($event, 'name')"/>
+            <app-textarea [editMode]="editMode" label="About" [content]="artist.about" (contentChange)="updateContent($event, 'about')"/>
+            <app-image [editMode]="editMode" [src]="artist.imageUrl" alt="Venue Image" (imageChange)="updateImage($event)"/>
+        </section>
+
+        <section [id]="navItems[1].fragment">
+            <h2 class="heading-events">Upcoming Events</h2>
+            <app-artist-events [artist]="artist" />
+        </section>
+
+        <section [id]="navItems[2].fragment">
+            <h2 class="heading-videos">Videos</h2>
+        </section>
+
+        <section [id]="navItems[2].fragment">
+            <h2 class="reviews">Reviews</h2>
+        </section>
+    </div>
+}@else {
+    Venue not found
+}

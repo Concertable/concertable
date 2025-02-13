@@ -91,6 +91,8 @@ import { ListingApplicationsComponent } from './pages/listing-applications/listi
 import { ArtistSummaryComponent } from './components/artist-summary/artist-summary.component';
 import { MyEventsComponent } from './pages/my-events/my-events.component';
 import { MyEventComponent } from './pages/my-event/my-event.component';
+import { ItemEventsComponent } from './components/item-events/item-events.component';
+import { ArtistEventsComponent } from './components/artist-events/artist-events.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -159,7 +161,9 @@ const routerOptions: ExtraOptions = {
     ListingApplicationsComponent,
     ArtistSummaryComponent,
     MyEventsComponent,
-    MyEventComponent
+    MyEventComponent,
+    ItemEventsComponent,
+    ArtistEventsComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

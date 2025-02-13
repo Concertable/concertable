@@ -6,8 +6,10 @@
     <div *ngIf="dropdownOpen" class="dropdown">
         <mat-list>
             <mat-list-item *ngFor="let message of messages">
-                <p>{{ message.content }}</p>
-                <button *ngIf="message.action" (click)="handleAction(message.action)">View</button>
+                <div class="message-container">
+                    <p class="message-text">{{ message.content }}</p>
+                    <button *ngIf="message.action" class="message-button primary" (click)="handleAction(message.action)">View</button>
+                </div>
             </mat-list-item>
         </mat-list>
         <button *ngIf="messages.length > 0" mat-button (click)="onShowMore()">Show More</button>

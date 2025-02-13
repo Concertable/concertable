@@ -14,8 +14,6 @@ import { DetailsDirective } from '../../directives/details/details.directive';
   styleUrl: './artist-details.component.scss'
 })
 export class ArtistDetailsComponent extends DetailsDirective<Artist> {
-  @Input('artist') declare entity?: Artist;
-
   constructor(
     private artistService: ArtistService,
     authService: AuthService,
@@ -29,8 +27,10 @@ export class ArtistDetailsComponent extends DetailsDirective<Artist> {
     return this.entity;
   }
 
-  set artist(value: Artist | undefined) {
-    this.entity = value;
+  @Input()
+  set artist(artist: Artist | undefined) {
+    console.log("Call");
+    this.entity = artist;
   }
 
   override ngOnInit(): void {
@@ -39,5 +39,11 @@ export class ArtistDetailsComponent extends DetailsDirective<Artist> {
 
   loadDetails(id: number): Observable<Artist> {
     return this.artistService.getDetailsById(id);
+  }
+
+  updateImage(url: string) {
+    if(this.artist)
+      this.artist.imageUrl = url
+    this.onChangeDetected
   }
 }

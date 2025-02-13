@@ -12,7 +12,7 @@ namespace Application.Interfaces
 {
     public interface IMessageService
     {
-        Task SendAsync(int fromUserId, int toUserId, string content);
+        Task SendAsync(int fromUserId, int toUserId, string action, string content);
         Task<MessageSummaryDto> GetSummaryForUser(PaginationParams? pageParams);
         Task<PaginationResponse<MessageDto>> GetAllForUserAsync(PaginationParams? pageParams);
 
