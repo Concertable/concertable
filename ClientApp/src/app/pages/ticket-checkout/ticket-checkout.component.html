@@ -1,0 +1,33 @@
+<div class="payment-form">
+    <div id="card-element" class="stripe-input"></div>
+    <!-- Card Number -->
+    <div id="card-number-element" class="stripe-input"></div>
+  
+    <!-- Expiry Date -->
+    <div id="card-expiry-element" class="stripe-input"></div>
+  
+    <!-- CVC -->
+    <div id="card-cvc-element" class="stripe-input"></div>
+  
+    <!-- Email Input -->
+    <input
+      type="email"
+      placeholder="Email"
+      [(ngModel)]="email"
+      class="email-input"
+      required
+    />
+  
+    <!-- Submit Button -->
+    <button
+      [disabled]="isProcessing"
+      (click)="purchaseTicket()"
+      class="buy-button"
+    >
+      {{ isProcessing ? 'Processing...' : 'Buy Ticket' }}
+    </button>
+  
+    <!-- Message -->
+    <p class="message">{{ message }}</p>
+  </div>
+  

@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Core.Parameters;
+using Core.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,6 @@ namespace Application.Interfaces
 {
     public interface ITicketService
     {
-        Task PurchaseAsync(string transactionId, int eventId);
+        Task<TicketPurchaseResponse> PurchaseAsync(string paymentMethodId, int eventId);
     }
 }

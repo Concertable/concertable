@@ -89,8 +89,8 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("Posted")
                         .HasColumnType("bit");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TotalTickets")
                         .HasColumnType("int");
@@ -376,6 +376,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Action")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ActionId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Content")
                         .IsRequired()

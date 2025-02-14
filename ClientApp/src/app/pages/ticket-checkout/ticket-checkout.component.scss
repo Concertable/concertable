@@ -1,0 +1,46 @@
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  #payment-element {
+    height: 180px; /* Increased height to accommodate stacked fields */
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: #fafafa;
+  }
+  
+  .email-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .buy-button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .buy-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .message {
+    margin-top: 10px;
+    color: red;
+    text-align: center;
+  }
+  

@@ -93,6 +93,7 @@ import { MyEventsComponent } from './pages/my-events/my-events.component';
 import { MyEventComponent } from './pages/my-event/my-event.component';
 import { ItemEventsComponent } from './components/item-events/item-events.component';
 import { ArtistEventsComponent } from './components/artist-events/artist-events.component';
+import { TicketCheckoutComponent } from './pages/ticket-checkout/ticket-checkout.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -164,6 +165,7 @@ const routerOptions: ExtraOptions = {
     MyEventComponent,
     ItemEventsComponent,
     ArtistEventsComponent,
+    TicketCheckoutComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

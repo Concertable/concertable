@@ -36,7 +36,7 @@ namespace Infrastructure.Services
             this.managerService = managerService;
         }
 
-        public async Task PurchaseAsync(string transactionId, int eventId)
+        public async Task<TicketPurchaseResponse> PurchaseAsync(string paymentMethodId, int eventId)
         {
             var ticketRepository = unitOfWork.GetRepository<Ticket>();
             var eventRepository = unitOfWork.GetRepository<Event>();
@@ -62,7 +62,7 @@ namespace Infrastructure.Services
                 throw new BadRequestException("No tickets available");
 
             // Process payment
-            var paymentResponse = await paymentService.ProcessAsync(transactionId, transactionDto);
+            var paymentResponse = await paymentService.ProcessAsync(paymentMethodId, transactionDto);
             if (!paymentResponse.Success)
                 throw new PaymentRequiredException("Payment failed");
 
@@ -82,6 +82,18 @@ namespace Infrastructure.Services
 
             await unitOfWork.SaveChangesAsync();
 
+            return new TicketPurchaseResponse
+            {
+                Success = true,
+                Message = "Ticket purchased successfully!",
+                TicketId = ticket.Id,
+                EventId = eventId,
+                PurchaseDate = ticket.PurchaseDate,
+                Amount = eventEntity.Price,
+                Currency = "GBP",
+                TransactionId = paymentResponse.TransactionId,
+                UserEmail = user.Email
+            };
         }
     }
 }

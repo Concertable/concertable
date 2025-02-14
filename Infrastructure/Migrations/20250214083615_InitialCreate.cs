@@ -208,6 +208,7 @@ namespace Infrastructure.Migrations
                     FromUserId = table.Column<int>(type: "int", nullable: false),
                     ToUserId = table.Column<int>(type: "int", nullable: false),
                     Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ActionId = table.Column<int>(type: "int", nullable: false),
                     SentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Read = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -446,7 +447,7 @@ namespace Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ApplicationId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<double>(type: "float", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalTickets = table.Column<int>(type: "int", nullable: false),
                     AvailableTickets = table.Column<int>(type: "int", nullable: false),
                     Posted = table.Column<bool>(type: "bit", nullable: false)

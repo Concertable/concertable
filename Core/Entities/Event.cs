@@ -6,7 +6,7 @@ namespace Core.Entities
     {
         public int ApplicationId { get; set; }
         public string Name { get; set; }
-        public double Price { get; set; }
+        public decimal Price { get; set; }
         public int TotalTickets { get; set; }
         public int AvailableTickets { get; set; }
         public bool Posted { get; set; }

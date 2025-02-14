@@ -190,7 +190,7 @@ namespace Infrastructure.Data
                 await context.SaveChangesAsync();
             }
             //ArtistGenres
-            if(!context.ArtistGenres.Any())
+            if (!context.ArtistGenres.Any())
             {
                 var artistGenres = new ArtistGenre[]
                 {
@@ -319,7 +319,7 @@ namespace Infrastructure.Data
                 await context.SaveChangesAsync();
             }
             //ListingGenres
-            if(!context.ListingGenres.Any())
+            if (!context.ListingGenres.Any())
             {
                 var listingGenres = new ListingGenre[]
                 {
@@ -358,7 +358,7 @@ namespace Infrastructure.Data
                 await context.SaveChangesAsync();
             }
             //Registers
-            if(!context.ListingApplications.Any())
+            if (!context.ListingApplications.Any())
             {
                 var registers = new ListingApplication[]
                 {
@@ -384,7 +384,7 @@ namespace Infrastructure.Data
                     new Event
                     {
                         ApplicationId = 1,
-                        Price = 10.5,
+                        Price = 10.5m,
                         Name = "Test Event",
                         TotalTickets = 100,
                         AvailableTickets = 50
@@ -392,7 +392,7 @@ namespace Infrastructure.Data
                     new Event
                     {
                         ApplicationId = 2,
-                        Price = 10.5,
+                        Price = 10.5m,
                         Name = "Test Event",
                         TotalTickets = 100,
                         AvailableTickets = 50

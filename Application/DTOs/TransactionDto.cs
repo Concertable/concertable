@@ -11,7 +11,7 @@ namespace Application.DTOs
         public int FromUserId { get; set; }
         public string FromUserEmail { get; set; }
         public int ToUserId { get; set; }
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
         public string PaymentType { get; set; }
     }
 }

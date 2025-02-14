@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250213034259_InitialCreate")]
+    [Migration("20250214083615_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -92,8 +92,8 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("Posted")
                         .HasColumnType("bit");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TotalTickets")
                         .HasColumnType("int");
@@ -379,6 +379,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Action")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ActionId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Content")
                         .IsRequired()

@@ -1,16 +1,11 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
-using Core.Enums;
-using Core.Parameters;
+using Core.Exceptions;
 using Core.Responses;
 using Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Stripe;
-using Stripe.Terminal;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Services
@@ -19,66 +14,83 @@ namespace Infrastructure.Services
     {
         private readonly StripeSettings stripeSettings;
         private readonly IPurchaseService purchaseService;
-        private readonly IAuthService authService;
 
-        public PaymentService(
-            IOptions<StripeSettings> stripeSettings, 
-            IPurchaseService purchaseService, 
-            IAuthService authService 
-            )
+        public PaymentService(IOptions<StripeSettings> stripeSettings, IPurchaseService purchaseService)
         {
             this.stripeSettings = stripeSettings.Value;
             StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
             this.purchaseService = purchaseService;
-            this.authService = authService;
         }
 
         public async Task<PaymentResponse> ProcessAsync(string paymentMethodId, TransactionDto transactionDto)
         {
             try
             {
-                long amount = (long)transactionDto.Amount * 100;
+                long amount = (long)(transactionDto.Amount * 100);
+
                 var options = new PaymentIntentCreateOptions
                 {
                     Amount = amount,
                     Currency = "GBP",
                     PaymentMethod = paymentMethodId,
                     ConfirmationMethod = "manual",
+                    PaymentMethodTypes = new List<string> { "card" },
                     ReceiptEmail = transactionDto.FromUserEmail
                 };
 
                 var service = new PaymentIntentService();
                 var paymentIntent = await service.CreateAsync(options);
 
-                var succeeded = paymentIntent.Status == "succeeded";
-
-                if (!succeeded) throw new StripeException("Payment confirmation failed");
-
-
-                var purchaseDto = new PurchaseDto
+                if (paymentIntent.Status == "requires_action" || paymentIntent.Status == "requires_confirmation")
                 {
-                    FromUserId = transactionDto.FromUserId,
-                    ToUserId = transactionDto.ToUserId,
-                    TransactionId = paymentIntent.Id,
-                    Type = transactionDto.PaymentType,
-                    Amount = amount
-                };
+                    var purchaseDto = new PurchaseDto
+                    {
+                        FromUserId = transactionDto.FromUserId,
+                        ToUserId = transactionDto.ToUserId,
+                        TransactionId = paymentIntent.Id,
+                        Type = transactionDto.PaymentType,
+                        Amount = amount
+                    };
 
-                await purchaseService.CreatePaidAsync(purchaseDto);
+                    await purchaseService.CreatePaidAsync(purchaseDto);
 
-                return new PaymentResponse
+                    var confirmOptions = new PaymentIntentConfirmOptions();
+                    var confirmedPaymentIntent = await service.ConfirmAsync(paymentIntent.Id, confirmOptions);
+
+                    var succeeded = confirmedPaymentIntent.Status == "succeeded";
+                    if (!succeeded)
+                        throw new BadRequestException("Payment failed");
+
+                    return new PaymentResponse
+                    {
+                        Success = succeeded,
+                        ClientSecret = confirmedPaymentIntent.ClientSecret,
+                        TransactionId = confirmedPaymentIntent.Id
+                    };
+                }
+                else
                 {
-                    Success = succeeded,
-                    ClientSecret = paymentIntent.ClientSecret,
-                    TransactionId = paymentIntent.Id
-                };
+                    return new PaymentResponse
+                    {
+                        Success = false,
+                        ErrorMessage = $"Unexpected PaymentIntent status: {paymentIntent.Status}"
+                    };
+                }
             }
             catch (StripeException ex)
             {
                 return new PaymentResponse
                 {
                     Success = false,
-                    ErrorMessage = ex.Message
+                    ErrorMessage = $"Stripe Error: {ex.Message}"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PaymentResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"General Error: {ex.Message}"
                 };
             }
         }
