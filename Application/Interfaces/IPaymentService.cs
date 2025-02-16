@@ -11,6 +11,6 @@ namespace Application.Interfaces
 {
     public interface IPaymentService
     {
-        Task<PaymentResponse> ProcessAsync(string transactionId, TransactionDto transactionDto);
+        Task<PaymentResponse> ProcessAsync(TransactionDto transactionDto, string paymentMethodId);
     }
 }

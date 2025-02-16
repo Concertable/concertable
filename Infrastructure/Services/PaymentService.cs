@@ -6,93 +6,69 @@ using Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Stripe;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services
+public class PaymentService : IPaymentService
 {
-    public class PaymentService : IPaymentService
+    private readonly StripeSettings stripeSettings;
+
+    public PaymentService(IOptions<StripeSettings> stripeSettings)
     {
-        private readonly StripeSettings stripeSettings;
-        private readonly IPurchaseService purchaseService;
+        this.stripeSettings = stripeSettings.Value;
+        StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
+    }
 
-        public PaymentService(IOptions<StripeSettings> stripeSettings, IPurchaseService purchaseService)
+    public async Task<PaymentResponse> ProcessAsync(TransactionDto transactionDto, string paymentMethodId)
+    {
+        try
         {
-            this.stripeSettings = stripeSettings.Value;
-            StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
-            this.purchaseService = purchaseService;
+            long amount = (long)(transactionDto.Amount * 100);
+
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = amount,
+                Currency = "GBP",
+                PaymentMethod = paymentMethodId,
+                Confirm = true,
+                ConfirmationMethod = "automatic",
+                CaptureMethod = "automatic",
+                PaymentMethodTypes = new List<string> { "card" },
+                ReceiptEmail = transactionDto.FromUserEmail,
+                Metadata = transactionDto.Metadata
+            };
+
+            var service = new PaymentIntentService();
+            var paymentIntent = await service.CreateAsync(options);
+
+            Debug.WriteLine("PaymentIntent created with ClientSecret: " + paymentIntent.ClientSecret);
+
+            // Always return client_secret, no matter the status
+            return new PaymentResponse
+            {
+                Success = paymentIntent.Status == "succeeded",
+                RequiresAction = paymentIntent.Status == "requires_action" || paymentIntent.Status == "requires_confirmation",
+                ClientSecret = paymentIntent.ClientSecret, // Always set this
+                TransactionId = paymentIntent.Id,
+                Message = paymentIntent.Status == "succeeded" ? "Payment successful" : "Additional authentication required"
+            };
         }
-
-        public async Task<PaymentResponse> ProcessAsync(string paymentMethodId, TransactionDto transactionDto)
+        catch (StripeException ex)
         {
-            try
+            return new PaymentResponse
             {
-                long amount = (long)(transactionDto.Amount * 100);
-
-                var options = new PaymentIntentCreateOptions
-                {
-                    Amount = amount,
-                    Currency = "GBP",
-                    PaymentMethod = paymentMethodId,
-                    ConfirmationMethod = "manual",
-                    PaymentMethodTypes = new List<string> { "card" },
-                    ReceiptEmail = transactionDto.FromUserEmail
-                };
-
-                var service = new PaymentIntentService();
-                var paymentIntent = await service.CreateAsync(options);
-
-                if (paymentIntent.Status == "requires_action" || paymentIntent.Status == "requires_confirmation")
-                {
-                    var purchaseDto = new PurchaseDto
-                    {
-                        FromUserId = transactionDto.FromUserId,
-                        ToUserId = transactionDto.ToUserId,
-                        TransactionId = paymentIntent.Id,
-                        Type = transactionDto.PaymentType,
-                        Amount = amount
-                    };
-
-                    await purchaseService.CreatePaidAsync(purchaseDto);
-
-                    var confirmOptions = new PaymentIntentConfirmOptions();
-                    var confirmedPaymentIntent = await service.ConfirmAsync(paymentIntent.Id, confirmOptions);
-
-                    var succeeded = confirmedPaymentIntent.Status == "succeeded";
-                    if (!succeeded)
-                        throw new BadRequestException("Payment failed");
-
-                    return new PaymentResponse
-                    {
-                        Success = succeeded,
-                        ClientSecret = confirmedPaymentIntent.ClientSecret,
-                        TransactionId = confirmedPaymentIntent.Id
-                    };
-                }
-                else
-                {
-                    return new PaymentResponse
-                    {
-                        Success = false,
-                        ErrorMessage = $"Unexpected PaymentIntent status: {paymentIntent.Status}"
-                    };
-                }
-            }
-            catch (StripeException ex)
+                Success = false,
+                Message = $"Stripe Error: {ex.Message}"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new PaymentResponse
             {
-                return new PaymentResponse
-                {
-                    Success = false,
-                    ErrorMessage = $"Stripe Error: {ex.Message}"
-                };
-            }
-            catch (Exception ex)
-            {
-                return new PaymentResponse
-                {
-                    Success = false,
-                    ErrorMessage = $"General Error: {ex.Message}"
-                };
-            }
+                Success = false,
+                Message = $"General Error: {ex.Message}"
+            };
         }
     }
+
 }

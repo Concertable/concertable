@@ -515,17 +515,11 @@ namespace Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     EventId = table.Column<int>(type: "int", nullable: false),
-                    PurchaseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: true)
+                    PurchaseDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tickets", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Tickets_AspNetUsers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Tickets_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -688,11 +682,6 @@ namespace Infrastructure.Migrations
                 name: "IX_SocialMedias_ArtistId",
                 table: "SocialMedias",
                 column: "ArtistId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tickets_CustomerId",
-                table: "Tickets",
-                column: "CustomerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tickets_EventId",

@@ -21,7 +21,8 @@ import { EventDetailsComponent } from './pages/event-details/event-details.compo
 import { ListingApplicationsComponent } from './pages/listing-applications/listing-applications.component';
 import { MyEventsComponent } from './pages/my-events/my-events.component';
 import { MyEventComponent } from './pages/my-event/my-event.component';
-import { TicketCheckoutComponent } from './pages/ticket-checkout/ticket-checkout.component';
+import { EventCheckoutComponent } from './pages/event-checkout/event-checkout.component';
+import { EventResolver } from './resolvers/event/event.resolver';
 
 const routes: Routes = [
   { path: '', component: HomeComponent,
@@ -30,7 +31,7 @@ const routes: Routes = [
       { path: 'find/venue', component: VenueDetailsComponent },
       { path: 'find/artist', component: ArtistDetailsComponent },
       { path: 'find/event', component: EventDetailsComponent },
-      { path: 'checkout', component: TicketCheckoutComponent },
+      { path: 'event/checkout/:id', component: EventCheckoutComponent, resolve: { event: EventResolver} },
     ]
    },
   { path: 'login', component: LoginComponent },

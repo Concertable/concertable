@@ -1,5 +1,6 @@
 export interface TicketPurchase {
     success: boolean;
+    requiresAction: boolean;
     message: string;
     ticketId: number;
     eventId: number;
@@ -7,5 +8,6 @@ export interface TicketPurchase {
     amount: number;
     currency: string;
     transactionId: string;
+    clientSecret: string;
     email: string
 }

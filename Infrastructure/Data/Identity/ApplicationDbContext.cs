@@ -96,12 +96,6 @@ namespace Infrastructure.Data.Identity
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Ticket>()
-                .HasOne(t => t.User)
-                .WithMany()
-                .HasForeignKey(t => t.UserId)
-                .IsRequired();
-
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
         
         }

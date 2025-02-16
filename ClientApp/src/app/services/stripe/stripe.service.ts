@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { loadStripe, Stripe, StripeElements, StripeCardNumberElement, StripeCardElement } from '@stripe/stripe-js';
-import { HttpClient } from '@angular/common/http';
+import { loadStripe, Stripe, StripeElements, StripeCardNumberElement } from '@stripe/stripe-js';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,11 +9,9 @@ export class StripeService {
   private stripe!: Stripe | null;
   private elements?: StripeElements;
   private cardNumberElement?: StripeCardNumberElement;
-  private cardElement?: StripeCardElement;
 
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
-  // Initialize Stripe
   async initStripe() {
     if (!this.stripe) {
       this.stripe = await loadStripe(environment.stripePublicKey);
@@ -24,48 +21,48 @@ export class StripeService {
     }
   }
 
-  // Create Card Elements
   async createCardElements() {
     await this.initStripe();
-
-    if (!this.elements) {
-      this.elements = this.stripe!.elements();
-    }
-
-    // Create and mount the Card Number Element
+    if (!this.elements) this.elements = this.stripe!.elements();
     if (!this.cardNumberElement) {
-      this.cardNumberElement = this.elements.create('cardNumber', {
-        showIcon: true
-      });
+      this.cardNumberElement = this.elements.create('cardNumber', { showIcon: true });
       this.cardNumberElement.mount('#card-number-element');
     }
-
-    // Create and mount the Expiry Element
-    const cardExpiry = this.elements.create('cardExpiry');
-    cardExpiry.mount('#card-expiry-element');
-
-    // Create and mount the CVC Element
-    const cardCvc = this.elements.create('cardCvc');
-    cardCvc.mount('#card-cvc-element');
+    this.elements.create('cardExpiry').mount('#card-expiry-element');
+    this.elements.create('cardCvc').mount('#card-cvc-element');
   }
 
-  // Create Payment Method
+  async confirmPayment(clientSecret: string, email: string): Promise<void> {
+    if (!this.stripe || !this.cardNumberElement) throw new Error('Stripe not initialized');
+    console.log('Using clientSecret:', clientSecret);
+    const result = await this.stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: this.cardNumberElement,
+        billing_details: { email }
+      }
+    });
+    console.log('Payment result:', result);
+    if (result.error) throw new Error(result.error.message);
+  }
+
   async createPaymentMethod(email: string): Promise<string> {
     if (!this.stripe || !this.cardNumberElement) {
-      throw new Error('Stripe Elements not initialized');
+      throw new Error('Stripe not initialized');
     }
-
+  
     const { paymentMethod, error } = await this.stripe.createPaymentMethod({
       type: 'card',
       card: this.cardNumberElement,
       billing_details: { email }
     });
-
+  
     if (error) {
+      console.error('Error creating PaymentMethod:', error.message);
       throw new Error(error.message);
     }
-
-    return paymentMethod.id;
+  
+    console.log('Created PaymentMethod:', paymentMethod.id);
+    return paymentMethod.id;  // Return the PaymentMethodId
   }
-
+  
 }

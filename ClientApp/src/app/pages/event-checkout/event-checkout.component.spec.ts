@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TicketCheckoutComponent } from './ticket-checkout.component';
+import { TicketCheckoutComponent } from './event-checkout.component';
 
 describe('TicketCheckoutComponent', () => {
   let component: TicketCheckoutComponent;

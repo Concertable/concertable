@@ -39,7 +39,7 @@
                 <mat-icon>monetization_on</mat-icon> 
                 {{ event.price | currency: 'GBP':'symbol' }}
             </p>
-            <button class="btn-buy">Buy Tickets</button>
+            <button class="btn-buy" (click)="onBuyClick()">Buy Tickets</button>
         </div>
         
     </div>

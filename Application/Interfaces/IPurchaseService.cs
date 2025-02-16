@@ -9,6 +9,6 @@ namespace Application.Interfaces
 {
     public interface IPurchaseService
     {
-        Task CreatePaidAsync(PurchaseDto purchaseDto);
+        Task LogAsync(PurchaseDto purchaseDto);
     }
 }

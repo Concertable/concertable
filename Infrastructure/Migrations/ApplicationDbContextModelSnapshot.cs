@@ -504,9 +504,6 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
-
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
@@ -517,8 +514,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
 
                     b.HasIndex("EventId");
 
@@ -917,10 +912,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Ticket", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.Customer", null)
-                        .WithMany("Tickets")
-                        .HasForeignKey("CustomerId");
-
                     b.HasOne("Core.Entities.Event", "Event")
                         .WithMany("Tickets")
                         .HasForeignKey("EventId")
@@ -928,7 +919,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Core.Entities.Identity.Customer", "User")
-                        .WithMany()
+                        .WithMany("Tickets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

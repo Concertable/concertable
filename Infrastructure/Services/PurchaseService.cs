@@ -21,9 +21,8 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task CreatePaidAsync(PurchaseDto purchaseDto)
+        public async Task LogAsync(PurchaseDto purchaseDto)
         {
-            purchaseDto.Status = "paid";
             var purchase = mapper.Map<Purchase>(purchaseDto);
 
             await purchaseRepository.AddAsync(purchase);

@@ -3,12 +3,8 @@ using Core.Entities.Identity;
 using Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Data
@@ -17,425 +13,215 @@ namespace Infrastructure.Data
     {
         public static async Task InitializeAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
-            await context.Database.MigrateAsync(); //Creates db if not created yet
+            await context.Database.MigrateAsync();
 
-            System.Diagnostics.Debug.WriteLine("test");
-
-            //Users
+            // Users
             if (!context.Users.Any())
             {
                 var users = new ApplicationUser[]
                 {
-                    new Admin
-                    {
-                        UserName = "admin@test.com",
-                        Email = "admin@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new Customer
-                    {
-                        UserName = "customer@test.com",
-                        Email = "customer@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new ArtistManager
-                    {
-                        UserName = "artistmanager@test.com",
-                        Email = "artistmanager@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager@test.com",
-                        Email = "venuemanager@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new Customer
-                    {
-                        UserName = "customer2@test.com",
-                        Email = "customer2@test.com",
-                        County = "Surrey",
-                        Town = "Ashtead"
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager2@test.com",
-                        Email = "venuemanager2@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager3@test.com",
-                        Email = "venuemanager3@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager4@test.com",
-                        Email = "venuemanager4@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager5@test.com",
-                        Email = "venuemanager5@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager6@test.com",
-                        Email = "venuemanager6@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager7@test.com",
-                        Email = "venuemanager7@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
-                    new VenueManager
-                    {
-                        UserName = "venuemanager8@test.com",
-                        Email = "venuemanager8@test.com",
-                        County = "Surrey",
-                        Town = "Woking",
-                    },
+                    new Admin { UserName = "admin1@test.com", Email = "admin1@test.com", County = "Surrey", Town = "Woking" },
+                    new Customer { UserName = "customer1@test.com", Email = "customer1@test.com", County = "Surrey", Town = "Guildford" },
+                    new Customer { UserName = "customer2@test.com", Email = "customer2@test.com", County = "Surrey", Town = "Epsom" },
+                    // Artist Managers
+                    new ArtistManager { UserName = "artistmanager1@test.com", Email = "artistmanager1@test.com", County = "Surrey", Town = "Dorking" },
+                    new ArtistManager { UserName = "artistmanager2@test.com", Email = "artistmanager2@test.com", County = "Surrey", Town = "Reigate" },
+                    new ArtistManager { UserName = "artistmanager3@test.com", Email = "artistmanager3@test.com", County = "Surrey", Town = "Farnham" },
+                    new ArtistManager { UserName = "artistmanager4@test.com", Email = "artistmanager4@test.com", County = "Surrey", Town = "Camberley" },
+                    new ArtistManager { UserName = "artistmanager5@test.com", Email = "artistmanager5@test.com", County = "Surrey", Town = "Haslemere" },
+                    // Venue Managers
+                    new VenueManager { UserName = "venuemanager1@test.com", Email = "venuemanager1@test.com", County = "Surrey", Town = "Leatherhead" },
+                    new VenueManager { UserName = "venuemanager2@test.com", Email = "venuemanager2@test.com", County = "Surrey", Town = "Redhill" },
+                    new VenueManager { UserName = "venuemanager3@test.com", Email = "venuemanager3@test.com", County = "Surrey", Town = "Weybridge" },
+                    new VenueManager { UserName = "venuemanager4@test.com", Email = "venuemanager4@test.com", County = "Surrey", Town = "Cobham" },
+                    new VenueManager { UserName = "venuemanager5@test.com", Email = "venuemanager5@test.com", County = "Surrey", Town = "Chertsey" }
                 };
+
                 foreach (var user in users)
                 {
                     await userManager.CreateAsync(user, "Password11!");
+                    await userManager.AddToRoleAsync(user, user.GetType().Name.Replace("ApplicationUser", ""));
                 }
-                await userManager.AddToRoleAsync(users[0], "Admin");
-                await userManager.AddToRoleAsync(users[1], "Customer");
-                await userManager.AddToRoleAsync(users[2], "ArtistManager");
-                await userManager.AddToRoleAsync(users[3], "VenueManager");
-                await userManager.AddToRoleAsync(users[4], "Customer");
-                await userManager.AddToRoleAsync(users[5], "VenueManager");
-                await userManager.AddToRoleAsync(users[6], "VenueManager");
-                await userManager.AddToRoleAsync(users[7], "VenueManager");
-                await userManager.AddToRoleAsync(users[8], "VenueManager");
-                await userManager.AddToRoleAsync(users[9], "VenueManager");
-                await userManager.AddToRoleAsync(users[10], "VenueManager");
-
             }
-            //Genres
+
+            // Genres
             if (!context.Genres.Any())
             {
                 var genres = new Genre[]
                 {
-                    new Genre { Name = "Rock" },
-                    new Genre { Name = "Pop" },
-                    new Genre { Name = "Indie" },
-                    new Genre { Name = "Alternative" },
-                    new Genre { Name = "Electronic" },
-                    new Genre { Name = "Hip-Hop" },
-                    new Genre { Name = "R&B" },
-                    new Genre { Name = "Jazz" },
-                    new Genre { Name = "Blues" },
-                    new Genre { Name = "Reggae" },
-                    new Genre { Name = "Country" },
-                    new Genre { Name = "Folk" },
-                    new Genre { Name = "Metal" },
-                    new Genre { Name = "Punk" },
-                    new Genre { Name = "Soul" },
-                    new Genre { Name = "Classical" },
-                    new Genre { Name = "House" },
-                    new Genre { Name = "Techno" },
-                    new Genre { Name = "Trance" },
-                    new Genre { Name = "Drum and Bass" },
-                    new Genre { Name = "Dubstep" },
-                    new Genre { Name = "Afrobeats" },
-                    new Genre { Name = "Latin" },
-                    new Genre { Name = "Ska" },
-                    new Genre { Name = "Gospel" },
-                    new Genre { Name = "Funk" },
-                    new Genre { Name = "K-Pop" },
-                    new Genre { Name = "J-Pop" },
-                    new Genre { Name = "Grime" },
-                    new Genre { Name = "Garage" },
-                    new Genre { Name = "Hardcore" },
-                    new Genre { Name = "EDM" },
-                    new Genre { Name = "Synthwave" },
-                    new Genre { Name = "Acoustic" },
-                    new Genre { Name = "Lo-Fi" }
+                    new Genre { Name = "Rock" }, new Genre { Name = "Pop" }, new Genre { Name = "Jazz" },
+                    new Genre { Name = "Hip-Hop" }, new Genre { Name = "Electronic" }, new Genre { Name = "Indie" }
                 };
-
                 context.Genres.AddRange(genres);
                 await context.SaveChangesAsync();
             }
-            //Artists
+
+            // Artists
             if (!context.Artists.Any())
             {
                 var artists = new Artist[]
                 {
-                    new Artist
-                    {
-                        UserId = 3,
-                        Name = "The Testys",
-                        About = "We are a Rock Band!",
-                        ImageUrl = "assets/images/test.jpg"
-                    },
+                    new Artist { UserId = 4, Name = "The Rockers", About = "A thrilling rock band", ImageUrl = "images/rockers.jpg" },
+                    new Artist { UserId = 5, Name = "Indie Vibes", About = "Smooth indie tunes", ImageUrl = "images/indie.jpg" },
+                    new Artist { UserId = 6, Name = "Electronic Pulse", About = "Pumping electronic beats", ImageUrl = "images/electronic.jpg" },
+                    new Artist { UserId = 7, Name = "Hip-Hop Flow", About = "Smooth hip-hop beats", ImageUrl = "images/hiphop.jpg" },
+                    new Artist { UserId = 8, Name = "Jazz Masters", About = "Timeless jazz performances", ImageUrl = "images/jazz.jpg" }
                 };
                 context.Artists.AddRange(artists);
                 await context.SaveChangesAsync();
             }
-            //ArtistGenres
+
+            // Artist Genres
             if (!context.ArtistGenres.Any())
             {
                 var artistGenres = new ArtistGenre[]
                 {
-                    new ArtistGenre
-                    {
-                        ArtistId = 1,
-                        GenreId = 1,
-                    },
-                    new ArtistGenre
-                    {
-                        ArtistId = 1,
-                        GenreId = 2,
-                    }
+                    new ArtistGenre { ArtistId = 1, GenreId = 1 },
+                    new ArtistGenre { ArtistId = 2, GenreId = 2 },
+                    new ArtistGenre { ArtistId = 3, GenreId = 5 },
+                    new ArtistGenre { ArtistId = 4, GenreId = 4 },
+                    new ArtistGenre { ArtistId = 5, GenreId = 3 }
                 };
                 context.ArtistGenres.AddRange(artistGenres);
                 await context.SaveChangesAsync();
             }
-            //Venue
-            if (!context.Listings.Any())
+
+            // Venues
+            if (!context.Venues.Any())
             {
                 var venues = new Venue[]
                 {
-                    new Venue
-                    {
-                        UserId = 4,
-                        Name = "The Test Venue 1",
-                        About = "Test Venue 1",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 7,
-                        Name = "The Test Venue 3",
-                        About = "Test Venue 3",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 8,
-                        Name = "The Test Venue 4",
-                        About = "Test Venue 4",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 9,
-                        Name = "The Test Venue 5",
-                        About = "Test Venue 5",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 10,
-                        Name = "The Test Venue 6",
-                        About = "Test Venue 6",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 11,
-                        Name = "The Test Venue 7",
-                        About = "Test Venue 7",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        Approved = true
-                    },
-                    new Venue
-                    {
-                        UserId = 12,
-                        Name = "The Test Venue 8",
-                        About = "Test Venue 8",
-                        Longitude = 0,
-                        Latitude = 0,
-                        ImageUrl = "assets/images/test.jpg",
-                        Approved = true
-                    },
-            };
+                    new Venue { UserId = 9, Name = "The Grand Venue", About = "Premier event venue in Leatherhead", Latitude = 51.3, Longitude = -0.3, ImageUrl = "images/grandvenue.jpg", Approved = true },
+                    new Venue { UserId = 10, Name = "Redhill Hall", About = "Historic hall for intimate gigs", Latitude = 51.2, Longitude = -0.2, ImageUrl = "images/redhillhall.jpg", Approved = true },
+                    new Venue { UserId = 11, Name = "Weybridge Pavilion", About = "Modern space for concerts", Latitude = 51.4, Longitude = -0.45, ImageUrl = "images/weybridge.jpg", Approved = true },
+                    new Venue { UserId = 12, Name = "Cobham Arts Centre", About = "Cultural hub for arts and music", Latitude = 51.33, Longitude = -0.39, ImageUrl = "images/cobham.jpg", Approved = true },
+                    new Venue { UserId = 13, Name = "Chertsey Arena", About = "Large arena for big events", Latitude = 51.39, Longitude = -0.5, ImageUrl = "images/chertsey.jpg", Approved = true }
+                };
                 context.Venues.AddRange(venues);
                 await context.SaveChangesAsync();
             }
-            //Listings
+
+            // Venue Images
+            if (!context.VenueImages.Any())
+            {
+                var venueImages = new VenueImage[]
+                {
+                    new VenueImage { VenueId = 1, Url = "images/venue1_1.jpg" },
+                    new VenueImage { VenueId = 1, Url = "images/venue1_2.jpg" },
+                    new VenueImage { VenueId = 2, Url = "images/venue2_1.jpg" },
+                    new VenueImage { VenueId = 3, Url = "images/venue3_1.jpg" }
+                };
+                context.VenueImages.AddRange(venueImages);
+                await context.SaveChangesAsync();
+            }
+
+            // Listings
             if (!context.Listings.Any())
             {
                 var listings = new Listing[]
                 {
-                    new Listing
-                    {
-                        VenueId = 1,
-                        StartDate = new DateTime(2024, 1, 23, 18, 00, 0),
-                        EndDate = new DateTime(2024, 1, 23, 20, 00, 0),
-                        Pay = 250
-                    },
-                    new Listing
-                    {
-                        VenueId = 1,
-                        StartDate = new DateTime(2025, 3, 10, 20, 30, 0),
-                        EndDate = new DateTime(2025, 3, 10, 20, 30, 0),
-                        Pay = 100
-
-                    },
-                    new Listing
-                    {
-                        VenueId = 1,
-                        StartDate = new DateTime(2025, 4, 5, 20, 30, 0),
-                        EndDate = new DateTime(2025, 4, 5, 23, 30, 0),
-                        Pay = 300
-                    },
+                    new Listing { VenueId = 1, StartDate = new DateTime(2024, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
+                    new Listing { VenueId = 2, StartDate = new DateTime(2025, 5, 10, 20, 0, 0), EndDate = new DateTime(2025, 5, 10, 23, 0, 0), Pay = 300 },
+                    new Listing { VenueId = 3, StartDate = new DateTime(2024, 1, 10, 18, 0, 0), EndDate = new DateTime(2024, 1, 10, 20, 0, 0), Pay = 150 },
+                    new Listing { VenueId = 4, StartDate = new DateTime(2025, 6, 20, 18, 0, 0), EndDate = new DateTime(2025, 6, 20, 21, 0, 0), Pay = 250 },
+                    new Listing { VenueId = 5, StartDate = new DateTime(2024, 4, 5, 20, 0, 0), EndDate = new DateTime(2024, 4, 5, 23, 0, 0), Pay = 275 }
                 };
                 context.Listings.AddRange(listings);
                 await context.SaveChangesAsync();
             }
-            //ListingGenres
+
+            // ListingGenres
             if (!context.ListingGenres.Any())
             {
                 var listingGenres = new ListingGenre[]
                 {
-                    new ListingGenre
-                    {
-                        ListingId = 1,
-                        GenreId = 1,
-                    },
-                    new ListingGenre
-                    {
-                        ListingId = 1,
-                        GenreId = 3,
-                    },
-                    new ListingGenre
-                    {
-                        ListingId = 2,
-                        GenreId = 2,
-                    },
-                    new ListingGenre
-                    {
-                        ListingId = 2,
-                        GenreId = 3,
-                    },
-                    new ListingGenre
-                    {
-                        ListingId = 3,
-                        GenreId = 1,
-                    },
-                    new ListingGenre
-                    {
-                        ListingId = 3,
-                        GenreId = 3,
-                    },
-                };
-                context.ListingGenres.AddRange(listingGenres);
-                await context.SaveChangesAsync();
+                new ListingGenre { ListingId = 1, GenreId = 1 }, // Rock for Listing 1
+                new ListingGenre { ListingId = 1, GenreId = 2 }, // Pop for Listing 1
+                new ListingGenre { ListingId = 2, GenreId = 5 }, // Electronic for Listing 2
+                new ListingGenre { ListingId = 3, GenreId = 3 }, // Jazz for Listing 3
+                new ListingGenre { ListingId = 4, GenreId = 4 }, // Hip-Hop for Listing 4
+                new ListingGenre { ListingId = 5, GenreId = 6 }  // Indie for Listing 5
+                        };
+                        context.ListingGenres.AddRange(listingGenres);
+                        await context.SaveChangesAsync();
             }
-            //Registers
+
+            // Listing Applications
             if (!context.ListingApplications.Any())
             {
-                var registers = new ListingApplication[]
+                var listingApplications = new ListingApplication[]
                 {
-                    new ListingApplication
-                    {
-                        ArtistId = 1,
-                        ListingId = 1
-                    },
-                    new ListingApplication
-                    {
-                        ArtistId = 1,
-                        ListingId = 2
-                    }
+                    new ListingApplication { ArtistId = 1, ListingId = 1 },
+                    new ListingApplication { ArtistId = 2, ListingId = 2 },
+                    new ListingApplication { ArtistId = 3, ListingId = 3 },
+                    new ListingApplication { ArtistId = 4, ListingId = 4 },
+                    new ListingApplication { ArtistId = 5, ListingId = 5 }
                 };
-                context.ListingApplications.AddRange(registers);
+                context.ListingApplications.AddRange(listingApplications);
                 await context.SaveChangesAsync();
             }
-            //Events
+
+            // Events
             if (!context.Events.Any())
             {
                 var events = new Event[]
                 {
-                    new Event
-                    {
-                        ApplicationId = 1,
-                        Price = 10.5m,
-                        Name = "Test Event",
-                        TotalTickets = 100,
-                        AvailableTickets = 50
-                    },
-                    new Event
-                    {
-                        ApplicationId = 2,
-                        Price = 10.5m,
-                        Name = "Test Event",
-                        TotalTickets = 100,
-                        AvailableTickets = 50
-                    },
+                    new Event { ApplicationId = 1, Name = "Rock Night", Price = 15, TotalTickets = 100, AvailableTickets = 20, Posted = true },
+                    new Event { ApplicationId = 2, Name = "Indie Evening", Price = 12, TotalTickets = 80, AvailableTickets = 80, Posted = false },
+                    new Event { ApplicationId = 3, Name = "Jazz Gala", Price = 18, TotalTickets = 120, AvailableTickets = 0, Posted = true },
+                    new Event { ApplicationId = 4, Name = "Electronic Bash", Price = 20, TotalTickets = 150, AvailableTickets = 50, Posted = true },
+                    new Event { ApplicationId = 5, Name = "Hip-Hop Fest", Price = 10, TotalTickets = 200, AvailableTickets = 100, Posted = true }
                 };
                 context.Events.AddRange(events);
                 await context.SaveChangesAsync();
             }
-            //Tickets
+
+            // Tickets
             if (!context.Tickets.Any())
             {
                 var tickets = new Ticket[]
-                 {
-                    new Ticket
-                    {
-                        UserId = 2,
-                        EventId = 1,
-                        PurchaseDate = DateTime.Now
-
-                    },
-                    new Ticket
-                    {
-                        UserId = 5,
-                        EventId = 1,
-                        PurchaseDate = DateTime.Now
-                    },
-                 };
+                {
+                    new Ticket { UserId = 2, EventId = 1, PurchaseDate = DateTime.Now },
+                    new Ticket { UserId = 3, EventId = 1, PurchaseDate = DateTime.Now },
+                    new Ticket { UserId = 2, EventId = 3, PurchaseDate = DateTime.Now }
+                };
                 context.Tickets.AddRange(tickets);
                 await context.SaveChangesAsync();
             }
-            //Reviews
-            if (!context.Users.Any())
+
+            // Reviews
+            if (!context.Reviews.Any())
             {
                 var reviews = new Review[]
                 {
-                    new Review
-                    {
-                        TicketId = 1,
-                        Stars = 4,
-                        Details = "Test"
-                    },
+                    new Review { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
+                    new Review { TicketId = 2, Stars = 5, Details = "Loved every moment!" }
                 };
                 context.Reviews.AddRange(reviews);
+                await context.SaveChangesAsync();
+            }
+
+            // Messages
+            if (!context.Messages.Any())
+            {
+                var messages = new Message[]
+                {
+                    new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.Now, Read = false },
+                    new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.Now, Read = true }
+                };
+                context.Messages.AddRange(messages);
+                await context.SaveChangesAsync();
+            }
+
+            // Purchases
+            if (!context.Purchases.Any())
+            {
+                var purchases = new Purchase[]
+                {
+                    new Purchase { FromUserId = 2, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now },
+                    new Purchase { FromUserId = 3, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 275, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now }
+                };
+                context.Purchases.AddRange(purchases);
                 await context.SaveChangesAsync();
             }
         }
