@@ -6,6 +6,7 @@ import { NavItem } from '../../models/nav-item';
 import { Venue } from '../../models/venue';
 import { Artist } from '../../models/artist';
 import { Event } from '../../models/event';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Directive({
   selector: '[appDetails]',
@@ -24,6 +25,7 @@ export abstract class DetailsDirective<T extends Venue | Artist | Event> impleme
 
   constructor(
     protected authService: AuthService,
+    protected blobStorageService: BlobStorageService,
     protected route: ActivatedRoute,
     protected router: Router
   ) { }
@@ -51,7 +53,7 @@ export abstract class DetailsDirective<T extends Venue | Artist | Event> impleme
   
   updateContent(updatedContent: string, field: keyof T) {
     if (this.entity && field in this.entity) {
-      (this.entity as any)[field] = updatedContent;  // ✅ Now TypeScript knows this is safe
+      (this.entity as any)[field] = updatedContent; 
     }
     this.onChangeDetected()
   }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Helpers
 {
@@ -18,5 +19,6 @@ namespace Infrastructure.Helpers
 
             return new PaginationResponse<T>(data, totalCount, pageNumber, pageSize);
         }
+
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250216011115_InitialCreate")]
+    [Migration("20250216194617_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -460,8 +460,8 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte>("Stars")
-                        .HasColumnType("tinyint");
+                    b.Property<double>("Stars")
+                        .HasColumnType("float");
 
                     b.Property<int>("TicketId")
                         .HasColumnType("int");
@@ -818,13 +818,13 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entities.ListingApplication", b =>
                 {
                     b.HasOne("Core.Entities.Artist", "Artist")
-                        .WithMany("Registers")
+                        .WithMany("Applications")
                         .HasForeignKey("ArtistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Core.Entities.Listing", "Listing")
-                        .WithMany("Registers")
+                        .WithMany("Applications")
                         .HasForeignKey("ListingId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1018,9 +1018,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Artist", b =>
                 {
-                    b.Navigation("ArtistGenres");
+                    b.Navigation("Applications");
 
-                    b.Navigation("Registers");
+                    b.Navigation("ArtistGenres");
 
                     b.Navigation("SocialMedias");
 
@@ -1050,9 +1050,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Listing", b =>
                 {
-                    b.Navigation("ListingGenres");
+                    b.Navigation("Applications");
 
-                    b.Navigation("Registers");
+                    b.Navigation("ListingGenres");
                 });
 
             modelBuilder.Entity("Core.Entities.Ticket", b =>

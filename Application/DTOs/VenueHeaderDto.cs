@@ -2,7 +2,6 @@
 {
     public class VenueHeaderDto : HeaderDto
     {
-
     }
 
 }

@@ -17,7 +17,13 @@ namespace Infrastructure.Repositories
 {
     public class EventRepository : Repository<Event>, IEventRepository
     {
-        public EventRepository(ApplicationDbContext context) : base(context) { }
+        private readonly IReviewRepository reviewRepository;
+
+        public EventRepository(ApplicationDbContext context, IReviewRepository reviewRepository) : base(context) 
+        {
+            this.reviewRepository = reviewRepository;
+        }
+
 
         public async Task<Event> GetByIdAsync(int id)
         {
@@ -39,14 +45,19 @@ namespace Infrastructure.Repositories
         }
 
 
-        public async Task<PaginationResponse<Event>> GetHeadersAsync(SearchParams searchParams)
+        public async Task<PaginationResponse<EventHeaderDto>> GetRawHeadersAsync(SearchParams searchParams)
         {
-            var query = context.Events.AsQueryable();
-            query = query.Select(v => new Event
-            {
-                Id = v.Id,
-                Name = v.Name
-            });
+            var query = context.Events
+                .Select(e => new EventHeaderDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    ImageUrl = e.Application.Artist.ImageUrl,
+                    StartDate = e.Application.Listing.StartDate,
+                    EndDate = e.Application.Listing.EndDate,
+                    County = e.Application.Listing.Venue.User.County,
+                    Town = e.Application.Listing.Venue.User.Town
+                }).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
             {

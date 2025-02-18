@@ -7,4 +7,7 @@ export interface Header {
     name: string;
     about: string;
     imageUrl: string;
+    county: string;
+    town: string;
+    rating: number;
 }

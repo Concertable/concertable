@@ -5,7 +5,13 @@
             <h1>{{navItems[0].name}}</h1>
             <app-heading-medium [editMode]="editMode" label="Name" [content]="artist.name" (contentChange)="updateContent($event, 'name')"/>
             <app-textarea [editMode]="editMode" label="About" [content]="artist.about" (contentChange)="updateContent($event, 'about')"/>
-            <app-image [editMode]="editMode" [src]="artist.imageUrl" alt="Venue Image" (imageChange)="updateImage($event)"/>
+            <app-image 
+                [editMode]="editMode" 
+                width="200"
+                height="200"
+                [src]="artist.imageUrl" 
+                alt="Venue Image" 
+                (imageChange)="updateImage($event)"/>
         </section>
 
         <section [id]="navItems[1].fragment">

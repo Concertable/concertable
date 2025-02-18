@@ -20,7 +20,7 @@ export abstract class MyItemDirective<T extends Venue | Artist | Event> implemen
 
   abstract update(item: T): Observable<T>;
 
-  abstract showUpdated(name: string): void;
+  abstract showUpdated(name: string): void
 
   onEditModeChange(newValue: boolean) {
     this.editMode = newValue;

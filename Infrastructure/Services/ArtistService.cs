@@ -16,22 +16,26 @@ namespace Infrastructure.Services
     public class ArtistService : IArtistService
     {
         private readonly IArtistRepository artistRepository;
+        private readonly IReviewService reviewService;
         private readonly IAuthService authService;
         private readonly IMapper mapper;
 
-        public ArtistService(IAuthService authService, IArtistRepository artistRepository, IMapper mapper) 
+        public ArtistService(IAuthService authService, IReviewService reviewService, IArtistRepository artistRepository, IMapper mapper) 
         {
             this.artistRepository = artistRepository;
+            this.reviewService = reviewService;
             this.authService = authService;
             this.mapper = mapper;
         }
 
         public async Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams)
         {
-            var headers = await artistRepository.GetHeadersAsync(searchParams);
-            var headersDtos = mapper.Map<IEnumerable<ArtistHeaderDto>>(headers.Data);
+            var headers = await artistRepository.GetRawHeadersAsync(searchParams);
+
+            await reviewService.AddArtistRatingsAsync(headers.Data);
+
             return new PaginationResponse<ArtistHeaderDto>(
-                headersDtos,
+                headers.Data,
                 headers.TotalCount,
                 headers.PageNumber,
                 headers.PageSize);

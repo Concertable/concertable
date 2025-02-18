@@ -61,11 +61,11 @@ namespace Infrastructure.Data
             {
                 var artists = new Artist[]
                 {
-                    new Artist { UserId = 4, Name = "The Rockers", About = "A thrilling rock band", ImageUrl = "images/rockers.jpg" },
-                    new Artist { UserId = 5, Name = "Indie Vibes", About = "Smooth indie tunes", ImageUrl = "images/indie.jpg" },
-                    new Artist { UserId = 6, Name = "Electronic Pulse", About = "Pumping electronic beats", ImageUrl = "images/electronic.jpg" },
-                    new Artist { UserId = 7, Name = "Hip-Hop Flow", About = "Smooth hip-hop beats", ImageUrl = "images/hiphop.jpg" },
-                    new Artist { UserId = 8, Name = "Jazz Masters", About = "Timeless jazz performances", ImageUrl = "images/jazz.jpg" }
+                    new Artist { UserId = 4, Name = "The Rockers", About = "A thrilling rock band", ImageUrl = "rockers.jpg" },
+                    new Artist { UserId = 5, Name = "Indie Vibes", About = "Smooth indie tunes", ImageUrl = "indievibes.jpg" },
+                    new Artist { UserId = 6, Name = "Electronic Pulse", About = "Pumping electronic beats", ImageUrl = "electronicpulse.jpg" },
+                    new Artist { UserId = 7, Name = "Hip-Hop Flow", About = "Smooth hip-hop beats", ImageUrl = "hiphopflow.jpg" },
+                    new Artist { UserId = 8, Name = "Jazz Masters", About = "Timeless jazz performances", ImageUrl = "jazzmaster.jpg" }
                 };
                 context.Artists.AddRange(artists);
                 await context.SaveChangesAsync();
@@ -91,11 +91,11 @@ namespace Infrastructure.Data
             {
                 var venues = new Venue[]
                 {
-                    new Venue { UserId = 9, Name = "The Grand Venue", About = "Premier event venue in Leatherhead", Latitude = 51.3, Longitude = -0.3, ImageUrl = "images/grandvenue.jpg", Approved = true },
-                    new Venue { UserId = 10, Name = "Redhill Hall", About = "Historic hall for intimate gigs", Latitude = 51.2, Longitude = -0.2, ImageUrl = "images/redhillhall.jpg", Approved = true },
-                    new Venue { UserId = 11, Name = "Weybridge Pavilion", About = "Modern space for concerts", Latitude = 51.4, Longitude = -0.45, ImageUrl = "images/weybridge.jpg", Approved = true },
-                    new Venue { UserId = 12, Name = "Cobham Arts Centre", About = "Cultural hub for arts and music", Latitude = 51.33, Longitude = -0.39, ImageUrl = "images/cobham.jpg", Approved = true },
-                    new Venue { UserId = 13, Name = "Chertsey Arena", About = "Large arena for big events", Latitude = 51.39, Longitude = -0.5, ImageUrl = "images/chertsey.jpg", Approved = true }
+                    new Venue { UserId = 9, Name = "The Grand Venue", About = "Premier event venue in Leatherhead", Latitude = 51.3, Longitude = -0.3, ImageUrl = "grandvenue.jpg", Approved = true },
+                    new Venue { UserId = 10, Name = "Redhill Hall", About = "Historic hall for intimate gigs", Latitude = 51.2, Longitude = -0.2, ImageUrl = "redhillhall.jpg", Approved = true },
+                    new Venue { UserId = 11, Name = "Weybridge Pavilion", About = "Modern space for concerts", Latitude = 51.4, Longitude = -0.45, ImageUrl = "weybridgepavilon.jpg", Approved = true },
+                    new Venue { UserId = 12, Name = "Cobham Arts Centre", About = "Cultural hub for arts and music", Latitude = 51.33, Longitude = -0.39, ImageUrl = "cobhamarts.jpg", Approved = true },
+                    new Venue { UserId = 13, Name = "Chertsey Arena", About = "Large arena for big events", Latitude = 51.39, Longitude = -0.5, ImageUrl = "chertseyarena.jpg", Approved = true }
                 };
                 context.Venues.AddRange(venues);
                 await context.SaveChangesAsync();
@@ -106,10 +106,10 @@ namespace Infrastructure.Data
             {
                 var venueImages = new VenueImage[]
                 {
-                    new VenueImage { VenueId = 1, Url = "images/venue1_1.jpg" },
-                    new VenueImage { VenueId = 1, Url = "images/venue1_2.jpg" },
-                    new VenueImage { VenueId = 2, Url = "images/venue2_1.jpg" },
-                    new VenueImage { VenueId = 3, Url = "images/venue3_1.jpg" }
+                    new VenueImage { VenueId = 1, Url = "venue1_1.jpg" },
+                    new VenueImage { VenueId = 1, Url = "venue1_2.jpg" },
+                    new VenueImage { VenueId = 2, Url = "venue2_1.jpg" },
+                    new VenueImage { VenueId = 3, Url = "venue3_1.jpg" }
                 };
                 context.VenueImages.AddRange(venueImages);
                 await context.SaveChangesAsync();

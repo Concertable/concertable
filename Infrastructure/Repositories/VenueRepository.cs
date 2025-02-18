@@ -12,22 +12,30 @@ using System.Threading.Tasks;
 using Infrastructure.Helpers;
 using Core.Responses;
 using Core.Entities.Identity;
+using Application.DTOs;
 
 namespace Infrastructure.Repositories
 {
     public class VenueRepository : Repository<Venue>, IVenueRepository
     {
-        public VenueRepository(ApplicationDbContext context) : base(context) { }
+        private readonly IReviewRepository reviewRepository;
 
-        public async Task<PaginationResponse<Venue>> GetHeadersAsync(SearchParams? searchParams)
+        public VenueRepository(ApplicationDbContext context, IReviewRepository reviewRepository) : base(context) 
         {
-            var query = context.Venues.AsQueryable();
-            query = query.Select(v => new Venue
-            {
-                Id = v.Id,
-                Name = v.Name,
-                ImageUrl = v.ImageUrl,
-            });
+            this.reviewRepository = reviewRepository;
+        }
+
+        public async Task<PaginationResponse<VenueHeaderDto>> GetRawHeadersAsync(SearchParams? searchParams)
+        {
+            var query = context.Venues
+                .Select(v => new VenueHeaderDto
+                {
+                    Id = v.Id,
+                    Name = v.Name,
+                    ImageUrl = v.ImageUrl,
+                    County = v.User.County,
+                    Town = v.User.Town
+                });
 
             if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
             {

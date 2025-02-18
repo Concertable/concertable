@@ -8,6 +8,7 @@ import { Event } from '../../models/event';
 import { DetailsDirective } from '../../directives/details/details.directive';
 import { Observable } from 'rxjs';
 import { EventStateService } from '../../services/event-state/event-state.service';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Component({
   selector: 'app-event-details',
@@ -31,10 +32,11 @@ export class EventDetailsComponent extends DetailsDirective<Event> {
     private eventService: EventService,
     private eventStateService: EventStateService,
     authService: AuthService,
+    blobStorageService: BlobStorageService,
     route: ActivatedRoute,
     router: Router) 
   { 
-    super(authService, route, router)
+    super(authService, blobStorageService, route, router)
   }
 
   get event(): Event | undefined {

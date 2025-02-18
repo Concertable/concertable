@@ -1,5 +1,10 @@
 <div class="image-upload-container">
-    <img [src]="src" [alt]="alt" *ngIf="src else placeholder">
+    <img 
+        [src]="blobStorageService.getUrl(src)" 
+        [alt]="alt" 
+        [width]="width"
+        [height]="height"
+        *ngIf="src else placeholder">
 
     <ng-template #placeholder>
         <div class="placeholder">No Image Selected</div>

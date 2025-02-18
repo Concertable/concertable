@@ -44,6 +44,9 @@ namespace Infrastructure.Data.Identity
 
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<ListingApplication>()
+                .Ignore(l => l.Event);
+
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.FromUser)
                 .WithMany(u => u.SentMessages)
@@ -77,7 +80,7 @@ namespace Infrastructure.Data.Identity
 
             modelBuilder.Entity<ListingApplication>()
                 .HasOne(r => r.Listing)
-                .WithMany(l => l.Registers)  
+                .WithMany(l => l.Applications)  
                 .HasForeignKey(r => r.ListingId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction); 
@@ -85,7 +88,7 @@ namespace Infrastructure.Data.Identity
             // One-to-Many: An Artist can have multiple Registers
             modelBuilder.Entity<ListingApplication>()
                 .HasOne(r => r.Artist)
-                .WithMany(a => a.Registers)  
+                .WithMany(a => a.Applications)  
                 .HasForeignKey(r => r.ArtistId)
                 .IsRequired();
 

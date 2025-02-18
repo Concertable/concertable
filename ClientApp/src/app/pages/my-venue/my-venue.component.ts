@@ -39,7 +39,6 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
   }
 
   update(venue: Venue): Observable<Venue> {
-    console.log("hh")
     return this.venueService.update(venue);
   }
 

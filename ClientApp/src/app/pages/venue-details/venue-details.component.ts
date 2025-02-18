@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { Coordinates } from '../../models/coordinates';
 import { cloneDeep } from 'lodash';
 import { Listing } from '../../models/listing';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Component({
   selector: 'app-venue-details',
@@ -32,9 +33,10 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
     private venueService: VenueService, 
     authService: AuthService, 
     route: ActivatedRoute,
+    blobStorageService: BlobStorageService,
     router: Router
   ) {
-    super(authService, route, router);
+    super(authService, blobStorageService, route, router);
   }
 
   get venue(): Venue | undefined {

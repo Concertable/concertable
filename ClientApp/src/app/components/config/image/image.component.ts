@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ToastService } from '../../../services/toast/toast.service';
+import { BlobStorageService } from '../../../services/blob-storage/blob-storage.service';
 
 @Component({
   selector: 'app-image',
@@ -12,13 +13,15 @@ export class ImageComponent {
   @Input() editMode?: boolean;
   @Input() src?: string;
   @Input() alt?: string;
+  @Input() width?: string = "200";
+  @Input() height?: string = "200";
   @Output() imageChange = new EventEmitter<string>
 
   imageUrl?: string;
 
   private maxFileSize = 2 * 1024 * 1024;
 
-  constructor(private toastService: ToastService) { }
+  constructor(private toastService: ToastService, protected blobStorageService: BlobStorageService) { }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -30,16 +33,15 @@ export class ImageComponent {
         return;
       }
 
-      const fileName = file.name
-      this.imageUrl = `images/${fileName}`
+      this.imageUrl = `images/${file.name}`
 
       const reader = new FileReader();
 
-      reader.onload = (e: any) => {
+      reader.onload = (e: ProgressEvent<FileReader>) => {
         this.src = reader.result as string; // Update the image preview
 
         const img = new Image();
-        img.src = e.target.result;
+        img.src = e.target?.result as string;
 
         img.onload = () => {
           // Resize the image to 200x200 pixels

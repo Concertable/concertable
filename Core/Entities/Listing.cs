@@ -9,7 +9,7 @@ namespace Core.Entities
         public DateTime EndDate { get; set; }
         public double Pay {  get; set; }
         public Venue Venue { get; set; }
-        public ICollection<ListingApplication> Registers { get; set; }
+        public ICollection<ListingApplication> Applications { get; set; }
         public ICollection<ListingGenre> ListingGenres { get; set; }
     }
 }

@@ -540,7 +540,7 @@ namespace Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TicketId = table.Column<int>(type: "int", nullable: false),
-                    Stars = table.Column<byte>(type: "tinyint", nullable: false),
+                    Stars = table.Column<double>(type: "float", nullable: false),
                     Details = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>

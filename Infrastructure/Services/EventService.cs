@@ -17,12 +17,14 @@ namespace Infrastructure.Services
     public class EventService : IEventService
     {
         private readonly IEventRepository eventRepository;
+        private readonly IReviewService reviewService;
         private readonly IListingApplicationService applicationService;
         private readonly IMapper mapper;
 
-        public EventService(IEventRepository eventRepository, IListingApplicationService applicationService, IMapper mapper)
+        public EventService(IEventRepository eventRepository, IReviewService reviewService, IListingApplicationService applicationService, IMapper mapper)
         {
             this.eventRepository = eventRepository;
+            this.reviewService = reviewService;
             this.applicationService = applicationService;
             this.mapper = mapper;
         }
@@ -35,10 +37,12 @@ namespace Infrastructure.Services
 
         public async Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams)
         {
-            var headers = await eventRepository.GetHeadersAsync(searchParams);
-            var headersDtos = mapper.Map<IEnumerable<EventHeaderDto>>(headers.Data);
+            var headers = await eventRepository.GetRawHeadersAsync(searchParams);
+
+            await reviewService.AddEventRatingsAsync(headers.Data);
+
             return new PaginationResponse<EventHeaderDto>(
-                headersDtos,
+                headers.Data,
                 headers.TotalCount,
                 headers.PageNumber,
                 headers.PageSize);

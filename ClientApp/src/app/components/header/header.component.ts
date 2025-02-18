@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Header } from '../../models/header';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HeaderType } from '../../models/header-type';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Component({
   selector: 'app-header',
@@ -14,7 +15,10 @@ export class HeaderComponent<T extends Header> {
   @Input() header?: T;
   @Input() headerType?: HeaderType;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(
+    protected blobStorageService: BlobStorageService,
+    private router: Router, 
+    private route: ActivatedRoute) { }
 
   onClick(): void {
     console.log("heee")

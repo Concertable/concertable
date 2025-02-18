@@ -10,21 +10,30 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Responses;
 using Infrastructure.Helpers;
+using Application.DTOs;
 
 namespace Infrastructure.Repositories
 {
     public class ArtistRepository : Repository<Artist>, IArtistRepository
     {
-        public ArtistRepository(ApplicationDbContext context) : base(context) { }
+        private readonly IReviewRepository reviewRepository;
 
-        public async Task<PaginationResponse<Artist>> GetHeadersAsync(SearchParams searchParams)
+        public ArtistRepository(ApplicationDbContext context, IReviewRepository reviewRepository) : base(context) 
         {
-            var query = context.Artists.AsQueryable();
-            query = query.Select(v => new Artist
-            {
-                Id = v.Id,
-                Name = v.Name
-            });
+            this.reviewRepository = reviewRepository;
+        }
+
+        public async Task<PaginationResponse<ArtistHeaderDto>> GetRawHeadersAsync(SearchParams searchParams)
+        {
+            var query = context.Artists
+                .Select(v => new ArtistHeaderDto
+                {
+                    Id = v.Id,
+                    Name = v.Name,
+                    ImageUrl = v.ImageUrl,
+                    County = v.User.County,
+                    Town = v.User.Town,
+                });
 
             if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
             {

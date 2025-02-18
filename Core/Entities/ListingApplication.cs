@@ -15,5 +15,6 @@ namespace Core.Entities
         public int ArtistId { get; set; }
         public Listing Listing { get; set; }
         public Artist Artist { get; set; }
+        public Event? Event { get; set; }
     }
 }

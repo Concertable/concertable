@@ -13,12 +13,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
 using Core.Responses;
+using System.Runtime.InteropServices;
 
 namespace Infrastructure.Services
 {
     public class VenueService : IVenueService
     {
         private readonly IVenueRepository venueRepository;
+        private readonly IReviewService reviewService;
         private readonly IAuthService authService;
         private readonly IGeocodingService geocodingService;
         private IUnitOfWork unitOfWork;
@@ -40,10 +42,12 @@ namespace Infrastructure.Services
 
         public async Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
         {
-            var headers = await venueRepository.GetHeadersAsync(searchParams);
-            var headersDtos = mapper.Map<IEnumerable<VenueHeaderDto>>(headers.Data);
+            var headers = await venueRepository.GetRawHeadersAsync(searchParams);
+
+            await reviewService.AddVenueRatingsAsync(headers.Data);
+
             return new PaginationResponse<VenueHeaderDto>(
-                headersDtos,
+                headers.Data,
                 headers.TotalCount,
                 headers.PageNumber,
                 headers.PageSize);

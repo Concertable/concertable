@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Application.DTOs;
+using Core.Entities;
 using Core.Parameters;
 using Core.Responses;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,6 @@ namespace Application.Interfaces
         Task<Event> GetByIdAsync(int id); 
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);
-        Task<PaginationResponse<Event>> GetHeadersAsync(SearchParams searchParams);
+        Task<PaginationResponse<EventHeaderDto>> GetRawHeadersAsync(SearchParams searchParams);
     }
 }

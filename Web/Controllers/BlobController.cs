@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Web.Controllers
 {
@@ -34,7 +35,26 @@ namespace Web.Controllers
             if (stream == null)
                 return NotFound("Blob not found");
 
-            return File(stream, "application/octet-stream", blobName);
+            var contentType = GetContentType(blobName);
+
+            return File(stream, contentType, blobName);
+        }
+
+        [HttpDelete("{fileName}")]
+        public async Task<IActionResult> Delete(string fileName)
+        {
+            await blobStorageService.DeleteAsync(fileName);
+            return Ok(new { message = "File deleted successfully" });
+        }
+
+        private string GetContentType(string fileName)
+        {
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(fileName, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            return contentType;
         }
     }
 }

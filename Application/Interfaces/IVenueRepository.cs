@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Application.DTOs;
+using Core.Entities;
 using Core.Parameters;
 using Core.Responses;
 using System;
@@ -11,7 +12,7 @@ namespace Application.Interfaces
 {
     public interface IVenueRepository : IRepository<Venue>
     {
-        Task<PaginationResponse<Venue>> GetHeadersAsync(SearchParams? searchParams);
+        Task<PaginationResponse<VenueHeaderDto>> GetRawHeadersAsync(SearchParams? searchParams);
         Task<Venue?> GetByUserIdAsync(int id);
     }
 }

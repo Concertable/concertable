@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Application.DTOs;
+using Core.Entities;
 using Core.Parameters;
 using Core.Responses;
 using System;
@@ -11,7 +12,7 @@ namespace Application.Interfaces
 {
     public interface IArtistRepository : IRepository<Artist>
     {
-        Task<PaginationResponse<Artist>> GetHeadersAsync(SearchParams searchParams);
+        Task<PaginationResponse<ArtistHeaderDto>> GetRawHeadersAsync(SearchParams searchParams);
         Task<Artist?> GetByUserIdAsync(int id);
     }
 }
