@@ -9,8 +9,8 @@ namespace Application.Interfaces
 {
     public interface IReviewService
     {
-        Task AddArtistRatingsAsync(IEnumerable<ArtistHeaderDto> headers);
-        Task AddVenueRatingsAsync(IEnumerable<VenueHeaderDto> headers);
-        Task AddEventRatingsAsync(IEnumerable<EventHeaderDto> headers);
+        Task AddRatingsAsync(IEnumerable<ArtistHeaderDto> headers);
+        Task AddRatingsAsync(IEnumerable<VenueHeaderDto> headers);
+        Task AddRatingsAsync(IEnumerable<EventHeaderDto> headers);
     }
 }

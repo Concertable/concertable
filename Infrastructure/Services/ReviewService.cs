@@ -19,7 +19,7 @@ namespace Infrastructure.Services
             this.reviewRepository = reviewRepository;
         }
 
-        public async Task AddArtistRatingsAsync(IEnumerable<ArtistHeaderDto> headers)
+        public async Task AddRatingsAsync(IEnumerable<ArtistHeaderDto> headers)
         {
             foreach (var h in headers)
             {
@@ -27,7 +27,7 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task AddEventRatingsAsync(IEnumerable<EventHeaderDto> headers)
+        public async Task AddRatingsAsync(IEnumerable<EventHeaderDto> headers)
         {
             foreach (var h in headers)
             {
@@ -35,7 +35,7 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task AddVenueRatingsAsync(IEnumerable<VenueHeaderDto> headers)
+        public async Task AddRatingsAsync(IEnumerable<VenueHeaderDto> headers)
         {
             foreach (var h in headers)
             {

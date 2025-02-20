@@ -39,7 +39,7 @@ namespace Infrastructure.Services
         {
             var headers = await eventRepository.GetRawHeadersAsync(searchParams);
 
-            await reviewService.AddEventRatingsAsync(headers.Data);
+            await reviewService.AddRatingsAsync(headers.Data);
 
             return new PaginationResponse<EventHeaderDto>(
                 headers.Data,

@@ -44,7 +44,7 @@ namespace Infrastructure.Services
         {
             var headers = await venueRepository.GetRawHeadersAsync(searchParams);
 
-            await reviewService.AddVenueRatingsAsync(headers.Data);
+            await reviewService.AddRatingsAsync(headers.Data);
 
             return new PaginationResponse<VenueHeaderDto>(
                 headers.Data,
