@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Core.Exceptions;
+using Infrastructure.ApiModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -32,20 +33,20 @@ namespace Infrastructure.Services
             //Send to api
             var response = await httpClient.GetStringAsync(requestUri);
             //Deserialize response
-            dynamic result = JsonConvert.DeserializeObject(response);
+            var result = JsonConvert.DeserializeObject<GoogleGeocodeResponse>(response);
 
             string county = null;
             string town = null;
 
-            if (result.results == null || result.results.Count == 0)
+            if (result.Results == null || result.Results.Count == 0)
                 throw new BadRequestException("No geocoding results found for the provided coordinates.");
 
-            foreach (var resultItem in result.results)
+            foreach (var resultItem in result.Results)
             {
-                foreach (var addressComponent in resultItem.address_components)
+                foreach (var addressComponent in resultItem.Address_Components)
                 {
-                    var types = addressComponent.types.ToObject<List<string>>();
-                    string longName = addressComponent.long_name;
+                    var types = addressComponent.Types;
+                    string longName = addressComponent.Long_Name;
 
                     if (types.Contains("administrative_area_level_2") && string.IsNullOrEmpty(county))
                     {

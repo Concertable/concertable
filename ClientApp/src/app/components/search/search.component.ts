@@ -23,9 +23,10 @@ export class SearchComponent {
     this.searchParams.date = date;
   }
 
-  onLocationChange(location: string) {
-    
+  onLocationChange({ lat, lng }: { lat: number; lng: number }) {
+    console.log("Latitude:", lat, "Longitude:", lng);
   }
+  
 
   onSearch() {
     console.log("date",this.date);
