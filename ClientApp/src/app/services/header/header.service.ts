@@ -25,6 +25,24 @@ export class HeaderService {
     private eventService: EventService
   ) { }
 
+  setParams(searchParams: SearchParams): HttpParams {
+    let params = new HttpParams();
+    console.log("after",searchParams)
+    Object.entries(searchParams)
+        .filter(([_, value]) => value !== undefined) // ✅ Ignore undefined values
+        .forEach(([key, value]) => {
+            if (key === "date") {
+                params = params.set(key, value.toISOString().slice(0, 16) + "Z"); // ✅ Convert only when needed
+            } else if (key === "genreIds") { // ✅ Check if value is an array
+                params = params.set(key, value);
+            } else {
+                params = params.set(key, String(value)); // ✅ Convert everything else to a string
+            }
+        });
+    return params;
+}
+
+
   getVenueHeaders(searchParams: SearchParams): Observable<Pagination<VenueHeader>> {
     const { date, ...filteredParams } = searchParams; 
     const params = new HttpParams({ fromObject: filteredParams as any })
@@ -38,7 +56,9 @@ export class HeaderService {
   }
 
   getEventHeaders(searchParams: SearchParams): Observable<Pagination<EventHeader>> {
-    const params = new HttpParams({ fromObject: searchParams as any })
+    const params = this.setParams(searchParams);
+    console.log("xxx",searchParams);
+    console.log(params);
     return this.eventService.getHeaders(params);
   }
 }

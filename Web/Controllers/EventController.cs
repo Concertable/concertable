@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.Design;
 using Application.DTOs;
+using Core.ModelBinders;
 
 namespace Web.Controllers
 {
@@ -21,7 +22,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<EventHeaderDto>>> GetHeaders([FromQuery] SearchParams searchParams)
+        public async Task<ActionResult<IEnumerable<EventHeaderDto>>> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
         {
             return Ok(await eventService.GetHeadersAsync(searchParams));
         }

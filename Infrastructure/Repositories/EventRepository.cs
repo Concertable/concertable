@@ -12,16 +12,23 @@ using Infrastructure.Helpers;
 using Core.Responses;
 using Application.DTOs;
 using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
     public class EventRepository : Repository<Event>, IEventRepository
     {
         private readonly IReviewRepository reviewRepository;
+        private readonly IHeaderRepositoryFactory headerRepositoryFactory;
 
-        public EventRepository(ApplicationDbContext context, IReviewRepository reviewRepository) : base(context) 
+        public EventRepository(
+            ApplicationDbContext context, 
+            IReviewRepository reviewRepository,
+            IHeaderRepositoryFactory headerRepositoryFactory
+            ) : base(context) 
         {
             this.reviewRepository = reviewRepository;
+            this.headerRepositoryFactory = headerRepositoryFactory;
         }
 
 
@@ -47,24 +54,30 @@ namespace Infrastructure.Repositories
 
         public async Task<PaginationResponse<EventHeaderDto>> GetRawHeadersAsync(SearchParams searchParams)
         {
-            var query = context.Events
-                .Select(e => new EventHeaderDto
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    ImageUrl = e.Application.Artist.ImageUrl,
-                    StartDate = e.Application.Listing.StartDate,
-                    EndDate = e.Application.Listing.EndDate,
-                    County = e.Application.Listing.Venue.User.County,
-                    Town = e.Application.Listing.Venue.User.Town
-                }).AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
+            Expression<Func<Event, EventHeaderDto>> selector = e => new EventHeaderDto
             {
-                query = query.OrderBy(v => searchParams.Sort);
+                Id = e.Id,
+                Name = e.Name,
+                ImageUrl = e.Application.Artist.ImageUrl,
+                StartDate = e.Application.Listing.StartDate,
+                EndDate = e.Application.Listing.EndDate,
+                County = e.Application.Listing.Venue.User.County,
+                Town = e.Application.Listing.Venue.User.Town
+            };
+
+            var filters = new List<Expression<Func<Event, bool>>>(); 
+
+            if (searchParams.Date != null)
+            {
+                filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
             }
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams);
+
+            var headerRepository = headerRepositoryFactory.Create(selector, filters);
+
+            // Delegate the call to header repository
+            return await headerRepository.GetRawHeadersAsync(searchParams);
         }
+
 
         public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)
         {

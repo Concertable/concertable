@@ -31,6 +31,7 @@ export class ListingsComponent  implements OnInit, OnChanges {
   };
   genres: Genre[] = [];
   newGenre: Genre = {
+    id: 0,
     name: ''
   };
   addNew: boolean = false;
@@ -76,7 +77,7 @@ export class ListingsComponent  implements OnInit, OnChanges {
     if (this.newGenre.name) {
       if (!this.newListing.genres.includes(this.newGenre)) {
         this.newListing.genres.push(this.newGenre);
-        this.newGenre = { name: '' };
+        this.newGenre = { id: 0, name: '' };
       }
     }
   }

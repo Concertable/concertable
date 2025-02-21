@@ -21,7 +21,14 @@ import { Pagination } from '../../models/pagination';
 export class FindComponent implements OnInit {
   @Input() headerType?: HeaderType;
   @Input() isCustomer?: boolean = false;
+
   headers: Header[] = [];
+  searchParams: SearchParams = {
+    searchTerm: '',
+    location: '',
+    date: undefined,
+    genreIds: []
+  };
 
   constructor(
     private headerService: HeaderService, 
@@ -30,11 +37,18 @@ export class FindComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      if (this.headerType && Object.keys(params).length > 0)
-        this.handleSearch(params as SearchParams);
-    })
-  }
+    const params = this.route.snapshot.queryParams;
+    if (this.headerType && Object.keys(params).length > 0) {
+        this.searchParams = {
+            ...params,
+            date: params['date'] ? new Date(params['date']) : undefined,
+            genreIds: params['genreIds']
+              ? params['genreIds'].split(',').map((id: string) => Number(id))
+              : []
+          };
+        this.handleSearch();
+    };
+}
 
   private headerMethods: Record<HeaderType, (searchParams: SearchParams) => Observable<Pagination<Header>>> = {
       venue: (searchParams) => this.headerService.getVenueHeaders(searchParams),
@@ -42,13 +56,16 @@ export class FindComponent implements OnInit {
       event: (searchParams) => this.headerService.getEventHeaders(searchParams),
   };
 
-  handleSearch(searchParams: SearchParams) {
+  handleSearch() {
+    console.log("test");
     if (this.headerType) {
+      const params = this.headerService.setParams(this.searchParams);
+      const queryParams = Object.fromEntries(new URLSearchParams(params.toString()));
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: searchParams,
+        queryParams: queryParams
       });
-      this.headerMethods[this.headerType](searchParams).subscribe(h => {
+      this.headerMethods[this.headerType](this.searchParams).subscribe(h => {
         console.log(h);
         this.headers = h.data;
       }
@@ -60,4 +77,14 @@ export class FindComponent implements OnInit {
     this.headerType = headerType;
     this.headers = [];
   }
+
+  updateSearchParams(updatedParams: SearchParams) {
+    Object.entries(updatedParams).forEach(([key, value]) => {
+      if (value !== undefined) {
+          this.searchParams[key as keyof SearchParams] = value; // ✅ Just set the value
+      }
+  });
+  console.log("S",this.searchParams);
   }
+
+}

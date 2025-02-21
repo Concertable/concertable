@@ -13,35 +13,47 @@ using Infrastructure.Helpers;
 using Core.Responses;
 using Core.Entities.Identity;
 using Application.DTOs;
+using System.Linq.Expressions;
+using Infrastructure.Factories;
 
 namespace Infrastructure.Repositories
 {
     public class VenueRepository : Repository<Venue>, IVenueRepository
     {
+        private readonly IHeaderRepositoryFactory headerRepositoryFactory;
         private readonly IReviewRepository reviewRepository;
 
-        public VenueRepository(ApplicationDbContext context, IReviewRepository reviewRepository) : base(context) 
+        public VenueRepository(
+            ApplicationDbContext context,
+            IHeaderRepositoryFactory headerRepositoryFactory,
+            IReviewRepository reviewRepository) : base(context) 
         {
+            this.headerRepositoryFactory = headerRepositoryFactory;
+
             this.reviewRepository = reviewRepository;
         }
 
         public async Task<PaginationResponse<VenueHeaderDto>> GetRawHeadersAsync(SearchParams? searchParams)
         {
-            var query = context.Venues
-                .Select(v => new VenueHeaderDto
-                {
-                    Id = v.Id,
-                    Name = v.Name,
-                    ImageUrl = v.ImageUrl,
-                    County = v.User.County,
-                    Town = v.User.Town
-                });
-
-            if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
+            Expression<Func<Venue, VenueHeaderDto>> selector = v => new VenueHeaderDto
             {
-                query = query.OrderBy(v => searchParams.Sort);
+                Id = v.Id,
+                Name = v.Name,
+                ImageUrl = v.ImageUrl,
+                County = v.User.County,
+                Town = v.User.Town
+            };
+
+            var filters = new List<Expression<Func<Event, bool>>>();
+
+            if (searchParams.Date != null)
+            {
+                filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
             }
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams);
+
+            var headerRepository = headerRepositoryFactory.Create(selector);
+
+            return await headerRepository.GetRawHeadersAsync(searchParams);
         }
 
         public async Task<Venue> GetByIdAsync(int id)

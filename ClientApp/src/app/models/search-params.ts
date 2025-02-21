@@ -5,4 +5,5 @@ export interface SearchParams {
     location?: string;
     date?: Date;
     sort?: string;
+    genreIds?: number[];
 }

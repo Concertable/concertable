@@ -11,35 +11,43 @@ using System.Threading.Tasks;
 using Core.Responses;
 using Infrastructure.Helpers;
 using Application.DTOs;
+using Infrastructure.Factories;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
     public class ArtistRepository : Repository<Artist>, IArtistRepository
     {
         private readonly IReviewRepository reviewRepository;
+        private readonly IHeaderRepositoryFactory headerRepositoryFactory;
 
-        public ArtistRepository(ApplicationDbContext context, IReviewRepository reviewRepository) : base(context) 
+        public ArtistRepository(ApplicationDbContext context, IReviewRepository reviewRepository, IHeaderRepositoryFactory headerRepositoryFactory) : base(context) 
         {
             this.reviewRepository = reviewRepository;
+            this.headerRepositoryFactory = headerRepositoryFactory;
         }
 
         public async Task<PaginationResponse<ArtistHeaderDto>> GetRawHeadersAsync(SearchParams searchParams)
         {
-            var query = context.Artists
-                .Select(v => new ArtistHeaderDto
-                {
-                    Id = v.Id,
-                    Name = v.Name,
-                    ImageUrl = v.ImageUrl,
-                    County = v.User.County,
-                    Town = v.User.Town,
-                });
-
-            if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
+            Expression<Func<Artist, ArtistHeaderDto>> selector = v => new ArtistHeaderDto
             {
-                query = query.OrderBy(v => searchParams.Sort);
+                Id = v.Id,
+                Name = v.Name,
+                ImageUrl = v.ImageUrl,
+                County = v.User.County,
+                Town = v.User.Town,
+            };
+
+            var filters = new List<Expression<Func<Event, bool>>>();
+
+            if (searchParams.Date != null)
+            {
+                filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
             }
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams);
+
+            var headerRepository = headerRepositoryFactory.Create(selector);
+
+            return await headerRepository.GetRawHeadersAsync(searchParams);
         }
 
         public async Task<Artist?> GetByUserIdAsync(int id)

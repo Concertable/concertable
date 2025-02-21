@@ -1,18 +1,30 @@
 <div class="container">
     <div class="wrapper">
-        <app-location-search class="location-search"></app-location-search>
-        <mat-form-field appearance="outline" class="search-input">
+      <!-- Location Search Component -->
+      <app-location-search class="location-search" (locationChange)="onLocationChange($event)"></app-location-search>
+  
+      <!-- Search Input Field -->
+      <mat-form-field appearance="outline" class="search-input">
         <mat-label>Search</mat-label>
         <input
-            matInput
-            [(ngModel)]="searchTerm"
-            [matAutocomplete]="auto">
+          matInput
+          [(ngModel)]="searchParams.searchTerm"
+          [matAutocomplete]="auto">
         <mat-autocomplete #auto="matAutocomplete">
+          <!-- Options can be added here, such as a list of autocomplete suggestions -->
         </mat-autocomplete>
-        </mat-form-field>
-        <app-date-picker *ngIf="searchTerm==='event'" class="date-picker"></app-date-picker>
-        <button mat-icon-button color="accent" class="btn-search" (click)="onSearch()">
-            <mat-icon>search</mat-icon>
-        </button>
+      </mat-form-field>
+
+      <!-- Date Picker Component for 'event' headerType -->
+      <app-date-picker *ngIf="headerType === 'event'" 
+                       (dateChange)="onDateChange($event)" 
+                       class="date-picker">
+      </app-date-picker>
+  
+      <!-- Search Button -->
+      <button mat-icon-button color="accent" class="btn-search" (click)="onSearch()">
+        <mat-icon>search</mat-icon>
+      </button>
     </div>
-</div>
+  </div>
+  

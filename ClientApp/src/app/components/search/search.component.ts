@@ -13,18 +13,25 @@ export class SearchComponent {
   searchTerm: string = '';
   location: string = '';
   date?: Date;
- 
+  @Input() searchParams!: SearchParams;
+
   @Input() headerType?: HeaderType;
-  @Output() search : EventEmitter<SearchParams>  = new EventEmitter<SearchParams>();
+  @Output() search : EventEmitter<void>  = new EventEmitter<void>();
+  @Output() searchParamsChange = new EventEmitter<SearchParams>();
+
+  onDateChange(date: Date) {
+    this.searchParams.date = date;
+  }
+
+  onLocationChange(location: string) {
+    
+  }
 
   onSearch() {
+    console.log("date",this.date);
     if(this.headerType) {
-      const searchParams: SearchParams = {
-        searchTerm: this.searchTerm,
-        location: this.location,
-        date: this.date
-      }
-      this.search.emit(searchParams);
+      this.searchParamsChange.emit(this.searchParams);
+      this.search.emit();
     }
   }
 }

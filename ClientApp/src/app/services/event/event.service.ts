@@ -23,11 +23,11 @@ export class EventService {
   }
 
   getDetailsById(id: number): Observable<Event> {
-    return this.http.get<Event>(`${this.apiUrl}/${id}`);
+    return this.http.get<Event>(`${this.apiUrl}/${id}` );
   }
 
   getHeaders(params: HttpParams): Observable<Pagination<EventHeader>> {
-    return this.http.get<Pagination<EventHeader>>(`${this.apiUrl}/headers`);
+    return this.http.get<Pagination<EventHeader>>(`${this.apiUrl}/headers`, { params });
   }
 
   createFromApplicationId(id: number) : Observable<void> {

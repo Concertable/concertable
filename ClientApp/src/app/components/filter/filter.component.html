@@ -1,4 +1,4 @@
-<app-sidebar [icon]="icon">
+<app-sidebar [icon]="icon" class="container">
   <div sidebar>
     <h3>Filter Content</h3>
     <div class="header-type" *ngIf="isCustomerRoute()">
@@ -6,11 +6,19 @@
         <option *ngFor="let type of headerTypes" [value]="type">{{ type }}</option>
       </select>
     </div>
-    <ng-container *ngIf="headerType === 'artist' || headerType === 'event'">
-      <select [(ngModel)]="selectedGenre" (change)="onGenreChange()">
+    <div class="genre-selection" *ngIf="headerType === 'artist' || headerType === 'event'">
+      <select [(ngModel)]="selectedGenre">
         <option *ngFor="let genre of genres" [ngValue]="genre">{{ genre.name }}</option>
       </select>
-    </ng-container>
+      <button (click)="addGenre()" class="add-genre-btn">+</button>
+
+      <div class="selected-genres">
+        <span *ngFor="let genre of selectedGenres" class="genre-tag">
+          {{ genre.name }} 
+          <button (click)="removeGenre(genre)">x</button>
+        </span>
+      </div>
+    </div>
   </div>
   <ng-content></ng-content>
 </app-sidebar>

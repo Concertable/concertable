@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.ModelBinders;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,9 @@ namespace Core.Parameters
         public string? SearchTerm { get; set; }
         public string? Location { get; set; }
         public DateTime? Date { get; set; }
-        public string? Sort {  get; set; }
+        public string? Sort { get; set; }
+
+        public int[] GenreIds { get; set; }
     }
+
 }

@@ -1,0 +1,96 @@
+/* General Styles */
+.sidebar {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 250px;
+  }
+  
+  /* Header */
+  h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  /* Select Dropdown */
+  select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
+  /* Genre Selection Container */
+  .genre-selection {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  
+  /* Add Genre Button */
+  .add-genre-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .add-genre-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Selected Genres List */
+  .selected-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  
+  /* Genre Tag Styling */
+  .genre-tag {
+    display: flex;
+    align-items: center;
+    background-color: #e9ecef;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background 0.2s ease-in-out;
+  }
+  
+  /* Remove Button */
+  .genre-tag button {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-weight: bold;
+    margin-left: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+  }
+  
+  .genre-tag button:hover {
+    color: #cc0000;
+  }
+  

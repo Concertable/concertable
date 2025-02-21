@@ -14,6 +14,8 @@ using System.Diagnostics;
 using Web;
 using Infrastructure.Settings;
 using Application.DTOs;
+using Core.Entities;
+using Infrastructure.Factories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +91,8 @@ builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IHeaderRepositoryFactory, HeaderRepositoryFactory>();
+
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

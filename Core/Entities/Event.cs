@@ -1,5 +1,4 @@
 ﻿
-
 namespace Core.Entities
 {
     public class Event : BaseEntity
