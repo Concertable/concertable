@@ -1,0 +1,1 @@
+export type ItemType = 'artist' | 'event' | 'venue'

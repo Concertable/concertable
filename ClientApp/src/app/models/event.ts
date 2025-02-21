@@ -1,12 +1,10 @@
 import { Artist } from "./artist";
 import { ArtistHeader } from "./artist-header";
-import { CoreEntity } from "./core-entity";
+import { Item } from "./item";
 import { Venue } from "./venue";
 import { VenueHeader } from "./venue-header";
 
-export interface Event {
-    id: number;
-    name: string;
+export interface Event extends Item {
     price: number;
     startDate: Date;
     endDate: Date;

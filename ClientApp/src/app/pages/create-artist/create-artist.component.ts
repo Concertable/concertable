@@ -11,6 +11,7 @@ import { Artist } from '../../models/artist';
 export class CreateArtistComponent {
   artist: Artist = {
   id: 0,  
+  type: 'artist',
   name: "",
   about: "",
   imageUrl: "", 

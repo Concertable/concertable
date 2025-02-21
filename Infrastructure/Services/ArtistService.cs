@@ -32,7 +32,7 @@ namespace Infrastructure.Services
         {
             var headers = await artistRepository.GetRawHeadersAsync(searchParams);
 
-            await reviewService.AddRatingsAsync(headers.Data);
+            await reviewService.AddAverageRatingsAsync(headers.Data);
 
             return new PaginationResponse<ArtistHeaderDto>(
                 headers.Data,

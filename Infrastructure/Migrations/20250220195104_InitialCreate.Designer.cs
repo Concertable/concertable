@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250216194617_InitialCreate")]
+    [Migration("20250220195104_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -460,8 +460,8 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Stars")
-                        .HasColumnType("float");
+                    b.Property<int>("Stars")
+                        .HasColumnType("int");
 
                     b.Property<int>("TicketId")
                         .HasColumnType("int");

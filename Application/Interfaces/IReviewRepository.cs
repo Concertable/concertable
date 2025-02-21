@@ -1,4 +1,7 @@
-﻿using Core.Entities;
+﻿using Application.DTOs;
+using Core.Entities;
+using Core.Parameters;
+using Core.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +12,12 @@ namespace Application.Interfaces
 {
     public interface IReviewRepository : IRepository<Review>
     {
-        Task<double?> GetRatingByEventIdAsync(int id);
-        Task<double?> GetRatingByArtistIdAsync(int id);
-        Task<double?> GetRatingByVenueIdAsync(int id);
+        Task<double?> GetAverageRatingByEventIdAsync(int id);
+        Task<double?> GetAverageRatingByArtistIdAsync(int id);
+        Task<double?> GetAverageRatingByVenueIdAsync(int id);
+
+        Task<PaginationResponse<Review>> GetByVenueIdAsync(int id, PaginationParams pageParams);
+        Task<PaginationResponse<Review>> GetByArtistIdAsync(int id, PaginationParams pageParams);
+        Task<PaginationResponse<Review>> GetByEventIdAsync(int id, PaginationParams pageParams);
     }
 }

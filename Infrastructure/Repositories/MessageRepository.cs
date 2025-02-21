@@ -18,16 +18,16 @@ namespace Infrastructure.Repositories
     {
         public MessageRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<PaginationResponse<Message>> GetAllForUserAsync(int id, PaginationParams pageParams)
+        public async Task<PaginationResponse<Message>> GetByUserIdAsync(int id, PaginationParams pageParams)
         {
             var query = context.Messages
                 .Where(m => m.ToUserId == id)
                 .OrderByDescending(m => m.SentDate);
 
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams.PageNumber, pageParams.PageSize);
+            return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
         }
 
-        public async Task<int> GetUnreadCountForUserAsync(int id)
+        public async Task<int> GetUnreadCountByUserIdAsync(int id)
         {
             var query = context.Messages
                 .Where(m => m.ToUserId == id && !m.Read);

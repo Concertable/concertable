@@ -1,4 +1,5 @@
-﻿using Core.Responses;
+﻿using Core.Parameters;
+using Core.Responses;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,15 @@ namespace Infrastructure.Helpers
     public static class PaginationHelper
     {
         public static async Task<PaginationResponse<T>> CreatePaginatedResponseAsync<T>(
-        IQueryable<T> query, int pageNumber, int pageSize)
+        IQueryable<T> query, PaginationParams pageParams)
         {
             int totalCount = await query.CountAsync();
-            var data = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            var data = await query.Skip((pageParams.PageNumber - 1) * pageParams.PageSize).Take(pageParams.PageSize).ToListAsync();
 
-            return new PaginationResponse<T>(data, totalCount, pageNumber, pageSize);
+            return new PaginationResponse<T>(data, totalCount, pageParams.PageNumber, pageParams.PageSize);
         }
+
+        public static PaginationParams CreateSummaryParams() => new PaginationParams {PageNumber = 1, PageSize=5};
 
     }
 }

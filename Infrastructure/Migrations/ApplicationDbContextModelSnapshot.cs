@@ -457,8 +457,8 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Stars")
-                        .HasColumnType("float");
+                    b.Property<int>("Stars")
+                        .HasColumnType("int");
 
                     b.Property<int>("TicketId")
                         .HasColumnType("int");

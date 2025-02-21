@@ -105,6 +105,11 @@ namespace Application.Mappings
             CreateMap<ListingApplication, ListingApplicationDto>()
             .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist));
 
+            //Reviews
+            CreateMap<Review, ReviewDto>()
+                .ForMember(dest => dest.Email, opt =>  opt.MapFrom(src => src.Ticket.User.Email));
+            CreateMap<ReviewDto, Review>();
+
         }
     }
 }

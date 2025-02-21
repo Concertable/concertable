@@ -48,10 +48,11 @@ namespace Infrastructure.Services
             await messageRepository.AddAsync(message);
         }
 
-        public async Task<PaginationResponse<MessageDto>> GetAllForUserAsync(PaginationParams? pageParams)
+
+        public async Task<PaginationResponse<MessageDto>> GetForUserAsync(PaginationParams? pageParams)
         {
             var user = await authService.GetCurrentUserAsync();
-            var messages = await messageRepository.GetAllForUserAsync(user.Id, pageParams);
+            var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
 
             var messagesDto = mapper.Map<IEnumerable<MessageDto>>(messages.Data);
             return new PaginationResponse<MessageDto>(
@@ -61,11 +62,13 @@ namespace Infrastructure.Services
                 messages.PageSize);
         }
 
-        public async Task<MessageSummaryDto> GetSummaryForUser(PaginationParams? pageParams)
+        public async Task<MessageSummaryDto> GetSummaryForUser()
         {
+            var pageParams = new PaginationParams() { PageNumber = 1, PageSize = 5 };
+
             var user = await authService.GetCurrentUserAsync();
-            var messages = await messageRepository.GetAllForUserAsync(user.Id, pageParams);
-            var unreadCount = await messageRepository.GetUnreadCountForUserAsync(user.Id);
+            var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
+            var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
 
             var messagesDto = mapper.Map<IEnumerable<MessageDto>>(messages.Data);
 

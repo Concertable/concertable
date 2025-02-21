@@ -18,8 +18,13 @@
             </section>
             <section [id]="navItems[2].fragment" class="artist-section">
                 <h1>{{ navItems[2].name }}</h1>
-            <app-artist-summary [artist]="event.artist" />
+                <app-artist-summary [artist]="event.artist" />
             </section>
+            <section [id]="navItems[2].fragment" class="artist-section">
+                <h1>{{ navItems[2].name }}</h1>
+                <app-review-summary [item]="event"></app-review-summary>
+            </section>
+            
             
         </div>
         <div class="sticky-summary">

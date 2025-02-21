@@ -63,7 +63,7 @@ namespace Infrastructure.Repositories
             {
                 query = query.OrderBy(v => searchParams.Sort);
             }
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams.PageNumber, searchParams.PageSize);
+            return await PaginationHelper.CreatePaginatedResponseAsync(query, searchParams);
         }
 
         public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)

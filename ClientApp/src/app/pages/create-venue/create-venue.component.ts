@@ -20,7 +20,8 @@ export class CreateVenueComponent {
   ) { }
 
   venue: Venue = {
-    id: 0,  
+    id: 0, 
+    type: 'venue', 
     name: "",
     about: "",
     coordinates: { latitude: 0, longitude: 0 }, 

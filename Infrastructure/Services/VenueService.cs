@@ -28,12 +28,14 @@ namespace Infrastructure.Services
 
         public VenueService(
             IVenueRepository venueRepository, 
+            IReviewService reviewService,
             IAuthService authService, 
             IGeocodingService geocodingService,
             IUnitOfWork unitOfWork,
             IMapper mapper)
         {
             this.venueRepository = venueRepository;
+            this.reviewService = reviewService;
             this.authService = authService;
             this.geocodingService = geocodingService;
             this.unitOfWork = unitOfWork;
@@ -44,7 +46,7 @@ namespace Infrastructure.Services
         {
             var headers = await venueRepository.GetRawHeadersAsync(searchParams);
 
-            await reviewService.AddRatingsAsync(headers.Data);
+            await reviewService.AddAverageRatingsAsync(headers.Data);
 
             return new PaginationResponse<VenueHeaderDto>(
                 headers.Data,

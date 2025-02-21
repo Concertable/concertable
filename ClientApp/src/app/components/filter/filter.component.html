@@ -6,6 +6,11 @@
         <option *ngFor="let type of headerTypes" [value]="type">{{ type }}</option>
       </select>
     </div>
+    <ng-container *ngIf="headerType === 'artist' || headerType === 'event'">
+      <select [(ngModel)]="selectedGenre" (change)="onGenreChange()">
+        <option *ngFor="let genre of genres" [ngValue]="genre">{{ genre.name }}</option>
+      </select>
+    </ng-container>
   </div>
   <ng-content></ng-content>
 </app-sidebar>

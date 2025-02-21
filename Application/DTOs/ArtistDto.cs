@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs
 {
-    public class ArtistDto
+    public class ArtistDto : ItemDto
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -15,5 +15,10 @@ namespace Application.DTOs
         public string Town { get; set; }
         public string ImageUrl { get; set; }
         public IEnumerable<string> Genres { get; set; }
+
+        public ArtistDto()
+        {
+            Type = "artist";
+        }
     }
 }

@@ -38,6 +38,7 @@
 
         <section [id]="navItems[3].fragment">
             <h2 class="reviews">Reviews</h2>
+            <app-review-summary [item]="venue"></app-review-summary>
         </section>
 
         @if (exists('Listings')) {

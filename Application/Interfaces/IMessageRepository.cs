@@ -11,7 +11,7 @@ namespace Application.Interfaces
 {
     public interface IMessageRepository : IRepository<Message>
     {
-        Task<PaginationResponse<Message>> GetAllForUserAsync(int id, PaginationParams? pageParams);
-        Task<int> GetUnreadCountForUserAsync(int id);
+        Task<PaginationResponse<Message>> GetByUserIdAsync(int id, PaginationParams? pageParams);
+        Task<int> GetUnreadCountByUserIdAsync(int id);
     }
 }
