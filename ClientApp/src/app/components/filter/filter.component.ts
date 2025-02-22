@@ -10,7 +10,7 @@ import { CustomerFindComponent } from '../customer-find/customer-find.component'
   selector: 'app-filter',
   standalone: false,
   templateUrl: './filter.component.html',
-  styleUrls: ['./filter.component.css']
+  styleUrls: ['./filter.component.scss']
 })
 export class FilterComponent implements OnInit {
   @Input() headerType?: HeaderType;
@@ -23,6 +23,42 @@ export class FilterComponent implements OnInit {
   genres: Genre[] = [];
   selectedGenre?: Genre;
   selectedGenres: Genre[] = [];
+  selectedOrderBy?: string;
+  selectedSortOrder?: string;
+  selectedDistance: number =0;
+
+  get orderByOptions() {
+    const options = ['Name']; 
+    if (this.headerType === 'event') 
+      options.push('Date'); 
+    if (this.searchParams.latitude && this.searchParams.longitude) 
+      options.push('Location');
+    return options;
+  }
+  
+  get locationSelected(): boolean {
+    return Boolean(this.searchParams.latitude && this.searchParams.longitude)
+  }
+
+  onOrderByChange() {
+    if(this.selectedOrderBy) 
+    {
+      this.selectedSortOrder = this.selectedSortOrder || 'asc';
+      this.searchParams.sort = `${this.selectedOrderBy}_${this.selectedSortOrder}`;
+    }
+    else 
+      this.selectedSortOrder = undefined; // Reset sort order if Order By is deselected
+  }
+
+  onSortOrderChange() {
+    if(this.selectedOrderBy)
+      this.searchParams.sort = `${this.selectedOrderBy}_${this.selectedSortOrder}`;
+  }
+
+  onDistanceChange() {
+    console.log("change",this.selectedDistance)
+    this.searchParams.radiusKm = this.selectedDistance;
+  }
 
   constructor(private route: ActivatedRoute, private genreService: GenreService) {}
 

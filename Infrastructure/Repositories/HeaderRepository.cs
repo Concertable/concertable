@@ -61,7 +61,7 @@ namespace Infrastructure.Repositories
             {
                 query = searchParams.Sort.ToLower() switch
                 {
-                    "name" => query.OrderBy(e => EF.Property<string>(e, "Name")),
+                    "name_asc" => query.OrderBy(e => EF.Property<string>(e, "Name")),
                     "name_desc" => query.OrderByDescending(e => EF.Property<string>(e, "Name")),
                     _ => query
                 };

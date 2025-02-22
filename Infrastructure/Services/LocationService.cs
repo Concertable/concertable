@@ -32,15 +32,33 @@ namespace Infrastructure.Services
                     return inputCoordinate.GetDistanceTo(itemCoordinate) <= radiusKm * 1000; // Compare with radius in meters
                 });
 
-            if (string.Equals(searchParams.Sort, "nearest", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(searchParams.Sort))
             {
-                filteredResults = filteredResults.OrderBy(e =>
+                if (string.Equals(searchParams.Sort, "location_asc", StringComparison.OrdinalIgnoreCase))
                 {
-                    var itemCoordinate = new GeoCoordinate(e.Latitude.Value, e.Longitude.Value);
-                    return inputCoordinate.GetDistanceTo(itemCoordinate); 
-                });
+                    filteredResults = filteredResults.OrderBy(e =>
+                    {
+                        if (e.Latitude.HasValue && e.Longitude.HasValue)
+                        {
+                            var itemCoordinate = new GeoCoordinate(e.Latitude.Value, e.Longitude.Value);
+                            return inputCoordinate.GetDistanceTo(itemCoordinate); 
+                        }
+                        return double.MaxValue; // Push invalid coordinates to the end
+                    });
+                }
+                else if (string.Equals(searchParams.Sort, "location_desc", StringComparison.OrdinalIgnoreCase))
+                {
+                    filteredResults = filteredResults.OrderByDescending(e =>
+                    {
+                        if (e.Latitude.HasValue && e.Longitude.HasValue)
+                        {
+                            var itemCoordinate = new GeoCoordinate(e.Latitude.Value, e.Longitude.Value);
+                            return inputCoordinate.GetDistanceTo(itemCoordinate); 
+                        }
+                        return double.MinValue; // Push invalid coordinates to the end
+                    });
+                }
             }
-
             return filteredResults; 
         }
     }

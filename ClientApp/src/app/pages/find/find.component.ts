@@ -21,6 +21,7 @@ import { Pagination } from '../../models/pagination';
 export class FindComponent implements OnInit {
   @Input() headerType?: HeaderType;
   @Input() isCustomer?: boolean = false;
+  coordinates?: google.maps.LatLngLiteral;
 
   headers: Header[] = [];
   searchParams: SearchParams = {};
@@ -39,7 +40,7 @@ export class FindComponent implements OnInit {
             date: params['date'] ? new Date(params['date']) : undefined,
             genreIds: params['genreIds']
               ? params['genreIds'].split(',').map((id: string) => Number(id))
-              : []
+              : undefined
           };
         this.handleSearch();
     };
@@ -54,6 +55,8 @@ export class FindComponent implements OnInit {
   handleSearch() {
     console.log("test");
     if (this.headerType) {
+      if(!this.searchParams.latitude || !this.searchParams.longitude)
+        this.searchParams.radiusKm = undefined;
       const params = this.headerService.setParams(this.searchParams);
       const queryParams = Object.fromEntries(new URLSearchParams(params.toString()));
       this.router.navigate([], {

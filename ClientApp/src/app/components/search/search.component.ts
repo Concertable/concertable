@@ -20,9 +20,9 @@ export class SearchComponent {
     this.searchParams.date = date;
   }
 
-  onLocationChange({ lat, lng }: google.maps.LatLngLiteral) {
-    this.searchParams.latitude = lat;
-    this.searchParams.longitude = lng;
+  onLocationChange(coordinates: google.maps.LatLngLiteral | undefined) {
+    this.searchParams.latitude = coordinates?.lat;
+    this.searchParams.longitude = coordinates?.lng;
   }
   
 

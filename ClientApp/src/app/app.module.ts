@@ -33,6 +33,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card'
 import {MatButtonModule} from '@angular/material/button';
+import { MatSlider, MatSliderModule } from '@angular/material/slider'; 
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/config/google-maps/google-maps.component';
@@ -194,7 +195,8 @@ const routerOptions: ExtraOptions = {
     MatBadgeModule,
     MatListModule,
     MatCardModule,
-    MatButtonModule
+    MatButtonModule,
+    MatSliderModule
 ],
   providers: [
     provideHttpClient(

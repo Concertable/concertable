@@ -51,7 +51,7 @@ namespace Infrastructure.Services
             var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
 
             return new PaginationResponse<EventHeaderDto>(
-                headers.Data,
+                locationHeaders,
                 headers.TotalCount,
                 headers.PageNumber,
                 headers.PageSize);

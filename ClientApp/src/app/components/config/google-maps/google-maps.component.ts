@@ -12,7 +12,7 @@ export class GoogleMapsComponent {
   @Input() editMode?: boolean = false;
   @Input() lat?: number;
   @Input() lng?: number;
-  @Output() coordinatesChange = new EventEmitter<google.maps.LatLngLiteral>();
+  @Output() coordinatesChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
 
   defaultCenter = { lat: 51.5074, lng: -0.1278 };
 
@@ -22,13 +22,14 @@ export class GoogleMapsComponent {
     return this.defaultCenter;
   }
 
-  onLocationChange(location: google.maps.LatLngLiteral) {
-    this.lat = location.lat;
-    this.lng = location.lng;
-    this.coordinatesChange.emit({
-      lat: this.lat,
-      lng: this.lng
-    });
+  onLocationChange(location: google.maps.LatLngLiteral | undefined) {
+    if (location?.lat !== undefined && location?.lng !== undefined) {
+      this.lat = location.lat;
+      this.lng = location.lng;
+      this.coordinatesChange.emit({ lat: this.lat, lng: this.lng }); 
+    } else {
+      this.coordinatesChange.emit(undefined); 
+    }
   }
   
 }
