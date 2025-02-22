@@ -14,9 +14,9 @@ export class LocationComponent {
   @Input() town?: string;
   @Input() latitude?: number;
   @Input() longitude?: number;
-  @Output() coordinatesChange = new EventEmitter<Coordinates>();
+  @Output() coordinatesChange = new EventEmitter<Coordinates | undefined>();
 
-  onCoordinatesChange(coordinates: Coordinates) {
+  onCoordinatesChange(coordinates: Coordinates | undefined) {
     this.coordinatesChange.emit(coordinates);
   }
 }
