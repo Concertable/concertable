@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { HeaderService } from '../../services/header/header.service';
 import { Header } from '../../models/header';
 import { Observable } from 'rxjs';
@@ -6,6 +6,8 @@ import { ArtistHeader } from '../../models/artist-header';
 import { VenueHeader } from '../../models/venue-header';
 import { EventHeader } from '../../models/event-header';
 import { HeaderType } from '../../models/header-type';
+import { Pagination } from '../../models/pagination';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-search-results',
@@ -14,18 +16,26 @@ import { HeaderType } from '../../models/header-type';
   styleUrl: './search-results.component.scss'
 })
 export class SearchResultsComponent {
-  @Input() headers: Header[] = [];
+  @Input() paginatedHeaders?: Pagination<Header>;
   @Input() headerType?: HeaderType;
+  @Output() pageChange = new EventEmitter<{ pageIndex: number; pageSize: number }>
 
   get artistHeaders(): ArtistHeader[] {
-    return this.headers as ArtistHeader[];
+    return this.paginatedHeaders?.data as ArtistHeader[];
   }
 
   get venueHeaders(): VenueHeader[] {
-    return this.headers as VenueHeader[]; 
+    return this.paginatedHeaders?.data as VenueHeader[]; 
   }
 
   get eventHeaders(): EventHeader[] {
-    return this.headers as EventHeader[];
+    return this.paginatedHeaders?.data as EventHeader[];
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageChange.emit({
+      pageIndex: event.pageIndex + 1,
+      pageSize: event.pageSize
+    })
   }
 }

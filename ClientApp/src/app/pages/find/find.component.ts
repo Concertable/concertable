@@ -23,8 +23,12 @@ export class FindComponent implements OnInit {
   @Input() isCustomer?: boolean = false;
   coordinates?: google.maps.LatLngLiteral;
 
+  paginatedHeaders?: Pagination<Header>
   headers: Header[] = [];
-  searchParams: SearchParams = {};
+  searchParams: SearchParams = {
+    pageNumber: 1,
+    pageSize: 10
+  };
 
   constructor(
     private headerService: HeaderService, 
@@ -36,6 +40,7 @@ export class FindComponent implements OnInit {
     const params = this.route.snapshot.queryParams;
     if (this.headerType && Object.keys(params).length > 0) {
         this.searchParams = {
+            ...this.searchParams,
             ...params,
             date: params['date'] ? new Date(params['date']) : undefined,
             genreIds: params['genreIds']
@@ -53,7 +58,6 @@ export class FindComponent implements OnInit {
   };
 
   handleSearch() {
-    console.log("test");
     if (this.headerType) {
       if(!this.searchParams.latitude || !this.searchParams.longitude)
         this.searchParams.radiusKm = undefined;
@@ -63,9 +67,10 @@ export class FindComponent implements OnInit {
         relativeTo: this.route,
         queryParams: queryParams
       });
-      this.headerMethods[this.headerType](this.searchParams).subscribe(h => {
-        console.log(h);
-        this.headers = h.data;
+      this.headerMethods[this.headerType](this.searchParams).subscribe(p => {
+        console.log(p);
+        this.headers = p.data;
+        this.paginatedHeaders = p
       }
       );
     }
@@ -76,13 +81,20 @@ export class FindComponent implements OnInit {
     this.headers = [];
   }
 
-  updateSearchParams(updatedParams: SearchParams) {
+  updateSearchParams(updatedParams: Partial<SearchParams>) {
     Object.entries(updatedParams).forEach(([key, value]) => {
       if (value !== undefined) {
-          this.searchParams[key as keyof SearchParams] = value; // ✅ Just set the value
+        (this.searchParams as any)[key] = value;
       }
-  });
-  console.log("S",this.searchParams);
+    });
+    console.log("Updated SearchParams:", this.searchParams);
+  }
+  
+
+  onPageChange(event: { pageIndex: number; pageSize: number; }) {
+    this.searchParams.pageNumber = event.pageIndex;
+    this.searchParams.pageSize = event.pageSize
+    this.handleSearch();
   }
 
 }

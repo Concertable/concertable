@@ -1,6 +1,7 @@
 import { HeaderType } from "./header-type";
+import { PaginationParams } from "./pagination-params";
 
-export interface SearchParams {
+export interface SearchParams extends PaginationParams {
     searchTerm?: string;
     date?: Date;
     sort?: string;

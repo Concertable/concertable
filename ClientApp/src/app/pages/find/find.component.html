@@ -1,4 +1,4 @@
 <app-filter [headerType]="headerType" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)" (headerTypeChange)="changeHeaderType($event)">
     <app-search (search)="handleSearch()" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)" [headerType]="headerType"></app-search>
-    <app-search-results *ngIf="headers.length > 0" [headers]="headers" [headerType] = "headerType"></app-search-results>
+    <app-search-results *ngIf="headers.length > 0" [paginatedHeaders]="paginatedHeaders" [headerType] = "headerType" (pageChange)="onPageChange($event)"></app-search-results>
 </app-filter>
