@@ -18,7 +18,8 @@
             <h1>{{navItems[1].name}}</h1>
             <app-location
                 [editMode]="editMode"
-                [coordinates]="venue.coordinates"
+                [latitude]="venue.latitude"
+                [longitude]="venue.longitude"
                 [county]="venue.county"
                 [town]="venue.town"
                 (coordinatesChange)="updateCoordinates($event)">

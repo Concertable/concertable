@@ -12,7 +12,7 @@ export class GoogleMapsComponent {
   @Input() editMode?: boolean = false;
   @Input() lat?: number;
   @Input() lng?: number;
-  @Output() coordinatesChange = new EventEmitter<Coordinates>();
+  @Output() coordinatesChange = new EventEmitter<google.maps.LatLngLiteral>();
 
   defaultCenter = { lat: 51.5074, lng: -0.1278 };
 
@@ -26,8 +26,8 @@ export class GoogleMapsComponent {
     this.lat = location.lat;
     this.lng = location.lng;
     this.coordinatesChange.emit({
-      latitude: this.lat,
-      longitude: this.lng
+      lat: this.lat,
+      lng: this.lng
     });
   }
   

@@ -11,7 +11,8 @@
                 <h1>{{navItems[1].name}}</h1>
                 <img width="200" [src]="blobStorageService.getUrl(event.venue.imageUrl)" />
                 <app-location
-                    [coordinates]="event.venue.coordinates"
+                    [latitude]="event.venue.latitude"
+                    [longitude]="event.venue.longitude"
                     [county]="event.venue.county"
                     [town]="event.venue.town">
                 </app-location>

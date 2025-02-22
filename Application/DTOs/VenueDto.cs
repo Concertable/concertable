@@ -6,8 +6,8 @@ namespace Application.DTOs
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Coordinates are required.")]
-        public CoordinatesDto Coordinates { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         [Required(ErrorMessage = "County is required.")]
         [StringLength(50, ErrorMessage = "County cannot exceed 50 characters.")]

@@ -18,20 +18,17 @@ namespace Application.Mappings
         public MappingProfile() 
         {
             //Venue
-            CreateMap<VenueDto, Venue>()
-            .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.Coordinates.Latitude))
-            .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.Coordinates.Longitude));
+            CreateMap<VenueDto, Venue>();
 
             CreateMap<Venue, VenueHeaderDto>();
             CreateMap<VenueHeaderDto, Venue>();
             CreateMap<Venue, VenueDto>()
             .ForMember(
-                dest => dest.Coordinates,
-                opt => opt.MapFrom(src => new CoordinatesDto
-                {
-                    Latitude = src.Latitude,
-                    Longitude = src.Longitude
-                })
+                dest => dest.Latitude,
+                opt => opt.MapFrom(src => src.User.Latitude))
+            .ForMember(
+                dest => dest.Longitude,
+                opt => opt.MapFrom(src => src.User.Longitude)
             )
             .ForMember(
                 dest => dest.County,

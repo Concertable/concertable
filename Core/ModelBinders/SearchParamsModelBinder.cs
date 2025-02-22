@@ -1,45 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Core.ModelBinders
 {
+    //c
     public class SearchParamsModelBinder : IModelBinder
     {
-        //c
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
                 throw new ArgumentNullException(nameof(bindingContext));
 
-            var values = bindingContext.ValueProvider;
             var model = Activator.CreateInstance(bindingContext.ModelType);
+            var values = bindingContext.ValueProvider;
 
             foreach (var property in bindingContext.ModelType.GetProperties())
             {
-                var value = values.GetValue(property.Name).FirstValue;
-                if (string.IsNullOrEmpty(value)) continue;
+                var rawValue = values.GetValue(property.Name).FirstValue;
+                if (string.IsNullOrEmpty(rawValue)) continue;
 
-                // Convert genreIds to int[]
-                if (property.Name.Equals("genreIds", StringComparison.OrdinalIgnoreCase) && property.PropertyType == typeof(int[]))
+                object convertedValue = rawValue;
+
+                // Handle int[] (e.g., GenreIds)
+                if (property.PropertyType == typeof(int[]))
                 {
-                    var genreIdsArray = value.Split(',')
+                    convertedValue = rawValue.Split(',')
                         .Select(x => int.TryParse(x, out var num) ? num : (int?)null)
                         .Where(x => x.HasValue)
                         .Select(x => x.Value)
                         .ToArray();
-
-                    property.SetValue(model, genreIdsArray);
                 }
                 else
                 {
-                    // Bind everything else normally
-                    var convertedValue = Convert.ChangeType(value, property.PropertyType);
-                    property.SetValue(model, convertedValue);
+                    // Determine if the property is nullable and extract its underlying type
+                    // Otherwise, keep as is
+                    var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+
+                    // Convert the value to the appropriate type
+                    convertedValue = Convert.ChangeType(rawValue, targetType);
                 }
+
+                property.SetValue(model, convertedValue);
             }
 
             bindingContext.Result = ModelBindingResult.Success(model);

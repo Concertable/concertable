@@ -23,12 +23,7 @@ export class FindComponent implements OnInit {
   @Input() isCustomer?: boolean = false;
 
   headers: Header[] = [];
-  searchParams: SearchParams = {
-    searchTerm: '',
-    location: '',
-    date: undefined,
-    genreIds: []
-  };
+  searchParams: SearchParams = {};
 
   constructor(
     private headerService: HeaderService, 

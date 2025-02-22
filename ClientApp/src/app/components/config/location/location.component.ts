@@ -12,11 +12,11 @@ export class LocationComponent {
   @Input() editMode?: boolean;
   @Input() county?: string;
   @Input() town?: string;
-  @Input() coordinates?: Coordinates
+  @Input() latitude?: number;
+  @Input() longitude?: number;
   @Output() coordinatesChange = new EventEmitter<Coordinates>();
 
   onCoordinatesChange(coordinates: Coordinates) {
-    this.coordinates = coordinates
-    this.coordinatesChange.emit(this.coordinates);
+    this.coordinatesChange.emit(coordinates);
   }
 }

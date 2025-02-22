@@ -20,6 +20,7 @@ namespace Infrastructure.Services
     public class VenueService : IVenueService
     {
         private readonly IVenueRepository venueRepository;
+        private readonly ILocationService locationService;
         private readonly IReviewService reviewService;
         private readonly IAuthService authService;
         private readonly IGeocodingService geocodingService;
@@ -28,6 +29,7 @@ namespace Infrastructure.Services
 
         public VenueService(
             IVenueRepository venueRepository, 
+            ILocationService locationService,
             IReviewService reviewService,
             IAuthService authService, 
             IGeocodingService geocodingService,
@@ -35,6 +37,7 @@ namespace Infrastructure.Services
             IMapper mapper)
         {
             this.venueRepository = venueRepository;
+            this.locationService = locationService;
             this.reviewService = reviewService;
             this.authService = authService;
             this.geocodingService = geocodingService;
@@ -48,8 +51,10 @@ namespace Infrastructure.Services
 
             await reviewService.AddAverageRatingsAsync(headers.Data);
 
+            var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
+
             return new PaginationResponse<VenueHeaderDto>(
-                headers.Data,
+                locationHeaders,
                 headers.TotalCount,
                 headers.PageNumber,
                 headers.PageSize);
@@ -71,7 +76,7 @@ namespace Infrastructure.Services
             var user = await authService.GetCurrentUserAsync();
             venue.UserId = user.Id;
 
-            var location = await geocodingService.GetLocationAsync(venueDto.Coordinates);
+            var location = await geocodingService.GetLocationAsync(venueDto.Longitude, venueDto.Latitude);
 
             user.County = location.County;
             user.Town = location.Town;
@@ -93,7 +98,7 @@ namespace Infrastructure.Services
             var user = await authService.GetCurrentUserAsync();
             venue.UserId = user.Id;
 
-            var location = await geocodingService.GetLocationAsync(venueDto.Coordinates);
+            var location = await geocodingService.GetLocationAsync(venueDto.Latitude, venueDto.Longitude);
 
             user.County = location.County;
             user.Town = location.Town;

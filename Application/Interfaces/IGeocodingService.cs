@@ -9,6 +9,6 @@ namespace Application.Interfaces
 {
     public interface IGeocodingService
     {
-        public Task<LocationDto> GetLocationAsync(CoordinatesDto coordinatesDto);
+        public Task<LocationDto> GetLocationAsync(double latitude, double longitude);
     }
 }

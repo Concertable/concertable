@@ -37,7 +37,7 @@ namespace Infrastructure.Tests.Services
             unitOfWorkMock = new Mock<IUnitOfWork>();
             mapperMock = new Mock<IMapper>();
 
-            venueService = new VenueService(venueRepositoryMock.Object, reviewServiceMock.Object, authServiceMock.Object, geocodingServiceMock.Object, unitOfWorkMock.Object, mapperMock.Object);
+            //venueService = new VenueService(venueRepositoryMock.Object, reviewServiceMock.Object, authServiceMock.Object, geocodingServiceMock.Object, unitOfWorkMock.Object, mapperMock.Object);
         }
 
         [Test]

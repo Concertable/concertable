@@ -17,13 +17,20 @@ namespace Infrastructure.Services
     {
         private readonly IArtistRepository artistRepository;
         private readonly IReviewService reviewService;
+        private readonly ILocationService locationService;
         private readonly IAuthService authService;
         private readonly IMapper mapper;
 
-        public ArtistService(IAuthService authService, IReviewService reviewService, IArtistRepository artistRepository, IMapper mapper) 
+        public ArtistService(
+            IAuthService authService, 
+            IReviewService reviewService, 
+            ILocationService locationService,
+            IArtistRepository artistRepository, 
+            IMapper mapper) 
         {
             this.artistRepository = artistRepository;
             this.reviewService = reviewService;
+            this.locationService = locationService;
             this.authService = authService;
             this.mapper = mapper;
         }
@@ -34,8 +41,10 @@ namespace Infrastructure.Services
 
             await reviewService.AddAverageRatingsAsync(headers.Data);
 
+            var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
+
             return new PaginationResponse<ArtistHeaderDto>(
-                headers.Data,
+                locationHeaders,
                 headers.TotalCount,
                 headers.PageNumber,
                 headers.PageSize);

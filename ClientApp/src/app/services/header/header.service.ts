@@ -44,14 +44,12 @@ export class HeaderService {
 
 
   getVenueHeaders(searchParams: SearchParams): Observable<Pagination<VenueHeader>> {
-    const { date, ...filteredParams } = searchParams; 
-    const params = new HttpParams({ fromObject: filteredParams as any })
+    const params = this.setParams(searchParams);
     return this.venueService.getHeaders(params);
   }
 
   getArtistHeaders(searchParams: SearchParams): Observable<Pagination<ArtistHeader>> {
-    const { date, ...filteredParams } = searchParams; 
-    const params = new HttpParams({ fromObject: filteredParams as any })
+    const params = this.setParams(searchParams);
     return this.artistService.getHeaders(params);
   }
 

@@ -41,7 +41,9 @@ namespace Infrastructure.Repositories
                 Name = v.Name,
                 ImageUrl = v.ImageUrl,
                 County = v.User.County,
-                Town = v.User.Town
+                Town = v.User.Town,
+                Latitude = v.User.Latitude ?? 0,
+                Longitude = v.User.Longitude ?? 0
             };
 
             var filters = new List<Expression<Func<Event, bool>>>();

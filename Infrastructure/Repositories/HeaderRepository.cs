@@ -52,13 +52,6 @@ namespace Infrastructure.Repositories
                 query = query.Where(e => EF.Property<string>(e, "Name").Contains(searchParams.SearchTerm));
             }
 
-            if (!string.IsNullOrWhiteSpace(searchParams?.Location))
-            {
-                query = query.Where(e =>
-                    EF.Property<string>(e, "County") == searchParams.Location ||
-                    EF.Property<string>(e, "Town") == searchParams.Location);
-            }
-
             foreach (var filter in filters)
             {
                 query = query.Where(filter);
@@ -70,7 +63,6 @@ namespace Infrastructure.Repositories
                 {
                     "name" => query.OrderBy(e => EF.Property<string>(e, "Name")),
                     "name_desc" => query.OrderByDescending(e => EF.Property<string>(e, "Name")),
-                    "county" => query.OrderBy(e => EF.Property<string>(e, "County")),
                     _ => query
                 };
             }

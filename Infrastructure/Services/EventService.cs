@@ -18,13 +18,20 @@ namespace Infrastructure.Services
     {
         private readonly IEventRepository eventRepository;
         private readonly IReviewService reviewService;
+        private readonly ILocationService locationService;
         private readonly IListingApplicationService applicationService;
         private readonly IMapper mapper;
 
-        public EventService(IEventRepository eventRepository, IReviewService reviewService, IListingApplicationService applicationService, IMapper mapper)
+        public EventService(
+            IEventRepository eventRepository, 
+            IReviewService reviewService, 
+            ILocationService locationService,
+            IListingApplicationService applicationService, 
+            IMapper mapper)
         {
             this.eventRepository = eventRepository;
             this.reviewService = reviewService;
+            this.locationService = locationService;
             this.applicationService = applicationService;
             this.mapper = mapper;
         }
@@ -40,6 +47,8 @@ namespace Infrastructure.Services
             var headers = await eventRepository.GetRawHeadersAsync(searchParams);
 
             await reviewService.AddAverageRatingsAsync(headers.Data);
+
+            var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
 
             return new PaginationResponse<EventHeaderDto>(
                 headers.Data,

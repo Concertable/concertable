@@ -9,5 +9,7 @@ export interface Header {
     imageUrl: string;
     county: string;
     town: string;
+    latitude: number;
+    longitude: number;
     rating: number;
 }

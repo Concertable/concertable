@@ -61,9 +61,11 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
 
   updateCoordinates(coordinates: Coordinates) {
     if(this.venue)
-      this.venue.coordinates = coordinates;
+    {
+      this.venue.latitude = coordinates.lat;
+      this.venue.longitude = coordinates.lng
+    }
     this.onChangeDetected();
-    console.log(this.venue?.coordinates)
   }
 
   onListingCreate(listing: Listing) {

@@ -10,9 +10,6 @@ import { HeaderType } from '../../models/header-type';
   styleUrl: './search.component.scss'
 })
 export class SearchComponent {
-  searchTerm: string = '';
-  location: string = '';
-  date?: Date;
   @Input() searchParams!: SearchParams;
 
   @Input() headerType?: HeaderType;
@@ -23,13 +20,13 @@ export class SearchComponent {
     this.searchParams.date = date;
   }
 
-  onLocationChange({ lat, lng }: { lat: number; lng: number }) {
-    console.log("Latitude:", lat, "Longitude:", lng);
+  onLocationChange({ lat, lng }: google.maps.LatLngLiteral) {
+    this.searchParams.latitude = lat;
+    this.searchParams.longitude = lng;
   }
   
 
   onSearch() {
-    console.log("date",this.date);
     if(this.headerType) {
       this.searchParamsChange.emit(this.searchParams);
       this.search.emit();

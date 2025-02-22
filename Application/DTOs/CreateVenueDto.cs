@@ -13,7 +13,8 @@ namespace Application.DTOs
         public string About { get; set; }
 
         [Required(ErrorMessage = "Coordinates are required.")]
-        public CoordinatesDto Coordinates { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         [Required(ErrorMessage = "Image URL is required.")] 
         public string ImageUrl { get; set; }

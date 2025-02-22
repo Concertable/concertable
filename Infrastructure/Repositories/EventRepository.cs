@@ -62,7 +62,9 @@ namespace Infrastructure.Repositories
                 StartDate = e.Application.Listing.StartDate,
                 EndDate = e.Application.Listing.EndDate,
                 County = e.Application.Listing.Venue.User.County,
-                Town = e.Application.Listing.Venue.User.Town
+                Town = e.Application.Listing.Venue.User.Town,
+                Latitude = e.Application.Listing.Venue.User.Latitude,
+                Longitude = e.Application.Listing.Venue.User.Longitude
             };
 
             var filters = new List<Expression<Func<Event, bool>>>(); 

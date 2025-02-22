@@ -5,6 +5,7 @@ using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using Core.ModelBinders;
 
 namespace Web.Controllers
 {
@@ -27,7 +28,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeaders([FromQuery] SearchParams searchParams)
+        public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
         {
             return Ok(await artistService.GetHeadersAsync(searchParams));
         }

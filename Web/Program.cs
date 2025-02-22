@@ -72,6 +72,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
 
 
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>

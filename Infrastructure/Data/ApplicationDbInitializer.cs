@@ -20,22 +20,23 @@ namespace Infrastructure.Data
             {
                 var users = new ApplicationUser[]
                 {
-                    new Admin { UserName = "admin1@test.com", Email = "admin1@test.com", County = "Surrey", Town = "Woking" },
-                    new Customer { UserName = "customer1@test.com", Email = "customer1@test.com", County = "Surrey", Town = "Guildford" },
-                    new Customer { UserName = "customer2@test.com", Email = "customer2@test.com", County = "Surrey", Town = "Epsom" },
+                    new Admin { UserName = "admin1@test.com", Email = "admin1@test.com", County = "Surrey", Town = "Woking", Latitude = 51.0, Longitude = -0.5 },
+                    new Customer { UserName = "customer1@test.com", Email = "customer1@test.com", County = "Surrey", Town = "Guildford", Latitude = 51.25, Longitude = -0.56 },
+                    new Customer { UserName = "customer2@test.com", Email = "customer2@test.com", County = "Surrey", Town = "Epsom", Latitude = 51.34, Longitude = -0.27 },
                     // Artist Managers
-                    new ArtistManager { UserName = "artistmanager1@test.com", Email = "artistmanager1@test.com", County = "Surrey", Town = "Dorking" },
-                    new ArtistManager { UserName = "artistmanager2@test.com", Email = "artistmanager2@test.com", County = "Surrey", Town = "Reigate" },
-                    new ArtistManager { UserName = "artistmanager3@test.com", Email = "artistmanager3@test.com", County = "Surrey", Town = "Farnham" },
-                    new ArtistManager { UserName = "artistmanager4@test.com", Email = "artistmanager4@test.com", County = "Surrey", Town = "Camberley" },
-                    new ArtistManager { UserName = "artistmanager5@test.com", Email = "artistmanager5@test.com", County = "Surrey", Town = "Haslemere" },
+                    new ArtistManager { UserName = "artistmanager1@test.com", Email = "artistmanager1@test.com", County = "Surrey", Town = "Dorking", Latitude = 51.23, Longitude = -0.33 },
+                    new ArtistManager { UserName = "artistmanager2@test.com", Email = "artistmanager2@test.com", County = "Surrey", Town = "Reigate", Latitude = 51.23, Longitude = -0.17 },
+                    new ArtistManager { UserName = "artistmanager3@test.com", Email = "artistmanager3@test.com", County = "Surrey", Town = "Farnham", Latitude = 51.21, Longitude = -0.58 },
+                    new ArtistManager { UserName = "artistmanager4@test.com", Email = "artistmanager4@test.com", County = "Surrey", Town = "Camberley", Latitude = 51.34, Longitude = -0.73 },
+                    new ArtistManager { UserName = "artistmanager5@test.com", Email = "artistmanager5@test.com", County = "Surrey", Town = "Haslemere", Latitude = 51.08, Longitude = -0.74 },
                     // Venue Managers
-                    new VenueManager { UserName = "venuemanager1@test.com", Email = "venuemanager1@test.com", County = "Surrey", Town = "Leatherhead" },
-                    new VenueManager { UserName = "venuemanager2@test.com", Email = "venuemanager2@test.com", County = "Surrey", Town = "Redhill" },
-                    new VenueManager { UserName = "venuemanager3@test.com", Email = "venuemanager3@test.com", County = "Surrey", Town = "Weybridge" },
-                    new VenueManager { UserName = "venuemanager4@test.com", Email = "venuemanager4@test.com", County = "Surrey", Town = "Cobham" },
-                    new VenueManager { UserName = "venuemanager5@test.com", Email = "venuemanager5@test.com", County = "Surrey", Town = "Chertsey" }
+                    new VenueManager { UserName = "venuemanager1@test.com", Email = "venuemanager1@test.com", County = "Surrey", Town = "Leatherhead", Latitude = 51.3, Longitude = -0.3 },
+                    new VenueManager { UserName = "venuemanager2@test.com", Email = "venuemanager2@test.com", County = "Surrey", Town = "Redhill", Latitude = 51.23, Longitude = -0.17 },
+                    new VenueManager { UserName = "venuemanager3@test.com", Email = "venuemanager3@test.com", County = "Surrey", Town = "Weybridge", Latitude = 51.38, Longitude = -0.46 },
+                    new VenueManager { UserName = "venuemanager4@test.com", Email = "venuemanager4@test.com", County = "Surrey", Town = "Cobham", Latitude = 51.32, Longitude = -0.46 },
+                    new VenueManager { UserName = "venuemanager5@test.com", Email = "venuemanager5@test.com", County = "Surrey", Town = "Chertsey", Latitude = 51.39, Longitude = -0.5 }
                 };
+
 
                 foreach (var user in users)
                 {
@@ -91,11 +92,11 @@ namespace Infrastructure.Data
             {
                 var venues = new Venue[]
                 {
-                    new Venue { UserId = 9, Name = "The Grand Venue", About = "Premier event venue in Leatherhead", Latitude = 51.3, Longitude = -0.3, ImageUrl = "grandvenue.jpg", Approved = true },
-                    new Venue { UserId = 10, Name = "Redhill Hall", About = "Historic hall for intimate gigs", Latitude = 51.2, Longitude = -0.2, ImageUrl = "redhillhall.jpg", Approved = true },
-                    new Venue { UserId = 11, Name = "Weybridge Pavilion", About = "Modern space for concerts", Latitude = 51.4, Longitude = -0.45, ImageUrl = "weybridgepavilon.jpg", Approved = true },
-                    new Venue { UserId = 12, Name = "Cobham Arts Centre", About = "Cultural hub for arts and music", Latitude = 51.33, Longitude = -0.39, ImageUrl = "cobhamarts.jpg", Approved = true },
-                    new Venue { UserId = 13, Name = "Chertsey Arena", About = "Large arena for big events", Latitude = 51.39, Longitude = -0.5, ImageUrl = "chertseyarena.jpg", Approved = true }
+                    new Venue { UserId = 9, Name = "The Grand Venue", About = "Premier event venue in Leatherhead", ImageUrl = "grandvenue.jpg", Approved = true },
+                    new Venue {UserId = 10, Name = "Redhill Hall", About = "Historic hall for intimate gigs", ImageUrl = "redhillhall.jpg", Approved = true},
+                    new Venue {UserId = 11, Name = "Weybridge Pavilion", About = "Modern space for concerts", ImageUrl = "weybridgepavilon.jpg", Approved = true},
+                    new Venue {UserId = 12, Name = "Cobham Arts Centre", About = "Cultural hub for arts and music", ImageUrl = "cobhamarts.jpg", Approved = true},
+                    new Venue {UserId = 13, Name = "Chertsey Arena", About = "Large arena for big events", ImageUrl = "chertseyarena.jpg", Approved = true}
                 };
                 context.Venues.AddRange(venues);
                 await context.SaveChangesAsync();

@@ -7,9 +7,10 @@ export interface Venue extends Item {
     type: 'venue';
     name: string;
     about: string;
-    coordinates: Coordinates
     imageUrl: string;
     county: string;
     town: string;
+    latitude: number;
+    longitude: number;
     approved: boolean;
 }

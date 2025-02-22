@@ -24,9 +24,9 @@ namespace Infrastructure.Services
             apiKey = configuration["GoogleApiKey"];
         }
 
-        public async Task<LocationDto> GetLocationAsync(CoordinatesDto coordinatesDto)
+        public async Task<LocationDto> GetLocationAsync(double latitude, double longitude)
         {
-            var latLng = $"{coordinatesDto.Latitude},{coordinatesDto.Longitude}";
+            var latLng = $"{latitude},{longitude}";
             var query = $"latlng={Uri.EscapeDataString(latLng)}&key={Uri.EscapeDataString(apiKey)}"; //Adds latlong to url safely
             Uri requestUri = new Uri(httpClient.BaseAddress, $"json?{query}");
 

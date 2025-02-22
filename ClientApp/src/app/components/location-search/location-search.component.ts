@@ -10,7 +10,7 @@ import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, I
 export class LocationSearchComponent implements AfterViewInit {
   @ViewChild('search', { static: true }) searchElement!: ElementRef;
   @Input() type: string = '(cities)';
-  @Output() locationChange = new EventEmitter<{ lat: number; lng: number }>();
+  @Output() locationChange = new EventEmitter<google.maps.LatLngLiteral>();
 
   ngAfterViewInit(): void {
     const options = {
