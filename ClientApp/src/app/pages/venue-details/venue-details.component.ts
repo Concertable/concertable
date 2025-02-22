@@ -59,11 +59,13 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
     return this.venueService.getDetailsById(id);
   }
 
-  updateCoordinates(coordinates: Coordinates) {
+  updateCoordinates(coordinates: Coordinates | undefined) {
     if(this.venue)
     {
-      this.venue.latitude = coordinates.lat;
-      this.venue.longitude = coordinates.lng
+      if(coordinates) {
+        this.venue.latitude = coordinates.lat;
+        this.venue.longitude = coordinates.lng;
+      }
     }
     this.onChangeDetected();
   }

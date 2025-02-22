@@ -1,24 +1,9 @@
-<div class="payment-form">
-    <div id="card-element" class="stripe-input"></div>
-    <!-- Card Number -->
-    <div id="card-number-element" class="stripe-input"></div>
-  
-    <!-- Expiry Date -->
-    <div id="card-expiry-element" class="stripe-input"></div>
-  
-    <!-- CVC -->
-    <div id="card-cvc-element" class="stripe-input"></div>
-  
-    <!-- Submit Button -->
-    <button
-      [disabled]="isProcessing"
-      (click)="purchaseTicket()"
-      class="buy-button"
-    >
-      {{ isProcessing ? 'Processing...' : 'Buy Ticket' }}
-    </button>
-  
-    <!-- Message -->
-    <p class="message">{{ message }}</p>
-  </div>
-  
+<div class="container">
+  <h2>Secure Checkout</h2>
+
+  <!-- Card Details Component -->
+  <app-card-details [isProcessing]="isProcessing" (paymentMethodChange)="updatePaymentMethodId($event)"></app-card-details>
+
+  <!-- Message -->
+  <p class="message">{{ message }}</p>
+</div>

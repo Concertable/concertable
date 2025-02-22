@@ -52,9 +52,12 @@ namespace Web.Controllers
                     };
                     bool processed = false;
 
+                    var userId = int.Parse(intent.Metadata["fromUserId"]);
+                    var email = intent.Metadata["fromUserEmail"];
+
                     if (paymentType == "event")
                     {
-                        await ticketService.CompleteAsync(intent.Id, int.Parse(intent.Metadata["eventId"]));
+                        await ticketService.CompleteAsync(intent.Id, int.Parse(intent.Metadata["eventId"]), userId, email);
                         processed = true;
                     }
                     else if (paymentType == "artist")

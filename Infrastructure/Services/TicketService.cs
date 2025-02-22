@@ -30,6 +30,11 @@ public class TicketService : ITicketService
         var eventRepository = unitOfWork.GetRepository<Event>();
 
         var user = await authService.GetCurrentUserAsync();
+        var role = await authService.GetFirstUserRoleAsync(user);
+
+        if (role != "Customer")
+            throw new ForbiddenException("Only Customers can buy tickets");
+
         var eventEntity = await eventRepository.GetByIdAsync(eventId);
         var toUserId = await managerService.GetIdByEventIdAsync(eventId);
 
@@ -37,9 +42,10 @@ public class TicketService : ITicketService
         {
             FromUserEmail = user.Email,
             Amount = eventEntity.Price,
-            Metadata =
+            Metadata = new Dictionary<string, string>()
             {
                 { "fromUserId", user.Id.ToString() },
+                { "fromUserEmail", user.Email },
                 { "toUserId", toUserId.ToString() },
                 { "type", "event" },
                 { "eventId", eventId.ToString() }
@@ -62,20 +68,21 @@ public class TicketService : ITicketService
         };
     }
 
-
-
-    public async Task<TicketPurchaseResponse> CompleteAsync(string transactionId, int eventId)
+    /// <summary>
+    /// Called by the Webhook controller once the payment process is complete
+    /// Adds the Ticket to the Database whilst updating Event Data
+    /// </summary>
+    public async Task<TicketPurchaseResponse> CompleteAsync(string transactionId, int eventId, int userId, string email)
     {
         var ticketRepository = unitOfWork.GetRepository<Ticket>();
         var eventRepository = unitOfWork.GetRepository<Event>();
 
-        var user = await authService.GetCurrentUserAsync();
         var eventEntity = await eventRepository.GetByIdAsync(eventId);
 
         // Create and save the ticket
         var ticket = new Ticket
         {
-            UserId = user.Id,
+            UserId = userId,
             EventId = eventId,
             PurchaseDate = DateTime.Now
         };
@@ -99,7 +106,7 @@ public class TicketService : ITicketService
             Amount = eventEntity.Price,
             Currency = "GBP",
             TransactionId = transactionId,
-            UserEmail = user.Email
+            UserEmail = email
         };
     }
 }

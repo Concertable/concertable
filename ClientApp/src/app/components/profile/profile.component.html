@@ -12,8 +12,14 @@
                 <p>Role: {{user.role}}</p>
             </div>
         </div>
+        <ng-container *ngIf="authService.isRole('Customer')">
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="onEditProfile()">
+                <mat-icon fontIcon="confirmation_number"></mat-icon>
+                <span>View Tickets</span>
+            </button>
+        </ng-container>
         <mat-divider></mat-divider>
-
         <button mat-menu-item (click)="onEditProfile()">
             <mat-icon fontIcon="edit"></mat-icon>
             <span>Edit Profile</span>

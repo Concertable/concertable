@@ -22,14 +22,34 @@ export class StripeService {
   }
 
   async createCardElements() {
+    const style = {
+      base: {
+        fontSize: '20px',  /* Larger text */
+        color: '#333',
+        fontFamily: 'Arial, sans-serif',
+        padding: '12px', /* Bigger padding */
+        borderRadius: '10px',
+        background: '#f7f7f7',
+        '::placeholder': {
+          color: '#999',
+          fontSize: '20px', /* Bigger placeholder */
+        },
+      },
+      invalid: {
+        color: '#e3342f',
+      },
+    };
     await this.initStripe();
     if (!this.elements) this.elements = this.stripe!.elements();
     if (!this.cardNumberElement) {
-      this.cardNumberElement = this.elements.create('cardNumber', { showIcon: true });
+      this.cardNumberElement = this.elements.create('cardNumber', {
+         showIcon: true,
+         style
+        });
       this.cardNumberElement.mount('#card-number-element');
     }
-    this.elements.create('cardExpiry').mount('#card-expiry-element');
-    this.elements.create('cardCvc').mount('#card-cvc-element');
+    this.elements.create('cardExpiry', { style }).mount('#card-expiry-element');
+    this.elements.create('cardCvc', { style }).mount('#card-cvc-element');
   }
 
   async confirmPayment(clientSecret: string, email: string): Promise<void> {
@@ -45,15 +65,14 @@ export class StripeService {
     if (result.error) throw new Error(result.error.message);
   }
 
-  async createPaymentMethod(email: string): Promise<string> {
+  async createPaymentMethod(): Promise<string> {
     if (!this.stripe || !this.cardNumberElement) {
       throw new Error('Stripe not initialized');
     }
   
     const { paymentMethod, error } = await this.stripe.createPaymentMethod({
       type: 'card',
-      card: this.cardNumberElement,
-      billing_details: { email }
+      card: this.cardNumberElement
     });
   
     if (error) {

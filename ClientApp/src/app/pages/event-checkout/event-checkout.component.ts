@@ -9,7 +9,7 @@ import { ActivatedRoute } from '@angular/router';
   selector: 'app-event-checkout',
   standalone: false,
   templateUrl: './event-checkout.component.html',
-  styleUrls: ['./event-checkout.component.css']
+  styleUrls: ['./event-checkout.component.scss']
 })
 export class EventCheckoutComponent implements OnInit {
   event?: Event;
@@ -22,37 +22,37 @@ export class EventCheckoutComponent implements OnInit {
     private stripeService: StripeService, 
     private ticketService: TicketService) {}
   
-  async ngOnInit() {
+  ngOnInit() {
     this.route.data.subscribe(data => {
       this.event = data['event'];
     });
-    console.log(this.event);
-    try {
-      await this.stripeService.createCardElements();
-    } catch (error) {
-      this.message = 'Failed to initialize payment fields.';
-      console.error(error);
-    }
   }
 
-  async purchaseTicket() {
+  async updatePaymentMethodId(paymentMethodId: string) {
+    await this.purchaseTicket(paymentMethodId)
+  }
+
+  async purchaseTicket(paymentMethodId: string) {
     this.isProcessing = true;
     this.message = '';
+
+    if(!paymentMethodId) {
+      return;
+    }
+
     try {
       if (this.event?.id) {
-        const paymentMethodId = await this.stripeService.createPaymentMethod(this.email);  // Create PaymentMethod first
-  
         this.ticketService.purchase(this.event.id, paymentMethodId).subscribe(
           async (response) => {
             if (response.requiresAction && response.clientSecret) {
               try {
                 await this.stripeService.confirmPayment(response.clientSecret, this.email);
-                this.message = 'Payment successful! Ticket purchased.1';
+                this.message = 'Payment successful! Ticket purchased.';
               } catch (error: any) {
                 this.message = `Payment authentication failed: ${error.message}`;
               }
             } else if (response.success) {
-              this.message = 'Payment successful! Ticket purchased.2';
+              this.message = 'Payment successful! Ticket purchased.';
             } else {
               this.message = 'Payment failed.';
             }

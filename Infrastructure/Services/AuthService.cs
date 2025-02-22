@@ -70,10 +70,17 @@ namespace Infrastructure.Services
             return user;
         }
 
-        public async Task<string> GetFirstUserRole(ApplicationUser user)
+        public async Task<string> GetFirstUserRoleAsync(ApplicationUser user)
         {
             var roles = await userManager.GetRolesAsync(user);
             return roles.First();
+        }
+
+        public async Task<string> GetFirstUserRoleAsync()
+        {
+            var user = await GetCurrentUserAsync();
+
+            return await GetFirstUserRoleAsync(user);
         }
 
         public async Task<bool> CheckEmailExistsAsync(string email)

@@ -32,9 +32,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card'
-import {MatButtonModule} from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatSliderModule } from '@angular/material/slider'; 
 import { MatPaginatorModule } from '@angular/material/paginator';
+
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/config/google-maps/google-maps.component';
@@ -97,6 +98,7 @@ import { ItemEventsComponent } from './components/item-events/item-events.compon
 import { ArtistEventsComponent } from './components/artist-events/artist-events.component';
 import { EventCheckoutComponent } from './pages/event-checkout/event-checkout.component';
 import { ReviewSummaryComponent } from './components/review-summary/review-summary.component';
+import { CardDetailsComponent } from './components/card-details/card-details.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -170,6 +172,7 @@ const routerOptions: ExtraOptions = {
     ArtistEventsComponent,
     EventCheckoutComponent,
     ReviewSummaryComponent,
+    CardDetailsComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

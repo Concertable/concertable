@@ -1,0 +1,28 @@
+<div class="card-container">
+    <label for="card-number-element">Card Number</label>
+    <div id="card-number-element" class="stripe-input"></div>
+  
+    <div class="wrapper">
+      <div class="nested-wrapper">
+        <label for="card-expiry-element">Expiry Date</label>
+        <div id="card-expiry-element" class="stripe-input"></div>
+      </div>
+  
+      <div class="nested-wrapper">
+        <label for="card-cvc-element">CVC</label>
+        <div id="card-cvc-element" class="stripe-input"></div>
+      </div>
+    </div>
+</div>
+  <!-- Buy Button -->
+  <button 
+    mat-flat-button 
+    color="primary"
+    [disabled]="isProcessing"
+    (click)="createPaymentMethod()"
+    class="buy-button"
+  >
+    {{ isProcessing ? 'Processing...' : 'Buy Ticket' }}
+  </button>
+<p class="message">{{ message }}</p>
+  

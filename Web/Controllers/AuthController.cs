@@ -31,7 +31,6 @@ namespace Web.Controllers
         public async Task<ActionResult> Logout()
         {
             await authService.Logout();
-
             return NoContent();
         }
 
@@ -43,7 +42,7 @@ namespace Web.Controllers
 
             if (user == null) return NoContent();
 
-            var role = await authService.GetFirstUserRole(user);
+            var role = await authService.GetFirstUserRoleAsync(user);
             return Ok(new UserDto()
             {
                 Id = user.Id,

@@ -1,0 +1,26 @@
+.card-container {
+    display: flex;
+    max-width: 300px;
+    flex-direction: column;
+    border: 2px solid #ccc; /* Add border */
+    border-radius: 25px; /* Rounded corners for squircle effect */
+    padding: 20px;
+}
+  
+.wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: stretch; /* Ensures children stretch if necessary */
+}
+  
+.nested-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;  
+}
+  
+.stripe-input {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+  

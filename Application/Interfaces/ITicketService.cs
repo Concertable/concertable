@@ -12,6 +12,6 @@ namespace Application.Interfaces
     public interface ITicketService
     {
         Task<TicketPurchaseResponse> PurchaseAsync(string paymentMethodId, int eventId);
-        Task<TicketPurchaseResponse> CompleteAsync(string transactionId, int eventId);
+        Task<TicketPurchaseResponse> CompleteAsync(string transactionId, int eventId, int userId, string email);
     }
 }

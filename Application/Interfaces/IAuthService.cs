@@ -17,6 +17,8 @@ namespace Application.Interfaces
 
         public Task<ApplicationUser> GetCurrentUserAsync();
 
-        public Task<string> GetFirstUserRole(ApplicationUser user);
+        public Task<string> GetFirstUserRoleAsync(ApplicationUser user);
+
+        public Task<string> GetFirstUserRoleAsync();
     }
 }
