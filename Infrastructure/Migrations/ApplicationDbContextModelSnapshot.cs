@@ -516,6 +516,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<byte[]>("QrCode")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 

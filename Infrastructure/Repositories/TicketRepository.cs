@@ -14,6 +14,13 @@ namespace Infrastructure.Repositories
     {
         public TicketRepository(ApplicationDbContext context) : base(context) { }
 
+        public Task<byte[]> GetQrCodeByIdAsync(int id)
+        {
+            var query = context.Tickets
+                .Where(t => t.Id == id)
+                .Select(t => t.QrCode);
 
+            return query.FirstAsync();
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Core.Responses;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
@@ -12,18 +13,21 @@ namespace Web.Controllers
         private readonly ITicketService ticketService;
         private readonly IArtistService artistService;
         private readonly IPurchaseService purchaseService;
+        private readonly IEmailService emailService;
         
         private readonly string webhookSecret;
 
         public WebhookController(
-            ITicketService ticketService, 
-            IArtistService artistService, 
+            ITicketService ticketService,
+            IArtistService artistService,
             IPurchaseService purchaseService,
+            IEmailService emailService,
             IConfiguration configuration)
         {
             this.ticketService = ticketService;
             this.artistService = artistService;
             this.purchaseService = purchaseService;
+            this.emailService = emailService;
             webhookSecret = configuration["Stripe:WebhookSecret"];
         }
 
@@ -55,9 +59,11 @@ namespace Web.Controllers
                     var userId = int.Parse(intent.Metadata["fromUserId"]);
                     var email = intent.Metadata["fromUserEmail"];
 
+                    TicketPurchaseResponse? ticketResponse = null;
+
                     if (paymentType == "event")
                     {
-                        await ticketService.CompleteAsync(intent.Id, int.Parse(intent.Metadata["eventId"]), userId, email);
+                        ticketResponse = await ticketService.CompleteAsync(intent.Id, int.Parse(intent.Metadata["eventId"]), userId, email);
                         processed = true;
                     }
                     else if (paymentType == "artist")
@@ -65,7 +71,10 @@ namespace Web.Controllers
                         processed = true;
                     }
                     if (processed)
+                    {
                         await purchaseService.LogAsync(purchaseDto);
+                        await emailService.SendTicketEmailAsync(userId, email, ticketResponse.TicketId);
+                    }
 
                     return Ok();
             }

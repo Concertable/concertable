@@ -2,6 +2,7 @@
 using Core.Entities;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,8 +46,6 @@ namespace Infrastructure.Repositories
             return repository;
         }
 
-
-
         public async Task SaveChangesAsync()
         {
             await context.SaveChangesAsync();
@@ -55,6 +54,11 @@ namespace Infrastructure.Repositories
         public void Dispose()
         {
             context.Dispose();
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await context.Database.BeginTransactionAsync();
         }
     }
 

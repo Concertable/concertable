@@ -6,20 +6,26 @@ using Core.Responses;
 
 public class TicketService : ITicketService
 {
+    private readonly ITicketRepository ticketRepository;
     private readonly IUnitOfWork unitOfWork;
     private readonly IPaymentService paymentService;
+    private readonly IQrCodeService qrCodeService;
     private readonly IAuthService authService;
     private readonly IManagerService managerService;
 
     public TicketService(
+        ITicketRepository ticketRepository,
         IUnitOfWork unitOfWork,
         IPaymentService paymentService,
+        IQrCodeService qrCodeService,
         IAuthService authService,
         IManagerService managerService
         )
     {
+        this.ticketRepository = ticketRepository;
         this.unitOfWork = unitOfWork;
         this.paymentService = paymentService;
+        this.qrCodeService = qrCodeService;
         this.authService = authService;
         this.managerService = managerService;
     }
@@ -79,22 +85,48 @@ public class TicketService : ITicketService
 
         var eventEntity = await eventRepository.GetByIdAsync(eventId);
 
-        // Create and save the ticket
-        var ticket = new Ticket
+        using var transaction = await unitOfWork.BeginTransactionAsync();
+
+        Ticket? ticket = null;
+
+        try
         {
-            UserId = userId,
-            EventId = eventId,
-            PurchaseDate = DateTime.Now
-        };
+            // Create and save the ticket
+            ticket = new Ticket
+            {
+                UserId = userId,
+                EventId = eventId,
+                PurchaseDate = DateTime.Now
+            };
 
-        await ticketRepository.AddAsync(ticket);
+            var ticketResponse = await ticketRepository.AddAsync(ticket);
+            await unitOfWork.SaveChangesAsync(); //Have to save here as its the only way to get the Id
 
-        // Reduce available tickets and save changes
-        // Made Sure tickets are available in PurchaseAsync method
-        eventEntity.AvailableTickets -= 1;
-        eventRepository.Update(eventEntity);
+            // Adds newly created QR Code to the ticket
+            ticket.QrCode = qrCodeService.GenerateFromTicketId(ticketResponse.Id);
+            ticketRepository.Update(ticket);
 
-        await unitOfWork.SaveChangesAsync();
+            // Reduce available tickets and save changes
+            // Made Sure tickets are available in PurchaseAsync method
+            eventEntity.AvailableTickets -= 1;
+            eventRepository.Update(eventEntity);
+
+            // Save & Commit Changes if all db operations executed without error
+            await unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            /* 
+             * Since we are forced to save midway through unitOfWork,
+             * Rollback if the any of the try block fails
+             */
+            await transaction.RollbackAsync();
+            throw new InternalServerException("Failed to Create Ticket. Please contact support");
+        }
+
+        if(ticket is null)
+            throw new InternalServerException("Ticket created, but not found");
 
         return new TicketPurchaseResponse
         {
@@ -108,5 +140,10 @@ public class TicketService : ITicketService
             TransactionId = transactionId,
             UserEmail = email
         };
+    }
+
+    public Task<byte[]> GetQrCodeByIdAsync(int id)
+    {
+        return ticketRepository.GetQrCodeByIdAsync(id);
     }
 }

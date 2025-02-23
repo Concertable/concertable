@@ -13,5 +13,6 @@ namespace Application.Interfaces
     {
         Task<TicketPurchaseResponse> PurchaseAsync(string paymentMethodId, int eventId);
         Task<TicketPurchaseResponse> CompleteAsync(string transactionId, int eventId, int userId, string email);
+        Task<byte[]> GetQrCodeByIdAsync(int id);
     }
 }

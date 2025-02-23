@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250222184122_InitialCreate")]
+    [Migration("20250223021828_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -518,6 +518,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("QrCode")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

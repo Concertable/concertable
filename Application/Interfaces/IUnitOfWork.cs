@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace Application.Interfaces
         IRepository<TEntity> GetRepository<TEntity>() where TEntity : BaseEntity;
         IBaseRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class;
         Task SaveChangesAsync();
+        Task<IDbContextTransaction> BeginTransactionAsync();
     }
 
 }
