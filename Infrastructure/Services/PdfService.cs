@@ -14,9 +14,9 @@ namespace Infrastructure.Services
     public class PdfService : IPdfService
     {
         private readonly IQrCodeService qrCodeService;
-        private readonly ITicketService ticketService;
+        private readonly Lazy<ITicketService> ticketService;
 
-        public PdfService(IQrCodeService qrCodeService , ITicketService ticketService)
+        public PdfService(IQrCodeService qrCodeService , Lazy<ITicketService> ticketService)
         {
             QuestPDF.Settings.License = LicenseType.Community;
             this.qrCodeService = qrCodeService;
@@ -25,7 +25,7 @@ namespace Infrastructure.Services
 
         public async Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId)
         {
-            byte[] qrCode = await ticketService.GetQrCodeByIdAsync(ticketId);
+            byte[] qrCode = await ticketService.Value.GetQrCodeByIdAsync(ticketId);
 
             return Document.Create(container =>
             {

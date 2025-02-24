@@ -3,7 +3,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Core.Entities;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using Infrastructure.Helpers;
 using Infrastructure.Repositories;
 using System;

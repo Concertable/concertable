@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
-import { AddedBankAccountResponse } from '../../models/added-bank-account-response';
+import { AddedBankAccount } from '../../models/added-bank-account';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +13,8 @@ export class StripeAccountService {
       
   constructor(private http: HttpClient) { }
   
-  addBankAccount(token: string): Observable<AddedBankAccountResponse> {
-    return this.http.post<AddedBankAccountResponse>(`${this.apiUrl}/add-bank-account?token=${token}`, {});
+  addBankAccount(token: string): Observable<AddedBankAccount> {
+    return this.http.post<AddedBankAccount>(`${this.apiUrl}/add-bank-account?token=${token}`, {});
   }
 
   isUserVerified(): Observable<boolean> {

@@ -14,6 +14,24 @@ namespace Infrastructure.Repositories
     {
         public UserRepository(ApplicationDbContext context) : base(context) { }
 
+        public async Task<ApplicationUser> GetByApplicationIdAsync(int applicationId)
+        {
+            var query = context.ListingApplications
+                .Where(a => a.Id == applicationId)
+                .Select(a => a.Artist.User);
+
+            return await query.FirstAsync();
+        }
+
+        public async Task<ApplicationUser> GetByEventIdAsync(int eventId)
+        {
+            var query = context.Events
+                 .Where(e => e.Id == eventId)
+                 .Select(e => e.Application.Artist.User);
+
+            return await query.FirstAsync();
+        }
+
         public async Task<int> GetIdByApplicationIdAsync(int applicationId)
         {
             var query = context.ListingApplications

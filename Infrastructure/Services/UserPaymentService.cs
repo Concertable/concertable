@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Core.Exceptions;
-using Core.Responses;
+using Application.Responses;
 using Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
 using System;
@@ -16,7 +16,7 @@ namespace Infrastructure.Services
     {
         private readonly IPaymentService paymentService;
         private IUserService userService;
-        private IEventService eventService;
+        private Lazy<IEventService> eventService;
         private IListingApplicationService listingApplicationService;
         private IAuthService authService;
         private IVenueService venueService;
@@ -24,7 +24,7 @@ namespace Infrastructure.Services
         public UserPaymentService(
             IPaymentService paymentService, 
             IUserService userService,
-            IEventService eventService,
+            Lazy<IEventService> eventService,
             IListingApplicationService listingApplicationService,
             IAuthService authService)
         {
@@ -38,19 +38,20 @@ namespace Infrastructure.Services
         public async Task<PaymentResponse> PayVenueManagerByEventIdAsync(int eventId, string paymentMethodId) 
         {
             var user = await authService.GetCurrentUserAsync();
-            var toUserId = await userService.GetIdByEventIdAsync(eventId);
-            var eventEntity = await eventService.GetDetailsByIdAsync(eventId);
+            var toUser = await userService.GetByEventIdAsync(eventId);
+            var eventEntity = await eventService.Value.GetDetailsByIdAsync(eventId);
 
             var transactionRequestDto = new TransactionRequestDto
             {
                 PaymentMethodId = paymentMethodId,
                 FromUserEmail = user.Email,
                 Amount = eventEntity.Price,
+                DestinationStripeId = toUser.StripeId,
                 Metadata = new Dictionary<string, string>()
             {
                 { "fromUserId", user.Id.ToString() },
                 { "fromUserEmail", user.Email },
-                { "toUserId", toUserId.ToString() },
+                { "toUserId", toUser.Id.ToString() },
                 { "type", "event" },
                 { "eventId", eventId.ToString() }
             }
@@ -67,7 +68,7 @@ namespace Infrastructure.Services
         public async Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId)
         {
             var user = await authService.GetCurrentUserAsync();
-            var toUserId = await userService.GetIdByApplicationIdAsync(applicationId);
+            var toUser = await userService.GetByApplicationIdAsync(applicationId);
             var pay = await listingApplicationService.GetListingPayByIdAsync(applicationId);
 
             var transactionRequestDto = new TransactionRequestDto
@@ -75,11 +76,12 @@ namespace Infrastructure.Services
                 PaymentMethodId = paymentMethodId,
                 FromUserEmail = user.Email,
                 Amount = pay,
+                DestinationStripeId = toUser.StripeId,
                 Metadata = new Dictionary<string, string>()
             {
                 { "fromUserId", user.Id.ToString() },
                 { "fromUserEmail", user.Email },
-                { "toUserId", toUserId.ToString() },
+                { "toUserId", toUser.Id.ToString() },
                 { "type", "application" },
                 { "applicationId", applicationId.ToString() }
             }

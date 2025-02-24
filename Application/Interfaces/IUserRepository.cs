@@ -11,5 +11,7 @@ namespace Application.Interfaces
     {
         Task<int> GetIdByApplicationIdAsync(int applicationId);
         Task<int> GetIdByEventIdAsync(int eventId);
+        Task<ApplicationUser> GetByApplicationIdAsync(int applicationId);
+        Task<ApplicationUser> GetByEventIdAsync(int eventId);
     }
 }

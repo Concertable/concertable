@@ -1,5 +1,5 @@
 ﻿using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

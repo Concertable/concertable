@@ -10,7 +10,7 @@ namespace Application.DTOs
     {
         public string PaymentMethodId { get; set; }
         public string FromUserEmail { get; set; }
-        public string? StripeId { get; set; }
+        public string? DestinationStripeId { get; set; }
         public decimal Amount { get; set; }
         public Dictionary<string, string> Metadata { get; set; }
     }

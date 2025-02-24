@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
-using Core.Responses;
+using Application.Responses;
 using Infrastructure.Repositories;
 using Core.Entities.Identity;
 

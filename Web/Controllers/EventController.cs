@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.Design;
 using Application.DTOs;
 using Core.ModelBinders;
+using Application.Responses;
 
 namespace Web.Controllers
 {
@@ -33,6 +34,12 @@ namespace Web.Controllers
             return Ok(await eventService.GetDetailsByIdAsync(id));
         }
 
+        [HttpGet("application/{applicationId}")]
+        public async Task<ActionResult<VenueDto>> GetDetailsByApplicationId(int applicationId)
+        {
+            return Ok(await eventService.GetDetailsByApplicationIdAsync(applicationId));
+        }
+
         [HttpGet("upcoming/venue/{id}")]
         public async Task<ActionResult<IEnumerable<EventDto>>> GetUpcomingByVenueId(int id)
         {
@@ -45,11 +52,10 @@ namespace Web.Controllers
             return Ok(await eventService.GetUpcomingByArtistIdAsync(id));
         }
 
-        [HttpPost("application/{id}")]
-        public async Task<IActionResult> CreateFromApplicationId(int id)
+        [HttpPost("book")]
+        public async Task<ActionResult<ListingApplicationPurchaseResponse>> Book(EventBookingParams bookingParams)
         {
-            var eventDto = await eventService.CreateFromApplicationIdAsync(id);
-            return CreatedAtAction(nameof(GetDetailsById), new { id = eventDto.Id }, eventDto);
+            return Ok(await eventService.BookAsync(bookingParams));
         }
 
     }

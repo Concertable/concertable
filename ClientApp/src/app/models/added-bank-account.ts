@@ -1,4 +1,4 @@
-export interface AddedBankAccountResponse {
+export interface AddedBankAccount {
     accountId: string;
     redirectUri: string;
 }

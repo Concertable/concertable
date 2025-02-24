@@ -1,5 +1,5 @@
 ﻿using Application.Interfaces;
-using Core.Responses;
+using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Controllers

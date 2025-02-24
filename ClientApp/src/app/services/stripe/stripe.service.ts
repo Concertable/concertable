@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { loadStripe, Stripe, StripeElements, StripeCardNumberElement } from '@stripe/stripe-js';
 import { environment } from '../../../environments/environment';
+import { StripeToastService } from '../toast/stripe-toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class StripeService {
   private elements?: StripeElements;
   private cardNumberElement?: StripeCardNumberElement;
 
-  constructor() {}
+  constructor(private stripeToastService: StripeToastService) {}
 
   async initStripe() {
     if (!this.stripe) {
@@ -59,13 +60,12 @@ export class StripeService {
     this.elements.create('cardCvc', { style }).mount('#card-cvc-element');
   }
 
-  async confirmPayment(clientSecret: string, email: string): Promise<void> {
+  async confirmPayment(clientSecret: string): Promise<void> {
     if (!this.stripe || !this.cardNumberElement) throw new Error('Stripe not initialized');
     console.log('Using clientSecret:', clientSecret);
     const result = await this.stripe.confirmCardPayment(clientSecret, {
       payment_method: {
-        card: this.cardNumberElement,
-        billing_details: { email }
+        card: this.cardNumberElement
       }
     });
     console.log('Payment result:', result);
@@ -83,7 +83,7 @@ export class StripeService {
     });
   
     if (error) {
-      console.error('Error creating PaymentMethod:', error.message);
+      this.stripeToastService.paymentMethodCreationError(error.message);
       throw new Error(error.message);
     }
   

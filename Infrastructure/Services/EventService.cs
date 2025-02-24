@@ -9,14 +9,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
-using Core.Responses;
+using Application.Responses;
 using System.Diagnostics;
+using Application.Responses;
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
     public class EventService : IEventService
     {
         private readonly IEventRepository eventRepository;
+        private readonly IAuthService authService;
+        private readonly IUserPaymentService userPaymentService;
+        private readonly IMessageService messageService;
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
         private readonly IListingApplicationService applicationService;
@@ -24,12 +31,18 @@ namespace Infrastructure.Services
 
         public EventService(
             IEventRepository eventRepository, 
+            IAuthService authService,
+            IUserPaymentService userPaymentService,
+            IMessageService messageService,
             IReviewService reviewService, 
             ILocationService locationService,
             IListingApplicationService applicationService, 
             IMapper mapper)
         {
             this.eventRepository = eventRepository;
+            this.authService = authService;
+            this.userPaymentService = userPaymentService;
+            this.messageService = messageService;
             this.reviewService = reviewService;
             this.locationService = locationService;
             this.applicationService = applicationService;
@@ -70,13 +83,35 @@ namespace Infrastructure.Services
             return mapper.Map<EventDto>(eventEntity);
         }
 
-        public async Task<EventDto> CreateFromApplicationIdAsync(int id)
+        public async Task<ListingApplicationPurchaseResponse> BookAsync(EventBookingParams bookingParams)
         {
-            var (artistDto, venueDto) = await applicationService.GetArtistAndVenueByIdAsync(id);
+            var user = await authService.GetCurrentUserAsync();
+            var role = await authService.GetFirstUserRoleAsync(user);
+
+            if (role != "VenueManager")
+                throw new ForbiddenException("Only VenueManagers can book events");
+
+            var paymentResponse = await userPaymentService.PayArtistManagerByApplicationIdAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
+
+            return new ListingApplicationPurchaseResponse
+            {
+                Success = paymentResponse.Success,
+                RequiresAction = paymentResponse.RequiresAction,
+                Message = paymentResponse.Message ?? (paymentResponse.Success ? "Payment successful" : "Payment failed"),
+                ApplicationId = bookingParams.ApplicationId,
+                TransactionId = paymentResponse.TransactionId,
+                UserEmail = user.Email,
+                ClientSecret = paymentResponse.ClientSecret
+            };
+        }
+
+        public async Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
+        {
+            var (artistDto, venueDto) = await applicationService.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
 
             var eventEntity = new Event
             {
-                ApplicationId = id,
+                ApplicationId = purchaseCompleteDto.EntityId,
                 Name = $"{artistDto.Name} performing at {venueDto.Name}",
                 Price = 0,
                 TotalTickets = 0,
@@ -86,6 +121,31 @@ namespace Infrastructure.Services
 
             await eventRepository.AddAsync(eventEntity);
             await eventRepository.SaveChangesAsync();
+
+            var eventDto = mapper.Map<EventDto>(eventEntity);
+
+            await messageService.SendAsync(
+                purchaseCompleteDto.FromUserId,
+                purchaseCompleteDto.ToUserId,
+                "event",
+                eventDto.Id,
+                "Your Application has been accepted! View your event here"
+            );
+
+            return new ListingApplicationPurchaseResponse
+            {
+                Success = true,
+                Message = "Event successfully booked!",
+                ApplicationId = purchaseCompleteDto.EntityId
+            };
+        }
+
+        public async Task<EventDto> GetDetailsByApplicationIdAsync(int applicationId)
+        {
+            var eventEntity = await eventRepository.GetByApplicationIdAsync(applicationId);
+
+            if (eventEntity is null)
+                throw new NotFoundException($"No event found for Application ID {applicationId}");
 
             return mapper.Map<EventDto>(eventEntity);
         }

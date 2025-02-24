@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using Core.Entities;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,8 @@ namespace Application.Interfaces
 {
     public interface IEventRepository : IRepository<Event>
     {
-        Task<Event> GetByIdAsync(int id); 
+        Task<Event> GetByIdAsync(int id);
+        Task<Event> GetByApplicationIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);
         Task<PaginationResponse<EventHeaderDto>> GetRawHeadersAsync(SearchParams searchParams);

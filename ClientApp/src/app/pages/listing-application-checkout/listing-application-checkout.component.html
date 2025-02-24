@@ -1,0 +1,10 @@
+<div class="container">
+    <h2>Secure Checkout</h2>
+  
+    <!-- Card Details Component -->
+    <app-card-details [isProcessing]="isProcessing" (paymentMethodChange)="updatePaymentMethodId($event)"></app-card-details>
+  
+    <!-- Message -->
+    <p class="message">{{ message }}</p>
+  </div>
+  

@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
-using Core.Responses;
+using Application.Responses;
 
 namespace Application.Interfaces
 {

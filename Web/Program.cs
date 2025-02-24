@@ -79,6 +79,10 @@ builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 builder.Services.AddScoped<IStripeAccountService, StripeAccountService>();
 
+//Lazy Dependency Injections
+builder.Services.AddScoped(provider => new Lazy<IEventService>(() => provider.GetRequiredService<IEventService>()));
+builder.Services.AddScoped(provider => new Lazy<ITicketService>(() => provider.GetRequiredService<ITicketService>()));
+
 
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
 {

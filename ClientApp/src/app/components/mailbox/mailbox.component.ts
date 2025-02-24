@@ -40,9 +40,11 @@ export class MailboxComponent implements OnInit, OnDestroy {
 
   }
 
-  handleAction(action: MessageAction) {
+  handleAction(action: MessageAction, actionId?: number) {
     if(action === "application") 
-      this.router.navigateByUrl('venue/my/applications');
+      this.router.navigateByUrl(`venue/my/applications/${actionId}`);
+    if(action === "event")
+      this.router.navigateByUrl(`artist/my/event/${actionId}`);
   }
 
   ngOnDestroy(): void {

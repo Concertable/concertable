@@ -24,10 +24,19 @@ namespace Infrastructure.Services
             return await userRepsitory.GetIdByApplicationIdAsync(applicationId);
         }
 
+        public async Task<ApplicationUser> GetByApplicationIdAsync(int applicationId)
+        {
+            return await userRepsitory.GetByApplicationIdAsync(applicationId);
+        }
+
         public async Task<int> GetIdByEventIdAsync(int eventId)
         {
             return await userRepsitory.GetIdByEventIdAsync(eventId);
         }
 
+        public async Task<ApplicationUser> GetByEventIdAsync(int eventId)
+        {
+            return await userRepsitory.GetByEventIdAsync(eventId);
+        }
     }
 }

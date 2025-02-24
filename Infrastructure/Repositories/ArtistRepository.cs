@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.Responses;
+using Application.Responses;
 using Infrastructure.Helpers;
 using Application.DTOs;
 using Infrastructure.Factories;

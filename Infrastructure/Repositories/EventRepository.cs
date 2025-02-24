@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Infrastructure.Helpers;
-using Core.Responses;
+using Application.Responses;
 using Application.DTOs;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -101,6 +101,14 @@ namespace Infrastructure.Repositories
                 .ThenInclude(a => a.Listing); // To retrieve the start date
 
             return await query.ToListAsync();
+        }
+
+        public async Task<Event?> GetByApplicationIdAsync(int applicationId)
+        {
+            var query = context.Events
+                .Where(e => e.ApplicationId == applicationId);
+
+            return await query.FirstOrDefaultAsync();
         }
     }
 }

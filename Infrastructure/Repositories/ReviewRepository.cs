@@ -2,7 +2,7 @@
 using Application.Interfaces;
 using Core.Entities;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using Infrastructure.Data.Identity;
 using Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;

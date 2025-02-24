@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
 using Core.Entities.Identity;
-using Core.Responses;
+using Application.Responses;
 using Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;

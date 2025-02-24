@@ -20,4 +20,8 @@ export class ListingApplicationService {
   getAllForListingId(id : number) : Observable<ListingApplication[]> {
     return this.http.get<ListingApplication[]>(`${this.apiUrl}/all/${id}`);
   }
+
+  getById(id: number): Observable<ListingApplication> {
+    return this.http.get<ListingApplication>(`${this.apiUrl}/${id}`);
+  }
 }

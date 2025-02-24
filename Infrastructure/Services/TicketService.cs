@@ -2,13 +2,16 @@
 using Application.Interfaces;
 using Core.Entities;
 using Core.Exceptions;
-using Core.Responses;
+using Application.Responses;
+using Infrastructure.Services;
+using Core.Parameters;
 
 public class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
     private readonly IUnitOfWork unitOfWork;
     private readonly IUserPaymentService userPaymentService;
+    private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
     private readonly IAuthService authService;
     private readonly IManagerService managerService;
@@ -17,6 +20,7 @@ public class TicketService : ITicketService
         ITicketRepository ticketRepository,
         IUnitOfWork unitOfWork,
         IUserPaymentService userPaymentService,
+        IEmailService emailService,
         IQrCodeService qrCodeService,
         IAuthService authService,
         IManagerService managerService
@@ -25,12 +29,13 @@ public class TicketService : ITicketService
         this.ticketRepository = ticketRepository;
         this.unitOfWork = unitOfWork;
         this.userPaymentService = userPaymentService;
+        this.emailService = emailService;
         this.qrCodeService = qrCodeService;
         this.authService = authService;
         this.managerService = managerService;
     }
 
-    public async Task<TicketPurchaseResponse> PurchaseAsync(string paymentMethodId, int eventId)
+    public async Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
         var user = await authService.GetCurrentUserAsync();
         var role = await authService.GetFirstUserRoleAsync(user);
@@ -38,7 +43,7 @@ public class TicketService : ITicketService
         if (role != "Customer")
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var paymentResponse = await userPaymentService.PayVenueManagerByEventIdAsync(eventId, paymentMethodId);
+        var paymentResponse = await userPaymentService.PayVenueManagerByEventIdAsync(purchaseParams.EventId, purchaseParams.PaymentMethodId);
 
         return new TicketPurchaseResponse
         {
@@ -47,7 +52,7 @@ public class TicketService : ITicketService
             Message = paymentResponse.Message ?? (paymentResponse.Success ? "Payment successful" : "Payment failed"),
             TransactionId = paymentResponse.TransactionId,
             UserEmail = user.Email,
-            ClientSecret = paymentResponse.ClientSecret // Ensure this is always sent to the frontend
+            ClientSecret = paymentResponse.ClientSecret 
         };
     }
 
@@ -55,12 +60,12 @@ public class TicketService : ITicketService
     /// Called by the Webhook controller once the payment process is complete
     /// Adds the Ticket to the Database whilst updating Event Data
     /// </summary>
-    public async Task<TicketPurchaseResponse> CompleteAsync(string transactionId, int eventId, int userId, string email)
+    public async Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
     {
         var ticketRepository = unitOfWork.GetRepository<Ticket>();
         var eventRepository = unitOfWork.GetRepository<Event>();
 
-        var eventEntity = await eventRepository.GetByIdAsync(eventId);
+        var eventEntity = await eventRepository.GetByIdAsync(purchaseCompleteDto.EntityId);
 
         using var transaction = await unitOfWork.BeginTransactionAsync();
 
@@ -71,8 +76,8 @@ public class TicketService : ITicketService
             // Create and save the ticket
             ticket = new Ticket
             {
-                UserId = userId,
-                EventId = eventId,
+                UserId = purchaseCompleteDto.FromUserId,
+                EventId = purchaseCompleteDto.EntityId,
                 PurchaseDate = DateTime.Now
             };
 
@@ -105,17 +110,19 @@ public class TicketService : ITicketService
         if(ticket is null)
             throw new InternalServerException("Ticket created, but not found");
 
+        await emailService.SendTicketEmailAsync(purchaseCompleteDto.FromUserId, purchaseCompleteDto.FromEmail, ticket.Id);
+
         return new TicketPurchaseResponse
         {
             Success = true,
             Message = "Ticket purchased successfully!",
             TicketId = ticket.Id,
-            EventId = eventId,
+            EventId = purchaseCompleteDto.EntityId,
             PurchaseDate = ticket.PurchaseDate,
             Amount = eventEntity.Price,
             Currency = "GBP",
-            TransactionId = transactionId,
-            UserEmail = email
+            TransactionId = purchaseCompleteDto.TransactionId,
+            UserEmail = purchaseCompleteDto.FromEmail
         };
     }
 

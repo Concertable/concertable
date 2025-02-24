@@ -36,13 +36,14 @@ export class ListingApplicationsComponent implements OnInit {
   }
 
   acceptApplication(application: ListingApplication) {
-    this.eventService.createFromApplicationId(application.id).subscribe(() => {
-      this.router.navigate([`../events/event`], {
-        relativeTo: this.route,
-        queryParams: { id: 1 }
-      })
-      this.eventToastService.showAutoCreated()
-    });
+    this.router.navigate(['application/checkout', application?.id]);
+    // this.eventService.createFromApplicationId(application.id).subscribe(() => {
+    //   this.router.navigate([`../events/event`], {
+    //     relativeTo: this.route,
+    //     queryParams: { id: 1 }
+    //   })
+    //   this.eventToastService.showAutoCreated()
+    // });
   }
 }
 

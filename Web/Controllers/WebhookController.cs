@@ -1,6 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
-using Core.Responses;
+using Application.Responses;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
@@ -11,7 +11,7 @@ namespace Web.Controllers
     public class WebhookController : ControllerBase
     {
         private readonly ITicketService ticketService;
-        private readonly IArtistService artistService;
+        private readonly IEventService eventService;
         private readonly IPurchaseService purchaseService;
         private readonly IEmailService emailService;
         
@@ -19,13 +19,13 @@ namespace Web.Controllers
 
         public WebhookController(
             ITicketService ticketService,
-            IArtistService artistService,
+            IEventService eventService,
             IPurchaseService purchaseService,
             IEmailService emailService,
             IConfiguration configuration)
         {
             this.ticketService = ticketService;
-            this.artistService = artistService;
+            this.eventService = eventService;
             this.purchaseService = purchaseService;
             this.emailService = emailService;
             webhookSecret = configuration["Stripe:WebhookSecret"];
@@ -59,21 +59,29 @@ namespace Web.Controllers
                     var userId = int.Parse(intent.Metadata["fromUserId"]);
                     var email = intent.Metadata["fromUserEmail"];
 
-                    TicketPurchaseResponse? ticketResponse = null;
+                    var purchaseCompleteDto = new PurchaseCompleteDto
+                    {
+                        TransactionId = intent.Id,
+                        FromUserId = int.Parse(intent.Metadata["fromUserId"]),
+                        FromEmail = intent.Metadata["fromUserEmail"],
+                        ToUserId = int.Parse(intent.Metadata["toUserId"]),
+                    };
 
                     if (paymentType == "event")
                     {
-                        ticketResponse = await ticketService.CompleteAsync(intent.Id, int.Parse(intent.Metadata["eventId"]), userId, email);
+                        purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["eventId"]);
+                        await ticketService.CompleteAsync(purchaseCompleteDto);
                         processed = true;
                     }
-                    else if (paymentType == "artist")
+                    else if (paymentType == "application")
                     {
+                        purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
+                        await eventService.CompleteAsync(purchaseCompleteDto);
                         processed = true;
                     }
                     if (processed)
                     {
                         await purchaseService.LogAsync(purchaseDto);
-                        await emailService.SendTicketEmailAsync(userId, email, ticketResponse.TicketId);
                     }
 
                     return Ok();

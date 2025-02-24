@@ -1,13 +1,6 @@
-export interface TicketPurchase {
-    success: boolean;
-    requiresAction: boolean;
-    message: string;
+import { Purchase } from "./purchase";
+
+export interface TicketPurchase extends Purchase {
     ticketId: number;
     eventId: number;
-    purchaseDate: Date;
-    amount: number;
-    currency: string;
-    transactionId: string;
-    clientSecret: string;
-    email: string
 }

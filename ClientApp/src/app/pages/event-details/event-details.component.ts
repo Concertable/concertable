@@ -56,7 +56,6 @@ export class EventDetailsComponent extends DetailsDirective<Event> {
   }
 
   onBuyClick() {
-    this.eventStateService.event = this.event;
     this.router.navigate(['event/checkout', this.event?.id])
   }
 }

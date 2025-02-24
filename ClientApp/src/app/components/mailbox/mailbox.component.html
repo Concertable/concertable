@@ -8,7 +8,7 @@
             <mat-list-item *ngFor="let message of messages">
                 <div class="message-container">
                     <p class="message-text">{{ message.content }}</p>
-                    <button *ngIf="message.action" class="message-button primary" (click)="handleAction(message.action)">View</button>
+                    <button *ngIf="message.action" class="message-button primary" (click)="handleAction(message.action, message.actionId)">View</button>
                 </div>
             </mat-list-item>
         </mat-list>

@@ -1,6 +1,6 @@
 ﻿using Application.DTOs;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +11,8 @@ namespace Application.Interfaces
 {
     public interface ITicketService
     {
-        Task<TicketPurchaseResponse> PurchaseAsync(string paymentMethodId, int eventId);
-        Task<TicketPurchaseResponse> CompleteAsync(string transactionId, int eventId, int userId, string email);
+        Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams);
+        Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
         Task<byte[]> GetQrCodeByIdAsync(int id);
     }
 }

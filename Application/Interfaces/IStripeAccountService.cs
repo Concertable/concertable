@@ -1,5 +1,5 @@
 ﻿using Core.Entities.Identity;
-using Core.Responses;
+using Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -13,7 +13,7 @@ namespace Infrastructure.Services
 {
     public class ListingApplicationService : IListingApplicationService
     {
-        private readonly IListingApplicationRepository applicationRepository;
+        private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IUnitOfWork unitOfWork;
         private readonly IAuthService authService;
         private readonly IMessageService messageService;
@@ -22,7 +22,7 @@ namespace Infrastructure.Services
         private readonly IMapper mapper;
 
         public ListingApplicationService(
-            IListingApplicationRepository applicationRepository,
+            IListingApplicationRepository listingApplicationRepository,
             IUnitOfWork unitOfWork,
             IAuthService authService,
             IMessageService messageService,
@@ -30,7 +30,7 @@ namespace Infrastructure.Services
             IArtistService artistService,
             IMapper mapper)
         {
-            this.applicationRepository = applicationRepository;
+            this.listingApplicationRepository = listingApplicationRepository;
             this.unitOfWork = unitOfWork;
             this.authService = authService;
             this.messageService = messageService;
@@ -41,7 +41,7 @@ namespace Infrastructure.Services
 
         public async Task<IEnumerable<ListingApplicationDto>> GetAllForListingIdAsync(int id)
         {
-            var applications = await applicationRepository.GetAllForListingIdAsync(id);
+            var applications = await listingApplicationRepository.GetAllForListingIdAsync(id);
 
             return mapper.Map<IEnumerable<ListingApplicationDto>>(applications);
         }
@@ -72,7 +72,8 @@ namespace Infrastructure.Services
                 fromUserId: user.Id, 
                 toUserId: listingOwner.Id,
                 content: $"{user.Email} has applied to your listing",
-                action: "application");
+                action: "application",
+                actionId: listingId); //?
 
             // Save changes after both have executed
             await unitOfWork.SaveChangesAsync();
@@ -83,14 +84,21 @@ namespace Infrastructure.Services
         /// </summary>
         public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
         {
-            var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(id);
+            var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(id);
 
             return (mapper.Map<ArtistDto>(artist), mapper.Map<VenueDto>(venue));
         }
 
         public async Task<decimal> GetListingPayByIdAsync(int id)
         {
-            return await applicationRepository.GetListingPayByIdAsync(id);
+            return await listingApplicationRepository.GetListingPayByIdAsync(id);
+        }
+
+        public async Task<ListingApplicationDto> GetByIdAsync(int id)
+        {
+            var application = await listingApplicationRepository.GetByIdAsync(id);
+
+            return mapper.Map<ListingApplicationDto>(application);
         }
     }
 }

@@ -10,26 +10,32 @@ namespace Web.Controllers
     [Route("api/[controller]")]
     public class ListingApplicationController : ControllerBase
     {
-        private readonly IListingApplicationService applicationService;
+        private readonly IListingApplicationService listingApplicationService;
 
-        public ListingApplicationController(IListingApplicationService applicationService)
+        public ListingApplicationController(IListingApplicationService listingApplicationService)
         {
-            this.applicationService = applicationService;
+            this.listingApplicationService = listingApplicationService;
         }
 
         [Authorize(Roles = "VenueManager")]
         [HttpGet("all/{id}")]
         public async Task<ActionResult<IEnumerable<ListingApplicationDto>>> GetAllForListingId(int id)
         {
-            return Ok(await applicationService.GetAllForListingIdAsync(id));
+            return Ok(await listingApplicationService.GetAllForListingIdAsync(id));
         }
 
         [Authorize(Roles = "ArtistManager")]
         [HttpPost("{listingId}")]
         public async Task<IActionResult> ApplyForListing(int listingId)
         {
-            await applicationService.ApplyForListingAsync(listingId);
+            await listingApplicationService.ApplyForListingAsync(listingId);
             return NoContent();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ListingApplication>> GetById(int id)
+        {
+            return Ok(await listingApplicationService.GetByIdAsync(id));
         }
     }
 }

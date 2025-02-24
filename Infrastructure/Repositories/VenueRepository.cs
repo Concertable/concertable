@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Infrastructure.Helpers;
-using Core.Responses;
+using Application.Responses;
 using Core.Entities.Identity;
 using Application.DTOs;
 using System.Linq.Expressions;

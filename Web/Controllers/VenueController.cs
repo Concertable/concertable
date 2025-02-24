@@ -5,7 +5,7 @@ using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
-using Core.Responses;
+using Application.Responses;
 using Core.ModelBinders;
 
 namespace Web.Controllers

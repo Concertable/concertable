@@ -3,7 +3,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Core.Entities;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +31,7 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task SendAsync(int fromUserId, int toUserId, string action, string content)
+        public async Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content)
         {
             var messageRepository = unitOfWork.GetRepository<Message>();
 
@@ -41,6 +41,7 @@ namespace Infrastructure.Services
                 FromUserId = fromUserId,
                 ToUserId = toUserId,
                 Action = action,
+                ActionId = actionId,
                 SentDate = DateTime.Now,
                 Read = false
             };

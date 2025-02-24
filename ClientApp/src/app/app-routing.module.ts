@@ -26,6 +26,8 @@ import { EventResolver } from './resolvers/event/event.resolver';
 import { MyTicketsComponent } from './pages/my-tickets/my-tickets.component';
 import { ProfileDetailsComponent } from './pages/profile-details/profile-details.component';
 import { PaymentDetailsComponent } from './components/payment-details/payment-details.component';
+import { ListingApplicationCheckoutComponent } from './pages/listing-application-checkout/listing-application-checkout.component';
+import { ListingApplicationResolver } from './resolvers/listing-application/listing-application.resolver';
 
 const routes: Routes = [
   { path: '', component: HomeComponent,
@@ -35,6 +37,7 @@ const routes: Routes = [
       { path: 'find/artist', component: ArtistDetailsComponent },
       { path: 'find/event', component: EventDetailsComponent },
       { path: 'event/checkout/:id', component: EventCheckoutComponent, resolve: { event: EventResolver} },
+      { path: 'application/checkout/:id', component: ListingApplicationCheckoutComponent, resolve: { listingApplication: ListingApplicationResolver} },
       { path: 'profile', component: ProfileDetailsComponent, children: [
         { path: 'payment', component: PaymentDetailsComponent }
       ] },

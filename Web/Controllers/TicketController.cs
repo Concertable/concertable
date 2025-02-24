@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Controllers
@@ -19,7 +19,7 @@ namespace Web.Controllers
         [HttpPost("purchase")]
         public async Task<ActionResult<TicketPurchaseResponse>> Purchase([FromBody] TicketPurchaseParams purchaseParams)
         {
-            return Ok(await ticketService.PurchaseAsync(purchaseParams.PaymentMethodId, purchaseParams.EventId));
+            return Ok(await ticketService.PurchaseAsync(purchaseParams));
         }
     }
 }

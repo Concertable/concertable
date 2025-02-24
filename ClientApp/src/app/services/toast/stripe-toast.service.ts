@@ -8,4 +8,8 @@ export class StripeToastService extends ToastService {
   stripeNotInitialized() {
     this.showError("Stripe not initialized")
   }
+
+  paymentMethodCreationError(errorMessage?: string) {
+    this.showError(`Error creating PaymentMethod: ${errorMessage}`, "PaymentMethod Creation Error");
+  }
 }

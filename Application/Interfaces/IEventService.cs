@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
-using Core.Responses;
+using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Interfaces
@@ -14,9 +14,11 @@ namespace Application.Interfaces
     public interface IEventService
     {
         Task<EventDto> GetDetailsByIdAsync(int id);
+        Task<EventDto> GetDetailsByApplicationIdAsync(int applicationId);
         Task<IEnumerable<EventDto>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id);
         Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams);
-        Task<EventDto> CreateFromApplicationIdAsync(int id);
+        Task<ListingApplicationPurchaseResponse> BookAsync(EventBookingParams bookingParams);
+        Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
     }
 }

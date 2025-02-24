@@ -12,7 +12,7 @@ export class TicketService {
 
   constructor(private http: HttpClient) {}
 
-  purchase(eventId: number, paymentMethodId: string): Observable<TicketPurchase> {
+  purchase(paymentMethodId: string, eventId: number): Observable<TicketPurchase> {
     return this.http.post<TicketPurchase>(`${this.apiUrl}/purchase`, { eventId, paymentMethodId } );
   }
 }

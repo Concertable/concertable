@@ -2,7 +2,7 @@
 using Application.Interfaces;
 using Core.Entities;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 

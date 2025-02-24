@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using Core.Entities;
 using Core.Parameters;
-using Core.Responses;
+using Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace Application.Interfaces
 {
     public interface IMessageService
     {
-        Task SendAsync(int fromUserId, int toUserId, string action, string content);
+        Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content);
         Task<MessageSummaryDto> GetSummaryForUser();
         Task<PaginationResponse<MessageDto>> GetForUserAsync(PaginationParams? pageParams);
 
