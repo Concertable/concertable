@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Core.Responses;
 using Infrastructure.Repositories;
+using Core.Entities.Identity;
 
 namespace Infrastructure.Services
 {
@@ -62,6 +63,19 @@ namespace Infrastructure.Services
         {
             var artist = await artistRepository.GetByIdAsync(id);
             return mapper.Map<ArtistDto>(artist);
+        }
+
+        public async Task<ArtistDto> CreateAsync(CreateArtistDto createArtistDto)
+        {
+            var artist = mapper.Map<Artist>(createArtistDto);
+
+            var user = await authService.GetCurrentUserAsync();
+            artist.UserId = user.Id;
+
+            var createdArtist = await artistRepository.AddAsync(artist);
+            await artistRepository.SaveChangesAsync();
+
+            return mapper.Map<ArtistDto>(createdArtist);
         }
     }
 }

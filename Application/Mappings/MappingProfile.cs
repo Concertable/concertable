@@ -54,6 +54,7 @@ namespace Application.Mappings
             CreateMap<ArtistDto, Artist>();
             CreateMap<Artist, ArtistHeaderDto>();
             CreateMap<ArtistHeaderDto, Artist>();
+            CreateMap<CreateArtistDto, Artist>();
             //Listing
             CreateMap<Listing, ListingDto>();
             CreateMap<ListingDto, Listing>();

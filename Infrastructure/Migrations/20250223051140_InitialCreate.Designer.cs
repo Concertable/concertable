@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250223021828_InitialCreate")]
+    [Migration("20250223051140_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -281,6 +281,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("StripeId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Town")
                         .HasColumnType("nvarchar(max)");
 
@@ -319,8 +322,8 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("Pay")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Pay")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");

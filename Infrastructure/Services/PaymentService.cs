@@ -19,23 +19,27 @@ public class PaymentService : IPaymentService
         StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
     }
 
-    public async Task<PaymentResponse> ProcessAsync(TransactionDto transactionDto, string paymentMethodId)
+    public async Task<PaymentResponse> ProcessAsync(TransactionRequestDto transactionRequesstDto)
     {
         try
         {
-            long amount = (long)(transactionDto.Amount * 100);
+            long amount = (long)(transactionRequesstDto.Amount * 100);
 
             var options = new PaymentIntentCreateOptions
             {
                 Amount = amount,
                 Currency = "GBP",
-                PaymentMethod = paymentMethodId,
+                PaymentMethod = transactionRequesstDto.PaymentMethodId,
                 Confirm = true,
                 ConfirmationMethod = "automatic",
                 CaptureMethod = "automatic",
                 PaymentMethodTypes = new List<string> { "card" },
-                ReceiptEmail = transactionDto.FromUserEmail,
-                Metadata = transactionDto.Metadata
+                ReceiptEmail = transactionRequesstDto.FromUserEmail,
+                Metadata = transactionRequesstDto.Metadata,
+                TransferData = new PaymentIntentTransferDataOptions
+                {
+                    Destination = transactionRequesstDto.StripeId
+                }
             };
 
             var service = new PaymentIntentService();

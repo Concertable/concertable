@@ -76,6 +76,8 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
+builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
+builder.Services.AddScoped<IStripeAccountService, StripeAccountService>();
 
 
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>

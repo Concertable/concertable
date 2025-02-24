@@ -25,4 +25,8 @@ export class ArtistService {
   getDetailsForCurrentUser(): Observable<Artist> {
     return this.http.get<Artist>(`${this.apiUrl}/user`);
   }
+
+  create(artist: Artist): Observable<Artist> {
+    return this.http.post<Artist>(`${this.apiUrl}`, artist);
+  }
 }

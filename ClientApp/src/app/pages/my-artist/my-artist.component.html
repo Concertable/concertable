@@ -2,9 +2,5 @@
     <app-config-navbar (editModeChange)="onEditModeChange($event)"></app-config-navbar>
     <app-artist-details [artist]="artist" [editMode]="editMode"></app-artist-details>
 }@else {
-    <div class="not-found">
-        <h2>You don't have an artist yet</h2>
-        <h3>Create one?</h3>
-        <button class="create" (click)="onCreateClick()">Create</button>
-    </div>
+    <app-manager-item-not-found [itemName]="'artist'"/>
 }

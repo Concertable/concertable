@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.ExceptionServices;
 
 namespace Infrastructure.Repositories
 {
@@ -42,5 +43,13 @@ namespace Infrastructure.Repositories
             return (query.Artist, query.Venue);
         }
 
+        public async Task<decimal> GetListingPayByIdAsync(int id)
+        {
+            var query = context.ListingApplications
+                .Where(la => la.Id == id)
+                .Select(la => la.Listing.Pay);
+
+            return await query.FirstAsync();
+        }
     }
 }

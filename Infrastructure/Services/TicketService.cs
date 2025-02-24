@@ -8,7 +8,7 @@ public class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
     private readonly IUnitOfWork unitOfWork;
-    private readonly IPaymentService paymentService;
+    private readonly IUserPaymentService userPaymentService;
     private readonly IQrCodeService qrCodeService;
     private readonly IAuthService authService;
     private readonly IManagerService managerService;
@@ -16,7 +16,7 @@ public class TicketService : ITicketService
     public TicketService(
         ITicketRepository ticketRepository,
         IUnitOfWork unitOfWork,
-        IPaymentService paymentService,
+        IUserPaymentService userPaymentService,
         IQrCodeService qrCodeService,
         IAuthService authService,
         IManagerService managerService
@@ -24,7 +24,7 @@ public class TicketService : ITicketService
     {
         this.ticketRepository = ticketRepository;
         this.unitOfWork = unitOfWork;
-        this.paymentService = paymentService;
+        this.userPaymentService = userPaymentService;
         this.qrCodeService = qrCodeService;
         this.authService = authService;
         this.managerService = managerService;
@@ -32,36 +32,13 @@ public class TicketService : ITicketService
 
     public async Task<TicketPurchaseResponse> PurchaseAsync(string paymentMethodId, int eventId)
     {
-        var ticketRepository = unitOfWork.GetRepository<Ticket>();
-        var eventRepository = unitOfWork.GetRepository<Event>();
-
         var user = await authService.GetCurrentUserAsync();
         var role = await authService.GetFirstUserRoleAsync(user);
 
         if (role != "Customer")
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var eventEntity = await eventRepository.GetByIdAsync(eventId);
-        var toUserId = await managerService.GetIdByEventIdAsync(eventId);
-
-        var transactionDto = new TransactionDto
-        {
-            FromUserEmail = user.Email,
-            Amount = eventEntity.Price,
-            Metadata = new Dictionary<string, string>()
-            {
-                { "fromUserId", user.Id.ToString() },
-                { "fromUserEmail", user.Email },
-                { "toUserId", toUserId.ToString() },
-                { "type", "event" },
-                { "eventId", eventId.ToString() }
-            }
-        };
-
-        if (eventEntity == null) throw new NotFoundException("Event not found");
-        if (eventEntity.AvailableTickets <= 0) throw new BadRequestException("No tickets available");
-
-        var paymentResponse = await paymentService.ProcessAsync(transactionDto, paymentMethodId);
+        var paymentResponse = await userPaymentService.PayVenueManagerByEventIdAsync(eventId, paymentMethodId);
 
         return new TicketPurchaseResponse
         {

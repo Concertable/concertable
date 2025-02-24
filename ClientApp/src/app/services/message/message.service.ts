@@ -16,10 +16,10 @@ export class MessageService {
   constructor(private http: HttpClient) { }
 
   getAllForUser(): Observable<Pagination<Message>> {
-    return this.http.get<Pagination<Message>>(`${this.apiUrl}/all`);
+    return this.http.get<Pagination<Message>>(`${this.apiUrl}/user`);
   }
 
   getSummaryForUser(): Observable<MessageSummary> {
-    return this.http.get<MessageSummary>(`${this.apiUrl}/summary`);
+    return this.http.get<MessageSummary>(`${this.apiUrl}/user/summary`);
   }
 }

@@ -53,6 +53,9 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
 
   override saveChanges(): void {
       super.saveChanges();
-      this.listingService.createMultiple(this.newListings).subscribe();
+      this.listingService.createMultiple(this.newListings).subscribe(l => this.newListings = []);
   }
+
+  
+
 }

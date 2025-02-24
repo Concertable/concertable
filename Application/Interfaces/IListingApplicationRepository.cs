@@ -11,5 +11,6 @@ namespace Application.Interfaces
     {
         Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId);
         Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id);
+        Task<decimal> GetListingPayByIdAsync(int id);
     }
 }

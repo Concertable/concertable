@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { ActivatedRoute, Router } from '@angular/router';
 
 
 @Component({
@@ -14,14 +15,21 @@ import { MatMenuModule } from '@angular/material/menu';
 export class ProfileComponent {
   profileListOpen = false;
 
-  constructor(protected authService: AuthService) { }
+  constructor(
+    protected authService: AuthService,
+    private router: Router
+  ) { }
 
   onProfile() {
     this.profileListOpen = !this.profileListOpen;
   }
 
   onEditProfile() {
+    this.router.navigateByUrl('/profile');
+  }
 
+  onViewProfile() {
+    this.router.navigateByUrl('/profile');
   }
 
   onLogOut() : void {

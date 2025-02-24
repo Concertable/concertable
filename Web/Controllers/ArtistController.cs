@@ -39,5 +39,16 @@ namespace Web.Controllers
         {
             return Ok(await artistService.GetDetailsForCurrentUserAsync());
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody]CreateArtistDto createArtistDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            //TODO: Talk about security benefits of passing user seperate instead of through the client side
+            var artistDto = await artistService.CreateAsync(createArtistDto);
+            return CreatedAtAction(nameof(GetDetailsById), new { Id = artistDto.Id }, artistDto);
+        }
     }
 }

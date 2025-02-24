@@ -66,27 +66,30 @@ namespace Infrastructure.Services
             return mapper.Map<VenueDto>(venue); 
         }
 
-        public async Task<VenueDto> CreateAsync(CreateVenueDto venueDto)
+        public async Task<VenueDto> CreateAsync(CreateVenueDto createVenueDto)
         {
             var venueRepository = unitOfWork.GetRepository<Venue>();
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
-            var venue = mapper.Map<Venue>(venueDto);
+            var venue = mapper.Map<Venue>(createVenueDto);
 
             var user = await authService.GetCurrentUserAsync();
             venue.UserId = user.Id;
 
-            var location = await geocodingService.GetLocationAsync(venueDto.Longitude, venueDto.Latitude);
+            var location = await geocodingService.GetLocationAsync(createVenueDto.Latitude, createVenueDto.Longitude);
 
             user.County = location.County;
             user.Town = location.Town;
+
+            user.Latitude = createVenueDto.Latitude;
+            user.Longitude = createVenueDto.Longitude;
 
             var createdVenue = await venueRepository.AddAsync(venue);
             userRepository.Update(user);
 
             await unitOfWork.SaveChangesAsync();
 
-            return mapper.Map<VenueDto>(venue);
+            return mapper.Map<VenueDto>(createdVenue);
         }
 
         public async Task<VenueDto> UpdateAsync(VenueDto venueDto)

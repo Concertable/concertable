@@ -39,7 +39,8 @@ namespace Infrastructure.Services
             string town = null;
 
             if (result.Results == null || result.Results.Count == 0)
-                throw new BadRequestException("No geocoding results found for the provided coordinates.");
+                throw new BadRequestException("No geocoding " +
+                    "results found for the provided coordinates.");
 
             foreach (var resultItem in result.Results)
             {

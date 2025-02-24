@@ -15,5 +15,6 @@ namespace Application.Interfaces
         Task<ArtistDto> GetDetailsByIdAsync(int id);
         Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams);
         Task<ArtistDto?> GetDetailsForCurrentUserAsync();
+        Task<ArtistDto> CreateAsync(CreateArtistDto createArtistDto);
     }
 }

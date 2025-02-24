@@ -1,2 +1,2 @@
-<app-create-navbar></app-create-navbar>
-<app-artist-details [editMode]="true"></app-artist-details>
+<app-create-navbar (create)="createChanges()"></app-create-navbar>
+<app-artist-details [artist]="artist" [editMode]="true"></app-artist-details>

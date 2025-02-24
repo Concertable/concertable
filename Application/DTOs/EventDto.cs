@@ -2,7 +2,7 @@
 {
     public class EventDto : ItemDto
     {
-        public double Price { get; set; }
+        public decimal Price { get; set; }
         public int? TotalTickets { get; set; }
         public int? AvailableTickets { get; set; }
         public DateTime StartDate { get; set; }

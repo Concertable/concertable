@@ -99,6 +99,9 @@ import { ArtistEventsComponent } from './components/artist-events/artist-events.
 import { EventCheckoutComponent } from './pages/event-checkout/event-checkout.component';
 import { ReviewSummaryComponent } from './components/review-summary/review-summary.component';
 import { CardDetailsComponent } from './components/card-details/card-details.component';
+import { ProfileDetailsComponent } from './pages/profile-details/profile-details.component';
+import { MyTicketsComponent } from './pages/my-tickets/my-tickets.component';
+import { PaymentDetailsComponent } from './components/payment-details/payment-details.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -173,6 +176,9 @@ const routerOptions: ExtraOptions = {
     EventCheckoutComponent,
     ReviewSummaryComponent,
     CardDetailsComponent,
+    ProfileDetailsComponent,
+    MyTicketsComponent,
+    PaymentDetailsComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

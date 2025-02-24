@@ -14,6 +14,7 @@ namespace Core.Entities.Identity
         public string? Town { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+        public string? StripeId { get; set; }
         public ICollection<Message> SentMessages { get; set; }
         public ICollection<Message> ReceivedMessages { get; set; }
     }

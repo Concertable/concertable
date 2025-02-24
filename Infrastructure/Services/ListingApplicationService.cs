@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
 using AutoMapper;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
@@ -49,6 +50,10 @@ namespace Infrastructure.Services
         {
             // Prepare data for Service calls
             var artistDto = await artistService.GetDetailsForCurrentUserAsync();
+
+            if (artistDto is null)
+                throw new ForbiddenException("You must create an Artist account before you apply for a listing");
+
             var application = new ListingApplication()
             {
                 ListingId = listingId,
@@ -81,6 +86,11 @@ namespace Infrastructure.Services
             var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(id);
 
             return (mapper.Map<ArtistDto>(artist), mapper.Map<VenueDto>(venue));
+        }
+
+        public async Task<decimal> GetListingPayByIdAsync(int id)
+        {
+            return await applicationRepository.GetListingPayByIdAsync(id);
         }
     }
 }

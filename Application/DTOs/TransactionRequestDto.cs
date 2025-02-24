@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs
 {
-    public class TransactionDto
+    public class TransactionRequestDto
     {
+        public string PaymentMethodId { get; set; }
         public string FromUserEmail { get; set; }
+        public string? StripeId { get; set; }
         public decimal Amount { get; set; }
         public Dictionary<string, string> Metadata { get; set; }
     }

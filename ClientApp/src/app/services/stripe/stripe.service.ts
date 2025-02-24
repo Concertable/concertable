@@ -21,6 +21,13 @@ export class StripeService {
     }
   }
 
+  async getInstance() : Promise<Stripe> {
+    if (!this.stripe) {
+      this.stripe = await loadStripe(environment.stripePublicKey);
+    }
+    return this.stripe!;
+  }
+
   async createCardElements() {
     const style = {
       base: {

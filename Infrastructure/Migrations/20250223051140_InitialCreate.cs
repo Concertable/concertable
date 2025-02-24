@@ -38,6 +38,7 @@ namespace Infrastructure.Migrations
                     Town = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: true),
                     Longitude = table.Column<double>(type: "float", nullable: true),
+                    StripeId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -357,7 +358,7 @@ namespace Infrastructure.Migrations
                     VenueId = table.Column<int>(type: "int", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Pay = table.Column<double>(type: "float", nullable: false)
+                    Pay = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {

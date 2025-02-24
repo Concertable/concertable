@@ -19,15 +19,18 @@ namespace Infrastructure.Services
 {
     public class AuthService : IAuthService
     {
+        private readonly IStripeAccountService stripeAccountService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
 
         public AuthService(
+            IStripeAccountService stripeAccountService,
             IHttpContextAccessor httpContextAccessor,
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager)
         {
+            this.stripeAccountService = stripeAccountService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
             this.signInManager = signInManager;
@@ -40,11 +43,22 @@ namespace Infrastructure.Services
             if (registerDto.Role.Equals("Admin"))
                 throw new UnauthorizedException("You cannot make yourself an admin");
 
-            var user = new ApplicationUser
+            ApplicationUser user;
+
+            switch(registerDto.Role)
             {
-                UserName = registerDto.Email,
-                Email = registerDto.Email
-            };
+                case "Customer":
+                    user = new Customer { UserName = registerDto.Email, Email = registerDto.Email };
+                    break;
+                case "VenueManager":
+                    user = new VenueManager { UserName = registerDto.Email, Email = registerDto.Email };
+                    break;
+                case "ArtistManager":
+                    user = new ArtistManager { UserName = registerDto.Email, Email = registerDto.Email };
+                    break;
+                default:
+                    throw new BadRequestException("Invalid role Specified");
+            }
 
             var result = await userManager.CreateAsync(user, registerDto.Password);
 
@@ -52,6 +66,8 @@ namespace Infrastructure.Services
                 throw new BadRequestException("Failed to Register User");
 
             await userManager.AddToRoleAsync(user, registerDto.Role);
+
+            await stripeAccountService.CreateStripeAccountAsync(user);
         }
 
         public async Task Logout()
