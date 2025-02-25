@@ -10,6 +10,7 @@ namespace Core.Parameters
     public class SearchParams : PaginationParams
     {
         public string? SearchTerm { get; set; }
+        public string HeaderType { get; set; }
         public DateTime? Date { get; set; }
         public string? Sort { get; set; }
         public double? Latitude { get; set; }

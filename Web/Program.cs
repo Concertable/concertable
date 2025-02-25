@@ -80,6 +80,13 @@ builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 builder.Services.AddScoped<IStripeAccountService, StripeAccountService>();
 
+builder.Services.AddScoped<IHeaderService<VenueHeaderDto>, VenueService>();
+builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();
+builder.Services.AddScoped<IHeaderService<EventHeaderDto>, EventService>();
+
+builder.Services.AddSingleton<IHeaderServiceFactory, HeaderServiceFactory>();
+
+
 //Lazy Dependency Injections
 builder.Services.AddScoped(provider => new Lazy<IEventService>(() => provider.GetRequiredService<IEventService>()));
 builder.Services.AddScoped(provider => new Lazy<ITicketService>(() => provider.GetRequiredService<ITicketService>()));
@@ -102,8 +109,10 @@ builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<IHeaderRepositoryFactory, HeaderRepositoryFactory>();
 
+builder.Services.AddScoped<IHeaderRepository<Venue, VenueHeaderDto>, VenueRepository>();
+builder.Services.AddScoped<IHeaderRepository<Artist, ArtistHeaderDto>, ArtistRepository>();
+builder.Services.AddScoped<IHeaderRepository<Event, EventHeaderDto>, EventRepository>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

@@ -10,9 +10,8 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IVenueRepository : IRepository<Venue>
+    public interface IVenueRepository : IHeaderRepository<Venue, VenueHeaderDto>
     {
-        Task<PaginationResponse<VenueHeaderDto>> GetRawHeadersAsync(SearchParams? searchParams);
         Task<Venue?> GetByUserIdAsync(int id);
     }
 }

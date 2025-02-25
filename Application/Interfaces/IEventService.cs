@@ -11,13 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Interfaces
 {
-    public interface IEventService
+    public interface IEventService : IHeaderService<EventHeaderDto>
     {
         Task<EventDto> GetDetailsByIdAsync(int id);
         Task<EventDto> GetDetailsByApplicationIdAsync(int applicationId);
         Task<IEnumerable<EventDto>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id);
-        Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams);
         Task<ListingApplicationPurchaseResponse> BookAsync(EventBookingParams bookingParams);
         Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
     }

@@ -16,41 +16,23 @@ using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
-    public class ArtistRepository : Repository<Artist>, IArtistRepository
+    public class ArtistRepository : HeaderRepository<Artist, ArtistHeaderDto>, IArtistRepository
     {
-        private readonly IReviewRepository reviewRepository;
-        private readonly IHeaderRepositoryFactory headerRepositoryFactory;
 
-        public ArtistRepository(ApplicationDbContext context, IReviewRepository reviewRepository, IHeaderRepositoryFactory headerRepositoryFactory) : base(context) 
+        public ArtistRepository(ApplicationDbContext context) : base(context) 
         {
-            this.reviewRepository = reviewRepository;
-            this.headerRepositoryFactory = headerRepositoryFactory;
         }
 
-        public async Task<PaginationResponse<ArtistHeaderDto>> GetRawHeadersAsync(SearchParams searchParams)
+        protected override Expression<Func<Artist, ArtistHeaderDto>> Selector => a => new ArtistHeaderDto
         {
-            Expression<Func<Artist, ArtistHeaderDto>> selector = v => new ArtistHeaderDto
-            {
-                Id = v.Id,
-                Name = v.Name,
-                ImageUrl = v.ImageUrl,
-                County = v.User.County,
-                Town = v.User.Town,
-                Latitude = v.User.Latitude,
-                Longitude = v.User.Longitude,
-            };
-
-            var filters = new List<Expression<Func<Event, bool>>>();
-
-            if (searchParams.Date != null)
-            {
-                filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
-            }
-
-            var headerRepository = headerRepositoryFactory.Create(selector);
-
-            return await headerRepository.GetRawHeadersAsync(searchParams);
-        }
+            Id = a.Id,
+            Name = a.Name,
+            ImageUrl = a.ImageUrl,
+            County = a.User.County,
+            Town = a.User.Town,
+            Latitude = a.User.Latitude ?? 0,
+            Longitude = a.User.Longitude ?? 0
+        };
 
         public async Task<Artist?> GetByUserIdAsync(int id)
         {

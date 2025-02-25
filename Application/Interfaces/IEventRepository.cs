@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IEventRepository : IRepository<Event>
+    public interface IEventRepository : IHeaderRepository<Event, EventHeaderDto>
     {
         Task<Event> GetByIdAsync(int id);
         Task<Event> GetByApplicationIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);
-        Task<PaginationResponse<EventHeaderDto>> GetRawHeadersAsync(SearchParams searchParams);
     }
 }

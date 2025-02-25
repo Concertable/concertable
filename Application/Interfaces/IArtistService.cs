@@ -10,7 +10,7 @@ using Application.Responses;
 
 namespace Application.Interfaces
 {
-    public interface IArtistService
+    public interface IArtistService : IHeaderService<ArtistHeaderDto>
     {
         Task<ArtistDto> GetDetailsByIdAsync(int id);
         Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams);

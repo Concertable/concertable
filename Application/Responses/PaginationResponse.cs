@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Application.DTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,11 @@ namespace Application.Responses
             TotalCount = totalCount;
             PageNumber = pageNumber;
             PageSize = pageSize;
+        }
+
+        public static explicit operator PaginationResponse<T>(PaginationResponse<VenueHeaderDto> v)
+        {
+            throw new NotImplementedException();
         }
     }
 }

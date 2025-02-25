@@ -12,7 +12,7 @@ using Application.Responses;
 
 namespace Application.Interfaces
 {
-    public interface IVenueService
+    public interface IVenueService : IHeaderService<VenueHeaderDto>
     {
         Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams);
 

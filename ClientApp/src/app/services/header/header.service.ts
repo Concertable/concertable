@@ -10,6 +10,7 @@ import { VenueService } from '../venue/venue.service';
 import { ArtistService } from '../artist/artist.service';
 import { EventService } from '../event/event.service';
 import { Pagination } from '../../models/pagination';
+import { Venue } from '../../models/venue';
 
 @Injectable({
   providedIn: 'root'
@@ -58,5 +59,10 @@ export class HeaderService {
     console.log("xxx",searchParams);
     console.log(params);
     return this.eventService.getHeaders(params);
+  }
+
+  get<T extends ArtistHeader | VenueHeader | EventHeader>(searchParams: SearchParams): Observable<Pagination<T>> {
+    const params = this.setParams(searchParams);
+    return this.http.get<Pagination<T>>(`${this.apiUrl}`, { params })
   }
 }

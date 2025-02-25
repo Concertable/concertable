@@ -16,20 +16,29 @@ using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
-    public class EventRepository : Repository<Event>, IEventRepository
+    public class EventRepository : HeaderRepository<Event, EventHeaderDto>, IEventRepository
     {
-        private readonly IReviewRepository reviewRepository;
-        private readonly IHeaderRepositoryFactory headerRepositoryFactory;
-
         public EventRepository(
-            ApplicationDbContext context, 
-            IReviewRepository reviewRepository,
-            IHeaderRepositoryFactory headerRepositoryFactory
+            ApplicationDbContext context
             ) : base(context) 
         {
-            this.reviewRepository = reviewRepository;
-            this.headerRepositoryFactory = headerRepositoryFactory;
         }
+
+        protected override Expression<Func<Event, EventHeaderDto>> Selector => e => new EventHeaderDto
+        {
+            Id = e.Id,
+            Name = e.Name,
+            ImageUrl = e.Application.Artist.ImageUrl,
+            StartDate = e.Application.Listing.StartDate,
+            EndDate = e.Application.Listing.EndDate,
+            County = e.Application.Listing.Venue.User.County,
+            Town = e.Application.Listing.Venue.User.Town,
+            Latitude = e.Application.Listing.Venue.User.Latitude,
+            Longitude = e.Application.Listing.Venue.User.Longitude
+        };
+
+        protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) =>
+            searchParams.Date == null ? new() : new() { e => e.Application.Listing.StartDate >= searchParams.Date };
 
 
         public async Task<Event> GetByIdAsync(int id)
@@ -49,35 +58,6 @@ namespace Infrastructure.Repositories
 
 
             return await query.FirstAsync();
-        }
-
-
-        public async Task<PaginationResponse<EventHeaderDto>> GetRawHeadersAsync(SearchParams searchParams)
-        {
-            Expression<Func<Event, EventHeaderDto>> selector = e => new EventHeaderDto
-            {
-                Id = e.Id,
-                Name = e.Name,
-                ImageUrl = e.Application.Artist.ImageUrl,
-                StartDate = e.Application.Listing.StartDate,
-                EndDate = e.Application.Listing.EndDate,
-                County = e.Application.Listing.Venue.User.County,
-                Town = e.Application.Listing.Venue.User.Town,
-                Latitude = e.Application.Listing.Venue.User.Latitude,
-                Longitude = e.Application.Listing.Venue.User.Longitude
-            };
-
-            var filters = new List<Expression<Func<Event, bool>>>(); 
-
-            if (searchParams.Date != null)
-            {
-                filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
-            }
-
-            var headerRepository = headerRepositoryFactory.Create(selector, filters);
-
-            // Delegate the call to header repository
-            return await headerRepository.GetRawHeadersAsync(searchParams);
         }
 
 

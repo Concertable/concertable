@@ -59,6 +59,7 @@ export class FindComponent implements OnInit {
 
   handleSearch() {
     if (this.headerType) {
+      this.searchParams.headerType = this.headerType;
       if(!this.searchParams.latitude || !this.searchParams.longitude)
         this.searchParams.radiusKm = undefined;
       const params = this.headerService.setParams(this.searchParams);
@@ -67,7 +68,7 @@ export class FindComponent implements OnInit {
         relativeTo: this.route,
         queryParams: queryParams
       });
-      this.headerMethods[this.headerType](this.searchParams).subscribe(p => {
+      this.headerService.get(this.searchParams).subscribe(p => {
         console.log(p);
         this.headers = p.data;
         this.paginatedHeaders = p

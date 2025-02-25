@@ -14,7 +14,7 @@ using Core.Entities.Identity;
 
 namespace Infrastructure.Services
 {
-    public class ArtistService : IArtistService
+    public class ArtistService : HeaderService<Artist, ArtistHeaderDto, IArtistRepository>, IArtistService
     {
         private readonly IArtistRepository artistRepository;
         private readonly IReviewService reviewService;
@@ -23,11 +23,11 @@ namespace Infrastructure.Services
         private readonly IMapper mapper;
 
         public ArtistService(
+            IArtistRepository artistRepository,
             IAuthService authService, 
             IReviewService reviewService, 
             ILocationService locationService,
-            IArtistRepository artistRepository, 
-            IMapper mapper) 
+            IMapper mapper) : base(artistRepository, locationService)
         {
             this.artistRepository = artistRepository;
             this.reviewService = reviewService;
@@ -36,19 +36,13 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams)
+        public async override Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams)
         {
-            var headers = await artistRepository.GetRawHeadersAsync(searchParams);
+            var headers = await base.GetHeadersAsync(searchParams);
 
             await reviewService.AddAverageRatingsAsync(headers.Data);
 
-            var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
-
-            return new PaginationResponse<ArtistHeaderDto>(
-                locationHeaders,
-                headers.TotalCount,
-                headers.PageNumber,
-                headers.PageSize);
+            return headers;
         }
 
         public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()

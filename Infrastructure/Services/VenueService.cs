@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 
 namespace Infrastructure.Services
 {
-    public class VenueService : IVenueService
+    public class VenueService : HeaderService<Venue, VenueHeaderDto, IVenueRepository>, IVenueService
     {
         private readonly IVenueRepository venueRepository;
         private readonly ILocationService locationService;
@@ -28,13 +28,14 @@ namespace Infrastructure.Services
         private readonly IMapper mapper;
 
         public VenueService(
-            IVenueRepository venueRepository, 
+            IVenueRepository venueRepository,
             ILocationService locationService,
             IReviewService reviewService,
-            IAuthService authService, 
+            IAuthService authService,
             IGeocodingService geocodingService,
             IUnitOfWork unitOfWork,
             IMapper mapper)
+            : base(venueRepository, locationService)
         {
             this.venueRepository = venueRepository;
             this.locationService = locationService;
@@ -45,19 +46,13 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
+        public async override Task<PaginationResponse<VenueHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
         {
-            var headers = await venueRepository.GetRawHeadersAsync(searchParams);
+            var headers = await base.GetHeadersAsync(searchParams);
 
             await reviewService.AddAverageRatingsAsync(headers.Data);
 
-            var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
-
-            return new PaginationResponse<VenueHeaderDto>(
-                locationHeaders,
-                headers.TotalCount,
-                headers.PageNumber,
-                headers.PageSize);
+            return headers;
         }
 
         public async Task<VenueDto> GetDetailsByIdAsync(int id)

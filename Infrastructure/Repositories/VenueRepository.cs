@@ -18,45 +18,23 @@ using Infrastructure.Factories;
 
 namespace Infrastructure.Repositories
 {
-    public class VenueRepository : Repository<Venue>, IVenueRepository
+    public class VenueRepository : HeaderRepository<Venue, VenueHeaderDto>, IVenueRepository
     {
-        private readonly IHeaderRepositoryFactory headerRepositoryFactory;
-        private readonly IReviewRepository reviewRepository;
-
         public VenueRepository(
-            ApplicationDbContext context,
-            IHeaderRepositoryFactory headerRepositoryFactory,
-            IReviewRepository reviewRepository) : base(context) 
+            ApplicationDbContext context) : base(context) 
         {
-            this.headerRepositoryFactory = headerRepositoryFactory;
-
-            this.reviewRepository = reviewRepository;
         }
 
-        public async Task<PaginationResponse<VenueHeaderDto>> GetRawHeadersAsync(SearchParams? searchParams)
+        protected override Expression<Func<Venue, VenueHeaderDto>> Selector => v => new VenueHeaderDto
         {
-            Expression<Func<Venue, VenueHeaderDto>> selector = v => new VenueHeaderDto
-            {
-                Id = v.Id,
-                Name = v.Name,
-                ImageUrl = v.ImageUrl,
-                County = v.User.County,
-                Town = v.User.Town,
-                Latitude = v.User.Latitude ?? 0,
-                Longitude = v.User.Longitude ?? 0
-            };
-
-            var filters = new List<Expression<Func<Event, bool>>>();
-
-            if (searchParams.Date != null)
-            {
-                filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
-            }
-
-            var headerRepository = headerRepositoryFactory.Create(selector);
-
-            return await headerRepository.GetRawHeadersAsync(searchParams);
-        }
+            Id = v.Id,
+            Name = v.Name,
+            ImageUrl = v.ImageUrl,
+            County = v.User.County,
+            Town = v.User.Town,
+            Latitude = v.User.Latitude ?? 0,
+            Longitude = v.User.Longitude ?? 0
+        };
 
         public async Task<Venue> GetByIdAsync(int id)
         {

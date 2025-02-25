@@ -10,9 +10,8 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IArtistRepository : IRepository<Artist>
+    public interface IArtistRepository : IHeaderRepository<Artist, ArtistHeaderDto>
     {
-        Task<PaginationResponse<ArtistHeaderDto>> GetRawHeadersAsync(SearchParams searchParams);
         Task<Artist?> GetByUserIdAsync(int id);
     }
 }

@@ -18,7 +18,7 @@ using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
-    public class EventService : IEventService
+    public class EventService : HeaderService<Event, EventHeaderDto, IEventRepository>, IEventService
     {
         private readonly IEventRepository eventRepository;
         private readonly IAuthService authService;
@@ -37,7 +37,7 @@ namespace Infrastructure.Services
             IReviewService reviewService, 
             ILocationService locationService,
             IListingApplicationService applicationService, 
-            IMapper mapper)
+            IMapper mapper) : base(eventRepository, locationService)
         {
             this.eventRepository = eventRepository;
             this.authService = authService;
@@ -55,19 +55,13 @@ namespace Infrastructure.Services
             return mapper.Map<IEnumerable<EventDto>>(events);
         }
 
-        public async Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams searchParams)
+        public async override Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
         {
-            var headers = await eventRepository.GetRawHeadersAsync(searchParams);
+            var headers = await base.GetHeadersAsync(searchParams);
 
             await reviewService.AddAverageRatingsAsync(headers.Data);
 
-            var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
-
-            return new PaginationResponse<EventHeaderDto>(
-                locationHeaders,
-                headers.TotalCount,
-                headers.PageNumber,
-                headers.PageSize);
+            return headers;
         }
 
         public async Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id)

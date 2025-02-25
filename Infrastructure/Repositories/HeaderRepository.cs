@@ -10,40 +10,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Core.Entities;
 
 namespace Infrastructure.Repositories
 {
-    public class HeaderRepository<TEntity, TDto> : IHeaderRepository<TDto>
+    public abstract class HeaderRepository<TEntity, TDto> : Repository<TEntity>, IHeaderRepository<TEntity, TDto>
         where TDto : HeaderDto
-        where TEntity : class
+        where TEntity : BaseEntity
     {
         private readonly ApplicationDbContext context;
         private readonly DbSet<TEntity> dbSet;
-        private readonly Expression<Func<TEntity, TDto>> selector;
-        private readonly List<Expression<Func<TEntity, bool>>> filters; // ✅ Use Entity-level filters
 
         public HeaderRepository(
-            ApplicationDbContext context,
-            Expression<Func<TEntity, TDto>> selector,
-            List<Expression<Func<TEntity, bool>>> filters) // ✅ Accept entity filters
+            ApplicationDbContext context): base(context)
         {
-            this.context = context;
             this.dbSet = context.Set<TEntity>();
-            this.selector = selector;
-            this.filters = filters;
         }
 
-        public HeaderRepository(
-            ApplicationDbContext context,
-            Expression<Func<TEntity, TDto>> selector)
-        {
-            this.context = context;
-            this.dbSet = context.Set<TEntity>();
-            this.selector = selector;
-            this.filters = new List<Expression<Func<TEntity, bool>>>();
-        }
+        protected abstract Expression<Func<TEntity, TDto>> Selector { get; }
+        protected virtual List<Expression<Func<TEntity, bool>>> Filters(SearchParams searchParams) => new();
 
-        public async Task<PaginationResponse<TDto>> GetRawHeadersAsync(SearchParams searchParams)
+        public async Task<PaginationResponse<TDto>> GetRawHeadersAsync(SearchParams? searchParams)
         {
             var query = dbSet.AsQueryable();
 
@@ -52,7 +39,7 @@ namespace Infrastructure.Repositories
                 query = query.Where(e => EF.Property<string>(e, "Name").Contains(searchParams.SearchTerm));
             }
 
-            foreach (var filter in filters)
+            foreach (var filter in Filters(searchParams))
             {
                 query = query.Where(filter);
             }
@@ -67,7 +54,7 @@ namespace Infrastructure.Repositories
                 };
             }
 
-            var result = query.Select(selector);
+            var result = query.Select(Selector);
 
             return await PaginationHelper.CreatePaginatedResponseAsync(result, searchParams);
         }
