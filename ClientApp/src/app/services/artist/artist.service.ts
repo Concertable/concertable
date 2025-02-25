@@ -19,7 +19,7 @@ export class ArtistService {
   }
 
   getHeaders(params: HttpParams): Observable<Pagination<ArtistHeader>> {
-    return this.http.get<Pagination<ArtistHeader>>(`${this.apiUrl}/headers`);
+    return this.http.get<Pagination<ArtistHeader>>(`${this.apiUrl}/headers`, { params });
   }
 
   getDetailsForCurrentUser(): Observable<Artist> {

@@ -5,11 +5,10 @@ import { VenueHeader } from "./venue-header";
 export interface Header {
     id: number;
     name: string;
-    about: string;
     imageUrl: string;
     county: string;
     town: string;
     latitude: number;
     longitude: number;
-    rating: number;
+    rating?: number;
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250223051140_InitialCreate")]
+    [Migration("20250225033427_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -386,10 +386,9 @@ namespace Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Action")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ActionId")
+                    b.Property<int?>("ActionId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")

@@ -383,10 +383,9 @@ namespace Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Action")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ActionId")
+                    b.Property<int?>("ActionId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
