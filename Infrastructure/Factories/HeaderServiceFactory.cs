@@ -39,10 +39,10 @@ namespace Infrastructure.Factories
 
         public IHeaderService<TDto> GetService<TDto>(string entityType) where TDto : HeaderDto
         {
-            if (!serviceTypes.TryGetValue(entityType, out var serviceType))
-                throw new ArgumentException($"No service found for entity type '{entityType}'.");
+            if (serviceTypes.TryGetValue(entityType, out var serviceType))
+                return (IHeaderService<TDto>)scope.ServiceProvider.GetRequiredService(serviceType);
 
-            return (IHeaderService<TDto>)scope.ServiceProvider.GetRequiredService(serviceType);
+            throw new ArgumentOutOfRangeException($"No service found for header type '{entityType}'.");
         }
 
         public void Dispose()
