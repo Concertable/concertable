@@ -25,25 +25,16 @@ export class ListingApplicationsComponent implements OnInit {
   get artists(): Artist[] {
     return this.applications.map(app => app.artist);
   }
-  
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const listingId = params['listingId']
-      if(listingId)
-        this.listingApplicationService.getAllForListingId(listingId).subscribe(a => this.applications = a);
-    });
+    this.route.data.subscribe(data => {
+      this.applications = data['applications'];
+      console.log("apps",this.applications);
+    })
   }
 
   acceptApplication(application: ListingApplication) {
     this.router.navigate(['application/checkout', application?.id]);
-    // this.eventService.createFromApplicationId(application.id).subscribe(() => {
-    //   this.router.navigate([`../events/event`], {
-    //     relativeTo: this.route,
-    //     queryParams: { id: 1 }
-    //   })
-    //   this.eventToastService.showAutoCreated()
-    // });
   }
 }
 

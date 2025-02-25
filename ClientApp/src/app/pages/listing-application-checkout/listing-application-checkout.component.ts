@@ -54,12 +54,5 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
   checkout(paymentMethodId: string, applicationId: number): Observable<ListingApplicationPurchase> {
     return this.eventService.book(paymentMethodId, applicationId)
   }
-
-  postCheckoutAction(): void {
-    // if(this.application?.id)
-    //   this.eventService.getDetailsByApplicationId(this.application.id).subscribe(e => {
-    //     this.router.navigateByUrl(`venue/events/event/${e.id}`)
-    //   })
-  }
 }
 

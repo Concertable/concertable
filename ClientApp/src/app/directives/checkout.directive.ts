@@ -28,8 +28,6 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
 
   abstract checkout(paymentMethodId: string, checkoutEntityId: number) : Observable<Purchase>
 
-  abstract postCheckoutAction(): void
-
   async updatePaymentMethodId(paymentMethodId: string) {
     await this.completeCheckout(paymentMethodId)
   }
@@ -52,13 +50,11 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
               try {
                 await this.stripeService.confirmPayment(response.clientSecret);
                 this.message = `Payment successful! ${this.entityType} purchased.`;
-                this.postCheckoutAction();
               } catch (error: any) {
                 this.message = `Payment authentication failed: ${error.message}`;
               }
             } else if (response.success) { //payment successful first time
               this.message = `Payment successful! ${this.entityType} purchased.`;
-              this.postCheckoutAction();
 
             } else {
               this.message = 'Payment failed.';

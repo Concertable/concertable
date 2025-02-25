@@ -73,7 +73,9 @@ const routes: Routes = [
       { path: 'my/events/event/:id', component: MyEventComponent,
         resolve: { event: MyEventResolver }
        },
-      { path: 'my/applications', component: ListingApplicationsComponent },
+      { path: 'my/applications/:id', component: ListingApplicationsComponent,
+        resolve: { applications: ListingApplicationResolver }
+       },
     ] },
   { path: 'artist', canActivate: [roleGuard], data: { role: "ArtistManager" }, component: ArtistDashboardComponent,
     children: [
