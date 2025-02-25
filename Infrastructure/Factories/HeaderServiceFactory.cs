@@ -11,7 +11,7 @@ namespace Infrastructure.Factories
     {
         private readonly IServiceProvider serviceProvider;
         private IServiceScope scope;
-        private readonly Dictionary<string, Type> serviceTypes;
+        private readonly IDictionary<string, Type> serviceTypes;
 
         public HeaderServiceFactory(IServiceProvider serviceProvider)
         {

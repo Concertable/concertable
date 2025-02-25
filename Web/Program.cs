@@ -50,7 +50,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
@@ -86,11 +85,9 @@ builder.Services.AddScoped<IHeaderService<EventHeaderDto>, EventService>();
 
 builder.Services.AddSingleton<IHeaderServiceFactory, HeaderServiceFactory>();
 
-
 //Lazy Dependency Injections
 builder.Services.AddScoped(provider => new Lazy<IEventService>(() => provider.GetRequiredService<IEventService>()));
 builder.Services.AddScoped(provider => new Lazy<ITicketService>(() => provider.GetRequiredService<ITicketService>()));
-
 
 builder.Services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
 {

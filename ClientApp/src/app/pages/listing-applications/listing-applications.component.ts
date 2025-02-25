@@ -17,10 +17,7 @@ export class ListingApplicationsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute, 
-    private listingApplicationService: ListingApplicationService,
-    private eventService: EventService,
-    private router: Router,
-    private eventToastService: EventToastService) { }
+    private router: Router) { }
 
   get artists(): Artist[] {
     return this.applications.map(app => app.artist);
