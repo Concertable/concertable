@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { Artist } from '../../models/artist';
 import { ArtistService } from '../../services/artist/artist.service';
 import { ActivatedRoute, Route, Router } from '@angular/router';
+import { MyItemDirective } from '../../directives/my-item/my-item.directive';
+import { Observable } from 'rxjs';
+import { ArtistToastService } from '../../services/toast/artist/artist-toast.service';
 
 @Component({
   selector: 'app-my-artist',
@@ -10,25 +13,32 @@ import { ActivatedRoute, Route, Router } from '@angular/router';
   templateUrl: './my-artist.component.html',
   styleUrl: './my-artist.component.scss'
 })
-export class MyArtistComponent {
-  protected artist?: Artist;
-  protected editMode: boolean = false;
+export class MyArtistComponent extends MyItemDirective<Artist> {
+  constructor(
+    route: ActivatedRoute, 
+    private artistService: ArtistService, 
+    private artistToastService: ArtistToastService,
+    private router: Router) {
+      super(route);
+     }
 
-  constructor(private artistService: ArtistService, private router: Router, private route: ActivatedRoute) { }
-
-  onEditModeChange(newValue: boolean) {
-    this.editMode = newValue;
+  get artist() : Artist | undefined {
+    return this.item;
   }
 
-  ngOnInit(): void {
-    this.artistService.getDetailsForCurrentUser().subscribe((artist) => {
-      this.artist = artist
-    });
+  set artist(artist: Artist) {
+    this.item = artist;
   }
 
-  onCreateClick() {
-    this.router.navigate(['create'], {
-      relativeTo: this.route
-    });
+  setDetails(data: any): void {
+    this.artist = data['artist'];    
+  }
+
+  update(artist: Artist): Observable<Artist> {
+    return this.artistService.update(artist);
+  }
+
+  showUpdated(name: string): void {
+    this.artistToastService.showUpdated(name);
   }
 }

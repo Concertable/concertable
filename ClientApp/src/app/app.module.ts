@@ -45,8 +45,6 @@ import { ConfigNavbarComponent } from './components/config-navbar/config-navbar.
 import { ConfigButtonComponent } from './components/config-button/config-button.component';
 import { ListingComponent } from './components/listing/listing.component';
 import { ListingsComponent } from './components/listings/listings.component';
-import { EditableVenueDetailsComponent } from './components/editable-venue-details/editable-venue-details.component';
-import { DetailsComponent } from './components/details/details.component';
 import { ScrollspyComponent } from './components/scrollspy/scrollspy.component';
 import { VenueEventsComponent } from './components/venue-events/venue-events.component';
 import { ArtistDashboardComponent } from './pages/artist-dashboard/artist-dashboard.component';
@@ -127,8 +125,6 @@ const routerOptions: ExtraOptions = {
     ConfigButtonComponent,
     ListingsComponent,
     ListingComponent,
-    EditableVenueDetailsComponent,
-    DetailsComponent,
     ScrollspyComponent,
     VenueEventsComponent,
     ArtistDashboardComponent,

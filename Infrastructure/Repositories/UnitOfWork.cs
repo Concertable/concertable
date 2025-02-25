@@ -1,5 +1,7 @@
 ﻿using Application.Interfaces;
 using Core.Entities;
+using Core.Enums;
+using Core.Exceptions;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -49,6 +51,18 @@ namespace Infrastructure.Repositories
         public async Task SaveChangesAsync()
         {
             await context.SaveChangesAsync();
+        }
+
+        public async Task TrySaveChangesAsync()
+        {
+            try
+            {
+                await SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("duplicate key") == true)
+            {
+                throw new BadRequestException("A record with this Key already exists", ErrorType.DuplicateKey);
+            }
         }
 
         public void Dispose()

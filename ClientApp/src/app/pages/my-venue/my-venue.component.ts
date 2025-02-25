@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { VenueToastService } from '../../services/toast/venue/venue-toast.service';
 import { Listing } from '../../models/listing';
 import { ListingService } from '../../services/listing/listing.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-my-venue',
@@ -20,10 +21,11 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
   newListings: Listing[] = []
 
   constructor(
+    route: ActivatedRoute,
     private venueService: VenueService, 
     private venueToastService: VenueToastService,
     private listingService: ListingService) {
-    super();
+    super(route);
   }
 
   get venue(): Venue | undefined {
@@ -34,8 +36,8 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
     this.item = value;
   }
 
-  getDetails() : Observable<Venue> {
-    return this.venueService.getDetailsForCurrentUser();
+  setDetails(data: any) {
+    this.venue = data['venue'];
   }
 
   update(venue: Venue): Observable<Venue> {

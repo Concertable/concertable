@@ -29,4 +29,8 @@ export class ArtistService {
   create(artist: Artist): Observable<Artist> {
     return this.http.post<Artist>(`${this.apiUrl}`, artist);
   }
+
+  update(artist: Artist) : Observable<Artist> {
+    return this.http.put<Artist>(`${this.apiUrl}/${artist.id}`, artist)
+  }
 }

@@ -14,9 +14,9 @@ import { ActivatedRoute } from '@angular/router';
 export class MyEventComponent extends MyItemDirective<Event> {
 
   constructor(
-      private eventService: EventService,
-      private route: ActivatedRoute) {
-      super();
+      route: ActivatedRoute,
+      private eventService: EventService) {
+      super(route);
     }
 
   get event() : Event | undefined {
@@ -24,18 +24,12 @@ export class MyEventComponent extends MyItemDirective<Event> {
   }
 
   set event(item: Event) {
-    this.event = item;
-  }
-
-  override getDetails(): Observable<Event> {
-    return this.route.queryParams.pipe(
-      switchMap(params => {
-        const eventId = params['id'];
-        return eventId ? this.eventService.getDetailsById(eventId) : throwError(() => new Error("No event ID provided"));
-      }) //maps observable to event observable to return it
-    );
+    this.item = item;
   }
     
+  setDetails(data: any): void {
+    this.event = data['event'];
+  }
 
   override update(item: Event): Observable<Event> {
     return of()

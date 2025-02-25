@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { Purchase } from '../../models/purchase';
 import { StripeService } from '../../services/stripe/stripe.service';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
+import { PaymentHubService } from '../../services/payment-hub/payment-hub.service';
 
 @Component({
   selector: 'app-listing-application-checkout',
@@ -19,10 +20,11 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
   constructor(
     route: ActivatedRoute, 
     stripeService: StripeService, 
+    paymentHubService: PaymentHubService,
     private eventService: EventService,
     private router: Router
   ) {
-    super(route, stripeService);
+    super(route, stripeService, paymentHubService);
   }
 
   get application(): ListingApplication | undefined {
@@ -31,6 +33,16 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
   
   set application(value: ListingApplication | undefined) {
     this.checkoutEntity = value;
+  }
+
+  override ngOnInit(): void {
+      super.ngOnInit();
+      this.paymentHubService.listingApplicationResponse$.subscribe(response => {
+        var event = response?.event
+        console.log("subscribed", response);
+        if(event)
+          this.router.navigateByUrl(`venue/my/events/event/${event.id}`);
+      })
   }
 
   setRouteData(data: any): void {

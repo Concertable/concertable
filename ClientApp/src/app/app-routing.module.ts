@@ -22,20 +22,33 @@ import { ListingApplicationsComponent } from './pages/listing-applications/listi
 import { MyEventsComponent } from './pages/my-events/my-events.component';
 import { MyEventComponent } from './pages/my-event/my-event.component';
 import { EventCheckoutComponent } from './pages/event-checkout/event-checkout.component';
-import { EventResolver } from './resolvers/event/event.resolver';
 import { MyTicketsComponent } from './pages/my-tickets/my-tickets.component';
 import { ProfileDetailsComponent } from './pages/profile-details/profile-details.component';
 import { PaymentDetailsComponent } from './components/payment-details/payment-details.component';
 import { ListingApplicationCheckoutComponent } from './pages/listing-application-checkout/listing-application-checkout.component';
+
 import { ListingApplicationResolver } from './resolvers/listing-application/listing-application.resolver';
+import { EventResolver } from './resolvers/event/event.resolver';
+import { MyEventResolver } from './resolvers/my-event/my-event.resolver';
+import { VenueDetailsResolver } from './resolvers/venue-details/venue-details.resolver';
+import { ArtistDetailsResolver } from './resolvers/artist-details/artist-details.resolver';
+import { MyArtistResolver } from './resolvers/my-artist/my-artist.resolver';
+import { MyVenueResolver } from './resolvers/my-venue/my-venue.resolver';
+import { EventDetailsResolver } from './resolvers/event-details/event-details.resolver';
 
 const routes: Routes = [
   { path: '', component: HomeComponent,
     children: [
       { path: 'find', component: CustomerFindComponent },
-      { path: 'find/venue', component: VenueDetailsComponent },
-      { path: 'find/artist', component: ArtistDetailsComponent },
-      { path: 'find/event', component: EventDetailsComponent },
+      { path: 'find/venue/:id', component: VenueDetailsComponent,
+        resolve: { venue: VenueDetailsResolver }
+       },
+      { path: 'find/artist/:id', component: ArtistDetailsComponent,
+        resolve: { artist: ArtistDetailsResolver }
+       },
+      { path: 'find/event/:id', component: EventDetailsComponent,
+        resolve: { event: EventDetailsResolver }
+       },
       { path: 'event/checkout/:id', component: EventCheckoutComponent, resolve: { event: EventResolver} },
       { path: 'application/checkout/:id', component: ListingApplicationCheckoutComponent, resolve: { listingApplication: ListingApplicationResolver} },
       { path: 'profile', component: ProfileDetailsComponent, children: [
@@ -48,19 +61,29 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'venue', canActivate: [roleGuard], data: { role: "VenueManager" }, component: VenueDashboardComponent,
     children: [
-      { path: 'my', component: MyVenueComponent },
+      { path: 'my', component: MyVenueComponent,
+        resolve: { venue: MyVenueResolver }
+       },
       { path: 'find', component: VenueFindComponent },
-      { path: 'find/artist', component: ArtistDetailsComponent },
+      { path: 'find/artist/:id', component: ArtistDetailsComponent,
+        resolve: { artist: ArtistDetailsResolver }
+       },
       { path: 'create', component: CreateVenueComponent },
       { path: 'my/events', component: MyEventsComponent },
-      { path: 'my/events/event', component: MyEventComponent },
+      { path: 'my/events/event/:id', component: MyEventComponent,
+        resolve: { event: MyEventResolver }
+       },
       { path: 'my/applications', component: ListingApplicationsComponent },
     ] },
   { path: 'artist', canActivate: [roleGuard], data: { role: "ArtistManager" }, component: ArtistDashboardComponent,
     children: [
-      { path: 'my', component: MyArtistComponent },
+      { path: 'my', component: MyArtistComponent,
+        resolve: { artist: MyArtistResolver }
+       },
       { path: 'find', component: ArtistFindComponent, },
-      { path: 'find/venue', component: VenueDetailsComponent, },
+      { path: 'find/venue', component: VenueDetailsComponent, 
+        resolve: { venue: VenueDetailsResolver }
+       },
       { path: 'create', component: CreateArtistComponent },
     ] },
   

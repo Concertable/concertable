@@ -15,9 +15,7 @@ export class ItemEventsComponent {
   constructor(protected authService: AuthService, private router: Router) { }
 
   onViewDetails(event: Event) {
-    this.router.navigate(['find/event'], { 
-      queryParams: { id: event.id } 
-    });
+    this.router.navigate(['find/event', event.id]);
   }
 
   onPurchase(event: Event) {

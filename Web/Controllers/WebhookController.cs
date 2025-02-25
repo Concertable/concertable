@@ -3,13 +3,17 @@ using Application.Interfaces;
 using Application.Responses;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Stripe;
+using Web.Hubs;
 
 namespace Web.Controllers
 {
     [Route("api/[controller]")]
     public class WebhookController : ControllerBase
     {
+        private readonly IHubContext<PaymentHub> hubContext;
         private readonly ITicketService ticketService;
         private readonly IEventService eventService;
         private readonly IPurchaseService purchaseService;
@@ -18,12 +22,14 @@ namespace Web.Controllers
         private readonly string webhookSecret;
 
         public WebhookController(
+            IHubContext<PaymentHub> hubContext,
             ITicketService ticketService,
             IEventService eventService,
             IPurchaseService purchaseService,
             IEmailService emailService,
             IConfiguration configuration)
         {
+            this.hubContext = hubContext;
             this.ticketService = ticketService;
             this.eventService = eventService;
             this.purchaseService = purchaseService;
@@ -76,12 +82,12 @@ namespace Web.Controllers
                     else if (paymentType == "application")
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
-                        await eventService.CompleteAsync(purchaseCompleteDto);
+                        var response = await eventService.CompleteAsync(purchaseCompleteDto);
+                        await hubContext.Clients.Group(userId.ToString()).SendAsync("ListingApplicationPurchaseResponse", response);
                         processed = true;
                     }
                     if (processed)
                     {
-                        await purchaseService.LogAsync(purchaseDto);
                     }
 
                     return Ok();

@@ -23,9 +23,8 @@ export class HeaderComponent<T extends Header> {
   onClick(): void {
     console.log("heee")
     if(this.header)
-      this.router.navigate([this.headerType], { 
+      this.router.navigate([this.headerType, this.header.id], { 
         relativeTo: this.route,
-        queryParams: { id: this.header.id }  
     });
   }
 }

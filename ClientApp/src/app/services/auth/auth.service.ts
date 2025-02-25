@@ -8,6 +8,7 @@ import { User } from '../../models/user';
 import { RegisterCredentials } from '../../models/register-credentials';
 import { Router } from '@angular/router';
 import { Role } from '../../models/role';
+import { PaymentHubService } from '../payment-hub/payment-hub.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null); 
   currentUser$ = this.currentUserSubject.asObservable(); // Every subscription will recieve the current user whenever it changes
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router, private paymentHubService: PaymentHubService) { }
 
   isRole = (role: Role) => this.currentUserSubject.getValue()?.role === role;
   isNotRole = (role: Role) => this.currentUserSubject.getValue()?.role !== role;
@@ -34,6 +35,7 @@ export class AuthService {
       tap(() => {
         this.getCurrentUser().subscribe();
         this.router.navigateByUrl('/')
+        this.paymentHubService.createHubConnection();
       })
     );
   }
@@ -44,6 +46,7 @@ export class AuthService {
       tap(() => {
         this.currentUserSubject.next(null);
         this.router.navigateByUrl('/');
+        this.paymentHubService.stopHubConnection();
       })
     );
   }

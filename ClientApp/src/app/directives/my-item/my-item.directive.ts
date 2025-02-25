@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Venue } from '../../models/venue';
 import { Artist } from '../../models/artist';
 import { Event } from '../../models/event';
+import { ActivatedRoute } from '@angular/router';
 
 @Directive({
   selector: '[appMyItem]',
@@ -15,8 +16,10 @@ export abstract class MyItemDirective<T extends Venue | Artist | Event> implemen
   protected editMode: boolean = false;
   protected saveable: boolean = false;
 
+  constructor(private route: ActivatedRoute) { }
+
   // Abstract method for getting details, to be implemented in child classes
-  abstract getDetails(): Observable<T>;
+  abstract setDetails(data: any): void;
 
   abstract update(item: T): Observable<T>;
 
@@ -27,10 +30,9 @@ export abstract class MyItemDirective<T extends Venue | Artist | Event> implemen
   }
 
   ngOnInit(): void {
-    this.getDetails().subscribe((item: T) => {
-      this.item = item;
-      this.originalItem = cloneDeep(this.item);
-    });
+    this.route.data.subscribe(data => {
+      this.setDetails(data)
+    })
   }
 
   cancelChanges() {

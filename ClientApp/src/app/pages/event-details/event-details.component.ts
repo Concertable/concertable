@@ -51,8 +51,8 @@ export class EventDetailsComponent extends DetailsDirective<Event> {
       super.ngOnInit();
   }
 
-  loadDetails(id: number): Observable<Event> {
-    return this.eventService.getDetailsById(id);
+  setDetails(data: any): void {
+      this.event = data['event'];
   }
 
   onBuyClick() {

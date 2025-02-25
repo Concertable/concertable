@@ -31,17 +31,12 @@ export abstract class DetailsDirective<T extends Venue | Artist | Event> impleme
   ) { }
 
   ngOnInit() {
-    if (!this.entity) {
-      this.route.queryParams.subscribe(params => {
-        const id = params['id'];
-        if (id) {
-          this.loadDetails(id).subscribe(entity => this.entity = entity);
-        }
-      });
-    }
+    this.route.data.subscribe(data => {
+      this.setDetails(data);
+    })
   }
 
-  abstract loadDetails(id: number): Observable<T>;
+  abstract setDetails(data: any): void;
 
   exists(section: string): boolean {
     return this.navItems.some(n => n.name === section);

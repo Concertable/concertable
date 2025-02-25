@@ -136,7 +136,8 @@ namespace Infrastructure.Services
             {
                 Success = true,
                 Message = "Event successfully booked!",
-                ApplicationId = purchaseCompleteDto.EntityId
+                ApplicationId = purchaseCompleteDto.EntityId,
+                Event = eventDto
             };
         }
 

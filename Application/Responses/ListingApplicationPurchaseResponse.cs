@@ -10,5 +10,6 @@ namespace Application.Responses
     public class ListingApplicationPurchaseResponse : PurchaseResponse
     {
         public int ApplicationId { get; set; }
+        public EventDto Event { get; set; }
     }
 }

@@ -13,6 +13,7 @@ namespace Application.Interfaces
         IRepository<TEntity> GetRepository<TEntity>() where TEntity : BaseEntity;
         IBaseRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class;
         Task SaveChangesAsync();
+        Task TrySaveChangesAsync();
         Task<IDbContextTransaction> BeginTransactionAsync();
     }
 

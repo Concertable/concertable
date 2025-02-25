@@ -39,8 +39,8 @@ export class ArtistDetailsComponent extends DetailsDirective<Artist> {
       super.ngOnInit();
   }
 
-  loadDetails(id: number): Observable<Artist> {
-    return this.artistService.getDetailsById(id);
+  setDetails(data: any): void {
+    this.artist = data['artist'];
   }
 
   updateImage(url: string) {

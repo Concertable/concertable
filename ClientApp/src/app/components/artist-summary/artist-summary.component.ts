@@ -14,9 +14,8 @@ export class ArtistSummaryComponent {
   constructor(private router: Router, private route: ActivatedRoute) { }
 
   onDetailsClick() {
-    this.router.navigate(['../artist'], { 
-      relativeTo: this.route, 
-      queryParams: { id: this.artist.id } 
+    this.router.navigate(['../../artist', this.artist.id], { 
+      relativeTo: this.route
     });
   }
 }

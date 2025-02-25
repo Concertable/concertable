@@ -32,7 +32,7 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
   constructor(
     private venueService: VenueService, 
     authService: AuthService, 
-    route: ActivatedRoute,
+    route: ActivatedRoute, 
     blobStorageService: BlobStorageService,
     router: Router
   ) {
@@ -55,8 +55,8 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
     super.ngOnInit();
   }
 
-  override loadDetails(id: number): Observable<Venue> {
-    return this.venueService.getDetailsById(id);
+  setDetails(data: any): void {
+    this.venue = data['venue'];
   }
 
   updateCoordinates(coordinates: Coordinates | undefined) {

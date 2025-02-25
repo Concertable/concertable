@@ -16,6 +16,7 @@ using Infrastructure.Settings;
 using Application.DTOs;
 using Core.Entities;
 using Infrastructure.Factories;
+using Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,6 +109,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+builder.Services.AddSignalR();
+
 builder.Services.AddAuthentication();
 builder.Services.ConfigureApplicationCookie(config =>
 {
@@ -142,6 +145,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapGroup("/api").MapIdentityApi<ApplicationUser>();
+app.MapHub<PaymentHub>("/hub/payments");
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

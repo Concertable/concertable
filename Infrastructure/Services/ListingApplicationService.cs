@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using AutoMapper;
 using Core.Exceptions;
+using Core.Enums;
 
 namespace Infrastructure.Services
 {
@@ -76,7 +77,14 @@ namespace Infrastructure.Services
                 actionId: listingId); //?
 
             // Save changes after both have executed
-            await unitOfWork.SaveChangesAsync();
+            try
+            {
+                await unitOfWork.TrySaveChangesAsync();
+            }
+            catch(BadRequestException ex) when (ex.ErrorType == ErrorType.DuplicateKey)
+            {
+                throw new BadRequestException("You cannot apply to the same listing twice");
+            }
         }
 
         /// <summary>
