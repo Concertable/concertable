@@ -20,7 +20,7 @@ namespace Infrastructure.Repositories
     {
         public EventRepository(
             ApplicationDbContext context
-            ) : base(context) 
+            ) : base(context)
         {
         }
 
@@ -37,9 +37,21 @@ namespace Infrastructure.Repositories
             Longitude = e.Application.Listing.Venue.User.Longitude
         };
 
-        protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) =>
-            searchParams.Date == null ? new() : new() { e => e.Application.Listing.StartDate >= searchParams.Date };
+        protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) {
+            var filters = new List<Expression<Func<Event, bool>>>();
 
+            if (searchParams.Date != null)
+            {
+                filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
+            }
+
+            if (searchParams.GenreIds != null && searchParams.GenreIds.Any())
+            {
+                filters.Add(e => e.Application.Artist.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
+            }
+
+            return filters;
+        }
 
         public async Task<Event> GetByIdAsync(int id)
         {

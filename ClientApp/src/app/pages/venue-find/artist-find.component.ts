@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { SearchParams } from '../../models/search-params';
+import { HeaderType } from '../../models/header-type';
 
 @Component({
   selector: 'app-artist-find',
@@ -8,5 +10,5 @@ import { Component } from '@angular/core';
   styleUrl: './artist-find.component.scss'
 })
 export class ArtistFindComponent {
-
+  headerType: HeaderType = 'venue';
 }

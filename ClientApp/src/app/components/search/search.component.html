@@ -1,7 +1,12 @@
 <div class="container">
     <div class="wrapper">
       <!-- Location Search Component -->
-      <app-location-search class="location-search" (locationChange)="onLocationChange($event)"></app-location-search>
+      <app-location-search 
+        class="location-search" 
+        [longitude]="searchParams.longitude"
+        [latitude]="searchParams.latitude"
+        (locationChange)="onLocationChange($event)">
+      </app-location-search>
   
       <!-- Search Input Field -->
       <mat-form-field appearance="outline" class="search-input">
@@ -16,7 +21,7 @@
       </mat-form-field>
 
       <!-- Date Picker Component for 'event' headerType -->
-      <app-date-picker *ngIf="headerType === 'event'" 
+      <app-date-picker *ngIf="searchParams.headerType === 'event'" 
                        (dateChange)="onDateChange($event)" 
                        class="date-picker">
       </app-date-picker>

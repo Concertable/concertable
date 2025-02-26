@@ -1,0 +1,3 @@
+<app-filter [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)" (headerTypeChange)="changeHeaderType($event)">
+    <app-search (search)="handleSearch()" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)"></app-search>
+</app-filter>

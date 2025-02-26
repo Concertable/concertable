@@ -5,6 +5,7 @@ import { Genre } from '../../models/genre';
 import { GenreService } from '../../services/genre/genre.service';
 import { SearchParams } from '../../models/search-params';
 import { CustomerFindComponent } from '../customer-find/customer-find.component';
+import { CustomerDashboardComponent } from '../../pages/customer-dashboard/customer-dashboard.component';
 
 @Component({
   selector: 'app-filter',
@@ -13,10 +14,9 @@ import { CustomerFindComponent } from '../customer-find/customer-find.component'
   styleUrls: ['./filter.component.scss']
 })
 export class FilterComponent implements OnInit {
-  @Input() headerType?: HeaderType;
-  @Input() searchParams!: SearchParams;
+  @Input() searchParams!: Partial<SearchParams>;
   @Output() headerTypeChange = new EventEmitter<HeaderType | undefined>();
-  @Output() searchParamsChange = new EventEmitter<SearchParams>();
+  @Output() searchParamsChange = new EventEmitter<Partial<SearchParams>>();
 
   icon: string = 'tune';
   headerTypes: HeaderType[] = ['venue', 'artist', 'event'];
@@ -25,11 +25,11 @@ export class FilterComponent implements OnInit {
   selectedGenres: Genre[] = [];
   selectedOrderBy?: string;
   selectedSortOrder?: string;
-  selectedDistance: number =0;
+  selectedDistance: number = 0;
 
   get orderByOptions() {
     const options = ['Name']; 
-    if (this.headerType === 'event') 
+    if (this.searchParams.headerType === 'event') 
       options.push('Date'); 
     if (this.searchParams.latitude && this.searchParams.longitude) 
       options.push('Location');
@@ -64,6 +64,23 @@ export class FilterComponent implements OnInit {
 
   ngOnInit(): void {
     this.getGenres();
+    this.loadSelectedOrderBy();
+    this.loadSelectedSortOrder();
+    this.loadSelectedDistance();
+  }
+
+  loadSelectedOrderBy() {
+    this.selectedOrderBy = this.searchParams.sort ? this.searchParams.sort.split("_")[0] : ""; 
+  }
+  
+  loadSelectedSortOrder() {
+    this.selectedSortOrder = this.searchParams.sort ? this.searchParams.sort.split("_")[1] : ""; 
+  }
+  
+
+  loadSelectedDistance() {
+    if(this.searchParams.radiusKm)
+      this.selectedDistance = this.searchParams.radiusKm;
   }
 
   getGenres() {
@@ -74,18 +91,13 @@ export class FilterComponent implements OnInit {
   }
 
   loadSelectedGenres() {
-    console.log("genres",this.genres);
-    console.log("ids",this.searchParams.genreIds);
-    this.searchParams.genreIds?.forEach(id => {
-      const genre = this.genres.find(g => g.id === id);
-      if (genre) {
-        this.selectedGenres.push(genre);
-      }
-    });
-
-    console.log("selectedgenres",this.selectedGenres);
+      this.searchParams.genreIds?.forEach(id => {
+        const genre = this.genres.find(g => g.id === id);
+        if (genre) {
+          this.selectedGenres.push(genre);
+        }
+      });
   }
-  
 
   private emitChanges() {
     const genreIds = this.selectedGenres.map(g => g.id);
@@ -94,11 +106,11 @@ export class FilterComponent implements OnInit {
   }
 
   isCustomerRoute(): boolean {
-    return this.route.component === CustomerFindComponent;
+    return this.route.component === CustomerFindComponent || this.route.component === CustomerDashboardComponent;
   }
 
   onHeaderTypeChange() {
-    this.headerTypeChange.emit(this.headerType);
+    this.headerTypeChange.emit(this.searchParams.headerType);
   }
 
   onGenreChange() {

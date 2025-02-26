@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Responses;
+using Core.ModelBinders;
 using Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetHeaders([FromQuery] SearchParams searchParams)
+        public async Task<IActionResult> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
         {
             if (string.IsNullOrWhiteSpace(searchParams.HeaderType))
             {

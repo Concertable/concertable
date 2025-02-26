@@ -34,6 +34,19 @@ namespace Infrastructure.Repositories
             Longitude = a.User.Longitude ?? 0
         };
 
+        protected override List<Expression<Func<Artist, bool>>> Filters(SearchParams searchParams)
+        {
+            var filters = new List<Expression<Func<Artist, bool>>>();
+
+
+            if (searchParams.GenreIds != null && searchParams.GenreIds.Any())
+            {
+                filters.Add(e => e.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
+            }
+
+            return filters;
+        }
+
         public async Task<Artist?> GetByUserIdAsync(int id)
         {
             var query = context.Artists.AsQueryable();

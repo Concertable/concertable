@@ -35,10 +35,12 @@ import { ArtistDetailsResolver } from './resolvers/artist-details/artist-details
 import { MyArtistResolver } from './resolvers/my-artist/my-artist.resolver';
 import { MyVenueResolver } from './resolvers/my-venue/my-venue.resolver';
 import { EventDetailsResolver } from './resolvers/event-details/event-details.resolver';
+import { CustomerDashboardComponent } from './pages/customer-dashboard/customer-dashboard.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent,
     children: [
+      { path: '', component: CustomerDashboardComponent },
       { path: 'find', component: CustomerFindComponent },
       { path: 'find/venue/:id', component: VenueDetailsComponent,
         resolve: { venue: VenueDetailsResolver }

@@ -101,6 +101,9 @@ import { ProfileDetailsComponent } from './pages/profile-details/profile-details
 import { MyTicketsComponent } from './pages/my-tickets/my-tickets.component';
 import { PaymentDetailsComponent } from './components/payment-details/payment-details.component';
 import { ListingApplicationCheckoutComponent } from './pages/listing-application-checkout/listing-application-checkout.component';
+import { CustomerDashboardComponent } from './pages/customer-dashboard/customer-dashboard.component';
+import { FindDirective } from './directives/find.directive';
+import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -176,7 +179,9 @@ const routerOptions: ExtraOptions = {
     ProfileDetailsComponent,
     MyTicketsComponent,
     PaymentDetailsComponent,
-    ListingApplicationCheckoutComponent
+    ListingApplicationCheckoutComponent,
+    CustomerDashboardComponent,
+    BreadcrumbComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
