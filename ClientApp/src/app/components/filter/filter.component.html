@@ -1,7 +1,9 @@
 <app-sidebar [icon]="icon" class="container">
   <div sidebar>
     <div class="wrapper">
-      <h3>Filter Content</h3>
+      <div class="title">
+        <mat-icon [innerText]="icon"></mat-icon><h3>Filter {{this.searchParams.headerType}}s</h3>
+      </div>
       <div class="header-type" *ngIf="isCustomerRoute()">
         <mat-form-field appearance="outline" class="custom-select">
           <mat-label>Header Type</mat-label>

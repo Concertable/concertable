@@ -104,6 +104,8 @@ import { ListingApplicationCheckoutComponent } from './pages/listing-application
 import { CustomerDashboardComponent } from './pages/customer-dashboard/customer-dashboard.component';
 import { FindDirective } from './directives/find.directive';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
+import { VenueHomeComponent } from './pages/venue-home/venue-home.component';
+import { ArtistHomeComponent } from './pages/artist-home/artist-home.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -182,6 +184,8 @@ const routerOptions: ExtraOptions = {
     ListingApplicationCheckoutComponent,
     CustomerDashboardComponent,
     BreadcrumbComponent,
+    VenueHomeComponent,
+    ArtistHomeComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
