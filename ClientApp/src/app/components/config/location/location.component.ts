@@ -19,4 +19,9 @@ export class LocationComponent {
   onCoordinatesChange(coordinates: Coordinates | undefined) {
     this.coordinatesChange.emit(coordinates);
   }
+
+  updateLocationValue(location?: { county: string, town: string }) {
+    this.county = location?.county;
+    this.town = location?.town;
+  }
 }

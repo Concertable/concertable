@@ -5,14 +5,16 @@
             <section [id]="navItems[0].fragment">
                 <h1>{{navItems[0].name}}</h1>
                 <app-heading-medium [editMode]="editMode" label="Name" [content]="venue.name" (contentChange)="updateContent($event, 'name')"/>
-                <app-textarea [editMode]="editMode" label="About" [content]="venue.about" (contentChange)="updateContent($event, 'about')"/>
-                <app-image 
-                    [editMode]="editMode" 
-                    [src]="venue.imageUrl" 
-                    width="200"
-                    height="200"
-                    alt="Venue Image" 
-                    (imageChange)="updateImage($event)"/>
+                <div class="wrapper">
+                    <app-textarea [editMode]="editMode" label="About" [content]="venue.about" (contentChange)="updateContent($event, 'about')"/>
+                    <app-image 
+                        [editMode]="editMode" 
+                        [src]="venue.imageUrl" 
+                        width="512"
+                        height="512"
+                        alt="Venue Image" 
+                        (imageChange)="updateImage($event)"/>
+                </div>
             </section>
             <mat-divider class="light" />
             <section [id]="navItems[1].fragment">
@@ -28,23 +30,23 @@
             </section>
             <mat-divider class="light" />
             @if (venue.about) {
-                <section [id]="navItems[1].fragment">
+                <section [id]="navItems[2].fragment">
                     <h2 class="heading-events">Upcoming Events</h2>
                     <app-venue-events [venue]="venue" />
                 </section>
             }
     
-            <section [id]="navItems[2].fragment">
+            <section [id]="navItems[3].fragment">
                 <h2 class="heading-videos">Videos</h2>
             </section>
     
-            <section [id]="navItems[3].fragment">
+            <section [id]="navItems[4].fragment">
                 <h2 class="reviews">Reviews</h2>
                 <app-venue-reviews [id]="venue.id"></app-venue-reviews>
             </section>
             <mat-divider class="light" />
             @if (exists('Listings')) {
-                <section [id]="navItems[4].fragment">
+                <section [id]="navItems[5].fragment">
                     <h2 class="heading-listings">Listings</h2>
                     <app-listings [venueId]="venue.id" [editMode]="editMode" (listingCreate)="onListingCreate($event)" />
                 </section>

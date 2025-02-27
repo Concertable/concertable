@@ -1,5 +1,5 @@
 import { Directive, EventEmitter, OnInit, Output } from '@angular/core';
-import { cloneDeep } from 'lodash';
+import { clone, cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { Venue } from '../../models/venue';
 import { Artist } from '../../models/artist';
@@ -12,7 +12,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export abstract class MyItemDirective<T extends Venue | Artist | Event> implements OnInit {
   protected item?: T;
-  private originalItem?: T;
+  protected originalItem?: T;
   protected editMode: boolean = false;
   protected saveable: boolean = false;
 
@@ -31,7 +31,8 @@ export abstract class MyItemDirective<T extends Venue | Artist | Event> implemen
 
   ngOnInit(): void {
     this.route.data.subscribe(data => {
-      this.setDetails(data)
+      this.setDetails(data);
+      this.originalItem = cloneDeep(this.item);
     })
   }
 
@@ -43,7 +44,11 @@ export abstract class MyItemDirective<T extends Venue | Artist | Event> implemen
 
   saveChanges() {
     if(this.item)
-      this.update(this.item).subscribe(v => this.showUpdated(v.name))
+      this.update(this.item).subscribe(v => {
+        this.item = v;
+        this.originalItem = cloneDeep(this.item);
+        this.showUpdated(v.name)
+    })
   }
 
   onEntityChange(entity: T) {

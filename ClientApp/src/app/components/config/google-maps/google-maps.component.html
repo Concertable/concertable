@@ -1,7 +1,7 @@
 <div class="container">
     <!-- Search Bar -->
     <div *ngIf="editMode">
-        <app-location-search (locationChange)="onLocationChange($event)" [type]="'establishment'"/>
+        <app-location-search (locationValueChange)="onLocationValueChange($event)" (locationChange)="onLocationChange($event)" [type]="'establishment'"/>
     </div>
 
     <!-- Google Map -->

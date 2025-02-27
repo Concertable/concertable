@@ -1,15 +1,29 @@
 .image-upload-container {
-    display: flex;
-    align-items: center; /* Ensures vertical alignment */
-    gap: 10px; /* Adds spacing between image and button */
+    position: relative; /* Needed to position the button inside the container */
+    display: inline-block;
 }
 
-.upload-btn {
+.btn-upload {
+    position: absolute; /* Positions the button absolutely inside the container */
+    top: 50%;           /* Centers vertically */
+    left: 50%;          /* Centers horizontally */
+    transform: translate(-50%, -50%); /* Adjusts the button so it's exactly centered */
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    color: white; /* Text color */
+    border: none;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    visibility: visible; /* Make sure the button is visible when in edit mode */
 }
 
-
-
-
+.placeholder {
+    text-align: center;
+    font-size: 18px;
+    color: #999;
+    padding: 20px;
+    background-color: #f4f4f4;
+}

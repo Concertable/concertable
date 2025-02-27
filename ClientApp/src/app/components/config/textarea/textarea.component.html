@@ -1,8 +1,8 @@
 @if(editMode) {
-    <div class="container">
-        <label *ngIf="label" class="label">{{ label }}</label>
-        <textarea type="text" [(ngModel)]="content" (ngModelChange)="onContentChange($event)"></textarea>
-    </div>
-}@else {
-    <p>{{ content }}</p>
+    <mat-form-field appearance="outline" class="container">
+        <mat-label *ngIf="label">{{ label }}</mat-label>
+        <textarea matInput [(ngModel)]="content" (ngModelChange)="onContentChange($event)"></textarea>
+    </mat-form-field>
+} @else {
+    <p class="content-display">{{ content }}</p>
 }

@@ -33,9 +33,8 @@ export class ScrollspyComponent implements AfterViewInit, OnDestroy {
       if (fragment) {
         const element = document.getElementById(fragment);
         if (element) {
-          const navbarOffset = 80; 
           window.scrollTo({
-            top: element.offsetTop - navbarOffset,
+            top: element.offsetTop,
             behavior: 'smooth'
           });
         }

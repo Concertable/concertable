@@ -1,7 +1,9 @@
 @if(editMode) {
     <div class="container">
-        <label *ngIf="label" class="label">{{ label }}</label>
-        <input type="text" [(ngModel)]="content" (ngModelChange)="onContentChange($event)" >
+        <mat-form-field appearance="outline">
+            <mat-label *ngIf="label">{{ label }}</mat-label>
+            <input matInput type="text" [(ngModel)]="content" (ngModelChange)="onContentChange($event)">
+        </mat-form-field>
     </div>
 }@else {
     <p>{{ content }}</p>

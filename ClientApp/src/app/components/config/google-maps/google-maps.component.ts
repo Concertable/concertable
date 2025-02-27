@@ -13,6 +13,7 @@ export class GoogleMapsComponent {
   @Input() lat?: number;
   @Input() lng?: number;
   @Output() coordinatesChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
+  @Output() locationValueChange = new EventEmitter<{ county: string, town: string} | undefined>
 
   defaultCenter = { lat: 51.5074, lng: -0.1278 };
 
@@ -30,6 +31,10 @@ export class GoogleMapsComponent {
     } else {
       this.coordinatesChange.emit(undefined); 
     }
+  }
+
+  onLocationValueChange(location?: { county: string, town: string }) {
+    this.locationValueChange.emit(location);
   }
   
 }

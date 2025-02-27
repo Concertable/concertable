@@ -110,6 +110,7 @@ import { CardComponent } from './components/card/card.component';
 import { VenueReviewsComponent } from './components/venue-reviews/venue-reviews.component';
 import { ArtistReviewsComponent } from './components/artist-reviews/artist-reviews.component';
 import { EventReviewsComponent } from './components/event-reviews/event-reviews.component';
+import { FooterComponent } from './components/footer/footer.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -195,6 +196,7 @@ const routerOptions: ExtraOptions = {
     VenueReviewsComponent,
     ArtistReviewsComponent,
     EventReviewsComponent,
+    FooterComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

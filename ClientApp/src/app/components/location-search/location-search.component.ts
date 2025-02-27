@@ -1,4 +1,5 @@
 import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { update } from 'lodash';
 
 @Component({
   selector: 'app-location-search',
@@ -13,33 +14,54 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
   @Input() latitude?: number;
   @Input() longitude?: number;
   @Output() locationChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
+  @Output() locationValueChange = new EventEmitter<{county: string, town: string} | undefined>();
+
+  locality?: string;
+  county?: string;
+  town?: string;
+  country?: string;
 
   locationInput?: string;
 
   ngOnInit(): void {
     if (this.latitude && this.longitude) {
       const latLng = new google.maps.LatLng(this.latitude, this.longitude);
-    const geocoder = new google.maps.Geocoder();
+      const geocoder = new google.maps.Geocoder();
 
-    geocoder.geocode({ location: latLng }, (results, status) => {
-      if (status === google.maps.GeocoderStatus.OK && results) {
-        let locality: string | undefined;
-        let country: string | undefined;
-        results[0]?.address_components.forEach((component: any) => {
-          console.log(component);
-          if (component.types.includes('postal_town')) {
-            locality = component.long_name; 
+      //Update location if inputs recieved initially
+      geocoder.geocode({ location: latLng }, (results, status) => {
+        if (status === google.maps.GeocoderStatus.OK && results) {
+          this.updateLocationInputs(results[0]?.address_components);
+          if (this.country) {
+            if (this.locality) {
+              // If locality is available, use locality and country
+              this.locationInput = `${this.locality}, ${this.country}`;
+            } else if (this.town) {
+              // If locality is not available, use town and country
+              this.locationInput = `${this.town}, ${this.country}`;
+            }
           }
-          if (component.types.includes('country')) {
-            country = component.short_name === 'GB' ? 'UK' : component.short_name;
-          }
-          if(locality && country)
-            this.locationInput = `${locality}, ${country}`
-        });
-      }
-    });
+        }
+        
+      })
     }
   }
+
+  private updateLocationInputs(components: google.maps.GeocoderAddressComponent[]) {
+    console.log(components);
+    components.forEach(component => {
+      const types = component.types;
+      if (types.includes('postal_town')) 
+        this.town = component.long_name;
+      if (types.includes('locality'))
+        this.locality = component.long_name;
+      if (types.includes('country')) 
+        this.country = component.short_name === 'GB' ? 'UK' : component.short_name;
+      if (types.includes('administrative_area_level_2'))
+        this.county = component.long_name
+    });
+  }
+  
 
   ngAfterViewInit(): void {
     const options = {
@@ -49,7 +71,6 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
 
     const autocomplete = new google.maps.places.Autocomplete(this.searchElement.nativeElement, options);
 
-    // Listen for the place_changed event
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
       if (place && place.geometry) {
@@ -58,14 +79,18 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
         if(lat && lng)
         {
           this.locationChange.emit({lat, lng});
-          this.locationInput = place.formatted_address;
+          if(place.address_components) {
+            this.updateLocationInputs(place.address_components);
+            if(this.county && this.town)
+              this.locationValueChange.emit({ county: this.county, town: this.town })
+          }
         }
       }
     });
 
     this.searchElement.nativeElement.addEventListener('input', () => {
       if (!this.searchElement.nativeElement.value) {
-        this.locationChange.emit(undefined); // Emit null when input is cleared
+        this.locationChange.emit(undefined); 
       }
       this.locationInput = undefined;
     });
