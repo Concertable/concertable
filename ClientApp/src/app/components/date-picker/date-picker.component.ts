@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-date-picker',
@@ -8,6 +8,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
   styleUrl: './date-picker.component.scss'
 })
 export class DatePickerComponent {
+  @Input() date?: Date
   @Output() dateChange = new EventEmitter<Date>();
 
   onDateChange(event: any) {

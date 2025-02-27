@@ -1,22 +1,102 @@
-/* You can add global styles to this file, and also import other style files */
+// /* Define CSS variables globally */
+// :root {
+//     --primary-color: #3b5998;
+//     --secondary-color: #4A90E2;
+//     --color-light: #F6F6F6;
+//     --color-white: #FFFFFF;
+//     --secondary-hover: #007BFF;
+//     --delete-color: #dc3545;
+//     --delete-hover: #c82333;
+//     --green-color: #28A745;
+//     --green-hover: #218838;
+// }
 
-html, body { height: 100%; }
-body { 
-    margin: 0; 
-    font-family: Roboto, "Helvetica Neue", sans-serif; 
+:root {
+    /* 🎨 Core Colors */
+    --primary-color: #3b5998; /* Navbar, Headers */
+    --secondary-color: #4A90E2; /* Main CTA Buttons (Save, Apply) */
+    --tertiary-color: #D6E4FF; /* Soft Blue (Edit Button) */
+
+    /* 🎨 Supporting Colors */
+    --neutral-gray: #ADB5BD; /* Softer gray for Cancel */
+    --accent-color: #FFD700; /* Gold (For highlights like price) */
+    --error-color: #dc3545; /* Red (Delete, Warnings) */
+    --success-color: #28A745; /* Green (Success Messages) */
+
+    /* 🎨 Button Colors */
+    --button-primary: var(--secondary-color); /* Primary CTA (Save, Apply) */
+    --button-secondary: var(--tertiary-color); /* Secondary (Edit) */
+    --button-cancel: var(--neutral-gray); /* Softer neutral (Cancel) */
+    --button-danger: var(--error-color); /* Red for dangerous actions */
+
+    --background-light: #F6F6F6;
+    --background-white: #FFFFFF;
 }
 
+
+/* Apply global styles */
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    background-color: var(--background-light); /* Now using global CSS variable */
+}
+
+/* Buttons */
 button.primary {
     padding: 8px 16px;
-    background-color: #007bff;
+    background-color: var(--secondary-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
-:root {
-    --mat-sys-background: #ffffff !important; 
+button.primary:hover {
+    background-color: var(--secondary-hover);
 }
-  
 
+button.delete {
+    padding: 8px 16px;
+    background-color: var(--delete-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button.delete:hover {
+    background-color: var(--delete-hover);
+}
+
+button.apply {
+    padding: 8px 16px;
+    background-color: var(--green-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button.apply:hover {
+    background-color: var(--green-hover);
+}
+
+/* Material UI Overrides */
+mat-icon.star {
+    color: gold;
+}
+
+mat-divider.light {
+    margin-top:20px;
+    border-top-color: #e8e4e4;
+}
+
+
+/* Material Theme Override */
+:root {
+    --mat-sys-background: var(--background-light) !important;
+}

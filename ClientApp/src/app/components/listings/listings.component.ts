@@ -65,7 +65,7 @@ export class ListingsComponent  implements OnInit, OnChanges {
   getListings() {
     console.log("getActiveListings");
     if(this.venueId)
-      this.listingService.getActiveByVenueId(this.venueId).subscribe((listings) => this.listings = listings)
+      this.listingService.getActiveByVenueId(this.venueId).subscribe((listings) => {this.listings = listings; console.log(this.listings)})
   }
 
   onAdd() {
@@ -82,37 +82,58 @@ export class ListingsComponent  implements OnInit, OnChanges {
     }
   }
 
-  set startTime(value: string) {
-    if (!this.newListing.startDate || !value) return;
+  get startDate(): string {
+    return this.newListing.startDate ? this.newListing.startDate.toISOString().split('T')[0] : '';
+  }
 
-    // Ensure startDate is always a Date object
-    if (typeof this.newListing.startDate === 'string') {
-        this.newListing.startDate = new Date(this.newListing.startDate + "T00:00:00"); // Convert properly
+  set startDate(value: string) {
+    if (value) {
+      const time = this.newListing.startDate ? this.newListing.startDate.toTimeString().split(' ')[0] : '00:00:00';
+      this.newListing.startDate = new Date(`${value}T${time}`);
     }
-
-    const [hours, minutes] = value.split(':').map(Number);
-    this.newListing.startDate.setHours(hours, minutes, 0, 0);
-}
-
-
-set endTime(value: string) {
-  if (!this.newListing.endDate || !value) return;
-
-  // Ensure endDate is always a Date object
-  if (typeof this.newListing.endDate === 'string') {
-      this.newListing.endDate = new Date(this.newListing.endDate + "T00:00:00"); // Convert properly
   }
 
-  const [hours, minutes] = value.split(':').map(Number);
-  this.newListing.endDate.setHours(hours, minutes, 0, 0);
-
-  // Ensure endDate is always on the same day or the next day
-  if (this.newListing.endDate < this.newListing.startDate) {
-      this.newListing.endDate.setDate(this.newListing.startDate.getDate() + 1);
-  } else {
-      this.newListing.endDate.setDate(this.newListing.startDate.getDate());
+  get startTime(): string {
+    return this.newListing.startDate ? this.newListing.startDate.toTimeString().slice(0, 5) : '';
   }
-}
+
+  set startTime(value: string) {
+    if (value) {
+      const date = this.startDate;
+      this.newListing.startDate = new Date(`${date}T${value}`);
+    }
+  }
+
+  get endTime(): string {
+    return this.newListing.endDate ? this.newListing.endDate.toTimeString().slice(0, 5) : '';
+  }
+
+  set endTime(value: string) {
+    if (value) {
+      const currentDate = this.newListing.endDate ? this.newListing.endDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      this.newListing.endDate = new Date(`${currentDate}T${value}`);
+    }
+  }
+
+  onStartDateChange(date: Date) {
+    this.newListing.startDate.setFullYear(date.getFullYear());
+    this.newListing.startDate.setMonth(date.getMonth());
+    this.newListing.startDate.setDate(date.getDate());
+  }
+
+  onStartTimeChange(time: Date) {
+    this.newListing.startDate.setHours(time.getHours());
+    this.newListing.startDate.setMinutes(time.getMinutes());
+    this.newListing.startDate.setSeconds(0);
+    this.newListing.startDate.setMilliseconds(0);
+  }
+
+  onEndTimeChange(time: Date) {
+    this.newListing.endDate.setHours(time.getHours());
+    this.newListing.endDate.setMinutes(time.getMinutes());
+    this.newListing.endDate.setSeconds(0);
+    this.newListing.endDate.setMilliseconds(0);
+  }
 
   onSaveItem() {
     this.listings?.push(this.newListing);
@@ -144,6 +165,7 @@ set endTime(value: string) {
     });
   }
 
+  //?
   private createDummyListing() {
     this.newListing = {
       startDate: new Date(),

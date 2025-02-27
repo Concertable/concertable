@@ -35,7 +35,7 @@ import { MatCardModule } from '@angular/material/card'
 import { MatButtonModule } from '@angular/material/button';
 import { MatSliderModule } from '@angular/material/slider'; 
 import { MatPaginatorModule } from '@angular/material/paginator';
-
+import { MatTimepickerModule } from '@angular/material/timepicker';
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/config/google-maps/google-maps.component';
@@ -95,17 +95,21 @@ import { MyEventComponent } from './pages/my-event/my-event.component';
 import { ItemEventsComponent } from './components/item-events/item-events.component';
 import { ArtistEventsComponent } from './components/artist-events/artist-events.component';
 import { EventCheckoutComponent } from './pages/event-checkout/event-checkout.component';
-import { ReviewSummaryComponent } from './components/review-summary/review-summary.component';
 import { CardDetailsComponent } from './components/card-details/card-details.component';
 import { ProfileDetailsComponent } from './pages/profile-details/profile-details.component';
 import { MyTicketsComponent } from './pages/my-tickets/my-tickets.component';
 import { PaymentDetailsComponent } from './components/payment-details/payment-details.component';
 import { ListingApplicationCheckoutComponent } from './pages/listing-application-checkout/listing-application-checkout.component';
 import { CustomerDashboardComponent } from './pages/customer-dashboard/customer-dashboard.component';
-import { FindDirective } from './directives/find.directive';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { VenueHomeComponent } from './pages/venue-home/venue-home.component';
 import { ArtistHomeComponent } from './pages/artist-home/artist-home.component';
+import { TimePickerComponent } from './components/time-picker/time-picker.component';
+import { DropDownComponent } from './components/drop-down/drop-down.component';
+import { CardComponent } from './components/card/card.component';
+import { VenueReviewsComponent } from './components/venue-reviews/venue-reviews.component';
+import { ArtistReviewsComponent } from './components/artist-reviews/artist-reviews.component';
+import { EventReviewsComponent } from './components/event-reviews/event-reviews.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -176,7 +180,6 @@ const routerOptions: ExtraOptions = {
     ItemEventsComponent,
     ArtistEventsComponent,
     EventCheckoutComponent,
-    ReviewSummaryComponent,
     CardDetailsComponent,
     ProfileDetailsComponent,
     MyTicketsComponent,
@@ -186,12 +189,18 @@ const routerOptions: ExtraOptions = {
     BreadcrumbComponent,
     VenueHomeComponent,
     ArtistHomeComponent,
+    TimePickerComponent,
+    DropDownComponent,
+    CardComponent,
+    VenueReviewsComponent,
+    ArtistReviewsComponent,
+    EventReviewsComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right', // Position of toast (top-right, bottom-right, etc.)
-      timeOut: 5000, // Auto-dismiss after 3 seconds
+      timeOut: 7000, // Auto-dismiss after 3 seconds
       closeButton: true,
       progressBar: true
     }),
@@ -214,7 +223,8 @@ const routerOptions: ExtraOptions = {
     MatCardModule,
     MatButtonModule,
     MatSliderModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatTimepickerModule
 ],
   providers: [
     provideHttpClient(

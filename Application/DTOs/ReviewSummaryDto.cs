@@ -9,7 +9,7 @@ namespace Application.DTOs
 {
     public class ReviewSummaryDto
     {
-        public double AverageRating { get; set; }
-        public PaginationResponse<ReviewDto> Reviews { get; set; }
+        public int TotalReviews { get; set; }
+        public double? AverageRating { get; set; }
     }
 }

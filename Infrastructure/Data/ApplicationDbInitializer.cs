@@ -567,10 +567,15 @@ namespace Infrastructure.Data
                 var listings = new Listing[]
                 {
                     new Listing { VenueId = 1, StartDate = new DateTime(2024, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
+                    new Listing { VenueId = 5, StartDate = new DateTime(2024, 4, 5, 20, 0, 0), EndDate = new DateTime(2024, 4, 5, 23, 0, 0), Pay = 275 },
                     new Listing { VenueId = 2, StartDate = new DateTime(2025, 5, 10, 20, 0, 0), EndDate = new DateTime(2025, 5, 10, 23, 0, 0), Pay = 300 },
-                    new Listing { VenueId = 3, StartDate = new DateTime(2024, 1, 10, 18, 0, 0), EndDate = new DateTime(2024, 1, 10, 20, 0, 0), Pay = 150 },
+                    new Listing { VenueId = 3, StartDate = new DateTime(2025, 1, 10, 18, 0, 0), EndDate = new DateTime(2024, 1, 10, 20, 0, 0), Pay = 150 },
                     new Listing { VenueId = 4, StartDate = new DateTime(2025, 6, 20, 18, 0, 0), EndDate = new DateTime(2025, 6, 20, 21, 0, 0), Pay = 250 },
-                    new Listing { VenueId = 5, StartDate = new DateTime(2024, 4, 5, 20, 0, 0), EndDate = new DateTime(2024, 4, 5, 23, 0, 0), Pay = 275 }
+                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
+                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
+                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
+                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 6, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
+
                 };
                 context.Listings.AddRange(listings);
                 await context.SaveChangesAsync();

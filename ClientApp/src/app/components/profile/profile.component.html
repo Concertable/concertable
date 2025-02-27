@@ -1,12 +1,12 @@
 @if (authService.currentUser$ | async; as user) {
     <!-- Profile Button (Triggers the Menu) -->
     <button class="btn-profile" mat-icon-button [matMenuTriggerFor]="menu">
-        <mat-icon fontIcon="account_circle">more_vert</mat-icon>
+        <mat-icon class="account-icon">person</mat-icon>
     </button>
 
     <mat-menu #menu="matMenu">
         <div class="info">
-            <mat-icon fontIcon="account_circle"></mat-icon>
+            <mat-icon>account_circle</mat-icon>
             <div class="details">
                 <h4>{{ user.email }}</h4>
                 <p>Role: {{user.role}}</p>

@@ -49,7 +49,7 @@ export class FindComponent extends FindDirective implements OnInit {
       }
 
       const params = this.searchParamsSerializerService.serialize(this.searchParams);
-
+      
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: params,

@@ -21,7 +21,8 @@ namespace Infrastructure.Helpers
             return new PaginationResponse<T>(data, totalCount, pageParams.PageNumber, pageParams.PageSize);
         }
 
-        public static PaginationParams CreateSummaryParams() => new PaginationParams {PageNumber = 1, PageSize=5};
+        public static PaginationParams CreateDefaultSummaryParams() => new PaginationParams {PageNumber = 1, PageSize = 5};
 
+        public static PaginationParams CreateDefaultSearchParams() => new PaginationParams { PageNumber = 1, PageSize = 10 };
     }
 }

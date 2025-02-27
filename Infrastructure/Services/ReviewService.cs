@@ -68,21 +68,6 @@ namespace Infrastructure.Services
                 reviews.PageSize);
         }
 
-        private async Task<ReviewSummaryDto> GetSummaryAsync(
-            Func<PaginationParams, Task<PaginationResponse<Review>>> getAsync,
-            Func<Task<double?>> getAverageRatingAsync)
-        {
-            var pageParams = PaginationHelper.CreateSummaryParams();
-            var reviews = await GetAsync(getAsync, pageParams);
-            var averageRating = await getAverageRatingAsync() ?? 0;
-
-            return new ReviewSummaryDto
-            {
-                Reviews = reviews,
-                AverageRating = averageRating
-            };
-        }
-
         public async Task<PaginationResponse<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams)
         {
             return await GetAsync(p => reviewRepository.GetByArtistIdAsync(id, p), pageParams);
@@ -100,23 +85,17 @@ namespace Infrastructure.Services
 
         public async Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id)
         {
-            return await GetSummaryAsync(
-                 p => reviewRepository.GetByArtistIdAsync(id, p),
-                () => reviewRepository.GetAverageRatingByArtistIdAsync(id));
+            return await reviewRepository.GetSummaryByArtistIdAsync(id);
         }
 
         public async Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id)
         {
-            return await GetSummaryAsync(
-                 p => reviewRepository.GetByEventIdAsync(id, p),
-                () => reviewRepository.GetAverageRatingByEventIdAsync(id));
+            return await reviewRepository.GetSummaryByEventIdAsync(id);
         }
 
         public async Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
         {
-            return await GetSummaryAsync(
-                 p => reviewRepository.GetByVenueIdAsync(id, p),
-                () => reviewRepository.GetAverageRatingByVenueIdAsync(id));
+            return await reviewRepository.GetSummaryByVenueIdAsync(id);
         }
     }
 }

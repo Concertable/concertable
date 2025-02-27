@@ -2,6 +2,6 @@ import { Pagination } from "./pagination";
 import { Review } from "./review";
 
 export interface ReviewSummary {
-    messages: Pagination<Review>
+    totalReviews: number;
     averageRating: number;
 }

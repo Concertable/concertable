@@ -1,0 +1,25 @@
+<div class="container">
+    <!-- Review Summary -->
+  <div class="summary">
+    <mat-icon class="star">star</mat-icon> 
+    <span class="rating">{{ summary?.averageRating }} / 5</span>
+    <span class="total-reviews">based on {{ summary?.totalReviews }} reviews</span>
+  </div>
+  <div class="cards-container">
+    <app-card *ngFor="let review of reviews" class="review-card">
+      <div class="review-header">
+        <div class="rating">
+          <mat-icon class="star">star</mat-icon>
+          <span>{{ review.stars }} / 5</span>
+        </div>
+        <div class="reviewer-info">
+          <strong>{{ review.email }}</strong>
+          <!-- <span class="review-date">{{ review.date | date:'dd MMMM yyyy' }}</span> -->
+        </div>
+      </div>
+      <mat-divider class="light"></mat-divider>
+      <p class="review-text">{{ review.details }}</p>
+    </app-card>
+  </div>
+</div>
+  

@@ -23,7 +23,7 @@
             </section>
             <section [id]="navItems[2].fragment" class="artist-section">
                 <h1>{{ navItems[2].name }}</h1>
-                <app-review-summary [item]="event"></app-review-summary>
+                <app-event-reviews [id]="event.id"></app-event-reviews>
             </section>
             
             
@@ -34,7 +34,7 @@
             <p>
                 <mat-icon>calendar_today</mat-icon>
                 {{ event.startDate | date: 'd MMM' }} {{ event.startDate | date: 'HH:mm' }} - 
-                {{ event.endDate | date: 'HH:mm' }}
+                {{ event.endTime | date: 'HH:mm' }}
             </p>
             
             <p>

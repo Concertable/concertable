@@ -7,34 +7,14 @@ using static System.Formats.Asn1.AsnWriter;
 
 namespace Infrastructure.Factories
 {
-    public class HeaderServiceFactory : IHeaderServiceFactory, IDisposable
+    public class HeaderServiceFactory : ServiceFactory, IHeaderServiceFactory
     {
-        private readonly IServiceProvider serviceProvider;
-        private IServiceScope scope;
-        private readonly IDictionary<string, Type> serviceTypes;
 
-        public HeaderServiceFactory(IServiceProvider serviceProvider)
+        public HeaderServiceFactory(IServiceProvider serviceProvider) : base(serviceProvider) 
         {
-            this.serviceProvider = serviceProvider;
-
-            this.serviceTypes = new Dictionary<string, Type>()
-            {
-                { "venue", typeof(IHeaderService<VenueHeaderDto>) },
-                { "artist", typeof(IHeaderService<ArtistHeaderDto>) },
-                { "event", typeof(IHeaderService<EventHeaderDto>) }
-            };
-        }
-
-        public void CreateScope()
-        {
-            DisposeScope(); 
-            scope = serviceProvider.CreateScope();
-        }
-
-        public void DisposeScope()
-        {
-            scope?.Dispose();
-            scope = null;
+            serviceTypes.Add("venue", typeof(IHeaderService<VenueHeaderDto>));
+            serviceTypes.Add("artist", typeof(IHeaderService<ArtistHeaderDto>));
+            serviceTypes.Add("event", typeof(IHeaderService<EventHeaderDto>));
         }
 
         public IHeaderService<TDto> GetService<TDto>(string entityType) where TDto : HeaderDto
@@ -43,11 +23,6 @@ namespace Infrastructure.Factories
                 return (IHeaderService<TDto>)scope.ServiceProvider.GetRequiredService(serviceType);
 
             throw new ArgumentOutOfRangeException($"No service found for header type '{entityType}'.");
-        }
-
-        public void Dispose()
-        {
-            DisposeScope();
         }
     }
 }

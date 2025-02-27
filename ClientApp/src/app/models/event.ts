@@ -7,7 +7,7 @@ import { VenueHeader } from "./venue-header";
 export interface Event extends Item {
     price: number;
     startDate: Date;
-    endDate: Date;
+    endTime: Date;
     totalTickets: number;
     availableTickets: number;
     venue: Venue;

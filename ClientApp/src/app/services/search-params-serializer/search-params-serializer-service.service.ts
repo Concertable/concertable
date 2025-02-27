@@ -10,21 +10,6 @@ import { HeaderType } from '../../models/header-type';
 export class SearchParamsSerializerServiceService extends ObjectSerializerService<SearchParams> {
   defaultHeaderType?: HeaderType;
 
-  serialize(searchParams: Partial<SearchParams>): Params {
-    const params: Params = {};
-
-    if (searchParams.searchTerm) params['searchTerm'] = searchParams.searchTerm;
-    if (searchParams.headerType) params['headerType'] = searchParams.headerType;
-    if (searchParams.date) params['date'] = searchParams.date.toISOString();
-    if (searchParams.sort) params['sort'] = searchParams.sort;
-    if (searchParams.latitude !== undefined) params['latitude'] = searchParams.latitude.toString();
-    if (searchParams.longitude !== undefined) params['longitude'] = searchParams.longitude.toString();
-    if (searchParams.radiusKm !== undefined) params['radiusKm'] = searchParams.radiusKm.toString();
-    if (searchParams.genreIds?.length) params['genreIds'] = searchParams.genreIds.join(",");
-
-    return params;
-  }
-
   deserialize(params: Params): Partial<SearchParams> {
     return {
       searchTerm: params['searchTerm'],

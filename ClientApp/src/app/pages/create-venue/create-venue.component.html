@@ -1,2 +1,4 @@
 <app-create-navbar (create)="createChanges()"></app-create-navbar>
-<app-venue-details [venue]="venue" [editMode]="true"></app-venue-details>
+<div class="container">
+    <app-venue-details [venue]="venue" [editMode]="true" (listingCreate)="addListing($event)"></app-venue-details>
+</div>

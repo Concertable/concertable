@@ -1,27 +1,35 @@
-<table class="container">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Cost</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let event of events">
-            <td>{{ event.name }}</td>
-            <td>{{ event.startDate | date: 'MMM d' }}</td>
-            <td>
-                {{ event.startDate | date: 'h:mm a' }} - {{ event.endDate | date: 'h:mm a' }}
-            </td>
-            <td>${{ event.price }}</td>
-            <td>
-                <button class="primary" (click)="onViewDetails(event)">View Details</button>
-            </td>
-            <td *ngIf="authService.isRole('Customer')">
-                <button (click)="onPurchase(event)">Purchase</button>
-            </td>
-        </tr>
-    </tbody>
-</table>
+<app-card [isEmpty]="events.length === 0">
+    <div *ngFor="let event of events" class="event-item">
+        <!-- Event Date -->
+        <div class="event-date">
+            <p class="date">{{ event.startDate | date:'d' }}</p>
+            <p class="month">{{ event.startDate | date:'MMM' }}</p>
+        </div>
+
+        <!-- Event Details -->
+        <div class="event-info">
+            <h3 class="event-name">{{ event.name }}</h3>
+
+            <p class="event-time">
+                <mat-icon>access_time</mat-icon>
+                {{ event.startDate | date:'h:mm a' }} - {{ event.endTime | date:'h:mm a' }}
+            </p>
+
+            <p class="event-cost">
+                <mat-icon>attach_money</mat-icon>
+                <strong>Price:</strong> ${{ event.price }}
+            </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="event-actions">
+            <button class="primary" (click)="onViewDetails(event)">
+                <mat-icon>visibility</mat-icon> View Details
+            </button>
+
+            <button *ngIf="authService.isRole('Customer')" class="purchase-btn" (click)="onPurchase(event)">
+                <mat-icon>shopping_cart</mat-icon> Purchase
+            </button>
+        </div>
+    </div>
+</app-card>

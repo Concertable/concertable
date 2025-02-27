@@ -15,6 +15,11 @@ namespace Application.Interfaces
         Task<double?> GetAverageRatingByEventIdAsync(int id);
         Task<double?> GetAverageRatingByArtistIdAsync(int id);
         Task<double?> GetAverageRatingByVenueIdAsync(int id);
+        Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
+        Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id);
+        Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);
+
+        Task<ReviewSummaryDto> GetSummaryAsync(IQueryable<Review> query);
 
         Task<PaginationResponse<Review>> GetByVenueIdAsync(int id, PaginationParams pageParams);
         Task<PaginationResponse<Review>> GetByArtistIdAsync(int id, PaginationParams pageParams);

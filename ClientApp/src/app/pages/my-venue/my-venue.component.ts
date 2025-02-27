@@ -18,7 +18,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './my-venue.component.scss'
 })
 export class MyVenueComponent extends MyItemDirective<Venue> {
-  newListings: Listing[] = []
+  newListings: Listing[] = [];
 
   constructor(
     route: ActivatedRoute,
@@ -57,7 +57,4 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
       super.saveChanges();
       this.listingService.createMultiple(this.newListings).subscribe(l => this.newListings = []);
   }
-
-  
-
 }

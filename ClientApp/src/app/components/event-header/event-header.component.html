@@ -1,5 +1,5 @@
 <app-header [header]="header" [headerType]="headerType">
     <span><mat-icon>calendar_today</mat-icon>
         {{ header?.startDate | date: 'd MMM' }} {{ header?.startDate | date: 'HH:mm' }} - 
-        {{ header?.endDate | date: 'HH:mm' }}</span>
+        {{ header?.endTime | date: 'HH:mm' }}</span>
 </app-header>

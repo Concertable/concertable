@@ -2,10 +2,12 @@
     display: flex;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 10000;
     padding: 10px;
     justify-content: center;
     align-items: center;
+    padding: 20px 0;
+    background-color: var(--background-white);
   }
   
   .container > ul {

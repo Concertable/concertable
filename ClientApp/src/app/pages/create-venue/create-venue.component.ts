@@ -5,6 +5,8 @@ import { VenueToastService } from '../../services/toast/venue/venue-toast.servic
 import { ActivatedRoute, Router } from '@angular/router';
 import { CreateItemDirective } from '../../directives/create-item/create-item.directive';
 import { Observable } from 'rxjs';
+import { ListingService } from '../../services/listing/listing.service';
+import { Listing } from '../../models/listing';
 
 @Component({
   selector: 'app-create-venue',
@@ -14,9 +16,12 @@ import { Observable } from 'rxjs';
   styleUrl: './create-venue.component.scss'
 })
 export class CreateVenueComponent extends CreateItemDirective<Venue> {
+  newListings: Listing[] = [];
+
   constructor(
     private venueService: VenueService, 
     private venueToastService: VenueToastService,
+    private listingService: ListingService,
     router: Router,
     route: ActivatedRoute
   ) {
@@ -53,4 +58,15 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
   showCreated(name: string): void {
     this.venueToastService.showCreated(name); 
   }
+
+  addListing(listing: Listing) {
+    this.newListings.push(listing);
+    //this.saveable = true;
+  }
+
+  override createChanges(): void {
+      super.createChanges()
+      this.listingService.createMultiple(this.newListings).subscribe(l => this.newListings = []);
+  }
+  
 }

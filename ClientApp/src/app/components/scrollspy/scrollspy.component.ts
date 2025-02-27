@@ -20,13 +20,21 @@ export class ScrollspyComponent implements OnInit{
   */
   ngOnInit(): void {
     this.route.fragment.subscribe(fragment => {
-      const element = document.getElementById(fragment ?? '')
-      if(element)
-        element.scrollIntoView();
-    })
+      if (fragment) {
+        const element = document.getElementById(fragment);
+        if (element) {
+          const navbarOffset = 80; // Adjust for your navbar height
+          window.scrollTo({ 
+            top: element.offsetTop - navbarOffset, 
+            behavior: 'smooth' 
+          });
+        }
+      }
+    });
   }
-
   get queryParams() {
     return this.route.snapshot.queryParams;
   }
+
+  
 }

@@ -1,18 +1,170 @@
-.container {
+.listing-date {
+    text-align: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.date {
+    font-size: 1.8rem;
+    color: #222;
+}
+
+.month {
+    font-size: 1rem;
+    color: #666;
+}
+
+.listing-info {
+    flex-grow: 1;
+    padding-left: 15px;
+    p > mat-icon {
+        vertical-align: middle;
+        margin-right: 5px
+    }
+}
+
+.day-time {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.day-of-week {
+    margin-right: 5px;
+}
+
+.pay {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.genres {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.genre-badge {
+    background: #007BFF;
+    color: white;
+    padding: 5px 10px;
+    margin-right: 5px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+.listing-actions {
     display: flex;
-    align-items: flex-start; /* Aligns items at the top */
-    gap: 10px; /* Adds space between button and table */
+    flex-direction: column;
 }
 
-.tbl-container {
-    td {
-        vertical-align: top; 
-    }
-
-    td ul {
-        margin: 5px 0 0 15px; 
-        padding-left: 15px; 
-    }
+button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+    margin-bottom: 5px;
 }
 
 
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-apply {
+    background: #28A745;
+    color: white;
+}
+
+.btn-apply:hover {
+    background: #218838;
+}
+
+.new-listing-card {
+    background: #f9f9f9;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.1);
+    max-width: 600px; /* Limits width for a cleaner look */
+}
+
+/* Grid Layout for compact form */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+/* Full width fields (time & genres) */
+.full-width {
+    grid-column: span 2;
+}
+
+.grid-item label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.grid-item input,
+.grid-item select {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Time inputs inline */
+.time-inputs {
+    display: flex;
+    gap: 5px;
+}
+
+/* Adjust Add Genre button */
+.btn-add-genre {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+
+.btn-add-genre {
+    margin-top: 10px;
+}
+
+.btn-add-genre:hover {
+    background: #cc8400;
+}
+
+.actions-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-add, .btn-save {
+    background: #4A90E2;
+    color: white;
+}
+
+.btn-add:hover, .btn-save:hover {
+    background: #007bff;
+}
+
+//mobile
+@media (max-width: 600px) {
+    .listing-item {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+.no-listings > mat-icon {
+    margin-right: 10px;
+    vertical-align: middle;
+}

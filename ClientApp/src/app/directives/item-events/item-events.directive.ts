@@ -29,7 +29,4 @@ export abstract class ItemEventsDirective<T extends Venue | Artist> implements O
   }
 
   abstract getUpcoming(id: number): Observable<Event[]>;
-
-  //?
-
 }

@@ -1,53 +1,55 @@
 @if(venue) {
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
-    <div class="container" *ngIf="entity">
-        <section [id]="navItems[0].fragment">
-            <h1>{{navItems[0].name}}</h1>
-            <app-heading-medium [editMode]="editMode" label="Name" [content]="venue.name" (contentChange)="updateContent($event, 'name')"/>
-            <app-textarea [editMode]="editMode" label="About" [content]="venue.about" (contentChange)="updateContent($event, 'about')"/>
-            <app-image 
-                [editMode]="editMode" 
-                [src]="venue.imageUrl" 
-                width="200"
-                height="200"
-                alt="Venue Image" 
-                (imageChange)="updateImage($event)"/>
-        </section>
-
-        <section [id]="navItems[1].fragment">
-            <h1>{{navItems[1].name}}</h1>
-            <app-location
-                [editMode]="editMode"
-                [latitude]="venue.latitude"
-                [longitude]="venue.longitude"
-                [county]="venue.county"
-                [town]="venue.town"
-                (coordinatesChange)="updateCoordinates($event)">
-            </app-location>
-        </section>
-
-        @if (venue.about) {
+    <div class="c">
+        <div class="container" *ngIf="entity">
+            <section [id]="navItems[0].fragment">
+                <h1>{{navItems[0].name}}</h1>
+                <app-heading-medium [editMode]="editMode" label="Name" [content]="venue.name" (contentChange)="updateContent($event, 'name')"/>
+                <app-textarea [editMode]="editMode" label="About" [content]="venue.about" (contentChange)="updateContent($event, 'about')"/>
+                <app-image 
+                    [editMode]="editMode" 
+                    [src]="venue.imageUrl" 
+                    width="200"
+                    height="200"
+                    alt="Venue Image" 
+                    (imageChange)="updateImage($event)"/>
+            </section>
+            <mat-divider class="light" />
             <section [id]="navItems[1].fragment">
-                <h2 class="heading-events">Upcoming Events</h2>
-                <app-venue-events [venue]="venue" />
+                <h1>{{navItems[1].name}}</h1>
+                <app-location
+                    [editMode]="editMode"
+                    [latitude]="venue.latitude"
+                    [longitude]="venue.longitude"
+                    [county]="venue.county"
+                    [town]="venue.town"
+                    (coordinatesChange)="updateCoordinates($event)">
+                </app-location>
             </section>
-        }
-
-        <section [id]="navItems[2].fragment">
-            <h2 class="heading-videos">Videos</h2>
-        </section>
-
-        <section [id]="navItems[3].fragment">
-            <h2 class="reviews">Reviews</h2>
-            <app-review-summary [item]="venue"></app-review-summary>
-        </section>
-
-        @if (exists('Listings')) {
-            <section [id]="navItems[4].fragment">
-                <h2 class="heading-listings">Listings</h2>
-                <app-listings [venueId]="venue.id" [editMode]="editMode" (listingCreate)="onListingCreate($event)" />
+            <mat-divider class="light" />
+            @if (venue.about) {
+                <section [id]="navItems[1].fragment">
+                    <h2 class="heading-events">Upcoming Events</h2>
+                    <app-venue-events [venue]="venue" />
+                </section>
+            }
+    
+            <section [id]="navItems[2].fragment">
+                <h2 class="heading-videos">Videos</h2>
             </section>
-        }
+    
+            <section [id]="navItems[3].fragment">
+                <h2 class="reviews">Reviews</h2>
+                <app-venue-reviews [id]="venue.id"></app-venue-reviews>
+            </section>
+            <mat-divider class="light" />
+            @if (exists('Listings')) {
+                <section [id]="navItems[4].fragment">
+                    <h2 class="heading-listings">Listings</h2>
+                    <app-listings [venueId]="venue.id" [editMode]="editMode" (listingCreate)="onListingCreate($event)" />
+                </section>
+            }
+        </div>
     </div>
 }@else {
     Venue not found

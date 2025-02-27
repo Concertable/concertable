@@ -1,0 +1,8 @@
+<mat-form-field appearance="outline">
+    <mat-label *ngIf="label">{{ label }}</mat-label>
+    <mat-select [value]="selectedValue" (selectionChange)="onSelectionChange($event.value)">
+        <mat-option *ngFor="let option of options" [value]="option">
+            {{ displayProperty ? option[displayProperty] : option }}
+        </mat-option>
+    </mat-select>
+</mat-form-field>

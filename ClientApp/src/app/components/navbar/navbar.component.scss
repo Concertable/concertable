@@ -1,22 +1,46 @@
 .container {
     display: flex;
     justify-content: space-between;
-    background-color: #a0c4ff;
-    align-items: center;
-    padding: 0 10px;
+    align-items: center; /* Darker shade for a sleek look */
+    background-color: var(--primary-color);
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adds depth */
 }
 
-nav img {
-    width: 80px;
+.app-logo {
+    width: 60px;
+    cursor: pointer;
+    border-radius: 8px; /* Softens the edges */
+    transition: transform 0.2s ease-in-out;
+}
+
+.app-logo:hover {
+    transform: scale(1.1); /* Subtle hover effect */
 }
 
 .content {
-    justify-content: end;
+    display: flex;
+    align-items: center;
 }
 
-.content > ul {
+.content ul {
     display: flex;
     flex-direction: row;
-    gap: 16px;
+    gap: 20px;
     list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
+
+.content ul li {
+    display: flex;
+    align-items: center;
+}
+
+::ng-deep .content ul li a {
+    color: white;
+    font-weight: 600;
+    text-decoration: none; 
+}
+
+

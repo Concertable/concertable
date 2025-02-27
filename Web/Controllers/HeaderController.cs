@@ -22,7 +22,7 @@ namespace Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
         {
-            if (string.IsNullOrWhiteSpace(searchParams.HeaderType))
+                if (string.IsNullOrWhiteSpace(searchParams.HeaderType))
             {
                 return BadRequest("Entity type is required.");
             }

@@ -17,6 +17,7 @@ using Application.DTOs;
 using Core.Entities;
 using Infrastructure.Factories;
 using Web.Hubs;
+using Application.Serializers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles; //Ignore cycles
     options.JsonSerializerOptions.WriteIndented = true; //JSON formatting
+    options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
 });
 builder.Services.AddHttpContextAccessor();
 
@@ -84,6 +86,7 @@ builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();
 builder.Services.AddScoped<IHeaderService<EventHeaderDto>, EventService>();
 
 builder.Services.AddSingleton<IHeaderServiceFactory, HeaderServiceFactory>();
+builder.Services.AddSingleton<IReviewServiceMethodFactory, ReviewServiceMethodFactory>();
 
 //Lazy Dependency Injections
 builder.Services.AddScoped(provider => new Lazy<IEventService>(() => provider.GetRequiredService<IEventService>()));

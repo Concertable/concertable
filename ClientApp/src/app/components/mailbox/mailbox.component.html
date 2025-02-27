@@ -1,6 +1,6 @@
 <div class="mail-container" *ngIf="authService.isAuthenticated()">
     <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" (click)="onMailClick()">
-        <mat-icon>mail</mat-icon>
+        <mat-icon class="mail-icon">mail</mat-icon>
     </button>
 
     <div *ngIf="dropdownOpen" class="dropdown">

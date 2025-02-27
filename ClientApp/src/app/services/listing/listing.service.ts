@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Listing } from '../../models/listing';
+import { DateTimeConverterService } from '../date-time-converter/date-time-converter.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class ListingService {
 
   private apiUrl = `${environment.apiUrl}/listing`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private dateTimeConverter: DateTimeConverterService) { }
 
   create(listing: Listing) : Observable<void> {
     return this.http.post<void>(`${this.apiUrl}`, listing);
@@ -22,6 +23,6 @@ export class ListingService {
   }
 
   getActiveByVenueId(id: number) : Observable<Listing[]> {
-    return this.http.get<Listing[]>(`${this.apiUrl}/active/venue/${id}`);
+    return this.http.get<Listing[]>(`${this.apiUrl}/active/venue/${id}`)
   }
 }
