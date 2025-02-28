@@ -38,7 +38,7 @@ export class MyArtistComponent extends MyItemDirective<Artist> {
     return this.artistService.update(artist);
   }
 
-  showUpdated(name: string): void {
-    this.artistToastService.showUpdated(name);
+  showUpdated(artist: Artist): void {
+    this.artistToastService.showUpdated(artist.name);
   }
 }

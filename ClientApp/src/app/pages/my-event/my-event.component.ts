@@ -31,11 +31,11 @@ export class MyEventComponent extends MyItemDirective<Event> {
     this.event = data['event'];
   }
 
-  override update(item: Event): Observable<Event> {
+  update(event: Event): Observable<Event> {
     return of()
   }
 
-  override showUpdated(name: string): void {
+  showUpdated(event: Event): void {
 
   }
 

@@ -23,7 +23,6 @@ import { MyEventsComponent } from './pages/my-events/my-events.component';
 import { MyEventComponent } from './pages/my-event/my-event.component';
 import { EventCheckoutComponent } from './pages/event-checkout/event-checkout.component';
 import { MyTicketsComponent } from './pages/my-tickets/my-tickets.component';
-import { ProfileDetailsComponent } from './pages/profile-details/profile-details.component';
 import { PaymentDetailsComponent } from './components/payment-details/payment-details.component';
 import { ListingApplicationCheckoutComponent } from './pages/listing-application-checkout/listing-application-checkout.component';
 
@@ -38,6 +37,9 @@ import { EventDetailsResolver } from './resolvers/event-details/event-details.re
 import { CustomerDashboardComponent } from './pages/customer-dashboard/customer-dashboard.component';
 import { ArtistHomeComponent } from './pages/artist-home/artist-home.component';
 import { VenueHomeComponent } from './pages/venue-home/venue-home.component';
+import { ProfileMenuComponent } from './pages/profile-menu/profile-menu.component';
+import { MyProfileComponent } from './pages/my-profile/my-profile.component';
+import { MyProfileResolver } from './resolvers/my-profile/my-profile.resolver';
 
 const routes: Routes = [
   {
@@ -72,9 +74,10 @@ const routes: Routes = [
       },
       {
         path: 'profile',
-        component: ProfileDetailsComponent,
+        component: ProfileMenuComponent,
         data: { breadcrumb: 'Profile' },
         children: [
+          { path: 'details', component: MyProfileComponent, resolve: { user: MyProfileResolver }, data: { breadcrumb: 'Profile Details' } },
           { path: 'payment', component: PaymentDetailsComponent, data: { breadcrumb: 'Payment Details' } },
           { path: 'tickets', component: MyTicketsComponent, data: { breadcrumb: 'My Tickets' } }
         ]

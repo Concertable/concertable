@@ -36,6 +36,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSliderModule } from '@angular/material/slider'; 
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTimepickerModule } from '@angular/material/timepicker';
+import { MatExpansionModule } from '@angular/material/expansion';
+
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/config/google-maps/google-maps.component';
@@ -96,7 +98,7 @@ import { ItemEventsComponent } from './components/item-events/item-events.compon
 import { ArtistEventsComponent } from './components/artist-events/artist-events.component';
 import { EventCheckoutComponent } from './pages/event-checkout/event-checkout.component';
 import { CardDetailsComponent } from './components/card-details/card-details.component';
-import { ProfileDetailsComponent } from './pages/profile-details/profile-details.component';
+import { ProfileMenuComponent } from './pages/profile-menu/profile-menu.component';
 import { MyTicketsComponent } from './pages/my-tickets/my-tickets.component';
 import { PaymentDetailsComponent } from './components/payment-details/payment-details.component';
 import { ListingApplicationCheckoutComponent } from './pages/listing-application-checkout/listing-application-checkout.component';
@@ -111,6 +113,8 @@ import { VenueReviewsComponent } from './components/venue-reviews/venue-reviews.
 import { ArtistReviewsComponent } from './components/artist-reviews/artist-reviews.component';
 import { EventReviewsComponent } from './components/event-reviews/event-reviews.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { ProfileDetailsComponent } from './components/profile-details/profile-details.component';
+import { MyProfileComponent } from './pages/my-profile/my-profile.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -182,8 +186,8 @@ const routerOptions: ExtraOptions = {
     ArtistEventsComponent,
     EventCheckoutComponent,
     CardDetailsComponent,
-    ProfileDetailsComponent,
     MyTicketsComponent,
+    ProfileMenuComponent,
     PaymentDetailsComponent,
     ListingApplicationCheckoutComponent,
     CustomerDashboardComponent,
@@ -197,6 +201,8 @@ const routerOptions: ExtraOptions = {
     ArtistReviewsComponent,
     EventReviewsComponent,
     FooterComponent,
+    ProfileDetailsComponent,
+    MyProfileComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
@@ -226,7 +232,8 @@ const routerOptions: ExtraOptions = {
     MatButtonModule,
     MatSliderModule,
     MatPaginatorModule,
-    MatTimepickerModule
+    MatTimepickerModule,
+    MatExpansionModule
 ],
   providers: [
     provideHttpClient(

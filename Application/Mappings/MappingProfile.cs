@@ -108,6 +108,8 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Email, opt =>  opt.MapFrom(src => src.Ticket.User.Email));
             CreateMap<ReviewDto, Review>();
 
+            CreateMap<ApplicationUser, UserDto>();
+            CreateMap<UserDto, ApplicationUser>();
         }
     }
 }

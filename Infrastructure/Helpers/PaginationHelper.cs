@@ -16,7 +16,7 @@ namespace Infrastructure.Helpers
         IQueryable<T> query, PaginationParams pageParams)
         {
             int totalCount = await query.CountAsync();
-            var data = await query.Skip((pageParams.PageNumber - 1) * pageParams.PageSize).Take(pageParams.PageSize).ToListAsync();
+             var data = await query.Skip((pageParams.PageNumber - 1) * pageParams.PageSize).Take(pageParams.PageSize).ToListAsync();
 
             return new PaginationResponse<T>(data, totalCount, pageParams.PageNumber, pageParams.PageSize);
         }

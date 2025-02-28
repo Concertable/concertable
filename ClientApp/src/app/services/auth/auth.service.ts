@@ -17,8 +17,22 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
   
-  private currentUserSubject = new BehaviorSubject<User | null>(null); 
+  private currentUserSubject = new BehaviorSubject<User | undefined>(undefined); 
   currentUser$ = this.currentUserSubject.asObservable(); // Every subscription will recieve the current user whenever it changes
+
+  /* 
+  * Observable responses cant distinguish the undefined between user not being authenticated
+  * and data from the server not being retrievex yet, so use this boolean to distinguish
+  */
+  private _currentUserLoaded = false;
+
+  get currentUserLoaded(): boolean {
+    return this._currentUserLoaded;
+  }
+
+  private set currentUserLoaded(value: boolean) {
+    this._currentUserLoaded = value;
+  }
 
   constructor(private http: HttpClient, private router: Router, private paymentHubService: PaymentHubService) { }
 
@@ -44,7 +58,8 @@ export class AuthService {
     console.log(`${this.apiUrl}/logout`);
     return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
       tap(() => {
-        this.currentUserSubject.next(null);
+        this.currentUserSubject.next(undefined);
+        this.currentUserLoaded = false;
         this.router.navigateByUrl('/');
         this.paymentHubService.stopHubConnection();
       })
@@ -61,10 +76,10 @@ export class AuthService {
   }
 
   getCurrentUser() : Observable<User> {
-    console.log("?");
     return this.http.get<User>(`${this.apiUrl}/current-user`).pipe(
       tap(user => {
         this.currentUserSubject.next(user);
+        this.currentUserLoaded = true;
       })
     )
   }

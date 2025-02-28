@@ -5,12 +5,13 @@ import { Venue } from '../../models/venue';
 import { Artist } from '../../models/artist';
 import { Event } from '../../models/event';
 import { ActivatedRoute } from '@angular/router';
+import { User } from '../../models/user';
 
 @Directive({
   selector: '[appMyItem]',
   standalone: false
 })
-export abstract class MyItemDirective<T extends Venue | Artist | Event> implements OnInit {
+export abstract class MyItemDirective<T extends Venue | Artist | Event | User> implements OnInit {
   protected item?: T;
   protected originalItem?: T;
   protected editMode: boolean = false;
@@ -23,7 +24,7 @@ export abstract class MyItemDirective<T extends Venue | Artist | Event> implemen
 
   abstract update(item: T): Observable<T>;
 
-  abstract showUpdated(name: string): void
+  abstract showUpdated(item: T): void
 
   onEditModeChange(newValue: boolean) {
     this.editMode = newValue;
@@ -47,7 +48,7 @@ export abstract class MyItemDirective<T extends Venue | Artist | Event> implemen
       this.update(this.item).subscribe(v => {
         this.item = v;
         this.originalItem = cloneDeep(this.item);
-        this.showUpdated(v.name)
+        this.showUpdated(v)
     })
   }
 

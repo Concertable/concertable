@@ -44,8 +44,8 @@ export class MyVenueComponent extends MyItemDirective<Venue> {
     return this.venueService.update(venue);
   }
 
-  showUpdated(name: string) {
-    this.venueToastService.showUpdated(name);
+  showUpdated(venue: Venue) {
+    this.venueToastService.showUpdated(venue.name);
   }
 
   addListing(listing: Listing) {
