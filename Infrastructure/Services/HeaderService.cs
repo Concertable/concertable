@@ -30,14 +30,33 @@ namespace Infrastructure.Services
             this.locationService = locationService;
         }
 
-        public async virtual Task<PaginationResponse<TDto>> GetHeadersAsync(SearchParams? searchParams)
+        public async virtual Task<PaginationResponse<TDto>> GetHeadersAsync(SearchParams searchParams)
         {
             var headers = await headerRepository.GetRawHeadersAsync(searchParams);
 
-            var locationHeaders = locationService.FilterAndSortByNearest(searchParams, headers.Data);
+            // Apply location filtering only if all values are present
+            if (searchParams.Latitude.HasValue && searchParams.Longitude.HasValue && searchParams.RadiusKm.HasValue)
+            {
+                headers.Data = locationService.FilterByRadius(
+                    searchParams.Latitude.Value,
+                    searchParams.Longitude.Value,
+                    searchParams.RadiusKm.Value,
+                    headers.Data);
+            }
+
+            // Apply sorting only if sorting is "location_asc" or "location_desc"
+            if (searchParams.Sort == "location_asc" || searchParams.Sort == "location_desc")
+            {
+                bool ascending = searchParams.Sort == "location_asc"; // true for asc, false for desc
+                headers.Data = locationService.SortByDistance(
+                    searchParams.Latitude.Value,
+                    searchParams.Longitude.Value,
+                    headers.Data,
+                    ascending);
+            }
 
             return new PaginationResponse<TDto>(
-                locationHeaders,
+                headers.Data,
                 headers.TotalCount,
                 headers.PageNumber,
                 headers.PageSize);

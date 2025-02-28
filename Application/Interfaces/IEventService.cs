@@ -19,5 +19,7 @@ namespace Application.Interfaces
         Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id);
         Task<ListingApplicationPurchaseResponse> BookAsync(EventBookingParams bookingParams);
         Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
+        Task<EventDto> UpdateAsync(EventDto eventDto);
+        Task<EventPostResponse> PostAsync(EventDto eventDto);
     }
 }

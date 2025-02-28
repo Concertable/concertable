@@ -8,6 +8,8 @@ using System.ComponentModel.Design;
 using Application.DTOs;
 using Core.ModelBinders;
 using Application.Responses;
+using Microsoft.AspNetCore.SignalR;
+using Web.Hubs;
 
 namespace Web.Controllers
 {
@@ -16,10 +18,12 @@ namespace Web.Controllers
     public class EventController : ControllerBase
     {
         private readonly IEventService eventService;
+        private readonly IHubContext<EventHub> hubContext;
 
-        public EventController(IEventService eventService) 
+        public EventController(IEventService eventService, IHubContext<EventHub> hubContext) 
         {
             this.eventService = eventService;
+            this.hubContext = hubContext;
         }
 
         [HttpGet("headers")]
@@ -56,6 +60,29 @@ namespace Web.Controllers
         public async Task<ActionResult<ListingApplicationPurchaseResponse>> Book(EventBookingParams bookingParams)
         {
             return Ok(await eventService.BookAsync(bookingParams));
+        }
+
+        [HttpPut("post/{id}")]
+        public async Task<ActionResult<EventDto>> Post([FromBody]EventDto eventDto)
+        {
+            var eventResponse = await eventService.PostAsync(eventDto);
+
+            foreach (var userId in eventResponse.UserIds)
+            {
+                await hubContext.Clients.User(userId.ToString())
+                    .SendAsync("EventPosted", eventResponse.Event);
+            }
+
+            return Ok(eventResponse.Event);
+        }
+
+        [HttpPut("test-signalr")]
+        public async Task<IActionResult> TestSignalR([FromBody] int userId)
+        {
+            await hubContext.Clients.User(userId.ToString()).SendAsync("EventPosted",
+                new EventDto { });
+
+            return Ok($"SignalR test message sent to User {userId}");
         }
 
     }

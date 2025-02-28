@@ -3,6 +3,7 @@ using Core.Entities.Identity;
 using Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Bcpg;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -33,72 +34,72 @@ namespace Infrastructure.Data
                     new ArtistManager { UserName = "artistmanager3@test.com", Email = "artistmanager3@test.com", County = "Surrey", Town = "Farnham", Latitude = 51.21, Longitude = -0.58 }, //10
                     new ArtistManager { UserName = "artistmanager4@test.com", Email = "artistmanager4@test.com", County = "Surrey", Town = "Camberley", Latitude = 51.34, Longitude = -0.73 }, //11
                     new ArtistManager { UserName = "artistmanager5@test.com", Email = "artistmanager5@test.com", County = "Surrey", Town = "Haslemere", Latitude = 51.08, Longitude = -0.74 }, //12
-                    new ArtistManager { UserName = "artistmanager6@test.com", Email = "artistmanager1@test.com", County = "London", Town = "Camden", Latitude = 51.53, Longitude = -0.13 }, //13
-                    new ArtistManager { UserName = "artistmanager7@test.com", Email = "artistmanager2@test.com", County = "Manchester", Town = "Salford", Latitude = 53.48, Longitude = -2.25 }, //14
-                    new ArtistManager { UserName = "artistmanager8@test.com", Email = "artistmanager3@test.com", County = "Birmingham", Town = "Digbeth", Latitude = 52.47, Longitude = -1.88 }, //15
-                    new ArtistManager { UserName = "artistmanager9@test.com", Email = "artistmanager4@test.com", County = "Edinburgh", Town = "Leith", Latitude = 55.98, Longitude = -3.17 }, //16
-                    new ArtistManager { UserName = "artistmanager10@test.com", Email = "artistmanager5@test.com", County = "Liverpool", Town = "Baltic Triangle", Latitude = 53.39, Longitude = -2.98 }, //17
-                    new ArtistManager { UserName = "artistmanager11@test.com", Email = "artistmanager6@test.com", County = "Leeds", Town = "Headingley", Latitude = 53.82, Longitude = -1.58 }, //18
-                    new ArtistManager { UserName = "artistmanager12@test.com", Email = "artistmanager7@test.com", County = "Glasgow", Town = "West End", Latitude = 55.87, Longitude = -4.29 }, //19
-                    new ArtistManager { UserName = "artistmanager13@test.com", Email = "artistmanager8@test.com", County = "Sheffield", Town = "Kelham Island", Latitude = 53.39, Longitude = -1.46 }, //20
-                    new ArtistManager { UserName = "artistmanager14@test.com", Email = "artistmanager9@test.com", County = "Nottingham", Town = "Lace Market", Latitude = 52.95, Longitude = -1.14 }, //21
-                    new ArtistManager { UserName = "artistmanager15@test.com", Email = "artistmanager10@test.com", County = "Bristol", Town = "Stokes Croft", Latitude = 51.46, Longitude = -2.59 }, //22
-                    new ArtistManager { UserName = "artistmanager16@test.com", Email = "artistmanager11@test.com", County = "Brighton", Town = "Kemptown", Latitude = 50.82, Longitude = -0.13 }, //23
-                    new ArtistManager { UserName = "artistmanager17@test.com", Email = "artistmanager12@test.com", County = "Cardiff", Town = "Cathays", Latitude = 51.49, Longitude = -3.17 }, //24
-                    new ArtistManager { UserName = "artistmanager18@test.com", Email = "artistmanager13@test.com", County = "Newcastle", Town = "Jesmond", Latitude = 54.99, Longitude = -1.61 }, //25
-                    new ArtistManager { UserName = "artistmanager19@test.com", Email = "artistmanager14@test.com", County = "Oxford", Town = "Jericho", Latitude = 51.76, Longitude = -1.26 }, //26
-                    new ArtistManager { UserName = "artistmanager20@test.com", Email = "artistmanager15@test.com", County = "Cambridge", Town = "Mill Road", Latitude = 52.19, Longitude = 0.13 }, //27
-                    new ArtistManager { UserName = "artistmanager21@test.com", Email = "artistmanager16@test.com", County = "Bath", Town = "Widcombe", Latitude = 51.38, Longitude = -2.36 }, //28
-                    new ArtistManager { UserName = "artistmanager22@test.com", Email = "artistmanager17@test.com", County = "Aberdeen", Town = "Old Aberdeen", Latitude = 57.17, Longitude = -2.1 },  //29
-                    new ArtistManager { UserName = "artistmanager23@test.com", Email = "artistmanager18@test.com", County = "York", Town = "The Shambles", Latitude = 53.96, Longitude = -1.08 }, //30
-                    new ArtistManager { UserName = "artistmanager24@test.com", Email = "artistmanager19@test.com", County = "Belfast", Town = "Cathedral Quarter", Latitude = 54.6, Longitude = -5.93 }, //31
-                    new ArtistManager { UserName = "artistmanager25@test.com", Email = "artistmanager20@test.com", County = "Dublin", Town = "Temple Bar", Latitude = 53.34, Longitude = -6.27 }, //32
-                    new ArtistManager { UserName = "artistmanager26@test.com", Email = "artistmanager21@test.com", County = "Norwich", Town = "Tombland", Latitude = 52.63, Longitude = 1.3 }, //33
-                    new ArtistManager { UserName = "artistmanager27@test.com", Email = "artistmanager22@test.com", County = "Exeter", Town = "St Sidwell's", Latitude = 50.73, Longitude = -3.53 }, //34
-                    new ArtistManager { UserName = "artistmanager28@test.com", Email = "artistmanager23@test.com", County = "Southampton", Town = "Ocean Village", Latitude = 50.9, Longitude = -1.4 }, //35
-                    new ArtistManager { UserName = "artistmanager29@test.com", Email = "artistmanager24@test.com", County = "Hull", Town = "Old Town", Latitude = 53.74, Longitude = -0.33 }, //36
-                    new ArtistManager { UserName = "artistmanager30@test.com", Email = "artistmanager25@test.com", County = "Plymouth", Town = "The Hoe", Latitude = 50.37, Longitude = -4.14 }, //37
-                    new ArtistManager { UserName = "artistmanager31@test.com", Email = "artistmanager26@test.com", County = "Swansea", Town = "Uplands", Latitude = 51.62, Longitude = -3.94 }, //38
-                    new ArtistManager { UserName = "artistmanager32@test.com", Email = "artistmanager27@test.com", County = "Inverness", Town = "Dalneigh", Latitude = 57.48, Longitude = -4.23 }, //39
-                    new ArtistManager { UserName = "artistmanager33@test.com", Email = "artistmanager28@test.com", County = "Stirling", Town = "Bridge of Allan", Latitude = 56.15, Longitude = -3.93 }, //40
-                    new ArtistManager { UserName = "artistmanager34@test.com", Email = "artistmanager29@test.com", County = "Dundee", Town = "Broughty Ferry", Latitude = 56.47, Longitude = -2.87 }, //41
-                    new ArtistManager { UserName = "artistmanager35@test.com", Email = "artistmanager30@test.com", County = "Coventry", Town = "Earlsdon", Latitude = 52.40, Longitude = -1.52 }, //42
+                    new ArtistManager { UserName = "artistmanager6@test.com", Email = "artistmanager6@test.com", County = "London", Town = "Camden", Latitude = 51.53, Longitude = -0.13 }, //13
+                    new ArtistManager { UserName = "artistmanager7@test.com", Email = "artistmanager7@test.com", County = "Manchester", Town = "Salford", Latitude = 53.48, Longitude = -2.25 }, //14
+                    new ArtistManager { UserName = "artistmanager8@test.com", Email = "artistmanager8@test.com", County = "Birmingham", Town = "Digbeth", Latitude = 52.47, Longitude = -1.88 }, //15
+                    new ArtistManager { UserName = "artistmanager9@test.com", Email = "artistmanager9@test.com", County = "Edinburgh", Town = "Leith", Latitude = 55.98, Longitude = -3.17 }, //16
+                    new ArtistManager { UserName = "artistmanager10@test.com", Email = "artistmanager10@test.com", County = "Liverpool", Town = "Baltic Triangle", Latitude = 53.39, Longitude = -2.98 }, //17
+                    new ArtistManager { UserName = "artistmanager11@test.com", Email = "artistmanager11@test.com", County = "Leeds", Town = "Headingley", Latitude = 53.82, Longitude = -1.58 }, //18
+                    new ArtistManager { UserName = "artistmanager12@test.com", Email = "artistmanager12@test.com", County = "Glasgow", Town = "West End", Latitude = 55.87, Longitude = -4.29 }, //19
+                    new ArtistManager { UserName = "artistmanager13@test.com", Email = "artistmanager13@test.com", County = "Sheffield", Town = "Kelham Island", Latitude = 53.39, Longitude = -1.46 }, //20
+                    new ArtistManager { UserName = "artistmanager14@test.com", Email = "artistmanager14@test.com", County = "Nottingham", Town = "Lace Market", Latitude = 52.95, Longitude = -1.14 }, //21
+                    new ArtistManager { UserName = "artistmanager15@test.com", Email = "artistmanager150@test.com", County = "Bristol", Town = "Stokes Croft", Latitude = 51.46, Longitude = -2.59 }, //22
+                    new ArtistManager { UserName = "artistmanager16@test.com", Email = "artistmanager16@test.com", County = "Brighton", Town = "Kemptown", Latitude = 50.82, Longitude = -0.13 }, //23
+                    new ArtistManager { UserName = "artistmanager17@test.com", Email = "artistmanager17@test.com", County = "Cardiff", Town = "Cathays", Latitude = 51.49, Longitude = -3.17 }, //24
+                    new ArtistManager { UserName = "artistmanager18@test.com", Email = "artistmanager18@test.com", County = "Newcastle", Town = "Jesmond", Latitude = 54.99, Longitude = -1.61 }, //25
+                    new ArtistManager { UserName = "artistmanager19@test.com", Email = "artistmanager19@test.com", County = "Oxford", Town = "Jericho", Latitude = 51.76, Longitude = -1.26 }, //26
+                    new ArtistManager { UserName = "artistmanager20@test.com", Email = "artistmanager20@test.com", County = "Cambridge", Town = "Mill Road", Latitude = 52.19, Longitude = 0.13 }, //27
+                    new ArtistManager { UserName = "artistmanager21@test.com", Email = "artistmanager21@test.com", County = "Bath", Town = "Widcombe", Latitude = 51.38, Longitude = -2.36 }, //28
+                    new ArtistManager { UserName = "artistmanager22@test.com", Email = "artistmanager22@test.com", County = "Aberdeen", Town = "Old Aberdeen", Latitude = 57.17, Longitude = -2.1 },  //29
+                    new ArtistManager { UserName = "artistmanager23@test.com", Email = "artistmanager23@test.com", County = "York", Town = "The Shambles", Latitude = 53.96, Longitude = -1.08 }, //30
+                    new ArtistManager { UserName = "artistmanager24@test.com", Email = "artistmanager24@test.com", County = "Belfast", Town = "Cathedral Quarter", Latitude = 54.6, Longitude = -5.93 }, //31
+                    new ArtistManager { UserName = "artistmanager25@test.com", Email = "artistmanager25@test.com", County = "Dublin", Town = "Temple Bar", Latitude = 53.34, Longitude = -6.27 }, //32
+                    new ArtistManager { UserName = "artistmanager26@test.com", Email = "artistmanager26@test.com", County = "Norwich", Town = "Tombland", Latitude = 52.63, Longitude = 1.3 }, //33
+                    new ArtistManager { UserName = "artistmanager27@test.com", Email = "artistmanager27@test.com", County = "Exeter", Town = "St Sidwell's", Latitude = 50.73, Longitude = -3.53 }, //34
+                    new ArtistManager { UserName = "artistmanager28@test.com", Email = "artistmanager28@test.com", County = "Southampton", Town = "Ocean Village", Latitude = 50.9, Longitude = -1.4 }, //35
+                    new ArtistManager { UserName = "artistmanager29@test.com", Email = "artistmanager29@test.com", County = "Hull", Town = "Old Town", Latitude = 53.74, Longitude = -0.33 }, //36
+                    new ArtistManager { UserName = "artistmanager30@test.com", Email = "artistmanager30@test.com", County = "Plymouth", Town = "The Hoe", Latitude = 50.37, Longitude = -4.14 }, //37
+                    new ArtistManager { UserName = "artistmanager31@test.com", Email = "artistmanager31@test.com", County = "Swansea", Town = "Uplands", Latitude = 51.62, Longitude = -3.94 }, //38
+                    new ArtistManager { UserName = "artistmanager32@test.com", Email = "artistmanager32@test.com", County = "Inverness", Town = "Dalneigh", Latitude = 57.48, Longitude = -4.23 }, //39
+                    new ArtistManager { UserName = "artistmanager33@test.com", Email = "artistmanager33@test.com", County = "Stirling", Town = "Bridge of Allan", Latitude = 56.15, Longitude = -3.93 }, //40
+                    new ArtistManager { UserName = "artistmanager34@test.com", Email = "artistmanager34@test.com", County = "Dundee", Town = "Broughty Ferry", Latitude = 56.47, Longitude = -2.87 }, //41
+                    new ArtistManager { UserName = "artistmanager35@test.com", Email = "artistmanager35@test.com", County = "Coventry", Town = "Earlsdon", Latitude = 52.40, Longitude = -1.52 }, //42
                     // Venue Managers
                     new VenueManager { UserName = "venuemanager1@test.com", Email = "venuemanager1@test.com", County = "Surrey", Town = "Leatherhead", Latitude = 51.3, Longitude = -0.3 }, //43
                     new VenueManager { UserName = "venuemanager2@test.com", Email = "venuemanager2@test.com", County = "Surrey", Town = "Redhill", Latitude = 51.23, Longitude = -0.17 }, //44
                     new VenueManager { UserName = "venuemanager3@test.com", Email = "venuemanager3@test.com", County = "Surrey", Town = "Weybridge", Latitude = 51.38, Longitude = -0.46 }, //45
                     new VenueManager { UserName = "venuemanager4@test.com", Email = "venuemanager4@test.com", County = "Surrey", Town = "Cobham", Latitude = 51.32, Longitude = -0.46 }, //46
                     new VenueManager { UserName = "venuemanager5@test.com", Email = "venuemanager5@test.com", County = "Surrey", Town = "Chertsey", Latitude = 51.39, Longitude = -0.5 }, //47
-                    new VenueManager { UserName = "venuemanager6@test.com", Email = "venuemanager1@test.com", County = "London", Town = "Camden", Latitude = 51.53, Longitude = -0.13 }, //48
-                    new VenueManager { UserName = "venuemanager7@test.com", Email = "venuemanager2@test.com", County = "Manchester", Town = "Northern Quarter", Latitude = 53.48, Longitude = -2.23 }, //49
-                    new VenueManager { UserName = "venuemanager8@test.com", Email = "venuemanager3@test.com", County = "Birmingham", Town = "Jewellery Quarter", Latitude = 52.48, Longitude = -1.91 }, //50
-                    new VenueManager { UserName = "venuemanager9@test.com", Email = "venuemanager4@test.com", County = "Edinburgh", Town = "Old Town", Latitude = 55.95, Longitude = -3.19 }, //51
-                    new VenueManager { UserName = "venuemanager10@test.com", Email = "venuemanager5@test.com", County = "Liverpool", Town = "Cavern Quarter", Latitude = 53.41, Longitude = -2.99 }, //52
-                    new VenueManager { UserName = "venuemanager11@test.com", Email = "venuemanager6@test.com", County = "Leeds", Town = "Call Lane", Latitude = 53.79, Longitude = -1.54 }, //53
-                    new VenueManager { UserName = "venuemanager12@test.com", Email = "venuemanager7@test.com", County = "Glasgow", Town = "Merchant City", Latitude = 55.86, Longitude = -4.24 }, //54
-                    new VenueManager { UserName = "venuemanager13@test.com", Email = "venuemanager8@test.com", County = "Sheffield", Town = "Ecclesall Road", Latitude = 53.38, Longitude = -1.50 }, //55
-                    new VenueManager { UserName = "venuemanager14@test.com", Email = "venuemanager9@test.com", County = "Nottingham", Town = "Hockley", Latitude = 52.95, Longitude = -1.14 }, //56
-                    new VenueManager { UserName = "venuemanager15@test.com", Email = "venuemanager10@test.com", County = "Bristol", Town = "Harbourside", Latitude = 51.45, Longitude = -2.60 }, //57
-                    new VenueManager { UserName = "venuemanager16@test.com", Email = "venuemanager11@test.com", County = "Brighton", Town = "The Lanes", Latitude = 50.82, Longitude = -0.14 }, //58
-                    new VenueManager { UserName = "venuemanager17@test.com", Email = "venuemanager12@test.com", County = "Cardiff", Town = "Riverside", Latitude = 51.48, Longitude = -3.18 }, //59
-                    new VenueManager { UserName = "venuemanager18@test.com", Email = "venuemanager13@test.com", County = "Newcastle", Town = "Quayside", Latitude = 54.97, Longitude = -1.60 }, //60
-                    new VenueManager { UserName = "venuemanager19@test.com", Email = "venuemanager14@test.com", County = "Oxford", Town = "Cowley", Latitude = 51.73, Longitude = -1.22 }, //61
-                    new VenueManager { UserName = "venuemanager20@test.com", Email = "venuemanager15@test.com", County = "Cambridge", Town = "Chesterton", Latitude = 52.22, Longitude = 0.14 }, //62
-                    new VenueManager { UserName = "venuemanager21@test.com", Email = "venuemanager16@test.com", County = "Bath", Town = "Bear Flat", Latitude = 51.37, Longitude = -2.36 }, //63
-                    new VenueManager { UserName = "venuemanager22@test.com", Email = "venuemanager17@test.com", County = "Aberdeen", Town = "Footdee", Latitude = 57.15, Longitude = -2.08 }, //64
-                    new VenueManager { UserName = "venuemanager23@test.com", Email = "venuemanager18@test.com", County = "York", Town = "Fossgate", Latitude = 53.96, Longitude = -1.08 }, //65
-                    new VenueManager { UserName = "venuemanager24@test.com", Email = "venuemanager19@test.com", County = "Belfast", Town = "Titanic Quarter", Latitude = 54.61, Longitude = -5.91 }, //66
-                    new VenueManager { UserName = "venuemanager25@test.com", Email = "venuemanager20@test.com", County = "Dublin", Town = "Grafton Street", Latitude = 53.34, Longitude = -6.26 }, //67
-                    new VenueManager { UserName = "venuemanager26@test.com", Email = "venuemanager21@test.com", County = "Norwich", Town = "Magdalen Street", Latitude = 52.63, Longitude = 1.30 }, //68
-                    new VenueManager { UserName = "venuemanager27@test.com", Email = "venuemanager22@test.com", County = "Exeter", Town = "Quay", Latitude = 50.72, Longitude = -3.53 }, //69
-                    new VenueManager { UserName = "venuemanager28@test.com", Email = "venuemanager23@test.com", County = "Southampton", Town = "Bargate", Latitude = 50.9, Longitude = -1.4 }, //70
-                    new VenueManager { UserName = "venuemanager29@test.com", Email = "venuemanager24@test.com", County = "Hull", Town = "Fruit Market", Latitude = 53.74, Longitude = -0.34 }, //71
-                    new VenueManager { UserName = "venuemanager30@test.com", Email = "venuemanager25@test.com", County = "Plymouth", Town = "Barbican", Latitude = 50.37, Longitude = -4.14 }, //72
-                    new VenueManager { UserName = "venuemanager31@test.com", Email = "venuemanager26@test.com", County = "Swansea", Town = "Mumbles", Latitude = 51.58, Longitude = -3.98 }, //73
-                    new VenueManager { UserName = "venuemanager32@test.com", Email = "venuemanager27@test.com", County = "Inverness", Town = "Crown", Latitude = 57.48, Longitude = -4.23 }, //74
-                    new VenueManager { UserName = "venuemanager33@test.com", Email = "venuemanager28@test.com", County = "Stirling", Town = "Causewayhead", Latitude = 56.15, Longitude = -3.93 }, //75
-                    new VenueManager { UserName = "venuemanager34@test.com", Email = "venuemanager29@test.com", County = "Dundee", Town = "Seagate", Latitude = 56.47, Longitude = -2.87 }, //76
-                    new VenueManager { UserName = "venuemanager35@test.com", Email = "venuemanager30@test.com", County = "Coventry", Town = "Far Gosford Street", Latitude = 52.41, Longitude = -1.5 } //77
+                    new VenueManager { UserName = "venuemanager6@test.com", Email = "venuemanager6@test.com", County = "London", Town = "Camden", Latitude = 51.53, Longitude = -0.13 }, //48
+                    new VenueManager { UserName = "venuemanager7@test.com", Email = "venuemanager7@test.com", County = "Manchester", Town = "Northern Quarter", Latitude = 53.48, Longitude = -2.23 }, //49
+                    new VenueManager { UserName = "venuemanager8@test.com", Email = "venuemanager8@test.com", County = "Birmingham", Town = "Jewellery Quarter", Latitude = 52.48, Longitude = -1.91 }, //50
+                    new VenueManager { UserName = "venuemanager9@test.com", Email = "venuemanager9@test.com", County = "Edinburgh", Town = "Old Town", Latitude = 55.95, Longitude = -3.19 }, //51
+                    new VenueManager { UserName = "venuemanager10@test.com", Email = "venuemanager10@test.com", County = "Liverpool", Town = "Cavern Quarter", Latitude = 53.41, Longitude = -2.99 }, //52
+                    new VenueManager { UserName = "venuemanager11@test.com", Email = "venuemanager11@test.com", County = "Leeds", Town = "Call Lane", Latitude = 53.79, Longitude = -1.54 }, //53
+                    new VenueManager { UserName = "venuemanager12@test.com", Email = "venuemanager12@test.com", County = "Glasgow", Town = "Merchant City", Latitude = 55.86, Longitude = -4.24 }, //54
+                    new VenueManager { UserName = "venuemanager13@test.com", Email = "venuemanager13@test.com", County = "Sheffield", Town = "Ecclesall Road", Latitude = 53.38, Longitude = -1.50 }, //55
+                    new VenueManager { UserName = "venuemanager14@test.com", Email = "venuemanager14@test.com", County = "Nottingham", Town = "Hockley", Latitude = 52.95, Longitude = -1.14 }, //56
+                    new VenueManager { UserName = "venuemanager15@test.com", Email = "venuemanager15@test.com", County = "Bristol", Town = "Harbourside", Latitude = 51.45, Longitude = -2.60 }, //57
+                    new VenueManager { UserName = "venuemanager16@test.com", Email = "venuemanager16@test.com", County = "Brighton", Town = "The Lanes", Latitude = 50.82, Longitude = -0.14 }, //58
+                    new VenueManager { UserName = "venuemanager17@test.com", Email = "venuemanager17@test.com", County = "Cardiff", Town = "Riverside", Latitude = 51.48, Longitude = -3.18 }, //59
+                    new VenueManager { UserName = "venuemanager18@test.com", Email = "venuemanager18@test.com", County = "Newcastle", Town = "Quayside", Latitude = 54.97, Longitude = -1.60 }, //60
+                    new VenueManager { UserName = "venuemanager19@test.com", Email = "venuemanager19@test.com", County = "Oxford", Town = "Cowley", Latitude = 51.73, Longitude = -1.22 }, //61
+                    new VenueManager { UserName = "venuemanager20@test.com", Email = "venuemanager20@test.com", County = "Cambridge", Town = "Chesterton", Latitude = 52.22, Longitude = 0.14 }, //62
+                    new VenueManager { UserName = "venuemanager21@test.com", Email = "venuemanager21@test.com", County = "Bath", Town = "Bear Flat", Latitude = 51.37, Longitude = -2.36 }, //63
+                    new VenueManager { UserName = "venuemanager22@test.com", Email = "venuemanager22@test.com", County = "Aberdeen", Town = "Footdee", Latitude = 57.15, Longitude = -2.08 }, //64
+                    new VenueManager { UserName = "venuemanager23@test.com", Email = "venuemanager23@test.com", County = "York", Town = "Fossgate", Latitude = 53.96, Longitude = -1.08 }, //65
+                    new VenueManager { UserName = "venuemanager24@test.com", Email = "venuemanager24@test.com", County = "Belfast", Town = "Titanic Quarter", Latitude = 54.61, Longitude = -5.91 }, //66
+                    new VenueManager { UserName = "venuemanager25@test.com", Email = "venuemanager25@test.com", County = "Dublin", Town = "Grafton Street", Latitude = 53.34, Longitude = -6.26 }, //67
+                    new VenueManager { UserName = "venuemanager26@test.com", Email = "venuemanager26@test.com", County = "Norwich", Town = "Magdalen Street", Latitude = 52.63, Longitude = 1.30 }, //68
+                    new VenueManager { UserName = "venuemanager27@test.com", Email = "venuemanager27@test.com", County = "Exeter", Town = "Quay", Latitude = 50.72, Longitude = -3.53 }, //69
+                    new VenueManager { UserName = "venuemanager28@test.com", Email = "venuemanager28@test.com", County = "Southampton", Town = "Bargate", Latitude = 50.9, Longitude = -1.4 }, //70
+                    new VenueManager { UserName = "venuemanager29@test.com", Email = "venuemanager29@test.com", County = "Hull", Town = "Fruit Market", Latitude = 53.74, Longitude = -0.34 }, //71
+                    new VenueManager { UserName = "venuemanager30@test.com", Email = "venuemanager30@test.com", County = "Plymouth", Town = "Barbican", Latitude = 50.37, Longitude = -4.14 }, //72
+                    new VenueManager { UserName = "venuemanager31@test.com", Email = "venuemanager31@test.com", County = "Swansea", Town = "Mumbles", Latitude = 51.58, Longitude = -3.98 }, //73
+                    new VenueManager { UserName = "venuemanager32@test.com", Email = "venuemanager32@test.com", County = "Inverness", Town = "Crown", Latitude = 57.48, Longitude = -4.23 }, //74
+                    new VenueManager { UserName = "venuemanager33@test.com", Email = "venuemanager33@test.com", County = "Stirling", Town = "Causewayhead", Latitude = 56.15, Longitude = -3.93 }, //75
+                    new VenueManager { UserName = "venuemanager34@test.com", Email = "venuemanager34@test.com", County = "Dundee", Town = "Seagate", Latitude = 56.47, Longitude = -2.87 }, //76
+                    new VenueManager { UserName = "venuemanager35@test.com", Email = "venuemanager35@test.com", County = "Coventry", Town = "Far Gosford Street", Latitude = 52.41, Longitude = -1.5 } //77
                 };
 
 
@@ -107,6 +108,21 @@ namespace Infrastructure.Data
                     await userManager.CreateAsync(user, "Password11!");
                     await userManager.AddToRoleAsync(user, user.GetType().Name.Replace("ApplicationUser", ""));
                 }
+            }
+
+            //Preferences
+            if(!context.Preferences.Any())
+            {
+                var preferences = new Preference[]
+                {
+                    new Preference
+                    {
+                        UserId = 2,
+                        RadiusKm = 10
+                    }
+                };
+                context.Preferences.AddRange(preferences);
+                await context.SaveChangesAsync();
             }
 
             // Genres

@@ -8,7 +8,7 @@ import { User } from '../../models/user';
 import { RegisterCredentials } from '../../models/register-credentials';
 import { Router } from '@angular/router';
 import { Role } from '../../models/role';
-import { PaymentHubService } from '../payment-hub/payment-hub.service';
+import { SignalRService } from '../signalr/signalr.service';
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +34,7 @@ export class AuthService {
     this._currentUserLoaded = value;
   }
 
-  constructor(private http: HttpClient, private router: Router, private paymentHubService: PaymentHubService) { }
+  constructor(private http: HttpClient, private router: Router, private signalRService: SignalRService) { }
 
   isRole = (role: Role) => this.currentUserSubject.getValue()?.role === role;
   isNotRole = (role: Role) => this.currentUserSubject.getValue()?.role !== role;
@@ -49,7 +49,7 @@ export class AuthService {
       tap(() => {
         this.getCurrentUser().subscribe();
         this.router.navigateByUrl('/')
-        this.paymentHubService.createHubConnection();
+        this.signalRService.createHubConnections();
       })
     );
   }
@@ -61,7 +61,7 @@ export class AuthService {
         this.currentUserSubject.next(undefined);
         this.currentUserLoaded = false;
         this.router.navigateByUrl('/');
-        this.paymentHubService.stopHubConnection();
+        this.signalRService.stopHubConnections();
       })
     );
   }

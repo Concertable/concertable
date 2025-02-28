@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250227004134_InitialCreate")]
+    [Migration("20250228193454_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -161,6 +161,29 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Genres");
+                });
+
+            modelBuilder.Entity("Core.Entities.GenrePreference", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PreferenceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GenreId");
+
+                    b.HasIndex("PreferenceId");
+
+                    b.ToTable("GenrePreference");
                 });
 
             modelBuilder.Entity("Core.Entities.Identity.ApplicationRole", b =>
@@ -414,6 +437,27 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ToUserId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("Core.Entities.Preference", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("RadiusKm")
+                        .HasColumnType("float");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Preferences");
                 });
 
             modelBuilder.Entity("Core.Entities.Purchase", b =>
@@ -809,6 +853,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Event");
                 });
 
+            modelBuilder.Entity("Core.Entities.GenrePreference", b =>
+                {
+                    b.HasOne("Core.Entities.Genre", "Genre")
+                        .WithMany()
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.Preference", "Preference")
+                        .WithMany("GenrePreferences")
+                        .HasForeignKey("PreferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Genre");
+
+                    b.Navigation("Preference");
+                });
+
             modelBuilder.Entity("Core.Entities.Listing", b =>
                 {
                     b.HasOne("Core.Entities.Venue", "Venue")
@@ -875,6 +938,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("FromUser");
 
                     b.Navigation("ToUser");
+                });
+
+            modelBuilder.Entity("Core.Entities.Preference", b =>
+                {
+                    b.HasOne("Core.Entities.Identity.Customer", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Core.Entities.Purchase", b =>
@@ -1058,6 +1132,11 @@ namespace Infrastructure.Migrations
                     b.Navigation("Applications");
 
                     b.Navigation("ListingGenres");
+                });
+
+            modelBuilder.Entity("Core.Entities.Preference", b =>
+                {
+                    b.Navigation("GenrePreferences");
                 });
 
             modelBuilder.Entity("Core.Entities.Ticket", b =>

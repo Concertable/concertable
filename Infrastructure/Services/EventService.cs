@@ -15,6 +15,8 @@ using Application.Responses;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Core.Exceptions;
+using Microsoft.AspNetCore.SignalR;
+using Stripe.Terminal;
 
 namespace Infrastructure.Services
 {
@@ -27,6 +29,7 @@ namespace Infrastructure.Services
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
         private readonly IListingApplicationService applicationService;
+        private readonly IPreferenceService preferenceService;
         private readonly IMapper mapper;
 
         public EventService(
@@ -143,6 +146,45 @@ namespace Infrastructure.Services
                 throw new NotFoundException($"No event found for Application ID {applicationId}");
 
             return mapper.Map<EventDto>(eventEntity);
+        }
+
+        public async Task<EventDto> UpdateAsync(EventDto eventDto)
+        {
+            //var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
+
+            throw new NotImplementedException();
+        }
+
+        public async Task<EventPostResponse> PostAsync(EventDto eventDto)
+        {
+            var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
+
+            var latitude = eventEntity.Application.Listing.Venue.User.Latitude;
+            var longitude = eventEntity.Application.Listing.Venue.User.Longitude;
+
+            if (latitude is null || longitude is null)
+                return new EventPostResponse
+                {
+                    Event = eventDto,
+                    UserIds = Enumerable.Empty<int>()
+                };
+
+            var preferences = await preferenceService.GetAsync();
+
+            var userIdsToNotify = preferences
+            .Where(preference => locationService.IsWithinRadius(
+                preference.User.Latitude.Value,
+                preference.User.Longitude.Value,
+                latitude.Value,
+                longitude.Value,
+                preference.RadiusKm))
+            .Select(preference => preference.User.Id);
+
+            return new EventPostResponse
+            {
+                Event = eventDto,
+                UserIds = userIdsToNotify
+            };
         }
     }
 }

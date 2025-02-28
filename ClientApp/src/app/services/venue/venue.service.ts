@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Venue } from '../../models/venue';
 import { environment } from '../../../environments/environment';
 import { VenueHeader } from '../../models/venue-header';
@@ -15,6 +15,9 @@ export class VenueService {
 
   private apiUrl = `${environment.apiUrl}/venue`
 
+  private currentUserVenueSubject = new BehaviorSubject<Venue | undefined>(undefined);
+  currentUserVenue$ = this.currentUserVenueSubject.asObservable();
+
   getDetailsById(id: number) {
     return this.http.get<Venue>(`${this.apiUrl}/${id}`);
   }
@@ -24,7 +27,9 @@ export class VenueService {
   }
 
   getDetailsForCurrentUser() : Observable<Venue> {
-    return this.http.get<Venue>(`${this.apiUrl}/user`);
+    return this.http.get<Venue>(`${this.apiUrl}/user`).pipe(
+      tap(venue => this.currentUserVenueSubject.next(venue))
+    );
   }
 
   create(venue: Venue) : Observable<Venue> {

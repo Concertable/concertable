@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { StripeService } from '../services/stripe/stripe.service';
 import { Purchase } from '../models/purchase';
 import { Observable, Subscription } from 'rxjs';
-import { PaymentHubService } from '../services/payment-hub/payment-hub.service';
+import { SignalRService } from '../services/signalr/signalr.service';
 
 @Directive({
   selector: '[appCheckout]',
@@ -21,7 +21,7 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
   constructor(
     private route: ActivatedRoute, 
     private stripeService: StripeService,
-    protected paymentHubService: PaymentHubService  
+    protected signalRService: SignalRService  
   ) { }
 
   abstract setRouteData(data: any): void;

@@ -15,7 +15,7 @@ export class MessageService {
     
   constructor(private http: HttpClient) { }
 
-  getAllForUser(): Observable<Pagination<Message>> {
+  getForUser(): Observable<Pagination<Message>> {
     return this.http.get<Pagination<Message>>(`${this.apiUrl}/user`);
   }
 

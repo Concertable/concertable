@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { Purchase } from '../../models/purchase';
 import { StripeService } from '../../services/stripe/stripe.service';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
-import { PaymentHubService } from '../../services/payment-hub/payment-hub.service';
+import { SignalRService } from '../../services/signalr/signalr.service';
 
 @Component({
   selector: 'app-listing-application-checkout',
@@ -20,11 +20,11 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
   constructor(
     route: ActivatedRoute, 
     stripeService: StripeService, 
-    paymentHubService: PaymentHubService,
+    signalRService: SignalRService,
     private eventService: EventService,
     private router: Router
   ) {
-    super(route, stripeService, paymentHubService);
+    super(route, stripeService, signalRService);
   }
 
   get application(): ListingApplication | undefined {
@@ -37,7 +37,7 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
 
   override ngOnInit(): void {
       super.ngOnInit();
-      this.paymentHubService.listingApplicationResponse$.subscribe(response => {
+      this.signalRService.listingApplicationResponse$.subscribe(response => {
         var event = response?.event
         console.log("subscribed", response);
         if(event)

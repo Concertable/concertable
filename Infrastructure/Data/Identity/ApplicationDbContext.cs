@@ -29,6 +29,7 @@ namespace Infrastructure.Data.Identity
         public DbSet<VenueImage> VenueImages { get; set; }
         public DbSet<Video> Videos { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<Preference> Preferences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

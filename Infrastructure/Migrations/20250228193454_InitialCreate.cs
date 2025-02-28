@@ -233,6 +233,26 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Preferences",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RadiusKm = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Preferences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Preferences_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Purchases",
                 columns: table => new
                 {
@@ -345,6 +365,32 @@ namespace Infrastructure.Migrations
                         name: "FK_Videos_Artists_ArtistId",
                         column: x => x.ArtistId,
                         principalTable: "Artists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GenrePreference",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PreferenceId = table.Column<int>(type: "int", nullable: false),
+                    GenreId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GenrePreference", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GenrePreference_Genres_GenreId",
+                        column: x => x.GenreId,
+                        principalTable: "Genres",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GenrePreference_Preferences_PreferenceId",
+                        column: x => x.PreferenceId,
+                        principalTable: "Preferences",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -634,6 +680,16 @@ namespace Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_GenrePreference_GenreId",
+                table: "GenrePreference",
+                column: "GenreId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GenrePreference_PreferenceId",
+                table: "GenrePreference",
+                column: "PreferenceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ListingApplications_ArtistId",
                 table: "ListingApplications",
                 column: "ArtistId");
@@ -663,6 +719,11 @@ namespace Infrastructure.Migrations
                 name: "IX_Messages_ToUserId",
                 table: "Messages",
                 column: "ToUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Preferences_UserId",
+                table: "Preferences",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Purchases_FromUserId",
@@ -740,6 +801,9 @@ namespace Infrastructure.Migrations
                 name: "EventImages");
 
             migrationBuilder.DropTable(
+                name: "GenrePreference");
+
+            migrationBuilder.DropTable(
                 name: "ListingGenres");
 
             migrationBuilder.DropTable(
@@ -762,6 +826,9 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Preferences");
 
             migrationBuilder.DropTable(
                 name: "Genres");

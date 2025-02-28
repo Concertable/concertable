@@ -68,7 +68,6 @@ namespace Infrastructure.Repositories
                 .ThenInclude(l => l.Venue)
                     .ThenInclude(v => v.User); 
 
-
             return await query.FirstAsync();
         }
 

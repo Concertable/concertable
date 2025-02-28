@@ -26,7 +26,6 @@ export class MailboxComponent implements OnInit, OnDestroy {
       if(this.authService.isRole("VenueManager")){
         this.subscriptions.push(this.messageService.getSummaryForUser().subscribe(messageSummary => {
           this.messages.push(...messageSummary.messages.data);
-          this.unreadCount = messageSummary.unreadCount;
         }));
       }
     }));

@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Core.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Application.DTOs
 {
-    public class HeaderDto
+    public class HeaderDto : ILocation
     {
         public int Id { get; set; }
         public string Name { get; set; }

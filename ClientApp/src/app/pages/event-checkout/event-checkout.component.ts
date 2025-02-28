@@ -7,7 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CheckoutDirective } from '../../directives/checkout.directive';
 import { Observable } from 'rxjs';
 import { TicketPurchase } from '../../models/ticket-purchase';
-import { PaymentHubService } from '../../services/payment-hub/payment-hub.service';
+import { SignalRService } from '../../services/signalr/signalr.service';
 
 @Component({
   selector: 'app-event-checkout',
@@ -19,9 +19,9 @@ export class EventCheckoutComponent extends CheckoutDirective<Event> {
   constructor(
     route: ActivatedRoute, 
     stripeService: StripeService, 
-    paymentHubService: PaymentHubService,
+    signalRService: SignalRService,
     private ticketService: TicketService) {
-      super(route, stripeService, paymentHubService);
+      super(route, stripeService, signalRService);
     }
 
   get event(): Event | undefined {

@@ -80,6 +80,7 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 builder.Services.AddScoped<IStripeAccountService, StripeAccountService>();
+builder.Services.AddScoped<IPreferenceService, PreferenceService>();
 
 builder.Services.AddScoped<IHeaderService<VenueHeaderDto>, VenueService>();
 builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();
@@ -109,6 +110,7 @@ builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IPreferenceRepository, PreferenceRepository>();
 
 builder.Services.AddScoped<IHeaderRepository<Venue, VenueHeaderDto>, VenueRepository>();
 builder.Services.AddScoped<IHeaderRepository<Artist, ArtistHeaderDto>, ArtistRepository>();
@@ -155,6 +157,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGroup("/api").MapIdentityApi<ApplicationUser>();
 app.MapHub<PaymentHub>("/hub/payments");
+app.MapHub<EventHub>("/hub/events");
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

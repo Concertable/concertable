@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Artist } from '../../models/artist';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ArtistHeader } from '../../models/artist-header';
 import { Pagination } from '../../models/pagination';
@@ -14,6 +14,8 @@ export class ArtistService {
 
   constructor(private http: HttpClient) { }
 
+  private currentUserArtistSubject = new BehaviorSubject<Artist | undefined>(undefined);
+
   getDetailsById(id: number): Observable<Artist> {
     return this.http.get<Artist>(`${this.apiUrl}/${id}`);
   }
@@ -23,7 +25,9 @@ export class ArtistService {
   }
 
   getDetailsForCurrentUser(): Observable<Artist> {
-    return this.http.get<Artist>(`${this.apiUrl}/user`);
+    return this.http.get<Artist>(`${this.apiUrl}/user`).pipe(
+      tap(artist => this.currentUserArtistSubject.next(artist))
+    );
   }
 
   create(artist: Artist): Observable<Artist> {

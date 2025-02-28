@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/home/home.component';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
-import { AuthLayoutComponent } from './components/auth-layout/auth-layout.component';
+import { AuthLayoutComponent } from './shared/layouts/auth-layout/auth-layout.component';
 import { VenueDashboardComponent } from './pages/venue-dashboard/venue-dashboard.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
@@ -115,6 +115,7 @@ import { EventReviewsComponent } from './components/event-reviews/event-reviews.
 import { FooterComponent } from './components/footer/footer.component';
 import { ProfileDetailsComponent } from './components/profile-details/profile-details.component';
 import { MyProfileComponent } from './pages/my-profile/my-profile.component';
+import { DashboardLayoutComponent } from './shared/layouts/dashboard-layout/dashboard-layout.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -203,6 +204,7 @@ const routerOptions: ExtraOptions = {
     FooterComponent,
     ProfileDetailsComponent,
     MyProfileComponent,
+    DashboardLayoutComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
