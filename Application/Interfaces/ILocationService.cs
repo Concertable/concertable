@@ -11,7 +11,7 @@ namespace Application.Interfaces
 {
     public interface ILocationService
     {
-        IEnumerable<T> FilterByRadius<T>(double latitude, double longitude, double radiusKm, IEnumerable<T> items)
+        IEnumerable<T> FilterByRadius<T>(double latitude, double longitude, int radiusKm, IEnumerable<T> items)
             where T : ILocation;
 
         IEnumerable<T> SortByDistance<T>(double latitude, double longitude, IEnumerable<T> items, bool ascending = true)

@@ -18,7 +18,7 @@ namespace Infrastructure.Services
         /// <summary>
         /// Filters items within a specified radius (in km).
         /// </summary>
-        public IEnumerable<T> FilterByRadius<T>(double latitude, double longitude, double radiusKm, IEnumerable<T> items)
+        public IEnumerable<T> FilterByRadius<T>(double latitude, double longitude, int radiusKm, IEnumerable<T> items)
             where T : ILocation
         {
             return items
@@ -28,7 +28,7 @@ namespace Infrastructure.Services
                     if (e.Latitude == 0 && e.Longitude == 0)
                         return false; 
 
-                    return IsWithinRadius(latitude, longitude, e.Latitude.Value, e.Longitude.Value, (int)radiusKm);
+                    return IsWithinRadius(latitude, longitude, e.Latitude.Value, e.Longitude.Value, radiusKm);
                 });
         }
 
@@ -52,7 +52,7 @@ namespace Infrastructure.Services
             return ascending ? sortedItems : sortedItems.Reverse();
         }
 
-        public IEnumerable<T> FilterAndSortByNearest<T>(double latitude, double longitude, double radiusKm, IEnumerable<T> items, bool ascending = true)
+        public IEnumerable<T> FilterAndSortByNearest<T>(double latitude, double longitude, int radiusKm, IEnumerable<T> items, bool ascending = true)
             where T : ILocation
         {
             var filteredItems = FilterByRadius(latitude, longitude, radiusKm, items);

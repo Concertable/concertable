@@ -14,14 +14,16 @@ namespace Infrastructure.Data
     {
         public static async Task InitializeAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
-            await context.Database.MigrateAsync();
-
-            // Users
-            if (!context.Users.Any())
+            if (context.Database.EnsureCreated())
             {
-                var users = new ApplicationUser[]
+                await context.Database.MigrateAsync();
+
+                // Users
+                if (!context.Users.Any())
                 {
-                    new Admin { UserName = "admin1@test.com", Email = "admin1@test.com", County = "Surrey", Town = "Woking", Latitude = 51.0, Longitude = -0.5, EmailConfirmed = 1 }, //1
+                    var users = new ApplicationUser[]
+                    {
+                    new Admin { UserName = "admin1@test.com", Email = "admin1@test.com", County = "Surrey", Town = "Woking", Latitude = 51.0, Longitude = -0.5, EmailConfirmed = true }, //1
                     new Customer { UserName = "customer1@test.com", Email = "customer1@test.com", County = "Surrey", Town = "Guildford", Latitude = 51.25, Longitude = -0.56, EmailConfirmed = true }, //2
                     new Customer { UserName = "customer2@test.com", Email = "customer2@test.com", County = "Surrey", Town = "Epsom", Latitude = 51.34, Longitude = -0.27, EmailConfirmed = true }, //3
                     new Customer { UserName = "customer3@test.com", Email = "customer3@test.com", County = "London", Town = "Camden", Latitude = 51.53, Longitude = -0.13, EmailConfirmed = true }, //4
@@ -100,36 +102,36 @@ namespace Infrastructure.Data
                     new VenueManager { UserName = "venuemanager33@test.com", Email = "venuemanager33@test.com", County = "Stirling", Town = "Causewayhead", Latitude = 56.15, Longitude = -3.93, EmailConfirmed = true }, //75
                     new VenueManager { UserName = "venuemanager34@test.com", Email = "venuemanager34@test.com", County = "Dundee", Town = "Seagate", Latitude = 56.47, Longitude = -2.87, EmailConfirmed = true }, //76
                     new VenueManager { UserName = "venuemanager35@test.com", Email = "venuemanager35@test.com", County = "Coventry", Town = "Far Gosford Street", Latitude = 52.41, Longitude = -1.5, EmailConfirmed = true } //77
-                };
+                    };
 
 
-                foreach (var user in users)
-                {
-                    await userManager.CreateAsync(user, "Password11!");
-                    await userManager.AddToRoleAsync(user, user.GetType().Name.Replace("ApplicationUser", ""));
+                    foreach (var user in users)
+                    {
+                        await userManager.CreateAsync(user, "Password11!");
+                        await userManager.AddToRoleAsync(user, user.GetType().Name.Replace("ApplicationUser", ""));
+                    }
                 }
-            }
 
-            //Preferences
-            if(!context.Preferences.Any())
-            {
-                var preferences = new Preference[]
+                //Preferences
+                if (!context.Preferences.Any())
                 {
+                    var preferences = new Preference[]
+                    {
                     new Preference
                     {
                         UserId = 2,
                         RadiusKm = 10
                     }
-                };
-                context.Preferences.AddRange(preferences);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Preferences.AddRange(preferences);
+                    await context.SaveChangesAsync();
+                }
 
-            // Genres
-            if (!context.Genres.Any())
-            {
-                var genres = new Genre[]
+                // Genres
+                if (!context.Genres.Any())
                 {
+                    var genres = new Genre[]
+                    {
                     new Genre { Name = "Rock" },
                     new Genre { Name = "Pop" },
                     new Genre { Name = "Jazz" },
@@ -138,16 +140,16 @@ namespace Infrastructure.Data
                     new Genre { Name = "Indie" },
                     new Genre { Name = "DnB" },
                     new Genre { Name = "House" }
-                };
-                context.Genres.AddRange(genres);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Genres.AddRange(genres);
+                    await context.SaveChangesAsync();
+                }
 
-            // Artists
-            if (!context.Artists.Any())
-            {
-                var artists = new Artist[]
+                // Artists
+                if (!context.Artists.Any())
                 {
+                    var artists = new Artist[]
+                    {
                     new Artist {
                         UserId = 8,
                         Name = "The Rockers",
@@ -323,265 +325,265 @@ namespace Infrastructure.Data
                         Name = "Violet Sundown",
                         About = "A psychedelic indie band that fuses alternative rock, dream pop, and shoegaze influences, creating a kaleidoscope of lush soundscapes. Their music is characterized by swirling guitars, hazy vocals, and hypnotic rhythms, pulling listeners into a trance-like state. Think Tame Impala meets Beach House, with a touch of My Bloody Valentine. Their sound is ethereal yet grounded, nostalgic yet futuristic, making them a favorite for deep thinkers and cosmic dreamers.",
                         ImageUrl = "violetsundown.jpg" }
-                };
-                context.Artists.AddRange(artists);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Artists.AddRange(artists);
+                    await context.SaveChangesAsync();
+                }
 
-            // Artist Genres
-            if (!context.ArtistGenres.Any())
-            {
-                var artistGenres = new ArtistGenre[]
+                // Artist Genres
+                if (!context.ArtistGenres.Any())
                 {
+                    var artistGenres = new ArtistGenre[]
+                    {
                     new ArtistGenre { ArtistId = 1, GenreId = 1 },
                     new ArtistGenre { ArtistId = 2, GenreId = 2 },
                     new ArtistGenre { ArtistId = 3, GenreId = 5 },
                     new ArtistGenre { ArtistId = 4, GenreId = 4 },
                     new ArtistGenre { ArtistId = 5, GenreId = 3 }
-                };
-                context.ArtistGenres.AddRange(artistGenres);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.ArtistGenres.AddRange(artistGenres);
+                    await context.SaveChangesAsync();
+                }
 
-            // Venues
-            if (!context.Venues.Any())
-            {
-                var venues = new Venue[]
+                // Venues
+                if (!context.Venues.Any())
                 {
-                    new Venue { 
-                        UserId = 43, 
+                    var venues = new Venue[]
+                    {
+                    new Venue {
+                        UserId = 43,
                         Name = "The Grand Venue",
-                        About = "Tucked away in the heart of Leatherhead, The Grand Venue has long been a cornerstone of the town’s cultural scene. Originally built as a Victorian-era community hall, it later transformed into an intimate venue for folk nights, jazz performances, and local theatre productions. With its wooden beam ceiling, vintage chandeliers, and a snug bar serving craft ales, it exudes an old-world charm. Today, it remains a go-to spot for grassroots artists and hosts everything from acoustic showcases to spoken word nights.", 
-                        ImageUrl = "grandvenue.jpg", 
+                        About = "Tucked away in the heart of Leatherhead, The Grand Venue has long been a cornerstone of the town’s cultural scene. Originally built as a Victorian-era community hall, it later transformed into an intimate venue for folk nights, jazz performances, and local theatre productions. With its wooden beam ceiling, vintage chandeliers, and a snug bar serving craft ales, it exudes an old-world charm. Today, it remains a go-to spot for grassroots artists and hosts everything from acoustic showcases to spoken word nights.",
+                        ImageUrl = "grandvenue.jpg",
                         Approved = true },
                     new Venue {
-                        UserId = 44, 
-                        Name = "Redhill Hall", 
-                        About = "Redhill Hall is a historic building that has served as a gathering place for musicians, poets, and artists since the late 1800s. Originally a town assembly hall, it was repurposed into a performance space in the 1970s, providing an intimate stage for indie bands, classical quartets, and local theatre productions. With its red-bricked exterior, arched windows, and candle-lit interior, the hall is both nostalgic and atmospheric—a hidden gem for folk nights and unplugged performances.", 
-                        ImageUrl = "redhillhall.jpg", 
+                        UserId = 44,
+                        Name = "Redhill Hall",
+                        About = "Redhill Hall is a historic building that has served as a gathering place for musicians, poets, and artists since the late 1800s. Originally a town assembly hall, it was repurposed into a performance space in the 1970s, providing an intimate stage for indie bands, classical quartets, and local theatre productions. With its red-bricked exterior, arched windows, and candle-lit interior, the hall is both nostalgic and atmospheric—a hidden gem for folk nights and unplugged performances.",
+                        ImageUrl = "redhillhall.jpg",
                         Approved = true},
                     new Venue {
-                        UserId = 45, 
-                        Name = "Weybridge Pavilion", 
-                        About = "Originally a community center built in the 1950s, Weybridge Pavilion has become a beloved venue for up-and-coming indie bands and alternative rock groups. Its modest stage and open floor layout allow for intimate yet energetic performances, often bringing in local talent and traveling artists. On weekends, it doubles as a DIY art space, showcasing photography exhibitions and spoken-word events. Locals love it for its laid-back atmosphere, low lighting, and vintage posters lining the walls.", 
-                        ImageUrl = "weybridgepavilon.jpg", 
+                        UserId = 45,
+                        Name = "Weybridge Pavilion",
+                        About = "Originally a community center built in the 1950s, Weybridge Pavilion has become a beloved venue for up-and-coming indie bands and alternative rock groups. Its modest stage and open floor layout allow for intimate yet energetic performances, often bringing in local talent and traveling artists. On weekends, it doubles as a DIY art space, showcasing photography exhibitions and spoken-word events. Locals love it for its laid-back atmosphere, low lighting, and vintage posters lining the walls.",
+                        ImageUrl = "weybridgepavilon.jpg",
                         Approved = true},
                     new Venue {
-                        UserId = 46, 
+                        UserId = 46,
                         Name = "Cobham Arts Centre",
                         About = "The Cobham Arts Centre was founded in the early 1990s by a group of artists who wanted to create a dedicated space for music, theatre, and visual arts. Built in a converted warehouse, it retains its industrial charm, with exposed brick walls, large arched windows, and a multipurpose stage that accommodates everything from classical recitals to electronic music nights. It’s a favorite among experimental musicians and alternative theatre groups, attracting a crowd that appreciates art in all forms.",
                         ImageUrl = "cobhamarts.jpg",
                         Approved = true},
                     new Venue {
-                        UserId = 47, 
-                        Name = "Chertsey Arena", 
-                        About = "Unlike most small venues, Chertsey Arena was purpose-built in the 1980s as a regional music and performance venue. While it can hold larger crowds, it maintains a tight-knit community feel, regularly hosting tribute acts, battle of the bands, and grassroots punk shows. The venue is known for its dim neon lights, dark wood bar, and posters from past decades covering every inch of the walls.", 
-                        ImageUrl = "chertseyarena.jpg", 
+                        UserId = 47,
+                        Name = "Chertsey Arena",
+                        About = "Unlike most small venues, Chertsey Arena was purpose-built in the 1980s as a regional music and performance venue. While it can hold larger crowds, it maintains a tight-knit community feel, regularly hosting tribute acts, battle of the bands, and grassroots punk shows. The venue is known for its dim neon lights, dark wood bar, and posters from past decades covering every inch of the walls.",
+                        ImageUrl = "chertseyarena.jpg",
                         Approved = true},
-                    new Venue { 
-                        UserId = 48, 
-                        Name = "Camden Electric Ballroom", 
-                        About = "A legendary venue in London’s Camden Town, the Electric Ballroom has been a fixture of the alternative music scene since the 1950s. Originally a dance hall, it later became an iconic spot for punk, rock, and electronic gigs, with bands like The Clash and The Smiths once gracing its stage. Today, the venue retains its underground charm, with a graffiti-covered exterior, a packed standing area, and a history steeped in counterculture.", 
-                        ImageUrl = "camdenballroom.jpg", 
+                    new Venue {
+                        UserId = 48,
+                        Name = "Camden Electric Ballroom",
+                        About = "A legendary venue in London’s Camden Town, the Electric Ballroom has been a fixture of the alternative music scene since the 1950s. Originally a dance hall, it later became an iconic spot for punk, rock, and electronic gigs, with bands like The Clash and The Smiths once gracing its stage. Today, the venue retains its underground charm, with a graffiti-covered exterior, a packed standing area, and a history steeped in counterculture.",
+                        ImageUrl = "camdenballroom.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 49, 
-                        Name = "Manchester Night & Day Café", 
-                        About = "A staple of Manchester’s Northern Quarter, Night & Day Café has been at the heart of the city’s indie music scene since the 1990s. Known for launching the careers of Britpop and post-punk revival bands, this cozy, café-style venue offers a laid-back atmosphere by day and electric energy by night. With wood-paneled walls, vintage gig posters, and low-hanging bulbs illuminating the stage, it’s the perfect spot for emerging bands and intimate acoustic nights.", 
+                    new Venue {
+                        UserId = 49,
+                        Name = "Manchester Night & Day Café",
+                        About = "A staple of Manchester’s Northern Quarter, Night & Day Café has been at the heart of the city’s indie music scene since the 1990s. Known for launching the careers of Britpop and post-punk revival bands, this cozy, café-style venue offers a laid-back atmosphere by day and electric energy by night. With wood-paneled walls, vintage gig posters, and low-hanging bulbs illuminating the stage, it’s the perfect spot for emerging bands and intimate acoustic nights.",
                         ImageUrl = "manchesternightday.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 50, 
-                        Name = "Birmingham O2 Institute", 
-                        About = "Housed in a former church, Birmingham’s O2 Institute is a stunning mix of gothic architecture and modern music culture. Built in the early 1900s, its arched ceilings and stained-glass windows provide a striking contrast to the rock, indie, and electronic acts that now take the stage. It’s a favorite among touring artists who love its intimate yet grand feel.", 
-                        ImageUrl = "birminghamo2.jpg", 
+                    new Venue {
+                        UserId = 50,
+                        Name = "Birmingham O2 Institute",
+                        About = "Housed in a former church, Birmingham’s O2 Institute is a stunning mix of gothic architecture and modern music culture. Built in the early 1900s, its arched ceilings and stained-glass windows provide a striking contrast to the rock, indie, and electronic acts that now take the stage. It’s a favorite among touring artists who love its intimate yet grand feel.",
+                        ImageUrl = "birminghamo2.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 51, 
+                    new Venue {
+                        UserId = 51,
                         Name = "Edinburgh Usher Hall",
-                        About = "One of Scotland’s most renowned venues, Usher Hall has been a premier location for classical concerts, jazz performances, and contemporary acts since the early 20th century. The venue’s ornate architecture, velvet drapes, and pristine acoustics make it a sought-after stage for musicians of all genres. While it leans towards orchestral and folk performances, it has also welcomed alternative rock and indie musicians over the years.", 
-                        ImageUrl = "edinburghusher.jpg", 
+                        About = "One of Scotland’s most renowned venues, Usher Hall has been a premier location for classical concerts, jazz performances, and contemporary acts since the early 20th century. The venue’s ornate architecture, velvet drapes, and pristine acoustics make it a sought-after stage for musicians of all genres. While it leans towards orchestral and folk performances, it has also welcomed alternative rock and indie musicians over the years.",
+                        ImageUrl = "edinburghusher.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 52, 
-                        Name = "Liverpool Philharmonic Hall", 
+                    new Venue {
+                        UserId = 52,
+                        Name = "Liverpool Philharmonic Hall",
                         About = "A jewel of Liverpool’s music scene, the Philharmonic Hall was built in 1939 and is home to the Royal Liverpool Philharmonic Orchestra. Known for its exceptional acoustics, it attracts jazz musicians, orchestras, and even intimate rock performances. The venue’s classic Art Deco design, luxurious seating, and historic charm make it one of the most treasured cultural spaces in the city.",
                         ImageUrl = "liverpoolphilharmonic.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 53, 
-                        Name = "Leeds Brudenell Social Club", 
-                        About = "A legendary indie music venue that has remained authentically grassroots since its founding in 1913 as a working men’s club. Over the years, it evolved into a haven for DIY musicians, alternative rock bands, and underground artists. The club retains its community feel, with a no-frills bar, simple wooden seating, and a tiny, sweat-soaked stage where future stars are born. It’s the kind of place where intimacy and raw energy define the experience.", 
-                        ImageUrl = "leedsbrudenell.jpg", 
+                    new Venue {
+                        UserId = 53,
+                        Name = "Leeds Brudenell Social Club",
+                        About = "A legendary indie music venue that has remained authentically grassroots since its founding in 1913 as a working men’s club. Over the years, it evolved into a haven for DIY musicians, alternative rock bands, and underground artists. The club retains its community feel, with a no-frills bar, simple wooden seating, and a tiny, sweat-soaked stage where future stars are born. It’s the kind of place where intimacy and raw energy define the experience.",
+                        ImageUrl = "leedsbrudenell.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 54, 
+                    new Venue {
+                        UserId = 54,
                         Name = "Glasgow Barrowland Ballroom",
                         About = "A historic music hall dating back to 1934, the Barrowland Ballroom is a Glaswegian institution. Once a dance hall for swing and jazz lovers, it now hosts some of the biggest indie and rock acts, yet still feels deeply connected to its blue-collar roots. With its retro neon sign, vintage Art Deco interior, and a bouncing wooden floor that vibrates with the crowd, it’s one of the most beloved live music venues in Scotland.",
                         ImageUrl = "glasgowbarrowland.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 55, 
-                        Name = "Sheffield Leadmill", 
-                        About = "Opening its doors in 1980, The Leadmill is Sheffield’s oldest live music venue and a launchpad for alternative bands, punk groups, and indie rockers. It has played host to early performances from Pulp, Arctic Monkeys, and The Killers, and its low ceilings, intimate stage, and sticky floors make it a true dive bar venue where every gig feels like a secret show. It’s loud, gritty, and full of character.", 
+                    new Venue {
+                        UserId = 55,
+                        Name = "Sheffield Leadmill",
+                        About = "Opening its doors in 1980, The Leadmill is Sheffield’s oldest live music venue and a launchpad for alternative bands, punk groups, and indie rockers. It has played host to early performances from Pulp, Arctic Monkeys, and The Killers, and its low ceilings, intimate stage, and sticky floors make it a true dive bar venue where every gig feels like a secret show. It’s loud, gritty, and full of character.",
                         ImageUrl = "sheffieldleadmill.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 56, 
+                    new Venue {
+                        UserId = 56,
                         Name = "Nottingham Rock City",
-                        About = "Since its opening in 1980, Rock City has earned a reputation as one of the UK’s most iconic rock venues. Hosting everything from metal to alternative rock, its graffiti-covered walls, booming sound system, and multi-room layout make it a mecca for headbangers and mosh pits. Every weekend, up-and-coming punk bands share the stage with established acts, ensuring that the spirit of rock stays alive in Nottingham.", 
+                        About = "Since its opening in 1980, Rock City has earned a reputation as one of the UK’s most iconic rock venues. Hosting everything from metal to alternative rock, its graffiti-covered walls, booming sound system, and multi-room layout make it a mecca for headbangers and mosh pits. Every weekend, up-and-coming punk bands share the stage with established acts, ensuring that the spirit of rock stays alive in Nottingham.",
                         ImageUrl = "nottinghamrockcity.jpg",
                         Approved = true },
-                    new Venue { 
-                        UserId = 57, 
-                        Name = "Bristol Thekla", 
-                        About = "Possibly the UK’s most unique music venue, Thekla is a repurposed cargo ship that has floated in Bristol Harbour since 1984. The venue’s industrial metal interiors, low ceilings, and multi-level standing areas create a truly immersive experience. Known for its alternative club nights, drum & bass sets, and indie band showcases, it attracts music lovers who crave something out of the ordinary.", 
-                        ImageUrl = "bristolthekla.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 58, 
-                        Name = "Brighton Concorde 2", 
-                        About = "Sitting on Brighton Beach, Concorde 2 is a seaside club with a reputation for legendary electronic music nights. Originally a Victorian tea room, it was transformed into a club venue in the 1990s, hosting house DJs, drum & bass artists, and live indie acts. With its arched windows looking out onto the ocean, a minimalist dance floor, and a powerful sound system, it’s a favorite for those who love coastal nightlife with a bit of history.", 
-                        ImageUrl = "brightonconcorde2.jpg",
-                        Approved = true },
-                    new Venue { 
-                        UserId = 59, 
-                        Name = "Cardiff Tramshed", 
-                        About = "A former tram depot, the Tramshed is now one of Cardiff’s most dynamic music and arts venues. With its brick walls, warehouse-style open space, and high industrial ceilings, it caters to indie, hip-hop, and electronic artists alike. A favorite for both emerging and established acts, it combines urban grit with a creative artsy feel, making every gig feel raw and spontaneous.", 
-                        ImageUrl = "cardifftramshed.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 60, 
-                        Name = "Newcastle O2 Academy", 
-                        About = "Originally a cinema built in 1927, the Newcastle O2 Academy still carries the grandeur of its past. Though it has been converted into a live music venue, it retains its ornate ceilings, sloped viewing area, and a grand yet intimate atmosphere. Hosting everything from rock gigs to hip-hop nights, it’s a staple of Newcastle’s music scene, where every show feels like a special event.",
-                        ImageUrl = "newcastleo2.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 61, 
-                        Name = "Oxford O2 Academy", 
-                        About = "Tucked into the heart of Oxford, the O2 Academy has been a hotspot for indie and alternative music since the early 2000s. The venue’s no-frills design, intimate layout, and pulsating energy make it a favorite for student crowds and local music lovers. Whether it’s a high-energy rock show or an intimate acoustic gig, the Academy delivers pure live music energy.",
-                        ImageUrl = "oxfordo2.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 62, 
-                        Name = "Cambridge Corn Exchange", 
-                        About = "Built in 1875, the Corn Exchange was once a trading hub for local merchants. Today, it’s a thriving concert hall known for its versatile performances—from classical concerts to indie rock gigs. The venue’s high ceilings, grand interior, and historic brickwork give it a regal feel, yet it maintains a cozy atmosphere that makes every show feel special.", 
-                        ImageUrl = "cambridgecornexchange.jpg",
-                        Approved = true },
-                    new Venue { 
-                        UserId = 63, 
-                        Name = "Bath Komedia", 
-                        About = "Originally a cinema in the 1920s, Komedia is now one of Bath’s most beloved arts venues, hosting live music, stand-up comedy, and indie performances. Its retro Art Deco aesthetic, dim red lighting, and intimate tables create a cabaret-style setting, perfect for a laid-back yet lively night out.", 
-                        ImageUrl = "bathkomedia.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 64, 
-                        Name = "Aberdeen The Lemon Tree", 
-                        About = "Nestled in Aberdeen’s city center, The Lemon Tree has been a cultural hub for arts and music since the 1990s. Originally a warehouse space, it was converted into a small live venue that quickly became a favorite for indie bands, folk musicians, and spoken word artists. With its low ceilings, exposed brick walls, and intimate candlelit tables, it’s a venue where audiences are up close and personal with the performers.", 
-                        ImageUrl = "aberdeenlemontree.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 65, 
-                        Name = "York Barbican", 
-                        About = "First opening in 1991, the York Barbican was built as a multi-purpose events hall. While it primarily hosts comedy, jazz, and classical performances, it also brings in rock, indie, and folk acts. Its modern yet intimate design—with a sloped viewing area, black-painted interiors, and simple stage lighting—makes it an inviting venue for both seated and standing audiences.", 
-                        ImageUrl = "yorkbarbican.jpg",
-                        Approved = true },
-                    new Venue { 
-                        UserId = 66, 
-                        Name = "Belfast Limelight", 
-                        About = "A true staple of Belfast’s alternative music scene, the Limelight has been pumping out rock, punk, and indie gigs since the 1980s. The venue consists of multiple rooms, including a smaller, grungy dive bar stage and a slightly larger gig room with low ceilings, neon bar signs, and black-painted walls. It’s the kind of place where up-and-coming bands cut their teeth before making it big.", 
-                        ImageUrl = "belfastlimelight.jpg",
-                        Approved = true },
-                    new Venue { 
-                        UserId = 67, 
-                        Name = "Dublin Vicar Street", 
-                        About = "Since opening in 1998, Vicar Street has built a reputation as Dublin’s most beloved live performance space. It’s known for hosting intimate gigs with world-famous artists, thanks to its cozy yet elegant layout. With wood-paneled walls, dim hanging lights, and a large but intimate standing area, it’s a venue that feels high-class yet unpretentious, making it the perfect stage for indie rock bands, singer-songwriters, and jazz ensembles.", 
-                        ImageUrl = "dublinvicarstreet.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 68,
-                        Name = "Norwich Waterfront", 
-                        About = "Once a warehouse in the city’s docklands, the Waterfront became a music venue in the early 1990s, quickly growing into Norwich’s go-to spot for indie, punk, and alternative rock. The venue is dark and atmospheric, with a balcony area overlooking the stage, a black-painted ceiling, and gig posters covering the walls. The raw industrial feel gives it underground credibility, making it one of the best intimate venues in the UK.", 
-                        ImageUrl = "norwichwaterfront.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 69, 
-                        Name = "Exeter Phoenix", 
-                        About = "Originally an arts and community center, the Phoenix is now Exeter’s leading multi-arts venue, known for its experimental theatre, visual art installations, and intimate music performances. The venue maintains its indie charm, with a small wooden stage, fairy lights hanging from the ceiling, and colorful murals decorating the walls. It’s the perfect home for emerging folk musicians, indie artists, and spoken word performers.", 
-                        ImageUrl = "exeterphoenix.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 70, 
-                        Name = "Southampton Engine Rooms",
-                        About = "A converted industrial unit, the Engine Rooms is one of Southampton’s leading live music spaces. With its concrete floors, neon strip lighting, and a large bar area, it has an urban warehouse feel that makes it ideal for electronic music nights, indie gigs, and alternative club events. The space is simple but effective—no fancy seating, just standing room and a powerful sound system.", 
-                        ImageUrl = "southamptonengine.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 71, 
-                        Name = "Hull The Welly Club", 
-                        About = "The Welly Club has been Hull’s favorite indie and rock venue since the 1980s. Its quirky name comes from its original life as a social club for working-class locals before it became a hotspot for Britpop bands and underground punk acts. It’s gritty, low-lit, and filled with a mix of dedicated gig-goers and students looking for a great night out.",
-                        ImageUrl = "hullwellyclub.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 72, 
-                        Name = "Plymouth Junction", 
-                        About = "Once an old railway building, the Junction became Plymouth’s leading grassroots music venue in the early 2000s. Specializing in punk, metal, and alternative gigs, it has an underground, rebellious feel, with steel beams exposed, faded posters from past gigs, and a DIY stage that looks thrown together but delivers big energy.", 
-                        ImageUrl = "plymouthjunction.jpg",
-                        Approved = true },
-                    new Venue { 
-                        UserId = 73, 
-                        Name = "Swansea Sin City", 
-                        About = "A small but rowdy venue, Sin City is Swansea’s go-to spot for indie, rock, and alternative electronic music. With graffiti-covered walls, LED lighting, and a standing room-only layout, it delivers a chaotic but thrilling gig experience. The venue is infamous for sweaty mosh pits, wild DJ sets, and some of the best up-and-coming bands on tour.", 
-                        ImageUrl = "swanseasincity.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 74, 
-                        Name = "Inverness Ironworks", 
-                        About = "The Ironworks is one of the Highlands' most important music venues, offering a rare space for touring bands in Scotland’s north. Built in an old industrial building, it blends rugged charm with professional staging, making it one of the most versatile venues in the country. Whether it’s a metal gig, a folk night, or a high-energy ceilidh, it provides a home for all genres and audiences.", 
-                        ImageUrl = "invernessironworks.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 75, 
-                        Name = "Stirling Albert Halls", 
-                        About = "Dating back to the 1800s, the Albert Halls in Stirling originally hosted town meetings, orchestral performances, and dance nights. Now, it’s a stunning heritage venue used for folk music, jazz concerts, and intimate classical recitals. Its stained-glass windows, velvet-draped stage, and elegant chandeliers make it feel almost like a mini opera house, adding a touch of grandeur to every performance.", 
-                        ImageUrl = "stirlingalberthalls.jpg", 
-                        Approved = true },
-                    new Venue { 
-                        UserId = 76, 
-                        Name = "Dundee Fat Sams", 
-                        About = "A legendary rock club, Fat Sams has been Dundee’s number one live venue since the 1980s. It has an underground club feel, with a graffiti-covered entrance, blacked-out walls, and a huge dance floor where people cram together for the most raucous rock gigs. A favorite for late-night alternative music lovers, it’s a venue that never seems to sleep.", 
-                        ImageUrl = "dundeefatsams.jpg", 
+                    new Venue {
+                        UserId = 57,
+                        Name = "Bristol Thekla",
+                        About = "Possibly the UK’s most unique music venue, Thekla is a repurposed cargo ship that has floated in Bristol Harbour since 1984. The venue’s industrial metal interiors, low ceilings, and multi-level standing areas create a truly immersive experience. Known for its alternative club nights, drum & bass sets, and indie band showcases, it attracts music lovers who crave something out of the ordinary.",
+                        ImageUrl = "bristolthekla.jpg",
                         Approved = true },
                     new Venue {
-                        UserId = 77, 
-                        Name = "Coventry Empire", 
-                        About = "Live music and club nights", 
+                        UserId = 58,
+                        Name = "Brighton Concorde 2",
+                        About = "Sitting on Brighton Beach, Concorde 2 is a seaside club with a reputation for legendary electronic music nights. Originally a Victorian tea room, it was transformed into a club venue in the 1990s, hosting house DJs, drum & bass artists, and live indie acts. With its arched windows looking out onto the ocean, a minimalist dance floor, and a powerful sound system, it’s a favorite for those who love coastal nightlife with a bit of history.",
+                        ImageUrl = "brightonconcorde2.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 59,
+                        Name = "Cardiff Tramshed",
+                        About = "A former tram depot, the Tramshed is now one of Cardiff’s most dynamic music and arts venues. With its brick walls, warehouse-style open space, and high industrial ceilings, it caters to indie, hip-hop, and electronic artists alike. A favorite for both emerging and established acts, it combines urban grit with a creative artsy feel, making every gig feel raw and spontaneous.",
+                        ImageUrl = "cardifftramshed.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 60,
+                        Name = "Newcastle O2 Academy",
+                        About = "Originally a cinema built in 1927, the Newcastle O2 Academy still carries the grandeur of its past. Though it has been converted into a live music venue, it retains its ornate ceilings, sloped viewing area, and a grand yet intimate atmosphere. Hosting everything from rock gigs to hip-hop nights, it’s a staple of Newcastle’s music scene, where every show feels like a special event.",
+                        ImageUrl = "newcastleo2.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 61,
+                        Name = "Oxford O2 Academy",
+                        About = "Tucked into the heart of Oxford, the O2 Academy has been a hotspot for indie and alternative music since the early 2000s. The venue’s no-frills design, intimate layout, and pulsating energy make it a favorite for student crowds and local music lovers. Whether it’s a high-energy rock show or an intimate acoustic gig, the Academy delivers pure live music energy.",
+                        ImageUrl = "oxfordo2.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 62,
+                        Name = "Cambridge Corn Exchange",
+                        About = "Built in 1875, the Corn Exchange was once a trading hub for local merchants. Today, it’s a thriving concert hall known for its versatile performances—from classical concerts to indie rock gigs. The venue’s high ceilings, grand interior, and historic brickwork give it a regal feel, yet it maintains a cozy atmosphere that makes every show feel special.",
+                        ImageUrl = "cambridgecornexchange.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 63,
+                        Name = "Bath Komedia",
+                        About = "Originally a cinema in the 1920s, Komedia is now one of Bath’s most beloved arts venues, hosting live music, stand-up comedy, and indie performances. Its retro Art Deco aesthetic, dim red lighting, and intimate tables create a cabaret-style setting, perfect for a laid-back yet lively night out.",
+                        ImageUrl = "bathkomedia.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 64,
+                        Name = "Aberdeen The Lemon Tree",
+                        About = "Nestled in Aberdeen’s city center, The Lemon Tree has been a cultural hub for arts and music since the 1990s. Originally a warehouse space, it was converted into a small live venue that quickly became a favorite for indie bands, folk musicians, and spoken word artists. With its low ceilings, exposed brick walls, and intimate candlelit tables, it’s a venue where audiences are up close and personal with the performers.",
+                        ImageUrl = "aberdeenlemontree.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 65,
+                        Name = "York Barbican",
+                        About = "First opening in 1991, the York Barbican was built as a multi-purpose events hall. While it primarily hosts comedy, jazz, and classical performances, it also brings in rock, indie, and folk acts. Its modern yet intimate design—with a sloped viewing area, black-painted interiors, and simple stage lighting—makes it an inviting venue for both seated and standing audiences.",
+                        ImageUrl = "yorkbarbican.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 66,
+                        Name = "Belfast Limelight",
+                        About = "A true staple of Belfast’s alternative music scene, the Limelight has been pumping out rock, punk, and indie gigs since the 1980s. The venue consists of multiple rooms, including a smaller, grungy dive bar stage and a slightly larger gig room with low ceilings, neon bar signs, and black-painted walls. It’s the kind of place where up-and-coming bands cut their teeth before making it big.",
+                        ImageUrl = "belfastlimelight.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 67,
+                        Name = "Dublin Vicar Street",
+                        About = "Since opening in 1998, Vicar Street has built a reputation as Dublin’s most beloved live performance space. It’s known for hosting intimate gigs with world-famous artists, thanks to its cozy yet elegant layout. With wood-paneled walls, dim hanging lights, and a large but intimate standing area, it’s a venue that feels high-class yet unpretentious, making it the perfect stage for indie rock bands, singer-songwriters, and jazz ensembles.",
+                        ImageUrl = "dublinvicarstreet.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 68,
+                        Name = "Norwich Waterfront",
+                        About = "Once a warehouse in the city’s docklands, the Waterfront became a music venue in the early 1990s, quickly growing into Norwich’s go-to spot for indie, punk, and alternative rock. The venue is dark and atmospheric, with a balcony area overlooking the stage, a black-painted ceiling, and gig posters covering the walls. The raw industrial feel gives it underground credibility, making it one of the best intimate venues in the UK.",
+                        ImageUrl = "norwichwaterfront.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 69,
+                        Name = "Exeter Phoenix",
+                        About = "Originally an arts and community center, the Phoenix is now Exeter’s leading multi-arts venue, known for its experimental theatre, visual art installations, and intimate music performances. The venue maintains its indie charm, with a small wooden stage, fairy lights hanging from the ceiling, and colorful murals decorating the walls. It’s the perfect home for emerging folk musicians, indie artists, and spoken word performers.",
+                        ImageUrl = "exeterphoenix.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 70,
+                        Name = "Southampton Engine Rooms",
+                        About = "A converted industrial unit, the Engine Rooms is one of Southampton’s leading live music spaces. With its concrete floors, neon strip lighting, and a large bar area, it has an urban warehouse feel that makes it ideal for electronic music nights, indie gigs, and alternative club events. The space is simple but effective—no fancy seating, just standing room and a powerful sound system.",
+                        ImageUrl = "southamptonengine.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 71,
+                        Name = "Hull The Welly Club",
+                        About = "The Welly Club has been Hull’s favorite indie and rock venue since the 1980s. Its quirky name comes from its original life as a social club for working-class locals before it became a hotspot for Britpop bands and underground punk acts. It’s gritty, low-lit, and filled with a mix of dedicated gig-goers and students looking for a great night out.",
+                        ImageUrl = "hullwellyclub.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 72,
+                        Name = "Plymouth Junction",
+                        About = "Once an old railway building, the Junction became Plymouth’s leading grassroots music venue in the early 2000s. Specializing in punk, metal, and alternative gigs, it has an underground, rebellious feel, with steel beams exposed, faded posters from past gigs, and a DIY stage that looks thrown together but delivers big energy.",
+                        ImageUrl = "plymouthjunction.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 73,
+                        Name = "Swansea Sin City",
+                        About = "A small but rowdy venue, Sin City is Swansea’s go-to spot for indie, rock, and alternative electronic music. With graffiti-covered walls, LED lighting, and a standing room-only layout, it delivers a chaotic but thrilling gig experience. The venue is infamous for sweaty mosh pits, wild DJ sets, and some of the best up-and-coming bands on tour.",
+                        ImageUrl = "swanseasincity.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 74,
+                        Name = "Inverness Ironworks",
+                        About = "The Ironworks is one of the Highlands' most important music venues, offering a rare space for touring bands in Scotland’s north. Built in an old industrial building, it blends rugged charm with professional staging, making it one of the most versatile venues in the country. Whether it’s a metal gig, a folk night, or a high-energy ceilidh, it provides a home for all genres and audiences.",
+                        ImageUrl = "invernessironworks.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 75,
+                        Name = "Stirling Albert Halls",
+                        About = "Dating back to the 1800s, the Albert Halls in Stirling originally hosted town meetings, orchestral performances, and dance nights. Now, it’s a stunning heritage venue used for folk music, jazz concerts, and intimate classical recitals. Its stained-glass windows, velvet-draped stage, and elegant chandeliers make it feel almost like a mini opera house, adding a touch of grandeur to every performance.",
+                        ImageUrl = "stirlingalberthalls.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 76,
+                        Name = "Dundee Fat Sams",
+                        About = "A legendary rock club, Fat Sams has been Dundee’s number one live venue since the 1980s. It has an underground club feel, with a graffiti-covered entrance, blacked-out walls, and a huge dance floor where people cram together for the most raucous rock gigs. A favorite for late-night alternative music lovers, it’s a venue that never seems to sleep.",
+                        ImageUrl = "dundeefatsams.jpg",
+                        Approved = true },
+                    new Venue {
+                        UserId = 77,
+                        Name = "Coventry Empire",
+                        About = "Live music and club nights",
                         ImageUrl = "coventryempire.jpg",
                         Approved = true }
-                };
-                context.Venues.AddRange(venues);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Venues.AddRange(venues);
+                    await context.SaveChangesAsync();
+                }
 
-            // Venue Images
-            if (!context.VenueImages.Any())
-            {
-                var venueImages = new VenueImage[]
+                // Venue Images
+                if (!context.VenueImages.Any())
                 {
+                    var venueImages = new VenueImage[]
+                    {
                     new VenueImage { VenueId = 1, Url = "venue1_1.jpg" },
                     new VenueImage { VenueId = 1, Url = "venue1_2.jpg" },
                     new VenueImage { VenueId = 2, Url = "venue2_1.jpg" },
                     new VenueImage { VenueId = 3, Url = "venue3_1.jpg" }
-                };
-                context.VenueImages.AddRange(venueImages);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.VenueImages.AddRange(venueImages);
+                    await context.SaveChangesAsync();
+                }
 
-            // Listings
-            if (!context.Listings.Any())
-            {
-                var listings = new Listing[]
+                // Listings
+                if (!context.Listings.Any())
                 {
+                    var listings = new Listing[]
+                    {
                     new Listing { VenueId = 1, StartDate = new DateTime(2024, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
                     new Listing { VenueId = 5, StartDate = new DateTime(2024, 4, 5, 20, 0, 0), EndDate = new DateTime(2024, 4, 5, 23, 0, 0), Pay = 275 },
                     new Listing { VenueId = 2, StartDate = new DateTime(2025, 5, 10, 20, 0, 0), EndDate = new DateTime(2025, 5, 10, 23, 0, 0), Pay = 300 },
@@ -592,104 +594,105 @@ namespace Infrastructure.Data
                     new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
                     new Listing { VenueId = 1, StartDate = new DateTime(2025, 6, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
 
-                };
-                context.Listings.AddRange(listings);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Listings.AddRange(listings);
+                    await context.SaveChangesAsync();
+                }
 
-            // ListingGenres
-            if (!context.ListingGenres.Any())
-            {
-                var listingGenres = new ListingGenre[]
+                // ListingGenres
+                if (!context.ListingGenres.Any())
                 {
+                    var listingGenres = new ListingGenre[]
+                    {
                 new ListingGenre { ListingId = 1, GenreId = 1 }, // Rock for Listing 1
                 new ListingGenre { ListingId = 1, GenreId = 2 }, // Pop for Listing 1
                 new ListingGenre { ListingId = 2, GenreId = 5 }, // Electronic for Listing 2
                 new ListingGenre { ListingId = 3, GenreId = 3 }, // Jazz for Listing 3
                 new ListingGenre { ListingId = 4, GenreId = 4 }, // Hip-Hop for Listing 4
                 new ListingGenre { ListingId = 5, GenreId = 6 }  // Indie for Listing 5
-                        };
-                context.ListingGenres.AddRange(listingGenres);
-                await context.SaveChangesAsync();
-            }
+                            };
+                    context.ListingGenres.AddRange(listingGenres);
+                    await context.SaveChangesAsync();
+                }
 
-            // Listing Applications
-            if (!context.ListingApplications.Any())
-            {
-                var listingApplications = new ListingApplication[]
+                // Listing Applications
+                if (!context.ListingApplications.Any())
                 {
+                    var listingApplications = new ListingApplication[]
+                    {
                     new ListingApplication { ArtistId = 1, ListingId = 1 },
                     new ListingApplication { ArtistId = 2, ListingId = 2 },
                     new ListingApplication { ArtistId = 3, ListingId = 3 },
                     new ListingApplication { ArtistId = 4, ListingId = 4 },
                     new ListingApplication { ArtistId = 5, ListingId = 5 }
-                };
-                context.ListingApplications.AddRange(listingApplications);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.ListingApplications.AddRange(listingApplications);
+                    await context.SaveChangesAsync();
+                }
 
-            // Events
-            if (!context.Events.Any())
-            {
-                var events = new Event[]
+                // Events
+                if (!context.Events.Any())
                 {
+                    var events = new Event[]
+                    {
                     new Event { ApplicationId = 1, Name = "Rock Night", Price = 15, TotalTickets = 100, AvailableTickets = 20, Posted = true },
                     new Event { ApplicationId = 2, Name = "Indie Evening", Price = 12, TotalTickets = 80, AvailableTickets = 80, Posted = false },
                     new Event { ApplicationId = 3, Name = "Jazz Gala", Price = 18, TotalTickets = 120, AvailableTickets = 0, Posted = true },
                     new Event { ApplicationId = 4, Name = "Electronic Bash", Price = 20, TotalTickets = 150, AvailableTickets = 50, Posted = true },
                     new Event { ApplicationId = 5, Name = "Hip-Hop Fest", Price = 10, TotalTickets = 200, AvailableTickets = 100, Posted = true }
-                };
-                context.Events.AddRange(events);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Events.AddRange(events);
+                    await context.SaveChangesAsync();
+                }
 
-            // Tickets
-            if (!context.Tickets.Any())
-            {
-                var tickets = new Ticket[]
+                // Tickets
+                if (!context.Tickets.Any())
                 {
+                    var tickets = new Ticket[]
+                    {
                     new Ticket { UserId = 2, EventId = 1, PurchaseDate = DateTime.Now },
                     new Ticket { UserId = 3, EventId = 1, PurchaseDate = DateTime.Now },
                     new Ticket { UserId = 2, EventId = 3, PurchaseDate = DateTime.Now }
-                };
-                context.Tickets.AddRange(tickets);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Tickets.AddRange(tickets);
+                    await context.SaveChangesAsync();
+                }
 
-            // Reviews
-            if (!context.Reviews.Any())
-            {
-                var reviews = new Review[]
+                // Reviews
+                if (!context.Reviews.Any())
                 {
+                    var reviews = new Review[]
+                    {
                     new Review { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
                     new Review { TicketId = 2, Stars = 5, Details = "Loved every moment!" }
-                };
-                context.Reviews.AddRange(reviews);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Reviews.AddRange(reviews);
+                    await context.SaveChangesAsync();
+                }
 
-            // Messages
-            if (!context.Messages.Any())
-            {
-                var messages = new Message[]
+                // Messages
+                if (!context.Messages.Any())
                 {
+                    var messages = new Message[]
+                    {
                     new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.Now, Read = false },
                     new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.Now, Read = true }
-                };
-                context.Messages.AddRange(messages);
-                await context.SaveChangesAsync();
-            }
+                    };
+                    context.Messages.AddRange(messages);
+                    await context.SaveChangesAsync();
+                }
 
-            // Purchases
-            if (!context.Purchases.Any())
-            {
-                var purchases = new Purchase[]
+                // Purchases
+                if (!context.Purchases.Any())
                 {
+                    var purchases = new Purchase[]
+                    {
                     new Purchase { FromUserId = 2, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now },
                     new Purchase { FromUserId = 3, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 275, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now }
-                };
-                context.Purchases.AddRange(purchases);
-                await context.SaveChangesAsync();
+                    };
+                    context.Purchases.AddRange(purchases);
+                    await context.SaveChangesAsync();
+                }
             }
         }
     }

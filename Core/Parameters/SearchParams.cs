@@ -15,7 +15,7 @@ namespace Core.Parameters
         public string? Sort { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
-        public double? RadiusKm { get; set; }
+        public int? RadiusKm { get; set; }
         public int[]? GenreIds { get; set; }
     }
 

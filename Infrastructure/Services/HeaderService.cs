@@ -35,12 +35,13 @@ namespace Infrastructure.Services
             var headers = await headerRepository.GetRawHeadersAsync(searchParams);
 
             // Apply location filtering only if all values are present
-            if (searchParams.Latitude.HasValue && searchParams.Longitude.HasValue && searchParams.RadiusKm.HasValue)
+            if (searchParams.Latitude.HasValue && searchParams.Longitude.HasValue)
             {
+                var radiusKm = searchParams.RadiusKm.GetValueOrDefault(10);
                 headers.Data = locationService.FilterByRadius(
                     searchParams.Latitude.Value,
                     searchParams.Longitude.Value,
-                    searchParams.RadiusKm.Value,
+                    radiusKm,
                     headers.Data);
             }
 
