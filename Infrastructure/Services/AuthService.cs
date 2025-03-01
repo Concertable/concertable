@@ -14,6 +14,10 @@ using Application.Interfaces;
 using Core.Entities.Identity;
 using Microsoft.AspNetCore.Http;
 using Application.DTOs;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System.Runtime.CompilerServices;
+using static QRCoder.PayloadGenerator;
 
 namespace Infrastructure.Services
 {
@@ -21,16 +25,22 @@ namespace Infrastructure.Services
     {
         private readonly IStripeAccountService stripeAccountService;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly IEmailService emailService;
+        private readonly IUriService uriService;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
 
         public AuthService(
             IStripeAccountService stripeAccountService,
             IHttpContextAccessor httpContextAccessor,
+            IEmailService emailService,
+            IUriService uriService,
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager)
         {
             this.stripeAccountService = stripeAccountService;
+            this.emailService = emailService;
+            this.uriService = uriService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
             this.signInManager = signInManager;
@@ -68,6 +78,13 @@ namespace Infrastructure.Services
             await userManager.AddToRoleAsync(user, registerDto.Role);
 
             await stripeAccountService.CreateStripeAccountAsync(user);
+
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var uri = uriService.GetEmailConfirmationUri(user.Id, token);
+
+            await emailService.SendEmailAsync(0, user.Email, "Confirm Your Email",
+            $"Please confirm your email by clicking <a href='{uri}'>here</a>");
         }
 
         public async Task Logout()
@@ -102,6 +119,71 @@ namespace Infrastructure.Services
         public async Task<bool> CheckEmailExistsAsync(string email)
         {
             return await userManager.FindByEmailAsync(email) != null;
+        }
+
+        public async Task<ApplicationUser> Login(LoginDto loginDto)
+        {
+            var user = await userManager.FindByEmailAsync(loginDto.Email);
+            if (user is null)
+                throw new BadRequestException("Invalid email or password.");
+
+            if (!await userManager.IsEmailConfirmedAsync(user))
+                throw new BadRequestException("Please confirm your email before logging in.");
+
+            var result = await signInManager.PasswordSignInAsync(
+                loginDto.Email,
+                loginDto.Password,
+                loginDto.RememberMe,
+                true);
+
+            if (!result.Succeeded)
+                throw new BadRequestException("Invalid email or password");
+
+            return user;
+        }
+
+        public async Task<bool> ConfirmEmail(string userId, string token)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new BadRequestException("Invalid user ID.");
+
+            var result = await userManager.ConfirmEmailAsync(user, token);
+
+            return result.Succeeded;
+        }
+
+        public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto requestDto)
+        {
+            var user = await userManager.FindByEmailAsync(requestDto.Email);
+            if (user is not null)
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+                var resetLink = uriService.GetPasswordResetUri(user.Id, token);
+
+                await emailService.SendEmailAsync(user.Id, user.Email, "Reset your password",
+                    $"Please reset your password by clicking <a href='{resetLink}'>here</a>");
+            }
+            return new ForgotPasswordResponseDto { Message = "If this email is associated with an account, a password reset link has been sent" };
+        }
+
+        public async Task<ResetPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto requestDto)
+        {
+            var user = await userManager.FindByIdAsync(requestDto.UserId.ToString());
+            if (user == null)
+            {
+                throw new BadRequestException("Invalid user");
+            }
+
+            var result = await userManager.ResetPasswordAsync(user, requestDto.Token, requestDto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                throw new BadRequestException("Password reset failed.");
+            }
+
+            return new ResetPasswordResponseDto { Message = "Password has been reset successfully." };
         }
     }
 }

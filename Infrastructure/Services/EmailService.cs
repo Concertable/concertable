@@ -5,6 +5,9 @@ using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Core.Entities.Identity;
+
 
 namespace Infrastructure.Services
 {
@@ -43,6 +46,18 @@ namespace Infrastructure.Services
             await smtp.AuthenticateAsync(configuration["Email:Username"], configuration["Email:Password"]);
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
+        }
+
+        public async Task SendEmailAsync(int userId, string toEmail, string subject, string body)
+        {
+            var emailDto = new EmailDto
+            {
+                To = toEmail,
+                Subject = subject,
+                Body = body,
+            };
+
+            await SendAsync(emailDto);
         }
 
         public async Task SendTicketEmailAsync(int userId, string toEmail, int ticketId)

@@ -45,7 +45,7 @@ export class AuthService {
 
   login(credentials: LoginCredentials): Observable<any> {
     let params = new HttpParams().append('useCookies', true);
-    return this.http.post<any>(`${environment.apiUrl}/login`, credentials, { params }).pipe(
+    return this.http.post<any>(`${this.apiUrl}/login`, credentials, { params }).pipe(
       tap(() => {
         this.getCurrentUser().subscribe();
         this.router.navigateByUrl('/')

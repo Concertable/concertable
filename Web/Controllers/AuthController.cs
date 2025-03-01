@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Application.DTOs;
+using Infrastructure.Services;
+using Core.Exceptions;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace Web.Controllers
 {
@@ -20,10 +23,27 @@ namespace Web.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             await authService.Register(registerDto);
             return NoContent();
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto loginDto)
+        {
+            var user = await authService.Login(loginDto);
+
+            var role = await authService.GetFirstUserRoleAsync(user);
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = role
+            });
         }
 
         [Authorize]
@@ -49,6 +69,29 @@ namespace Web.Controllers
                 Email = user.Email,
                 Role = role
             });
+        }
+
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        {
+            var result = await authService.ConfirmEmail(userId, token);
+            if (!result)
+                return BadRequest(new { message = "Email confirmation failed or token is invalid" });
+
+            return Ok(new { message = "Email confirmed successfully!" });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto requestDto)
+        {
+            return Ok(await authService.ForgotPasswordAsync(requestDto));
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto requestDto)
+        {
+            return Ok(await authService.ResetPasswordAsync(requestDto));
         }
     }
 }

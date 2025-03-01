@@ -52,7 +52,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+
+    options.SignIn.RequireConfirmedEmail = true;
+})
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
 
@@ -81,6 +86,7 @@ builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
 builder.Services.AddScoped<IStripeAccountService, StripeAccountService>();
 builder.Services.AddScoped<IPreferenceService, PreferenceService>();
+builder.Services.AddScoped<IUriService, UriService>();
 
 builder.Services.AddScoped<IHeaderService<VenueHeaderDto>, VenueService>();
 builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();
