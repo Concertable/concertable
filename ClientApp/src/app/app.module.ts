@@ -116,6 +116,7 @@ import { FooterComponent } from './components/footer/footer.component';
 import { ProfileDetailsComponent } from './components/profile-details/profile-details.component';
 import { MyProfileComponent } from './pages/my-profile/my-profile.component';
 import { DashboardLayoutComponent } from './shared/layouts/dashboard-layout/dashboard-layout.component';
+import { MyPreferencesComponent } from './components/my-preferences/my-preferences.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -205,6 +206,7 @@ const routerOptions: ExtraOptions = {
     ProfileDetailsComponent,
     MyProfileComponent,
     DashboardLayoutComponent,
+    MyPreferencesComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

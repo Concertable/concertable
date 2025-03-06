@@ -11,8 +11,9 @@ namespace Application.Interfaces
     public interface IPreferenceService
     {
         Task<PreferenceDto> GetByUserIdAsync(int userId);
-
         Task<IEnumerable<PreferenceDto>> GetAsync();
+        Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceceDto);
+        Task<PreferenceDto> UpdateAsync(PreferenceDto preferenceDto);
     }
 
 }
