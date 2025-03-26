@@ -8,7 +8,7 @@ namespace Core.Entities
         public decimal Price { get; set; }
         public int TotalTickets { get; set; }
         public int AvailableTickets { get; set; }
-        public bool Posted { get; set; }
+        public DateTime? DatePosted { get; set; }
         public ListingApplication Application { get; set; }
         public ICollection<Ticket> Tickets { get; }
         public ICollection<EventImage> Images { get; }

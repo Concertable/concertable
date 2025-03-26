@@ -14,8 +14,6 @@ namespace Infrastructure.Data
     {
         public static async Task InitializeAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
-            if (context.Database.EnsureCreated())
-            {
                 await context.Database.MigrateAsync();
 
                 // Users
@@ -635,11 +633,47 @@ namespace Infrastructure.Data
                 {
                     var events = new Event[]
                     {
-                    new Event { ApplicationId = 1, Name = "Rock Night", Price = 15, TotalTickets = 100, AvailableTickets = 20, Posted = true },
-                    new Event { ApplicationId = 2, Name = "Indie Evening", Price = 12, TotalTickets = 80, AvailableTickets = 80, Posted = false },
-                    new Event { ApplicationId = 3, Name = "Jazz Gala", Price = 18, TotalTickets = 120, AvailableTickets = 0, Posted = true },
-                    new Event { ApplicationId = 4, Name = "Electronic Bash", Price = 20, TotalTickets = 150, AvailableTickets = 50, Posted = true },
-                    new Event { ApplicationId = 5, Name = "Hip-Hop Fest", Price = 10, TotalTickets = 200, AvailableTickets = 100, Posted = true }
+                    new Event {
+                        ApplicationId = 1,
+                        Name = "Rock Night",
+                        Price = 15,
+                        TotalTickets = 100,
+                        AvailableTickets = 20,
+                        DatePosted = new DateTime(2023, 3, 1, 20, 30, 0)  
+                    },
+                    new Event {
+                        ApplicationId = 2,
+                        Name = "Indie Evening",
+                        Price = 12,
+                        TotalTickets = 80,
+                        AvailableTickets = 80,
+                        DatePosted = new DateTime(2023, 2, 20, 18, 0, 0)  
+                    },
+                    new Event {
+                        ApplicationId = 3,
+                        Name = "Jazz Gala",
+                        Price = 18,
+                        TotalTickets = 120,
+                        AvailableTickets = 0,
+                        DatePosted = new DateTime(2023, 3, 5, 19, 15, 0) 
+                    },
+                    new Event {
+                        ApplicationId = 4,
+                        Name = "Electronic Bash",
+                        Price = 20,
+                        TotalTickets = 150,
+                        AvailableTickets = 50,
+                        DatePosted = new DateTime(2023, 3, 3, 22, 0, 0)  
+                    },
+                    new Event {
+                        ApplicationId = 5,
+                        Name = "Hip-Hop Fest",
+                        Price = 10,
+                        TotalTickets = 200,
+                        AvailableTickets = 100,
+                        DatePosted = new DateTime(2023, 3, 6, 21, 30, 0)  
+                    }
+
                     };
                     context.Events.AddRange(events);
                     await context.SaveChangesAsync();
@@ -693,7 +727,6 @@ namespace Infrastructure.Data
                     context.Purchases.AddRange(purchases);
                     await context.SaveChangesAsync();
                 }
-            }
         }
     }
 }

@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -120,6 +120,7 @@ import { MyPreferencesComponent } from './components/my-preferences/my-preferenc
 import { SelectorComponent } from './components/selector/selector.component';
 import { SliderComponent } from './components/slider/slider.component';
 import { PreferenceDetailsComponent } from './components/preference-details/preference-details.component';
+import { EventCarouselComponent } from './components/event-carousel/event-carousel.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -212,7 +213,8 @@ const routerOptions: ExtraOptions = {
     MyPreferencesComponent,
     SelectorComponent,
     SliderComponent,
-    PreferenceDetailsComponent
+    PreferenceDetailsComponent,
+    EventCarouselComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
@@ -254,6 +256,7 @@ const routerOptions: ExtraOptions = {
     provideAnimationsAsync(),
     { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

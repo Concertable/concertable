@@ -7,6 +7,8 @@ import { HeaderType } from '../../models/header-type';
 import { SearchParams } from '../../models/search-params';
 import { FindDirective } from '../../directives/find.directive';
 import { SearchParamsSerializerServiceService } from '../../services/search-params-serializer/search-params-serializer-service.service';
+import { EventHeader } from '../../models/event-header';
+import { EventService } from '../../services/event/event.service';
 
 @Component({
   selector: 'app-find',
@@ -15,6 +17,23 @@ import { SearchParamsSerializerServiceService } from '../../services/search-para
   styleUrl: './find.component.scss'
 })
 export class FindComponent extends FindDirective implements OnInit {
+triggerNewSubscription() {
+  const newEvent: EventHeader = {
+    id: 999,
+    name: '🔥 Injected Event',
+    imageUrl: 'https://via.placeholder.com/200x200?text=🔥+Injected',
+    county: 'Test County',
+    town: 'Test Town',
+    latitude: 51.5,
+    longitude: -0.12,
+    rating: 5,
+    startDate: new Date(),
+    endTime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
+  };
+
+  this.eventService.addFakeEvent(newEvent);
+  console.log('✅ Injected event into ReplaySubject');
+}
   coordinates?: google.maps.LatLngLiteral;
   paginatedHeaders?: Pagination<Header>;
   headers: Header[] = [];
@@ -23,7 +42,8 @@ export class FindComponent extends FindDirective implements OnInit {
     searchParamsSerializerService: SearchParamsSerializerServiceService,
     router: Router,
     route: ActivatedRoute,
-    private headerService: HeaderService
+    private headerService: HeaderService,
+    private eventService: EventService
   ) {
     super(searchParamsSerializerService, router, route);
   }

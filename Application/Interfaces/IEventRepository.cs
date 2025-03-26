@@ -17,5 +17,6 @@ namespace Application.Interfaces
         Task<Event> GetByApplicationIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);
+        Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(EventParams eventParams);
     }
 }

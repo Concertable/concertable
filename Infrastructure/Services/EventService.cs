@@ -40,6 +40,7 @@ namespace Infrastructure.Services
             IReviewService reviewService, 
             ILocationService locationService,
             IListingApplicationService applicationService, 
+            IPreferenceService preferenceService,
             IMapper mapper) : base(eventRepository, locationService)
         {
             this.eventRepository = eventRepository;
@@ -49,6 +50,7 @@ namespace Infrastructure.Services
             this.reviewService = reviewService;
             this.locationService = locationService;
             this.applicationService = applicationService;
+            this.preferenceService = preferenceService;
             this.mapper = mapper;
         }
 
@@ -112,8 +114,7 @@ namespace Infrastructure.Services
                 Name = $"{artistDto.Name} performing at {venueDto.Name}",
                 Price = 0,
                 TotalTickets = 0,
-                AvailableTickets = 0,
-                Posted = false
+                AvailableTickets = 0
             };
 
             await eventRepository.AddAsync(eventEntity);
@@ -159,6 +160,9 @@ namespace Infrastructure.Services
         {
             var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
 
+            if (eventEntity.DatePosted.HasValue)
+                throw new BadRequestException("Event has already been posted");
+
             var latitude = eventEntity.Application.Listing.Venue.User.Latitude;
             var longitude = eventEntity.Application.Listing.Venue.User.Longitude;
 
@@ -185,6 +189,28 @@ namespace Infrastructure.Services
                 Event = eventDto,
                 UserIds = userIdsToNotify
             };
+        }
+
+        public async Task<IEnumerable<EventHeaderDto>> GetLocalHeadersForUserAsync(bool orderByRecent, int? take)
+        {
+            var user = await currentUserService.GetAsync();
+            var preferences = await preferenceService.GetByUserIdAsync(user.Id);
+
+            var eventParams = new EventParams
+            {
+                Latitude = user.Latitude,
+                Longitude = user.Longitude,
+                RadiusKm = preferences.RadiusKm,
+                GenreIds = preferences.Genres.Select(g => g.Id).ToList(),
+                OrderByRecent = orderByRecent,
+                Take = take
+            };
+
+            var events = await eventRepository.GetFilteredAsync(eventParams);
+
+            var nearbyEvents = locationService.FilterByRadius(user.Latitude.Value, user.Longitude.Value, preferences.RadiusKm, events);
+
+            return take.HasValue ? nearbyEvents.Take(take.Value) : nearbyEvents;
         }
     }
 }

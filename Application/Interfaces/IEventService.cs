@@ -21,5 +21,6 @@ namespace Application.Interfaces
         Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
         Task<EventDto> UpdateAsync(EventDto eventDto);
         Task<EventPostResponse> PostAsync(EventDto eventDto);
+        Task<IEnumerable<EventHeaderDto>> GetLocalHeadersForUserAsync(bool orderByRecent, int? take);
     }
 }

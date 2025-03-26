@@ -62,6 +62,12 @@ namespace Web.Controllers
             return Ok(await eventService.BookAsync(bookingParams));
         }
 
+        [HttpGet("headers/local/user")]
+        public async Task<ActionResult<IEnumerable<EventHeaderDto>>> GetLocalHeadersForUser([FromQuery]bool orderByRecent, [FromQuery]int? take)
+        {
+            return Ok(await eventService.GetLocalHeadersForUserAsync(orderByRecent, take));
+        }
+
         [HttpPut("post/{id}")]
         public async Task<ActionResult<EventDto>> Post([FromBody]EventDto eventDto)
         {

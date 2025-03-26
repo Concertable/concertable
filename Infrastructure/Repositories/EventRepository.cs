@@ -13,6 +13,7 @@ using Application.Responses;
 using Application.DTOs;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
+using GeoCoordinatePortable;
 
 namespace Infrastructure.Repositories
 {
@@ -69,6 +70,54 @@ namespace Infrastructure.Repositories
                     .ThenInclude(v => v.User); 
 
             return await query.FirstAsync();
+        }
+
+        public async Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(EventParams eventParams)
+        {
+            var query = context.Events
+                .Include(e => e.Application.Listing.Venue.User)
+                .Include(e => e.EventGenre)
+                .AsQueryable();
+
+            if (eventParams.Latitude.HasValue && eventParams.Longitude.HasValue)
+            {
+                double lat = eventParams.Latitude.Value;
+                double lon = eventParams.Longitude.Value;
+                int radius = eventParams.RadiusKm ?? 10;
+
+                var (minLat, maxLat, minLon, maxLon) = GeoApproximatorHelper.GetBoundingBox(lat, lon, radius);
+
+                query = query.Where(e =>
+                    e.Application.Listing.Venue.User.Latitude >= minLat &&
+                    e.Application.Listing.Venue.User.Latitude <= maxLat &&
+                    e.Application.Listing.Venue.User.Longitude >= minLon &&
+                    e.Application.Listing.Venue.User.Longitude <= maxLon);
+            }
+
+            //if (eventParams.GenreIds.Count() > 0)
+            //    query = query.Where(e =>
+            //        e.EventGenre.Any(eg => eventParams.GenreIds.Contains(eg.GenreId)));
+
+
+            if (eventParams.OrderByRecent)
+                query = query.OrderByDescending(e => e.DatePosted);
+
+            var eventHeaders = await query
+            .Select(e => new EventHeaderDto
+            {
+                Id = e.Id,
+                Name = e.Name,
+                ImageUrl = e.Application.Artist.ImageUrl,
+                County = e.Application.Listing.Venue.User.County,
+                Town = e.Application.Listing.Venue.User.Town,
+                Latitude = e.Application.Listing.Venue.User.Latitude,
+                Longitude = e.Application.Listing.Venue.User.Longitude,
+                StartDate = e.Application.Listing.StartDate, 
+                EndDate = e.Application.Listing.EndDate 
+            })
+            .ToListAsync();
+
+            return eventHeaders;
         }
 
 

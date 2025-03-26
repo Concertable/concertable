@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, ReplaySubject } from 'rxjs';
+import { Observable, ReplaySubject, tap } from 'rxjs';
 import { Event } from '../../models/event';
 import { EventHeader } from '../../models/event-header';
 import { Pagination } from '../../models/pagination';
@@ -14,22 +14,32 @@ import { SignalRService } from '../signalr/signalr.service';
 export class EventService {
   private apiUrl = `${environment.apiUrl}/event`;
 
-  private recentEventsSubject = new ReplaySubject<Event>(5);
-  recentEvents$ = this.recentEventsSubject.asObservable();
-  
-  constructor(private http: HttpClient, private signalRService: SignalRService) {
+  recentEventHeadersSubject = new ReplaySubject<EventHeader>(10);
+  recentEventHeaders$ = this.recentEventHeadersSubject.asObservable();
+
+  constructor(
+    private http: HttpClient,
+    private signalRService: SignalRService
+  ) {
+    this.loadInitialRecentHeaders();
     this.signalRService.eventPosted$.subscribe(event => {
-      console.log("POSTEDDDD");
-      if(event)
-        this.recentEventsSubject.next(event);
-    })
+      if (event) {
+        this.recentEventHeadersSubject.next(event);
+      }
+    });
   }
 
-  getUpComingByVenueId(id: number) : Observable<Event[]> {
+  private loadInitialRecentHeaders(): void {
+    this.getLocalHeadersForUser(true, 10).subscribe(headers => {
+      headers.forEach(header => this.recentEventHeadersSubject.next(header));
+    });
+  }
+
+  getUpComingByVenueId(id: number): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/upcoming/venue/${id}`);
   }
 
-  getUpComingByArtistId(id: number) : Observable<Event[]> {
+  getUpComingByArtistId(id: number): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/upcoming/artist/${id}`);
   }
 
@@ -45,7 +55,21 @@ export class EventService {
     return this.http.get<Pagination<EventHeader>>(`${this.apiUrl}/headers`, { params });
   }
 
-  book(paymentMethodId: string, applicationId: number) : Observable<ListingApplicationPurchase> {
+  book(paymentMethodId: string, applicationId: number): Observable<ListingApplicationPurchase> {
     return this.http.post<ListingApplicationPurchase>(`${this.apiUrl}/book`, { paymentMethodId, applicationId });
   }
+
+  getLocalHeadersForUser(orderByRecent: boolean = false, take?: number): Observable<EventHeader[]> {
+    let params = new HttpParams().set('orderByRecent', orderByRecent);
+    if (take != null) {
+      params = params.set('take', take.toString());
+    }
+
+    return this.http.get<EventHeader[]>(`${this.apiUrl}/headers/local/user`, { params });
+  }
+
+  addFakeEvent(header: EventHeader): void {
+    this.recentEventHeadersSubject.next(header);
+  }
+  
 }

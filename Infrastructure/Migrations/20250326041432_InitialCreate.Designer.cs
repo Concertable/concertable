@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250301062633_InitialCreate")]
+    [Migration("20250326041432_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -85,12 +85,12 @@ namespace Infrastructure.Migrations
                     b.Property<int>("AvailableTickets")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DatePosted")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Posted")
-                        .HasColumnType("bit");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");

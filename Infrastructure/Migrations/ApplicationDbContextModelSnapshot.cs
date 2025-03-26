@@ -82,12 +82,12 @@ namespace Infrastructure.Migrations
                     b.Property<int>("AvailableTickets")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DatePosted")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Posted")
-                        .HasColumnType("bit");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");

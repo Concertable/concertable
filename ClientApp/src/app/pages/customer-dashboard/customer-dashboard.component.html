@@ -1,3 +1,11 @@
 <app-filter [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)" (headerTypeChange)="changeHeaderType($event)">
     <app-search (search)="handleSearch()" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)"></app-search>
+    <app-event-carousel [headers]="recentEventHeaders" title="Recently Posted Events"></app-event-carousel>
+    <mat-divider></mat-divider>
+    <!-- Add a button to manually trigger the artificial subscription -->
+<button (click)="triggerNewSubscription()">Trigger New Subscription</button>
+
+    <app-event-carousel [headers]="eventHeaders" title="Local Events"></app-event-carousel>
+    <mat-divider></mat-divider>
+    <app-event-carousel [headers]="eventHeaders" title="Free Events"></app-event-carousel>
 </app-filter>

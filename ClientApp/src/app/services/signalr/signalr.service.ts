@@ -4,6 +4,7 @@ import * as signalR from "@microsoft/signalr";
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
 import { Event } from '../../models/event';
+import { EventHeader } from '../../models/event-header';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class SignalRService {
   private eventHubConnection?: signalR.HubConnection;
 
   private listingApplicationResponseSubject = new BehaviorSubject<ListingApplicationPurchase | undefined>(undefined);
-  private eventPostedSubject = new Subject<Event | undefined>();
+  private eventPostedSubject = new Subject<EventHeader | undefined>();
 
   listingApplicationResponse$ = this.listingApplicationResponseSubject.asObservable();
   eventPosted$ = this.eventPostedSubject.asObservable();
@@ -52,7 +53,7 @@ export class SignalRService {
 
     this.eventHubConnection.start().catch(error => console.log('EventHub Connection Error:', error));
 
-    this.eventHubConnection.on('EventPosted', (event: Event) => {
+    this.eventHubConnection.on('EventPosted', (event: EventHeader) => {
       this.eventPostedSubject.next(event);
     });
   }
