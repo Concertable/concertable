@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth/auth.service';
 import { Observable } from 'rxjs';
 import { DetailsDirective } from '../../directives/details/details.directive';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
+import { ExtendedDetailsDirective } from '../../directives/extended-details.directive';
 
 @Component({
   selector: 'app-artist-details',
@@ -14,7 +15,7 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
   templateUrl: './artist-details.component.html',
   styleUrl: './artist-details.component.scss'
 })
-export class ArtistDetailsComponent extends DetailsDirective<Artist> {
+export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
   constructor(
     private artistService: ArtistService,
     authService: AuthService,
@@ -22,7 +23,7 @@ export class ArtistDetailsComponent extends DetailsDirective<Artist> {
     route: ActivatedRoute,
     router: Router) 
   { 
-    super(authService, blobStorageService, route, router)
+    super(blobStorageService, authService, route, router)
   }
 
   get artist(): Artist | undefined {

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MyItemDirective } from '../../directives/my-item/my-item.directive';
+import { ConfigDirective } from '../../directives/config/config.directive';
 import { Event } from '../../models/event';
 import { Observable, of, switchMap, throwError } from 'rxjs';
 import { EventService } from '../../services/event/event.service';
@@ -11,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './my-event.component.html',
   styleUrl: './my-event.component.scss'
 })
-export class MyEventComponent extends MyItemDirective<Event> {
+export class MyEventComponent extends ConfigDirective<Event> {
 
   constructor(
       route: ActivatedRoute,

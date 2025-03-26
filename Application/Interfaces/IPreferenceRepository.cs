@@ -11,6 +11,8 @@ namespace Application.Interfaces
     {
         Task<IEnumerable<Preference>> GetAllAsync();
 
+        Task<Preference> GetByIdAsync(int id);
+
         Task<Preference?> GetByUserIdAsync(int id);
     }
 }

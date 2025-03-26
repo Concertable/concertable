@@ -16,18 +16,18 @@ namespace Infrastructure.Services
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMessageRepository messageRepository;
-        private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
         private readonly IMapper mapper;
 
         public MessageService(
             IUnitOfWork unitOfWork, 
             IMessageRepository messageRepository,
-            IAuthService authService,
+            ICurrentUserService currentUserService,
             IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
             this.messageRepository = messageRepository;
-            this.authService = authService;
+            this.currentUserService = currentUserService;
             this.mapper = mapper;
         }
 
@@ -52,7 +52,7 @@ namespace Infrastructure.Services
 
         public async Task<PaginationResponse<MessageDto>> GetForUserAsync(PaginationParams? pageParams)
         {
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
 
             var messagesDto = mapper.Map<IEnumerable<MessageDto>>(messages.Data);
@@ -67,7 +67,7 @@ namespace Infrastructure.Services
         {
             var pageParams = new PaginationParams() { PageNumber = 1, PageSize = 5 };
 
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
             var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
 

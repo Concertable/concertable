@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MyItemDirective } from '../../directives/my-item/my-item.directive';
+import { ConfigDirective } from '../../directives/config/config.directive';
 import { User } from '../../models/user';
 import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
@@ -11,8 +11,10 @@ import { AuthService } from '../../services/auth/auth.service';
   templateUrl: './my-profile.component.html',
   styleUrl: './my-profile.component.scss'
 })
-export class MyProfileComponent extends MyItemDirective<User> {
-  constructor(route: ActivatedRoute, private authService: AuthService) {
+export class MyProfileComponent extends ConfigDirective<User> {
+  constructor(
+    route: ActivatedRoute, 
+  ) {
     super(route);
    }
 
@@ -30,6 +32,7 @@ export class MyProfileComponent extends MyItemDirective<User> {
   }
 
   update(item: User): Observable<User> {
+    //return this.artistService.update(artist);
     throw new Error('Method not implemented.');
   }
 

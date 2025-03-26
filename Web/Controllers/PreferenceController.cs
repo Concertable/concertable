@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -27,6 +28,12 @@ namespace Web.Controllers
         public async Task<IActionResult> Update(int id, [FromBody]PreferenceDto preferenceDto)
         {
             return Ok(await preferenceService.UpdateAsync(preferenceDto));
+        }
+
+        [HttpGet("user")]
+        public async Task<ActionResult<Preference>> GetByUser()
+        {
+            return Ok(await preferenceService.GetByUserAsync());
         }
     }
 }

@@ -6,12 +6,14 @@ import { Artist } from '../../models/artist';
 import { Event } from '../../models/event';
 import { ActivatedRoute } from '@angular/router';
 import { User } from '../../models/user';
+import { Preference } from '../../models/preference';
+import { Coordinates } from '../../models/coordinates';
 
 @Directive({
-  selector: '[appMyItem]',
+  selector: '[appConfig]',
   standalone: false
 })
-export abstract class MyItemDirective<T extends Venue | Artist | Event | User> implements OnInit {
+export abstract class ConfigDirective<T extends Venue | Artist | Event | User | Preference | Coordinates> implements OnInit {
   protected item?: T;
   protected originalItem?: T;
   protected editMode: boolean = false;

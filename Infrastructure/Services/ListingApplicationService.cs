@@ -16,7 +16,7 @@ namespace Infrastructure.Services
     {
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IUnitOfWork unitOfWork;
-        private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
         private readonly IMessageService messageService;
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
@@ -25,7 +25,7 @@ namespace Infrastructure.Services
         public ListingApplicationService(
             IListingApplicationRepository listingApplicationRepository,
             IUnitOfWork unitOfWork,
-            IAuthService authService,
+            ICurrentUserService currentUserService,
             IMessageService messageService,
             IListingService listingService,
             IArtistService artistService,
@@ -33,7 +33,7 @@ namespace Infrastructure.Services
         {
             this.listingApplicationRepository = listingApplicationRepository;
             this.unitOfWork = unitOfWork;
-            this.authService = authService;
+            this.currentUserService = currentUserService;
             this.messageService = messageService;
             this.listingService = listingService;
             this.artistService = artistService;
@@ -60,7 +60,7 @@ namespace Infrastructure.Services
                 ListingId = listingId,
                 ArtistId = artistDto.Id,
             };
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             var listingOwner = await listingService.GetOwnerByIdAsync(listingId);
 
             var applicationRepository = unitOfWork.GetRepository<ListingApplication>();

@@ -9,18 +9,18 @@ namespace Web.Controllers
     public class StripeAccountController : ControllerBase
     {
         private readonly IStripeAccountService stripeAccountService;
-        private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
 
-        public StripeAccountController(IStripeAccountService stripeAccountService, IAuthService authService)
+        public StripeAccountController(IStripeAccountService stripeAccountService, ICurrentUserService currentUserService)
         {
             this.stripeAccountService = stripeAccountService;
-            this.authService = authService;
+            this.currentUserService = currentUserService;
         }
 
         [HttpPost("add-bank-account")]
         public async Task<ActionResult<AddedBankAccountResponse>> AddBankAccountForUser([FromQuery]string token)
         {
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetEntityAsync();
 
             if(user.StripeId is null)
             {
@@ -33,7 +33,7 @@ namespace Web.Controllers
         [HttpGet("verified")]
         public async Task<ActionResult<bool>> IsUserVerified()
         {
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetEntityAsync();
 
             if (user.StripeId is null)
             {

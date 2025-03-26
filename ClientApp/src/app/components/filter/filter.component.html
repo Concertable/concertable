@@ -15,46 +15,22 @@
         </mat-form-field>
       </div>
   
-      <div class="genre-selection" *ngIf="searchParams.headerType === 'artist' || searchParams.headerType === 'event'">
-        <mat-form-field appearance="outline" class="custom-select">
-          <mat-label>Select Genre</mat-label>
-          <mat-select [(value)]="selectedGenre">
-            <mat-option *ngFor="let genre of genres" [value]="genre">
-              {{ genre.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-  
-        <button mat-icon-button color="primary" (click)="addGenre()" class="add-genre-btn">
-          <mat-icon>add</mat-icon>
-        </button>
-  
-        <div class="selected-genres">
-          <span *ngFor="let genre of selectedGenres" class="genre-tag mat-chip">
-            {{ genre.name }}
-            <button mat-icon-button (click)="removeGenre(genre)">
-              <mat-icon>close</mat-icon>
-            </button>
-          </span>
-        </div> 
-      </div>
-      <!-- Distance Slider (Only Enabled When Location is Selected) -->
-      <div class="distance-selection">
-        <div class="wrapper">
-          <mat-label>Distance Radius (km)</mat-label>
-          <mat-slider
-            discrete
-            min="10"
-            max="100"
-            step="10"
-            thumbLabel
-            (change)="onDistanceChange()">
-            <input matSliderThumb [(ngModel)]="selectedDistance" [disabled]="!locationSelected">
-          </mat-slider>
-          <span *ngIf="locationSelected">{{ selectedDistance }} km</span>
-        </div>
-      </div>
-
+      <app-selector *ngIf="searchParams.headerType === 'artist' || searchParams.headerType === 'event'"
+        [options]="genres"
+        [selectedItems]="selectedGenres"
+        [label]="'Select Genre'"
+        displayProperty="name"
+        (selectedItemsChange)="onGenreChange($event)">
+      </app-selector>
+      <app-slider
+        label="Distance Radius (km)"
+        [(value)]="selectedDistance"
+        [min]="10"
+        [max]="100"
+        [step]="10"
+        [disabled]="!locationSelected"
+        (valueChange)="onDistanceChange()">
+      </app-slider>
       <div class="order-selection">
         <mat-form-field appearance="outline" class="custom-select">
           <mat-label>Order By</mat-label>

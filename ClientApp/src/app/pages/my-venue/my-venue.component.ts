@@ -3,7 +3,7 @@ import { VenueService } from '../../services/venue/venue.service';
 import { Venue } from '../../models/venue';
 import { AuthService } from '../../services/auth/auth.service';
 import { cloneDeep } from 'lodash';
-import { MyItemDirective } from '../../directives/my-item/my-item.directive';
+import { ConfigDirective } from '../../directives/config/config.directive';
 import { Observable } from 'rxjs';
 import { VenueToastService } from '../../services/toast/venue/venue-toast.service';
 import { Listing } from '../../models/listing';
@@ -17,7 +17,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './my-venue.component.html',
   styleUrl: './my-venue.component.scss'
 })
-export class MyVenueComponent extends MyItemDirective<Venue> {
+export class MyVenueComponent extends ConfigDirective<Venue> {
   newListings: Listing[] = [];
 
   constructor(

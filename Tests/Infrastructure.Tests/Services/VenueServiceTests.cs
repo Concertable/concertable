@@ -66,7 +66,7 @@ namespace Infrastructure.Tests.Services
         { // Arrange
             var user = new ApplicationUser { Id = 1 };
             var venue = new Venue { Id = 1, Name = "Venue 1", UserId = user.Id };
-            authServiceMock.Setup(service => service.GetCurrentUserAsync()).ReturnsAsync(user);
+            //authServiceMock.Setup(service => service.GetCurrentUserAsync()).ReturnsAsync(user);
             venueRepositoryMock.Setup(m => m.GetByUserIdAsync(user.Id)).ReturnsAsync(venue);
             // Act
             var result = await venueService.GetDetailsForCurrentUserAsync();
@@ -81,7 +81,7 @@ namespace Infrastructure.Tests.Services
             // Arrange
             var user = new ApplicationUser { Id = 1 };
             var venue = new Venue { Name = "Venue 1" };
-            authServiceMock.Setup(service => service.GetCurrentUserAsync()).ReturnsAsync(user);
+            //authServiceMock.Setup(service => service.GetCurrentUserAsync()).ReturnsAsync(user);
             // Act
             //venueService.Create(venue);
             // Assert

@@ -13,7 +13,7 @@ public class TicketService : ITicketService
     private readonly IUserPaymentService userPaymentService;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
-    private readonly IAuthService authService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IManagerService managerService;
 
     public TicketService(
@@ -22,7 +22,7 @@ public class TicketService : ITicketService
         IUserPaymentService userPaymentService,
         IEmailService emailService,
         IQrCodeService qrCodeService,
-        IAuthService authService,
+        ICurrentUserService currentUserService,
         IManagerService managerService
         )
     {
@@ -31,14 +31,14 @@ public class TicketService : ITicketService
         this.userPaymentService = userPaymentService;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
-        this.authService = authService;
+        this.currentUserService = currentUserService;
         this.managerService = managerService;
     }
 
     public async Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
-        var user = await authService.GetCurrentUserAsync();
-        var role = await authService.GetFirstUserRoleAsync(user);
+        var user = await currentUserService.GetAsync();
+        var role = await currentUserService.GetFirstRoleAsync();
 
         if (role != "Customer")
             throw new ForbiddenException("Only Customers can buy tickets");

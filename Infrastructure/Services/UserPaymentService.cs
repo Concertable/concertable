@@ -18,7 +18,7 @@ namespace Infrastructure.Services
         private IUserService userService;
         private Lazy<IEventService> eventService;
         private IListingApplicationService listingApplicationService;
-        private IAuthService authService;
+        private ICurrentUserService currentUserService;
         private IVenueService venueService;
 
         public UserPaymentService(
@@ -26,18 +26,18 @@ namespace Infrastructure.Services
             IUserService userService,
             Lazy<IEventService> eventService,
             IListingApplicationService listingApplicationService,
-            IAuthService authService)
+            ICurrentUserService currentUserService)
         {
             this.paymentService = paymentService;
             this.userService = userService;
             this.eventService = eventService;
             this.listingApplicationService = listingApplicationService;
-            this.authService = authService;
+            this.currentUserService = currentUserService;
         }
 
         public async Task<PaymentResponse> PayVenueManagerByEventIdAsync(int eventId, string paymentMethodId) 
         {
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             var toUser = await userService.GetByEventIdAsync(eventId);
             var eventEntity = await eventService.Value.GetDetailsByIdAsync(eventId);
 
@@ -67,7 +67,7 @@ namespace Infrastructure.Services
 
         public async Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId)
         {
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             var toUser = await userService.GetByApplicationIdAsync(applicationId);
             var pay = await listingApplicationService.GetListingPayByIdAsync(applicationId);
 

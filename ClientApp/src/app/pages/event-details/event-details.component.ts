@@ -5,10 +5,9 @@ import { AuthService } from '../../services/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from '../../services/event/event.service';
 import { Event } from '../../models/event';
-import { DetailsDirective } from '../../directives/details/details.directive';
-import { Observable } from 'rxjs';
 import { EventStateService } from '../../services/event-state/event-state.service';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
+import { ExtendedDetailsDirective } from '../../directives/extended-details.directive';
 
 @Component({
   selector: 'app-event-details',
@@ -17,7 +16,7 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
   templateUrl: './event-details.component.html',
   styleUrl: './event-details.component.scss'
 })
-export class EventDetailsComponent extends DetailsDirective<Event> {
+export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
   @Input('event') declare entity?: Event;
 
   override navItems: NavItem[] = [
@@ -36,7 +35,7 @@ export class EventDetailsComponent extends DetailsDirective<Event> {
     route: ActivatedRoute,
     router: Router) 
   { 
-    super(authService, blobStorageService, route, router)
+    super(blobStorageService, authService, route, router)
   }
 
   get event(): Event | undefined {

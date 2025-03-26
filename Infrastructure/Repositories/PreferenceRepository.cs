@@ -21,10 +21,22 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Preference> GetByIdAsync(int id)
+        {
+            return await context.Preferences
+                .Include(p => p.GenrePreferences)
+                    .ThenInclude(gp => gp.Genre)
+                .Include(p => p.User)
+                .FirstAsync(p => p.Id == id);
+        }
+
         public async Task<Preference?> GetByUserIdAsync(int id)
         {
             return await context.Preferences
                 .Where(p => p.UserId == id)
+                .Include(p => p.GenrePreferences)
+                    .ThenInclude(gp => gp.Genre) 
+                .Include(p => p.User)
                 .FirstOrDefaultAsync();
         }
     }

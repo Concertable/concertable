@@ -1,0 +1,78 @@
+﻿using Application.DTOs;
+using Application.Interfaces;
+using Core.Entities.Identity;
+using Core.Exceptions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Infrastructure.Services
+{
+    public class CurrentUserService : ICurrentUserService
+    {
+        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly UserManager<ApplicationUser> userManager;
+
+        public CurrentUserService(IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager)
+        {
+            this.httpContextAccessor = httpContextAccessor;
+            this.userManager = userManager;
+        }
+
+        public async Task<UserDto> GetAsync()
+        {
+            var user = await GetEntityAsync();
+            var role = await GetFirstRoleAsync(user);
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = role,
+                Latitude = user.Latitude,
+                Longitude = user.Longitude
+            };
+        }
+
+        public async Task<int> GetIdAsync()
+        {
+            return (await GetAsync()).Id;
+        }
+
+        public async Task<string> GetFirstRoleAsync()
+        {
+            var principal = httpContextAccessor.HttpContext?.User;
+            var user = await userManager.GetUserAsync(principal);
+            var roles = await userManager.GetRolesAsync(user);
+
+            if (!roles.Any())
+                throw new BadRequestException("User has no roles assigned.");
+
+            return roles.First();
+        }
+
+        public async Task<string> GetFirstRoleAsync(ApplicationUser user)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+
+            if (!roles.Any())
+                throw new BadRequestException("User has no roles assigned.");
+
+            return roles.First();
+        }
+
+        public async Task<ApplicationUser> GetEntityAsync()
+        {
+            var principal = httpContextAccessor.HttpContext?.User;
+            var user = await userManager.GetUserAsync(principal);
+            if (user == null) throw new UnauthorizedException("User not authenticated");
+
+            return user;
+        }
+    }
+}

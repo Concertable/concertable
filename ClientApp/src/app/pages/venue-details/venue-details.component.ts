@@ -10,6 +10,7 @@ import { Coordinates } from '../../models/coordinates';
 import { cloneDeep } from 'lodash';
 import { Listing } from '../../models/listing';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
+import { ExtendedDetailsDirective } from '../../directives/extended-details.directive';
 
 @Component({
   selector: 'app-venue-details',
@@ -18,7 +19,7 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
   templateUrl: './venue-details.component.html',
   styleUrl: './venue-details.component.scss'
 })
-export class VenueDetailsComponent extends DetailsDirective<Venue> {
+export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
   @Output() listingCreate = new EventEmitter<Listing>
 
   override navItems: NavItem[] = [
@@ -36,7 +37,7 @@ export class VenueDetailsComponent extends DetailsDirective<Venue> {
     blobStorageService: BlobStorageService,
     router: Router
   ) {
-    super(authService, blobStorageService, route, router);
+    super(blobStorageService, authService, route, router);
   }
 
   get venue(): Venue | undefined {

@@ -40,6 +40,8 @@ import { VenueHomeComponent } from './pages/venue-home/venue-home.component';
 import { ProfileMenuComponent } from './pages/profile-menu/profile-menu.component';
 import { MyProfileComponent } from './pages/my-profile/my-profile.component';
 import { MyProfileResolver } from './resolvers/my-profile/my-profile.resolver';
+import { MyPreferencesComponent } from './components/my-preferences/my-preferences.component';
+import { myPreferencesResolver } from './resolvers/my-preferences/my-preferences.resolver';
 
 const routes: Routes = [
   {
@@ -78,6 +80,7 @@ const routes: Routes = [
         data: { breadcrumb: 'Profile' },
         children: [
           { path: 'details', component: MyProfileComponent, resolve: { user: MyProfileResolver }, data: { breadcrumb: 'Profile Details' } },
+          { path: 'preferences', component: MyPreferencesComponent, resolve: { preferences: myPreferencesResolver }, data: { breadcrumb: 'Preferences' } },
           { path: 'payment', component: PaymentDetailsComponent, data: { breadcrumb: 'Payment Details' } },
           { path: 'tickets', component: MyTicketsComponent, data: { breadcrumb: 'My Tickets' } }
         ]

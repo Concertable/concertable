@@ -13,16 +13,16 @@ namespace Infrastructure.Services
     public class PreferenceService : IPreferenceService
     {
         private readonly IPreferenceRepository preferenceRepository;
-        private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
         private readonly IMapper mapper;
 
         public PreferenceService(
             IPreferenceRepository preferenceRepository,
-            IAuthService authService,
+            ICurrentUserService currentUserService,
             IMapper mapper)
         {
             this.preferenceRepository = preferenceRepository;  
-            this.authService = authService;
+            this.currentUserService = currentUserService;
             this.mapper = mapper;
         }
 
@@ -30,7 +30,7 @@ namespace Infrastructure.Services
         {
             var preference = mapper.Map<Preference>(createPreferenceDto);
 
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
 
             foreach(var genreDto in createPreferenceDto.Genres)
             {
@@ -63,11 +63,17 @@ namespace Infrastructure.Services
             return mapper.Map<PreferenceDto>(preference);
         }
 
+        public async Task<PreferenceDto> GetByUserAsync()
+        {
+            var user = await currentUserService.GetAsync();
+
+            return await GetByUserIdAsync(user.Id);
+        }
+
         public async Task<PreferenceDto> UpdateAsync(PreferenceDto preferenceDto)
         {
             var preference = await preferenceRepository.GetByIdAsync(preferenceDto.Id);
-
-            var userId = (await authService.GetCurrentUserAsync()).Id;
+            var userId = (await currentUserService.GetAsync()).Id;
 
             if (userId != preference.User.Id)
                 throw new UnauthorizedAccessException("You do not own this preference");
@@ -82,10 +88,14 @@ namespace Infrastructure.Services
                 });
             }
 
+            preference.RadiusKm = preferenceDto.RadiusKm;
+
             preferenceRepository.Update(preference);
             await preferenceRepository.SaveChangesAsync();
 
-            return mapper.Map<PreferenceDto>(preference);
+            var updatedPreference = await preferenceRepository.GetByIdAsync(preference.Id);
+            return mapper.Map<PreferenceDto>(updatedPreference);
         }
+
     }
 }

@@ -16,10 +16,12 @@ namespace Web.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ICurrentUserService currentUserService)
         {
             this.authService = authService;
+            this.currentUserService = currentUserService;
         }
 
         [HttpPost("register")]
@@ -35,15 +37,7 @@ namespace Web.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto loginDto)
         {
-            var user = await authService.Login(loginDto);
-
-            var role = await authService.GetFirstUserRoleAsync(user);
-            return Ok(new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = role
-            });
+            return Ok(await authService.Login(loginDto));
         }
 
         [Authorize]
@@ -58,17 +52,7 @@ namespace Web.Controllers
         [HttpGet("current-user")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
-            var user = await authService.GetCurrentUserAsync();
-
-            if (user == null) return NoContent();
-
-            var role = await authService.GetFirstUserRoleAsync(user);
-            return Ok(new UserDto()
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = role
-            });
+            return Ok(await currentUserService.GetAsync());
         }
 
 

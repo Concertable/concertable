@@ -11,6 +11,7 @@ export class DropDownComponent<T> {
   @Input() options: T[] = [];
   @Input() selectedValue?: T; 
   @Input() displayProperty?: keyof T;
+  @Input() disabled: boolean = false;
   @Output() selectionChange = new EventEmitter<T>();
 
   onSelectionChange(value: T) {

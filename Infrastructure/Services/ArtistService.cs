@@ -19,12 +19,12 @@ namespace Infrastructure.Services
         private readonly IArtistRepository artistRepository;
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
-        private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
         private readonly IMapper mapper;
 
         public ArtistService(
             IArtistRepository artistRepository,
-            IAuthService authService, 
+            ICurrentUserService currentUserService, 
             IReviewService reviewService, 
             ILocationService locationService,
             IMapper mapper) : base(artistRepository, locationService)
@@ -32,7 +32,7 @@ namespace Infrastructure.Services
             this.artistRepository = artistRepository;
             this.reviewService = reviewService;
             this.locationService = locationService;
-            this.authService = authService;
+            this.currentUserService = currentUserService;
             this.mapper = mapper;
         }
 
@@ -47,7 +47,7 @@ namespace Infrastructure.Services
 
         public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
         {
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             var artist = await artistRepository.GetByUserIdAsync(user.Id);
 
             return mapper.Map<ArtistDto?>(artist);
@@ -63,7 +63,7 @@ namespace Infrastructure.Services
         {
             var artist = mapper.Map<Artist>(createArtistDto);
 
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             artist.UserId = user.Id;
 
             var createdArtist = await artistRepository.AddAsync(artist);

@@ -1,1 +1,10 @@
 <app-text [content]="'Hello'"></app-text>
+<app-location
+    *ngIf="user"
+    [editMode]="editMode"
+    [latitude]="user.latitude"
+    [longitude]="user.longitude"
+    [county]="user.county"
+    [town]="user.town"
+    (coordinatesChange)="updateCoordinates($event)">
+</app-location>

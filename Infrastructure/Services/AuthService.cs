@@ -24,24 +24,24 @@ namespace Infrastructure.Services
     public class AuthService : IAuthService
     {
         private readonly IStripeAccountService stripeAccountService;
-        private readonly IHttpContextAccessor httpContextAccessor;
         private readonly IEmailService emailService;
         private readonly IUriService uriService;
+        private readonly IPreferenceService preferenceService;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
 
         public AuthService(
             IStripeAccountService stripeAccountService,
-            IHttpContextAccessor httpContextAccessor,
             IEmailService emailService,
             IUriService uriService,
+            IPreferenceService preferenceService,
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager)
         {
             this.stripeAccountService = stripeAccountService;
             this.emailService = emailService;
             this.uriService = uriService;
-            this.httpContextAccessor = httpContextAccessor;
+            this.preferenceService = preferenceService;
             this.userManager = userManager;
             this.signInManager = signInManager;
         }
@@ -79,6 +79,15 @@ namespace Infrastructure.Services
 
             await stripeAccountService.CreateStripeAccountAsync(user);
 
+            // Create default preferences for every user
+            var preferenceDto = new CreatePreferenceDto
+            {
+                RadiusKm = 10,
+                Genres = Enumerable.Empty<GenreDto>()
+            };
+
+            await preferenceService.CreateAsync(preferenceDto);
+
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
             var uri = uriService.GetEmailConfirmationUri(user.Id, token);
@@ -92,36 +101,12 @@ namespace Infrastructure.Services
             await signInManager.SignOutAsync();
         }
 
-        public async Task<ApplicationUser> GetCurrentUserAsync()
-        {
-            var principal = httpContextAccessor?.HttpContext?.User;
-
-            var user = await userManager.GetUserAsync(principal);
-
-            if (user == null) throw new UnauthorizedException("User not Authenticated");
-
-            return user;
-        }
-
-        public async Task<string> GetFirstUserRoleAsync(ApplicationUser user)
-        {
-            var roles = await userManager.GetRolesAsync(user);
-            return roles.First();
-        }
-
-        public async Task<string> GetFirstUserRoleAsync()
-        {
-            var user = await GetCurrentUserAsync();
-
-            return await GetFirstUserRoleAsync(user);
-        }
-
         public async Task<bool> CheckEmailExistsAsync(string email)
         {
             return await userManager.FindByEmailAsync(email) != null;
         }
 
-        public async Task<ApplicationUser> Login(LoginDto loginDto)
+        public async Task<UserDto> Login(LoginDto loginDto)
         {
             var user = await userManager.FindByEmailAsync(loginDto.Email);
             if (user is null)
@@ -139,7 +124,19 @@ namespace Infrastructure.Services
             if (!result.Succeeded)
                 throw new BadRequestException("Invalid email or password");
 
-            return user;
+            var role = (await userManager.GetRolesAsync(user)).FirstOrDefault();
+
+            if (role is null)
+                throw new BadRequestException("User has no role");
+
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = role
+            };
+
+            return userDto;
         }
 
         public async Task<bool> ConfirmEmail(string userId, string token)

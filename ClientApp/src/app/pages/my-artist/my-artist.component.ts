@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Artist } from '../../models/artist';
 import { ArtistService } from '../../services/artist/artist.service';
 import { ActivatedRoute, Route, Router } from '@angular/router';
-import { MyItemDirective } from '../../directives/my-item/my-item.directive';
+import { ConfigDirective } from '../../directives/config/config.directive';
 import { Observable } from 'rxjs';
 import { ArtistToastService } from '../../services/toast/artist/artist-toast.service';
 
@@ -13,7 +13,7 @@ import { ArtistToastService } from '../../services/toast/artist/artist-toast.ser
   templateUrl: './my-artist.component.html',
   styleUrl: './my-artist.component.scss'
 })
-export class MyArtistComponent extends MyItemDirective<Artist> {
+export class MyArtistComponent extends ConfigDirective<Artist> {
   constructor(
     route: ActivatedRoute, 
     private artistService: ArtistService, 

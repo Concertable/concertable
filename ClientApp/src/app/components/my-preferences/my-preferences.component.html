@@ -1,0 +1,3 @@
+<app-config-navbar (editModeChange)="onEditModeChange($event)" (cancel)="cancelChanges()" (save)="saveChanges()" [saveable]="saveable"></app-config-navbar>
+<app-preference-details [preferences]="preferences" [editMode]="editMode" (entityChange)="onEntityChange($event)"></app-preference-details>
+

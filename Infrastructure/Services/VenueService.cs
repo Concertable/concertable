@@ -22,7 +22,7 @@ namespace Infrastructure.Services
         private readonly IVenueRepository venueRepository;
         private readonly ILocationService locationService;
         private readonly IReviewService reviewService;
-        private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
         private readonly IGeocodingService geocodingService;
         private IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
@@ -31,7 +31,7 @@ namespace Infrastructure.Services
             IVenueRepository venueRepository,
             ILocationService locationService,
             IReviewService reviewService,
-            IAuthService authService,
+            ICurrentUserService currentUserService,
             IGeocodingService geocodingService,
             IUnitOfWork unitOfWork,
             IMapper mapper)
@@ -40,7 +40,7 @@ namespace Infrastructure.Services
             this.venueRepository = venueRepository;
             this.locationService = locationService;
             this.reviewService = reviewService;
-            this.authService = authService;
+            this.currentUserService = currentUserService;
             this.geocodingService = geocodingService;
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
@@ -68,7 +68,7 @@ namespace Infrastructure.Services
 
             var venue = mapper.Map<Venue>(createVenueDto);
 
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetEntityAsync();
             venue.UserId = user.Id;
 
             var location = await geocodingService.GetLocationAsync(createVenueDto.Latitude, createVenueDto.Longitude);
@@ -93,7 +93,7 @@ namespace Infrastructure.Services
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
             var venue = mapper.Map<Venue>(venueDto);
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetEntityAsync();
             venue.UserId = user.Id;
 
             var location = await geocodingService.GetLocationAsync(venueDto.Latitude, venueDto.Longitude);
@@ -111,7 +111,7 @@ namespace Infrastructure.Services
 
         public async Task<VenueDto?> GetDetailsForCurrentUserAsync()
         {
-            var user = await authService.GetCurrentUserAsync();
+            var user = await currentUserService.GetAsync();
             var venue = await venueRepository.GetByUserIdAsync(user.Id);
 
             return mapper.Map<VenueDto>(venue);

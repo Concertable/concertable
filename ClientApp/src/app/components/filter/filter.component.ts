@@ -113,8 +113,9 @@ export class FilterComponent implements OnInit {
     this.headerTypeChange.emit(this.searchParams.headerType);
   }
 
-  onGenreChange() {
-    console.log(this.selectedGenre?.name);
+  onGenreChange(genres: Genre[]) {
+    this.selectedGenres = genres;
+    this.emitChanges();
   }
 
   addGenre() {

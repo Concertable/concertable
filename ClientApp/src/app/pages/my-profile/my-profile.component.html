@@ -1,2 +1,2 @@
 <app-config-navbar (editModeChange)="onEditModeChange($event)" (cancel)="cancelChanges()" (save)="saveChanges()" [saveable]="saveable"></app-config-navbar>
-<app-profile-details></app-profile-details>
+<app-profile-details [user]="user"></app-profile-details>

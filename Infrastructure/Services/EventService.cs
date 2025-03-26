@@ -23,7 +23,7 @@ namespace Infrastructure.Services
     public class EventService : HeaderService<Event, EventHeaderDto, IEventRepository>, IEventService
     {
         private readonly IEventRepository eventRepository;
-        private readonly IAuthService authService;
+        private readonly ICurrentUserService currentUserService;
         private readonly IUserPaymentService userPaymentService;
         private readonly IMessageService messageService;
         private readonly IReviewService reviewService;
@@ -34,7 +34,7 @@ namespace Infrastructure.Services
 
         public EventService(
             IEventRepository eventRepository, 
-            IAuthService authService,
+            ICurrentUserService currentUserService,
             IUserPaymentService userPaymentService,
             IMessageService messageService,
             IReviewService reviewService, 
@@ -43,7 +43,7 @@ namespace Infrastructure.Services
             IMapper mapper) : base(eventRepository, locationService)
         {
             this.eventRepository = eventRepository;
-            this.authService = authService;
+            this.currentUserService = currentUserService;
             this.userPaymentService = userPaymentService;
             this.messageService = messageService;
             this.reviewService = reviewService;
@@ -82,8 +82,8 @@ namespace Infrastructure.Services
 
         public async Task<ListingApplicationPurchaseResponse> BookAsync(EventBookingParams bookingParams)
         {
-            var user = await authService.GetCurrentUserAsync();
-            var role = await authService.GetFirstUserRoleAsync(user);
+            var user = await currentUserService.GetAsync();
+            var role = await currentUserService.GetFirstRoleAsync();
 
             if (role != "VenueManager")
                 throw new ForbiddenException("Only VenueManagers can book events");
