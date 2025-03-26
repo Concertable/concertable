@@ -14,7 +14,7 @@ namespace Application.DTOs
         public string County { get; set; }
         public string Town { get; set; }
         public string ImageUrl { get; set; }
-        public IEnumerable<string> Genres { get; set; }
+        public IEnumerable<GenreDto> Genres { get; set; }
 
         public ArtistDto()
         {

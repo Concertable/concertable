@@ -10,6 +10,7 @@ namespace Application.Responses
     public class EventPostResponse
     {
         public EventDto Event { get; set; }
+        public EventHeaderDto EventHeader { get; set; }
         /*
          * The userIds that are local to the event location so can be notified
          * when the event is posted

@@ -121,6 +121,7 @@ import { SelectorComponent } from './components/selector/selector.component';
 import { SliderComponent } from './components/slider/slider.component';
 import { PreferenceDetailsComponent } from './components/preference-details/preference-details.component';
 import { EventCarouselComponent } from './components/event-carousel/event-carousel.component';
+import { DashboardDirective } from './directives/dashboard.directive';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -214,7 +215,7 @@ const routerOptions: ExtraOptions = {
     SelectorComponent,
     SliderComponent,
     PreferenceDetailsComponent,
-    EventCarouselComponent
+    EventCarouselComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

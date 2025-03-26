@@ -1,5 +1,5 @@
 <app-card [isEmpty]="events.length === 0">
-    <div *ngFor="let event of events" class="event-item">
+    <div *ngFor="let event of events" class="item">
         <!-- Event Date -->
         <div class="event-date">
             <p class="date">{{ event.startDate | date:'d' }}</p>
@@ -21,14 +21,15 @@
             </p>
         </div>
 
-        <!-- Actions -->
         <div class="event-actions">
             <button class="primary" (click)="onViewDetails(event)">
-                <mat-icon>visibility</mat-icon> View Details
+                <mat-icon>visibility</mat-icon>
+                <span class="btn-label">View Details</span>
             </button>
 
-            <button *ngIf="authService.isRole('Customer')" class="purchase-btn" (click)="onPurchase(event)">
-                <mat-icon>shopping_cart</mat-icon> Purchase
+            <button *ngIf="authService.isRole('Customer')" class="primary" (click)="onPurchase(event)">
+                <mat-icon>shopping_cart</mat-icon>
+                <span class="btn-label">Purchase</span>
             </button>
         </div>
     </div>

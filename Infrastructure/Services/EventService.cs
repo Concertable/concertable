@@ -75,6 +75,18 @@ namespace Infrastructure.Services
             return mapper.Map<IEnumerable<EventDto>>(events);
         }
 
+        public async Task<IEnumerable<EventDto>> GetHistoryByArtistIdAsync(int id)
+        {
+            var events = await eventRepository.GetHistoryByVenueIdAsync(id);
+            return mapper.Map<IEnumerable<EventDto>>(events);
+        }
+
+        public async Task<IEnumerable<EventDto>> GetHistoryByVenueIdAsync(int id)
+        {
+            var events = await eventRepository.GetHistoryByVenueIdAsync(id);
+            return mapper.Map<IEnumerable<EventDto>>(events);
+        }
+
         public async Task<EventDto> GetDetailsByIdAsync(int id)
         {
             var eventEntity = await eventRepository.GetByIdAsync(id);
@@ -151,17 +163,40 @@ namespace Infrastructure.Services
 
         public async Task<EventDto> UpdateAsync(EventDto eventDto)
         {
-            //var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
+            var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
+            if (eventEntity is null)
+                throw new NotFoundException("Event not found");
+            
+            mapper.Map(eventDto, eventEntity);
 
-            throw new NotImplementedException();
+            eventRepository.Update(eventEntity);
+            await eventRepository.SaveChangesAsync();
+
+            return mapper.Map<EventDto>(eventEntity);
         }
 
         public async Task<EventPostResponse> PostAsync(EventDto eventDto)
         {
             var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
 
+            if (eventEntity is null)
+                throw new NotFoundException("Event not found");
+
             if (eventEntity.DatePosted.HasValue)
                 throw new BadRequestException("Event has already been posted");
+
+            mapper.Map(eventDto, eventEntity);
+
+            eventEntity.DatePosted = DateTime.Now;
+
+            eventRepository.Update(eventEntity);
+            await eventRepository.SaveChangesAsync();
+
+            var eventHeaderDto = mapper.Map<EventHeaderDto>(eventDto);
+
+            var averageRating = (await reviewService.GetSummaryByEventIdAsync(eventDto.Id)).AverageRating;
+
+            eventHeaderDto.Rating = averageRating;
 
             var latitude = eventEntity.Application.Listing.Venue.User.Latitude;
             var longitude = eventEntity.Application.Listing.Venue.User.Longitude;
@@ -170,6 +205,7 @@ namespace Infrastructure.Services
                 return new EventPostResponse
                 {
                     Event = eventDto,
+                    EventHeader = eventHeaderDto,
                     UserIds = Enumerable.Empty<int>()
                 };
 
@@ -187,6 +223,7 @@ namespace Infrastructure.Services
             return new EventPostResponse
             {
                 Event = eventDto,
+                EventHeader = eventHeaderDto,
                 UserIds = userIdsToNotify
             };
         }
@@ -195,6 +232,9 @@ namespace Infrastructure.Services
         {
             var user = await currentUserService.GetAsync();
             var preferences = await preferenceService.GetByUserIdAsync(user.Id);
+
+            if (preferences is null)
+                throw new BadRequestException("You do not have preferences set");
 
             var eventParams = new EventParams
             {
@@ -211,6 +251,18 @@ namespace Infrastructure.Services
             var nearbyEvents = locationService.FilterByRadius(user.Latitude.Value, user.Longitude.Value, preferences.RadiusKm, events);
 
             return take.HasValue ? nearbyEvents.Take(take.Value) : nearbyEvents;
+        }
+
+        public async Task<IEnumerable<EventDto>> GetUnpostedByArtistIdAsync(int id)
+        {
+            var events = await eventRepository.GetUnpostedByArtistIdAsync(id);
+            return mapper.Map<IEnumerable<EventDto>>(events);
+        }
+
+        public async Task<IEnumerable<EventDto>> GetUnpostedByVenueIdAsync(int id)
+        {
+            var events = await eventRepository.GetUnpostedByVenueIdAsync(id);
+            return mapper.Map<IEnumerable<EventDto>>(events);
         }
     }
 }

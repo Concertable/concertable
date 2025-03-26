@@ -1,17 +1,26 @@
 .container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     padding: 16px;
     height: 100vh;
 
-    > * {
+    > ::ng-deep [section-one],
+    ::ng-deep [section-two],
+    ::ng-deep [section-three],
+    ::ng-deep [section-four] {
         border: 2px solid #ccc;
+        min-width: 200px;
         padding: 16px;
         border-radius: 8px;
         background-color: #f9f9f9;
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     }
     
+    ::ng-deep .title {
+
+        text-align: center;
+        margin: 0 auto;
+    }
 }
   

@@ -17,11 +17,22 @@
     --secondary-color: #4A90E2; /* Main CTA Buttons (Save, Apply) */
     --tertiary-color: #D6E4FF; /* Soft Blue (Edit Button) */
 
+    /* ✨ Hover Colors */
+    --primary-hover: #334d84;     /* Slightly darker than primary */
+    --secondary-hover: #357ABD;   /* Richer blue for CTA hover */
+    --tertiary-hover: #c2d9ff;    /* Slightly deeper for soft hover */
+
     /* 🎨 Supporting Colors */
-    --neutral-gray: #ADB5BD; /* Softer gray for Cancel */
-    --accent-color: #FFD700; /* Gold (For highlights like price) */
-    --error-color: #dc3545; /* Red (Delete, Warnings) */
-    --success-color: #28A745; /* Green (Success Messages) */
+    --neutral-gray: #ADB5BD;       /* Softer gray for Cancel */
+    --accent-color: #FFD700;       /* Gold (Highlights like price) */
+    --error-color: #dc3545;        /* Red (Delete, Warnings) */
+    --success-color: #28A745;      /* Green (Success Messages) */
+
+    /* ✨ Hover Variants */
+    --neutral-hover: #868e96;      /* Slightly darker gray */
+    --accent-hover: #e6c200;       /* Slightly deeper gold */
+    --error-hover: #c82333;        /* Darker red */
+    --success-hover: #218838;      /* Slightly darker green */
 
     /* 🎨 Button Colors */
     --button-primary: var(--secondary-color); /* Primary CTA (Save, Apply) */
@@ -45,7 +56,6 @@ body {
     background-color: var(--background-light); /* Now using global CSS variable */
 }
 
-/* Buttons */
 button.primary {
     padding: 8px 16px;
     background-color: var(--secondary-color);
@@ -53,10 +63,10 @@ button.primary {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-}
 
-button.primary:hover {
-    background-color: var(--secondary-hover);
+    &:hover {
+        background-color: var(--secondary-hover);
+    }
 }
 
 button.delete {
@@ -66,10 +76,10 @@ button.delete {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-}
 
-button.delete:hover {
-    background-color: var(--delete-hover);
+    :hover {
+        background-color: var(--delete-hover);
+    }
 }
 
 button.apply {

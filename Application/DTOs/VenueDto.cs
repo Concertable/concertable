@@ -8,14 +8,6 @@ namespace Application.DTOs
 
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-
-        [Required(ErrorMessage = "County is required.")]
-        [StringLength(50, ErrorMessage = "County cannot exceed 50 characters.")]
-        public string County { get; set; }
-
-        [Required(ErrorMessage = "Town is required.")]
-        [StringLength(50, ErrorMessage = "Town cannot exceed 50 characters.")]
-        public string Town { get; set; }
         public bool Approved { get; set; } = false;
 
         public VenueDto()

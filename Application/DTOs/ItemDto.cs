@@ -18,8 +18,16 @@ namespace Application.DTOs
         public string About { get; set; }
         [Required(ErrorMessage = "ImageUrl is required.")]
         public string ImageUrl { get; set; }
+        [Required(ErrorMessage = "County is required.")]
+        [StringLength(50, ErrorMessage = "County cannot exceed 50 characters.")]
+        public string County { get; set; }
+
+        [Required(ErrorMessage = "Town is required.")]
+        [StringLength(50, ErrorMessage = "Town cannot exceed 50 characters.")]
+        public string Town { get; set; }
         public string Type { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+        public double? Rating { get; set; }
     }
 }

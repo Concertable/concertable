@@ -12,7 +12,15 @@ import { Event } from '../../models/event';
 })
 export class ArtistEventsComponent extends ItemEventsDirective<Artist> {
   getUpcoming(id: number): Observable<Event[]> {
-    return this.eventService.getUpComingByArtistId(id);
+    return this.eventService.getUpcomingByArtistId(id);
+  }
+
+  getHistory(id: number): Observable<Event[]> {
+    return this.eventService.getHistoryByArtistId(id);
+  }
+
+  getUnposted(id: number): Observable<Event[]> {
+    return this.eventService.getUnpostedByArtistId(id);
   }
 
   get artist(): Artist | undefined {

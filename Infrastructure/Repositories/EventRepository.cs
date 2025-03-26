@@ -120,28 +120,30 @@ namespace Infrastructure.Repositories
             return eventHeaders;
         }
 
-
         public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)
         {
-            var query = context.Events //Get all events
+            var query = context.Events // Get all events
                 .Where(e => e.Application.Listing.VenueId == id // That are associated with the venue
-                            && e.Application.Listing.StartDate >= DateTime.Now) // And event hasnt passed yet
+                            && e.Application.Listing.StartDate >= DateTime.Now // And event hasn't passed yet
+                            && e.DatePosted != null) // And has been posted
                 .Include(e => e.Application)
-                .ThenInclude(a => a.Listing); // To retrieve the start date
+                    .ThenInclude(a => a.Listing); // To retrieve the start date
 
             return await query.ToListAsync();
         }
 
         public async Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id)
         {
-            var query = context.Events //Get all events
+            var query = context.Events // Get all events
                 .Where(e => e.Application.ArtistId == id // That are associated with the artist
-                            && e.Application.Listing.StartDate >= DateTime.Now) // And event hasnt passed yet
+                            && e.Application.Listing.StartDate >= DateTime.Now // And event hasn't passed yet
+                            && e.DatePosted != null) // And has been posted
                 .Include(e => e.Application)
-                .ThenInclude(a => a.Listing); // To retrieve the start date
+                    .ThenInclude(a => a.Listing); // To retrieve the start date
 
             return await query.ToListAsync();
         }
+
 
         public async Task<Event?> GetByApplicationIdAsync(int applicationId)
         {
@@ -150,5 +152,46 @@ namespace Infrastructure.Repositories
 
             return await query.FirstOrDefaultAsync();
         }
+
+        public async Task<IEnumerable<Event>> GetHistoryByArtistIdAsync(int id)
+        {
+            var query = context.Events // Get all events
+            .Where(e => e.Application.ArtistId == id // That are associated with the artist
+                        && e.Application.Listing.StartDate < DateTime.Now // That have already started
+                        && e.DatePosted != null) // And have been posted
+            .Include(e => e.Application)
+                .ThenInclude(a => a.Listing); // To retrieve start/end dates
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Event>> GetHistoryByVenueIdAsync(int id)
+        {
+            var query = context.Events // Get all events
+            .Where(e => e.Application.Listing.VenueId == id // That are associated with the venue
+                        && e.Application.Listing.StartDate < DateTime.Now // That have already started
+                        && e.DatePosted != null) // And have been posted
+            .Include(e => e.Application)
+                .ThenInclude(a => a.Listing); // To retrieve start/end dates
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Event>> GetUnpostedByArtistIdAsync(int id)
+        {
+            return await context.Events
+                .Where(e => e.Application.ArtistId == id && e.DatePosted == null)
+                .Include(e => e.Application.Listing)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Event>> GetUnpostedByVenueIdAsync(int id)
+        {
+            return await context.Events
+                .Where(e => e.Application.Listing.VenueId == id && e.DatePosted == null)
+                .Include(e => e.Application.Listing)
+                .ToListAsync();
+        }
+
     }
 }

@@ -56,6 +56,30 @@ namespace Web.Controllers
             return Ok(await eventService.GetUpcomingByArtistIdAsync(id));
         }
 
+        [HttpGet("history/venue/{id}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetHistoryByVenueId(int id)
+        {
+            return Ok(await eventService.GetHistoryByVenueIdAsync(id));
+        }
+
+        [HttpGet("history/artist/{id}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetHistoryByArtistId(int id)
+        {
+            return Ok(await eventService.GetHistoryByArtistIdAsync(id));
+        }
+
+        [HttpGet("unposted/venue/{id}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetUnpostedByVenueId(int id)
+        {
+            return Ok(await eventService.GetUnpostedByVenueIdAsync(id));
+        }
+
+        [HttpGet("unposted/artist/{id}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetUnpostedByArtistId(int id)
+        {
+            return Ok(await eventService.GetUnpostedByArtistIdAsync(id));
+        }
+
         [HttpPost("book")]
         public async Task<ActionResult<ListingApplicationPurchaseResponse>> Book(EventBookingParams bookingParams)
         {
@@ -68,6 +92,12 @@ namespace Web.Controllers
             return Ok(await eventService.GetLocalHeadersForUserAsync(orderByRecent, take));
         }
 
+        [HttpPut("{id}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> Update([FromBody]EventDto eventDto)
+        {
+            return Ok(await eventService.UpdateAsync(eventDto));
+        }
+
         [HttpPut("post/{id}")]
         public async Task<ActionResult<EventDto>> Post([FromBody]EventDto eventDto)
         {
@@ -76,7 +106,7 @@ namespace Web.Controllers
             foreach (var userId in eventResponse.UserIds)
             {
                 await hubContext.Clients.User(userId.ToString())
-                    .SendAsync("EventPosted", eventResponse.Event);
+                    .SendAsync("EventPosted", eventResponse.EventHeader);
             }
 
             return Ok(eventResponse.Event);
@@ -86,7 +116,18 @@ namespace Web.Controllers
         public async Task<IActionResult> TestSignalR([FromBody] int userId)
         {
             await hubContext.Clients.User(userId.ToString()).SendAsync("EventPosted",
-                new EventDto { });
+             new EventDto
+             {
+                 Id = 999,
+                 Name = "Testy Nights: Live Session",
+                 Price = 25.00m,
+                 TotalTickets = 200,
+                 AvailableTickets = 150,
+                 DatePosted = DateTime.UtcNow,
+                 StartDate = DateTime.UtcNow.AddDays(7).AddHours(19), // 7 days from now at 7 PM
+                 EndDate = DateTime.UtcNow.AddDays(7).AddHours(23),   // ends at 11 PM
+             });
+
 
             return Ok($"SignalR test message sent to User {userId}");
         }

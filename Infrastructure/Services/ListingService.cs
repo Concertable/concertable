@@ -56,6 +56,11 @@ namespace Infrastructure.Services
             return mapper.Map<IEnumerable<ListingDto>>(listings);
         }
 
+        public async Task<Listing> GetByIdAsync(int id)
+        {
+            return await listingRepository.GetByIdAsync(id);
+        }
+
         public async Task<VenueManager> GetOwnerByIdAsync(int id)
         {
             return await listingRepository.GetOwnerByIdAsync(id); 

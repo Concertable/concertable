@@ -333,11 +333,13 @@ namespace Infrastructure.Data
                 {
                     var artistGenres = new ArtistGenre[]
                     {
-                    new ArtistGenre { ArtistId = 1, GenreId = 1 },
-                    new ArtistGenre { ArtistId = 2, GenreId = 2 },
-                    new ArtistGenre { ArtistId = 3, GenreId = 5 },
-                    new ArtistGenre { ArtistId = 4, GenreId = 4 },
-                    new ArtistGenre { ArtistId = 5, GenreId = 3 }
+                        new ArtistGenre { ArtistId = 1, GenreId = 1 },
+                        new ArtistGenre { ArtistId = 1, GenreId = 2 },
+                        new ArtistGenre { ArtistId = 2, GenreId = 2 },
+                        new ArtistGenre { ArtistId = 3, GenreId = 5 },
+                        new ArtistGenre { ArtistId = 4, GenreId = 4 },
+                        new ArtistGenre { ArtistId = 5, GenreId = 3 },
+                        new ArtistGenre { ArtistId = 5, GenreId = 6 }
                     };
                     context.ArtistGenres.AddRange(artistGenres);
                     await context.SaveChangesAsync();
@@ -582,15 +584,15 @@ namespace Infrastructure.Data
                 {
                     var listings = new Listing[]
                     {
-                    new Listing { VenueId = 1, StartDate = new DateTime(2024, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
-                    new Listing { VenueId = 5, StartDate = new DateTime(2024, 4, 5, 20, 0, 0), EndDate = new DateTime(2024, 4, 5, 23, 0, 0), Pay = 275 },
-                    new Listing { VenueId = 2, StartDate = new DateTime(2025, 5, 10, 20, 0, 0), EndDate = new DateTime(2025, 5, 10, 23, 0, 0), Pay = 300 },
-                    new Listing { VenueId = 3, StartDate = new DateTime(2025, 1, 10, 18, 0, 0), EndDate = new DateTime(2024, 1, 10, 20, 0, 0), Pay = 150 },
-                    new Listing { VenueId = 4, StartDate = new DateTime(2025, 6, 20, 18, 0, 0), EndDate = new DateTime(2025, 6, 20, 21, 0, 0), Pay = 250 },
-                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
-                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
-                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
-                    new Listing { VenueId = 1, StartDate = new DateTime(2025, 6, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
+                        new Listing { VenueId = 1, StartDate = new DateTime(2024, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
+                        new Listing { VenueId = 5, StartDate = new DateTime(2024, 4, 5, 20, 0, 0), EndDate = new DateTime(2024, 4, 5, 23, 0, 0), Pay = 275 },
+                        new Listing { VenueId = 2, StartDate = new DateTime(2025, 5, 10, 20, 0, 0), EndDate = new DateTime(2025, 5, 10, 23, 0, 0), Pay = 300 },
+                        new Listing { VenueId = 3, StartDate = new DateTime(2025, 1, 10, 18, 0, 0), EndDate = new DateTime(2024, 1, 10, 20, 0, 0), Pay = 150 },
+                        new Listing { VenueId = 4, StartDate = new DateTime(2025, 6, 20, 18, 0, 0), EndDate = new DateTime(2025, 6, 20, 21, 0, 0), Pay = 250 },
+                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
+                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
+                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
+                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 6, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
 
                     };
                     context.Listings.AddRange(listings);
@@ -602,13 +604,22 @@ namespace Infrastructure.Data
                 {
                     var listingGenres = new ListingGenre[]
                     {
-                new ListingGenre { ListingId = 1, GenreId = 1 }, // Rock for Listing 1
-                new ListingGenre { ListingId = 1, GenreId = 2 }, // Pop for Listing 1
-                new ListingGenre { ListingId = 2, GenreId = 5 }, // Electronic for Listing 2
-                new ListingGenre { ListingId = 3, GenreId = 3 }, // Jazz for Listing 3
-                new ListingGenre { ListingId = 4, GenreId = 4 }, // Hip-Hop for Listing 4
-                new ListingGenre { ListingId = 5, GenreId = 6 }  // Indie for Listing 5
-                            };
+                        new ListingGenre { ListingId = 1, GenreId = 1 }, // Rock for Listing 1
+                        new ListingGenre { ListingId = 1, GenreId = 2 }, // Pop for Listing 1
+                        new ListingGenre { ListingId = 2, GenreId = 5 }, // Electronic for Listing 2
+                        new ListingGenre { ListingId = 3, GenreId = 3 }, // Jazz for Listing 3
+                        new ListingGenre { ListingId = 4, GenreId = 4 }, // Hip-Hop for Listing 4
+                        new ListingGenre { ListingId = 5, GenreId = 6 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 5, GenreId = 1 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 6, GenreId = 6 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 6, GenreId = 4 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 7, GenreId = 2 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 8, GenreId = 4 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 8, GenreId = 1 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 9, GenreId = 2 },  // Indie for Listing 5
+                        new ListingGenre { ListingId = 9, GenreId = 1 },  // Indie for Listing 5
+
+                    };
                     context.ListingGenres.AddRange(listingGenres);
                     await context.SaveChangesAsync();
                 }
@@ -697,8 +708,8 @@ namespace Infrastructure.Data
                 {
                     var reviews = new Review[]
                     {
-                    new Review { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
-                    new Review { TicketId = 2, Stars = 5, Details = "Loved every moment!" }
+                        new Review { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
+                        new Review { TicketId = 2, Stars = 5, Details = "Loved every moment!" }
                     };
                     context.Reviews.AddRange(reviews);
                     await context.SaveChangesAsync();
@@ -709,8 +720,8 @@ namespace Infrastructure.Data
                 {
                     var messages = new Message[]
                     {
-                    new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.Now, Read = false },
-                    new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.Now, Read = true }
+                        new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.Now, Read = false },
+                        new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.Now, Read = true }
                     };
                     context.Messages.AddRange(messages);
                     await context.SaveChangesAsync();
@@ -721,8 +732,8 @@ namespace Infrastructure.Data
                 {
                     var purchases = new Purchase[]
                     {
-                    new Purchase { FromUserId = 2, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now },
-                    new Purchase { FromUserId = 3, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 275, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now }
+                        new Purchase { FromUserId = 2, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now },
+                        new Purchase { FromUserId = 3, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 275, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now }
                     };
                     context.Purchases.AddRange(purchases);
                     await context.SaveChangesAsync();

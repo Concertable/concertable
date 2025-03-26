@@ -30,4 +30,10 @@
     .item:last-child {
         border-bottom: none;
     }
+
+    .btn-label {
+        @media (max-width: 1500px) {
+            display: none;
+        }
+    }
 }

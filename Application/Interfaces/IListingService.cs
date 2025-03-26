@@ -15,5 +15,6 @@ namespace Application.Interfaces
         Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto);
         Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id);
         Task<VenueManager> GetOwnerByIdAsync(int id);
+        Task<Listing> GetByIdAsync(int id);
     }
 }

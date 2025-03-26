@@ -159,11 +159,11 @@ export class ListingsComponent  implements OnInit, OnChanges {
 
   onViewApplications(listing: Listing) {
     console.log(listing);
-    this.router.navigate(['applications'], {
-      relativeTo: this.route,
-      queryParams: {listingId: listing.id }
+    this.router.navigate(['my/applications', listing.id], {
+      relativeTo: this.route
     });
   }
+  
 
   //?
   private createDummyListing() {

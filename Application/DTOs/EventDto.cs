@@ -7,6 +7,7 @@
         public int? AvailableTickets { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public DateTime? DatePosted { get; set; }
         public VenueDto Venue { get; set; }
         public ArtistDto Artist { get; set; }
 

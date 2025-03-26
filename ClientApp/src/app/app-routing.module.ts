@@ -97,7 +97,7 @@ const routes: Routes = [
     canActivate: [roleGuard],
     data: { role: "VenueManager", breadcrumb: 'Venue Home' },
     children: [
-      { path: '', component: VenueDashboardComponent, data: { breadcrumb: 'Dashboard' } },
+      { path: '', component: VenueDashboardComponent, resolve: { venue: MyVenueResolver }, data: { breadcrumb: 'Dashboard' } },
       { path: 'my', component: MyVenueComponent, resolve: { venue: MyVenueResolver }, data: { breadcrumb: 'My Venue' } },
       {
         path: 'find',

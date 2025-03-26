@@ -66,6 +66,8 @@ namespace Application.Mappings
             CreateMap<EventDto, Event>();
             CreateMap<Event, EventHeaderDto>();
             CreateMap<EventHeaderDto, Event>();
+            CreateMap<EventDto, EventHeaderDto>();
+            CreateMap<EventHeaderDto, EventDto>();
             CreateMap<Event, EventDto>()
             .ForMember(
                 dest => dest.StartDate,

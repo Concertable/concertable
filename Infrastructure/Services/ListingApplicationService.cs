@@ -9,6 +9,7 @@ using Application.DTOs;
 using AutoMapper;
 using Core.Exceptions;
 using Core.Enums;
+using System.Reflection;
 
 namespace Infrastructure.Services
 {
@@ -49,7 +50,6 @@ namespace Infrastructure.Services
 
         public async Task ApplyForListingAsync(int listingId)
         {
-            // Prepare data for Service calls
             var artistDto = await artistService.GetDetailsForCurrentUserAsync();
 
             if (artistDto is null)
@@ -62,6 +62,18 @@ namespace Infrastructure.Services
             };
             var user = await currentUserService.GetAsync();
             var listingOwner = await listingService.GetOwnerByIdAsync(listingId);
+
+            var listing = await listingService.GetByIdAsync(listingId);
+
+            if (listing is null)
+                throw new BadRequestException("Listing does not exist");
+
+            // Check the Genres match in at least one case
+            var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
+            var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId).ToHashSet();
+
+            if (!artistGenreIds.Overlaps(listingGenreIds))
+                throw new BadRequestException("You need to have the same genres as the Listing to be able to apply to it");
 
             var applicationRepository = unitOfWork.GetRepository<ListingApplication>();
 

@@ -22,9 +22,10 @@ export class EventService {
     private signalRService: SignalRService
   ) {
     this.loadInitialRecentHeaders();
-    this.signalRService.eventPosted$.subscribe(event => {
-      if (event) {
-        this.recentEventHeadersSubject.next(event);
+    this.signalRService.eventPosted$.subscribe(header => {
+      if (header) {
+        console.log(header);
+        this.recentEventHeadersSubject.next(header);
       }
     });
   }
@@ -35,12 +36,28 @@ export class EventService {
     });
   }
 
-  getUpComingByVenueId(id: number): Observable<Event[]> {
+  getUpcomingByVenueId(id: number): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/upcoming/venue/${id}`);
   }
 
-  getUpComingByArtistId(id: number): Observable<Event[]> {
+  getUpcomingByArtistId(id: number): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/upcoming/artist/${id}`);
+  }
+
+  getHistoryByVenueId(id: number): Observable<Event[]> {
+    return this.http.get<Event[]>(`${this.apiUrl}/history/venue/${id}`);
+  }
+
+  getHistoryByArtistId(id: number): Observable<Event[]> {
+    return this.http.get<Event[]>(`${this.apiUrl}/history/artist/${id}`);
+  }
+
+  getUnpostedByVenueId(id: number): Observable<Event[]> {
+    return this.http.get<Event[]>(`${this.apiUrl}/unposted/venue/${id}`);
+  }
+
+  getUnpostedByArtistId(id: number): Observable<Event[]> {
+    return this.http.get<Event[]>(`${this.apiUrl}/unposted/artist/${id}`);
   }
 
   getDetailsById(id: number): Observable<Event> {

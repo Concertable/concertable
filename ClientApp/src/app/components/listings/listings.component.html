@@ -4,9 +4,6 @@
             <p class="date">{{ listing.startDate | date:'d' }}</p>
             <p class="month">{{ listing.startDate | date:'MMM' }}</p>
         </div>
-
-        
-
         <div class="listing-info">
             <p class="day-time">
                 <mat-icon>access_time</mat-icon>
@@ -19,8 +16,8 @@
             </p>
             <p class="genres">
                 <mat-icon>music_note</mat-icon>
-                <strong>Genres:</strong> 
-                <span *ngFor="let genre of listing.genres" class="genre-badge">{{ genre.name }}</span>
+                <strong style="margin-right: 3px;">Genres:</strong> 
+                <span *ngFor="let genre of listing.genres" class="genres">{{ genre.name }}, </span>
             </p>
         </div>
 
@@ -34,13 +31,14 @@
             <button *ngIf="authService.isRole('VenueManager') && !editMode"
                     class="primary" 
                     (click)="onViewApplications(listing)">
-                <mat-icon>visibility</mat-icon> View Applications
+                <mat-icon>visibility</mat-icon>
+                <span class="btn-label">View Applications</span>
             </button>
 
             <button *ngIf="authService.isRole('ArtistManager')"
                     class="apply" 
                     (click)="onApply(listing)">
-                <mat-icon>check_circle</mat-icon> Apply
+                <mat-icon>check_circle</mat-icon>Apply
             </button>
         </div>
     </div>
