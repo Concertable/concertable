@@ -1,4 +1,4 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -126,11 +126,16 @@ import { EventCarouselComponent } from './components/event-carousel/event-carous
 import { BadgeComponent } from './components/badge/badge.component';
 import { PriceComponent } from './components/config/price/price.component';
 import { NumberComponent } from './components/config/number/number.component';
+import { InitService } from './services/init/init.service';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
   scrollPositionRestoration: 'enabled' // Restores scroll position when navigating back
 };
+
+export function initApp(initService: InitService) {
+  return () => initService.init();
+}
 
 @NgModule({
   declarations: [
@@ -263,7 +268,13 @@ const routerOptions: ExtraOptions = {
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     provideAnimationsAsync(),
-    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initApp,
+      deps: [InitService],
+      multi: true
+    }
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent]

@@ -82,39 +82,6 @@ export class ListingsComponent  implements OnInit, OnChanges {
     }
   }
 
-  get startDate(): string {
-    return this.newListing.startDate ? this.newListing.startDate.toISOString().split('T')[0] : '';
-  }
-
-  set startDate(value: string) {
-    if (value) {
-      const time = this.newListing.startDate ? this.newListing.startDate.toTimeString().split(' ')[0] : '00:00:00';
-      this.newListing.startDate = new Date(`${value}T${time}`);
-    }
-  }
-
-  get startTime(): string {
-    return this.newListing.startDate ? this.newListing.startDate.toTimeString().slice(0, 5) : '';
-  }
-
-  set startTime(value: string) {
-    if (value) {
-      const date = this.startDate;
-      this.newListing.startDate = new Date(`${date}T${value}`);
-    }
-  }
-
-  get endTime(): string {
-    return this.newListing.endDate ? this.newListing.endDate.toTimeString().slice(0, 5) : '';
-  }
-
-  set endTime(value: string) {
-    if (value) {
-      const currentDate = this.newListing.endDate ? this.newListing.endDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-      this.newListing.endDate = new Date(`${currentDate}T${value}`);
-    }
-  }
-
   onStartDateChange(date: Date) {
     this.newListing.startDate.setFullYear(date.getFullYear());
     this.newListing.startDate.setMonth(date.getMonth());
@@ -126,6 +93,7 @@ export class ListingsComponent  implements OnInit, OnChanges {
     this.newListing.startDate.setMinutes(time.getMinutes());
     this.newListing.startDate.setSeconds(0);
     this.newListing.startDate.setMilliseconds(0);
+    console.log(this.newListing)
   }
 
   onEndTimeChange(time: Date) {
@@ -133,9 +101,32 @@ export class ListingsComponent  implements OnInit, OnChanges {
     this.newListing.endDate.setMinutes(time.getMinutes());
     this.newListing.endDate.setSeconds(0);
     this.newListing.endDate.setMilliseconds(0);
+  
+    console.log(this.newListing);
   }
+  
+  isEndTimeBeforeStartTime(start: Date, end: Date): boolean {
+    const startHours = start.getHours();
+    const startMinutes = start.getMinutes();
+    const endHours = end.getHours();
+    const endMinutes = end.getMinutes();
+  
+    return (
+      endHours < startHours ||
+      (endHours === startHours && endMinutes < startMinutes)
+    );
+  }
+  
+  
 
   onSaveItem() {
+    // If end time is earlier than start time, assume it's the next day
+    if (this.isEndTimeBeforeStartTime(this.newListing.startDate, this.newListing.endDate)) 
+      this.newListing.endDate.setDate(this.newListing.startDate.getDate() + 1);
+    else 
+      this.newListing.endDate.setDate(this.newListing.startDate.getDate());
+    
+    console.log(this.newListing)
     this.listings?.push(this.newListing);
     this.addNew = false;
     this.listingCreate.emit(this.newListing);

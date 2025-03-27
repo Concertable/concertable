@@ -9,6 +9,7 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
 import { ExtendedDetailsDirective } from '../../directives/extended-details.directive';
 import { Genre } from '../../models/genre';
 import { GenreService } from '../../services/genre/genre.service';
+import { NavItem } from '../../models/nav-item';
 
 @Component({
   selector: 'app-artist-details',
@@ -19,6 +20,13 @@ import { GenreService } from '../../services/genre/genre.service';
 })
 export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
   genres: Genre[] = [];
+
+  override navItems: NavItem[] = [
+      { name: 'Info', fragment: 'info' },
+      { name: 'Upcoming Events', fragment: 'upcoming-events' },
+      { name: 'Videos', fragment: 'videos' },
+      { name: 'Reviews', fragment: 'reviews' }
+    ];
 
   constructor(
     private artistService: ArtistService,

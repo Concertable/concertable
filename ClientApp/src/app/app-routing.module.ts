@@ -43,6 +43,7 @@ import { MyProfileResolver } from './resolvers/my-profile/my-profile.resolver';
 import { MyPreferencesComponent } from './components/my-preferences/my-preferences.component';
 import { myPreferencesResolver } from './resolvers/my-preferences/my-preferences.resolver';
 import { ListingApplicationsResolver } from './resolvers/listing-applications.resolver';
+import { authGuard } from './guards/auth/auth.guard';
 
 const routes: Routes = [
   {
@@ -65,7 +66,7 @@ const routes: Routes = [
         path: 'event',
         data: { breadcrumb: 'Event' },
         children: [
-          { path: 'checkout/:id', component: EventCheckoutComponent, resolve: { event: EventResolver }, data: { breadcrumb: 'Checkout' } }
+          { path: 'checkout/:id', component: EventCheckoutComponent, resolve: { event: EventResolver }, data: { breadcrumb: 'Checkout' }, canActivate: [authGuard] }
         ]
       },
       {
@@ -127,7 +128,7 @@ const routes: Routes = [
     canActivate: [roleGuard],
     data: { role: "ArtistManager", breadcrumb: 'Artist Home' },
     children: [
-      { path: '', component: ArtistDashboardComponent, data: { breadcrumb: 'Dashboard' } },
+      { path: '', component: ArtistDashboardComponent, resolve: { artist: MyArtistResolver }, data: { breadcrumb: 'Dashboard' } },
       { path: 'my', component: MyArtistComponent, resolve: { artist: MyArtistResolver }, data: { breadcrumb: 'My Artist' } },
       {
         path: 'find',

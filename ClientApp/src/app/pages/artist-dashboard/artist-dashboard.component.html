@@ -1,0 +1,19 @@
+@if(artist) {
+    <app-dashboard-layout>
+        <div section-one>
+            <h2 class="title">Applications</h2>
+        </div>
+        <div section-two>
+            <h2 class="title">Event</h2>
+            <h3>Upcoming Events</h3>
+            <app-artist-events [artist]="artist" [viewType]="EventViewType.Upcoming"></app-artist-events>
+            <h3>Unposted Events</h3>
+            <app-artist-events [artist]="artist" [viewType]="EventViewType.Unposted"></app-artist-events>
+            <h3>Event History</h3>
+            <app-artist-events [artist]="artist" [viewType]="EventViewType.History"></app-artist-events>
+        </div>
+        <div section-three>
+            <h2 class="title">Finance</h2>
+        </div>
+    </app-dashboard-layout>
+}

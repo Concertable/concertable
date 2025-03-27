@@ -8,4 +8,5 @@ export interface Artist extends Item {
     county: string;
     town: string;
     userId: number;
+    imageUrl: string
 }

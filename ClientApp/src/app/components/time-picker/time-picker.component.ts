@@ -10,8 +10,8 @@ export class TimePickerComponent {
   @Input() time?: Date;
   @Output() timeChange = new EventEmitter<Date>();
 
-  onTimeChange(event: any) {
-    const time: Date = event.value;
-    this.timeChange.emit(time);
+  onTimeChange() {
+    if(this.time)
+      this.timeChange.emit(this.time);
   }
 }

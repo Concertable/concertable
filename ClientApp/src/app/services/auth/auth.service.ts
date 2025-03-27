@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, Injectable, signal } from '@angular/core';
 import { LoginCredentials } from '../../models/login-credentials';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, map, Observable, tap } from 'rxjs';
 import { LoginResponse } from '../../models/login-response';
 import { environment } from '../../../environments/environment';
 import { User } from '../../models/user';
@@ -20,6 +20,11 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | undefined>(undefined); 
   currentUser$ = this.currentUserSubject.asObservable(); // Every subscription will recieve the current user whenever it changes
 
+  isAuthenticated$ = this.currentUserSubject.pipe(
+    map(user => user !== undefined),
+    distinctUntilChanged()
+  );
+  
   /* 
   * Observable responses cant distinguish the undefined between user not being authenticated
   * and data from the server not being retrievex yet, so use this boolean to distinguish
@@ -40,7 +45,7 @@ export class AuthService {
   isNotRole = (role: Role) => this.currentUserSubject.getValue()?.role !== role;
 
   isAuthenticated(): boolean {
-    return this.currentUserSubject.getValue() !== null;
+    return this.currentUserSubject.getValue() !== undefined;
   }
 
   login(credentials: LoginCredentials): Observable<any> {

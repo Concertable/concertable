@@ -11,8 +11,8 @@ export class DatePickerComponent {
   @Input() date?: Date
   @Output() dateChange = new EventEmitter<Date>();
 
-  onDateChange(event: any) {
-    const date: Date = event.value;
-    this.dateChange.emit(date);
+  onDateChange() {
+    if(this.date)
+      this.dateChange.emit(this.date);
   }
 }

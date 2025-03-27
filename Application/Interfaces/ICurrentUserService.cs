@@ -11,6 +11,7 @@ namespace Application.Interfaces
     public interface ICurrentUserService
     {
         Task<UserDto> GetAsync();
+        Task<UserDto?> GetOrDefaultAsync();
         Task<ApplicationUser> GetEntityAsync();
         Task<int> GetIdAsync();
         Task<string> GetFirstRoleAsync();

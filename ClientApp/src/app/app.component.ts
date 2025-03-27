@@ -8,13 +8,8 @@ import { AuthService } from './services/auth/auth.service';
   standalone: false,
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'concertable-app';
 
-  constructor(private initService: InitService) { }
-
-  ngOnInit(): void {
-    this.initService.init();
-    // console.log(google);
-  }
+  constructor() { }
 }

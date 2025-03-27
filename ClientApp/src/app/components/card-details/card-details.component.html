@@ -14,15 +14,15 @@
       </div>
     </div>
 </div>
-  <!-- Buy Button -->
   <button 
     mat-flat-button 
     color="primary"
     [disabled]="isProcessing"
     (click)="createPaymentMethod()"
     class="buy-button"
+    style="margin-top: 10px"
   >
     {{ isProcessing ? 'Processing...' : buttonName }}
   </button>
-<p class="message">{{ message }}</p>
+<p class="message" style="margin-top: 10px">{{ message }}</p>
   

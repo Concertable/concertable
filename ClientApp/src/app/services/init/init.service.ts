@@ -16,12 +16,21 @@ export class InitService {
     private eventService: EventService
   ) { }
 
-  init() {
-    this.authService.getCurrentUser().subscribe((user) =>
-    {
-      console.log(user);
-      if(user) this.signalRService.createHubConnections();
-    }
-    );
-  }
+  init(): Promise<void> {
+    return new Promise((resolve) => {
+      this.authService.getCurrentUser().subscribe({
+        next: (user) => {
+          console.log(user);
+          if (user) {
+            this.signalRService.createHubConnections();
+          }
+          resolve(); // ✅ still resolves when successful
+        },
+        error: (err) => {
+          console.warn('Init failed to get current user:', err);
+          resolve(); // ✅ make sure app still starts
+        }
+      });
+    });
+  }  
 }

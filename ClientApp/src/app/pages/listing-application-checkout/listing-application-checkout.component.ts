@@ -9,6 +9,7 @@ import { Purchase } from '../../models/purchase';
 import { StripeService } from '../../services/stripe/stripe.service';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
 import { SignalRService } from '../../services/signalr/signalr.service';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Component({
   selector: 'app-listing-application-checkout',
@@ -21,10 +22,11 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
     route: ActivatedRoute, 
     stripeService: StripeService, 
     signalRService: SignalRService,
+    blobStorageService: BlobStorageService,
     private eventService: EventService,
     private router: Router
   ) {
-    super(route, stripeService, signalRService);
+    super(route, stripeService, signalRService, blobStorageService);
   }
 
   get application(): ListingApplication | undefined {

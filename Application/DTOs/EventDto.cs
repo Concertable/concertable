@@ -1,12 +1,8 @@
 ﻿using Application.DTOs;
 using System.ComponentModel.DataAnnotations;
 
-public class EventDto : IValidatableObject
+public class EventDto : ItemDto, IValidatableObject
 {
-    public int Id { get; set; }
-
-    [Required(ErrorMessage = "Event name is required.")]
-    public string Name { get; set; }
 
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0.")]
     public decimal Price { get; set; }

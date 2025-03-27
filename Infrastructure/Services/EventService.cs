@@ -231,7 +231,11 @@ namespace Infrastructure.Services
 
         public async Task<IEnumerable<EventHeaderDto>> GetLocalHeadersForUserAsync(bool orderByRecent, int? take)
         {
-            var user = await currentUserService.GetAsync();
+            var user = await currentUserService.GetOrDefaultAsync();
+
+            if (user is null)
+                return Enumerable.Empty<EventHeaderDto>();
+
             var preferences = await preferenceService.GetByUserIdAsync(user.Id);
 
             if (preferences is null)

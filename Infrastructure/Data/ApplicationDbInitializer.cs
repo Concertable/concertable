@@ -584,15 +584,18 @@ namespace Infrastructure.Data
                 {
                     var listings = new Listing[]
                     {
-                        new Listing { VenueId = 1, StartDate = new DateTime(2024, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
-                        new Listing { VenueId = 5, StartDate = new DateTime(2024, 4, 5, 20, 0, 0), EndDate = new DateTime(2024, 4, 5, 23, 0, 0), Pay = 275 },
-                        new Listing { VenueId = 2, StartDate = new DateTime(2025, 5, 10, 20, 0, 0), EndDate = new DateTime(2025, 5, 10, 23, 0, 0), Pay = 300 },
-                        new Listing { VenueId = 3, StartDate = new DateTime(2025, 1, 10, 18, 0, 0), EndDate = new DateTime(2024, 1, 10, 20, 0, 0), Pay = 150 },
-                        new Listing { VenueId = 4, StartDate = new DateTime(2025, 6, 20, 18, 0, 0), EndDate = new DateTime(2025, 6, 20, 21, 0, 0), Pay = 250 },
-                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 3, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 200 },
-                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
-                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 5, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
-                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 6, 15, 19, 0, 0), EndDate = new DateTime(2024, 3, 15, 22, 0, 0), Pay = 250 },
+                        //  Past events 
+                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 1, 15, 18, 0, 0), EndDate = new DateTime(2025, 1, 15, 21, 0, 0), Pay = 150 },
+                        new Listing { VenueId = 2, StartDate = new DateTime(2025, 2, 10, 19, 0, 0), EndDate = new DateTime(2025, 2, 10, 22, 0, 0), Pay = 180 },
+                        new Listing { VenueId = 3, StartDate = new DateTime(2025, 2, 25, 20, 0, 0), EndDate = new DateTime(2025, 2, 25, 23, 0, 0), Pay = 200 },
+
+                        //  Future events (relative to now)
+                        new Listing { VenueId = 1, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(10).AddHours(3), Pay = 220 },
+                        new Listing { VenueId = 2, StartDate = DateTime.Now.AddMonths(1), EndDate = DateTime.Now.AddMonths(1).AddHours(3), Pay = 275 },
+                        new Listing { VenueId = 3, StartDate = DateTime.Now.AddMonths(2), EndDate = DateTime.Now.AddMonths(2).AddHours(3), Pay = 300 },
+                        new Listing { VenueId = 4, StartDate = DateTime.Now.AddDays(45), EndDate = DateTime.Now.AddDays(45).AddHours(3), Pay = 250 },
+                        new Listing { VenueId = 5, StartDate = DateTime.Now.AddMonths(3).AddDays(5), EndDate = DateTime.Now.AddMonths(3).AddDays(5).AddHours(3), Pay = 290 },
+                        new Listing { VenueId = 1, StartDate = DateTime.Now.AddMonths(4), EndDate = DateTime.Now.AddMonths(4).AddHours(2), Pay = 310 }
 
                     };
                     context.Listings.AddRange(listings);

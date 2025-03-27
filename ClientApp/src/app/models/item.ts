@@ -5,5 +5,5 @@ export interface Item {
     type: ItemType;
     name: string;
     about: string;
-    imageUrl: string
+    rating: number;
 }

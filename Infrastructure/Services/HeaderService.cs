@@ -58,7 +58,7 @@ namespace Infrastructure.Services
 
             return new PaginationResponse<TDto>(
                 headers.Data,
-                headers.TotalCount,
+                headers.Data.Count(),
                 headers.PageNumber,
                 headers.PageSize);
         }

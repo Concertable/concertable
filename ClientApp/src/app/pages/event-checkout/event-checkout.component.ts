@@ -8,6 +8,7 @@ import { CheckoutDirective } from '../../directives/checkout.directive';
 import { Observable } from 'rxjs';
 import { TicketPurchase } from '../../models/ticket-purchase';
 import { SignalRService } from '../../services/signalr/signalr.service';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Component({
   selector: 'app-event-checkout',
@@ -20,8 +21,9 @@ export class EventCheckoutComponent extends CheckoutDirective<Event> {
     route: ActivatedRoute, 
     stripeService: StripeService, 
     signalRService: SignalRService,
+    blobStorageService: BlobStorageService,
     private ticketService: TicketService) {
-      super(route, stripeService, signalRService);
+      super(route, stripeService, signalRService, blobStorageService);
     }
 
   get event(): Event | undefined {

@@ -15,9 +15,9 @@
                 {{ event.startDate | date:'h:mm a' }} - {{ event.endDate | date:'h:mm a' }}
             </p>
 
-            <p class="event-cost">
+            <p class="icon-text">
                 <mat-icon>attach_money</mat-icon>
-                <strong>Price:</strong> ${{ event.price }}
+                <strong style="margin-right: 3px;">Price:</strong> {{ event.price | currency: 'GBP':'symbol':'1.2-2' }}
             </p>
         </div>
 

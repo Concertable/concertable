@@ -48,7 +48,8 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
         county: "",
         town: "",
         userId: 0,
-        approved: false
+        approved: false,
+        rating: 0
       }
   }
 

@@ -10,9 +10,9 @@
                 <span class="day-of-week">{{ listing?.startDate | date:'EEE' }}</span>
                 <span>{{ listing?.startDate | date:'h:mm a' }} - {{ listing?.endDate | date:'h:mm a' }}</span>
             </p>
-            <p class="pay">
+            <p class="icon-text">
                 <mat-icon>attach_money</mat-icon>
-                <strong>Pay:</strong> ${{ listing.pay }}
+                <strong style="margin-right: 3px">Pay:</strong> {{ listing.pay | currency: 'GBP':'symbol':'1.2-2' }}
             </p>
             <p class="genres">
                 <mat-icon>music_note</mat-icon>

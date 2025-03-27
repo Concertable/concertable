@@ -6,6 +6,7 @@ import { StripeService } from '../services/stripe/stripe.service';
 import { Purchase } from '../models/purchase';
 import { Observable, Subscription } from 'rxjs';
 import { SignalRService } from '../services/signalr/signalr.service';
+import { BlobStorageService } from '../services/blob-storage/blob-storage.service';
 
 @Directive({
   selector: '[appCheckout]',
@@ -21,7 +22,8 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
   constructor(
     private route: ActivatedRoute, 
     private stripeService: StripeService,
-    protected signalRService: SignalRService  
+    protected signalRService: SignalRService,
+    protected blobStorageService: BlobStorageService 
   ) { }
 
   abstract setRouteData(data: any): void;

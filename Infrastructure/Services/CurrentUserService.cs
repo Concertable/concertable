@@ -39,6 +39,29 @@ namespace Infrastructure.Services
             };
         }
 
+        public async Task<UserDto?> GetOrDefaultAsync()
+        {
+            try
+            {
+                var user = await GetEntityAsync();
+                var role = await GetFirstRoleAsync(user);
+
+                return new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Role = role,
+                    Latitude = user.Latitude,
+                    Longitude = user.Longitude
+                };
+            }
+            catch (UnauthorizedException)
+            {
+                return null;
+            }
+        }
+
+
         public async Task<int> GetIdAsync()
         {
             return (await GetAsync()).Id;

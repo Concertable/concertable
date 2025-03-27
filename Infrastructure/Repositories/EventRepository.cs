@@ -75,6 +75,7 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(EventParams eventParams)
         {
             var query = context.Events
+                .Where(e => e.DatePosted != null)
                 .Include(e => e.Application.Listing.Venue.User)
                 .Include(e => e.EventGenre)
                 .AsQueryable();

@@ -41,8 +41,9 @@ export class CreateArtistComponent extends CreateItemDirective<Artist> {
       genres: [],
       county: "",
       town: "",
-      userId: 0
-      };
+      userId: 0,
+      rating: 0
+    };
   }
 
   create(artist: Artist): Observable<Artist> {

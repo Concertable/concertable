@@ -1,4 +1,4 @@
-<div class="mail-container" *ngIf="authService.isAuthenticated()">
+<div class="mail-container" *ngIf="authService.isAuthenticated$ | async">
     <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" (click)="onMailClick()">
         <mat-icon class="mail-icon">mail</mat-icon>
     </button>

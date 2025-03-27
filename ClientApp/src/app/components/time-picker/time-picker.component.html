@@ -1,10 +1,11 @@
 <mat-form-field appearance="outline">
     <mat-label>Time</mat-label>
     <input 
-    matInput 
-    [matTimepicker]="picker"
-    [value]="time"
-    (timeChange)="onTimeChange($event)">
-    <mat-timepicker-toggle matIconSuffix [for]="picker"/>
-    <mat-timepicker #picker/>
-</mat-form-field>
+      matInput 
+      [matTimepicker]="picker"
+      [(ngModel)]="time" 
+      (ngModelChange)="onTimeChange()">
+    <mat-timepicker-toggle matIconSuffix [for]="picker" />
+    <mat-timepicker #picker />
+  </mat-form-field>
+  
