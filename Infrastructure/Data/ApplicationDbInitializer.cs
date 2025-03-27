@@ -21,16 +21,16 @@ namespace Infrastructure.Data
                 {
                     var users = new ApplicationUser[]
                     {
-                    new Admin { UserName = "admin1@test.com", Email = "admin1@test.com", County = "Surrey", Town = "Woking", Latitude = 51.0, Longitude = -0.5, EmailConfirmed = true }, //1
-                    new Customer { UserName = "customer1@test.com", Email = "customer1@test.com", County = "Surrey", Town = "Guildford", Latitude = 51.25, Longitude = -0.56, EmailConfirmed = true }, //2
+                    new Admin { UserName = "admin1@test.com", Email = "admin1@test.com", County = "Surrey", Town = "Woking", Latitude = 51.0, Longitude = -0.5, EmailConfirmed = true, StripeId = "acct_1R71v9Bt1TeOQuP6" }, //1
+                    new Customer { UserName = "customer1@test.com", Email = "customer1@test.com", County = "Surrey", Town = "Guildford", Latitude = 51.25, Longitude = -0.56, EmailConfirmed = true, StripeId = "acct_1R71vrGWdDleGW3a" }, //2
                     new Customer { UserName = "customer2@test.com", Email = "customer2@test.com", County = "Surrey", Town = "Epsom", Latitude = 51.34, Longitude = -0.27, EmailConfirmed = true }, //3
                     new Customer { UserName = "customer3@test.com", Email = "customer3@test.com", County = "London", Town = "Camden", Latitude = 51.53, Longitude = -0.13, EmailConfirmed = true }, //4
                     new Customer { UserName = "customer4@test.com", Email = "customer4@test.com", County = "Edinburgh", Town = "Leith", Latitude = 55.98, Longitude =  -3.17, EmailConfirmed = true }, //5
                     new Customer { UserName = "customer5@test.com", Email = "customer5@test.com", County = "Sheffield", Town = "Kelham Island", Latitude = 53.39, Longitude = -1.46, EmailConfirmed = true }, //6
                     new Customer { UserName = "customer6@test.com", Email = "customer6@test.com", County = "Bath", Town = "Widcombe", Latitude = 51.38, Longitude = -2.36, EmailConfirmed = true }, //7
                     // Artist Managers
-                    new ArtistManager { UserName = "artistmanager1@test.com", Email = "artistmanager1@test.com", County = "Surrey", Town = "Dorking", Latitude = 51.23, Longitude = -0.33, EmailConfirmed = true }, //8
-                    new ArtistManager { UserName = "artistmanager2@test.com", Email = "artistmanager2@test.com", County = "Surrey", Town = "Reigate", Latitude = 51.23, Longitude = -0.17, EmailConfirmed = true }, //9
+                    new ArtistManager { UserName = "artistmanager1@test.com", Email = "artistmanager1@test.com", County = "Surrey", Town = "Dorking", Latitude = 51.23, Longitude = -0.33, EmailConfirmed = true, StripeId = "acct_1R71yoLnJh1ZDYF4" }, //8
+                    new ArtistManager { UserName = "artistmanager2@test.com", Email = "artistmanager2@test.com", County = "Surrey", Town = "Reigate", Latitude = 51.23, Longitude = -0.17, EmailConfirmed = true, StripeId = "acct_1R71z6IBXwkKnqix" }, //9
                     new ArtistManager { UserName = "artistmanager3@test.com", Email = "artistmanager3@test.com", County = "Surrey", Town = "Farnham", Latitude = 51.21, Longitude = -0.58, EmailConfirmed = true }, //10
                     new ArtistManager { UserName = "artistmanager4@test.com", Email = "artistmanager4@test.com", County = "Surrey", Town = "Camberley", Latitude = 51.34, Longitude = -0.7, EmailConfirmed = true }, //11
                     new ArtistManager { UserName = "artistmanager5@test.com", Email = "artistmanager5@test.com", County = "Surrey", Town = "Haslemere", Latitude = 51.08, Longitude = -0.74, EmailConfirmed = true }, //12
@@ -65,8 +65,8 @@ namespace Infrastructure.Data
                     new ArtistManager { UserName = "artistmanager34@test.com", Email = "artistmanager34@test.com", County = "Dundee", Town = "Broughty Ferry", Latitude = 56.47, Longitude = -2.87, EmailConfirmed = true }, //41
                     new ArtistManager { UserName = "artistmanager35@test.com", Email = "artistmanager35@test.com", County = "Coventry", Town = "Earlsdon", Latitude = 52.40, Longitude = -1.52, EmailConfirmed = true }, //42
                     // Venue Managers
-                    new VenueManager { UserName = "venuemanager1@test.com", Email = "venuemanager1@test.com", County = "Surrey", Town = "Leatherhead", Latitude = 51.3, Longitude = -0.3, EmailConfirmed = true }, //43
-                    new VenueManager { UserName = "venuemanager2@test.com", Email = "venuemanager2@test.com", County = "Surrey", Town = "Redhill", Latitude = 51.23, Longitude = -0.17, EmailConfirmed = true }, //44
+                    new VenueManager { UserName = "venuemanager1@test.com", Email = "venuemanager1@test.com", County = "Surrey", Town = "Leatherhead", Latitude = 51.3, Longitude = -0.3, EmailConfirmed = true, StripeId = "acct_1R71zKBsonWwC9oM" }, //43
+                    new VenueManager { UserName = "venuemanager2@test.com", Email = "venuemanager2@test.com", County = "Surrey", Town = "Redhill", Latitude = 51.23, Longitude = -0.17, EmailConfirmed = true, StripeId = "acct_1R71zvLnLloN6AmB" }, //44
                     new VenueManager { UserName = "venuemanager3@test.com", Email = "venuemanager3@test.com", County = "Surrey", Town = "Weybridge", Latitude = 51.38, Longitude = -0.46, EmailConfirmed = true }, //45
                     new VenueManager { UserName = "venuemanager4@test.com", Email = "venuemanager4@test.com", County = "Surrey", Town = "Cobham", Latitude = 51.32, Longitude = -0.46, EmailConfirmed = true }, //46
                     new VenueManager { UserName = "venuemanager5@test.com", Email = "venuemanager5@test.com", County = "Surrey", Town = "Chertsey", Latitude = 51.39, Longitude = -0.5, EmailConfirmed = true }, //47
@@ -720,8 +720,8 @@ namespace Infrastructure.Data
                 {
                     var messages = new Message[]
                     {
-                        new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.Now, Read = false },
-                        new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.Now, Read = true }
+                        new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.Now, Read = false, Action = "application", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.Now, Read = true, Action = "event", ActionId = 1 }
                     };
                     context.Messages.AddRange(messages);
                     await context.SaveChangesAsync();

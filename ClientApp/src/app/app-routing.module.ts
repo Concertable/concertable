@@ -42,6 +42,7 @@ import { MyProfileComponent } from './pages/my-profile/my-profile.component';
 import { MyProfileResolver } from './resolvers/my-profile/my-profile.resolver';
 import { MyPreferencesComponent } from './components/my-preferences/my-preferences.component';
 import { myPreferencesResolver } from './resolvers/my-preferences/my-preferences.resolver';
+import { ListingApplicationsResolver } from './resolvers/listing-applications.resolver';
 
 const routes: Routes = [
   {
@@ -71,7 +72,7 @@ const routes: Routes = [
         path: 'application',
         data: { breadcrumb: 'Application' },
         children: [
-          { path: 'checkout/:id', component: ListingApplicationCheckoutComponent, resolve: { listingApplication: ListingApplicationResolver }, data: { breadcrumb: 'Checkout' } }
+          { path: 'checkout/:id', component: ListingApplicationCheckoutComponent, resolve: { application: ListingApplicationResolver }, data: { breadcrumb: 'Checkout' } }
         ]
       },
       {
@@ -114,7 +115,7 @@ const routes: Routes = [
         children: [
           { path: 'events', component: MyEventsComponent, data: { breadcrumb: 'Events' } },
           { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } },
-          { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationResolver }, data: { breadcrumb: 'Applications' } }
+          { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationsResolver }, data: { breadcrumb: 'Applications' } }
         ]
       }
     ]

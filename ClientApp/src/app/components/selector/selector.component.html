@@ -1,30 +1,32 @@
-<div class="selector-container">
-    <!-- Use Existing DropDownComponent -->
-    <app-drop-down
-      [label]="label"
-      [options]="options"
-      [selectedValue]="selectedValue"
-      [displayProperty]="displayProperty"
-      (selectionChange)="selectedValue = $event"
-      [disabled]="disabled">
-    </app-drop-down>
+<div class="container">
+    <div class="wrapper" *ngIf="editMode">
+      <app-drop-down
+        [label]="label"
+        [options]="options"
+        [selectedValue]="selectedValue"
+        [displayProperty]="displayProperty"
+        (selectionChange)="selectedValue = $event"
+        [disabled]="disabled">
+      </app-drop-down>
   
-    <button 
-      mat-icon-button 
-      color="primary" 
-      (click)="addItem()" 
-      class="add-btn" 
-      [disabled]="disabled">
-      <mat-icon>add</mat-icon>
-    </button>
+      <button 
+        mat-icon-button 
+        color="primary" 
+        (click)="addItem()" 
+        class="add-btn" 
+        [disabled]="disabled">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
   
     <div class="selected-items">
-      <span *ngFor="let item of selectedItems" class="item-chip">
-        {{ displayProperty ? item[displayProperty] : item }}
-        <button (click)="removeItem(item)">
-          <mat-icon>close</mat-icon>
-        </button>
-      </span>
+      <app-badge
+        *ngFor="let item of selectedItems"
+        [displayProperty]="displayProperty"
+        [item]="item"
+        [editMode]="editMode"
+        (remove)="removeItem(item)">
+      </app-badge>
     </div>
   </div>
   

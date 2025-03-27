@@ -127,7 +127,11 @@ namespace Infrastructure.Repositories
                             && e.Application.Listing.StartDate >= DateTime.Now // And event hasn't passed yet
                             && e.DatePosted != null) // And has been posted
                 .Include(e => e.Application)
-                    .ThenInclude(a => a.Listing); // To retrieve the start date
+                    .ThenInclude(a => a.Listing) // To retrieve the start date
+                 .Include(e => e.Application.Listing.Venue)
+                    .ThenInclude(v => v.User)
+                 .Include(e => e.Application.Artist)
+                    .ThenInclude(a => a.User);
 
             return await query.ToListAsync();
         }
@@ -139,7 +143,11 @@ namespace Infrastructure.Repositories
                             && e.Application.Listing.StartDate >= DateTime.Now // And event hasn't passed yet
                             && e.DatePosted != null) // And has been posted
                 .Include(e => e.Application)
-                    .ThenInclude(a => a.Listing); // To retrieve the start date
+                    .ThenInclude(a => a.Listing) // To retrieve the start date
+                .Include(e => e.Application.Listing.Venue)
+                    .ThenInclude(v => v.User)
+                 .Include(e => e.Application.Artist)
+                    .ThenInclude(a => a.User);
 
             return await query.ToListAsync();
         }
@@ -160,7 +168,11 @@ namespace Infrastructure.Repositories
                         && e.Application.Listing.StartDate < DateTime.Now // That have already started
                         && e.DatePosted != null) // And have been posted
             .Include(e => e.Application)
-                .ThenInclude(a => a.Listing); // To retrieve start/end dates
+                .ThenInclude(a => a.Listing) // To retrieve start/end dates
+             .Include(e => e.Application.Listing.Venue)
+                .ThenInclude(v => v.User)
+             .Include(e => e.Application.Artist)
+                .ThenInclude(a => a.User);
 
             return await query.ToListAsync();
         }
@@ -172,7 +184,11 @@ namespace Infrastructure.Repositories
                         && e.Application.Listing.StartDate < DateTime.Now // That have already started
                         && e.DatePosted != null) // And have been posted
             .Include(e => e.Application)
-                .ThenInclude(a => a.Listing); // To retrieve start/end dates
+                .ThenInclude(a => a.Listing) // To retrieve start/end dates
+             .Include(e => e.Application.Listing.Venue)
+                .ThenInclude(v => v.User)
+             .Include(e => e.Application.Artist)
+                .ThenInclude(a => a.User);
 
             return await query.ToListAsync();
         }
@@ -182,6 +198,10 @@ namespace Infrastructure.Repositories
             return await context.Events
                 .Where(e => e.Application.ArtistId == id && e.DatePosted == null)
                 .Include(e => e.Application.Listing)
+                .Include(e => e.Application.Listing.Venue)
+                    .ThenInclude(v => v.User)
+                 .Include(e => e.Application.Artist)
+                    .ThenInclude(a => a.User)
                 .ToListAsync();
         }
 
@@ -190,6 +210,10 @@ namespace Infrastructure.Repositories
             return await context.Events
                 .Where(e => e.Application.Listing.VenueId == id && e.DatePosted == null)
                 .Include(e => e.Application.Listing)
+                .Include(e => e.Application.Listing.Venue)
+                    .ThenInclude(v => v.User)
+                 .Include(e => e.Application.Artist)
+                    .ThenInclude(a => a.User)
                 .ToListAsync();
         }
 

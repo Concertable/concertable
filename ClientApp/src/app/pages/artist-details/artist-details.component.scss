@@ -1,1 +1,13 @@
 @use '../../../styles/details.scss';
+
+.wrapper {
+    display: flex; /* Enables side-by-side alignment */
+    align-items: flex-start; /* Aligns items at the top */
+    gap: 20px; /* Adds spacing between textarea and image */
+    margin-top: 16px;
+    width: 100%
+}
+
+.nested-wrapper {
+    width: 100%
+}

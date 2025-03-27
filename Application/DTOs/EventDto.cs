@@ -1,19 +1,47 @@
-﻿namespace Application.DTOs
-{
-    public class EventDto : ItemDto
-    {
-        public decimal Price { get; set; }
-        public int? TotalTickets { get; set; }
-        public int? AvailableTickets { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public DateTime? DatePosted { get; set; }
-        public VenueDto Venue { get; set; }
-        public ArtistDto Artist { get; set; }
+﻿using Application.DTOs;
+using System.ComponentModel.DataAnnotations;
 
-        public EventDto()
+public class EventDto : IValidatableObject
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Event name is required.")]
+    public string Name { get; set; }
+
+    [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0.")]
+    public decimal Price { get; set; }
+
+    [Required(ErrorMessage = "Total tickets are required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Total tickets must be greater than 0.")]
+    public int TotalTickets { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Available tickets cannot be negative.")]
+    public int AvailableTickets { get; set; }
+
+    [Required(ErrorMessage = "Start date is required.")]
+    public DateTime StartDate { get; set; }
+
+    [Required(ErrorMessage = "End date is required.")]
+    public DateTime EndDate { get; set; }
+
+    public DateTime? DatePosted { get; set; }
+
+    [Required(ErrorMessage = "Venue is required.")]
+    public VenueDto Venue { get; set; }
+
+    [Required(ErrorMessage = "Artist is required.")]
+    public ArtistDto Artist { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (Artist != null && string.IsNullOrWhiteSpace(Artist.ImageUrl))
         {
-            Type = "event";
+            yield return new ValidationResult("Artist image is required.", new[] { "Artist.ImageUrl" });
+        }
+
+        if (StartDate != default && EndDate != default && StartDate >= EndDate)
+        {
+            yield return new ValidationResult("End date must be after start date.", new[] { nameof(EndDate) });
         }
     }
 }

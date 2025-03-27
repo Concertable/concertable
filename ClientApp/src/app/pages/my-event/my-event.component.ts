@@ -4,6 +4,8 @@ import { Event } from '../../models/event';
 import { Observable, of, switchMap, throwError } from 'rxjs';
 import { EventService } from '../../services/event/event.service';
 import { ActivatedRoute } from '@angular/router';
+import { cloneDeep } from 'lodash';
+import { EventToastService } from '../../services/toast/event/event-toast.service';
 
 @Component({
   selector: 'app-my-event',
@@ -15,7 +17,8 @@ export class MyEventComponent extends ConfigDirective<Event> {
 
   constructor(
       route: ActivatedRoute,
-      private eventService: EventService) {
+      private eventService: EventService,
+      private eventToastService: EventToastService) {
       super(route);
     }
 
@@ -32,11 +35,13 @@ export class MyEventComponent extends ConfigDirective<Event> {
   }
 
   update(event: Event): Observable<Event> {
-    return of()
+    if(this.item?.datePosted)
+      return this.eventService.update(event);
+    return this.eventService.post(event);
   }
 
   showUpdated(event: Event): void {
-
+    this.eventToastService.showUpdated()
   }
 
 }

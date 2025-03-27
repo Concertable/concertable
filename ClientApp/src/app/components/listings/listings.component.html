@@ -34,11 +34,12 @@
                 <mat-icon>visibility</mat-icon>
                 <span class="btn-label">View Applications</span>
             </button>
-
+            
             <button *ngIf="authService.isRole('ArtistManager')"
                     class="apply" 
                     (click)="onApply(listing)">
-                <mat-icon>check_circle</mat-icon>Apply
+                <mat-icon>check_circle</mat-icon>
+                <span class="btn-label">Apply</span>
             </button>
         </div>
     </div>

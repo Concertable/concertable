@@ -5,6 +5,9 @@ import { ToastService } from '../toast.service';
   providedIn: 'root'
 })
 export class EventToastService extends ToastService {
+  showUpdated() {
+    this.showSuccess("Successfully updated the event","Updated")
+  }
   showAutoCreated() {
     this.showSuccess("Successfully created the event","Created")
   }

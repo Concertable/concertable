@@ -56,6 +56,34 @@ body {
     background-color: var(--background-light); /* Now using global CSS variable */
 }
 
+.icon-text {
+    display: flex;
+    align-items: center;
+  
+    mat-icon {
+      font-size: 20px;
+    }
+  }
+  
+
+  button {
+    display: flex;
+    align-items: center;  
+    justify-content: center;
+  
+    mat-icon {
+      margin-right: 7px;
+    }
+  
+    &:disabled,
+    &[disabled] {
+      opacity: 0.6;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+  }
+  
+
 button.primary {
     padding: 8px 16px;
     background-color: var(--secondary-color);
@@ -82,17 +110,17 @@ button.delete {
     }
 }
 
-button.apply {
+button.apply, button.buy {
     padding: 8px 16px;
-    background-color: var(--green-color);
+    background-color: var(--success-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-}
 
-button.apply:hover {
-    background-color: var(--green-hover);
+    &:hover {
+        background-color: var(--success-hover);
+    }
 }
 
 /* Material UI Overrides */

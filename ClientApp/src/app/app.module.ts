@@ -5,6 +5,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 
+import { TextFieldModule } from '@angular/cdk/text-field';
+
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/home/home.component';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
@@ -121,7 +123,9 @@ import { SelectorComponent } from './components/selector/selector.component';
 import { SliderComponent } from './components/slider/slider.component';
 import { PreferenceDetailsComponent } from './components/preference-details/preference-details.component';
 import { EventCarouselComponent } from './components/event-carousel/event-carousel.component';
-import { DashboardDirective } from './directives/dashboard.directive';
+import { BadgeComponent } from './components/badge/badge.component';
+import { PriceComponent } from './components/config/price/price.component';
+import { NumberComponent } from './components/config/number/number.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -216,6 +220,9 @@ const routerOptions: ExtraOptions = {
     SliderComponent,
     PreferenceDetailsComponent,
     EventCarouselComponent,
+    BadgeComponent,
+    PriceComponent,
+    NumberComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
@@ -228,6 +235,7 @@ const routerOptions: ExtraOptions = {
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    TextFieldModule,
     MatIconModule,
     MatMenuModule,
     GoogleMapsModule,
@@ -246,7 +254,7 @@ const routerOptions: ExtraOptions = {
     MatSliderModule,
     MatPaginatorModule,
     MatTimepickerModule,
-    MatExpansionModule
+    MatExpansionModule,
 ],
   providers: [
     provideHttpClient(

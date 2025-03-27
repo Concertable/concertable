@@ -50,5 +50,14 @@ namespace Web.Controllers
             var artistDto = await artistService.CreateAsync(createArtistDto);
             return CreatedAtAction(nameof(GetDetailsById), new { Id = artistDto.Id }, artistDto);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] ArtistDto artistDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(await artistService.UpdateAsync(artistDto));
+        }
     }
 }

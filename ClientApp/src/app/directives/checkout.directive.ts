@@ -43,6 +43,7 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
     }
 
     try {
+      console.log("test",this.checkoutEntity);
       if (this.checkoutEntity?.id) {
         this.checkout(paymentMethodId, this.checkoutEntity.id).subscribe(
           async (response) => {

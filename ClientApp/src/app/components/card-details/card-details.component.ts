@@ -8,6 +8,7 @@ import { StripeService } from '../../services/stripe/stripe.service';
   styleUrl: './card-details.component.scss'
 })
 export class CardDetailsComponent {
+  @Input() buttonName?: string = ''
   @Input() isProcessing?: boolean = false;
   @Output() paymentMethodChange = new EventEmitter<string>(); 
   message: string = '';

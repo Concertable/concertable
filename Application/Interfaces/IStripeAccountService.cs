@@ -11,9 +11,7 @@ namespace Application.Interfaces
     public interface IStripeAccountService
     {
         Task<string> CreateStripeAccountAsync(ApplicationUser user);
-        Task<string> CreateBankAccountTokenAsync(string stripeId, int accountNo, int sortCode);
-        Task<AddedBankAccountResponse> AddBankAccountAsync(string stripeId, string accountToken);
-        Task SetupBankAccountAsync(string stripeId, int accountNo, int sortCode);
+        Task<string> GetOnboardingLinkAsync(string stripeId);
         Task<bool> IsUserVerifiedAsync(string stripeId);
     }
 }

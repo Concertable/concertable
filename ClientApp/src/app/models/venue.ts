@@ -12,5 +12,6 @@ export interface Venue extends Item {
     town: string;
     latitude: number;
     longitude: number;
+    userId: number;
     approved: boolean;
 }

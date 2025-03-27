@@ -24,3 +24,43 @@
         height:auto;
     }
 }
+
+.nested-wrapper {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 15px; /* Add space between image and content */
+    margin-bottom: 20px;
+  }
+  
+  img {
+    display: block; /* Ensures the image doesn't have unwanted spacing */
+    max-width: 100%; /* Make sure the image is responsive */
+    height: auto; /* Preserve aspect ratio */
+  }
+  
+  .img-about {
+    display: flex;
+    flex-direction: column; /* Stack content vertically */
+    justify-content: center; /* Vertically center the content inside .img-about */
+    flex: 1; /* Make it take up remaining space */
+  }
+
+  .wrapper {
+    flex: 1;
+  }
+  
+  .warning {
+    display: flex;
+    align-items: center;
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 12px 16px;
+    border-left: 5px solid var(--accent-color);
+    margin-bottom: 16px;
+    border-radius: 4px;
+  
+    .icon {
+      margin-right: 8px;
+    }
+  }
+  

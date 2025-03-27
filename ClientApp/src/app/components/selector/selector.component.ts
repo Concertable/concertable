@@ -12,6 +12,7 @@ export class SelectorComponent<T> {
   @Input() selectedItems: T[] = []; 
   @Input() displayProperty?: keyof T;
   @Input() disabled : boolean = false
+  @Input() editMode?: boolean = false;
 
   @Output() selectedItemsChange = new EventEmitter<T[]>(); 
 

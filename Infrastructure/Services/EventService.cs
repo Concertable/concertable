@@ -188,6 +188,7 @@ namespace Infrastructure.Services
             mapper.Map(eventDto, eventEntity);
 
             eventEntity.DatePosted = DateTime.Now;
+            eventEntity.AvailableTickets = eventDto.TotalTickets;
 
             eventRepository.Update(eventEntity);
             await eventRepository.SaveChangesAsync();
@@ -234,7 +235,7 @@ namespace Infrastructure.Services
             var preferences = await preferenceService.GetByUserIdAsync(user.Id);
 
             if (preferences is null)
-                throw new BadRequestException("You do not have preferences set");
+                return Enumerable.Empty<EventHeaderDto>();
 
             var eventParams = new EventParams
             {

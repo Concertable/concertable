@@ -1,13 +1,15 @@
+
 <div class="container">
     <app-image [src]="artist.imageUrl" [alt]="'Artist Image'" />
     <div class="info">
-        <h2>{{ artist.name }}</h2>
-        <p><mat-icon>music_note</mat-icon>
-            <span *ngFor="let genre of artist.genres; let i = index">
-                {{ genre }} {{ i < artist.genres.length - 1 ? ', ' : '' }}
-            </span>
-        </p>
-        <p><mat-icon>location_on</mat-icon> {{ artist.county }}</p>
-        <button class="primary" (click)="onDetailsClick()">View Details</button>
+    <h2>{{ artist.name }}</h2>
+    <p><mat-icon>music_note</mat-icon>
+        <span *ngFor="let genre of artist.genres; let i = index">
+        {{ genre.name }} {{ i < artist.genres.length - 1 ? ', ' : '' }}
+        </span>
+    </p>
+    <p><mat-icon>location_on</mat-icon> {{ artist.county }}</p>
+    <button class="primary" (click)="onDetailsClick()">View Details</button>
     </div>
 </div>
+

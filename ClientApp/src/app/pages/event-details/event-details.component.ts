@@ -45,6 +45,7 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
   set event(value: Event | undefined) {
     this.entity = value;
   }
+  
 
   override ngOnInit(): void {
       super.ngOnInit();

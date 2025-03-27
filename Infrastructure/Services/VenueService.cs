@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Responses;
 using System.Runtime.InteropServices;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
@@ -92,9 +93,13 @@ namespace Infrastructure.Services
             var venueRepository = unitOfWork.GetRepository<Venue>();
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
-            var venue = mapper.Map<Venue>(venueDto);
+            var venue = await venueRepository.GetByIdAsync(venueDto.Id);
+            mapper.Map(venueDto, venue);
+
             var user = await currentUserService.GetEntityAsync();
-            venue.UserId = user.Id;
+
+            if (venue?.UserId != user.Id)
+                throw new ForbiddenException("You do not own this venue");
 
             var location = await geocodingService.GetLocationAsync(venueDto.Latitude, venueDto.Longitude);
 

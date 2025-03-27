@@ -51,5 +51,14 @@ namespace Infrastructure.Repositories
 
             return await query.FirstAsync();
         }
+
+        public async new Task<ListingApplication?> GetByIdAsync(int id)
+        {
+            var query = context.ListingApplications
+                .Where(la => la.Id == id)
+                .Include(la => la.Artist);
+
+            return await query.FirstOrDefaultAsync();
+        }
     }
 }

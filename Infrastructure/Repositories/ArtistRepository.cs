@@ -49,8 +49,21 @@ namespace Infrastructure.Repositories
 
         public async Task<Artist?> GetByUserIdAsync(int id)
         {
-            var query = context.Artists.AsQueryable();
-            query = query.Where(v => v.UserId == id);
+            var query = context.Artists
+                .Where(v => v.UserId == id)
+                .Include(a => a.ArtistGenres)
+                    .ThenInclude(ag => ag.Genre);
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public new async Task<Artist?> GetByIdAsync(int id)
+        {
+            var query = context.Artists
+                .Where(v => v.Id == id)
+                .Include(a => a.ArtistGenres)
+                    .ThenInclude(ag => ag.Genre)
+                .Include(a => a.User);
 
             return await query.FirstOrDefaultAsync();
         }

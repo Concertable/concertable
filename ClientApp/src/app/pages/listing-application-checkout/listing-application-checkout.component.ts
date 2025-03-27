@@ -47,11 +47,12 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
 
   setRouteData(data: any): void {
     console.log(data);
-    this.application = data['listingApplication'];
+    this.application = data['application'];
     console.log("a",this.application);
   }
 
   checkout(paymentMethodId: string, applicationId: number): Observable<ListingApplicationPurchase> {
+    console.log("test123123123")
     return this.eventService.book(paymentMethodId, applicationId)
   }
 }

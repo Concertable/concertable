@@ -3,15 +3,27 @@
     <div class="container" *ngIf="artist">
         <section [id]="navItems[0].fragment">
             <h1>{{navItems[0].name}}</h1>
-            <app-heading-medium [editMode]="editMode" label="Name" [content]="artist.name" (contentChange)="updateContent($event, 'name')"/>
-            <app-textarea [editMode]="editMode" label="About" [content]="artist.about" (contentChange)="updateContent($event, 'about')"/>
-            <app-image 
-                [editMode]="editMode" 
-                width="200"
-                height="200"
-                [src]="artist.imageUrl" 
-                alt="Venue Image" 
-                (imageChange)="updateImage($event)"/>
+            <app-heading-medium [editMode]="editMode" label="Name" [(content)]="artist.name" (contentChange)="onChangeDetected()"/>
+            <div class="wrapper">
+                <div class="nested-wrapper">
+                    <app-textarea [editMode]="editMode" label="About" [(content)]="artist.about" (contentChange)="onChangeDetected()"/>
+                    <app-selector
+                        [options]="genres"
+                        [(selectedItems)]="artist.genres"
+                        [label]="'Select Genre'"
+                        displayProperty="name"
+                        [editMode]="editMode"
+                        (selectedItemsChange)="onChangeDetected()">
+                    </app-selector>
+                </div>
+                <app-image 
+                    [editMode]="editMode" 
+                    width="300"
+                    height="300"
+                    [src]="artist.imageUrl" 
+                    alt="Venue Image" 
+                    (imageChange)="updateImage($event)"/>
+            </div>
         </section>
 
         <section [id]="navItems[1].fragment">

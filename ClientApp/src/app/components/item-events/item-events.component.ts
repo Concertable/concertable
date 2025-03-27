@@ -15,7 +15,18 @@ export class ItemEventsComponent {
   constructor(protected authService: AuthService, private router: Router) { }
 
   onViewDetails(event: Event) {
-    this.router.navigate(['find/event', event.id]);
+    this.authService.currentUser$.subscribe(user => {
+      console.log(this.authService.isRole("VenueManager"))
+      console.log(event.venue.userId == user?.id)
+      if(this.authService.isRole("VenueManager"))
+        if(event.venue.userId == user?.id)
+          this.router.navigate(['venue/my/events/event', event.id]);
+      else if(this.authService.isRole("ArtistManager"))
+        if(event.artist.userId == user?.id)
+          this.router.navigate(['artist/my/events/event', event.id]);
+      else 
+        this.router.navigate(['find/event', event.id]);
+    })
   }
 
   onPurchase(event: Event) {

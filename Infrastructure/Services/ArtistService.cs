@@ -11,6 +11,7 @@ using Application.DTOs;
 using Application.Responses;
 using Infrastructure.Repositories;
 using Core.Entities.Identity;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
@@ -20,6 +21,7 @@ namespace Infrastructure.Services
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
         private readonly ICurrentUserService currentUserService;
+        private IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
 
         public ArtistService(
@@ -27,12 +29,14 @@ namespace Infrastructure.Services
             ICurrentUserService currentUserService, 
             IReviewService reviewService, 
             ILocationService locationService,
+            IUnitOfWork unitOfWork,
             IMapper mapper) : base(artistRepository, locationService)
         {
             this.artistRepository = artistRepository;
             this.reviewService = reviewService;
             this.locationService = locationService;
             this.currentUserService = currentUserService;
+            this.unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
 
@@ -70,6 +74,41 @@ namespace Infrastructure.Services
             await artistRepository.SaveChangesAsync();
 
             return mapper.Map<ArtistDto>(createdArtist);
+        }
+
+        public async Task<ArtistDto> UpdateAsync(ArtistDto artistDto)
+        {
+            var artist = await artistRepository.GetByIdAsync(artistDto.Id);
+            mapper.Map(artistDto, artist);
+
+            var user = await currentUserService.GetEntityAsync();
+
+            if (artist?.UserId != user.Id)
+                throw new ForbiddenException("You do not own this Artist");
+
+            var existingGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
+
+            var newGenreIds = artistDto.Genres.Select(g => g.Id);
+
+            foreach (var genreId in existingGenreIds.Except(newGenreIds))
+            {
+                var genreToRemove = artist.ArtistGenres.First(ag => ag.GenreId == genreId);
+                artist.ArtistGenres.Remove(genreToRemove);
+            }
+
+            foreach (var genreId in newGenreIds.Except(existingGenreIds))
+            {
+                artist.ArtistGenres.Add(new ArtistGenre
+                {
+                    ArtistId = artist.Id,
+                    GenreId = genreId
+                });
+            }
+
+            artistRepository.Update(artist);
+            await artistRepository.SaveChangesAsync();
+
+            return mapper.Map<ArtistDto>(artist);
         }
     }
 }

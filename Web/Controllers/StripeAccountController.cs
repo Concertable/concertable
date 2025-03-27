@@ -17,18 +17,18 @@ namespace Web.Controllers
             this.currentUserService = currentUserService;
         }
 
-        [HttpPost("add-bank-account")]
-        public async Task<ActionResult<AddedBankAccountResponse>> AddBankAccountForUser([FromQuery]string token)
+        [HttpGet("onboarding-link")]
+        public async Task<ActionResult<string>> GetOnboardingLink()
         {
             var user = await currentUserService.GetEntityAsync();
 
-            if(user.StripeId is null)
-            {
-                return BadRequest("No StripeId found");
-            }
+            if (string.IsNullOrWhiteSpace(user.StripeId))
+                return BadRequest("User does not have a Stripe account set up.");
 
-            return Ok(await stripeAccountService.AddBankAccountAsync(user.StripeId, token));
+            var link = await stripeAccountService.GetOnboardingLinkAsync(user.StripeId);
+            return Ok(link);
         }
+
 
         [HttpGet("verified")]
         public async Task<ActionResult<bool>> IsUserVerified()

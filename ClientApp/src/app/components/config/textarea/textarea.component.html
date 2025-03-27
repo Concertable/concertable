@@ -1,8 +1,15 @@
 @if(editMode) {
     <mat-form-field appearance="outline" class="container">
         <mat-label *ngIf="label">{{ label }}</mat-label>
-        <textarea matInput [(ngModel)]="content" (ngModelChange)="onContentChange($event)"></textarea>
+        <textarea 
+            matInput 
+            [(ngModel)]="content" 
+            (ngModelChange)="onContentChange($event)" 
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="1"
+            cdkAutosizeMaxRows="20">
+        </textarea>
     </mat-form-field>
 } @else {
-    <p class="content-display">{{ content }}</p>
+    <p>{{ content }}</p>
 }

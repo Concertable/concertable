@@ -2,7 +2,7 @@
     <h2>Secure Checkout</h2>
   
     <!-- Card Details Component -->
-    <app-card-details [isProcessing]="isProcessing" (paymentMethodChange)="updatePaymentMethodId($event)"></app-card-details>
+    <app-card-details buttonName="Pay Artist" [isProcessing]="isProcessing" (paymentMethodChange)="updatePaymentMethodId($event)"></app-card-details>
   
     <!-- Message -->
     <p class="message">{{ message }}</p>

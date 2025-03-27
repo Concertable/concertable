@@ -20,7 +20,8 @@
         [selectedItems]="selectedGenres"
         [label]="'Select Genre'"
         displayProperty="name"
-        (selectedItemsChange)="onGenreChange($event)">
+        (selectedItemsChange)="onGenreChange($event)"
+        [editMode]="true">
       </app-selector>
       <app-slider
         label="Distance Radius (km)"

@@ -160,7 +160,7 @@ export class ListingsComponent  implements OnInit, OnChanges {
   onViewApplications(listing: Listing) {
     console.log(listing);
     this.router.navigate(['my/applications', listing.id], {
-      relativeTo: this.route
+      relativeTo: this.route.parent
     });
   }
   

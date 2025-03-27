@@ -1,34 +1,11 @@
-   <!-- If user is verified, show "Change Details" button -->
-  <div *ngIf="isVerified && !showForm">
-    <p>Your Stripe account is verified.</p>
-    <button mat-raised-button color="primary" (click)="showBankForm()">Change Bank Details</button>
-  </div>
-  
-  <!-- If user is NOT verified, show "Add Bank Details" button -->
-  <div *ngIf="!isVerified && !showForm">
-    <p>Your Stripe account is not yet verified.</p>
-    <button mat-raised-button color="accent" (click)="showBankForm()">Add Bank Details</button>
-  </div>
-  
-  <!-- Show the form when the button is clicked -->
-  <form *ngIf="showForm" (ngSubmit)="submitBankDetails()" #bankForm="ngForm">
-    <div class="form-group">
-      <label for="accountHolder">Account Holder Name</label>
-      <input id="accountHolder" type="text" class="form-control" [(ngModel)]="accountHolderName" name="accountHolder" required />
-    </div>
-  
-    <div class="form-group">
-      <label for="sortCode">Sort Code</label>
-      <input id="sortCode" type="text" class="form-control" [(ngModel)]="sortCode" name="sortCode" required pattern="^\d{2}-\d{2}-\d{2}$" />
-      <small class="text-danger" *ngIf="sortCode && sortCode.length !== 8">Invalid sort code format</small>
-    </div>
-  
-    <div class="form-group">
-      <label for="accountNumber">Account Number</label>
-      <input id="accountNumber" type="text" class="form-control" [(ngModel)]="accountNumber" name="accountNumber" required pattern="^\d{8}$" />
-      <small class="text-danger" *ngIf="accountNumber && accountNumber.length !== 8">Invalid account number</small>
-    </div>
-  
-    <button mat-raised-button color="primary" type="submit" [disabled]="!bankForm.valid">Submit Bank Details</button>
-  </form>
-  
+<!-- If user is verified -->
+<div *ngIf="isVerified">
+  <p>Your Stripe account is verified and ready for payouts.</p>
+  <button mat-raised-button color="primary" (click)="startOnboarding()">Update Details</button>
+</div>
+
+<!-- If user is NOT verified -->
+<div *ngIf="!isVerified">
+  <p>You need to complete your Stripe onboarding.</p>
+  <button mat-raised-button color="accent" (click)="startOnboarding()">Complete Onboarding</button>
+</div>

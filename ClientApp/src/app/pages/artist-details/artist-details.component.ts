@@ -7,6 +7,8 @@ import { Observable } from 'rxjs';
 import { DetailsDirective } from '../../directives/details/details.directive';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 import { ExtendedDetailsDirective } from '../../directives/extended-details.directive';
+import { Genre } from '../../models/genre';
+import { GenreService } from '../../services/genre/genre.service';
 
 @Component({
   selector: 'app-artist-details',
@@ -16,8 +18,11 @@ import { ExtendedDetailsDirective } from '../../directives/extended-details.dire
   styleUrl: './artist-details.component.scss'
 })
 export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
+  genres: Genre[] = [];
+
   constructor(
     private artistService: ArtistService,
+    private genreService: GenreService,
     authService: AuthService,
     blobStorageService: BlobStorageService,
     route: ActivatedRoute,
@@ -38,6 +43,7 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
 
   override ngOnInit(): void {
       super.ngOnInit();
+      this.genreService.getAll().subscribe(g => this.genres = g)
   }
 
   setDetails(data: any): void {

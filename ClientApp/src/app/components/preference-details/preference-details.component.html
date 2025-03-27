@@ -1,11 +1,12 @@
 @if(preferences) {
   <app-selector
-  [options]="genres"
-  [(selectedItems)]="preferences.genres"
-  [label]="'Select Genres'"
-  displayProperty="name"
-  [disabled]="!editMode"
-  (selectedItemsChange)="onChangeDetected()">
+    [options]="genres"
+    [(selectedItems)]="preferences.genres"
+    [label]="'Select Genres'"
+    displayProperty="name"
+    [disabled]="!editMode"
+    [editMode]="editMode"
+    (selectedItemsChange)="onChangeDetected()">
 </app-selector>
 <app-slider
   label="Distance Radius (km)"

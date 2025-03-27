@@ -1,24 +1,31 @@
 import { Injectable } from '@angular/core';
 import { ToastService } from '../toast.service';
-import { StripeError } from '@stripe/stripe-js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StripeAccountToastService extends ToastService {
-  addedBankAccount(accountId: string){
-    this.showSuccess(`Successfully added bank account ${accountId}. Redirecting you to the stripe creation page`,"Account Added")
+  onboardingStarted() {
+    this.showSuccess("Redirecting you to complete your Stripe onboarding", "Stripe Onboarding");
   }
 
-  invalidSortCodeOrAccountNo(){
-    this.showError("Invalid sort code or account number format");
+  onboardingSuccess() {
+    this.showSuccess("Stripe Details Successfully added!", "Success")
   }
 
-  bankTokenError(error: StripeError) {
-    this.showError(`Error creating Bank Token: ${error}`)
+  onboardingFail() {
+    this.showError("Failed to Authenticate Stripe Account", "Fail")
   }
 
   onboardingWindowClosed() {
-    this.showInfo("Stripe onboarding window closed");
+    this.showInfo("Stripe onboarding window was closed");
+  }
+
+  onboardingError() {
+    this.showError("Failed to generate Stripe onboarding link");
+  }
+
+  notVerified() {
+    this.showError("User does not have a stripe Id")
   }
 }

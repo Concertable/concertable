@@ -4,14 +4,7 @@ using Application.Responses;
 using Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Org.BouncyCastle.Asn1.IsisMtt.Ocsp;
 using Stripe;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -22,9 +15,9 @@ namespace Infrastructure.Services
         private readonly string baseUri;
 
         public StripeAccountService(
-            IUserRepository userRepository, 
+            IUserRepository userRepository,
             IOptions<StripeSettings> stripeSettings,
-            IConfiguration configuration) 
+            IConfiguration configuration)
         {
             this.stripeSettings = stripeSettings.Value;
             StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
@@ -34,8 +27,8 @@ namespace Infrastructure.Services
 
         public async Task<string> CreateStripeAccountAsync(ApplicationUser user)
         {
-            var service = new AccountService();
-            var options = new AccountCreateOptions
+            var accountService = new AccountService();
+            var accountOptions = new AccountCreateOptions
             {
                 Type = "express",
                 Email = user.Email,
@@ -47,7 +40,7 @@ namespace Infrastructure.Services
                 }
             };
 
-            var account = await service.CreateAsync(options);
+            var account = await accountService.CreateAsync(accountOptions);
 
             user.StripeId = account.Id;
             userRepository.Update(user);
@@ -56,71 +49,26 @@ namespace Infrastructure.Services
             return account.Id;
         }
 
-        public async Task<string> CreateBankAccountTokenAsync(string stripeId, int accountNo, int sortCode)
+        public async Task<string> GetOnboardingLinkAsync(string stripeId)
         {
-            var options = new TokenCreateOptions
-            {
-                BankAccount = new TokenBankAccountOptions {
-                    Country = "GB",
-                    Currency = "GBP",
-                    AccountHolderType = "individual",
-                    RoutingNumber = sortCode.ToString(),
-                    AccountNumber = accountNo.ToString()
-                }
-            };
-            var service = new TokenService();
-            var token = await service.CreateAsync(options);
-
-            return token.Id;
-        }
-
-        public async Task<AddedBankAccountResponse> AddBankAccountAsync(string stripeId, string accountToken)
-        {
-            var options = new AccountExternalAccountCreateOptions
-            {
-                ExternalAccount = accountToken
-            };
-
-            var service = new AccountExternalAccountService();
-            var account = await service.CreateAsync(stripeId, options);
-
-            var redirectUri = await CreateOnboardingLinkAsync(stripeId);
-
-            return new AddedBankAccountResponse
-            {
-                AccountId = account.Id,
-                RedirectUri = redirectUri
-            };
-        }
-
-        private async Task<string> CreateOnboardingLinkAsync(string stripeId)
-        {
-            var isVerified = await IsUserVerifiedAsync(stripeId);
             var service = new AccountLinkService();
+
             var options = new AccountLinkCreateOptions
             {
                 Account = stripeId,
-                RefreshUrl = $"{baseUri}/reauth",
-                ReturnUrl = $"{baseUri}/dashboard",
-                Type = isVerified ? "account_update" : "account_onboarding"
+                RefreshUrl = $"{baseUri}/reauth",   // You can change this to match your app
+                ReturnUrl = $"{baseUri}/dashboard", // This is where users are sent back to
+                Type = "account_onboarding"
             };
 
             var link = await service.CreateAsync(options);
-            return link.Url; 
-        }
-
-        public async Task SetupBankAccountAsync(string stripeId, int accountNo, int sortCode)
-        {
-            var tokenId = await CreateBankAccountTokenAsync(stripeId, accountNo, sortCode);
-
-            await AddBankAccountAsync(stripeId, tokenId);
+            return link.Url;
         }
 
         public async Task<bool> IsUserVerifiedAsync(string stripeId)
         {
             var service = new AccountService();
             var account = await service.GetAsync(stripeId);
-
             return account.PayoutsEnabled && account.ChargesEnabled;
         }
     }

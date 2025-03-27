@@ -88,5 +88,13 @@ export class EventService {
   addFakeEvent(header: EventHeader): void {
     this.recentEventHeadersSubject.next(header);
   }
+
+  post(event: Event): Observable<Event> {
+    return this.http.put<Event>(`${this.apiUrl}/post/${event.id}`, event);
+  }
+
+  update(event: Event): Observable<Event> {
+    return this.http.put<Event>(`${this.apiUrl}/${event.id}`, event);
+  }
   
 }

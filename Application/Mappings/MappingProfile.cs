@@ -35,23 +35,32 @@ namespace Application.Mappings
                 opt => opt.MapFrom(src => src.User.County))
             .ForMember(
                 dest => dest.Town,
-                opt => opt.MapFrom(src => src.User.Town));
+                opt => opt.MapFrom(src => src.User.Town))
+            .ForMember(
+                dest => dest.UserId,
+                opt => opt.MapFrom(src => src.User.Id));
 
             //Artist
             CreateMap<Artist, ArtistDto>()
-            .ForMember(
-                dest => dest.Genres,
-                opt => opt.MapFrom(src => src.ArtistGenres.Select(ag => ag.Genre.Name))
-            )
+            .ForMember(dest => dest.Genres, opt =>
+                opt.MapFrom(src => src.ArtistGenres.Select(ag => new GenreDto
+                {
+                    Id = ag.Genre.Id,
+                    Name = ag.Genre.Name
+                })))
             .ForMember(
                 dest => dest.County,
                 opt => opt.MapFrom(src => src.User.County))
             .ForMember(
                 dest => dest.Town,
-                opt => opt.MapFrom(src => src.User.Town));
+                opt => opt.MapFrom(src => src.User.Town))
+            .ForMember(
+                dest => dest.UserId,
+                opt => opt.MapFrom(src => src.User.Id));
             CreateMap<CreateVenueDto, Venue>();
 
-            CreateMap<ArtistDto, Artist>();
+            CreateMap<ArtistDto, Artist>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore());
             CreateMap<Artist, ArtistHeaderDto>();
             CreateMap<ArtistHeaderDto, Artist>();
             CreateMap<CreateArtistDto, Artist>();
