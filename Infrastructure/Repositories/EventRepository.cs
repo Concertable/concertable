@@ -55,6 +55,20 @@ namespace Infrastructure.Repositories
             return filters;
         }
 
+        // Order by both name and date posted
+        protected override IQueryable<Event> ApplyOrdering(IQueryable<Event> query, string? sort)
+        {
+            return sort?.ToLower() switch
+            {
+                "name_asc" => query.OrderBy(e => e.Name),
+                "name_desc" => query.OrderByDescending(e => e.Name),
+                "date_asc" => query.OrderBy(e => e.DatePosted),
+                "date_desc" => query.OrderByDescending(e => e.DatePosted),
+                _ => query
+            };
+        }
+
+
         public async Task<Event> GetByIdAsync(int id)
         {
             var query = context.Events

@@ -46,17 +46,22 @@ namespace Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
             {
-                query = searchParams.Sort.ToLower() switch
-                {
-                    "name_asc" => query.OrderBy(e => EF.Property<string>(e, "Name")),
-                    "name_desc" => query.OrderByDescending(e => EF.Property<string>(e, "Name")),
-                    _ => query
-                };
+                query = ApplyOrdering(query, searchParams.Sort);
             }
 
             var result = query.Select(Selector);
 
             return await PaginationHelper.CreatePaginatedResponseAsync(result, searchParams);
+        }
+
+        protected virtual IQueryable<TEntity> ApplyOrdering(IQueryable<TEntity> query, string? sort)
+        {
+            return sort?.ToLower() switch
+            {
+                "name_asc" => query.OrderBy(e => EF.Property<string>(e, "Name")),
+                "name_desc" => query.OrderByDescending(e => EF.Property<string>(e, "Name")),
+                _ => query
+            };
         }
     }
 }

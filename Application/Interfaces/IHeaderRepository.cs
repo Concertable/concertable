@@ -15,5 +15,6 @@ namespace Application.Interfaces
         where TEntity: BaseEntity
     {
         Task<PaginationResponse<TDto>> GetRawHeadersAsync(SearchParams? searchParams);
+
     }
 }
