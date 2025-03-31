@@ -85,5 +85,11 @@ namespace Infrastructure.Services
             };
         }
 
+        public async Task<int> GetUnreadCountForUserAsync()
+        {
+            var user = await currentUserService.GetAsync();
+            return await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
+        }
+
     }
 }

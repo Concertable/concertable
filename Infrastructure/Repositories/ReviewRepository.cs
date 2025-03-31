@@ -74,36 +74,28 @@ namespace Infrastructure.Repositories
             };
         }
 
-
-        public async Task<PaginationResponse<Review>> GetByArtistIdAsync(int id, PaginationParams pageParams)
+        private async Task<PaginationResponse<Review>> GetAsync(
+            Expression<Func<Review, bool>> predicate,
+            PaginationParams pageParams)
         {
             var query = context.Reviews
                 .Include(r => r.Ticket)
-                .ThenInclude(t => t.User)
-                .Where(r => r.Ticket.Event.Application.ArtistId == id);
+                    .ThenInclude(t => t.User)
+                .Where(predicate)
+                .OrderByDescending(r => r.Id); 
 
             return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
         }
 
-        public async Task<PaginationResponse<Review>> GetByEventIdAsync(int id, PaginationParams pageParams)
-        {
-            var query = context.Reviews
-                .Include(r => r.Ticket)
-                .ThenInclude(t => t.User)
-                .Where(r => r.Ticket.EventId == id);
+        public Task<PaginationResponse<Review>> GetByEventIdAsync(int eventId, PaginationParams pageParams) =>
+            GetAsync(r => r.Ticket.EventId == eventId, pageParams);
 
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
-        }
+        public Task<PaginationResponse<Review>> GetByArtistIdAsync(int artistId, PaginationParams pageParams) =>
+            GetAsync(r => r.Ticket.Event.Application.ArtistId == artistId, pageParams);
 
-        public async Task<PaginationResponse<Review>> GetByVenueIdAsync(int id, PaginationParams pageParams)
-        {
-            var query = context.Reviews
-                .Include(r => r.Ticket)
-                .ThenInclude(t => t.User)
-                .Where(r => r.Ticket.Event.Application.Listing.VenueId == id);
+        public Task<PaginationResponse<Review>> GetByVenueIdAsync(int venueId, PaginationParams pageParams) =>
+            GetAsync(r => r.Ticket.Event.Application.Listing.VenueId == venueId, pageParams);
 
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
-        }
 
         private IQueryable<Ticket> GetUnreviewedTicketsByUser(int userId)
         {

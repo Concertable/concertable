@@ -21,6 +21,7 @@ namespace Infrastructure.Repositories
         public async Task<PaginationResponse<Message>> GetByUserIdAsync(int id, PaginationParams pageParams)
         {
             var query = context.Messages
+                .Include(m => m.FromUser)
                 .Where(m => m.ToUserId == id)
                 .OrderByDescending(m => m.SentDate);
 

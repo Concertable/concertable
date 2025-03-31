@@ -18,8 +18,9 @@
     </button>
   </div>
 
+  <!-- Review List -->
   <div class="cards-container">
-    <app-card *ngFor="let review of reviews" class="review-card">
+    <app-card *ngFor="let review of reviewsPage?.data" class="review-card">
       <div class="review-header">
         <div class="rating">
           <mat-icon class="star">star</mat-icon>
@@ -27,11 +28,20 @@
         </div>
         <div class="reviewer-info">
           <strong>{{ review.email }}</strong>
-          <!-- <span class="review-date">{{ review.date | date:'dd MMMM yyyy' }}</span> -->
         </div>
       </div>
       <mat-divider class="light"></mat-divider>
       <p class="review-text">{{ review.details }}</p>
     </app-card>
   </div>
+
+  <div class="pagination">
+    <mat-paginator
+      [length]="reviewsPage?.totalCount || 0"
+      [pageSize]="reviewsPage?.pageSize || 10"
+      [pageIndex]="(reviewsPage?.pageNumber ?? 1) - 1"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+</div>
 </div>

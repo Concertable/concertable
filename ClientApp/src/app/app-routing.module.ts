@@ -176,9 +176,18 @@ const routes: Routes = [
           { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver }, data: { breadcrumb: 'Venue Details' } }
         ]
       },
-      { path: 'create', component: CreateArtistComponent, data: { breadcrumb: 'Create Artist' } }
+      { path: 'create', component: CreateArtistComponent, data: { breadcrumb: 'Create Artist' } },
+      {
+        path: 'my',
+        data: { breadcrumb: 'My' },
+        children: [
+          { path: 'events', component: MyEventsComponent, data: { breadcrumb: 'Events' } },
+          { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } }
+        ]
+      }
     ]
   }
+  
 ];
 
 @NgModule({

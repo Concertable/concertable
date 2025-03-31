@@ -12,9 +12,13 @@ import { ReviewSummary } from '../../models/review-summary';
   styleUrl: '../../shared/templates/reviews/reviews.template.scss'
 })
 export class EventReviewsComponent extends ReviewDirective {
+  override onAddReview(): void {
+    throw new Error('Method not implemented.');
+  }
   getSummary(id: number): Observable<ReviewSummary> {
     return this.reviewService.getSummaryByEventId(id);
   }
+
   get(id: number): Observable<Pagination<Review>> {
     return this.reviewService.getByEventId(id, this.pageParams);
   }

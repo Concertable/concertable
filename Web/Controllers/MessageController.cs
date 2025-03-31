@@ -30,5 +30,11 @@ namespace Web.Controllers
         {
             return Ok(await messageService.GetForUserAsync(pageParams));
         }
+
+        [HttpGet("user/unread-count")]
+        public async Task<ActionResult<int>> GetUnreadCountForUser()
+        {
+            return Ok(await messageService.GetUnreadCountForUserAsync());
+        }
     }
 }

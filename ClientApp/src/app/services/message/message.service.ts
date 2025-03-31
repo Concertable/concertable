@@ -5,21 +5,27 @@ import { environment } from '../../../environments/environment';
 import { Message } from '../../models/message';
 import { Pagination } from '../../models/pagination';
 import { MessageSummary } from '../../models/message-summary';
+import { PaginationParams } from '../../models/pagination-params';
+import { HttpParamsService } from '../http-params/http-params.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessageService {
-
   private apiUrl = `${environment.apiUrl}/message`;
     
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private httpParamsService: HttpParamsService<PaginationParams>) { }
 
-  getForUser(): Observable<Pagination<Message>> {
-    return this.http.get<Pagination<Message>>(`${this.apiUrl}/user`);
-  }
+  getForUser(pageParams: PaginationParams): Observable<Pagination<Message>> {
+    const params = this.httpParamsService.serialize(pageParams);
+    return this.http.get<Pagination<Message>>(`${this.apiUrl}/user`, { params });
+  }  
 
   getSummaryForUser(): Observable<MessageSummary> {
     return this.http.get<MessageSummary>(`${this.apiUrl}/user/summary`);
   }
+
+  getUnreadCountForUser(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/user/unread-count`);
+  }  
 }

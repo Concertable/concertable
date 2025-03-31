@@ -99,10 +99,19 @@ namespace Application.Mappings
 
 
             //Messages
-            CreateMap<Message, MessageDto>();
-            CreateMap<MessageDto, Message>();
+            CreateMap<Message, MessageDto>()
+            .ForMember(dest => dest.FromUser, opt => opt.MapFrom(src => src.FromUser))
+            .ForMember(dest => dest.Action, opt => opt.MapFrom(src =>
+                !string.IsNullOrEmpty(src.Action) && src.ActionId.HasValue
+                    ? new ActionDto
+                    {
+                        Name = src.Action,
+                        Id = src.ActionId.Value
+                    }
+                    : null
+            ))
+            .ReverseMap();
 
-            //MessageSummary
 
             //Purchase
             CreateMap<Purchase, PurchaseDto>();

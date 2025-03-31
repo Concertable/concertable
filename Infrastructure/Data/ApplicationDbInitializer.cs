@@ -825,8 +825,13 @@ namespace Infrastructure.Data
                 {
                     var messages = new Message[]
                     {
-                        new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.UtcNow, Read = false, Action = "application", ActionId = 1 },
-                        new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow, Read = true, Action = "event", ActionId = 1 }
+                        new Message { FromUserId = 2, ToUserId = 43, Content = "Interested in your venue!", SentDate = DateTime.UtcNow.AddDays(-7), Read = true, Action = "application", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-5).AddHours(-2), Read = true, Action = "event", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-3).AddHours(3), Read = true, Action = "event", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-2), Read = false, Action = "event", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-1).AddHours(5), Read = false, Action = "event", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddHours(-12), Read = false, Action = "event", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow, Read = false, Action = "event", ActionId = 1 },
                     };
                     context.Messages.AddRange(messages);
                     await context.SaveChangesAsync();

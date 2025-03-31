@@ -12,6 +12,9 @@ import { ReviewSummary } from '../../models/review-summary';
   styleUrl: '../../shared/templates/reviews/reviews.template.scss'
 })
 export class ArtistReviewsComponent extends ReviewDirective {
+  override onAddReview(): void {
+    throw new Error('Method not implemented.');
+  }
   getSummary(id: number): Observable<ReviewSummary> {
     return this.reviewService.getSummaryByArtistId(id);
   }
