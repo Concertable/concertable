@@ -27,6 +27,7 @@ public class EventDto : ItemDto, IValidatableObject
 
     [Required(ErrorMessage = "Artist is required.")]
     public ArtistDto Artist { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

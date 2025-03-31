@@ -9,6 +9,7 @@ import { EventStateService } from '../../services/event-state/event-state.servic
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 import { ExtendedDetailsDirective } from '../../directives/extended-details/extended-details.directive';
 import { ToastService } from '../../services/toast/toast.service';
+import { GenreService } from '../../services/genre/genre.service';
 
 @Component({
   selector: 'app-event-details',
@@ -18,6 +19,7 @@ import { ToastService } from '../../services/toast/toast.service';
   styleUrl: './event-details.component.scss'
 })
 export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
+  now: Date = new Date();
   @Input('event') declare entity?: Event;
 
   override navItems: NavItem[] = [
@@ -33,11 +35,12 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
     private eventStateService: EventStateService,
     authService: AuthService,
     blobStorageService: BlobStorageService,
+    genreService: GenreService,
     route: ActivatedRoute,
     router: Router,
     toastService: ToastService) 
   { 
-    super(blobStorageService, authService, route, router, toastService)
+    super(blobStorageService, genreService, authService, route, router, toastService)
   }
 
   get event(): Event | undefined {
@@ -51,13 +54,21 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
 
   override ngOnInit(): void {
       super.ngOnInit();
+
   }
 
   setDetails(data: any): void {
-      this.event = data['event'];
+    this.event = data['event'];
+    console.log('event.startDate', this.event?.startDate, 'now', this.now);
   }
 
   onBuyClick() {
     this.router.navigate(['event/checkout', this.event?.id])
+  }
+
+  get isStartDateBeforeNow(): boolean {
+    if(this.event)
+      return new Date(this.event.startDate) <= new Date();
+    return false;
   }
 }

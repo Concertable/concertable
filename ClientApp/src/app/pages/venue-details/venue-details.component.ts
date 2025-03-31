@@ -12,6 +12,7 @@ import { Listing } from '../../models/listing';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 import { ExtendedDetailsDirective } from '../../directives/extended-details/extended-details.directive';
 import { ToastService } from '../../services/toast/toast.service';
+import { GenreService } from '../../services/genre/genre.service';
 
 @Component({
   selector: 'app-venue-details',
@@ -36,10 +37,11 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
     authService: AuthService, 
     route: ActivatedRoute, 
     blobStorageService: BlobStorageService,
+    genreService: GenreService,
     router: Router,
     toastService: ToastService
   ) {
-    super(blobStorageService, authService, route, router, toastService);
+    super(blobStorageService, genreService, authService, route, router, toastService);
   }
 
   get venue(): Venue | undefined {

@@ -8,6 +8,8 @@ import { Event } from '../../models/event';
 import { DetailsDirective } from '../details/details.directive';
 import { NavItem } from '../../models/nav-item';
 import { ToastService } from '../../services/toast/toast.service';
+import { Genre } from '../../models/genre';
+import { GenreService } from '../../services/genre/genre.service';
 
 @Directive({
   selector: '[appExtendedDetails]',
@@ -19,15 +21,22 @@ export abstract class ExtendedDetailsDirective<T extends Venue | Artist | Event>
     { name: 'Videos', fragment: 'videos' },
     { name: 'Reviews', fragment: 'reviews' }
   ];
+  genres: Genre[] = [];
 
   constructor(
     protected blobStorageService: BlobStorageService, 
+    private genreService: GenreService,
     authService: AuthService,
     route: ActivatedRoute,
     router: Router,
     toastService: ToastService
   ) {
     super(authService, route, router, toastService);
+  }
+
+  override ngOnInit(): void {
+      super.ngOnInit();
+      this.genreService.getAll().subscribe(g => this.genres = g)
   }
 
   exists(section: string): boolean {

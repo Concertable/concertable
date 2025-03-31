@@ -20,8 +20,6 @@ import { ToastService } from '../../services/toast/toast.service';
   styleUrl: './artist-details.component.scss'
 })
 export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
-  genres: Genre[] = [];
-
   override navItems: NavItem[] = [
       { name: 'Info', fragment: 'info' },
       { name: 'Upcoming Events', fragment: 'upcoming-events' },
@@ -31,14 +29,14 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
 
   constructor(
     private artistService: ArtistService,
-    private genreService: GenreService,
     authService: AuthService,
     blobStorageService: BlobStorageService,
+    genreService: GenreService,
     route: ActivatedRoute,
     router: Router,
     toastService: ToastService) 
   { 
-    super(blobStorageService, authService, route, router, toastService)
+    super(blobStorageService, genreService, authService, route, router, toastService)
   }
 
   get artist(): Artist | undefined {
@@ -53,7 +51,6 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
 
   override ngOnInit(): void {
       super.ngOnInit();
-      this.genreService.getAll().subscribe(g => this.genres = g)
   }
 
   setDetails(data: any): void {

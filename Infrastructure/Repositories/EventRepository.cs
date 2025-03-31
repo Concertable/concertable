@@ -68,7 +68,9 @@ namespace Infrastructure.Repositories
                         .ThenInclude(ag => ag.Genre)
             .Include(e => e.Application.Listing)
                 .ThenInclude(l => l.Venue)
-                    .ThenInclude(v => v.User); 
+                    .ThenInclude(v => v.User)
+            .Include(e => e.EventGenre)
+                .ThenInclude(eg => eg.Genre);
 
             return await query.FirstAsync();
         }

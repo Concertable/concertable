@@ -9,7 +9,16 @@
             <section [id]="navItems[0].fragment">
                 <h1>{{navItems[0].name}}</h1>
                 <app-heading-medium [editMode]="editMode" [(content)]="event.name"/>
-                <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about"/>
+                <div class="nested-wrapper">
+                    <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about"/>
+                    <app-selector
+                        [options]="genres"
+                        [(selectedItems)]="event.genres"
+                        [label]="'Select Genre'"
+                        displayProperty="name"
+                        [editMode]="false">
+                    </app-selector>
+                </div>
             </section>
             <mat-divider class="light" />
             <section [id]="navItems[1].fragment">
@@ -79,7 +88,7 @@
                 </app-price>
 
             </p>
-            <button [disabled]="authService.isNotRole('Customer')" class="buy" (click)="onBuyClick()">
+            <button [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow" class="buy" (click)="onBuyClick()">
                 <mat-icon>shopping_cart</mat-icon>
                 <span class="btn-label">Buy Ticket</span>
             </button>
