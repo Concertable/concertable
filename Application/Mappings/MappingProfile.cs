@@ -128,6 +128,9 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.GenrePreferences
                     .Select(gp => gp.Genre)));
             CreateMap<PreferenceDto, Preference>();
+
+            CreateMap<Ticket, TicketDto>();
+            CreateMap<TicketDto, Ticket>();
         }
     }
 }

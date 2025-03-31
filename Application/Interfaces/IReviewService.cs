@@ -24,5 +24,8 @@ namespace Application.Interfaces
         Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id);
 
         Task<ReviewDto> CreateAsync(ReviewDto review);
+        Task<bool> CanUserReviewEventIdAsync(int eventId);
+        Task<bool> CanUserReviewVenueIdAsync(int venueId);
+        Task<bool> CanUserReviewArtistIdAsync(int artistId);
     }
 }

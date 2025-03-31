@@ -11,17 +11,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services
 {
     public class ReviewService : IReviewService
     {
         private readonly IReviewRepository reviewRepository;
+        private readonly ICurrentUserService currentUserService;
         private readonly IMapper mapper;
 
-        public ReviewService(IReviewRepository reviewRepository, IMapper mapper)
+        public ReviewService(IReviewRepository reviewRepository, ICurrentUserService currentUserService, IMapper mapper)
         {
             this.reviewRepository = reviewRepository;
+            this.currentUserService = currentUserService;
             this.mapper = mapper;
         }
 
@@ -96,6 +99,27 @@ namespace Infrastructure.Services
         public async Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
         {
             return await reviewRepository.GetSummaryByVenueIdAsync(id);
+        }
+
+        public async Task<bool> CanUserReviewEventIdAsync(int eventId)
+        {
+            var user = await currentUserService.GetAsync();
+
+            return await reviewRepository.CanUserIdReviewEventIdAsync(user.Id, eventId);
+        }
+
+        public async Task<bool> CanUserReviewVenueIdAsync(int venueId)
+        {
+            var user = await currentUserService.GetAsync();
+
+            return await reviewRepository.CanUserIdReviewVenueIdAsync(user.Id, venueId);
+        }
+
+        public async Task<bool> CanUserReviewArtistIdAsync(int artistId)
+        {
+            var user = await currentUserService.GetAsync();
+
+            return await reviewRepository.CanUserIdReviewArtistIdAsync(user.Id, artistId);
         }
     }
 }

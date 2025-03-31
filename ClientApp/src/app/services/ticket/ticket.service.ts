@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Ticket } from '../../models/ticket';
+import { environment } from '../../../environments/environment';
 import { TicketPurchase } from '../../models/ticket-purchase';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TicketService {
   private apiUrl = `${environment.apiUrl}/ticket`;
@@ -13,6 +14,17 @@ export class TicketService {
   constructor(private http: HttpClient) {}
 
   purchase(paymentMethodId: string, eventId: number): Observable<TicketPurchase> {
-    return this.http.post<TicketPurchase>(`${this.apiUrl}/purchase`, { eventId, paymentMethodId } );
+    return this.http.post<TicketPurchase>(`${this.apiUrl}/purchase`, {
+      eventId,
+      paymentMethodId,
+    });
+  }
+
+  getUserHistory(): Observable<Ticket[]> {
+    return this.http.get<Ticket[]>(`${this.apiUrl}/history/user`);
+  }
+
+  getUserUpcoming(): Observable<Ticket[]> {
+    return this.http.get<Ticket[]>(`${this.apiUrl}/upcoming/user`);
   }
 }

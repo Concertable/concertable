@@ -13,6 +13,8 @@ namespace Application.Interfaces
     {
         Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams);
         Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
+        Task<IEnumerable<TicketDto>> GetUserUpcomingAsync();
+        Task<IEnumerable<TicketDto>> GetUserHistoryAsync();
         Task<byte[]> GetQrCodeByIdAsync(int id);
     }
 }

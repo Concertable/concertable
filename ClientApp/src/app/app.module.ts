@@ -129,6 +129,7 @@ import { NumberComponent } from './components/config/number/number.component';
 import { InitService } from './services/init/init.service';
 import { CreatePreferenceComponent } from './components/create-preference/create-preference.component';
 import { TimeAgoPipe } from './shared/pipes/time-ago/time-ago.pipe';
+import { CustomerTicketsComponent } from './components/customer-tickets/customer-tickets.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -232,6 +233,7 @@ export function initApp(initService: InitService) {
     NumberComponent,
     CreatePreferenceComponent,
     TimeAgoPipe,
+    CustomerTicketsComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

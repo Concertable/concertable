@@ -62,5 +62,24 @@ namespace Web.Controllers
         {
             return Ok(await reviewService.GetByEventIdAsync(id, pageParams));
         }
+
+        [HttpGet("event/can-review/{eventId}")]
+        public async Task<ActionResult<bool>> CanUserReviewEventId( int eventId)
+        {
+            return Ok(await reviewService.CanUserReviewEventIdAsync(eventId));
+        }
+
+        [HttpGet("artist/can-review/{artistId}")]
+        public async Task<ActionResult<bool>> CanUserReviewArtistId([FromQuery] int artistId)
+        {
+            return Ok(await reviewService.CanUserReviewArtistIdAsync(artistId));
+        }
+
+        [HttpGet("venue/can-review/{venueId}")]
+        public async Task<ActionResult<bool>> CanUserReviewVenueId([FromQuery] int venueId)
+        {
+            return Ok(await reviewService.CanUserReviewVenueIdAsync(venueId));
+        }
+
     }
 }

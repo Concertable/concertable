@@ -1,10 +1,23 @@
 <div class="container">
-    <!-- Review Summary -->
+  <!-- Review Summary -->
   <div class="summary">
     <mat-icon class="star">star</mat-icon> 
     <span class="rating">{{ summary?.averageRating }} / 5</span>
     <span class="total-reviews">based on {{ summary?.totalReviews }} reviews</span>
   </div>
+
+  <!-- Always show Add Review Button, disable if not allowed -->
+  <div class="add-review">
+    <button
+      mat-raised-button
+      color="primary mb-3"
+      [disabled]="!(canReview$ | async)"
+      (click)="onAddReview()">
+      <mat-icon>rate_review</mat-icon>
+      Write a Review
+    </button>
+  </div>
+
   <div class="cards-container">
     <app-card *ngFor="let review of reviews" class="review-card">
       <div class="review-header">
@@ -22,4 +35,3 @@
     </app-card>
   </div>
 </div>
-  

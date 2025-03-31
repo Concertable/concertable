@@ -11,10 +11,11 @@ import { PaginationParams } from '../../models/pagination-params';
   standalone: false
 })
 export abstract class ReviewDirective implements OnInit {
-  @Input() id?: number;
+  @Input() id?: number; // The id depending on the details scope (e.g. artistId, eventId...)
   pageParams: PaginationParams = {};
   reviews: Review[] = [];
   summary?: ReviewSummary;
+  canReview$?: Observable<boolean>
 
   constructor(protected reviewService: ReviewService) { }
 
@@ -27,6 +28,7 @@ export abstract class ReviewDirective implements OnInit {
         this.pageParams.pageSize = reviewsPage.pageSize;
         this.reviews.push(...reviewsPage.data);
       });
+      this.canReview$ = this.canReview(this.id);
     }
   }
 
@@ -34,6 +36,12 @@ export abstract class ReviewDirective implements OnInit {
     if(this.id)
       this.get(this.id);
   }
+
+  onAddReview() {
+    throw new Error('Method not implemented.');
+  }
+
+  abstract canReview(id: number): Observable<boolean>
 
   abstract getSummary(id: number): Observable<ReviewSummary> 
 

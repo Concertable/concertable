@@ -18,4 +18,8 @@ export class ArtistReviewsComponent extends ReviewDirective {
   get(id: number): Observable<Pagination<Review>> {
     return this.reviewService.getByArtistId(id, this.pageParams);
   }
+
+  canReview(id: number): Observable<boolean> {
+      return this.reviewService.canUserReviewArtist(id);
+  }
 }

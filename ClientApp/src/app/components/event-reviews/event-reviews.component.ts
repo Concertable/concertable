@@ -18,4 +18,8 @@ export class EventReviewsComponent extends ReviewDirective {
   get(id: number): Observable<Pagination<Review>> {
     return this.reviewService.getByEventId(id, this.pageParams);
   }
+
+  canReview(id: number): Observable<boolean> {
+      return this.reviewService.canUserReviewEvent(id);
+  }
 }

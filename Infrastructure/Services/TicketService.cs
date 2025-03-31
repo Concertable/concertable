@@ -135,17 +135,21 @@ public class TicketService : ITicketService
         return ticketRepository.GetQrCodeByIdAsync(id);
     }
 
-    public async Task<TicketDto[]> GetUpcomingAsync()
+    public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
-        var tickets = await ticketRepository.GetUpcomingAsync();
+        var user = await currentUserService.GetAsync();
 
-        return mapper.Map<TicketDto[]>(tickets);
+        var tickets = await ticketRepository.GetUpcomingByUserIdAsync(user.Id);
+
+        return mapper.Map<IEnumerable<TicketDto>>(tickets);
     }
 
-    public async Task<TicketDto[]> GetHistoryAsync()
+    public async Task<IEnumerable<TicketDto>> GetUserHistoryAsync()
     {
-        var tickets = await ticketRepository.GetUpcomingAsync();
+        var user = await currentUserService.GetAsync();
 
-        return mapper.Map<TicketDto[]>(tickets);
+        var tickets = await ticketRepository.GetHistoryByUserIdAsync(user.Id);
+
+        return mapper.Map<IEnumerable<TicketDto>>(tickets);
     }
 }

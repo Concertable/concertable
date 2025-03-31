@@ -104,5 +104,33 @@ namespace Infrastructure.Repositories
 
             return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
         }
+
+        private IQueryable<Ticket> GetUnreviewedTicketsByUser(int userId)
+        {
+            return context.Tickets
+                .Where(t => t.UserId == userId && t.Review == null);
+        }
+
+
+        public Task<bool> CanUserIdReviewEventIdAsync(int userId, int eventId)
+        {
+            return GetUnreviewedTicketsByUser(userId)
+                .AnyAsync(t => t.EventId == eventId);
+        }
+
+
+        public Task<bool> CanUserIdReviewArtistIdAsync(int userId, int artistId)
+        {
+            return GetUnreviewedTicketsByUser(userId)
+                .AnyAsync(t => t.Event.Application.Artist.Id == artistId);
+        }
+
+
+        public Task<bool> CanUserIdReviewVenueIdAsync(int userId, int venueId)
+        {
+            return GetUnreviewedTicketsByUser(userId)
+                .AnyAsync(t => t.Event.Application.Listing.Venue.Id == venueId);
+        }
+
     }
 }

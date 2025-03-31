@@ -1,0 +1,25 @@
+<app-card [isEmpty]="tickets.length === 0">
+    <div *ngFor="let ticket of tickets" class="item">  
+      <div class="event-info">
+        <h3 class="event-name">{{ ticket.event.name }}</h3>
+  
+        <p class="icon-text">
+          <mat-icon>receipt_long</mat-icon>
+          <strong class="mr-1">Purchased:</strong> {{ ticket.purchaseDate | date:'shortDate' }}
+        </p>
+      </div>
+  
+      <div class="event-actions">
+        <button class="primary" (click)="onViewEvent(ticket)">
+          <mat-icon>event</mat-icon>
+          <span class="btn-label">Event Details</span>
+        </button>
+  
+        <button *ngIf="ticket.qrCode" class="primary" (click)="onShowQr(ticket)">
+          <mat-icon>qr_code</mat-icon>
+          <span class="btn-label">QR Code</span>
+        </button>
+      </div>
+    </div>
+  </app-card>
+  

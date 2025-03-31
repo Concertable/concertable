@@ -45,6 +45,8 @@ import { myPreferenceResolver } from './resolvers/my-preference/my-preference.re
 import { ListingApplicationsResolver } from './resolvers/listing-applications.resolver';
 import { authGuard } from './guards/auth/auth.guard';
 import { CreatePreferenceComponent } from './components/create-preference/create-preference.component';
+import { CustomerTicketsComponent } from './components/customer-tickets/customer-tickets.component';
+import { TicketViewType } from './models/ticket-view-type';
 
 const routes: Routes = [
   {
@@ -100,7 +102,26 @@ const routes: Routes = [
           },
           { path: 'details', component: MyProfileComponent, resolve: { user: MyProfileResolver }, data: { breadcrumb: 'Profile Details' } },
           { path: 'payment', component: PaymentDetailsComponent, data: { breadcrumb: 'Payment Details' } },
-          { path: 'tickets', component: MyTicketsComponent, data: { breadcrumb: 'My Tickets' } }
+          {
+            path: 'tickets',
+            data: { breadcrumb: 'My Tickets' },
+            children: [
+              {
+                path: '',
+                component: MyTicketsComponent,
+              },
+              {
+                path: 'upcoming',
+                component: CustomerTicketsComponent,
+                data: { viewType: TicketViewType.Upcoming, breadcrumb: 'Upcoming Tickets' }
+              },
+              {
+                path: 'history',
+                component: CustomerTicketsComponent,
+                data: { viewType: TicketViewType.History, breadcrumb: 'Ticket History' }
+              }
+            ]
+          }
         ]
       }
       

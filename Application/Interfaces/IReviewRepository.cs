@@ -22,5 +22,8 @@ namespace Application.Interfaces
         Task<PaginationResponse<Review>> GetByVenueIdAsync(int id, PaginationParams pageParams);
         Task<PaginationResponse<Review>> GetByArtistIdAsync(int id, PaginationParams pageParams);
         Task<PaginationResponse<Review>> GetByEventIdAsync(int id, PaginationParams pageParams);
+        Task<bool> CanUserIdReviewEventIdAsync(int userId, int eventId);
+        Task<bool> CanUserIdReviewArtistIdAsync(int userId, int artistId);
+        Task<bool> CanUserIdReviewVenueIdAsync(int userId, int venueId);
     }
 }

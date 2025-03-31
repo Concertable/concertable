@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Repositories
 {
@@ -22,5 +23,24 @@ namespace Infrastructure.Repositories
 
             return query.FirstAsync();
         }
+
+        public async Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id)
+        {
+            var query = context.Tickets
+                .Where(t => t.UserId == id && t.Event.Application.Listing.StartDate < DateTime.UtcNow)
+                .Include(t => t.Event);
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id)
+        {
+            var query = context.Tickets
+                 .Where(t => t.UserId == id && t.Event.Application.Listing.StartDate >= DateTime.UtcNow)
+                 .Include(t => t.Event);
+
+            return await query.ToListAsync();
+        }
+
     }
 }

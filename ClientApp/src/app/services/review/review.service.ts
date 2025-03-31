@@ -43,4 +43,16 @@ export class ReviewService {
     const params = this.httpParamsService.serialize(pageParams);
     return this.http.get<Pagination<Review>>(`${this.apiUrl}/event/${id}`, { params });
   }
+
+  canUserReviewEvent(id: number) : Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/event/can-review/${id}`);
+  }
+
+  canUserReviewArtist(id: number) : Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/artist/can-review/${id}`);
+  }
+
+  canUserReviewVenue(id: number) : Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/venue/can-review/${id}`);
+  }
 }
