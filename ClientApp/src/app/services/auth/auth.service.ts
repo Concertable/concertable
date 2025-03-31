@@ -48,12 +48,14 @@ export class AuthService {
     return this.currentUserSubject.getValue() !== undefined;
   }
 
-  login(credentials: LoginCredentials): Observable<any> {
+  login(credentials: LoginCredentials, returnUrl?: string): Observable<User> {
     let params = new HttpParams().append('useCookies', true);
-    return this.http.post<any>(`${this.apiUrl}/login`, credentials, { params }).pipe(
-      tap(() => {
-        this.getCurrentUser().subscribe();
-        this.router.navigateByUrl('/')
+
+    return this.http.post<User>(`${this.apiUrl}/login`, credentials, { params }).pipe(
+      tap((user) => {
+        this.currentUserSubject.next(user);
+        this.currentUserLoaded = true;
+        this.router.navigateByUrl(returnUrl ?? '/');
         this.signalRService.createHubConnections();
       })
     );
