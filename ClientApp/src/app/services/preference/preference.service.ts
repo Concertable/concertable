@@ -19,4 +19,8 @@ private apiUrl = `${environment.apiUrl}/preference`;
   update(preference: Preference): Observable<Preference> {
     return this.http.put<Preference>(`${this.apiUrl}/${preference.id}`, preference);
   }
+
+  create(preference: Preference): Observable<Preference> {
+    return this.http.post<Preference>(`${this.apiUrl}`, preference);
+  }
 }

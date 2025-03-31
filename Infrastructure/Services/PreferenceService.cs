@@ -29,6 +29,7 @@ namespace Infrastructure.Services
         public async Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceDto)
         {
             var preference = mapper.Map<Preference>(createPreferenceDto);
+            preference.GenrePreferences = new List<GenrePreference>();
 
             var user = await currentUserService.GetAsync();
 

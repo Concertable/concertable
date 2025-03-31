@@ -10,7 +10,7 @@ import { PreferenceService } from '../../services/preference/preference.service'
 @Injectable({
   providedIn: 'root'
 })
-export class myPreferencesResolver implements Resolve<Preference> {
+export class myPreferenceResolver implements Resolve<Preference> {
 
   constructor(private preferenceService: PreferenceService) {}
 

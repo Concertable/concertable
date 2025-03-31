@@ -10,5 +10,7 @@ namespace Application.Interfaces
     public interface ITicketRepository : IRepository<Ticket>
     {
         Task<byte[]> GetQrCodeByIdAsync(int id);
+        Task<Ticket[]> GetUpcomingAsync();
+        Task<Ticket[]> GetHistoryAsync();
     }
 }

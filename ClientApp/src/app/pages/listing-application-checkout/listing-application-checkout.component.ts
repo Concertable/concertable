@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CheckoutDirective } from '../../directives/checkout.directive';
+import { CheckoutDirective } from '../../directives/checkout/checkout.directive';
 import { ListingApplication } from '../../models/listing-application';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Listing } from '../../models/listing';

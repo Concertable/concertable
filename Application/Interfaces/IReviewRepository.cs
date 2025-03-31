@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace Application.Interfaces
 {
@@ -18,9 +19,6 @@ namespace Application.Interfaces
         Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);
-
-        Task<ReviewSummaryDto> GetSummaryAsync(IQueryable<Review> query);
-
         Task<PaginationResponse<Review>> GetByVenueIdAsync(int id, PaginationParams pageParams);
         Task<PaginationResponse<Review>> GetByArtistIdAsync(int id, PaginationParams pageParams);
         Task<PaginationResponse<Review>> GetByEventIdAsync(int id, PaginationParams pageParams);

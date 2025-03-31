@@ -5,6 +5,8 @@ import { GenreService } from '../../services/genre/genre.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DetailsDirective } from '../../directives/details/details.directive';
 import { AuthService } from '../../services/auth/auth.service';
+import { firstValueFrom } from 'rxjs';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Component({
   selector: 'app-preference-details',
@@ -19,26 +21,27 @@ export class PreferenceDetailsComponent extends DetailsDirective<Preference> {
     private genreService: GenreService,
     authService: AuthService,
     route: ActivatedRoute,
-    router: Router) 
+    router: Router,
+    toastService: ToastService) 
   { 
-    super(authService, route, router)
+    super(authService, route, router, toastService)
   }
   
-  get preferences(): Preference | undefined {
-      return this.entity;
-    }
-  
-    @Input()
-    set preferences(preferences: Preference | undefined) {
-      this.entity = preferences;
-    }
+  get preference(): Preference | undefined {
+    return this.entity;
+  }
 
+  @Input()
+  set preference(preferences: Preference | undefined) {
+    this.entity = preferences;
+  }
+  
   override ngOnInit(): void {
     super.ngOnInit();
     this.genreService.getAll().subscribe(g => this.genres = g);
   }
 
   setDetails(data: any): void {
-    this.preferences = data['preferences'];
+    this.preference = data['preference'];
   }
 }

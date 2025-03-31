@@ -17,7 +17,7 @@ namespace Application.Interfaces
         Task<Event> GetByApplicationIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);
-        Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(EventParams eventParams);
+        Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(int userId, EventParams eventParams);
         Task<IEnumerable<Event>> GetHistoryByArtistIdAsync(int id);
         Task<IEnumerable<Event>> GetHistoryByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUnpostedByArtistIdAsync(int id);

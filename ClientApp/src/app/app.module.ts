@@ -86,7 +86,7 @@ import { CreateVenueComponent } from './pages/create-venue/create-venue.componen
 import { CreateNavbarComponent } from './components/create-navbar/create-navbar.component';
 import { MailboxComponent } from './components/mailbox/mailbox.component';
 import { EventDetailsComponent } from './pages/event-details/event-details.component';
-import { ManagerItemNotFoundComponent } from './components/manager-item-not-found/manager-item-not-found.component';
+import { ConfigItemNotFoundComponent } from './components/config-item-not-found/config-item-not-found.component';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
 import { ToastrModule } from 'ngx-toastr';
@@ -118,7 +118,7 @@ import { FooterComponent } from './components/footer/footer.component';
 import { ProfileDetailsComponent } from './components/profile-details/profile-details.component';
 import { MyProfileComponent } from './pages/my-profile/my-profile.component';
 import { DashboardLayoutComponent } from './shared/layouts/dashboard-layout/dashboard-layout.component';
-import { MyPreferencesComponent } from './components/my-preferences/my-preferences.component';
+import { MyPreferenceComponent } from './components/my-preference/my-preference.component';
 import { SelectorComponent } from './components/selector/selector.component';
 import { SliderComponent } from './components/slider/slider.component';
 import { PreferenceDetailsComponent } from './components/preference-details/preference-details.component';
@@ -127,6 +127,8 @@ import { BadgeComponent } from './components/badge/badge.component';
 import { PriceComponent } from './components/config/price/price.component';
 import { NumberComponent } from './components/config/number/number.component';
 import { InitService } from './services/init/init.service';
+import { CreatePreferenceComponent } from './components/create-preference/create-preference.component';
+import { TimeAgoPipe } from './shared/pipes/time-ago/time-ago.pipe';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -191,7 +193,7 @@ export function initApp(initService: InitService) {
     CreateNavbarComponent,
     MailboxComponent,
     EventDetailsComponent,
-    ManagerItemNotFoundComponent,
+    ConfigItemNotFoundComponent,
     ConfigTextDirective,
     EditTextComponent,
     ListingApplicationsComponent,
@@ -220,7 +222,7 @@ export function initApp(initService: InitService) {
     ProfileDetailsComponent,
     MyProfileComponent,
     DashboardLayoutComponent,
-    MyPreferencesComponent,
+    MyPreferenceComponent,
     SelectorComponent,
     SliderComponent,
     PreferenceDetailsComponent,
@@ -228,6 +230,8 @@ export function initApp(initService: InitService) {
     BadgeComponent,
     PriceComponent,
     NumberComponent,
+    CreatePreferenceComponent,
+    TimeAgoPipe,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

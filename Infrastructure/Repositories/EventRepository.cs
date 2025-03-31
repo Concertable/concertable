@@ -35,7 +35,8 @@ namespace Infrastructure.Repositories
             County = e.Application.Listing.Venue.User.County,
             Town = e.Application.Listing.Venue.User.Town,
             Latitude = e.Application.Listing.Venue.User.Latitude,
-            Longitude = e.Application.Listing.Venue.User.Longitude
+            Longitude = e.Application.Listing.Venue.User.Longitude,
+            DatePosted = e.DatePosted
         };
 
         protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) {
@@ -72,10 +73,10 @@ namespace Infrastructure.Repositories
             return await query.FirstAsync();
         }
 
-        public async Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(EventParams eventParams)
+        public async Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(int userId, EventParams eventParams)
         {
             var query = context.Events
-                .Where(e => e.DatePosted != null)
+                .Where(e => e.DatePosted != null && e.Application.Listing.EndDate > DateTime.UtcNow)
                 .Include(e => e.Application.Listing.Venue.User)
                 .Include(e => e.EventGenre)
                 .AsQueryable();
@@ -99,6 +100,8 @@ namespace Infrastructure.Repositories
             //    query = query.Where(e =>
             //        e.EventGenre.Any(eg => eventParams.GenreIds.Contains(eg.GenreId)));
 
+            // Exclude events where the user already has a ticket
+            query = query.Where(e => !context.Tickets.Any(t => t.EventId == e.Id && t.UserId == userId));
 
             if (eventParams.OrderByRecent)
                 query = query.OrderByDescending(e => e.DatePosted);
@@ -114,7 +117,8 @@ namespace Infrastructure.Repositories
                 Latitude = e.Application.Listing.Venue.User.Latitude,
                 Longitude = e.Application.Listing.Venue.User.Longitude,
                 StartDate = e.Application.Listing.StartDate, 
-                EndDate = e.Application.Listing.EndDate 
+                EndDate = e.Application.Listing.EndDate,
+                DatePosted = e.DatePosted
             })
             .ToListAsync();
 

@@ -1,6 +1,6 @@
 import { Directive, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Data } from '@angular/router';
-import { EventViewType } from '../models/event-view-type';
+import { EventViewType } from '../../models/event-view-type';
 
 @Directive({
   selector: '[appDashboard]',

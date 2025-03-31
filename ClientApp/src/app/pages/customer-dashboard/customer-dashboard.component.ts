@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SearchParams } from '../../models/search-params';
 import { HeaderType } from '../../models/header-type';
-import { FindDirective } from '../../directives/find.directive';
+import { FindDirective } from '../../directives/find/find.directive';
 import { EventService } from '../../services/event/event.service';
 import { Event } from '../../models/event';
 import { SearchParamsSerializerServiceService } from '../../services/search-params-serializer/search-params-serializer-service.service';
@@ -28,7 +28,7 @@ export class CustomerDashboardComponent extends FindDirective implements OnInit,
       longitude: -118.4912,
       rating: Math.random() * 5,
       startDate: new Date(),
-      endTime: new Date(new Date().getTime() + 4 * 60 * 60 * 1000)  // 4 hours later
+      endDate: new Date(new Date().getTime() + 4 * 60 * 60 * 1000)  // 4 hours later
     };
   
     this.eventService.addFakeEvent(newEventHeader);
@@ -46,7 +46,7 @@ export class CustomerDashboardComponent extends FindDirective implements OnInit,
       longitude: -118.4912,
       rating: 4.8,
       startDate: new Date('2025-04-01T17:00:00'),
-      endTime: new Date('2025-04-01T23:00:00')
+      endDate: new Date('2025-04-01T23:00:00')
     },
     {
       id: 2,
@@ -58,7 +58,7 @@ export class CustomerDashboardComponent extends FindDirective implements OnInit,
       longitude: -74.0060,
       rating: 4.5,
       startDate: new Date('2025-04-03T20:00:00'),
-      endTime: new Date('2025-04-04T01:00:00')
+      endDate: new Date('2025-04-04T01:00:00')
     },
     {
       id: 3,
@@ -70,7 +70,7 @@ export class CustomerDashboardComponent extends FindDirective implements OnInit,
       longitude: -122.4194,
       rating: 4.7,
       startDate: new Date('2025-04-05T12:00:00'),
-      endTime: new Date('2025-04-05T18:00:00')
+      endDate: new Date('2025-04-05T18:00:00')
     },
     {
       id: 4,
@@ -82,7 +82,7 @@ export class CustomerDashboardComponent extends FindDirective implements OnInit,
       longitude: -0.1278,
       rating: 4.9,
       startDate: new Date('2025-04-07T18:00:00'),
-      endTime: new Date('2025-04-07T22:30:00')
+      endDate: new Date('2025-04-07T22:30:00')
     },
     {
       id: 5,
@@ -94,7 +94,7 @@ export class CustomerDashboardComponent extends FindDirective implements OnInit,
       longitude: 2.3522,
       rating: 4.3,
       startDate: new Date('2025-04-08T20:30:00'),
-      endTime: new Date('2025-04-08T23:00:00')
+      endDate: new Date('2025-04-08T23:00:00')
     }
   ];
 

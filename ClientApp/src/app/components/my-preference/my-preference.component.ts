@@ -9,12 +9,12 @@ import { Observable } from 'rxjs';
 import { PreferenceToastService } from '../../services/toast/preference-toast.service';
 
 @Component({
-  selector: 'app-my-preferences',
+  selector: 'app-my-preference',
   standalone: false,
-  templateUrl: './my-preferences.component.html',
-  styleUrl: './my-preferences.component.scss'
+  templateUrl: './my-preference.component.html',
+  styleUrl: './my-preference.component.scss'
 })
-export class MyPreferencesComponent extends ConfigDirective<Preference> {
+export class MyPreferenceComponent extends ConfigDirective<Preference> {
   constructor(
     route: ActivatedRoute,
     private preferenceService: PreferenceService,
@@ -23,16 +23,17 @@ export class MyPreferencesComponent extends ConfigDirective<Preference> {
     super(route);
   }
 
-  get preferences(): Preference | undefined {
+  get preference(): Preference | undefined {
       return this.item;
     }
   
-  set preferences(value: Preference | undefined) {
+  set preference(value: Preference | undefined) {
     this.item = value;
   }
 
   setDetails(data: any): void {
-    this.preferences = data['preferences']; 
+    this.preference = data['preference'];
+    console.log(data) 
   }
 
   update(preference: Preference): Observable<Preference> {

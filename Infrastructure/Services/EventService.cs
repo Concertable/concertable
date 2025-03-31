@@ -229,7 +229,7 @@ namespace Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<EventHeaderDto>> GetLocalHeadersForUserAsync(bool orderByRecent, int? take)
+        public async Task<IEnumerable<EventHeaderDto>> GetRecommendedHeadersAsync()
         {
             var user = await currentUserService.GetOrDefaultAsync();
 
@@ -247,15 +247,19 @@ namespace Infrastructure.Services
                 Longitude = user.Longitude,
                 RadiusKm = preferences.RadiusKm,
                 GenreIds = preferences.Genres.Select(g => g.Id).ToList(),
-                OrderByRecent = orderByRecent,
-                Take = take
+                OrderByRecent = true,
+                Take = 10
             };
 
-            var events = await eventRepository.GetFilteredAsync(eventParams);
+            var events = await eventRepository.GetFilteredAsync(user.Id, eventParams);
 
             var nearbyEvents = locationService.FilterByRadius(user.Latitude.Value, user.Longitude.Value, preferences.RadiusKm, events);
 
-            return take.HasValue ? nearbyEvents.Take(take.Value) : nearbyEvents;
+            nearbyEvents = nearbyEvents.Take(eventParams.Take);
+
+            await reviewService.AddAverageRatingsAsync(nearbyEvents);
+
+            return nearbyEvents.Take(eventParams.Take);
         }
 
         public async Task<IEnumerable<EventDto>> GetUnpostedByArtistIdAsync(int id)

@@ -21,7 +21,7 @@ namespace Application.Interfaces
         Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
         Task<EventDto> UpdateAsync(EventDto eventDto);
         Task<EventPostResponse> PostAsync(EventDto eventDto);
-        Task<IEnumerable<EventHeaderDto>> GetLocalHeadersForUserAsync(bool orderByRecent, int? take);
+        Task<IEnumerable<EventHeaderDto>> GetRecommendedHeadersAsync();
         Task<IEnumerable<EventDto>> GetHistoryByArtistIdAsync(int id);
         Task<IEnumerable<EventDto>> GetHistoryByVenueIdAsync(int id);
         Task<IEnumerable<EventDto>> GetUnpostedByArtistIdAsync(int id);

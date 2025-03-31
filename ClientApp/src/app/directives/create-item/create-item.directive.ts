@@ -3,15 +3,16 @@ import { Observable } from 'rxjs';
 import { Venue } from '../../models/venue';
 import { Artist } from '../../models/artist';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Preference } from '../../models/preference';
 
 @Directive({
   selector: '[appCreateItem]',
   standalone: false
 })
-export abstract class CreateItemDirective<T extends Venue | Artist> implements OnInit {
+export abstract class CreateItemDirective<T extends Venue | Artist | Preference> implements OnInit {
   item?: T;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(protected router: Router, protected route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.createDefaultItem();
@@ -21,7 +22,7 @@ export abstract class CreateItemDirective<T extends Venue | Artist> implements O
 
   abstract create(item: T): Observable<T>;
 
-  abstract showCreated(name: string): void;
+  abstract showCreated(item: T): void;
 
   navigateToItem() {
     this.router.navigate(['../my'], { relativeTo: this.route });
@@ -29,9 +30,9 @@ export abstract class CreateItemDirective<T extends Venue | Artist> implements O
 
   createChanges() {
     if(this.item)
-      this.create(this.item).subscribe(v => {
-    this.showCreated(v.name);
-    this.navigateToItem();
-  })
+      this.create(this.item).subscribe(i => {
+      this.showCreated(i)
+      this.navigateToItem();
+    })
   }
 }

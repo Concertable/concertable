@@ -5,7 +5,7 @@ import { Header } from '../../models/header';
 import { Pagination } from '../../models/pagination';
 import { HeaderType } from '../../models/header-type';
 import { SearchParams } from '../../models/search-params';
-import { FindDirective } from '../../directives/find.directive';
+import { FindDirective } from '../../directives/find/find.directive';
 import { SearchParamsSerializerServiceService } from '../../services/search-params-serializer/search-params-serializer-service.service';
 import { EventHeader } from '../../models/event-header';
 import { EventService } from '../../services/event/event.service';
@@ -28,7 +28,7 @@ triggerNewSubscription() {
     longitude: -0.12,
     rating: 5,
     startDate: new Date(),
-    endTime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
+    endDate: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
   };
 
   this.eventService.addFakeEvent(newEvent);

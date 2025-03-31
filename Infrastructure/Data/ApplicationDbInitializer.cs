@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Entities.Identity;
+using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ namespace Infrastructure.Data
         {
                 await context.Database.MigrateAsync();
 
+                var now = DateTime.UtcNow;
                 // Users
                 if (!context.Users.Any())
                 {
@@ -579,31 +581,48 @@ namespace Infrastructure.Data
                     await context.SaveChangesAsync();
                 }
 
-                // Listings
-                if (!context.Listings.Any())
+            // Listings
+            if (!context.Listings.Any())
+            {
+                var listings = new Listing[]
                 {
-                    var listings = new Listing[]
-                    {
-                        //  Past events 
-                        new Listing { VenueId = 1, StartDate = new DateTime(2025, 1, 15, 18, 0, 0), EndDate = new DateTime(2025, 1, 15, 21, 0, 0), Pay = 150 },
-                        new Listing { VenueId = 2, StartDate = new DateTime(2025, 2, 10, 19, 0, 0), EndDate = new DateTime(2025, 2, 10, 22, 0, 0), Pay = 180 },
-                        new Listing { VenueId = 3, StartDate = new DateTime(2025, 2, 25, 20, 0, 0), EndDate = new DateTime(2025, 2, 25, 23, 0, 0), Pay = 200 },
+                    new Listing { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Pay = 150 },
+                    new Listing { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Pay = 200 },
+                    new Listing { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Pay = 180 },
+                    new Listing { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Pay = 175 },
+                    new Listing { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Pay = 160 },
+                    new Listing { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Pay = 220 },
+                    new Listing { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Pay = 210 },
+                    new Listing { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Pay = 230 },
+                    new Listing { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Pay = 240 },
+                    new Listing { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Pay = 250 },
+                    new Listing { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Pay = 160 },
+                    new Listing { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Pay = 300 },
+                    new Listing { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Pay = 280 },
+                    new Listing { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Pay = 270 },
+                    new Listing { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 265 },
+                    new Listing { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Pay = 260 },
+                    new Listing { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Pay = 255 },
+                    new Listing { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Pay = 250 },
+                    new Listing { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Pay = 245 },
+                    new Listing { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Pay = 240 },
+                    new Listing { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Pay = 235 },
+                    new Listing { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Pay = 230 },
+                    new Listing { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Pay = 225 },
+                    new Listing { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Pay = 220 },
+                    new Listing { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Pay = 215 },
+                    new Listing { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Pay = 210 },
+                    new Listing { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Pay = 205 },
+                    new Listing { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 },
+                    new Listing { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 },
+                    new Listing { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }
+                };
+                context.Listings.AddRange(listings);
+                await context.SaveChangesAsync();
+            }
 
-                        //  Future events (relative to now)
-                        new Listing { VenueId = 1, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(10).AddHours(3), Pay = 220 },
-                        new Listing { VenueId = 2, StartDate = DateTime.Now.AddMonths(1), EndDate = DateTime.Now.AddMonths(1).AddHours(3), Pay = 275 },
-                        new Listing { VenueId = 3, StartDate = DateTime.Now.AddMonths(2), EndDate = DateTime.Now.AddMonths(2).AddHours(3), Pay = 300 },
-                        new Listing { VenueId = 4, StartDate = DateTime.Now.AddDays(45), EndDate = DateTime.Now.AddDays(45).AddHours(3), Pay = 250 },
-                        new Listing { VenueId = 5, StartDate = DateTime.Now.AddMonths(3).AddDays(5), EndDate = DateTime.Now.AddMonths(3).AddDays(5).AddHours(3), Pay = 290 },
-                        new Listing { VenueId = 1, StartDate = DateTime.Now.AddMonths(4), EndDate = DateTime.Now.AddMonths(4).AddHours(2), Pay = 310 }
-
-                    };
-                    context.Listings.AddRange(listings);
-                    await context.SaveChangesAsync();
-                }
-
-                // ListingGenres
-                if (!context.ListingGenres.Any())
+            // ListingGenres
+            if (!context.ListingGenres.Any())
                 {
                     var listingGenres = new ListingGenre[]
                     {
@@ -627,104 +646,187 @@ namespace Infrastructure.Data
                     await context.SaveChangesAsync();
                 }
 
-                // Listing Applications
-                if (!context.ListingApplications.Any())
+            // Listing Applications
+            if (!context.ListingApplications.Any())
                 {
-                    var listingApplications = new ListingApplication[]
+                    var applications = new ListingApplication[]
                     {
-                    new ListingApplication { ArtistId = 1, ListingId = 1 },
-                    new ListingApplication { ArtistId = 2, ListingId = 2 },
-                    new ListingApplication { ArtistId = 3, ListingId = 3 },
-                    new ListingApplication { ArtistId = 4, ListingId = 4 },
-                    new ListingApplication { ArtistId = 5, ListingId = 5 }
+                        new ListingApplication { ArtistId = 1, ListingId = 1 },
+                        new ListingApplication { ArtistId = 2, ListingId = 2 },
+                        new ListingApplication { ArtistId = 3, ListingId = 3 },
+                        new ListingApplication { ArtistId = 4, ListingId = 4 },
+                        new ListingApplication { ArtistId = 5, ListingId = 5 },
+                        new ListingApplication { ArtistId = 6, ListingId = 6 },
+                        new ListingApplication { ArtistId = 7, ListingId = 7 },
+                        new ListingApplication { ArtistId = 8, ListingId = 8 },
+                        new ListingApplication { ArtistId = 9, ListingId = 9 },
+                        new ListingApplication { ArtistId = 10, ListingId = 10 },
+                        new ListingApplication { ArtistId = 11, ListingId = 11 },
+                        new ListingApplication { ArtistId = 12, ListingId = 12 },
+                        new ListingApplication { ArtistId = 13, ListingId = 13 },
+                        new ListingApplication { ArtistId = 14, ListingId = 14 },
+                        new ListingApplication { ArtistId = 15, ListingId = 15 },
+                        new ListingApplication { ArtistId = 16, ListingId = 16 },
+                        new ListingApplication { ArtistId = 17, ListingId = 17 },
+                        new ListingApplication { ArtistId = 18, ListingId = 18 },
+                        new ListingApplication { ArtistId = 19, ListingId = 19 },
+                        new ListingApplication { ArtistId = 20, ListingId = 20 },
+                        new ListingApplication { ArtistId = 21, ListingId = 21 },
+                        new ListingApplication { ArtistId = 22, ListingId = 22 },
+                        new ListingApplication { ArtistId = 23, ListingId = 23 },
+                        new ListingApplication { ArtistId = 24, ListingId = 24 },
+                        new ListingApplication { ArtistId = 25, ListingId = 25 },
+                        new ListingApplication { ArtistId = 26, ListingId = 26 },
+                        new ListingApplication { ArtistId = 27, ListingId = 27 },
+                        new ListingApplication { ArtistId = 28, ListingId = 28 },
+                        new ListingApplication { ArtistId = 29, ListingId = 29 },
+                        new ListingApplication { ArtistId = 30, ListingId = 30 },
                     };
-                    context.ListingApplications.AddRange(listingApplications);
+                    context.ListingApplications.AddRange(applications);
                     await context.SaveChangesAsync();
                 }
 
-                // Events
-                if (!context.Events.Any())
-                {
-                    var events = new Event[]
+                    if (!context.Events.Any())
                     {
-                    new Event {
-                        ApplicationId = 1,
-                        Name = "Rock Night",
-                        Price = 15,
-                        TotalTickets = 100,
-                        AvailableTickets = 20,
-                        DatePosted = new DateTime(2023, 3, 1, 20, 30, 0)  
-                    },
-                    new Event {
-                        ApplicationId = 2,
-                        Name = "Indie Evening",
-                        Price = 12,
-                        TotalTickets = 80,
-                        AvailableTickets = 80,
-                        DatePosted = new DateTime(2023, 2, 20, 18, 0, 0)  
-                    },
-                    new Event {
-                        ApplicationId = 3,
-                        Name = "Jazz Gala",
-                        Price = 18,
-                        TotalTickets = 120,
-                        AvailableTickets = 0,
-                        DatePosted = new DateTime(2023, 3, 5, 19, 15, 0) 
-                    },
-                    new Event {
-                        ApplicationId = 4,
-                        Name = "Electronic Bash",
-                        Price = 20,
-                        TotalTickets = 150,
-                        AvailableTickets = 50,
-                        DatePosted = new DateTime(2023, 3, 3, 22, 0, 0)  
-                    },
-                    new Event {
-                        ApplicationId = 5,
-                        Name = "Hip-Hop Fest",
-                        Price = 10,
-                        TotalTickets = 200,
-                        AvailableTickets = 100,
-                        DatePosted = new DateTime(2023, 3, 6, 21, 30, 0)  
+                        var events = new Event[]
+                        {
+                            new Event { ApplicationId = 1, Name = "The Rockers performing at The Grand Venue", About = "An epic night of rock music at The Grand Venue.", Price = 15, TotalTickets = 120, AvailableTickets = 80, DatePosted = now.AddDays(-58) },
+                            new Event { ApplicationId = 2, Name = "Indie Vibes performing at Redhill Hall", About = "A cozy indie evening at Redhill Hall.", Price = 12, TotalTickets = 110, AvailableTickets = 70, DatePosted = now.AddDays(-55) },
+                            new Event { ApplicationId = 3, Name = "Electronic Pulse performing at Weybridge Pavilion", About = "Electronic Pulse takes over Weybridge Pavilion.", Price = 18, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(-52) },
+                            new Event { ApplicationId = 4, Name = "Hip-Hop Flow performing at Cobham Arts Centre", About = "Experience raw beats at Cobham Arts Centre.", Price = 10, TotalTickets = 100, AvailableTickets = 60, DatePosted = now.AddDays(-49) },
+                            new Event { ApplicationId = 5, Name = "Jazz Masters performing at Chertsey Arena", About = "Smooth jazz vibes in Chertsey Arena.", Price = 25, TotalTickets = 140, AvailableTickets = 110, DatePosted = now.AddDays(-46) },
+                            new Event { ApplicationId = 6, Name = "Always Punks performing at Camden Electric Ballroom", About = "High-energy punk show in Camden.", Price = 20, TotalTickets = 150, AvailableTickets = 90, DatePosted = now.AddDays(-43) },
+                            new Event { ApplicationId = 7, Name = "The Hollow Frequencies performing at Manchester Night & Day Café", About = "Dreamy atmospheres meet indie rock.", Price = 30, TotalTickets = 170, AvailableTickets = 150, DatePosted = now.AddDays(-40) },
+                            new Event { ApplicationId = 8, Name = "Neon Foxes performing at Birmingham O2 Institute", About = "Neon lights and synth-rock beats.", Price = 16, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(-37) },
+                            new Event { ApplicationId = 9, Name = "Velvet Static performing at Edinburgh Usher Hall", About = "A blend of grunge and ambience.", Price = 14, TotalTickets = 115, AvailableTickets = 75, DatePosted = now.AddDays(-34) },
+                            new Event { ApplicationId = 10, Name = "Echo Bloom performing at Liverpool Philharmonic Hall", About = "Cinematic folk and lush harmonies.", Price = 22, TotalTickets = 135, AvailableTickets = 100, DatePosted = now.AddDays(-31) },
+                            new Event { ApplicationId = 11, Name = "The Wild Chords performing at Leeds Brudenell Social Club", About = "Garage rock energy unleashed.", Price = 13, TotalTickets = 125, AvailableTickets = 85, DatePosted = now.AddDays(-28) },
+                            new Event { ApplicationId = 12, Name = "Glitch & Glow performing at Glasgow Barrowland Ballroom", About = "Experimental beats with neon twists.", Price = 11, TotalTickets = 120, AvailableTickets = 90, DatePosted = now.AddDays(-25) },
+                            new Event { ApplicationId = 13, Name = "Sonic Mirage performing at Sheffield Leadmill", About = "A journey through ambient pop.", Price = 19, TotalTickets = 140, AvailableTickets = 110, DatePosted = now.AddDays(-22) },
+                            new Event { ApplicationId = 14, Name = "Neon Echoes performing at Nottingham Rock City", About = "Retro synths light up the night.", Price = 17, TotalTickets = 135, AvailableTickets = 105, DatePosted = now.AddDays(-19) },
+                            new Event { ApplicationId = 15, Name = "Dreamwave Collective performing at Bristol Thekla", About = "Waves of sound aboard Thekla.", Price = 21, TotalTickets = 145, AvailableTickets = 115, DatePosted = now.AddDays(-16) },
+                            new Event { ApplicationId = 16, Name = "Synth Pulse performing at Brighton Concorde 2", About = "Massive drops and electronic rush.", Price = 18, TotalTickets = 140, AvailableTickets = 120, DatePosted = now.AddDays(-13) },
+                            new Event { ApplicationId = 17, Name = "The Brass Poets performing at Cardiff Tramshed", About = "Brass and poetry unite in Cardiff.", Price = 26, TotalTickets = 155, AvailableTickets = 130, DatePosted = now.AddDays(-10) },
+                            new Event { ApplicationId = 18, Name = "Groove Alchemy performing at Newcastle O2 Academy", About = "Funky grooves fill Newcastle.", Price = 15, TotalTickets = 120, AvailableTickets = 100, DatePosted = now.AddDays(-7) },
+                            new Event { ApplicationId = 19, Name = "Velvet Rhymes performing at Oxford O2 Academy", About = "Hip-hop with a smooth jazz core.", Price = 28, TotalTickets = 160, AvailableTickets = 145, DatePosted = now.AddDays(-4) },
+                            new Event { ApplicationId = 20, Name = "The Lo-Fi Syndicate performing at Cambridge Corn Exchange", About = "Relaxed beats and lo-fi chill.", Price = 24, TotalTickets = 150, AvailableTickets = 130, DatePosted = now.AddDays(-1) },
+                            new Event { ApplicationId = 21, Name = "Beats & Blue Notes performing at Bath Komedia", About = "Bebop swing meets rhymes.", Price = 27, TotalTickets = 160, AvailableTickets = 140, DatePosted = now.AddDays(2) },
+                            new Event { ApplicationId = 22, Name = "Bass Pilots performing at Aberdeen The Lemon Tree", About = "DnB madness in Aberdeen.", Price = 23, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(5) },
+                            new Event { ApplicationId = 23, Name = "The Digital Prophets performing at York Barbican", About = "Glitchy, futuristic techno journey.", Price = 29, TotalTickets = 155, AvailableTickets = 140, DatePosted = now.AddDays(8) },
+                            new Event { ApplicationId = 24, Name = "Neon Bass Theory performing at Belfast Limelight", About = "Bass-driven neon dreamscapes.", Price = 10, TotalTickets = 110, AvailableTickets = 70, DatePosted = now.AddDays(11) },
+                            new Event { ApplicationId = 25, Name = "Wavelength 303 performing at Dublin Vicar Street", About = "Old school acid house revival.", Price = 15, TotalTickets = 125, AvailableTickets = 90, DatePosted = now.AddDays(14) },
+                            new Event { ApplicationId = 26, Name = "Gravity Loops performing at Norwich Waterfront", About = "Deep house and chill fusion night.", Price = 30, TotalTickets = 180, AvailableTickets = 170, DatePosted = now.AddDays(17) }
+                        };
+
+                        context.Events.AddRange(events);
+                        await context.SaveChangesAsync();
                     }
 
-                    };
-                    context.Events.AddRange(events);
-                    await context.SaveChangesAsync();
-                }
-
-                // Tickets
-                if (!context.Tickets.Any())
+            // Tickets
+            if (!context.Tickets.Any())
+            {
+                var tickets = new Ticket[]
                 {
-                    var tickets = new Ticket[]
-                    {
-                    new Ticket { UserId = 2, EventId = 1, PurchaseDate = DateTime.Now },
-                    new Ticket { UserId = 3, EventId = 1, PurchaseDate = DateTime.Now },
-                    new Ticket { UserId = 2, EventId = 3, PurchaseDate = DateTime.Now }
-                    };
-                    context.Tickets.AddRange(tickets);
-                    await context.SaveChangesAsync();
-                }
+                    new Ticket { UserId = 2, EventId = 1, PurchaseDate = now.AddDays(-57) },
+                    new Ticket { UserId = 3, EventId = 1, PurchaseDate = now.AddDays(-57) },
+                    new Ticket { UserId = 4, EventId = 1, PurchaseDate = now.AddDays(-57) },
+                    new Ticket { UserId = 5, EventId = 1, PurchaseDate = now.AddDays(-56) },
+                    new Ticket { UserId = 6, EventId = 1, PurchaseDate = now.AddDays(-56) },
+                    new Ticket { UserId = 7, EventId = 1, PurchaseDate = now.AddDays(-56) },
+                    new Ticket { UserId = 8, EventId = 1, PurchaseDate = now.AddDays(-55) },
 
-                // Reviews
-                if (!context.Reviews.Any())
+                    new Ticket { UserId = 3, EventId = 2, PurchaseDate = now.AddDays(-54) },
+                    new Ticket { UserId = 4, EventId = 2, PurchaseDate = now.AddDays(-54) },
+                    new Ticket { UserId = 5, EventId = 2, PurchaseDate = now.AddDays(-54) },
+                    new Ticket { UserId = 6, EventId = 2, PurchaseDate = now.AddDays(-53) },
+                    new Ticket { UserId = 7, EventId = 2, PurchaseDate = now.AddDays(-53) },
+                    new Ticket { UserId = 8, EventId = 2, PurchaseDate = now.AddDays(-53) },
+                    new Ticket { UserId = 9, EventId = 2, PurchaseDate = now.AddDays(-52) },
+
+                    new Ticket { UserId = 4, EventId = 3, PurchaseDate = now.AddDays(-51) },
+                    new Ticket { UserId = 5, EventId = 3, PurchaseDate = now.AddDays(-51) },
+                    new Ticket { UserId = 6, EventId = 3, PurchaseDate = now.AddDays(-51) },
+                    new Ticket { UserId = 7, EventId = 3, PurchaseDate = now.AddDays(-50) },
+                    new Ticket { UserId = 8, EventId = 3, PurchaseDate = now.AddDays(-50) },
+                    new Ticket { UserId = 9, EventId = 3, PurchaseDate = now.AddDays(-50) },
+                    new Ticket { UserId = 10, EventId = 3, PurchaseDate = now.AddDays(-49) },
+
+                    new Ticket { UserId = 2, EventId = 4, PurchaseDate = now.AddDays(-48) },
+                    new Ticket { UserId = 3, EventId = 4, PurchaseDate = now.AddDays(-48) },
+                    new Ticket { UserId = 4, EventId = 4, PurchaseDate = now.AddDays(-48) },
+                    new Ticket { UserId = 5, EventId = 4, PurchaseDate = now.AddDays(-47) },
+                    new Ticket { UserId = 6, EventId = 4, PurchaseDate = now.AddDays(-47) },
+                    new Ticket { UserId = 7, EventId = 4, PurchaseDate = now.AddDays(-47) },
+                    new Ticket { UserId = 8, EventId = 4, PurchaseDate = now.AddDays(-46) },
+
+                    new Ticket { UserId = 9, EventId = 5, PurchaseDate = now.AddDays(-45) },
+                    new Ticket { UserId = 10, EventId = 5, PurchaseDate = now.AddDays(-45) },
+                    new Ticket { UserId = 2, EventId = 5, PurchaseDate = now.AddDays(-45) },
+                    new Ticket { UserId = 3, EventId = 5, PurchaseDate = now.AddDays(-44) },
+                    new Ticket { UserId = 4, EventId = 5, PurchaseDate = now.AddDays(-44) },
+                    new Ticket { UserId = 5, EventId = 5, PurchaseDate = now.AddDays(-44) },
+                    new Ticket { UserId = 6, EventId = 5, PurchaseDate = now.AddDays(-43) }
+                };
+
+                context.Tickets.AddRange(tickets);
+                await context.SaveChangesAsync();
+            }
+
+            // Reviews
+            if (!context.Reviews.Any())
+            {
+                var reviews = new Review[]
                 {
-                    var reviews = new Review[]
-                    {
-                        new Review { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
-                        new Review { TicketId = 2, Stars = 5, Details = "Loved every moment!" }
-                    };
-                    context.Reviews.AddRange(reviews);
-                    await context.SaveChangesAsync();
-                }
+                    new Review { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
+                    new Review { TicketId = 2, Stars = 5, Details = "Loved every moment!" },
+                    new Review { TicketId = 3, Stars = 5, Details = "Unforgettable night!" },
+                    new Review { TicketId = 4, Stars = 4, Details = "Great energy from the crowd." },
+                    new Review { TicketId = 5, Stars = 3, Details = "Good, but the sound was a bit off." },
+                    new Review { TicketId = 6, Stars = 5, Details = "Perfect setlist and vibes!" },
+                    new Review { TicketId = 7, Stars = 4, Details = "Would attend again!" },
 
-                // Messages
-                if (!context.Messages.Any())
+                    new Review { TicketId = 8, Stars = 5, Details = "Fantastic indie atmosphere." },
+                    new Review { TicketId = 9, Stars = 4, Details = "Loved the venue!" },
+                    new Review { TicketId = 10, Stars = 4, Details = "Solid performance." },
+                    new Review { TicketId = 11, Stars = 5, Details = "Caught my new favorite artist!" },
+                    new Review { TicketId = 12, Stars = 3, Details = "Good music, but crowded." },
+                    new Review { TicketId = 13, Stars = 5, Details = "Indie dream come true." },
+                    new Review { TicketId = 14, Stars = 4, Details = "Chill night out." },
+
+                    new Review { TicketId = 15, Stars = 5, Details = "Incredible stage presence!" },
+                    new Review { TicketId = 16, Stars = 4, Details = "Would love to see them again." },
+                    new Review { TicketId = 17, Stars = 5, Details = "Next-level visuals." },
+                    new Review { TicketId = 18, Stars = 4, Details = "Very unique sound." },
+                    new Review { TicketId = 19, Stars = 4, Details = "Great crowd energy." },
+                    new Review { TicketId = 20, Stars = 5, Details = "Absolute fire show." },
+                    new Review { TicketId = 21, Stars = 5, Details = "Perfect DnB experience." },
+
+                    new Review { TicketId = 22, Stars = 4, Details = "Smooth lyrical vibes." },
+                    new Review { TicketId = 23, Stars = 5, Details = "Top-tier show!" },
+                    new Review { TicketId = 24, Stars = 4, Details = "Nice intimate gig." },
+                    new Review { TicketId = 25, Stars = 3, Details = "A bit too loud but still fun." },
+                    new Review { TicketId = 26, Stars = 4, Details = "Well organized event." },
+                    new Review { TicketId = 27, Stars = 5, Details = "Really enjoyed it." },
+                    new Review { TicketId = 28, Stars = 5, Details = "Brought my friends, all loved it." },
+
+                    new Review { TicketId = 29, Stars = 3, Details = "Solid but expected more." },
+                    new Review { TicketId = 30, Stars = 4, Details = "The lighting was amazing!" },
+                    new Review { TicketId = 31, Stars = 5, Details = "Instant classic." },
+                    new Review { TicketId = 32, Stars = 4, Details = "Had a great time." },
+                    new Review { TicketId = 33, Stars = 4, Details = "Venue was packed with energy." }
+                };
+                context.Reviews.AddRange(reviews);
+                await context.SaveChangesAsync();
+            }
+
+
+            // Messages
+            if (!context.Messages.Any())
                 {
                     var messages = new Message[]
                     {
-                        new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.Now, Read = false, Action = "application", ActionId = 1 },
-                        new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.Now, Read = true, Action = "event", ActionId = 1 }
+                        new Message { FromUserId = 2, ToUserId = 9, Content = "Interested in your venue!", SentDate = DateTime.UtcNow, Read = false, Action = "application", ActionId = 1 },
+                        new Message { FromUserId = 4, ToUserId = 10, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow, Read = true, Action = "event", ActionId = 1 }
                     };
                     context.Messages.AddRange(messages);
                     await context.SaveChangesAsync();
@@ -735,8 +837,8 @@ namespace Infrastructure.Data
                 {
                     var purchases = new Purchase[]
                     {
-                        new Purchase { FromUserId = 2, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now },
-                        new Purchase { FromUserId = 3, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 275, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.Now }
+                        new Purchase { FromUserId = 2, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.UtcNow },
+                        new Purchase { FromUserId = 3, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 275, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.UtcNow }
                     };
                     context.Purchases.AddRange(purchases);
                     await context.SaveChangesAsync();

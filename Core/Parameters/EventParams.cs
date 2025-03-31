@@ -13,6 +13,6 @@ namespace Core.Parameters
         public int? RadiusKm { get; set; } = 25;
         public IEnumerable<int> GenreIds { get; set; } = Enumerable.Empty<int>();
         public bool OrderByRecent { get; set; } = false;
-        public int? Take { get; set; }
+        public int Take { get; set; }
     }
 }

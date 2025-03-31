@@ -122,6 +122,7 @@ namespace Application.Mappings
             CreateMap<ApplicationUser, UserDto>();
             CreateMap<UserDto, ApplicationUser>();
 
+            CreateMap<CreatePreferenceDto, Preference>();
             CreateMap<Preference, PreferenceDto>()
                 .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.GenrePreferences

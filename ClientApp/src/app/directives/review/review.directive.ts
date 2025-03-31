@@ -1,10 +1,10 @@
 import { Directive, Input, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ReviewSummary } from '../models/review-summary';
-import { Pagination } from '../models/pagination';
-import { Review } from '../models/review';
-import { ReviewService } from '../services/review/review.service';
-import { PaginationParams } from '../models/pagination-params';
+import { ReviewSummary } from '../../models/review-summary';
+import { Pagination } from '../../models/pagination';
+import { Review } from '../../models/review';
+import { ReviewService } from '../../services/review/review.service';
+import { PaginationParams } from '../../models/pagination-params';
 
 @Directive({
   selector: '[appReview]',

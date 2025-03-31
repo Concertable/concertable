@@ -4,7 +4,7 @@ import { TicketService } from '../../services/ticket/ticket.service';
 import { Event } from '../../models/event';
 import { EventStateService } from '../../services/event-state/event-state.service';
 import { ActivatedRoute } from '@angular/router';
-import { CheckoutDirective } from '../../directives/checkout.directive';
+import { CheckoutDirective } from '../../directives/checkout/checkout.directive';
 import { Observable } from 'rxjs';
 import { TicketPurchase } from '../../models/ticket-purchase';
 import { SignalRService } from '../../services/signalr/signalr.service';

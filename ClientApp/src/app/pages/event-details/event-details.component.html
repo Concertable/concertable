@@ -11,6 +11,7 @@
                 <app-heading-medium [editMode]="editMode" [(content)]="event.name"/>
                 <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about"/>
             </section>
+            <mat-divider class="light" />
             <section [id]="navItems[1].fragment">
                 <h1>{{navItems[1].name}}</h1>
                 <div class="nested-wrapper">
@@ -30,14 +31,19 @@
                     [longitude]="event.venue.longitude">
                 </app-location>
             </section>
+            <mat-divider class="light" />
             <section [id]="navItems[2].fragment" class="artist-section">
                 <h1>{{ navItems[2].name }}</h1>
-                <app-artist-summary [artist]="event.artist" />
+                <app-card>
+                    <app-artist-summary [artist]="event.artist" />
+                </app-card>
             </section>
+            <mat-divider class="light" />
             <section [id]="navItems[2].fragment" class="artist-section">
                 <h1>{{ navItems[2].name }}</h1>
                 <app-event-reviews [id]="event.id"></app-event-reviews>
             </section>
+            <mat-divider class="light" />
             <section [id]="navItems[3].fragment">
                 <h1>Tickets</h1>
               

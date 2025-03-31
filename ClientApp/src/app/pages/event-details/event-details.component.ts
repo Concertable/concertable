@@ -7,7 +7,8 @@ import { EventService } from '../../services/event/event.service';
 import { Event } from '../../models/event';
 import { EventStateService } from '../../services/event-state/event-state.service';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
-import { ExtendedDetailsDirective } from '../../directives/extended-details.directive';
+import { ExtendedDetailsDirective } from '../../directives/extended-details/extended-details.directive';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Component({
   selector: 'app-event-details',
@@ -33,9 +34,10 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
     authService: AuthService,
     blobStorageService: BlobStorageService,
     route: ActivatedRoute,
-    router: Router) 
+    router: Router,
+    toastService: ToastService) 
   { 
-    super(blobStorageService, authService, route, router)
+    super(blobStorageService, authService, route, router, toastService)
   }
 
   get event(): Event | undefined {

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { DashboardDirective } from '../../directives/dashboard.directive';
+import { DashboardDirective } from '../../directives/dashboard/dashboard.directive';
 import { Venue } from '../../models/venue';
 import { EventViewType } from '../../models/event-view-type';
 

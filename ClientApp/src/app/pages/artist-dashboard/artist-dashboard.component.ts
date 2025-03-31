@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Artist } from '../../models/artist';
-import { DashboardDirective } from '../../directives/dashboard.directive';
+import { DashboardDirective } from '../../directives/dashboard/dashboard.directive';
 
 @Component({
   selector: 'app-artist-dashboard',

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ResolveFn } from '@angular/router';
 
-import { myPreferencesResolver } from './my-preferences.resolver';
+import { myPreferencesResolver } from './my-preference.resolver';
 
 describe('myPreferencesResolver', () => {
   const executeResolver: ResolveFn<boolean> = (...resolverParameters) => 

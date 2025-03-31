@@ -1,0 +1,6 @@
+@if(preference){
+    <app-config-navbar (editModeChange)="onEditModeChange($event)" (cancel)="cancelChanges()" (save)="saveChanges()" [saveable]="saveable"></app-config-navbar>
+    <app-preference-details [preference]="preference" [editMode]="editMode" (entityChange)="onEntityChange($event)"></app-preference-details>
+}@else{
+    <app-config-item-not-found [itemName]="'preference'"/>
+}

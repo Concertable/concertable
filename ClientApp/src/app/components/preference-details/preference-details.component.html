@@ -1,7 +1,7 @@
-@if(preferences) {
+@if(preference) {
   <app-selector
     [options]="genres"
-    [(selectedItems)]="preferences.genres"
+    [(selectedItems)]="preference.genres"
     [label]="'Select Genres'"
     displayProperty="name"
     [disabled]="!editMode"
@@ -10,7 +10,7 @@
 </app-selector>
 <app-slider
   label="Distance Radius (km)"
-  [(value)]="preferences.radiusKm"
+  [(value)]="preference.radiusKm"
   [min]="10"
   [max]="100"
   [step]="10"
@@ -18,5 +18,5 @@
   (valueChange)="onChangeDetected()">
 </app-slider>
 }@else {
-  not found
+  Not Found
 }

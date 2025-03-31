@@ -6,10 +6,11 @@ import { AuthService } from '../../services/auth/auth.service';
 import { Observable } from 'rxjs';
 import { DetailsDirective } from '../../directives/details/details.directive';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
-import { ExtendedDetailsDirective } from '../../directives/extended-details.directive';
+import { ExtendedDetailsDirective } from '../../directives/extended-details/extended-details.directive';
 import { Genre } from '../../models/genre';
 import { GenreService } from '../../services/genre/genre.service';
 import { NavItem } from '../../models/nav-item';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Component({
   selector: 'app-artist-details',
@@ -34,9 +35,10 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
     authService: AuthService,
     blobStorageService: BlobStorageService,
     route: ActivatedRoute,
-    router: Router) 
+    router: Router,
+    toastService: ToastService) 
   { 
-    super(blobStorageService, authService, route, router)
+    super(blobStorageService, authService, route, router, toastService)
   }
 
   get artist(): Artist | undefined {

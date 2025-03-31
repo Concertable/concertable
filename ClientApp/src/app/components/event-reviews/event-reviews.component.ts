@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ReviewDirective } from '../../directives/review.directive';
+import { ReviewDirective } from '../../directives/review/review.directive';
 import { Observable } from 'rxjs';
 import { Pagination } from '../../models/pagination';
 import { Review } from '../../models/review';

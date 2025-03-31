@@ -1,12 +1,13 @@
 import { Directive } from '@angular/core';
-import { AuthService } from '../services/auth/auth.service';
-import { BlobStorageService } from '../services/blob-storage/blob-storage.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Venue } from '../models/venue';
-import { Artist } from '../models/artist';
-import { Event } from '../models/event';
-import { DetailsDirective } from './details/details.directive';
-import { NavItem } from '../models/nav-item';
+import { Venue } from '../../models/venue';
+import { Artist } from '../../models/artist';
+import { Event } from '../../models/event';
+import { DetailsDirective } from '../details/details.directive';
+import { NavItem } from '../../models/nav-item';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Directive({
   selector: '[appExtendedDetails]',
@@ -23,9 +24,10 @@ export abstract class ExtendedDetailsDirective<T extends Venue | Artist | Event>
     protected blobStorageService: BlobStorageService, 
     authService: AuthService,
     route: ActivatedRoute,
-    router: Router
+    router: Router,
+    toastService: ToastService
   ) {
-    super(authService, route, router);
+    super(authService, route, router, toastService);
   }
 
   exists(section: string): boolean {

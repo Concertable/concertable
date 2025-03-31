@@ -1,12 +1,12 @@
 import { Directive, OnDestroy, OnInit } from '@angular/core';
-import { ListingApplication } from '../models/listing-application';
-import { Event } from '../models/event';
+import { ListingApplication } from '../../models/listing-application';
+import { Event } from '../../models/event';
 import { ActivatedRoute } from '@angular/router';
-import { StripeService } from '../services/stripe/stripe.service';
-import { Purchase } from '../models/purchase';
+import { StripeService } from '../../services/stripe/stripe.service';
+import { Purchase } from '../../models/purchase';
 import { Observable, Subscription } from 'rxjs';
-import { SignalRService } from '../services/signalr/signalr.service';
-import { BlobStorageService } from '../services/blob-storage/blob-storage.service';
+import { SignalRService } from '../../services/signalr/signalr.service';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Directive({
   selector: '[appCheckout]',

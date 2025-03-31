@@ -1,8 +1,8 @@
 import { Directive, Input } from '@angular/core';
-import { HeaderType } from '../models/header-type';
-import { SearchParams } from '../models/search-params';
+import { HeaderType } from '../../models/header-type';
+import { SearchParams } from '../../models/search-params';
 import { ActivatedRoute, Router, UrlSerializer } from '@angular/router';
-import { SearchParamsSerializerServiceService } from '../services/search-params-serializer/search-params-serializer-service.service';
+import { SearchParamsSerializerServiceService } from '../../services/search-params-serializer/search-params-serializer-service.service';
 
 @Directive({
   selector: '[appFind]',

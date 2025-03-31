@@ -8,6 +8,8 @@
         alt="Header Image"
         width="200"
         height="200">
-    <p><mat-icon>location_on</mat-icon> {{ header?.county }}, {{ header?.town }}</p>
+    <span class="icon-text mt-3">
+        <mat-icon>location_on</mat-icon> {{ header?.county }}, {{ header?.town }}
+        </span>           
     <ng-content></ng-content>
 </div>

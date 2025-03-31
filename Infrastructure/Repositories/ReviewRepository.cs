@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories
 {
@@ -19,65 +20,60 @@ namespace Infrastructure.Repositories
     {
         public ReviewRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id)
+        public Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id)
         {
-            var query = context.Reviews
-                .Where(r => r.Ticket.Event.Application.ArtistId == id);
-
-            return await GetSummaryAsync(query);
+            return GetSummaryAsync(r => r.Ticket.Event.Application.ArtistId == id);
         }
 
-        public async Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id)
+        public Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id)
         {
-            var query = context.Reviews
-                .Where(r => r.Ticket.EventId == id);
-
-            return await GetSummaryAsync(query);
+            return GetSummaryAsync(r => r.Ticket.EventId == id);
         }
 
-        public async Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
+        public Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
         {
-            var query = context.Reviews
-                .Where(r => r.Ticket.Event.Application.Listing.VenueId == id);
-
-            return await GetSummaryAsync(query);
+            return GetSummaryAsync(r => r.Ticket.Event.Application.Listing.VenueId == id);
         }
 
-        public async Task<double?> GetAverageRatingByArtistIdAsync(int id)
-        {
-            var query = context.Reviews
-                .Where(r => r.Ticket.Event.Application.ArtistId == id);
 
-            return await query.AverageAsync(r => (double?)r.Stars);
+        public Task<double?> GetAverageRatingByArtistIdAsync(int id)
+        {
+            return GetAverageRatingAsync(r => r.Ticket.Event.Application.ArtistId == id);
         }
 
-        public async Task<double?> GetAverageRatingByEventIdAsync(int id)
+        public Task<double?> GetAverageRatingByEventIdAsync(int id)
         {
-            var query = context.Reviews
-                .Where(r => r.Ticket.EventId == id);
-
-            return await query.AverageAsync(r => (double?)r.Stars);
+            return GetAverageRatingAsync(r => r.Ticket.EventId == id);
         }
 
-        public async Task<double?> GetAverageRatingByVenueIdAsync(int id)
+        public Task<double?> GetAverageRatingByVenueIdAsync(int id)
         {
-            var query = context.Reviews
-                .Where(r => r.Ticket.Event.Application.Listing.VenueId == id);
-
-            return await query.AverageAsync(r => (double?)r.Stars);
+            return GetAverageRatingAsync(r => r.Ticket.Event.Application.Listing.VenueId == id);
         }
 
-        public async Task<ReviewSummaryDto> GetSummaryAsync(IQueryable<Review> query)
+        private async Task<double?> GetAverageRatingAsync(Expression<Func<Review, bool>> filter)
         {
+            var query = context.Reviews.Where(filter);
+
+            return (await query.AverageAsync(r => (double?)r.Stars)) is double avg
+                ? Math.Round(avg, 1)
+                : null;
+        }
+
+        private async Task<ReviewSummaryDto> GetSummaryAsync(Expression<Func<Review, bool>> filter)
+        {
+            var query = context.Reviews.Where(filter);
+
             var averageRating = await query.AverageAsync(r => (double?)r.Stars);
             var totalReviews = await query.CountAsync();
 
             return new ReviewSummaryDto
             {
-                AverageRating = averageRating,
+                AverageRating = averageRating is double avg ? Math.Round(avg, 1) : null,
                 TotalReviews = totalReviews
             };
         }
+
 
         public async Task<PaginationResponse<Review>> GetByArtistIdAsync(int id, PaginationParams pageParams)
         {

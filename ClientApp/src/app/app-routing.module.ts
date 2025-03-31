@@ -40,10 +40,11 @@ import { VenueHomeComponent } from './pages/venue-home/venue-home.component';
 import { ProfileMenuComponent } from './pages/profile-menu/profile-menu.component';
 import { MyProfileComponent } from './pages/my-profile/my-profile.component';
 import { MyProfileResolver } from './resolvers/my-profile/my-profile.resolver';
-import { MyPreferencesComponent } from './components/my-preferences/my-preferences.component';
-import { myPreferencesResolver } from './resolvers/my-preferences/my-preferences.resolver';
+import { MyPreferenceComponent } from './components/my-preference/my-preference.component';
+import { myPreferenceResolver } from './resolvers/my-preference/my-preference.resolver';
 import { ListingApplicationsResolver } from './resolvers/listing-applications.resolver';
 import { authGuard } from './guards/auth/auth.guard';
+import { CreatePreferenceComponent } from './components/create-preference/create-preference.component';
 
 const routes: Routes = [
   {
@@ -81,12 +82,28 @@ const routes: Routes = [
         component: ProfileMenuComponent,
         data: { breadcrumb: 'Profile' },
         children: [
+          {
+            path: 'preferences',
+            data: { breadcrumb: 'Preferences' },
+            children: [
+              {
+                path: '',
+                component: MyPreferenceComponent,
+                resolve: { preference: myPreferenceResolver },
+              },
+              {
+                path: 'create',
+                component: CreatePreferenceComponent,
+                data: { breadcrumb: 'Create' }
+              }
+            ]
+          },
           { path: 'details', component: MyProfileComponent, resolve: { user: MyProfileResolver }, data: { breadcrumb: 'Profile Details' } },
-          { path: 'preferences', component: MyPreferencesComponent, resolve: { preferences: myPreferencesResolver }, data: { breadcrumb: 'Preferences' } },
           { path: 'payment', component: PaymentDetailsComponent, data: { breadcrumb: 'Payment Details' } },
           { path: 'tickets', component: MyTicketsComponent, data: { breadcrumb: 'My Tickets' } }
         ]
       }
+      
     ]
   },
 

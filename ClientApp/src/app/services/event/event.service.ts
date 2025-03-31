@@ -21,7 +21,7 @@ export class EventService {
     private http: HttpClient,
     private signalRService: SignalRService
   ) {
-    this.loadInitialRecentHeaders();
+    this.loadInitialRecommendedHeaders();
     this.signalRService.eventPosted$.subscribe(header => {
       if (header) {
         console.log(header);
@@ -30,8 +30,8 @@ export class EventService {
     });
   }
 
-  private loadInitialRecentHeaders(): void {
-    this.getLocalHeadersForUser(true, 10).subscribe(headers => {
+  private loadInitialRecommendedHeaders(): void {
+    this.getRecommendedHeaders().subscribe(headers => {
       headers.forEach(header => this.recentEventHeadersSubject.next(header));
     });
   }
@@ -76,13 +76,16 @@ export class EventService {
     return this.http.post<ListingApplicationPurchase>(`${this.apiUrl}/book`, { paymentMethodId, applicationId });
   }
 
-  getLocalHeadersForUser(orderByRecent: boolean = false, take?: number): Observable<EventHeader[]> {
-    let params = new HttpParams().set('orderByRecent', orderByRecent);
-    if (take != null) {
-      params = params.set('take', take.toString());
-    }
+  getRecommendedHeaders(): Observable<EventHeader[]> {
+    return this.http.get<EventHeader[]>(`${this.apiUrl}/headers/recommended`);
+  }
 
-    return this.http.get<EventHeader[]>(`${this.apiUrl}/headers/local/user`, { params });
+  getPopularHeaders(): Observable<EventHeader[]> {
+    return this.http.get<EventHeader[]>(`${this.apiUrl}/headers/popular`);
+  }
+
+  getFreeHeaders(): Observable<EventHeader[]> {
+    return this.http.get<EventHeader[]>(`${this.apiUrl}/headers/free`);
   }
 
   addFakeEvent(header: EventHeader): void {

@@ -5,6 +5,7 @@ using Core.Exceptions;
 using Application.Responses;
 using Infrastructure.Services;
 using Core.Parameters;
+using AutoMapper;
 
 public class TicketService : ITicketService
 {
@@ -15,6 +16,7 @@ public class TicketService : ITicketService
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUserService currentUserService;
     private readonly IManagerService managerService;
+    private readonly IMapper mapper;
 
     public TicketService(
         ITicketRepository ticketRepository,
@@ -23,7 +25,8 @@ public class TicketService : ITicketService
         IEmailService emailService,
         IQrCodeService qrCodeService,
         ICurrentUserService currentUserService,
-        IManagerService managerService
+        IManagerService managerService,
+        IMapper mapper
         )
     {
         this.ticketRepository = ticketRepository;
@@ -33,6 +36,7 @@ public class TicketService : ITicketService
         this.qrCodeService = qrCodeService;
         this.currentUserService = currentUserService;
         this.managerService = managerService;
+        this.mapper = mapper;
     }
 
     public async Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams)
@@ -129,5 +133,19 @@ public class TicketService : ITicketService
     public Task<byte[]> GetQrCodeByIdAsync(int id)
     {
         return ticketRepository.GetQrCodeByIdAsync(id);
+    }
+
+    public async Task<TicketDto[]> GetUpcomingAsync()
+    {
+        var tickets = await ticketRepository.GetUpcomingAsync();
+
+        return mapper.Map<TicketDto[]>(tickets);
+    }
+
+    public async Task<TicketDto[]> GetHistoryAsync()
+    {
+        var tickets = await ticketRepository.GetUpcomingAsync();
+
+        return mapper.Map<TicketDto[]>(tickets);
     }
 }

@@ -50,7 +50,7 @@ export class CreateArtistComponent extends CreateItemDirective<Artist> {
     return this.artistService.create(artist);
   }
   
-  showCreated(name: string): void {
-    this.artistToastService.showCreated(name);
+  showCreated(artist: Artist): void {
+    this.artistToastService.showCreated(artist.name);
   }
 }

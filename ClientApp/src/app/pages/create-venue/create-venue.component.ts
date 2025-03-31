@@ -57,8 +57,8 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
     return this.venueService.create(venue);
   }
 
-  showCreated(name: string): void {
-    this.venueToastService.showCreated(name); 
+  showCreated(venue: Venue): void {
+    this.venueToastService.showCreated(venue.name); 
   }
 
   addListing(listing: Listing) {

@@ -1,5 +1,6 @@
 <app-header [header]="header" [headerType]="headerType">
-    <span><mat-icon>calendar_today</mat-icon>
+    <span class="icon-text mt-2"><mat-icon>calendar_today</mat-icon>
         {{ header?.startDate | date: 'd MMM' }} {{ header?.startDate | date: 'HH:mm' }} - 
-        {{ header?.endTime | date: 'HH:mm' }}</span>
+        {{ header?.endDate | date: 'HH:mm' }}</span>
+    <span class="time-ago icon-text mt-2"><mat-icon>schedule</mat-icon>{{ header?.datePosted | timeAgo }}</span>
 </app-header>
