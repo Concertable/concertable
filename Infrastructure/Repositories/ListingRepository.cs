@@ -56,7 +56,9 @@ namespace Infrastructure.Repositories
         {
             var query = context.ListingApplications
                 .Where(la => la.Id == id)
-                .Select(la => la.Listing);
+                .Select(la => la.Listing)
+                .Include(la => la.ListingGenres)
+                    .ThenInclude(lg => lg.Genre);
 
             return await query.FirstOrDefaultAsync();
         }

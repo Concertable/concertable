@@ -13,6 +13,6 @@ namespace Core.Entities
         public ListingApplication Application { get; set; }
         public ICollection<Ticket> Tickets { get; }
         public ICollection<EventImage> Images { get; }
-        public ICollection<EventGenre> EventGenre { get; }
+        public ICollection<EventGenre> EventGenres { get; set; }
     }
 }

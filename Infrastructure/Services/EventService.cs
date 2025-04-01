@@ -29,8 +29,9 @@ namespace Infrastructure.Services
         private readonly IMessageService messageService;
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
-        private readonly IListingApplicationService applicationService;
         private readonly IPreferenceService preferenceService;
+        private readonly IListingRepository listingRepository;
+        private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IMapper mapper;
 
         public EventService(
@@ -41,8 +42,9 @@ namespace Infrastructure.Services
             IMessageService messageService,
             IReviewService reviewService, 
             ILocationService locationService,
-            IListingApplicationService applicationService, 
             IPreferenceService preferenceService,
+            IListingRepository listingRepository,
+            IListingApplicationRepository listingApplicationRepository,
             IMapper mapper) : base(eventRepository, locationService)
         {
             this.eventRepository = eventRepository;
@@ -52,8 +54,9 @@ namespace Infrastructure.Services
             this.messageService = messageService;
             this.reviewService = reviewService;
             this.locationService = locationService;
-            this.applicationService = applicationService;
+            this.listingApplicationRepository = listingApplicationRepository;
             this.preferenceService = preferenceService;
+            this.listingRepository = listingRepository;
             this.mapper = mapper;
         }
 
@@ -121,26 +124,16 @@ namespace Infrastructure.Services
 
         public async Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
         {
-            var (artistDto, venueDto) = await applicationService.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
+            var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
 
-            var result = await eventSchedulingService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId);
+            var response = await eventSchedulingService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId);
 
-            if (!result.IsValid)
-                throw new BadRequestException(result.Reason!);
+            if (!response.IsValid)
+                throw new BadRequestException(response.Reason!);
 
-            var eventEntity = new Event
-            {
-                ApplicationId = purchaseCompleteDto.EntityId,
-                Name = $"{artistDto.Name} performing at {venueDto.Name}",
-                Price = 0,
-                TotalTickets = 0,
-                AvailableTickets = 0
-            };
+            var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
 
-            await eventRepository.AddAsync(eventEntity);
-            await eventRepository.SaveChangesAsync();
-
-            var eventDto = mapper.Map<EventDto>(eventEntity);
+            var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
 
             await messageService.SendAsync(
                 purchaseCompleteDto.FromUserId,
@@ -157,6 +150,40 @@ namespace Infrastructure.Services
                 ApplicationId = purchaseCompleteDto.EntityId,
                 Event = eventDto
             };
+        }
+
+        /// <summary>
+        /// Creates default event
+        /// i.e. Event without a defined price, and being labled as unposted
+        /// </summary>
+        public async Task<EventDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, Artist artist, Listing listing)
+        {
+            var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
+            var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId);
+
+            // Genres of the event should be the intersection of the artist, and listing genres
+            var matchingGenreIds = artistGenreIds.Intersect(listingGenreIds);
+
+            if (!matchingGenreIds.Any())
+                throw new BadRequestException("The artist does not match any genres required by the listing");
+
+            var eventEntity = new Event
+            {
+                ApplicationId = purchaseCompleteDto.EntityId,
+                Name = $"{artist.Name} performing at {listing.Venue.Name}",
+                Price = 0,
+                TotalTickets = 0,
+                AvailableTickets = 0,
+                DatePosted = null,
+                EventGenres = matchingGenreIds
+                    .Select(genreId => new EventGenre { GenreId = genreId })
+                    .ToList()
+            };
+
+            await eventRepository.AddAsync(eventEntity);
+            await eventRepository.SaveChangesAsync();
+
+            return mapper.Map<EventDto>(eventEntity);
         }
 
         public async Task<EventDto> GetDetailsByApplicationIdAsync(int applicationId)

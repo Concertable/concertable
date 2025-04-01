@@ -60,7 +60,13 @@ namespace Web.Controllers
                         Status = intent.Status,
                         CreatedAt = DateTime.Now
                     };
-                    bool processed = false;
+
+                    /*
+                     * Log the payment immediately
+                     * in case we have any faults later in this controller (such as a database fail),
+                     * the log is in the database so an administrator could issue a refund
+                     */
+                    await purchaseService.LogAsync(purchaseDto); 
 
                     var userId = int.Parse(intent.Metadata["fromUserId"]);
                     var email = intent.Metadata["fromUserEmail"];
@@ -77,17 +83,12 @@ namespace Web.Controllers
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["eventId"]);
                         await ticketService.CompleteAsync(purchaseCompleteDto);
-                        processed = true;
                     }
                     else if (paymentType == "application")
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
                         var response = await eventService.CompleteAsync(purchaseCompleteDto);
                         await hubContext.Clients.Group(userId.ToString()).SendAsync("ListingApplicationPurchaseResponse", response);
-                        processed = true;
-                    }
-                    if (processed)
-                    {
                     }
 
                     return Ok();
