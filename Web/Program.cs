@@ -18,6 +18,8 @@ using Core.Entities;
 using Infrastructure.Factories;
 using Web.Hubs;
 using Application.Serializers;
+using Microsoft.AspNetCore.Authorization;
+using Web.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -150,7 +152,8 @@ builder.Services.ConfigureApplicationCookie(config =>
         return Task.CompletedTask;
     };
 });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization()
+    .AddSingleton<IAuthorizationHandler, AdminAuthorizeHandler>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

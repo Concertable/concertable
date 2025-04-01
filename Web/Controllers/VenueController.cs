@@ -33,7 +33,7 @@ namespace Web.Controllers
             return Ok(await venueService.GetDetailsByIdAsync(id));
         }
 
-        [Authorize(Roles = "VenueManager, Admin")]
+        [Authorize(Roles = "VenueManager")]
         [HttpGet("user")]
         public async Task<ActionResult<VenueDto?>> GetDetailsForCurrentUser()
         {
@@ -41,7 +41,7 @@ namespace Web.Controllers
             
         }
 
-        [Authorize(Roles = "VenueManager, Admin")]
+        [Authorize(Roles = "VenueManager")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateVenueDto createVenueDto)
         {
@@ -53,7 +53,7 @@ namespace Web.Controllers
             return CreatedAtAction(nameof(GetDetailsById), new { Id = venueDto.Id }, venueDto);
         }
 
-        [Authorize(Roles = "VenueManager, Admin")]
+        [Authorize(Roles = "VenueManager")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] VenueDto proposedVenueDto)
         {

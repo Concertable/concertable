@@ -33,7 +33,7 @@ namespace Web.Controllers
             return Ok(await artistService.GetHeadersAsync(searchParams));
         }
 
-        [Authorize(Roles = "ArtistManager, Admin")]
+        [Authorize(Roles = "ArtistManager")]
         [HttpGet("user")]
         public async Task<ActionResult<ArtistDto?>> GetDetailsForCurrentUser()
         {
