@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
+using Application.Responses;
 
 namespace Web.Controllers
 {
@@ -11,10 +12,18 @@ namespace Web.Controllers
     public class ListingApplicationController : ControllerBase
     {
         private readonly IListingApplicationService listingApplicationService;
+        private readonly IEventSchedulingService eventSchedulingService;
+        private readonly IArtistService artistService;
 
-        public ListingApplicationController(IListingApplicationService listingApplicationService)
+        public ListingApplicationController(
+            IListingApplicationService listingApplicationService, 
+            IEventSchedulingService eventSchedulingService,
+            IArtistService artistService
+            )
         {
             this.listingApplicationService = listingApplicationService;
+            this.eventSchedulingService = eventSchedulingService;
+            this.artistService = artistService;
         }
 
         [Authorize(Roles = "VenueManager")]
@@ -37,5 +46,36 @@ namespace Web.Controllers
         {
             return Ok(await listingApplicationService.GetByIdAsync(id));
         }
+
+        [Authorize(Roles = "ArtistManager")]
+        [HttpGet("can-apply/{listingId}")]
+        public async Task<ActionResult<bool>> CanApplyForListing(int listingId)
+        {
+            var artist = await artistService.GetDetailsForCurrentUserAsync();
+
+            if (artist is null)
+                return NotFound("Artist not found");
+
+            var response = await eventSchedulingService.CanApplyForListingAsync(listingId, artist.Id);
+
+            if (!response.IsValid)
+                return BadRequest(response.Reason);
+
+            return Ok(true);
+        }
+
+        [Authorize(Roles = "VenueManager")]
+        [HttpGet("can-accept/{applicationId}")]
+        public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
+        {
+            var result = await eventSchedulingService.CanAcceptListingApplicationAsync(applicationId);
+
+            if (!result.IsValid)
+                return BadRequest(result.Reason);
+
+            return Ok(true);
+        }
+
+
     }
 }

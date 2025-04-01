@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { ListingApplication } from '../../models/listing-application';
+import { ValidationResponse } from '../../models/validation-response';
 
 @Injectable({
   providedIn: 'root'
@@ -23,5 +24,13 @@ export class ListingApplicationService {
 
   getById(id: number): Observable<ListingApplication> {
     return this.http.get<ListingApplication>(`${this.apiUrl}/${id}`);
+  }
+
+  canApplyForListing(listingId: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/can-apply/${listingId}`);
+  }
+
+  canAcceptApplication(listingApplicationId: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/can-accept/${listingApplicationId}`);
   }
 }

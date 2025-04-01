@@ -18,6 +18,7 @@ namespace Infrastructure.Services
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IUnitOfWork unitOfWork;
         private readonly ICurrentUserService currentUserService;
+        private readonly IEventSchedulingService eventSchedulingService;
         private readonly IMessageService messageService;
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
@@ -27,6 +28,7 @@ namespace Infrastructure.Services
             IListingApplicationRepository listingApplicationRepository,
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
+            IEventSchedulingService eventSchedulingService,
             IMessageService messageService,
             IListingService listingService,
             IArtistService artistService,
@@ -35,6 +37,7 @@ namespace Infrastructure.Services
             this.listingApplicationRepository = listingApplicationRepository;
             this.unitOfWork = unitOfWork;
             this.currentUserService = currentUserService;
+            this.eventSchedulingService = eventSchedulingService;
             this.messageService = messageService;
             this.listingService = listingService;
             this.artistService = artistService;
@@ -60,13 +63,16 @@ namespace Infrastructure.Services
                 ListingId = listingId,
                 ArtistId = artistDto.Id,
             };
+
             var user = await currentUserService.GetAsync();
             var listingOwner = await listingService.GetOwnerByIdAsync(listingId);
 
             var listing = await listingService.GetByIdAsync(listingId);
 
-            if (listing is null)
-                throw new BadRequestException("Listing does not exist");
+            var response = await eventSchedulingService.CanApplyForListingAsync(listingId, artistDto.Id);
+
+            if (!response.IsValid)
+                throw new BadRequestException(response.Reason);
 
             // Check the Genres match in at least one case
             var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
@@ -93,7 +99,7 @@ namespace Infrastructure.Services
             {
                 await unitOfWork.TrySaveChangesAsync();
             }
-            catch(BadRequestException ex) when (ex.ErrorType == ErrorType.DuplicateKey)
+            catch (BadRequestException ex) when (ex.ErrorType == ErrorType.DuplicateKey)
             {
                 throw new BadRequestException("You cannot apply to the same listing twice");
             }

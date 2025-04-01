@@ -47,6 +47,7 @@ import { authGuard } from './guards/auth/auth.guard';
 import { CreatePreferenceComponent } from './components/create-preference/create-preference.component';
 import { CustomerTicketsComponent } from './components/customer-tickets/customer-tickets.component';
 import { TicketViewType } from './models/ticket-view-type';
+import { listingApplicationCheckoutGuard } from './guards/listing-application-checkout/listing-application-checkout.guard';
 
 const routes: Routes = [
   {
@@ -74,9 +75,9 @@ const routes: Routes = [
       },
       {
         path: 'application',
-        data: { breadcrumb: 'Application' },
+        data: { role:"VenueManager", breadcrumb: 'Application' },
         children: [
-          { path: 'checkout/:id', component: ListingApplicationCheckoutComponent, resolve: { application: ListingApplicationResolver }, data: { breadcrumb: 'Checkout' } }
+          { path: 'checkout/:id', component: ListingApplicationCheckoutComponent, resolve: { application: ListingApplicationResolver }, data: { breadcrumb: 'Checkout' }, canActivate: [roleGuard, listingApplicationCheckoutGuard], }
         ]
       },
       {

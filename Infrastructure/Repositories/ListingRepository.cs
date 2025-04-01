@@ -42,14 +42,23 @@ namespace Infrastructure.Repositories
             return await query.FirstAsync();
         }
 
-        public async Task<Listing> GetByIdAsync(int id)
+        public async new Task<Listing?> GetByIdAsync(int id)
         {
             var query = context.Listings
                 .Where(l => l.Id == id)
                 .Include(l => l.ListingGenres)
                     .ThenInclude(lg => lg.Genre);
 
-            return await query.FirstAsync();
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<Listing?> GetByApplicationIdAsync(int id)
+        {
+            var query = context.ListingApplications
+                .Where(la => la.Id == id)
+                .Select(la => la.Listing);
+
+            return await query.FirstOrDefaultAsync();
         }
     }
 }

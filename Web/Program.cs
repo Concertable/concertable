@@ -88,6 +88,7 @@ builder.Services.AddScoped<IStripeAccountService, StripeAccountService>();
 builder.Services.AddScoped<IPreferenceService, PreferenceService>();
 builder.Services.AddScoped<IUriService, UriService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IEventSchedulingService, EventSchedulingService>();
 
 builder.Services.AddScoped<IHeaderService<VenueHeaderDto>, VenueService>();
 builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();

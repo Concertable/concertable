@@ -11,8 +11,9 @@ namespace Application.Interfaces
 {
     public interface IListingRepository : IRepository<Listing>
     {
+        new Task<Listing?> GetByIdAsync(int id);
         Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
-
+        Task<Listing?> GetByApplicationIdAsync(int id);
         Task<VenueManager> GetOwnerByIdAsync(int id);
     }
 }

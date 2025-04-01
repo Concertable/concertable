@@ -238,5 +238,17 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<bool> ArtistHasEventOnDateAsync(int artistId, DateTime date)
+        {
+            return await context.Events
+                .Where(e => e.Application.ArtistId == artistId)
+                .AnyAsync(e => e.Application.Listing.StartDate.Date == date.Date);
+        }
+
+        public Task<bool> ListingHasEventAsync(int listingId)
+        {
+            return context.Events
+                .AnyAsync(e => e.Application.ListingId == listingId);
+        }
     }
 }

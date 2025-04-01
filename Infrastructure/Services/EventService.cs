@@ -25,6 +25,7 @@ namespace Infrastructure.Services
         private readonly IEventRepository eventRepository;
         private readonly ICurrentUserService currentUserService;
         private readonly IUserPaymentService userPaymentService;
+        private readonly IEventSchedulingService eventSchedulingService;
         private readonly IMessageService messageService;
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
@@ -36,6 +37,7 @@ namespace Infrastructure.Services
             IEventRepository eventRepository, 
             ICurrentUserService currentUserService,
             IUserPaymentService userPaymentService,
+            IEventSchedulingService eventSchedulingService,
             IMessageService messageService,
             IReviewService reviewService, 
             ILocationService locationService,
@@ -46,6 +48,7 @@ namespace Infrastructure.Services
             this.eventRepository = eventRepository;
             this.currentUserService = currentUserService;
             this.userPaymentService = userPaymentService;
+            this.eventSchedulingService = eventSchedulingService;
             this.messageService = messageService;
             this.reviewService = reviewService;
             this.locationService = locationService;
@@ -119,6 +122,11 @@ namespace Infrastructure.Services
         public async Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
         {
             var (artistDto, venueDto) = await applicationService.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
+
+            var result = await eventSchedulingService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId);
+
+            if (!result.IsValid)
+                throw new BadRequestException(result.Reason!);
 
             var eventEntity = new Event
             {

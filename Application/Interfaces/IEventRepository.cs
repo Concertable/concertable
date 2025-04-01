@@ -22,5 +22,7 @@ namespace Application.Interfaces
         Task<IEnumerable<Event>> GetHistoryByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUnpostedByArtistIdAsync(int id);
         Task<IEnumerable<Event>> GetUnpostedByVenueIdAsync(int id);
+        Task<bool> ArtistHasEventOnDateAsync(int artistId, DateTime date);
+        Task<bool> ListingHasEventAsync(int listingId);
     }
 }
