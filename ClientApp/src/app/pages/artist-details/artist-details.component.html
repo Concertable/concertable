@@ -28,7 +28,7 @@
 
         <section [id]="navItems[1].fragment">
             <h2 class="heading-events">Upcoming Events</h2>
-            <app-artist-events [artist]="artist" />
+            <app-artist-events [artist]="artist" [viewType]="EventViewType.Upcoming"/>
         </section>
 
         <section [id]="navItems[2].fragment">

@@ -1,6 +1,5 @@
 @if(venue) {
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
-    <div class="c">
         <div class="container" *ngIf="entity">
             <section [id]="navItems[0].fragment">
                 <h1>{{navItems[0].name}}</h1>
@@ -32,7 +31,7 @@
             @if (venue.about) {
                 <section [id]="navItems[2].fragment">
                     <h2 class="heading-events">Upcoming Events</h2>
-                    <app-venue-events [venue]="venue" />
+                    <app-venue-events [venue]="venue" [viewType]="EventViewType.Upcoming"/>
                 </section>
             }
     
@@ -52,7 +51,6 @@
                 </section>
             }
         </div>
-    </div>
 }@else {
     Venue not found
 }

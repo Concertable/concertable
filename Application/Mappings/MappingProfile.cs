@@ -94,7 +94,7 @@ namespace Application.Mappings
                 dest => dest.Artist,
                 opt => opt.MapFrom(src => src.Application.Artist == null ? null : src.Application.Artist)
             )
-            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.EventGenre.Select(eg => eg.Genre)))
+            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.EventGenres.Select(eg => eg.Genre)))
             .ReverseMap();
 
 

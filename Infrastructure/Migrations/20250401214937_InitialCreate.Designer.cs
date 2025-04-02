@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250331183924_InitialCreate")]
+    [Migration("20250401214937_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -187,7 +187,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("PreferenceId");
 
-                    b.ToTable("GenrePreference");
+                    b.ToTable("GenrePreferences");
                 });
 
             modelBuilder.Entity("Core.Entities.Identity.ApplicationRole", b =>
@@ -830,7 +830,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entities.EventGenre", b =>
                 {
                     b.HasOne("Core.Entities.Event", "Event")
-                        .WithMany("EventGenre")
+                        .WithMany("EventGenres")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1112,7 +1112,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Event", b =>
                 {
-                    b.Navigation("EventGenre");
+                    b.Navigation("EventGenres");
 
                     b.Navigation("Images");
 

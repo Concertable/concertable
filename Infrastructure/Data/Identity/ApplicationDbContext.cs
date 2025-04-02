@@ -30,6 +30,7 @@ namespace Infrastructure.Data.Identity
         public DbSet<Video> Videos { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<Preference> Preferences { get; set; }
+        public DbSet<GenrePreference> GenrePreferences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

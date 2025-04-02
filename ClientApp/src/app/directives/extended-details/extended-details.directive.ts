@@ -10,6 +10,7 @@ import { NavItem } from '../../models/nav-item';
 import { ToastService } from '../../services/toast/toast.service';
 import { Genre } from '../../models/genre';
 import { GenreService } from '../../services/genre/genre.service';
+import { EventViewType } from '../../models/event-view-type';
 
 @Directive({
   selector: '[appExtendedDetails]',
@@ -22,6 +23,8 @@ export abstract class ExtendedDetailsDirective<T extends Venue | Artist | Event>
     { name: 'Reviews', fragment: 'reviews' }
   ];
   genres: Genre[] = [];
+
+  EventViewType = EventViewType;
 
   constructor(
     protected blobStorageService: BlobStorageService, 

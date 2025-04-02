@@ -83,7 +83,7 @@ namespace Infrastructure.Repositories
             .Include(e => e.Application.Listing)
                 .ThenInclude(l => l.Venue)
                     .ThenInclude(v => v.User)
-            .Include(e => e.EventGenre)
+            .Include(e => e.EventGenres)
                 .ThenInclude(eg => eg.Genre);
 
             return await query.FirstAsync();
@@ -94,7 +94,7 @@ namespace Infrastructure.Repositories
             var query = context.Events
                 .Where(e => e.DatePosted != null && e.Application.Listing.EndDate > DateTime.UtcNow)
                 .Include(e => e.Application.Listing.Venue.User)
-                .Include(e => e.EventGenre)
+                .Include(e => e.EventGenres)
                 .AsQueryable();
 
             if (eventParams.Latitude.HasValue && eventParams.Longitude.HasValue)

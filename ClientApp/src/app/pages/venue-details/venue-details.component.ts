@@ -13,6 +13,7 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
 import { ExtendedDetailsDirective } from '../../directives/extended-details/extended-details.directive';
 import { ToastService } from '../../services/toast/toast.service';
 import { GenreService } from '../../services/genre/genre.service';
+import { EventViewType } from '../../models/event-view-type';
 
 @Component({
   selector: 'app-venue-details',

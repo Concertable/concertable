@@ -370,7 +370,7 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GenrePreference",
+                name: "GenrePreferences",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -380,15 +380,15 @@ namespace Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GenrePreference", x => x.Id);
+                    table.PrimaryKey("PK_GenrePreferences", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GenrePreference_Genres_GenreId",
+                        name: "FK_GenrePreferences_Genres_GenreId",
                         column: x => x.GenreId,
                         principalTable: "Genres",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GenrePreference_Preferences_PreferenceId",
+                        name: "FK_GenrePreferences_Preferences_PreferenceId",
                         column: x => x.PreferenceId,
                         principalTable: "Preferences",
                         principalColumn: "Id",
@@ -681,13 +681,13 @@ namespace Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_GenrePreference_GenreId",
-                table: "GenrePreference",
+                name: "IX_GenrePreferences_GenreId",
+                table: "GenrePreferences",
                 column: "GenreId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GenrePreference_PreferenceId",
-                table: "GenrePreference",
+                name: "IX_GenrePreferences_PreferenceId",
+                table: "GenrePreferences",
                 column: "PreferenceId");
 
             migrationBuilder.CreateIndex(
@@ -802,7 +802,7 @@ namespace Infrastructure.Migrations
                 name: "EventImages");
 
             migrationBuilder.DropTable(
-                name: "GenrePreference");
+                name: "GenrePreferences");
 
             migrationBuilder.DropTable(
                 name: "ListingGenres");
