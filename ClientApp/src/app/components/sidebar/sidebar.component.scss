@@ -1,10 +1,11 @@
 .container {
-    min-height: 100vh;
+    min-height: 100%;
 }
 
 mat-sidenav {
     border-radius: 0px !important; /* Override Material default */
-    background-color: #a0c4ff;
+    background-color: var(--background-white);
+    box-shadow: -6px 0 12px rgba(0, 0, 0, 0.20);
 }
 
 .btn-close {

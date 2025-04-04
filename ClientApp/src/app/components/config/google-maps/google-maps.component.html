@@ -1,13 +1,11 @@
 <div class="container">
     <!-- Search Bar -->
-    <div *ngIf="editMode">
-        <app-location-search (locationValueChange)="onLocationValueChange($event)" (locationChange)="onLocationChange($event)" [type]="'establishment'"/>
-    </div>
+    <app-location-search *ngIf="editMode" (locationChange)="onLocationChange($event)" (latLongChange)="onLatLongChange($event)" [type]="'establishment'"/>
 
     <!-- Google Map -->
-    <google-map [center]="center" [zoom]="14">
-        <map-marker *ngIf="lat !== undefined && lng !== undefined"
-            [position]="{ lat: lat, lng: lng }">
+    <google-map [options]="options" [width]="800" [height]="400">
+        <map-marker *ngIf="lat !== undefined && lng !== undefined" [clickable]="false" [draggable]="true"
+            [position]="{ lat, lng }">
         </map-marker>
     </google-map>
 </div>

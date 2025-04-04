@@ -82,6 +82,7 @@ namespace Web.Controllers
                     if (paymentType == "event")
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["eventId"]);
+                        purchaseCompleteDto.Quantity = int.Parse(intent.Metadata["quantity"]);
                         await ticketService.CompleteAsync(purchaseCompleteDto);
                     }
                     else if (paymentType == "application")

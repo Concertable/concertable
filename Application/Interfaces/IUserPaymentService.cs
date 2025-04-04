@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface IUserPaymentService
     {
-        Task<PaymentResponse> PayVenueManagerByEventIdAsync(int eventId, string paymentMethodId);
+        Task<PaymentResponse> PayVenueManagerByEventIdAsync(int eventId, int quantity, string paymentMethodId);
         Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId);
     }
 }

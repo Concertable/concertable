@@ -35,7 +35,7 @@ namespace Infrastructure.Services
             this.currentUserService = currentUserService;
         }
 
-        public async Task<PaymentResponse> PayVenueManagerByEventIdAsync(int eventId, string paymentMethodId) 
+        public async Task<PaymentResponse> PayVenueManagerByEventIdAsync(int eventId, int quantity, string paymentMethodId) 
         {
             var user = await currentUserService.GetAsync();
             var toUser = await userService.GetByEventIdAsync(eventId);
@@ -53,7 +53,8 @@ namespace Infrastructure.Services
                 { "fromUserEmail", user.Email },
                 { "toUserId", toUser.Id.ToString() },
                 { "type", "event" },
-                { "eventId", eventId.ToString() }
+                { "eventId", eventId.ToString() },
+                { "quantity", quantity.ToString() }
             }
             };
 

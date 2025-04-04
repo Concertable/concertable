@@ -8,7 +8,7 @@ namespace Application.Responses
 {
     public class TicketPurchaseResponse : PurchaseResponse
     {
-        public int TicketId { get; set; }
+        public IEnumerable<int> TicketIds { get; set; }
         public int EventId { get; set; }
     }
 

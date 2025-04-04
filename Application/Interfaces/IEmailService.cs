@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface IEmailService
     {
-        Task SendTicketEmailAsync(int userId, string email, int ticketId);
+        Task SendTicketsToEmailAsync(int userId, string toEmail, IEnumerable<int> ticketIds);
         Task SendEmailAsync(int userId, string toEmail, string subject, string body);
     }
 }

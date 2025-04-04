@@ -1,8 +1,5 @@
 @if(editMode) {
-    <div class="container">
-        <label *ngIf="label" class="label">{{ label }}</label>
-        <input type="text" [(ngModel)]="content" (ngModelChange)="onContentChange($event)">
-    </div>
+    <app-input [(content)]="content" label="Name"></app-input>
 }@else {
-    <h2>{{ content }}</h2>
+    <h1>{{ content }}</h1>
 }

@@ -1,0 +1,34 @@
+<div class="details-hero">
+    <div class="content">
+      <div class="text">
+        <app-heading-large
+          [editMode]="editMode"
+          label="Name"
+          [(content)]="name"
+          (contentChange)="onChangeDetected()" />
+
+        <p class="icon-text" *ngIf="email">
+          <mat-icon>mail</mat-icon>
+          {{ email }}
+        </p>
+
+        <app-location
+            [editMode]="editMode"       
+            [county]="county"
+            [town]="town"
+            (locationChange)="onLocationChange($event)" 
+            (latLongChange)="onLatLongChange($event)" 
+            [type]="'establishment'"
+        />
+      </div>
+  
+      <div class="image" *ngIf="imageUrl">
+        <img
+          [src]="blobStorageService.getUrl(imageUrl)"
+          alt="Hero Image"
+          width="240"
+          height="240" />
+      </div>
+    </div>
+  </div>
+  

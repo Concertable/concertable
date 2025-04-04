@@ -1,0 +1,7 @@
+<div class="wrapper" *ngIf="county && town && !editMode">
+    <mat-icon class="icon">location_on</mat-icon>
+    <p>{{ county }}</p>
+    <span>,</span>
+    <p>{{ town }}</p>
+</div>
+<app-google-maps (locationChange)="updateLocation($event)" [editMode]="editMode" [lat]="latitude" [lng]="longitude" (latLongChange)="onLatLongChange($event)" />

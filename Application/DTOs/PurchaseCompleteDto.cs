@@ -13,5 +13,6 @@ namespace Application.DTOs
         public int FromUserId { get; set; }
         public string FromEmail { get; set; }
         public int ToUserId { get; set; }
+        public int? Quantity { get; set; }
     }
 }

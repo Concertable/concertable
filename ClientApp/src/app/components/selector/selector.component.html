@@ -18,15 +18,13 @@
         <mat-icon>add</mat-icon>
       </button>
     </div>
-  
-    <div class="selected-items">
-      <app-badge
-        *ngFor="let item of selectedItems"
-        [displayProperty]="displayProperty"
-        [item]="item"
-        [editMode]="editMode"
-        (remove)="removeItem(item)">
-      </app-badge>
-    </div>
+
+    <app-badges
+      [items]="selectedItems"
+      [displayProperty]="displayProperty"
+      [editMode]="editMode"
+      (remove)="removeItem($event)">
+    </app-badges>
+
   </div>
   

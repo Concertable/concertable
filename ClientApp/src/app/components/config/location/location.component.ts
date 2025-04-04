@@ -1,27 +1,26 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Coordinates } from '../../../models/coordinates';
 
 @Component({
   selector: 'app-location',
   standalone: false,
-  
   templateUrl: './location.component.html',
   styleUrl: './location.component.scss'
 })
 export class LocationComponent {
-  @Input() editMode?: boolean;
   @Input() county?: string;
   @Input() town?: string;
   @Input() latitude?: number;
   @Input() longitude?: number;
-  @Output() coordinatesChange = new EventEmitter<Coordinates | undefined>();
+  @Input() editMode?: boolean = false;
 
-  onCoordinatesChange(coordinates: Coordinates | undefined) {
-    this.coordinatesChange.emit(coordinates);
+  @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral|undefined>();
+  @Output() locationChange = new EventEmitter<{ county: string, town: string }>();
+
+  onLatLongChange(latLong: google.maps.LatLngLiteral|undefined) {
+    this.latLongChange.emit(latLong);
   }
 
-  updateLocationValue(location?: { county: string, town: string }) {
-    this.county = location?.county;
-    this.town = location?.town;
+  onLocationChange(location?: { county: string, town: string }) {
+    this.locationChange.emit(location);
   }
 }

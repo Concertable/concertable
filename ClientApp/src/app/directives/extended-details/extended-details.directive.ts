@@ -18,7 +18,7 @@ import { EventViewType } from '../../models/event-view-type';
 })
 export abstract class ExtendedDetailsDirective<T extends Venue | Artist | Event> extends DetailsDirective<T> {
   navItems: NavItem[] = [
-    { name: 'Info', fragment: 'info' },
+    { name: 'About', fragment: 'about' },
     { name: 'Videos', fragment: 'videos' },
     { name: 'Reviews', fragment: 'reviews' }
   ];

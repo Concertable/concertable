@@ -39,6 +39,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDividerModule } from '@angular/material/divider';
 
 
 import { GoogleMapsModule } from '@angular/google-maps';
@@ -72,7 +73,7 @@ import { TextareaComponent } from './components/config/textarea/textarea.compone
 import { ImageComponent } from './components/config/image/image.component';
 import { HeadingLargeComponent } from './components/config/heading-large/heading-large.component';
 import { HeadingMediumComponent } from './components/config/heading-medium/heading-medium.component';
-import { LocationComponent } from './components/config/location/location.component';
+import { LocationDisplayComponent } from './components/config/location-display/location-display.component';
 import { ExtraOptions } from '@angular/router';
 import { VenueFindComponent } from './components/venue-find/venue-find.component';
 import { ArtistDetailsComponent } from './pages/artist-details/artist-details.component';
@@ -130,6 +131,12 @@ import { InitService } from './services/init/init.service';
 import { CreatePreferenceComponent } from './components/create-preference/create-preference.component';
 import { TimeAgoPipe } from './shared/pipes/time-ago/time-ago.pipe';
 import { CustomerTicketsComponent } from './components/customer-tickets/customer-tickets.component';
+import { VenueDetailsHeroComponent } from './components/venue-details-hero/venue-details-hero.component';
+import { BadgesComponent } from './components/badges/badges.component';
+import { EventDetailsHeroComponent } from './components/event-details-hero/event-details-hero.component';
+import { LocationComponent } from './components/config/location/location.component';
+import { InputComponent } from './shared/config/input/input.component';
+import { AddressComponent } from './components/address/address.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -181,7 +188,7 @@ export function initApp(initService: InitService) {
     ImageComponent,
     HeadingLargeComponent,
     HeadingMediumComponent,
-    LocationComponent,
+    LocationDisplayComponent,
     VenueFindComponent,
     ArtistDetailsComponent,
     CustomerFindComponent,
@@ -234,6 +241,12 @@ export function initApp(initService: InitService) {
     CreatePreferenceComponent,
     TimeAgoPipe,
     CustomerTicketsComponent,
+    VenueDetailsHeroComponent,
+    BadgesComponent,
+    EventDetailsHeroComponent,
+    LocationComponent,
+    InputComponent,
+    AddressComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
@@ -266,6 +279,7 @@ export function initApp(initService: InitService) {
     MatPaginatorModule,
     MatTimepickerModule,
     MatExpansionModule,
+    MatDividerModule
 ],
   providers: [
     provideHttpClient(

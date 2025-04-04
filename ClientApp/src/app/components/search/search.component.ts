@@ -22,9 +22,9 @@ export class SearchComponent implements OnInit{
     this.searchParams.date = date;
   }
 
-  onLocationChange(coordinates: google.maps.LatLngLiteral | undefined) {
-    this.searchParams.latitude = coordinates?.lat;
-    this.searchParams.longitude = coordinates?.lng;
+  onLatLongChange(latLong: google.maps.LatLngLiteral | undefined) {
+    this.searchParams.latitude = latLong?.lat;
+    this.searchParams.longitude = latLong?.lng;
   }
 
   onSearch() {

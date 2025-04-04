@@ -34,9 +34,16 @@ namespace Infrastructure.Services
                 HtmlBody = emailDto.Body
             };
 
-            if (emailDto.Attachment != null)
+            if (emailDto.Attachments != null)
             {
-                bodyBuilder.Attachments.Add(emailDto.AttachmentName ?? "Ticket.pdf", emailDto.Attachment, ContentType.Parse("application/pdf"));
+                foreach (var attachment in emailDto.Attachments)
+                {
+                    bodyBuilder.Attachments.Add(
+                        attachment.FileName,
+                        attachment.Content,
+                        ContentType.Parse(attachment.MimeType)
+                    );
+                }
             }
 
             email.Body = bodyBuilder.ToMessageBody();
@@ -47,6 +54,7 @@ namespace Infrastructure.Services
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
         }
+
 
         public async Task SendEmailAsync(int userId, string toEmail, string subject, string body)
         {
@@ -60,17 +68,27 @@ namespace Infrastructure.Services
             await SendAsync(emailDto);
         }
 
-        public async Task SendTicketEmailAsync(int userId, string toEmail, int ticketId)
+        public async Task SendTicketsToEmailAsync(int userId, string toEmail, IEnumerable<int> ticketIds)
         {
-            byte[] ticketPdf = await pdfService.GenerateTicketReciptAsync(toEmail, ticketId);
+            var attachments = new List<AttachmentDto>();
+
+            foreach (var ticketId in ticketIds)
+            {
+                byte[] ticketPdf = await pdfService.GenerateTicketReciptAsync(toEmail, ticketId);
+
+                attachments.Add(new AttachmentDto
+                {
+                    Content = ticketPdf,
+                    FileName = $"Ticket-{ticketId}.pdf"
+                });
+            }
 
             var emailDto = new EmailDto
             {
                 To = toEmail,
                 Subject = "Your Ticket Receipt",
-                Body = "<p>Here is your receipt for your event ticket.</p>",
-                Attachment = ticketPdf,
-                AttachmentName = "Ticket.pdf"
+                Body = $"<p>Thank you for your order! Your {ticketIds.Count()} ticket(s) are attached.</p>",
+                Attachments = attachments
             };
 
             await SendAsync(emailDto);

@@ -14,6 +14,7 @@ import { ExtendedDetailsDirective } from '../../directives/extended-details/exte
 import { ToastService } from '../../services/toast/toast.service';
 import { GenreService } from '../../services/genre/genre.service';
 import { EventViewType } from '../../models/event-view-type';
+import { Genre } from '../../models/genre';
 
 @Component({
   selector: 'app-venue-details',
@@ -25,8 +26,14 @@ import { EventViewType } from '../../models/event-view-type';
 export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
   @Output() listingCreate = new EventEmitter<Listing>
 
+  selectedItems: Genre[] = [
+    { id: 1, name: 'Action' },
+    { id: 2, name: 'Comedy' },
+    { id: 3, name: 'Drama' },
+  ]
+
   override navItems: NavItem[] = [
-    { name: 'Info', fragment: 'info' },
+    { name: 'About', fragment: 'about' },
     { name: 'Location', fragment: 'location' },
     { name: 'Events', fragment: 'events' },
     { name: 'Videos', fragment: 'videos' },
@@ -65,13 +72,12 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
     this.venue = data['venue'];
   }
 
-  updateCoordinates(coordinates: Coordinates | undefined) {
+  updateLatLong(latLong: google.maps.LatLngLiteral | undefined) {
     if(this.venue)
-    {
-      if(coordinates) {
-        this.venue.latitude = coordinates.lat;
-        this.venue.longitude = coordinates.lng;
-      }
+      if (latLong) {
+        const { lat, lng } = latLong;
+        this.venue.latitude = lat;
+        this.venue.longitude = lng;
     }
     this.onChangeDetected();
   }

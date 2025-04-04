@@ -1,4 +1,5 @@
 @if(event) {
+    <app-event-details-hero [event]="event" [editMode]="editMode" (contentChange)="onChangeDetected()"></app-event-details-hero>
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
     <div class="container" *ngIf="event">
         <div class="wrapper">
@@ -35,10 +36,10 @@
                         </p>
                     </div>
                 </div>
-                <app-location
+                <app-location-display
                     [latitude]="event.venue.latitude"
                     [longitude]="event.venue.longitude">
-                </app-location>
+                </app-location-display>
             </section>
             <mat-divider class="light" />
             <section [id]="navItems[2].fragment" class="artist-section">

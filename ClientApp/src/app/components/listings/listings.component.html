@@ -1,98 +1,103 @@
-<app-card [isEmpty]="listings.length === 0">
-    <div *ngFor="let listing of listings" class="item">
-        <div class="listing-date">
-            <p class="date">{{ listing.startDate | date:'d' }}</p>
-            <p class="month">{{ listing.startDate | date:'MMM' }}</p>
-        </div>
-        <div class="listing-info">
-            <p class="day-time">
-                <mat-icon>access_time</mat-icon>
-                <span class="day-of-week">{{ listing?.startDate | date:'EEE' }}</span>
-                <span>{{ listing?.startDate | date:'h:mm a' }} - {{ listing?.endDate | date:'h:mm a' }}</span>
-            </p>
-            <p class="icon-text">
-                <mat-icon>attach_money</mat-icon>
-                <strong style="margin-right: 3px">Pay:</strong> {{ listing.pay | currency: 'GBP':'symbol':'1.2-2' }}
-            </p>
-            <p class="genres">
-                <mat-icon>music_note</mat-icon>
-                <strong style="margin-right: 3px;">Genres:</strong> 
-                <span *ngFor="let genre of listing.genres" class="genres">{{ genre.name }}, </span>
-            </p>
-        </div>
 
-        <div class="listing-actions">
-            <button *ngIf="authService.isRole('VenueManager') && editMode"
-                    class="delete btn-delete" 
-                    (click)="onDelete(listing)">
-                <mat-icon>delete</mat-icon> Delete
-            </button>
-
-            <button *ngIf="authService.isRole('VenueManager') && !editMode"
-                    class="primary" 
-                    (click)="onViewApplications(listing)">
-                <mat-icon>visibility</mat-icon>
-                <span class="btn-label">View Applications</span>
-            </button>
-            
-            <button *ngIf="authService.isRole('ArtistManager')"
-                    class="apply" 
-                    (click)="onApply(listing)">
-                <mat-icon>check_circle</mat-icon>
-                <span class="btn-label">Apply</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Add New Listing -->
-    <div *ngIf="addNew && editMode" class="new-listing-card">
-        <h3>Add New Listing</h3>
-    
-        <div class="grid-container">
-            <div class="grid-item">
-                <label>Date:</label>
-                <app-date-picker (dateChange)="onStartDateChange($event)"></app-date-picker>
+<div class="container">
+    <app-card [isEmpty]="listings.length === 0">
+        <div *ngFor="let listing of listings" class="item">
+            <div class="date-container">
+                <p class="date">{{ listing.startDate | date:'d' }}</p>
+                <p class="month">{{ listing.startDate | date:'MMM' }}</p>
             </div>
-    
-            <div class="grid-item">
-                <label>Pay</label>
-                <mat-form-field appearance="outline">
-                    <input matInput type="number" [(ngModel)]="newListing.pay" min="0" step="1">
-                </mat-form-field>
-            </div>
-    
-            <div class="grid-item full-width">
-                <label>Time:</label>
-                <div class="time-inputs">
-                    <app-time-picker (timeChange)="onStartTimeChange($event)"></app-time-picker> - 
-                    <app-time-picker (timeChange)="onEndTimeChange($event)"></app-time-picker>
+            <div class="info">
+                <div class="nested-info">
+                    <p class="time icon-text">
+                        <mat-icon>access_time</mat-icon>
+                        <span class="mr-[5px]">{{ listing?.startDate | date:'EEE' }}</span>
+                        <span>{{ listing?.startDate | date:'h:mm a' }} - {{ listing?.endDate | date:'h:mm a' }}</span>
+                    </p>
+                    <p class="icon-text">
+                        <mat-icon>payments</mat-icon>
+                        <strong class="mr-[5px]">Pay:</strong> {{ listing.pay | currency: 'GBP':'symbol':'1.2-2' }}
+                    </p>
                 </div>
+                <p class="genres icon-text">
+                    <mat-icon>music_note</mat-icon>
+                    <strong class="mr-[5px]">Genres:</strong> 
+                    <span *ngFor="let genre of listing.genres" class="genres">{{ genre.name }}, </span>
+                </p>
             </div>
     
-            <div class="grid-item full-width">
-                <label>Genres:</label>
-                <app-drop-down 
-                    [options]="genres" 
-                    [selectedValue]="newGenre"
-                    [displayProperty]="'name'"
-                    (selectionChange)="newGenre = $event">
-                </app-drop-down>
-                <button class="primary btn-add-genre" (click)="onAddGenre()">
-                    <mat-icon>add</mat-icon> Add Genre
+            <div class="actions">
+                <button *ngIf="authService.isRole('VenueManager') && editMode"
+                        class="delete btn-delete" 
+                        (click)="onDelete(listing)">
+                    <mat-icon>delete</mat-icon> Delete
+                </button>
+    
+                <button *ngIf="authService.isRole('VenueManager') && !editMode"
+                        class="primary" 
+                        (click)="onViewApplications(listing)">
+                    <mat-icon>visibility</mat-icon>
+                    <span class="btn-label">View Applications</span>
+                </button>
+                
+                <button *ngIf="authService.isRole('ArtistManager')"
+                        class="apply" 
+                        (click)="onApply(listing)">
+                    <mat-icon>check_circle</mat-icon>
+                    <span class="btn-label">Apply</span>
                 </button>
             </div>
         </div>
     
-        <!-- Display Added Genres -->
-        <ul class="genre-list">
-            <li *ngFor="let genre of newListing.genres" class="genre-badge">{{ genre.name }}</li>
-        </ul>
-    </div>
+        <!-- Add New Listing -->
+        <div *ngIf="addNew && editMode" class="new-card">
+            <h3>Add New Listing</h3>
+        
+            <div class="grid-container">
+                <div class="grid-item">
+                    <label>Date:</label>
+                    <app-date-picker (dateChange)="onStartDateChange($event)"></app-date-picker>
+                </div>
+        
+                <div class="grid-item">
+                    <label>Pay</label>
+                    <mat-form-field appearance="outline">
+                        <input matInput type="number" [(ngModel)]="newListing.pay" min="0" step="1">
+                    </mat-form-field>
+                </div>
+        
+                <div class="grid-item full-width">
+                    <label>Time:</label>
+                    <div class="time-inputs">
+                        <app-time-picker (timeChange)="onStartTimeChange($event)"></app-time-picker> - 
+                        <app-time-picker (timeChange)="onEndTimeChange($event)"></app-time-picker>
+                    </div>
+                </div>
+        
+                <div class="grid-item full-width">
+                    <label>Genres:</label>
+                    <app-drop-down 
+                        [options]="genres" 
+                        [selectedValue]="newGenre"
+                        [displayProperty]="'name'"
+                        (selectionChange)="newGenre = $event">
+                    </app-drop-down>
+                    <button class="primary btn-add-genre" (click)="onAddGenre()">
+                        <mat-icon>add</mat-icon> Add Genre
+                    </button>
+                </div>
+            </div>
+        
+            <!-- Display Added Genres -->
+            <ul class="genre-list">
+                <li *ngFor="let genre of newListing.genres" class="genre-badge">{{ genre.name }}</li>
+            </ul>
+        </div>
+        
     
-
-    <!-- Add & Save Buttons -->
-    <div *ngIf="editMode" class="actions-container">
-        <button *ngIf="!addNew" class="btn-add" (click)="onAdd()"><mat-icon>add</mat-icon> Add</button>
-        <button *ngIf="addNew" class="btn-save" (click)="onSaveItem()"><mat-icon>save</mat-icon> Save</button>
-    </div>
-</app-card>
+        <!-- Add & Save Buttons -->
+        <div *ngIf="editMode" class="actions-container">
+            <button *ngIf="!addNew" class="btn-add" (click)="onAdd()"><mat-icon>add</mat-icon> Add</button>
+            <button *ngIf="addNew" class="btn-save" (click)="onSaveItem()"><mat-icon>save</mat-icon> Save</button>
+        </div>
+    </app-card>
+</div>

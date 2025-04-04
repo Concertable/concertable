@@ -13,8 +13,8 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
   @Input() type: string = '(cities)';
   @Input() latitude?: number;
   @Input() longitude?: number;
-  @Output() locationChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
-  @Output() locationValueChange = new EventEmitter<{county: string, town: string} | undefined>();
+  @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
+  @Output() locationChange = new EventEmitter<{county: string, town: string} | undefined>();
 
   locality?: string;
   county?: string;
@@ -48,7 +48,6 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
   }
 
   private updateLocationInputs(components: google.maps.GeocoderAddressComponent[]) {
-    console.log(components);
     components.forEach(component => {
       const types = component.types;
       if (types.includes('postal_town')) 
@@ -78,11 +77,11 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
         const lng = place.geometry.location?.lng();
         if(lat && lng)
         {
-          this.locationChange.emit({lat, lng});
+          this.latLongChange.emit({lat, lng});
           if(place.address_components) {
             this.updateLocationInputs(place.address_components);
             if(this.county && this.town)
-              this.locationValueChange.emit({ county: this.county, town: this.town })
+              this.locationChange.emit({ county: this.county, town: this.town })
           }
         }
       }
@@ -90,7 +89,7 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
 
     this.searchElement.nativeElement.addEventListener('input', () => {
       if (!this.searchElement.nativeElement.value) {
-        this.locationChange.emit(undefined); 
+        this.latLongChange.emit(undefined); 
       }
       this.locationInput = undefined;
     });

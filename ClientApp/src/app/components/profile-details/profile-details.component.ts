@@ -10,7 +10,7 @@ import { Coordinates } from '../../models/coordinates';
   styleUrl: './profile-details.component.scss'
 })
 export class ProfileDetailsComponent extends DetailsDirective<User> {
-updateCoordinates($event: Coordinates|undefined) {
+updateLatLong($event: Coordinates|undefined) {
 throw new Error('Method not implemented.');
 }
   onLocationChange($event: google.maps.LatLngLiteral|undefined) {

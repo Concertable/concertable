@@ -1,7 +1,7 @@
-<div class="wrapper" *ngIf="county && town && !editMode">
-    <mat-icon class="icon">location_on</mat-icon>
-    <p>{{county}}</p>
+<div class="wrapper icon-text" *ngIf="county && town && !editMode">
+    <mat-icon>location_on</mat-icon>
+    <p>{{ county }}</p>
     <span>,</span>
-    <p>{{town}}</p>
+    <p>{{ town }}</p>
 </div>
-<app-google-maps (locationValueChange)="updateLocationValue($event)" [editMode]="editMode" [lat]="latitude" [lng]="longitude" (coordinatesChange)="onCoordinatesChange($event)" />
+<app-location-search *ngIf="editMode" (locationChange)="onLocationChange($event)" (latLongChange)="onLatLongChange($event)" [type]="'establishment'"/>

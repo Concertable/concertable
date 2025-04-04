@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Coordinates } from '../../../models/coordinates';
 
 @Component({
@@ -8,33 +8,39 @@ import { Coordinates } from '../../../models/coordinates';
   templateUrl: './google-maps.component.html',
   styleUrl: './google-maps.component.scss'
 })
-export class GoogleMapsComponent {
+export class GoogleMapsComponent implements OnInit {
   @Input() editMode?: boolean = false;
   @Input() lat?: number;
   @Input() lng?: number;
-  @Output() coordinatesChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
-  @Output() locationValueChange = new EventEmitter<{ county: string, town: string} | undefined>
+  @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
+  @Output() locationChange = new EventEmitter<{ county: string, town: string} | undefined>
 
-  defaultCenter = { lat: 51.5074, lng: -0.1278 };
-
-  get center(): google.maps.LatLngLiteral {
-    if (this.lat !== undefined && this.lng !== undefined)
-      return { lat: this.lat, lng: this.lng };
-    return this.defaultCenter;
+  options: google.maps.MapOptions = {
+    center: { lat: 51, lng: 0.1 }
   }
 
-  onLocationChange(location: google.maps.LatLngLiteral | undefined) {
-    if (location?.lat !== undefined && location?.lng !== undefined) {
-      this.lat = location.lat;
-      this.lng = location.lng;
-      this.coordinatesChange.emit({ lat: this.lat, lng: this.lng }); 
-    } else {
-      this.coordinatesChange.emit(undefined); 
+  ngOnInit() {
+    if (this.lat !== undefined && this.lng !== undefined) {
+      this.options.center = { lat: this.lat, lng: this.lng };
     }
   }
 
-  onLocationValueChange(location?: { county: string, town: string }) {
-    this.locationValueChange.emit(location);
+  onLatLongChange(latLong: google.maps.LatLngLiteral | undefined) {
+    if (latLong) {
+      const { lat, lng } = latLong;
+  
+      this.lat = lat;
+      this.lng = lng;
+  
+      this.latLongChange.emit({ lat, lng });
+    } else {
+      this.latLongChange.emit(undefined);
+    }
+  }
+  
+
+  onLocationChange(location?: { county: string, town: string }) {
+    this.locationChange.emit(location);
   }
   
 }

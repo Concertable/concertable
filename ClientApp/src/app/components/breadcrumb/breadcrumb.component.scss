@@ -1,3 +1,10 @@
 .container {
-    background-color: #F1F3F4;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px;
+
+    a {
+        color: white;
+        text-decoration: underline;
+    }
 }

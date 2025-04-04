@@ -10,5 +10,6 @@ namespace Core.Parameters
     {
         public string PaymentMethodId { get; set; }
         public int EventId { get; set; }
+        public int Quantity { get; set; } = 1;
     }
 }

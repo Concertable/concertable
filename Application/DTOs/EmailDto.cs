@@ -11,7 +11,6 @@ namespace Application.DTOs
         public required string To { get; set; }
         public string? Subject { get; set; }
         public string? Body { get; set; }
-        public byte[]? Attachment { get; set; }
-        public string? AttachmentName { get; set; }
+        public IEnumerable<AttachmentDto> Attachments { get; set; }
     }
 }

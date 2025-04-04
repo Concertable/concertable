@@ -12,6 +12,12 @@
     height: 60px; /* Fixed height for consistent appearance */
 }
 
+:host {
+    display: block;
+    background-color: var(--primary-color);
+    overflow: hidden;
+}
+
 .wrapper {
     display: flex;
     align-items: center; 
