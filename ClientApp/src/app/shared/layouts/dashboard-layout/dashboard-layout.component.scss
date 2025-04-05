@@ -5,10 +5,10 @@
     padding: 16px;
     height: 100%;
 
-    > ::ng-deep [section-one],
-    ::ng-deep [section-two],
-    ::ng-deep [section-three],
-    ::ng-deep [section-four] {
+    > :host ::ng-deep [section-one],
+    :host ::ng-deep [section-two],
+    :host ::ng-deep [section-three],
+    :host ::ng-deep [section-four] {
         border: 2px solid #ccc;
         min-width: 200px;
         padding: 16px;
@@ -17,7 +17,7 @@
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     }
     
-    ::ng-deep .title {
+    :host ::ng-deep .title {
 
         text-align: center;
         margin: 0 auto;

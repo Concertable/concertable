@@ -1,14 +1,17 @@
-<nav class="container">
-    <img class="app-logo" src="../images/logo.png" alt="app-logo" (click)="onLogoClick()">
-    <div class = "content">
-        <ul>
-            <ng-content></ng-content>
-            <li>
-                <app-mailbox></app-mailbox>
-            </li>
-            <li>
-                <app-profile></app-profile>
-            </li>
-        </ul>
-    </div>
-</nav>
+
+<div class="nav">
+    <nav class="container">
+        <img class="app-logo" src="../images/logo-long2.png" alt="app-logo" (click)="onLogoClick()">
+        <div class = "content">
+            <ul>
+                <ng-content></ng-content>
+                <li>
+                    <app-mailbox></app-mailbox>
+                </li>
+                <li>
+                    <app-profile></app-profile>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</div>

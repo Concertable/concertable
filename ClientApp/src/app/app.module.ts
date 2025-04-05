@@ -137,6 +137,7 @@ import { EventDetailsHeroComponent } from './components/event-details-hero/event
 import { LocationComponent } from './components/config/location/location.component';
 import { InputComponent } from './shared/config/input/input.component';
 import { AddressComponent } from './components/address/address.component';
+import { ArtistDetailsHeroComponent } from './components/artist-details-hero/artist-details-hero.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -246,7 +247,8 @@ export function initApp(initService: InitService) {
     EventDetailsHeroComponent,
     LocationComponent,
     InputComponent,
-    AddressComponent
+    AddressComponent,
+    ArtistDetailsHeroComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

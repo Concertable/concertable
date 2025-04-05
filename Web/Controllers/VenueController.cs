@@ -38,7 +38,6 @@ namespace Web.Controllers
         public async Task<ActionResult<VenueDto?>> GetDetailsForCurrentUser()
         {
             return Ok(await venueService.GetDetailsForCurrentUserAsync());
-            
         }
 
         [Authorize(Roles = "VenueManager")]

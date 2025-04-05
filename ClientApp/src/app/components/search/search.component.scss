@@ -10,6 +10,7 @@
     border-radius: 50px; /* Rounded edges */
     border: 1px solid #ddd;
     height: 60px; /* Fixed height for consistent appearance */
+    container-type: inline-size;
 }
 
 :host {
@@ -25,7 +26,7 @@
     width: 100%;
 }
 
-.location-search,
+.location-search, 
 .search-input,
 .date-picker,
 .btn-search {
@@ -34,7 +35,7 @@
     justify-content: center;
 }
 
-.location-search {
+.location-search, :host ::ng-deep .location-search mat-form-field {
     flex: 1;
 }
 
@@ -42,10 +43,22 @@
     flex: 3;
 }
 
-.date-picker {
+.date-picker, :host ::ng-deep .date-picker mat-form-field {
     flex: 1;
 }
 
 .btn-search {
     margin-left: 5px;
 }
+
+@container (max-width: 600px) {
+    .location-search,
+    .date-picker {
+      display: none;
+    }
+  
+    .search-input {
+      flex: 1; /* make it take full width */
+    }
+  }
+  

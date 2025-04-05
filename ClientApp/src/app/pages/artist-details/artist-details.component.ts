@@ -21,9 +21,8 @@ import { ToastService } from '../../services/toast/toast.service';
 })
 export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
   override navItems: NavItem[] = [
-      { name: 'Info', fragment: 'info' },
+      { name: 'About', fragment: 'about' },
       { name: 'Upcoming Events', fragment: 'upcoming-events' },
-      { name: 'Videos', fragment: 'videos' },
       { name: 'Reviews', fragment: 'reviews' }
     ];
 

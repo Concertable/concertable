@@ -1,26 +1,23 @@
+.nav {
+    container-type: inline-size;
+}
+
 .container {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Darker shade for a sleek look */
+    align-items: center; /* Centers everything vertically */
     background-color: var(--primary-color);
     padding: 10px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adds depth */
 }
 
 .app-logo {
-    width: 60px;
+    height: 40px;
     cursor: pointer;
-    border-radius: 8px; /* Softens the edges */
-    transition: transform 0.2s ease-in-out;
-}
-
-.app-logo:hover {
-    transform: scale(1.1); /* Subtle hover effect */
 }
 
 .content {
     display: flex;
-    align-items: center;
+    align-items: center; /* Centers the items vertically within .content */
 }
 
 .content ul {
@@ -30,17 +27,23 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
+    align-items: center; /* Ensures that the list items are vertically centered */
 }
 
 .content ul li {
     display: flex;
-    align-items: center;
+    align-items: center; /* Ensures each list item is centered vertically */
 }
 
-::ng-deep .content ul li a {
+:host ::ng-deep .content ul li a {
     color: white;
     font-weight: 600;
-    text-decoration: none; 
+    text-decoration: none;
 }
 
-
+@container (width < 800px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+}

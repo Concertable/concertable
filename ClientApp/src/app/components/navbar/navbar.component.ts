@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 })
 export class NavbarComponent {
   constructor(protected authService: AuthService, private router: Router) { }
-
+  
   onLogoClick() {
     this.router.navigateByUrl('/');
   }

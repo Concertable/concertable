@@ -1,4 +1,5 @@
 @if(artist) {
+    <app-artist-details-hero [artist]="artist" />
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
     <div class="container" *ngIf="artist">
         <section [id]="navItems[0].fragment">
@@ -7,6 +8,7 @@
             <div class="wrapper">
                 <div class="nested-wrapper">
                     <app-textarea [editMode]="editMode" label="About" [(content)]="artist.about" (contentChange)="onChangeDetected()"/>
+                    <mat-divider vertical></mat-divider>
                     <app-selector
                         [options]="genres"
                         [(selectedItems)]="artist.genres"
@@ -16,13 +18,6 @@
                         (selectedItemsChange)="onChangeDetected()">
                     </app-selector>
                 </div>
-                <app-image 
-                    [editMode]="editMode" 
-                    width="300"
-                    height="300"
-                    [src]="artist.imageUrl" 
-                    alt="Venue Image" 
-                    (imageChange)="updateImage($event)"/>
             </div>
         </section>
 
