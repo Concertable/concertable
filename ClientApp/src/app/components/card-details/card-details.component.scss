@@ -1,6 +1,5 @@
 .card-container {
     display: flex;
-    max-width: 300px;
     flex-direction: column;
     border: 2px solid #ccc; /* Add border */
     border-radius: 25px; /* Rounded corners for squircle effect */
@@ -22,5 +21,9 @@
 .stripe-input {
     border: 1px solid #ccc;
     padding: 5px;
+}
+
+.message{
+    color: var(--error-color)
 }
   

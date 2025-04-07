@@ -9,6 +9,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 export class InputComponent {
   @Input() label: string = '';
   @Input() content?: string;
+  @Input() whiteOutline?: boolean = false
   @Output() contentChange = new EventEmitter<string>();
 
   onContentChange(value: string) {

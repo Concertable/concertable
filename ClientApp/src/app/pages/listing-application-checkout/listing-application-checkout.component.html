@@ -1,10 +1,21 @@
+<app-hero [title]="'Pay your chosen Artist'" [titleStyle]="titleStyle"></app-hero>
 <div class="container">
-    <h2>Secure Checkout</h2>
-  
-    <!-- Card Details Component -->
-    <app-card-details buttonName="Pay Artist" [isProcessing]="isProcessing" (paymentMethodChange)="updatePaymentMethodId($event)"></app-card-details>
-  
-    <!-- Message -->
+  <div class="wrapper">
+    <app-artist-summary [artist]="application?.artist"></app-artist-summary>
+
+    <app-payment-summary
+      [title]="'Payment Summary'" 
+      [summaryItems]="summaryItems">
+    </app-payment-summary>
+  </div>
+
+  <div class="card-details">
+    <app-card-details
+      buttonName="Pay Artist"
+      [isProcessing]="isProcessing"
+      (paymentMethodChange)="updatePaymentMethodId($event)">
+    </app-card-details>
+
     <p class="message">{{ message }}</p>
   </div>
-  
+</div>

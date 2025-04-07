@@ -8,7 +8,7 @@
     <mat-sidenav-content>
         <!-- main content -->
         <button *ngIf="!sidenav.opened" class="btn-toggle" mat-icon-button (click)="sidenav.toggle()">
-            <mat-icon class="btn-open" fontIcon="tune"></mat-icon>
+            <mat-icon class="btn-open" [fontIcon]="icon"></mat-icon>
         </button>
         <ng-content></ng-content>
     </mat-sidenav-content>

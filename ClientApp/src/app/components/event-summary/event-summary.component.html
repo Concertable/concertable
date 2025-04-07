@@ -1,0 +1,29 @@
+<app-card *ngIf="event">
+    <div class="container">
+      <img
+        class="rounded-[10px]" width="170" height="170"
+        [src]="blobService.getUrl(event?.artist?.imageUrl)"
+        alt="{{ event?.artist?.name }}'s Image"
+      />
+  
+      <div class="content">
+        <h3 class="title">{{ event?.name }}</h3>
+  
+        <p class="icon-text mb-[3px]">
+          <mat-icon >calendar_today</mat-icon>
+          {{ event?.startDate | date: 'd MMM y, h:mm a' }}
+        </p>
+  
+        <p class="icon-text mb-[3px]">
+          <mat-icon >location_on</mat-icon>
+          {{ event?.venue?.name }}, {{ event?.venue?.town }}, {{ event?.venue?.county }}
+        </p>
+  
+        <p class="icon-text mb-0">
+            <mat-icon >payments</mat-icon>
+            £{{ event?.price | number: '1.2-2' }} per ticket
+        </p>
+      </div>
+    </div>
+  </app-card>
+  

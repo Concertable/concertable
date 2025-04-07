@@ -26,10 +26,10 @@ import { Genre } from '../../models/genre';
 export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
   @Output() listingCreate = new EventEmitter<Listing>
 
-  selectedItems: Genre[] = [
-    { id: 1, name: 'Action' },
-    { id: 2, name: 'Comedy' },
-    { id: 3, name: 'Drama' },
+  venueGenres: Genre[] = [
+    { id: 1, name: 'Rock' },
+    { id: 2, name: 'Hip-Hop' },
+    { id: 3, name: 'Reggae' },
   ]
 
   override navItems: NavItem[] = [
@@ -90,6 +90,13 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
     if(this.venue)
       this.venue.imageUrl = url
     this.onChangeDetected
+  }
+
+  onViewInMaps() {
+    if(this.venue?.latitude && this.venue.longitude) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${this.venue.latitude},${this.venue.longitude}`;
+      window.open(url, '_blank');
+    }
   }
 
 }

@@ -1,8 +1,9 @@
-<div class="details-hero">
+<app-hero>
     <div class="content">
       <div class="text">
         <app-heading-large
           [editMode]="editMode"
+          [whiteOutline]="true"
           label="Name"
           [(content)]="name"
           (contentChange)="onChangeDetected()" />
@@ -16,19 +17,18 @@
             [editMode]="editMode"       
             [county]="county"
             [town]="town"
+            [whiteOutline]="true"
             (locationChange)="onLocationChange($event)" 
             (latLongChange)="onLatLongChange($event)" 
             [type]="'establishment'"
         />
       </div>
   
-      <div class="image" *ngIf="imageUrl">
         <img
           [src]="blobStorageService.getUrl(imageUrl)"
           alt="Hero Image"
           width="240"
           height="240" />
       </div>
-    </div>
-  </div>
+</app-hero>
   

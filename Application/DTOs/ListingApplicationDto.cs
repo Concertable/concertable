@@ -10,5 +10,6 @@ namespace Application.DTOs
     {
         public int Id { get; set; }
         public ArtistDto Artist { get; set; }
+        public ListingDto Listing { get; set; }
     }
 }

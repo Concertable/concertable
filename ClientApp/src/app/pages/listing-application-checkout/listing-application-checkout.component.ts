@@ -15,9 +15,11 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
   selector: 'app-listing-application-checkout',
   standalone: false,
   templateUrl: './listing-application-checkout.component.html',
-  styleUrl: './listing-application-checkout.component.scss'
+  styleUrl: '../../shared/components/checkout/checkout.component.scss'
 })
 export class ListingApplicationCheckoutComponent extends CheckoutDirective<ListingApplication> {
+  override titleStyle: { [key: string]: string; } = { 'max-width': '1000px' };
+
   constructor(
     route: ActivatedRoute, 
     stripeService: StripeService, 
@@ -39,6 +41,13 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
 
   override ngOnInit(): void {
       super.ngOnInit();
+      if (this.application?.artist) 
+        this.summaryItems = [
+          { label: "Artist you're paying to perform", value: this.application.artist.name },
+          { label: "Amount", value: this.application.listing.pay, isCost: true },
+          { label: "Total", value: this.application.listing.pay, isCost: true }
+        ];
+      console.log(this.summaryItems);
       this.signalRService.listingApplicationResponse$.subscribe(response => {
         var event = response?.event
         console.log("subscribed", response);

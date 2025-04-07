@@ -1,23 +1,6 @@
-.auth-container {
+.container {
     display: flex;
-    height: 100%; 
-  }
-  
-  .image-section {
-    flex: 1; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f4f4f4; 
-  }
-  
-  .image-section img {
-    width: 100%;
-    max-height: 100%;
-    object-fit: cover;
-  }
-  
-  .form-section {
+    min-height: 80vh; 
     flex: 1; /* 50% width */
     display: flex;
     justify-content: center;
@@ -25,6 +8,7 @@
     background-color: #fff; 
     padding: 20px;
   }
+
 
   :host ::ng-deep { //applies styles to its children
     form {

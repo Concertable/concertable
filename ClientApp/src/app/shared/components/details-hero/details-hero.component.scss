@@ -1,16 +1,15 @@
-.details-hero {
-    background-color: #1e2a78;
-    color: white;
-    padding: 10px 0;
+
+.content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 1.5rem;
+}
   
-    .content {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      max-width: 1200px;
-      margin: 0 auto;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-    }
-  }
+.text {
+    flex: 1;
+}
+
   

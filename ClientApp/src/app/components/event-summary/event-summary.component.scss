@@ -1,0 +1,33 @@
+.container {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  
+  .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .title {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .event-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #444;
+    margin: 0.25rem 0;
+  }
+  
+  .event-icon {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+    color: #444;
+  }
+  

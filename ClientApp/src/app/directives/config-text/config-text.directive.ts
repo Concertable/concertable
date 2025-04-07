@@ -9,6 +9,7 @@ export class ConfigTextDirective {
   @Input() editMode? = false;
   @Input() content?: string;
   @Input() label?: string;
+  @Input() whiteOutline?: boolean;
   @Output() contentChange = new EventEmitter<string>();
 
   private contentSubject = new Subject<string>();

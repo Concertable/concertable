@@ -14,9 +14,12 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
   selector: 'app-event-checkout',
   standalone: false,
   templateUrl: './event-checkout.component.html',
-  styleUrls: ['./event-checkout.component.scss']
+  styleUrl: '../../shared/components/checkout/checkout.component.scss'
 })
 export class EventCheckoutComponent extends CheckoutDirective<Event> {
+  override titleStyle: { [key: string]: string; } = { 'max-width': '1000px' };
+  quantity: number = 1;
+
   constructor(
     route: ActivatedRoute, 
     stripeService: StripeService, 
@@ -24,7 +27,18 @@ export class EventCheckoutComponent extends CheckoutDirective<Event> {
     blobStorageService: BlobStorageService,
     private ticketService: TicketService) {
       super(route, stripeService, signalRService, blobStorageService);
-    }
+  }
+
+  override ngOnInit(): void {
+    super.ngOnInit();
+      if (this.event?.price && this.event?.artist?.name) 
+        this.summaryItems = [
+          { label: 'Cost per ticket', value: this.event.price, isCost: true },
+          { label: 'Quantity', value: this.quantity, isCost: false },
+          { label: 'Total', value: this.event.price * this.quantity, isCost: true }
+        ];
+      console.log(this.summaryItems);
+  }
 
   get event(): Event | undefined {
     return this.checkoutEntity;
@@ -39,10 +53,14 @@ export class EventCheckoutComponent extends CheckoutDirective<Event> {
   }
 
   checkout(paymentMethodId: string, eventId: number): Observable<TicketPurchase> {
-      return this.ticketService.purchase(paymentMethodId, eventId);
+      return this.ticketService.purchase(paymentMethodId, eventId, this.quantity);
   }
 
   postCheckoutAction(): void {
       
+  }
+
+  updateQuantity(quantity: number) {
+    throw new Error('Method not implemented.');
   }
 }

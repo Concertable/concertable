@@ -54,11 +54,10 @@ namespace Infrastructure.Repositories
 
         public async Task<Listing?> GetByApplicationIdAsync(int id)
         {
-            var query = context.ListingApplications
-                .Where(la => la.Id == id)
-                .Select(la => la.Listing)
-                .Include(la => la.ListingGenres)
-                    .ThenInclude(lg => lg.Genre);
+            var query = context.Listings
+                .Include(l => l.ListingGenres)
+                    .ThenInclude(lg => lg.Genre)
+                .Where(l => l.Applications.Any(a => a.Id == id));
 
             return await query.FirstOrDefaultAsync();
         }

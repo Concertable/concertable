@@ -1,28 +1,21 @@
+<app-hero [title]="'Purchase your Ticket'" [titleStyle]="titleStyle"></app-hero>
 <div class="container">
-  <!-- 🧾 Event Summary -->
-  <div class="event-summary" *ngIf="event">
-    <img
-      [src]="blobStorageService.getUrl(event.artist.imageUrl)"
-      alt="{{ event.artist.name }}"
-    />
-    <div class="summary-content">
-      <h3>{{ event.name }}</h3>
-      <p>
-        <mat-icon inline>calendar_today</mat-icon>
-        {{ event.startDate | date: 'd MMM y, h:mm a' }}
-      </p>
-      <p>
-        <mat-icon inline>location_on</mat-icon>
-        {{ event.venue.name }}, {{ event.venue.town }}, {{ event.venue.county }}
-      </p>
-      <p>
-        <mat-icon inline>monetization_on</mat-icon>
-        £{{ event.price | number: '1.2-2' }} per ticket
-      </p>
-    </div>
-  </div>
+  <!-- Event Summary Section -->
+   <div class="wrapper">
+    <app-event-summary [event]="event"></app-event-summary>
 
-  <div class="checkout-payment">
+    <!-- Payment Summary Section -->
+    <app-payment-summary
+      [title]="'Payment Summary'" 
+      [summaryItems]="summaryItems"
+      (quantityChange)="updateQuantity($event)"
+    ></app-payment-summary>
+   </div>
+
+
+
+  <!-- Checkout Payment Section -->
+  <div class="card-details">
     <app-card-details
       buttonName="Buy Ticket"
       [isProcessing]="isProcessing"

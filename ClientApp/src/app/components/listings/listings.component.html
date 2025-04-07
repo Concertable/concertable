@@ -33,17 +33,13 @@
                 </button>
     
                 <button *ngIf="authService.isRole('VenueManager') && !editMode"
-                        class="primary" 
-                        (click)="onViewApplications(listing)">
-                    <mat-icon>visibility</mat-icon>
-                    <span class="btn-label">View Applications</span>
+                    color="primary" mat-fab extended (click)="onViewApplications(listing)">
+                    <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">View Applications</span>
                 </button>
-                
+
                 <button *ngIf="authService.isRole('ArtistManager')"
-                        class="apply" 
-                        (click)="onApply(listing)">
-                    <mat-icon>check_circle</mat-icon>
-                    <span class="btn-label">Apply</span>
+                    color="primary" mat-fab extended (click)="onApply(listing)">
+                    <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">Apply</span>
                 </button>
             </div>
         </div>
@@ -81,7 +77,8 @@
                         [displayProperty]="'name'"
                         (selectionChange)="newGenre = $event">
                     </app-drop-down>
-                    <button class="primary btn-add-genre" (click)="onAddGenre()">
+                    <button
+                        color="primary btn-add-genre" mat-fab extended (click)="onAddGenre()">
                         <mat-icon>add</mat-icon> Add Genre
                     </button>
                 </div>
@@ -96,8 +93,14 @@
     
         <!-- Add & Save Buttons -->
         <div *ngIf="editMode" class="actions-container">
-            <button *ngIf="!addNew" class="btn-add" (click)="onAdd()"><mat-icon>add</mat-icon> Add</button>
-            <button *ngIf="addNew" class="btn-save" (click)="onSaveItem()"><mat-icon>save</mat-icon> Save</button>
+            <button *ngIf="!addNew" class="btn-add"
+                color="primary btn-add-add" mat-fab extended (click)="onAdd()">
+                <mat-icon>add</mat-icon> Add
+            </button>
+            <button *ngIf="addNew" class="btn-save"
+                color="primary btn-save" mat-fab extended (click)="onSaveItem()">
+                <mat-icon>save</mat-icon> Save
+            </button>
         </div>
     </app-card>
 </div>

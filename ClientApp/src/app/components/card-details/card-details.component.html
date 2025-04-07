@@ -1,4 +1,5 @@
-<div class="card-container">
+<app-card>
+  <div class="card-container">
     <label for="card-number-element">Card Number</label>
     <div id="card-number-element" class="stripe-input"></div>
   
@@ -16,13 +17,12 @@
 </div>
   <button 
     mat-flat-button 
-    color="primary"
     [disabled]="isProcessing"
     (click)="createPaymentMethod()"
-    class="buy-button"
     style="margin-top: 10px"
+    color="primary"
   >
     {{ isProcessing ? 'Processing...' : buttonName }}
   </button>
 <p class="message" style="margin-top: 10px">{{ message }}</p>
-  
+</app-card>

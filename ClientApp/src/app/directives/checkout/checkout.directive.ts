@@ -7,6 +7,7 @@ import { Purchase } from '../../models/purchase';
 import { Observable, Subscription } from 'rxjs';
 import { SignalRService } from '../../services/signalr/signalr.service';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
+import { PaymentSummaryItem } from '../../models/payment-summary-item';
 
 @Directive({
   selector: '[appCheckout]',
@@ -18,6 +19,8 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
   isProcessing: boolean = false; 
   entityType?: string;
   subscriptions: Subscription[] = [];
+  summaryItems: PaymentSummaryItem[] = [];
+  titleStyle: { [key: string]: string } = {};
 
   constructor(
     private route: ActivatedRoute, 
@@ -25,6 +28,12 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
     protected signalRService: SignalRService,
     protected blobStorageService: BlobStorageService 
   ) { }
+
+  ngOnInit(): void {
+    this.route.data.subscribe(data => {
+      this.setRouteData(data);
+    });
+  }
 
   abstract setRouteData(data: any): void;
 
@@ -75,12 +84,6 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
     } finally {
       this.isProcessing = false;
     }
-  }
-
-  ngOnInit(): void {
-    this.route.data.subscribe(data => {
-      this.setRouteData(data);
-    });
   }
 
   ngOnDestroy(): void {

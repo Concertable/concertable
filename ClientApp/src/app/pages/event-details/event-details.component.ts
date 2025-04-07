@@ -10,6 +10,7 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
 import { ExtendedDetailsDirective } from '../../directives/extended-details/extended-details.directive';
 import { ToastService } from '../../services/toast/toast.service';
 import { GenreService } from '../../services/genre/genre.service';
+import { Genre } from '../../models/genre';
 
 @Component({
   selector: 'app-event-details',
@@ -21,6 +22,11 @@ import { GenreService } from '../../services/genre/genre.service';
 export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
   now: Date = new Date();
   @Input('event') declare entity?: Event;
+  eventGenres: Genre[] = [
+    { id: 1, name: 'Rock' },
+    { id: 2, name: 'Hip-Hop' },
+    { id: 3, name: 'Reggae' },
+  ]
 
   override navItems: NavItem[] = [
     { name: 'Info', fragment: 'info' },

@@ -41,6 +41,8 @@
     /* 🎨 Button Colors */
     --button-primary: var(--secondary-color); /* Primary CTA (Save, Apply) */
     --button-secondary: var(--tertiary-color); /* Secondary (Edit) */
+    --button-primary-hover: var(--secondary-hover); /* Primary CTA (Save, Apply) */
+    --button-secondary-hover: var(--tertiary-hover); /* Secondary (Edit) */
     --button-cancel: var(--neutral-gray); /* Softer neutral (Cancel) */
     --button-danger: var(--error-color); /* Red for dangerous actions */
 
@@ -51,7 +53,7 @@
 
 /* Apply global styles */
 html, body {
-    height: 100vh;
+    min-height: 100vh;
 }
 
 body {
@@ -103,7 +105,7 @@ body {
     color: white;
   
     &:hover {
-      background-color: var(--secondary-hover);
+      background-color: var(--button-primary-hover);
     }
   }
   
@@ -112,7 +114,7 @@ body {
     color: black;
   
     &:hover {
-      background-color: var(--tertiary-hover);
+      background-color: var(--button-secondary-hover);
     }
   }
   
@@ -141,6 +143,36 @@ button.apply, button.buy {
     &:hover {
         background-color: var(--success-hover);
     }
+}
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-button.mat-primary,
+.mat-mdc-button-base.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-outlined-button.mat-primary {
+  background-color: var(--button-primary) !important;
+  color: white !important;
+
+  &:hover {
+    background-color: var(--button-primary-hover) !important;
+  }
+}
+
+.mat-mdc-raised-button.mat-secondary,
+.mat-mdc-button.mat-secondary,
+.mat-mdc-button-base.mat-secondary,
+.mat-mdc-unelevated-button.mat-secondary,
+.mat-mdc-outlined-button.mat-secondary {
+  background-color: var(--button-secondary) !important;
+  color: #00458F !important;
+
+  &:hover {
+    background-color: var(--button-secondary-hover) !important;
+  }
+}
+
+.mat-mdc-fab[extended] {
+  height: 40px !important;
 }
 
 /* Material UI Overrides */

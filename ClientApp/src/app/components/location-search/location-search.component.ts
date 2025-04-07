@@ -13,6 +13,7 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
   @Input() type: string = '(cities)';
   @Input() latitude?: number;
   @Input() longitude?: number;
+  @Input() whiteOutline?: boolean;
   @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
   @Output() locationChange = new EventEmitter<{county: string, town: string} | undefined>();
 
@@ -77,6 +78,7 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
         const lng = place.geometry.location?.lng();
         if(lat && lng)
         {
+          console.log(lat,lng)
           this.latLongChange.emit({lat, lng});
           if(place.address_components) {
             this.updateLocationInputs(place.address_components);

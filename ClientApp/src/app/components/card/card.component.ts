@@ -1,11 +1,4 @@
-import {
-  Component,
-  ContentChild,
-  AfterContentInit,
-  ElementRef,
-  ViewChild,
-  Input
-} from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-card',

@@ -4,4 +4,4 @@
     <span>,</span>
     <p>{{ town }}</p>
 </div>
-<app-location-search *ngIf="editMode" (locationChange)="onLocationChange($event)" (latLongChange)="onLatLongChange($event)" [type]="'establishment'"/>
+<app-location-search *ngIf="editMode" (locationChange)="onLocationChange($event)" (latLongChange)="onLatLongChange($event)" [type]="'establishment'" [whiteOutline]="whiteOutline"/>

@@ -11,12 +11,14 @@
           <input type="password" id="password" name="password" [(ngModel)]="credentials.password" required>
         </div>
         <div class="form-container">
-            <label for="role">I am a:</label>
-            <select id="role" name="role" [(ngModel)]="credentials.role" required>
-              <option value="Customer">Customer</option>
-              <option value="ArtistManager">Artist Manager</option>
-              <option value="VenueManager">Venue Manager</option>
-            </select>
+          <mat-form-field appearance="outline">
+            <mat-label>I am a:</mat-label>
+              <mat-select [(ngModel)]="credentials.role" name="role" required>
+                <mat-option value="Customer">Customer</mat-option>
+                <mat-option value="ArtistManager">Artist Manager</mat-option>
+                <mat-option value="VenueManager">Venue Manager</mat-option>
+              </mat-select>
+            </mat-form-field>
           </div>
         <button mat-flat-button type="submit" class="submit">Submit</button>
       </form>

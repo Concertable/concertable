@@ -52,135 +52,145 @@ import { listingApplicationCheckoutGuard } from './guards/listing-application-ch
 const routes: Routes = [
   {
     path: '',
-    component: AppComponent,
+    component: HomeComponent,
+    data: { breadcrumb: 'Home' },
     children: [
       {
         path: '',
-        component: HomeComponent,
-        data: { breadcrumb: 'Home' },
+        component: CustomerDashboardComponent,
+        data: { breadcrumb: 'Dashboard' }
+      },
+      {
+        path: 'find',
+        data: { breadcrumb: 'Find' },
         children: [
-          { path: '', component: CustomerDashboardComponent },
+          { path: '', component: CustomerFindComponent, data: { breadcrumb: 'Search' } },
+          { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver }, data: { breadcrumb: 'Venue Details' } },
+          { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver }, data: { breadcrumb: 'Artist Details' } },
+          { path: 'event/:id', component: EventDetailsComponent, resolve: { event: EventDetailsResolver }, data: { breadcrumb: 'Event Details' } }
+        ]
+      },
+      {
+        path: 'event',
+        data: { breadcrumb: 'Event' },
+        children: [
           {
-            path: 'find',
-            children: [
-              { path: '', component: CustomerFindComponent },
-              { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver } },
-              { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver } },
-              { path: 'event/:id', component: EventDetailsComponent, resolve: { event: EventDetailsResolver } }
-            ]
-          },
+            path: 'checkout/:id',
+            component: EventCheckoutComponent,
+            resolve: { event: EventResolver },
+            canActivate: [authGuard],
+            data: { breadcrumb: 'Checkout' }
+          }
+        ]
+      },
+      {
+        path: 'application',
+        canActivate: [roleGuard],
+        data: { role: 'VenueManager', breadcrumb: 'Application' },
+        children: [
           {
-            path: 'event',
+            path: 'checkout/:id',
+            component: ListingApplicationCheckoutComponent,
+            resolve: { application: ListingApplicationResolver },
+            data: { breadcrumb: 'Checkout' }
+          }
+        ]
+      },
+      {
+        path: 'profile',
+        component: ProfileMenuComponent,
+        data: { breadcrumb: 'My Profile' },
+        children: [
+          {
+            path: 'preferences',
+            data: { breadcrumb: 'Preferences' },
             children: [
               {
-                path: 'checkout/:id',
-                component: EventCheckoutComponent,
-                resolve: { event: EventResolver },
-                canActivate: [authGuard]
-              }
-            ]
-          },
-          {
-            path: 'application',
-            canActivate: [roleGuard, listingApplicationCheckoutGuard],
-            children: [
-              {
-                path: 'checkout/:id',
-                component: ListingApplicationCheckoutComponent,
-                resolve: { application: ListingApplicationResolver }
-              }
-            ]
-          },
-          {
-            path: 'profile',
-            component: ProfileMenuComponent,
-            children: [
-              {
-                path: 'preferences',
-                children: [
-                  {
-                    path: '',
-                    component: MyPreferenceComponent,
-                    resolve: { preference: myPreferenceResolver }
-                  },
-                  {
-                    path: 'create',
-                    component: CreatePreferenceComponent
-                  }
-                ]
+                path: '',
+                component: MyPreferenceComponent,
+                resolve: { preference: myPreferenceResolver },
+                data: { breadcrumb: 'My Preferences' }
               },
-              { path: 'details', component: MyProfileComponent, resolve: { user: MyProfileResolver } },
-              { path: 'payment', component: PaymentDetailsComponent },
               {
-                path: 'tickets',
-                children: [
-                  { path: '', component: MyTicketsComponent },
-                  { path: 'upcoming', component: CustomerTicketsComponent, data: { viewType: TicketViewType.Upcoming } },
-                  { path: 'history', component: CustomerTicketsComponent, data: { viewType: TicketViewType.History } }
-                ]
+                path: 'create',
+                component: CreatePreferenceComponent,
+                data: { breadcrumb: 'Create Preference' }
               }
             ]
-          }
-        ]
-      },
-      {
-        path: 'venue',
-        component: VenueHomeComponent,
-        canActivate: [roleGuard],
-        data: { role: "VenueManager" },
-        children: [
-          { path: '', component: VenueDashboardComponent, resolve: { venue: MyVenueResolver } },
-          { path: 'my', component: MyVenueComponent, resolve: { venue: MyVenueResolver } },
-          {
-            path: 'find',
-            children: [
-              { path: '', component: VenueFindComponent },
-              { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver } }
-            ]
           },
-          { path: 'create', component: CreateVenueComponent },
+          { path: 'details', component: MyProfileComponent, resolve: { user: MyProfileResolver }, data: { breadcrumb: 'Details' } },
+          { path: 'payment', component: PaymentDetailsComponent, data: { breadcrumb: 'Payment' } },
           {
-            path: 'my',
+            path: 'tickets',
+            data: { breadcrumb: 'Tickets' },
             children: [
-              { path: 'events', component: MyEventsComponent },
-              { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver } },
-              { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationsResolver } }
-            ]
-          }
-        ]
-      },
-      {
-        path: 'artist',
-        component: ArtistHomeComponent,
-        canActivate: [roleGuard],
-        data: { role: "ArtistManager" },
-        children: [
-          { path: '', component: ArtistDashboardComponent, resolve: { artist: MyArtistResolver } },
-          { path: 'my', component: MyArtistComponent, resolve: { artist: MyArtistResolver } },
-          {
-            path: 'find',
-            children: [
-              { path: '', component: ArtistFindComponent },
-              { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver } }
-            ]
-          },
-          { path: 'create', component: CreateArtistComponent },
-          {
-            path: 'my',
-            children: [
-              { path: 'events', component: MyEventsComponent },
-              { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver } }
+              { path: '', component: MyTicketsComponent, data: { breadcrumb: 'All Tickets' } },
+              { path: 'upcoming', component: CustomerTicketsComponent, data: { viewType: TicketViewType.Upcoming, breadcrumb: 'Upcoming Tickets' } },
+              { path: 'history', component: CustomerTicketsComponent, data: { viewType: TicketViewType.History, breadcrumb: 'Past Tickets' } }
             ]
           }
         ]
       }
     ]
   },
-
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent }
+  {
+    path: 'venue',
+    component: VenueHomeComponent,
+    canActivate: [roleGuard],
+    data: { role: 'VenueManager', breadcrumb: 'Venue' },
+    children: [
+      { path: '', component: VenueDashboardComponent, resolve: { venue: MyVenueResolver }, data: { breadcrumb: 'Dashboard' } },
+      { path: 'my', component: MyVenueComponent, resolve: { venue: MyVenueResolver }, data: { breadcrumb: 'My Venue' } },
+      {
+        path: 'find',
+        data: { breadcrumb: 'Find Artists' },
+        children: [
+          { path: '', component: VenueFindComponent, data: { breadcrumb: 'Browse Artists' } },
+          { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver }, data: { breadcrumb: 'Artist Details' } }
+        ]
+      },
+      { path: 'create', component: CreateVenueComponent, data: { breadcrumb: 'Create Venue' } },
+      {
+        path: 'my',
+        data: { breadcrumb: 'My' },
+        children: [
+          { path: 'events', component: MyEventsComponent, data: { breadcrumb: 'My Events' } },
+          { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } },
+          { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationsResolver }, data: { breadcrumb: 'Applications' } }
+        ]
+      }
+    ]
+  },
+  {
+    path: 'artist',
+    component: ArtistHomeComponent,
+    canActivate: [roleGuard],
+    data: { role: 'ArtistManager', breadcrumb: 'Artist' },
+    children: [
+      { path: '', component: ArtistDashboardComponent, resolve: { artist: MyArtistResolver }, data: { breadcrumb: 'Dashboard' } },
+      { path: 'my', component: MyArtistComponent, resolve: { artist: MyArtistResolver }, data: { breadcrumb: 'My Artist' } },
+      {
+        path: 'find',
+        data: { breadcrumb: 'Find Venues' },
+        children: [
+          { path: '', component: ArtistFindComponent, data: { breadcrumb: 'Browse Venues' } },
+          { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver }, data: { breadcrumb: 'Venue Details' } }
+        ]
+      },
+      { path: 'create', component: CreateArtistComponent, data: { breadcrumb: 'Create Artist' } },
+      {
+        path: 'my',
+        data: { breadcrumb: 'My' },
+        children: [
+          { path: 'events', component: MyEventsComponent, data: { breadcrumb: 'My Events' } },
+          { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } }
+        ]
+      }
+    ]
+  },
+  { path: 'login', component: LoginComponent, data: { breadcrumb: 'Login' } },
+  { path: 'register', component: RegisterComponent, data: { breadcrumb: 'Register' } }
 ];
-
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

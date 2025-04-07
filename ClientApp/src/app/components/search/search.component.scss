@@ -51,14 +51,14 @@
     margin-left: 5px;
 }
 
-@container (max-width: 600px) {
+@container (width < 800px) {
     .location-search,
     .date-picker {
       display: none;
     }
   
     .search-input {
-      flex: 1; /* make it take full width */
+      flex: 1; // Takesthe full width
     }
   }
   

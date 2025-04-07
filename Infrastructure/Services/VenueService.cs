@@ -106,6 +106,9 @@ namespace Infrastructure.Services
             user.County = location.County;
             user.Town = location.Town;
 
+            user.Latitude = venueDto.Latitude;
+            user.Longitude = venueDto.Longitude;
+
             venueRepository.Update(venue);
             userRepository.Update(user);
 

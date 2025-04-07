@@ -10,7 +10,7 @@ import { DetailsHeroDirective } from '../../directives/details-hero.directive';
 })
 export class EventDetailsHeroComponent extends DetailsHeroDirective<Event> {
   @Input() event?: Event;
-  @Input() override locationEditable?: boolean = false;
+  @Input() override locationEditable?: boolean = true;
 
   get entity() {
     return this.event;

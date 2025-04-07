@@ -9,17 +9,11 @@
             </div>              
             <section [id]="navItems[0].fragment">
                 <h1>{{navItems[0].name}}</h1>
-                <app-heading-medium [editMode]="editMode" [(content)]="event.name"/>
-                <div class="nested-wrapper">
                     <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about"/>
-                    <app-selector
-                        [options]="genres"
-                        [(selectedItems)]="event.genres"
-                        [label]="'Select Genre'"
-                        displayProperty="name"
-                        [editMode]="false">
-                    </app-selector>
-                </div>
+                    <app-badges
+                        [items]="eventGenres"
+                        [displayProperty]="'name'">
+                    </app-badges>
             </section>
             <mat-divider class="light" />
             <section [id]="navItems[1].fragment">

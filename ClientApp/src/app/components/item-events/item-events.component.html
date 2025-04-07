@@ -25,9 +25,8 @@
             </div>
     
             <div class="actions">
-                <button class="primary" (click)="onViewDetails(event)">
-                    <mat-icon>visibility</mat-icon>
-                    <span class="btn-label">View Details</span>
+                <button color="primary" class="mt-2" mat-fab extended (click)="onViewDetails(event)">
+                    <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">View details</span>
                 </button>
     
                 <button *ngIf="authService.isRole('Customer')" class="primary" (click)="onPurchase(event)">

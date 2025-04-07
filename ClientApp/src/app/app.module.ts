@@ -138,6 +138,10 @@ import { LocationComponent } from './components/config/location/location.compone
 import { InputComponent } from './shared/config/input/input.component';
 import { AddressComponent } from './components/address/address.component';
 import { ArtistDetailsHeroComponent } from './components/artist-details-hero/artist-details-hero.component';
+import { PaymentSummaryComponent } from './components/payment-summary/payment-summary.component';
+import { EventSummaryComponent } from './components/event-summary/event-summary.component';
+import { SummaryDirective } from './directives/summary.directive';
+import { HeroComponent } from './components/hero/hero.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -248,7 +252,11 @@ export function initApp(initService: InitService) {
     LocationComponent,
     InputComponent,
     AddressComponent,
-    ArtistDetailsHeroComponent
+    ArtistDetailsHeroComponent,
+    PaymentSummaryComponent,
+    EventSummaryComponent,
+    SummaryDirective,
+    HeroComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

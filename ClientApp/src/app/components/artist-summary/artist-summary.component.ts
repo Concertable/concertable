@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { Artist } from '../../models/artist';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SummaryDirective } from '../../directives/summary.directive';
+import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 
 @Component({
   selector: 'app-artist-summary',
@@ -8,14 +10,16 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './artist-summary.component.html',
   styleUrl: './artist-summary.component.scss'
 })
-export class ArtistSummaryComponent {
-  @Input() artist!: Artist;
+export class ArtistSummaryComponent extends SummaryDirective<Artist> {
+  @Input() artist?: Artist;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(private router: Router, private route: ActivatedRoute, blobService: BlobStorageService) {
+    super(blobService);
+   }
 
-  onDetailsClick() {
-    this.router.navigate(['../../artist', this.artist.id], { 
-      relativeTo: this.route
-    });
+  onViewDetails() {
+    if(this.artist)
+      this.router.navigate([`/find/artist`, this.artist.id]);
   }
+  
 }

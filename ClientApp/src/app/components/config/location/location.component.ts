@@ -11,6 +11,7 @@ export class LocationComponent {
   @Input() town?: string;
   @Input() latitude?: number;
   @Input() longitude?: number;
+  @Input() whiteOutline?: boolean;
   @Input() editMode?: boolean = false;
 
   @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral|undefined>();

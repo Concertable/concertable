@@ -1,20 +1,20 @@
-<div class="container" *ngIf="(paginatedHeaders?.data ?? []).length > 0">
-    <div class="results">
-        <ng-container class="content" [ngSwitch]="headerType">
-            <app-artist-headers *ngSwitchCase="'artist'" [headers]="artistHeaders"></app-artist-headers>
-            <app-venue-headers *ngSwitchCase="'venue'" [headers]="venueHeaders"></app-venue-headers>
-            <app-event-headers *ngSwitchCase="'event'" [headers]="eventHeaders"></app-event-headers>
-        </ng-container>
+<div class="container">
+    <div class="results" *ngIf="(paginatedHeaders?.data ?? []).length > 0">
+      <ng-container class="content" [ngSwitch]="headerType">
+        <app-artist-headers *ngSwitchCase="'artist'" [headers]="artistHeaders"></app-artist-headers>
+        <app-venue-headers *ngSwitchCase="'venue'" [headers]="venueHeaders"></app-venue-headers>
+        <app-event-headers *ngSwitchCase="'event'" [headers]="eventHeaders"></app-event-headers>
+      </ng-container>
     </div>
-    <div class="pagination">
-        <mat-paginator
+  
+    <div class="pagination" *ngIf="(paginatedHeaders?.data ?? []).length > 0">
+      <mat-paginator
         [length]="paginatedHeaders?.totalCount || 0"
         [pageSize]="paginatedHeaders?.pageSize || 10"
         [pageIndex]="(paginatedHeaders?.pageNumber ?? 1) - 1"
         [pageSizeOptions]="[5, 10, 25, 50]"
         (page)="onPageChange($event)">
-        </mat-paginator>
+      </mat-paginator>
     </div>
 </div>
-
   

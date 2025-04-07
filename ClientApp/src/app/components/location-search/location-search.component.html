@@ -1,6 +1,6 @@
 
-<mat-form-field appearance="fill">
-    <mat-label>Location</mat-label>
+<mat-form-field appearance="outline" [ngClass]="{ 'white-outline': whiteOutline }">
+    <mat-label [ngClass]="{ 'white-outline': whiteOutline }">Location</mat-label>
     <mat-icon matPrefix>location_on</mat-icon>
     <input #search matInput placeholder="Anywhere" [(ngModel)]="locationInput" >
 </mat-form-field>

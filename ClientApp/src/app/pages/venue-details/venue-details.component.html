@@ -9,14 +9,11 @@
         <div class="container" *ngIf="entity">
             <section [id]="navItems[0].fragment">
                 <h1>{{navItems[0].name}}</h1>
-                <div class="wrapper">
                     <app-textarea [editMode]="editMode" label="About" [(content)]="venue.about" (contentChange)="onChangeDetected()"/>
-                    <mat-divider vertical></mat-divider>
                     <app-badges
-                        [items]="selectedItems"
+                        [items]="venueGenres"
                         [displayProperty]="'name'">
                     </app-badges>
-                </div>
             </section>
             <mat-divider class="light" />
             <section [id]="navItems[1].fragment">
@@ -25,7 +22,9 @@
                     <app-google-maps [editMode]="editMode" [lat]="venue.latitude" [lng]="venue.longitude" (latLongChange)="updateLatLong($event)" />
                     <div>
                         <app-address [lat]="venue.latitude" [lng]="venue.longitude" />
-                        <button class="secondary mt-10">View in Maps</button>
+                        <button color="secondary" class="mt-2" mat-fab extended (click)="onViewInMaps()">
+                            <mat-icon fontIcon="map"></mat-icon>View in maps
+                        </button>
                     </div>
                 </div>
             </section>

@@ -1,13 +1,13 @@
 <nav class="config-header-container">
     <div class="config-header-content">
         <ul>
-            <li><button class="secondary" [disabled]="!saveable" (click)="onCancel()">
+            <li><button color="secondary" mat-fab extended [disabled]="!saveable" (click)="onCancel()">
                 <mat-icon fontIcon="cancel"></mat-icon>Cancel
             </button></li>
-            <li><button class="secondary" (click)="onEditModeChange()">
+            <li><button color="secondary" mat-fab extended (click)="onEditModeChange()">
                 <mat-icon fontIcon="edit"></mat-icon>Edit
             </button></li>
-            <li><button class="primary" [disabled]="editMode || !saveable" (click)="onSave()">
+            <li><button color="primary" mat-fab extended [disabled]="editMode || !saveable" (click)="onSave()">
                 <mat-icon fontIcon="save"></mat-icon>Save
             </button></li>
         </ul>

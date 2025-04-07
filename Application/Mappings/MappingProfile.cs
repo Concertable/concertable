@@ -123,7 +123,8 @@ namespace Application.Mappings
 
             //ListingApplications
             CreateMap<ListingApplication, ListingApplicationDto>()
-            .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist));
+            .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist))
+            .ForMember(dest => dest.Listing, opt => opt.MapFrom(src => src.Listing));
 
             //Reviews
             CreateMap<Review, ReviewDto>()

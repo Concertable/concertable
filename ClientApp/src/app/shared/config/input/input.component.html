@@ -1,6 +1,6 @@
 <div class="container">
-        <mat-form-field appearance="fill">
-            <mat-label *ngIf="label">{{ label }}</mat-label>
-            <input matInput type="text" [(ngModel)]="content" (ngModelChange)="onContentChange($event)">
-        </mat-form-field>
-    </div>
+    <mat-form-field appearance="outline" [ngClass]="{ 'white-outline': whiteOutline }">
+        <mat-label *ngIf="label">{{ label }}</mat-label>
+        <input matInput type="text" [(ngModel)]="content" (ngModelChange)="onContentChange($event)">
+    </mat-form-field>
+</div>

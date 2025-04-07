@@ -1,0 +1,59 @@
+
+  
+  h4 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 24px;  /* Increase the space below the title */
+  }
+  
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;  /* Increased padding for more space between items */
+    border-bottom: 1px solid #ddd;
+    font-size: 1.1rem;  /* Slightly increase font size for better readability */
+  }
+  
+  .summary-item:last-child {
+    border-bottom: none;  /* Remove the border on the last item */
+  }
+  
+  .label {
+    font-weight: 500;
+    color: #555;
+    margin-right: 10px;  /* Added margin to separate label and value */
+  }
+  
+  .value {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-item, .value {
+    word-break: break-word;
+  }
+  
+  
+  .empty-message {
+    text-align: center;
+    color: #777;
+    font-size: 1rem;
+    padding: 20px;
+  }
+  
+  .empty-message mat-icon {
+    font-size: 24px;
+    margin-right: 8px;
+    color: #aaa;
+  }
+
+  .btn-quantity {
+    border-radius: 100%;
+    background-color: var(--secondary-color); // blue-600
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+  }
+  

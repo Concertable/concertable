@@ -1,0 +1,47 @@
+.container {
+    padding: 20px;
+    background-color: var(--primary-color);
+    text-align: center;
+    font-family: Arial, sans-serif;
+
+    a {
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+    }
+  }
+  
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+  }
+  
+  .app-logo {
+    height: 50px;
+  }
+  
+  .nav-link {
+    text-decoration: none;
+    color: #007bff;
+  }
+  
+  .nav-link:hover {
+    text-decoration: underline;
+  }
+  
+  .contact-info {
+    margin: 10px 0;
+    color: white;
+  }
+  
+  .bottom-link a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .bottom-link a:hover {
+    text-decoration: underline;
+  }
+  
