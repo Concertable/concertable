@@ -10,11 +10,12 @@ import { BlobStorageService } from '../services/blob-storage/blob-storage.servic
 })
 export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
   @Input() editMode?: boolean = false;
-  @Input() locationEditable?: boolean; 
-  @Input() imageEditable?: boolean;
   @Output() contentChange = new EventEmitter<void>();
   @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
   @Output() locationChange = new EventEmitter<{ county: string, town: string }>();
+
+  locationEditable?: boolean= false; 
+  imageEditable?: boolean = false;
 
   constructor(protected blobStorageService: BlobStorageService) { }
 
@@ -67,5 +68,9 @@ export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
 
   onLocationChange(location?: { county: string, town: string }) {
     this.locationChange.emit(location);
+  }
+
+  onImageChange(image: File) {
+    return;
   }
 }

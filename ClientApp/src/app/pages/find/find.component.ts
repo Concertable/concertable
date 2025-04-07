@@ -32,7 +32,7 @@ triggerNewSubscription() {
   };
 
   this.eventService.addFakeEvent(newEvent);
-  console.log('✅ Injected event into ReplaySubject');
+  console.log('Injected event into ReplaySubject');
 }
   coordinates?: google.maps.LatLngLiteral;
   paginatedHeaders?: Pagination<Header>;

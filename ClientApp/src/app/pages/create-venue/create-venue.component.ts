@@ -17,6 +17,7 @@ import { Listing } from '../../models/listing';
 })
 export class CreateVenueComponent extends CreateItemDirective<Venue> {
   newListings: Listing[] = [];
+  image?: File
 
   constructor(
     private venueService: VenueService, 
@@ -54,7 +55,9 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
   }
 
   create(venue: Venue): Observable<Venue> {
-    return this.venueService.create(venue);
+    if (!this.image) 
+      throw new Error("Image is required to create a venue");
+    return this.venueService.create(venue, this.image);
   }
 
   showCreated(venue: Venue): void {
@@ -63,7 +66,10 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
 
   addListing(listing: Listing) {
     this.newListings.push(listing);
-    //this.saveable = true;
+  }
+
+  updateImage(image: File) {
+    this.image = image;
   }
 
   override createChanges(): void {

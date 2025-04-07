@@ -1,20 +1,36 @@
 <div class="image-upload-container">
-    <img 
-        [src]="blobStorageService.getUrl(src)" 
-        [alt]="alt" 
+    <ng-container *ngIf="imageSrc; else placeholder">
+      <img
+        [src]="imageSrc"
+        [alt]="alt"
         [width]="width"
         [height]="height"
-        *ngIf="src else placeholder">
-
+        class="preview-image"
+      />
+    </ng-container>
+  
     <ng-template #placeholder>
-        <div class="placeholder">No Image Selected</div>
+      <div class="placeholder" [style.width.px]="width" [style.height.px]="height">
+        No Image Selected
+      </div>
     </ng-template>
-
-    <!-- Upload Button (Shown Only in Edit Mode) -->
-    <button *ngIf="editMode" class="btn-upload" mat-fab extended (click)="fileInput.click()">
-        <mat-icon>upload</mat-icon> Upload
+  
+    <!-- Upload Button -->
+    <button
+      *ngIf="editMode"
+      class="btn-upload"
+      mat-fab
+      extended
+      (click)="fileInput.click()">
+      <mat-icon>upload</mat-icon> Upload
     </button>
-
+  
     <!-- Hidden File Input -->
-    <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
-</div>
+    <input
+      #fileInput
+      type="file"
+      accept="image/*"
+      hidden
+      (change)="onFileSelected($event)" />
+  </div>
+  

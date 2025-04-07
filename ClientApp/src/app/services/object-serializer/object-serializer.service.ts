@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
+import { ISerializer } from '../../shared/interfaces/serializer/iserializer';
 
 @Injectable({
   providedIn: 'root',
 })
-export abstract class ObjectSerializerService<T> {
+export abstract class ObjectSerializerService<T> implements ISerializer<T> {
   serialize(obj: Partial<T>): Params {
     return Object.fromEntries(
       Object.entries(obj)
@@ -27,5 +28,5 @@ export abstract class ObjectSerializerService<T> {
     return value.toString();
   }
 
-  abstract deserialize(params: Params): Partial<T>;
+  abstract deserialize(params: Params): T;
 }

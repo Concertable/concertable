@@ -1,6 +1,6 @@
 @if (venue) {
     <app-config-navbar (editModeChange)="onEditModeChange($event)" (cancel)="cancelChanges()" (save)="saveChanges()" [saveable]="saveable"></app-config-navbar>
-    <app-venue-details *ngIf="venue" [venue]="venue" [editMode]="editMode" (entityChange)="onEntityChange($event)" (listingCreate)="addListing($event)"></app-venue-details>
+    <app-venue-details *ngIf="venue" [venue]="venue" [editMode]="editMode" (entityChange)="onEntityChange($event)" (listingCreate)="addListing($event)" (imageChange)="updateImage($event)"></app-venue-details>
 } @else {
     <app-config-item-not-found [itemName]="'venue'"/>
 }

@@ -14,7 +14,7 @@
         </p>
 
         <app-location
-            [editMode]="editMode"       
+            [editMode]="editMode && locationEditable"       
             [county]="county"
             [town]="town"
             [whiteOutline]="true"
@@ -24,11 +24,13 @@
         />
       </div>
   
-        <img
-          [src]="blobStorageService.getUrl(imageUrl)"
+        <app-image
+          [(src)]="imageUrl"
+          [editMode]="editMode && imageEditable"
           alt="Hero Image"
           width="240"
-          height="240" />
+          height="240"
+          (imageChange)="onImageChange($event)" />
       </div>
 </app-hero>
   

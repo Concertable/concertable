@@ -57,7 +57,6 @@ export class ScrollspyComponent implements AfterViewInit, OnDestroy {
     const scrollPosition = window.scrollY; 
 
     for (let section of this.sections) {
-      console.log(section.offsetTop);
       if (section.offsetTop <= scrollPosition) {
         currentSection = section.id;
       }

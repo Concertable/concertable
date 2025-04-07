@@ -15,12 +15,14 @@ using Application.DTOs;
 using Application.Responses;
 using System.Runtime.InteropServices;
 using Core.Exceptions;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services
 {
     public class VenueService : HeaderService<Venue, VenueHeaderDto, IVenueRepository>, IVenueService
     {
         private readonly IVenueRepository venueRepository;
+        private readonly IBlobStorageService blobStorageService;
         private readonly ILocationService locationService;
         private readonly IReviewService reviewService;
         private readonly ICurrentUserService currentUserService;
@@ -30,6 +32,7 @@ namespace Infrastructure.Services
 
         public VenueService(
             IVenueRepository venueRepository,
+            IBlobStorageService blobStorageService,
             ILocationService locationService,
             IReviewService reviewService,
             ICurrentUserService currentUserService,
@@ -39,6 +42,7 @@ namespace Infrastructure.Services
             : base(venueRepository, locationService)
         {
             this.venueRepository = venueRepository;
+            this.blobStorageService = blobStorageService;
             this.locationService = locationService;
             this.reviewService = reviewService;
             this.currentUserService = currentUserService;
@@ -59,55 +63,56 @@ namespace Infrastructure.Services
         public async Task<VenueDto> GetDetailsByIdAsync(int id)
         {
             var venue = await venueRepository.GetByIdAsync(id);
-            return mapper.Map<VenueDto>(venue); 
+
+            var venueDto = mapper.Map<VenueDto>(venue);
+            await reviewService.SetAverageRatingAsync(venueDto);
+
+            return venueDto;
         }
 
-        public async Task<VenueDto> CreateAsync(CreateVenueDto createVenueDto)
+        public async Task<VenueDto> CreateAsync(CreateVenueDto createVenueDto, IFormFile image)
         {
             var venueRepository = unitOfWork.GetRepository<Venue>();
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
             var venue = mapper.Map<Venue>(createVenueDto);
-
-            var user = await currentUserService.GetEntityAsync();
-            venue.UserId = user.Id;
-
-            var location = await geocodingService.GetLocationAsync(createVenueDto.Latitude, createVenueDto.Longitude);
-
-            user.County = location.County;
-            user.Town = location.Town;
-
-            user.Latitude = createVenueDto.Latitude;
-            user.Longitude = createVenueDto.Longitude;
-
-            var createdVenue = await venueRepository.AddAsync(venue);
-            userRepository.Update(user);
-
-            await unitOfWork.SaveChangesAsync();
-
-            return mapper.Map<VenueDto>(createdVenue);
-        }
-
-        public async Task<VenueDto> UpdateAsync(VenueDto venueDto)
-        {
-            var venueRepository = unitOfWork.GetRepository<Venue>();
-            var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
-
-            var venue = await venueRepository.GetByIdAsync(venueDto.Id);
-            mapper.Map(venueDto, venue);
-
             var user = await currentUserService.GetEntityAsync();
 
             if (venue?.UserId != user.Id)
                 throw new ForbiddenException("You do not own this venue");
 
-            var location = await geocodingService.GetLocationAsync(venueDto.Latitude, venueDto.Longitude);
+            venue.UserId = user.Id;
+            venue.ImageUrl = await UploadImageAsync(image);
 
-            user.County = location.County;
-            user.Town = location.Town;
+            await UpdateUserLocationAsync(user, createVenueDto.Latitude, createVenueDto.Longitude);
 
-            user.Latitude = venueDto.Latitude;
-            user.Longitude = venueDto.Longitude;
+            var createdVenue = await venueRepository.AddAsync(venue);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+
+            return mapper.Map<VenueDto>(createdVenue);
+        }
+
+        public async Task<VenueDto> UpdateAsync(VenueDto venueDto, IFormFile? image)
+        {
+            var venueRepository = unitOfWork.GetRepository<Venue>();
+            var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
+
+            var venue = await venueRepository.GetByIdAsync(venueDto.Id);
+            var user = await currentUserService.GetEntityAsync();
+
+            if (venue?.UserId != user.Id)
+                throw new ForbiddenException("You do not own this venue");
+
+            mapper.Map(venueDto, venue);
+
+            await UpdateUserLocationAsync(user, venueDto.Latitude, venueDto.Longitude);
+
+            if (!string.IsNullOrEmpty(venue.ImageUrl))
+                await blobStorageService.DeleteAsync(venue.ImageUrl); // Delete old image
+
+            if (image is not null )
+                venue.ImageUrl = await UploadImageAsync(image, venue.ImageUrl);
 
             venueRepository.Update(venue);
             userRepository.Update(user);
@@ -122,7 +127,36 @@ namespace Infrastructure.Services
             var user = await currentUserService.GetAsync();
             var venue = await venueRepository.GetByUserIdAsync(user.Id);
 
-            return mapper.Map<VenueDto>(venue);
+            var venueDto = mapper.Map<VenueDto>(venue);
+            await reviewService.SetAverageRatingAsync(venueDto);
+
+            return venueDto;
+        }
+
+        private async Task UpdateUserLocationAsync(ApplicationUser user, double latitude, double longitude)
+        {
+            var location = await geocodingService.GetLocationAsync(latitude, longitude);
+
+            user.County = location.County;
+            user.Town = location.Town;
+            user.Latitude = latitude;
+            user.Longitude = longitude;
+        }
+
+        private async Task<string> UploadImageAsync(IFormFile image, string? oldImageUrl = null)
+        {
+            if (!string.IsNullOrEmpty(oldImageUrl))
+            {
+                await blobStorageService.DeleteAsync(oldImageUrl); // Deletes old image
+            }
+
+            var extension = Path.GetExtension(image.FileName);
+            var imageUrl = $"{Guid.NewGuid()}{extension}"; // Prevents collisions
+
+            using var stream = image.OpenReadStream();
+            await blobStorageService.UploadAsync(stream, imageUrl); // Upload new image
+
+            return imageUrl;
         }
     }
 }

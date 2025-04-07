@@ -15,6 +15,8 @@ namespace Application.Interfaces
         Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers);
         Task AddAverageRatingsAsync(IEnumerable<EventHeaderDto> headers);
 
+        Task SetAverageRatingAsync(VenueDto venue);
+
         Task<PaginationResponse<ReviewDto>> GetByVenueIdAsync(int id, PaginationParams pageParams);
         Task<PaginationResponse<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams);
         Task<PaginationResponse<ReviewDto>> GetByEventIdAsync(int id, PaginationParams pageParams);

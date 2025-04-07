@@ -10,7 +10,7 @@ import { HeaderType } from '../../models/header-type';
 export class SearchParamsSerializerServiceService extends ObjectSerializerService<SearchParams> {
   defaultHeaderType?: HeaderType;
 
-  deserialize(params: Params): Partial<SearchParams> {
+  deserialize(params: Params): SearchParams {
     return {
       searchTerm: params['searchTerm'],
       headerType: params['headerType'] ?? this.defaultHeaderType, 

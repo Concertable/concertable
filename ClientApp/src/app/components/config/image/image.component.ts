@@ -10,55 +10,36 @@ import { BlobStorageService } from '../../../services/blob-storage/blob-storage.
   styleUrl: './image.component.scss'
 })
 export class ImageComponent {
-  @Input() editMode?: boolean;
+  preview?: string;
+
   @Input() src?: string;
-  @Input() alt?: string;
-  @Input() width?: string = "200";
-  @Input() height?: string = "200";
-  @Output() imageChange = new EventEmitter<string>
+  @Input() alt: string = 'Preview';
+  @Input() width: string = '200';
+  @Input() height: string = '200';
+  @Input() editMode?: boolean;
 
-  imageUrl?: string;
+  @Output() srcChange = new EventEmitter<string>();
+  @Output() imageChange = new EventEmitter<File>();
 
-  private maxFileSize = 2 * 1024 * 1024;
 
-  constructor(private toastService: ToastService, protected blobStorageService: BlobStorageService) { }
+  constructor(private blobStorageService: BlobStorageService) {}
+
+  get imageSrc(): string | undefined {
+    return this.preview || this.blobStorageService.getUrl(this.src ?? '');
+  }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
+    const file = input.files?.[0];
+    if (!file) return;
 
-      if (file.size > this.maxFileSize) {
-        this.toastService.showError("File is too large! Please select an image smaller than 2MB", "File too Large")
-        return;
-      }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.preview = reader.result as string
 
-      this.imageUrl = `images/${file.name}`
+      this.imageChange.emit(file);
+    };
 
-      const reader = new FileReader();
-
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        this.src = reader.result as string; // Update the image preview
-
-        const img = new Image();
-        img.src = e.target?.result as string;
-
-        img.onload = () => {
-          // Resize the image to 200x200 pixels
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = 200;
-          canvas.height = 200;
-
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, 200, 200);
-            this.src = canvas.toDataURL('image/jpeg', 0.8); // Compress to JPEG (adjust quality if needed)
-          }
-        };
-
-      };
-      reader.readAsDataURL(file);
-      this.imageChange.emit(this.imageUrl);
-    }
+    reader.readAsDataURL(file);
   }
 }

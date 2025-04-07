@@ -68,7 +68,7 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
     console.log('event.startDate', this.event?.startDate, 'now', this.now);
   }
 
-  onBuyClick() {
+  onBuy() {
     this.router.navigate(['event/checkout', this.event?.id])
   }
 

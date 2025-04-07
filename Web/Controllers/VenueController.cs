@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
 using Application.Responses;
 using Core.ModelBinders;
+using Application.Requests;
 
 namespace Web.Controllers
 {
@@ -42,24 +43,24 @@ namespace Web.Controllers
 
         [Authorize(Roles = "VenueManager")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateVenueDto createVenueDto)
+        public async Task<IActionResult> Create([FromForm] VenueCreateRequest venueCreate)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             //TODO: Talk about security benefits of passing user seperate instead of through the client side
-            var venueDto = await venueService.CreateAsync(createVenueDto);
+            var venueDto = await venueService.CreateAsync(venueCreate.Venue, venueCreate.Image);
             return CreatedAtAction(nameof(GetDetailsById), new { Id = venueDto.Id }, venueDto);
         }
 
         [Authorize(Roles = "VenueManager")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] VenueDto proposedVenueDto)
+        public async Task<IActionResult> Update(int id, [FromForm] VenueUpdateRequest venueUpdate)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var venueDto = await venueService.UpdateAsync(proposedVenueDto);
+            var venueDto = await venueService.UpdateAsync(venueUpdate.Venue, venueUpdate.Image);
             return Ok(venueDto);
         }
     }

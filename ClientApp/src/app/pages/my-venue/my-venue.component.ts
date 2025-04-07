@@ -19,6 +19,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class MyVenueComponent extends ConfigDirective<Venue> {
   newListings: Listing[] = [];
+  image?: File;
 
   constructor(
     route: ActivatedRoute,
@@ -41,7 +42,9 @@ export class MyVenueComponent extends ConfigDirective<Venue> {
   }
 
   update(venue: Venue): Observable<Venue> {
-    return this.venueService.update(venue);
+    if (!this.image) 
+      throw new Error("Image is required to update a venue");
+    return this.venueService.update(venue, this.image);
   }
 
   showUpdated(venue: Venue) {
@@ -54,7 +57,11 @@ export class MyVenueComponent extends ConfigDirective<Venue> {
   }
 
   override saveChanges(): void {
-      super.saveChanges();
-      this.listingService.createMultiple(this.newListings).subscribe(l => this.newListings = []);
+    super.saveChanges();
+    this.listingService.createMultiple(this.newListings).subscribe(l => this.newListings = []);
+  }
+
+  updateImage(image: File) {
+    this.image = image;
   }
 }

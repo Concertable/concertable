@@ -5,13 +5,14 @@ import { Venue } from '../../models/venue';
 import { environment } from '../../../environments/environment';
 import { VenueHeader } from '../../models/venue-header';
 import { Pagination } from '../../models/pagination';
+import { VenueFormDataSerializerService } from '../venue-form-data-serializer.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VenueService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private venueFormDataSerializer: VenueFormDataSerializerService) { }
 
   private apiUrl = `${environment.apiUrl}/venue`
 
@@ -32,11 +33,13 @@ export class VenueService {
     );
   }
 
-  create(venue: Venue) : Observable<Venue> {
-    return this.http.post<Venue>(`${this.apiUrl}`, venue);
+  create(venue: Venue, image: File) : Observable<Venue> {
+    const formData = this.venueFormDataSerializer.serializeWithImage(venue, image);
+    return this.http.post<Venue>(`${this.apiUrl}`, formData);
   }
 
-  update(venue: Venue) : Observable<Venue> {
-    return this.http.put<Venue>(`${this.apiUrl}/${venue.id}`, venue)
+  update(venue: Venue, image: File) : Observable<Venue> {
+    const formData = this.venueFormDataSerializer.serializeWithImage(venue, image);
+    return this.http.put<Venue>(`${this.apiUrl}/${venue.id}`, formData)
   }
 }

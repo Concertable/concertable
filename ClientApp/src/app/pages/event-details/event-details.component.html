@@ -38,9 +38,7 @@
             <mat-divider class="light" />
             <section [id]="navItems[2].fragment" class="artist-section">
                 <h1>{{ navItems[2].name }}</h1>
-                <app-card>
                     <app-artist-summary [artist]="event.artist" />
-                </app-card>
             </section>
             <mat-divider class="light" />
             <section [id]="navItems[2].fragment" class="artist-section">
@@ -83,12 +81,11 @@
                 </app-price>
 
             </p>
-            <button [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow" class="buy" (click)="onBuyClick()">
-                <mat-icon>shopping_cart</mat-icon>
-                <span class="btn-label">Buy Ticket</span>
+            <button [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
+                color="success" mat-fab extended (click)="onBuy()">
+                <mat-icon>shopping_cart</mat-icon>Buy Ticket
             </button>
         </div>
-        
     </div>
 }@else {
     Venue not found

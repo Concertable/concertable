@@ -25,6 +25,8 @@ import { Genre } from '../../models/genre';
 })
 export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
   @Output() listingCreate = new EventEmitter<Listing>
+  @Output() imageChange = new EventEmitter<File>
+  image?: File;
 
   venueGenres: Genre[] = [
     { id: 1, name: 'Rock' },
@@ -86,17 +88,16 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
     this.listingCreate.emit(listing);
   }
 
-  updateImage(url: string) {
-    if(this.venue)
-      this.venue.imageUrl = url
-    this.onChangeDetected
-  }
-
   onViewInMaps() {
     if(this.venue?.latitude && this.venue.longitude) {
       const url = `https://www.google.com/maps/search/?api=1&query=${this.venue.latitude},${this.venue.longitude}`;
       window.open(url, '_blank');
     }
+  }
+
+  onImageChange(image: File) {
+    this.imageChange.emit(image);
+    this.onChangeDetected();
   }
 
 }

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Venue } from '../../models/venue';
 import { DetailsHeroDirective } from '../../directives/details-hero.directive';
 
@@ -10,7 +10,9 @@ import { DetailsHeroDirective } from '../../directives/details-hero.directive';
 })
 export class VenueDetailsHeroComponent extends DetailsHeroDirective<Venue>{
   @Input() venue?: Venue;
-  @Input() override locationEditable?: boolean = true;
+  @Output() imageChange = new EventEmitter<File>
+  override locationEditable?: boolean = true;
+  override imageEditable?: boolean = true;
   
     get entity() {
       return this.venue;
@@ -66,5 +68,9 @@ export class VenueDetailsHeroComponent extends DetailsHeroDirective<Venue>{
     set imageUrl(value: string) {
       if(this.venue)
         this.venue.imageUrl = value;
+    }
+
+    override onImageChange(image: File) {
+      this.imageChange.emit(image);
     }
 }

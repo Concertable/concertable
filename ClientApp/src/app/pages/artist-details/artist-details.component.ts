@@ -55,10 +55,4 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
   setDetails(data: any): void {
     this.artist = data['artist'];
   }
-
-  updateImage(url: string) {
-    if(this.artist)
-      this.artist.imageUrl = url
-    this.onChangeDetected
-  }
 }

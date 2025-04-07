@@ -4,6 +4,7 @@
         [editMode]="editMode" 
         (contentChange)="onChangeDetected()"
         (latLongChange)="updateLatLong($event)"
+        (imageChange)="onImageChange($event)"
         />
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
         <div class="container" *ngIf="entity">

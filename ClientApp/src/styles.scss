@@ -171,6 +171,33 @@ button.apply, button.buy {
   }
 }
 
+.mat-mdc-raised-button.mat-success,
+.mat-mdc-button.mat-success,
+.mat-mdc-button-base.mat-success,
+.mat-mdc-unelevated-button.mat-success,
+.mat-mdc-outlined-button.mat-success {
+  background-color: var(--success-color) !important;
+  color: white !important;
+
+  &:hover {
+    background-color: var(--success-hover) !important;
+  }
+}
+
+.mat-mdc-raised-button.mat-error,
+.mat-mdc-button.mat-error,
+.mat-mdc-button-base.mat-error,
+.mat-mdc-unelevated-button.error,
+.mat-mdc-outlined-button.mat-error {
+  background-color: var(--error-color) !important;
+  color: white !important;
+
+  &:hover {
+    background-color: var(--error-hover) !important;
+  }
+}
+
+
 .mat-mdc-fab[extended] {
   height: 40px !important;
 }
