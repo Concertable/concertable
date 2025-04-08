@@ -1,3 +1,6 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
 name: Build and deploy ASP.Net Core app to Azure Web App - concertable-app
 
 on:
@@ -10,51 +13,33 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: .
 
       - name: Set up node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-
+      
       - name: Install Angular CLI
         run: npm install -g @angular/cli@18
-
+      
       - name: Install dependencies and build Angular app
         run: |
           cd ClientApp
           npm install
           ng build --configuration production
 
+
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
 
-      - name: Install EF Core CLI
-        run: |
-          dotnet tool install --global dotnet-ef
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
       - name: Build with dotnet
         run: dotnet build --configuration Release
-
-      - name: Generate EF Core migration SQL script
-        run: |
-          mkdir migration-output
-          dotnet ef migrations script --idempotent --context ApplicationDbContext --output migration-output/migration.sql --project src/Infrastructure/Infrastructure.csproj --startup-project src/Web/Web.csproj
-        working-directory: ${{ github.workspace }}
-
-      - name: Upload migration script
-        uses: actions/upload-artifact@v4
-        with:
-          name: migration-script
-          path: migration-output/migration.sql
 
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
@@ -72,20 +57,15 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write
-      contents: read
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
 
     steps:
-      - name: Download app artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-
-      - name: Download migration script
-        uses: actions/download-artifact@v4
-        with:
-          name: migration-script
-
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -93,11 +73,14 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BF851F2B73B645C298E688BCE825E9A3 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_03CB9942E6EE42FEA473D19267A56D03 }}
 
-      - name: Run EF migration SQL script on Azure SQL
-        uses: azure/sql-action@v2
-        with:
-          connection-string: ${{ secrets.PROD_SQL_CONNECTION_STRING }}
-          path: migration.sql
+      - name: Install EF Core CLI
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Run EF Core Migrations
+        run: dotnet ef database update --project Infrastructure/Infrastructure.csproj --startup-project Web/Web.csproj
+        working-directory: ${{ github.workspace }}
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.PROD_SQL_CONNECTION_STRING }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -106,3 +89,4 @@ jobs:
           app-name: 'concertable-app'
           slot-name: 'Production'
           package: .
+          
