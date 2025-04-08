@@ -167,7 +167,7 @@ namespace Infrastructure.Services
 
         public async Task<ResetPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto requestDto)
         {
-            var user = await userManager.FindByIdAsync(requestDto.UserId.ToString());
+            var user = await userManager.FindByIdAsync(requestDto.UserId);
             if (user == null)
             {
                 throw new BadRequestException("Invalid user");
