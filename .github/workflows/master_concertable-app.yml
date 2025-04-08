@@ -78,6 +78,7 @@ jobs:
 
       - name: Run EF Core Migrations
         run: dotnet ef database update --project src/Infrastructure/Infrastructure.csproj --startup-project src/Web/Web.csproj
+        working-directory: ${{ github.workspace }}
         env:
           ConnectionStrings__DefaultConnection: ${{ secrets.PROD_SQL_CONNECTION_STRING }}
 
