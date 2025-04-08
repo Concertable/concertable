@@ -23,7 +23,7 @@ namespace Web.Controllers
             var user = await currentUserService.GetEntityAsync();
 
             if (string.IsNullOrWhiteSpace(user.StripeId))
-                return BadRequest("User does not have a Stripe account set up.");
+                return BadRequest("User does not have a Stripe account set up");
 
             var link = await stripeAccountService.GetOnboardingLinkAsync(user.StripeId);
             return Ok(link);

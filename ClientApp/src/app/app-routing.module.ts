@@ -78,8 +78,8 @@ const routes: Routes = [
             path: 'checkout/:id',
             component: EventCheckoutComponent,
             resolve: { event: EventResolver },
-            canActivate: [authGuard],
-            data: { breadcrumb: 'Checkout' }
+            canActivate: [authGuard, roleGuard],
+            data: { breadcrumb: 'Checkout', role: 'Customer', }
           }
         ]
       },
@@ -90,6 +90,7 @@ const routes: Routes = [
         children: [
           {
             path: 'checkout/:id',
+            canActivate: [listingApplicationCheckoutGuard],
             component: ListingApplicationCheckoutComponent,
             resolve: { application: ListingApplicationResolver },
             data: { breadcrumb: 'Checkout' }

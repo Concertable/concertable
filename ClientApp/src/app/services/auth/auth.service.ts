@@ -18,7 +18,7 @@ export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
   
   private currentUserSubject = new BehaviorSubject<User | undefined>(undefined); 
-  currentUser$ = this.currentUserSubject.asObservable(); // Every subscription will recieve the current user whenever it changes
+  currentUser$ = this.currentUserSubject.asObservable(); // Every subscriber will recieve the current user whenever it changes
 
   isAuthenticated$ = this.currentUserSubject.pipe(
     map(user => user !== undefined),
@@ -86,7 +86,6 @@ export class AuthService {
     return this.http.get<User>(`${this.apiUrl}/current-user`).pipe(
       tap(user => {
         this.currentUserSubject.next(user);
-        this.currentUserLoaded = true;
       })
     )
   }

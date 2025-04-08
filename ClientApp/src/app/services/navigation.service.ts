@@ -20,4 +20,8 @@ export class NavigationService {
   getPreviousUrl(): string {
     return this.previousUrl;
   }
+
+  navigateToPreviousUrl(): void {
+    this.router.navigateByUrl(this.previousUrl);
+  }
 }

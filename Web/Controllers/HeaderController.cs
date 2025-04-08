@@ -24,7 +24,7 @@ namespace Web.Controllers
         {
                 if (string.IsNullOrWhiteSpace(searchParams.HeaderType))
             {
-                return BadRequest("Entity type is required.");
+                return BadRequest("Header type is required");
             }
 
             try
@@ -43,7 +43,6 @@ namespace Web.Controllers
 
                     _ => throw new ArgumentException($"Invalid entity type '{searchParams.HeaderType}'.")
                 };
-
                 return Ok(response);
             }
             catch (ArgumentException ex)

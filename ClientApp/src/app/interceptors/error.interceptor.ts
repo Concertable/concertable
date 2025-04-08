@@ -4,6 +4,7 @@ import { AuthService } from "../services/auth/auth.service";
 import { Router } from "@angular/router";
 import { Observable, catchError, throwError } from "rxjs";
 import { ToastrService } from "ngx-toastr";
+import { SKIP_ERROR_HANDLER } from "../shared/http/http-context.token";
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -11,6 +12,9 @@ export class ErrorInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService, private router: Router, private toastr: ToastrService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    if (request.context.get(SKIP_ERROR_HANDLER)) 
+      return next.handle(request);
+    
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
         console.error("HTTP Error:", err); // Logs the full error for debugging

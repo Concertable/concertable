@@ -35,19 +35,13 @@ namespace Infrastructure.Repositories
             var query = dbSet.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchParams?.SearchTerm))
-            {
                 query = query.Where(e => EF.Property<string>(e, "Name").Contains(searchParams.SearchTerm));
-            }
 
             foreach (var filter in Filters(searchParams))
-            {
                 query = query.Where(filter);
-            }
 
             if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
-            {
                 query = ApplyOrdering(query, searchParams.Sort);
-            }
 
             var result = query.Select(Selector);
 

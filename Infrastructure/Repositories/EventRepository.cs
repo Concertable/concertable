@@ -55,7 +55,7 @@ namespace Infrastructure.Repositories
             return filters;
         }
 
-        // Order by both name and date posted
+        // Event needs to be able to sort by Date Posted as well as name
         protected override IQueryable<Event> ApplyOrdering(IQueryable<Event> query, string? sort)
         {
             return sort?.ToLower() switch
@@ -67,7 +67,6 @@ namespace Infrastructure.Repositories
                 _ => query
             };
         }
-
 
         public async Task<Event> GetByIdAsync(int id)
         {
@@ -116,8 +115,8 @@ namespace Infrastructure.Repositories
             //    query = query.Where(e =>
             //        e.EventGenre.Any(eg => eventParams.GenreIds.Contains(eg.GenreId)));
 
-            // Exclude events where the user already has a ticket
-            query = query.Where(e => !context.Tickets.Any(t => t.EventId == e.Id && t.UserId == userId));
+            //// Exclude events where the user already has a ticket
+            //query = query.Where(e => !context.Tickets.Any(t => t.EventId == e.Id && t.UserId == userId));
 
             if (eventParams.OrderByRecent)
                 query = query.OrderByDescending(e => e.DatePosted);

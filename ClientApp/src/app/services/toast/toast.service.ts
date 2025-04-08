@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 
@@ -13,6 +14,10 @@ export class ToastService {
 
   showError(message: string, title: string = "Error") {
     this.toastr.error(message, title);
+  }
+
+  showErrorResponse(error: HttpErrorResponse) {
+    this.toastr.error(error.error, `${error.status} ${error.statusText}`);
   }
 
   showWarning(message: string, title: string = "Warning") {

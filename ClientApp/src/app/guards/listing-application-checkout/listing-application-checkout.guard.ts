@@ -21,9 +21,9 @@ export const listingApplicationCheckoutGuard: CanActivateFn = (route, state) => 
       return response;
     }),
     catchError((error: HttpErrorResponse) => {
-      toastService.showError(error.error, error.message);
-      const previousUrl = navService.getPreviousUrl();
-      router.navigateByUrl(previousUrl);
+      console.log(error);
+      toastService.showErrorResponse(error);
+      navService.navigateToPreviousUrl();
       return of(false);
     })
   );

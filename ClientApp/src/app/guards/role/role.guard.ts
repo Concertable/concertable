@@ -4,10 +4,12 @@ import { catchError, map, of } from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { Location } from '@angular/common';
+import { NavigationService } from '../../services/navigation.service';
 
-export const roleGuard: CanActivateFn = (route, state) => {
+export const roleGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);
   const toastService = inject(ToastService);
+  const navService = inject(NavigationService);
   const location = inject(Location);
   const router = inject(Router);
   const role = route.data['role'];
@@ -17,15 +19,15 @@ export const roleGuard: CanActivateFn = (route, state) => {
       if(["Admin", role].includes(currentUser?.role)){
         return true;
       } else {
-        toastService.showError("You do not have the role to access this page", "Unauthorized")
-        location.back();
+        toastService.showError("You do not have the role to access this page", "Unauthorized");
+        const previousUrl = navService.getPreviousUrl();
+        router.navigateByUrl(previousUrl);
         return false;
       }
     }),
     catchError((err) => {
-      console.log(err);
       return of(false);
     })
   )
-  
 };
+

@@ -1,7 +1,9 @@
 <div class="container" (click)="onClick()">
     <h3>
         {{ header?.name }}
-        <ng-container *ngIf="header?.rating"><mat-icon class="star-icon">star</mat-icon> {{ header?.rating }}</ng-container>
+        <ng-container *ngIf="header?.rating">
+            <mat-icon class="star-icon">star</mat-icon>{{ header?.rating }}
+        </ng-container>
     </h3>
     <img 
         [src]="blobStorageService.getUrl(header?.imageUrl)" 

@@ -8,15 +8,18 @@ namespace Infrastructure.Services
         private readonly IEventRepository eventRepository;
         private readonly IListingRepository listingRepository;
         private readonly IListingApplicationRepository listingApplicationRepository;
+        private readonly ICurrentUserService currentUserService;
 
         public EventSchedulingService(
             IEventRepository eventRepository, 
             IListingRepository listingRepository, 
-            IListingApplicationRepository listingApplicationRepository)
+            IListingApplicationRepository listingApplicationRepository,
+            ICurrentUserService currentUserService)
         {
             this.eventRepository = eventRepository;
             this.listingRepository = listingRepository;
             this.listingApplicationRepository = listingApplicationRepository;
+            this.currentUserService = currentUserService;
             
         }
 
@@ -24,12 +27,16 @@ namespace Infrastructure.Services
         {
             var listing = await listingRepository.GetByApplicationIdAsync(applicationId);
             var listingApplication = await listingApplicationRepository.GetByIdAsync(applicationId);
+            var user = await currentUserService.GetEntityAsync();
 
             if(listing is null)
                 return ValidationResponse.Failure("Listing does not exist");
 
             if (listingApplication is null)
                 return ValidationResponse.Failure("Listing Application does not exist");
+
+            if (listing.Venue.UserId != user.Id)
+                return ValidationResponse.Failure("You do not own this Listing");
 
             if (listing.StartDate < DateTime.UtcNow)
                 return ValidationResponse.Failure("You can't accept this application because the listing has already passed");
