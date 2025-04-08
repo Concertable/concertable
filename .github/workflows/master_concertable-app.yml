@@ -42,6 +42,12 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
+      - name: Run EF Core Migrations
+        run: dotnet ef database update --project src/Infrastructure/Infrastructure.csproj --startup-project src/Web/Web.csproj
+        working-directory: ${{ github.workspace }}
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.PROD_SQL_CONNECTION_STRING }}
+
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
@@ -76,13 +82,7 @@ jobs:
 
       - name: Install EF Core CLI
         run: dotnet tool install --global dotnet-ef
-
-      - name: Run EF Core Migrations
-        run: dotnet ef database update --project src/Infrastructure/Infrastructure.csproj --startup-project src/Web/Web.csproj
-        working-directory: ${{ github.workspace }}
-        env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.PROD_SQL_CONNECTION_STRING }}
-
+        
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
