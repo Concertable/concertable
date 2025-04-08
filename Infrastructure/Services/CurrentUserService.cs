@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using AutoMapper;
 using Core.Entities.Identity;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +18,16 @@ namespace Infrastructure.Services
     {
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly IMapper mapper;
 
-        public CurrentUserService(IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager)
+        public CurrentUserService(
+            IHttpContextAccessor httpContextAccessor, 
+            UserManager<ApplicationUser> userManager,
+            IMapper mapper)
         {
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
+            this.mapper = mapper;
         }
 
         public async Task<UserDto> GetAsync()
@@ -34,8 +40,10 @@ namespace Infrastructure.Services
                 Id = user.Id,
                 Email = user.Email,
                 Role = role,
+                County = user.County,
+                Town = user.Town,
                 Latitude = user.Latitude,
-                Longitude = user.Longitude
+                Longitude = user.Longitude,
             };
         }
 
@@ -51,8 +59,10 @@ namespace Infrastructure.Services
                     Id = user.Id,
                     Email = user.Email,
                     Role = role,
+                    County = user.County,
+                    Town = user.Town,
                     Latitude = user.Latitude,
-                    Longitude = user.Longitude
+                    Longitude = user.Longitude,
                 };
             }
             catch (UnauthorizedException)
@@ -60,7 +70,6 @@ namespace Infrastructure.Services
                 return null;
             }
         }
-
 
         public async Task<int> GetIdAsync()
         {

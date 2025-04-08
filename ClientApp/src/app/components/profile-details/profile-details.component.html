@@ -1,10 +1,21 @@
-<app-text [content]="'Hello'"></app-text>
-<app-location-display
-    *ngIf="user"
-    [editMode]="editMode"
-    [latitude]="user.latitude"
-    [longitude]="user.longitude"
-    [county]="user.county"
-    [town]="user.town"
-    (latLongChange)="updateLatLong($event)">
-</app-location-display>
+<div class="container" *ngIf="user">
+    <div class="flex items-center gap-2">
+        <label>Email:</label>
+        <app-text [(content)]="user.email" [editMode]="editMode" (contentChange)="onChangeDetected()"></app-text>
+    </div>  
+    <div class="flex items-center gap-2">
+        <label>Password:</label>
+        <button mat-button color="primary" (click)="onChangePassword()">
+          Reset Password
+        </button>
+    </div>  
+    <app-location-display
+        *ngIf="user"
+        [editMode]="editMode"
+        [latitude]="user.latitude"
+        [longitude]="user.longitude"
+        [county]="user.county"
+        [town]="user.town"
+        (latLongChange)="updateLatLong($event)">
+    </app-location-display>
+</div>

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output } from '@angular/core';
 import { Artist } from '../../models/artist';
 import { ArtistService } from '../../services/artist/artist.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -39,13 +39,18 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
   }
 
   get artist(): Artist | undefined {
-    return this.entity;
+    return this.item;
   }
 
   @Input()
   set artist(artist: Artist | undefined) {
     console.log("Call");
-    this.entity = artist;
+    this.item = artist;
+  }
+
+  @Output()
+  get artistChange() {
+    return this.itemChange;
   }
 
   override ngOnInit(): void {

@@ -8,9 +8,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   styleUrl: './config-navbar.component.scss'
 })
 export class ConfigNavbarComponent {
-  protected editMode: boolean = false;
-  @Input() saveable: boolean = false;
+  @Input() editMode: boolean = false;
   @Output() editModeChange = new EventEmitter<boolean>();
+  @Input() saveable: boolean = false;
   @Output() save = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 

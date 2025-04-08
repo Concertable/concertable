@@ -1,6 +1,6 @@
 @if (artist) {
-    <app-config-navbar (editModeChange)="onEditModeChange($event)" (cancel)="cancelChanges()" (save)="saveChanges()" [saveable]="saveable"></app-config-navbar>
-    <app-artist-details [artist]="artist" [editMode]="editMode" (entityChange)="onEntityChange($event)"></app-artist-details>
+    <app-config-navbar [(editMode)]="editMode" (cancel)="cancelChanges()" (save)="saveChanges()" [saveable]="saveable"></app-config-navbar>
+    <app-artist-details [artist]="artist" [editMode]="editMode" (entityChange)="onItemChange()"></app-artist-details>
 }@else {
     <app-manager-item-not-found [itemName]="'artist'"/>
 }

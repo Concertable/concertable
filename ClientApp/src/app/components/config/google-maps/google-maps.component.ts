@@ -25,9 +25,7 @@ console.log("hey")
   }
 
   ngOnInit() {
-    if (this.lat !== undefined && this.lng !== undefined) {
-      this.options.center = { lat: this.lat, lng: this.lng };
-    }
+    console.log(this.lat);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -42,7 +40,6 @@ console.log("hey")
   }
 
   onLatLongChange(latLong: google.maps.LatLngLiteral | undefined) {
-    console.log("312")
     if (latLong) {
       const { lat, lng } = latLong;
   

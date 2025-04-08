@@ -1,4 +1,5 @@
-﻿using Core.Entities.Identity;
+﻿using Application.DTOs;
+using Core.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,6 @@ namespace Application.Interfaces
         Task<ApplicationUser> GetByEventIdAsync(int id);
         Task<int> GetIdByApplicationIdAsync(int id);
         Task<int> GetIdByEventIdAsync(int id);
+        Task<UserDto> UpdateLocationAsync(double latitude, double longitude);
     }
 }

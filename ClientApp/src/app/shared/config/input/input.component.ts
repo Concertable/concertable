@@ -1,4 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ConfigTextDirective } from '../../../directives/config-text/config-text.directive';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { InputDirective } from '../../../directives/input.directive';
 
 @Component({
   selector: 'app-input',
@@ -6,13 +9,5 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   templateUrl: './input.component.html',
   styleUrl: './input.component.scss'
 })
-export class InputComponent {
-  @Input() label: string = '';
-  @Input() content?: string;
-  @Input() whiteOutline?: boolean = false
-  @Output() contentChange = new EventEmitter<string>();
-
-  onContentChange(value: string) {
-    this.contentChange.emit(value);
-  }
+export class InputComponent extends InputDirective {
 }

@@ -142,6 +142,8 @@ import { PaymentSummaryComponent } from './components/payment-summary/payment-su
 import { EventSummaryComponent } from './components/event-summary/event-summary.component';
 import { SummaryDirective } from './directives/summary.directive';
 import { HeroComponent } from './components/hero/hero.component';
+import { InputDirective } from './directives/input.directive';
+import { ResetPasswordComponent } from './components/pages/reset-password/reset-password.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -256,7 +258,9 @@ export function initApp(initService: InitService) {
     PaymentSummaryComponent,
     EventSummaryComponent,
     SummaryDirective,
-    HeroComponent
+    HeroComponent,
+    InputDirective,
+    ResetPasswordComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

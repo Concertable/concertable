@@ -1,5 +1,5 @@
 @if(editMode) {
-    <app-text-input [(content)]="content" label="Name"></app-text-input>
+    <app-input [(content)]="content" [label]="label" (contentChange)="onContentChange($event)"></app-input>
 }@else {
     <p>{{ content }}</p>
 }

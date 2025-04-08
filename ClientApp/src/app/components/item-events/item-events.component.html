@@ -29,7 +29,7 @@
                     <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">View details</span>
                 </button>
     
-                <button *ngIf="authService.isRole('Customer')" class="primary" (click)="onPurchase(event)">
+                <button *ngIf="authService.isRole('Customer')" mat-fab extended color="success" (click)="onPurchase(event)">
                     <mat-icon>shopping_cart</mat-icon>
                     <span class="btn-label">Purchase</span>
                 </button>

@@ -17,9 +17,9 @@ import { ToastService } from '../../services/toast/toast.service';
   standalone: false,
 })
 export abstract class DetailsDirective<T extends Venue | Artist | Event | User | Preference> implements OnInit {
-  @Input() entity?: T;
+  @Input() item?: T;
   @Input() editMode?: boolean;
-  @Output() entityChange = new EventEmitter<T>()
+  @Output() itemChange = new EventEmitter<T>()
 
   constructor(
     protected authService: AuthService,
@@ -37,14 +37,7 @@ export abstract class DetailsDirective<T extends Venue | Artist | Event | User |
   abstract setDetails(data: any): void;
 
   onChangeDetected() {
-    console.log(this.entity);
-    this.entityChange.emit(this.entity);
-  }
-  
-  updateContent(updatedContent: any, field: keyof T) {
-    if (this.entity && field in this.entity) {
-      (this.entity as any)[field] = updatedContent; 
-    }
-    this.onChangeDetected()
+    console.log("entity",this.item);
+    this.itemChange.emit(this.item);
   }
 }

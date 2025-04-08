@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output } from '@angular/core';
 import { Preference } from '../../models/preference';
 import { Genre } from '../../models/genre';
 import { GenreService } from '../../services/genre/genre.service';
@@ -28,12 +28,17 @@ export class PreferenceDetailsComponent extends DetailsDirective<Preference> {
   }
   
   get preference(): Preference | undefined {
-    return this.entity;
+    return this.item;
   }
 
   @Input()
   set preference(preferences: Preference | undefined) {
-    this.entity = preferences;
+    this.item = preferences;
+  }
+
+  @Output()
+  get preferenceChange() {
+    return this.itemChange;
   }
   
   override ngOnInit(): void {

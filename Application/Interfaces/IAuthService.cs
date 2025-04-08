@@ -14,8 +14,10 @@ namespace Application.Interfaces
         public Task Register(RegisterDto registerDto);
         public Task<UserDto> Login(LoginDto loginDto);
         public Task Logout();
-        Task<bool> ConfirmEmail(string userId, string token);
+        Task<bool> ConfirmEmailAsync(string userId, string token);
         Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto requestDto);
         Task<ResetPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto requestDto);
+        Task RequestEmailChangeAsync(string newEmail);
+        Task<bool> ConfirmEmailChangeAsync(string token, string newEmail);
     }
 }

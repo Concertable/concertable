@@ -8,6 +8,7 @@ import { ActivatedRoute } from '@angular/router';
 import { User } from '../../models/user';
 import { Preference } from '../../models/preference';
 import { Coordinates } from '../../models/coordinates';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Directive({
   selector: '[appConfig]',
@@ -19,7 +20,7 @@ export abstract class ConfigDirective<T extends Venue | Artist | Event | User | 
   protected editMode: boolean = false;
   protected saveable: boolean = false;
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(protected route: ActivatedRoute) { }
 
   // Abstract method for getting details, to be implemented in child classes
   abstract setDetails(data: any): void;
@@ -28,8 +29,8 @@ export abstract class ConfigDirective<T extends Venue | Artist | Event | User | 
 
   abstract showUpdated(item: T): void
 
-  onEditModeChange(newValue: boolean) {
-    this.editMode = newValue;
+  onEditModeChange(editMode: boolean) {
+    this.editMode = editMode;
   }
 
   ngOnInit(): void {
@@ -54,8 +55,8 @@ export abstract class ConfigDirective<T extends Venue | Artist | Event | User | 
     })
   }
 
-  onEntityChange(entity: T) {
+  onItemChange() {
     this.saveable = true;
-    this.item = entity;
+    console.log("Item", this.item);
   }
 }

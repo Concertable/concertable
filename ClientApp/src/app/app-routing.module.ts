@@ -101,7 +101,7 @@ const routes: Routes = [
       {
         path: 'profile',
         component: ProfileMenuComponent,
-        data: { breadcrumb: 'My Profile' },
+        data: { breadcrumb: 'Profile' },
         children: [
           {
             path: 'preferences',
@@ -120,7 +120,7 @@ const routes: Routes = [
               }
             ]
           },
-          { path: 'details', component: MyProfileComponent, resolve: { user: MyProfileResolver }, data: { breadcrumb: 'Details' } },
+          { path: 'my', component: MyProfileComponent, resolve: { user: MyProfileResolver }, data: { breadcrumb: 'My Profile' } },
           { path: 'payment', component: PaymentDetailsComponent, data: { breadcrumb: 'Payment' } },
           {
             path: 'tickets',

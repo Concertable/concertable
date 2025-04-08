@@ -55,12 +55,17 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
   }
 
   get venue(): Venue | undefined {
-    return this.entity;
+    return this.item;
   }
 
   @Input()
   set venue(value: Venue | undefined) {
-    this.entity = value;
+    this.item = value;
+  }
+
+  @Output()
+  get venueChange() {
+    return this.itemChange;
   }
 
   override ngOnInit() {

@@ -13,23 +13,23 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent {
-  profileListOpen = false;
-
   constructor(
     protected authService: AuthService,
     private router: Router
   ) { }
 
   onProfile() {
-    this.profileListOpen = !this.profileListOpen;
+    this.router.navigateByUrl('/profile');
   }
 
   onEditProfile() {
-    this.router.navigateByUrl('/profile');
-  }
+    this.router.navigate(['/profile/my'], {
+      queryParams: { editMode: true }
+    });
+  }  
 
   onViewProfile() {
-    this.router.navigateByUrl('/profile');
+    this.router.navigateByUrl('/profile/my');
   }
 
   onLogOut() : void {

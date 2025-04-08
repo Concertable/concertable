@@ -8,5 +8,7 @@ import { Component, Input } from '@angular/core';
   styleUrl: './auth-layout.component.scss'
 })
 export class AuthLayoutComponent {
-  @Input() imageSrc: string = '';
+  @Input() title?: string;
+  titleStyle: { [key: string]: string; } = { 'text-align': 'center' };
+  @Input() imageSrc?: string = '';
 }

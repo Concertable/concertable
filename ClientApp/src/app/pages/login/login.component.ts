@@ -11,12 +11,12 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
+  title: string = 'Login Page'
   returnUrl?: string;
-  
   credentials: LoginCredentials = {
     email: '',
     password: ''
-    };
+  };
   
   constructor(
     private authService: AuthService, 
@@ -27,8 +27,13 @@ export class LoginComponent implements OnInit {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'];
   }
 
-  login() {
+  onLogin() {
     this.authService.login(this.credentials, this.returnUrl)
       .subscribe();
+  }
+
+  onForgotPassword(event: MouseEvent) {
+    event.preventDefault();
+    this.authService.forgotPassword(this.credentials.email).subscribe()
   }
 }

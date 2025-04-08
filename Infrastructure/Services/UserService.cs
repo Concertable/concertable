@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using AutoMapper;
 using Core.Entities.Identity;
 using Org.BouncyCastle.Bcpg;
 using System;
@@ -13,10 +14,20 @@ namespace Infrastructure.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository userRepsitory;
+        private readonly ICurrentUserService currentUserService;
+        private readonly IGeocodingService geocodingService;
+        private readonly IMapper mapper;
 
-        public UserService(IUserRepository userRepsitory)
+        public UserService(
+            IUserRepository userRepsitory, 
+            ICurrentUserService currentUserService,
+            IGeocodingService geocodingService,
+            IMapper mapper)
         {
             this.userRepsitory = userRepsitory;
+            this.currentUserService = currentUserService;
+            this.geocodingService = geocodingService;
+            this.mapper = mapper;
         }
 
         public async Task<int> GetIdByApplicationIdAsync(int applicationId)
@@ -38,5 +49,24 @@ namespace Infrastructure.Services
         {
             return await userRepsitory.GetByEventIdAsync(eventId);
         }
+
+        public async Task<UserDto> UpdateLocationAsync(double latitude, double longitude)
+        {
+            var user = await currentUserService.GetEntityAsync();
+
+            user.Latitude = latitude;
+            user.Longitude = longitude;
+
+            var locationDto = await geocodingService.GetLocationAsync(latitude, longitude);
+
+            user.County = locationDto.County;
+            user.Town = locationDto.Town;
+
+            userRepsitory.Update(user);
+            await userRepsitory.SaveChangesAsync();
+
+            return mapper.Map<UserDto>(user);
+        }
+
     }
 }

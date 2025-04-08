@@ -12,24 +12,7 @@ export class ConfigTextDirective {
   @Input() whiteOutline?: boolean;
   @Output() contentChange = new EventEmitter<string>();
 
-  private contentSubject = new Subject<string>();
-
-  ngOnInit(): void {
-    this.contentSubject
-      .pipe(
-        debounceTime(300), 
-        distinctUntilChanged() 
-      )
-      .subscribe((updatedContent) => {
-        this.contentChange.emit(updatedContent);
-      });
-  }
-  
   onContentChange(content: string) {
-    this.contentSubject.next(content);
-  }
-
-  ngOnDestroy(): void {
-    this.contentSubject.complete()
+    this.contentChange.emit(content);
   }
 }

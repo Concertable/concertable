@@ -1,11 +1,25 @@
 <div class="container">
     <!-- Search Bar -->
-    <app-location-search *ngIf="editMode" (locationChange)="onLocationChange($event)" (latLongChange)="onLatLongChange($event)" [type]="'establishment'"/>
-
-    <!-- Google Map -->
-    <google-map [options]="options" [width]="800" [height]="400">
-        <map-marker *ngIf="lat !== undefined && lng !== undefined" [clickable]="false" [draggable]="true"
-            [position]="{ lat, lng }">
+    <app-location-search 
+      *ngIf="editMode" 
+      (locationChange)="onLocationChange($event)" 
+      (latLongChange)="onLatLongChange($event)" 
+      [type]="'establishment'">
+    </app-location-search>
+  
+    @if (lat && lng) {
+      <!-- Google Map -->
+      <google-map [options]="options" [width]="800" [height]="400">
+        <map-marker 
+          [clickable]="false" 
+          [draggable]="true"
+          [position]="{ lat, lng }">
         </map-marker>
-    </google-map>
-</div>
+      </google-map>
+    } @else {
+        <div class="map-placeholder">
+            No location set
+        </div>
+    }
+  </div>
+  

@@ -8,6 +8,7 @@ using Application.DTOs;
 using Infrastructure.Services;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Identity.Data;
+using Application.Requests;
 
 namespace Web.Controllers
 {
@@ -59,7 +60,7 @@ namespace Web.Controllers
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
-            var result = await authService.ConfirmEmail(userId, token);
+            var result = await authService.ConfirmEmailAsync(userId, token);
             if (!result)
                 return BadRequest(new { message = "Email confirmation failed or token is invalid" });
 
@@ -77,5 +78,26 @@ namespace Web.Controllers
         {
             return Ok(await authService.ResetPasswordAsync(requestDto));
         }
+
+        [Authorize]
+        [HttpPost("request-email-change")]
+        public async Task<IActionResult> RequestEmailChange([FromBody] ChangeEmailRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await authService.RequestEmailChangeAsync(request.NewEmail);
+            return Ok(new { message = "A confirmation link has been sent to your current email." });
+        }
+
+        [HttpGet("confirm-email-change")]
+        public async Task<IActionResult> ConfirmEmailChange([FromQuery] string token, [FromQuery] string newEmail)
+        {
+            var result = await authService.ConfirmEmailChangeAsync(token, newEmail);
+
+            return Ok(new { message = "Your email has been successfully updated!" });
+        }
+
+
     }
 }

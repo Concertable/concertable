@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output } from '@angular/core';
 import { DetailsDirective } from '../../directives/details/details.directive';
 import { User } from '../../models/user';
 import { Coordinates } from '../../models/coordinates';
@@ -10,18 +10,24 @@ import { Coordinates } from '../../models/coordinates';
   styleUrl: './profile-details.component.scss'
 })
 export class ProfileDetailsComponent extends DetailsDirective<User> {
-updateLatLong($event: Coordinates|undefined) {
-throw new Error('Method not implemented.');
-}
-  onLocationChange($event: google.maps.LatLngLiteral|undefined) {
-  throw new Error('Method not implemented.');
-  }
-  onLocationValueChange($event: { county: string; town: string; }|undefined) {
-  throw new Error('Method not implemented.');
+  updateLatLong(latLong: google.maps.LatLngLiteral | undefined) {
+    if(this.user)
+      if (latLong) {
+        const { lat, lng } = latLong;
+        this.user.latitude = lat;
+        this.user.longitude = lng;
+    }
+    this.onChangeDetected();
   }
 
+  @Output()
+  get userChange() {
+    return this.itemChange;
+  }
+
+
   get user(): User | undefined {
-    return this.entity;
+    return this.item;
   }
 
   override ngOnInit(): void {
@@ -30,10 +36,16 @@ throw new Error('Method not implemented.');
   
   @Input()
   set user(user: User | undefined) {
-    this.entity = user;
+    this.item = user;
   }
 
   setDetails(data: any): void {
     this.user = data['user']; 
   }
+
+  onChangePassword() {
+    if(this.user)
+    this.authService.forgotPassword(this.user.email).subscribe();
+  }
+  
 }

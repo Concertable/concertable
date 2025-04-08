@@ -50,7 +50,7 @@ export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
   }
 
   set name(name: string) {
-    if(this.entity?.name)
+    if (this.entity)
       this.entity.name = name;
   }
 
@@ -59,6 +59,7 @@ export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
   }
 
   onChangeDetected() {
+    console.log(this.name);
     this.contentChange.emit()
   }
 

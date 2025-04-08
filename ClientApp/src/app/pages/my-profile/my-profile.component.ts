@@ -4,6 +4,9 @@ import { User } from '../../models/user';
 import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
+import { ToastService } from '../../services/toast/toast.service';
+import { UserService } from '../../services/user.service';
+import { UserToastService } from '../../services/toast/user-toast.service';
 
 @Component({
   selector: 'app-my-profile',
@@ -12,7 +15,11 @@ import { AuthService } from '../../services/auth/auth.service';
   styleUrl: './my-profile.component.scss'
 })
 export class MyProfileComponent extends ConfigDirective<User> {
+  prevEmail?: string;
   constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private userToastService: UserToastService,
     route: ActivatedRoute, 
   ) {
     super(route);
@@ -26,18 +33,36 @@ export class MyProfileComponent extends ConfigDirective<User> {
     this.item = value;
   }
 
-  setDetails(data: any): void {
-    console.log(data);
-    this.user = data['user'];
+  override ngOnInit(): void {
+      super.ngOnInit();
+      this.route.queryParams.subscribe(params => {
+        this.editMode = params['editMode'] === 'true';
+      });
   }
 
-  update(item: User): Observable<User> {
-    //return this.artistService.update(artist);
-    throw new Error('Method not implemented.');
+  setDetails(data: any): void {
+    this.user = data['user'];
+    this.prevEmail = this.user?.email;
+  }
+
+  update(user: User): Observable<User> {
+    return this.userService.updateLocation(user.id, user.latitude, user.longitude)
   }
 
   showUpdated(item: User): void {
-    throw new Error('Method not implemented.');
+    this.userToastService.showUpdated();
+  }
+
+  override saveChanges() {
+    if (!this.user || !this.originalItem) return;
+  
+    if (this.user?.email !== this.prevEmail) {
+      // Send email confirmation instead of directly saving
+      this.authService.requestEmailChange(this.user?.email).subscribe();
+    }
+    
+    // For all other cases, run base save logic
+    super.saveChanges();
   }
 
 }

@@ -9,6 +9,8 @@ import { RegisterCredentials } from '../../models/register-credentials';
 import { Router } from '@angular/router';
 import { Role } from '../../models/role';
 import { SignalRService } from '../signalr/signalr.service';
+import { ResetPasswordRequest } from '../../models/reset-password-request';
+import { ToastService } from '../toast/toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +41,7 @@ export class AuthService {
     this._currentUserLoaded = value;
   }
 
-  constructor(private http: HttpClient, private router: Router, private signalRService: SignalRService) { }
+  constructor(private http: HttpClient, private router: Router, private signalRService: SignalRService, private toastService: ToastService) { }
 
   isRole = (role: Role) => this.currentUserSubject.getValue()?.role === role;
   isNotRole = (role: Role) => this.currentUserSubject.getValue()?.role !== role;
@@ -94,4 +96,23 @@ export class AuthService {
     if (role === 'VenueManager')
       this.router.navigateByUrl('/venue');
   }
+
+  requestEmailChange(newEmail: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/request-email-change`, { newEmail }).pipe(
+      tap(() => this.toastService.showSuccess('Confirmation email sent to your email'))
+    );
+  }  
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email }).pipe(
+      tap(() => this.toastService.showSuccess('Reset email sent to your email address'))
+    );
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, request).pipe(
+      tap(() => this.toastService.showSuccess('Password reset successful!'))
+    );
+  }
+  
 }

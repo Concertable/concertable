@@ -1,7 +1,7 @@
-<app-auth-layout [imageSrc]="'assets/images/register.jpg'">
+<app-auth-layout [imageSrc]="'assets/images/register.jpg'" [title]="title">
     <div class="container">
       <h1 class="title">Register</h1>
-      <form (ngSubmit)="register()">
+      <form (ngSubmit)="register()" #form="ngForm">
         <div class="form-container">
           <label for="email">Email:</label>
           <input type="email" id="email" name="email" [(ngModel)]="credentials.email" required>
@@ -20,7 +20,12 @@
               </mat-select>
             </mat-form-field>
           </div>
-        <button mat-flat-button type="submit" class="submit">Submit</button>
+        <button mat-flat-button type="submit" class="submit" [disabled]="form.invalid">Submit</button>
+        <p class="mt-2">
+          Already have an account?
+          <a routerLink="/login" class="text-[var(--secondary-color)]">Login</a>
+        </p>
+        
       </form>
     </div>
   </app-auth-layout>

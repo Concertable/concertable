@@ -2,12 +2,16 @@
     display: flex;
     max-width: 1200px;     /* or whatever width you prefer */
     margin: 0 auto;        /* centers the wrapper horizontally */
-    height: 100%;
+    min-height: 100vh;
   }
+
+.sidebar {
+  padding: 10px;
+}
   
-  .main-content {
-    flex: 1;
-    background-color: var(--background-white);
-    padding: 1rem;
-  }
+.main-content {
+  flex: 1;
+  background-color: var(--background-white);
+  padding: 1rem;
+}
   

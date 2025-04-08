@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
   styleUrl: './register.component.scss'
 })
 export class RegisterComponent {
+  title: string = 'Register Page'
   credentials: RegisterCredentials = {
     email: '',
     password: '',

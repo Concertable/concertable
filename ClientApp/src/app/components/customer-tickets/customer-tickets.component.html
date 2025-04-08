@@ -1,25 +1,40 @@
 <app-card [isEmpty]="tickets.length === 0">
-    <div *ngFor="let ticket of tickets" class="item">  
-      <div class="event-info">
-        <h3 class="event-name">{{ ticket.event.name }}</h3>
-  
+  <div *ngFor="let ticket of tickets" class="item">
+    
+    <!-- Event Date -->
+    <div class="date-container">
+      <p class="date">{{ ticket.event.startDate | date:'d' }}</p>
+      <p class="month">{{ ticket.event.startDate | date:'MMM' }}</p>
+    </div>
+
+    <!-- Event Info -->
+    <div class="info">
+      <h3 class="name">{{ ticket.event.name }}</h3>
+
+      <div class="nested-info">
         <p class="icon-text">
           <mat-icon>receipt_long</mat-icon>
-          <strong class="mr-1">Purchased:</strong> {{ ticket.purchaseDate | date:'shortDate' }}
+          <strong>Purchased:</strong> {{ ticket.purchaseDate | date:'shortDate' }}
+        </p>
+
+        <p class="icon-text">
+          <mat-icon>access_time</mat-icon>
+          {{ ticket.event.startDate | date:'h:mm a' }} - {{ ticket.event.endDate | date:'h:mm a' }}
         </p>
       </div>
-  
-      <div class="event-actions">
-        <button class="primary" (click)="onViewEvent(ticket)">
-          <mat-icon>event</mat-icon>
-          <span class="btn-label">Event Details</span>
-        </button>
-  
-        <button *ngIf="ticket.qrCode" class="primary" (click)="onShowQr(ticket)">
-          <mat-icon>qr_code</mat-icon>
-          <span class="btn-label">QR Code</span>
-        </button>
-      </div>
     </div>
-  </app-card>
-  
+
+    <div class="actions">
+      <button color="secondary" mat-fab extended (click)="onViewEvent(ticket)">
+        <mat-icon>event</mat-icon>
+        <span class="btn-label">View Details</span>
+      </button>
+      
+
+      <button color="primary" mat-fab extended (click)="onShowQr(ticket)">
+        <mat-icon>qr_code</mat-icon>
+        <span class="btn-label">QR Code</span>
+      </button>
+    </div>
+  </div>
+</app-card>

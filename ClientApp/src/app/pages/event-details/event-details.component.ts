@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output } from '@angular/core';
 import { NavItem } from '../../models/nav-item';
 import { VenueService } from '../../services/venue/venue.service';
 import { AuthService } from '../../services/auth/auth.service';
@@ -53,8 +53,14 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
     return this.entity;
   }
 
+  @Input()
   set event(value: Event | undefined) {
     this.entity = value;
+  }
+
+  @Output()
+  get venueChange() {
+    return this.itemChange;
   }
   
 

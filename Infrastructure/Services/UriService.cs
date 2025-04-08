@@ -40,6 +40,21 @@ namespace Infrastructure.Services
             return new Uri(uri);
         }
 
+        public Uri GetEmailChangeConfirmationUri(int userId, string token, string newEmail)
+        {
+            var uri = linkGenerator.GetUriByAction(
+                httpContextAccessor.HttpContext!,
+                action: "ConfirmEmailChange",
+                controller: "Auth",
+                values: new { userId, token, newEmail }
+            );
+
+            if (uri is null)
+                throw new ArgumentException("Failed to generate email change confirmation link");
+
+            return new Uri(uri);
+        }
+
         public Uri GetPasswordResetUri(int userId, string token)
         {
             var uri = linkGenerator.GetUriByAction(
