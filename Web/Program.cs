@@ -196,7 +196,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-System.Diagnostics.Debug.WriteLine("hello");
 // Initialize the Database
 try
 {
@@ -204,6 +203,8 @@ try
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    await context.Database.MigrateAsync();
 
     await ApplicationDbInitializer.InitializeAsync(context, userManager);
 
