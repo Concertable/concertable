@@ -18,7 +18,7 @@ namespace Infrastructure.Services
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IUnitOfWork unitOfWork;
         private readonly ICurrentUserService currentUserService;
-        private readonly IEventSchedulingService eventSchedulingService;
+        private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IMessageService messageService;
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
@@ -28,7 +28,7 @@ namespace Infrastructure.Services
             IListingApplicationRepository listingApplicationRepository,
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
-            IEventSchedulingService eventSchedulingService,
+            IListingApplicationValidationService applicationValidationService,
             IMessageService messageService,
             IListingService listingService,
             IArtistService artistService,
@@ -37,7 +37,7 @@ namespace Infrastructure.Services
             this.listingApplicationRepository = listingApplicationRepository;
             this.unitOfWork = unitOfWork;
             this.currentUserService = currentUserService;
-            this.eventSchedulingService = eventSchedulingService;
+            this.applicationValidationService = applicationValidationService;
             this.messageService = messageService;
             this.listingService = listingService;
             this.artistService = artistService;
@@ -69,7 +69,7 @@ namespace Infrastructure.Services
 
             var listing = await listingService.GetByIdAsync(listingId);
 
-            var response = await eventSchedulingService.CanApplyForListingAsync(listingId, artistDto.Id);
+            var response = await applicationValidationService.CanApplyForListingAsync(listingId, artistDto.Id);
 
             if (!response.IsValid)
                 throw new BadRequestException(response.Reason);

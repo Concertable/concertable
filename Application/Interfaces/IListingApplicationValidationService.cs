@@ -13,7 +13,7 @@ namespace Application.Interfaces
     /// checking if artists are available on specific dates, and enforcing
     /// scheduling constraints across the system.
     /// </summary>
-    public interface IEventSchedulingService
+    public interface IListingApplicationValidationService
     {
         /// <summary>
         /// Checks whether an artist can apply for a given listing, based on conflicts and constraints.

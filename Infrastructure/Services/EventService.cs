@@ -25,7 +25,7 @@ namespace Infrastructure.Services
         private readonly IEventRepository eventRepository;
         private readonly ICurrentUserService currentUserService;
         private readonly IUserPaymentService userPaymentService;
-        private readonly IEventSchedulingService eventSchedulingService;
+        private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IMessageService messageService;
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
@@ -38,7 +38,7 @@ namespace Infrastructure.Services
             IEventRepository eventRepository, 
             ICurrentUserService currentUserService,
             IUserPaymentService userPaymentService,
-            IEventSchedulingService eventSchedulingService,
+            IListingApplicationValidationService eventSchedulingService,
             IMessageService messageService,
             IReviewService reviewService, 
             ILocationService locationService,
@@ -50,7 +50,7 @@ namespace Infrastructure.Services
             this.eventRepository = eventRepository;
             this.currentUserService = currentUserService;
             this.userPaymentService = userPaymentService;
-            this.eventSchedulingService = eventSchedulingService;
+            this.applicationValidationService = applicationValidationService;
             this.messageService = messageService;
             this.reviewService = reviewService;
             this.locationService = locationService;
@@ -126,7 +126,7 @@ namespace Infrastructure.Services
         {
             var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
 
-            var response = await eventSchedulingService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId);
+            var response = await applicationValidationService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId);
 
             if (!response.IsValid)
                 throw new BadRequestException(response.Reason!);

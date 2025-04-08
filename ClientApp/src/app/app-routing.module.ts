@@ -48,6 +48,7 @@ import { CreatePreferenceComponent } from './components/create-preference/create
 import { CustomerTicketsComponent } from './components/customer-tickets/customer-tickets.component';
 import { TicketViewType } from './models/ticket-view-type';
 import { listingApplicationCheckoutGuard } from './guards/listing-application-checkout/listing-application-checkout.guard';
+import { eventCheckoutGuard } from './guards/event-checkout/event-checkout.guard';
 
 const routes: Routes = [
   {
@@ -78,7 +79,7 @@ const routes: Routes = [
             path: 'checkout/:id',
             component: EventCheckoutComponent,
             resolve: { event: EventResolver },
-            canActivate: [authGuard, roleGuard],
+            canActivate: [authGuard, roleGuard, eventCheckoutGuard],
             data: { breadcrumb: 'Checkout', role: 'Customer', }
           }
         ]

@@ -5,11 +5,13 @@ import { Router } from "@angular/router";
 import { Observable, catchError, throwError } from "rxjs";
 import { ToastrService } from "ngx-toastr";
 import { SKIP_ERROR_HANDLER } from "../shared/http/http-context.token";
+import { extractHttpErrorMessage } from "../shared/http/http-interceptor-utils";
+import { ToastService } from "../services/toast/toast.service";
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
   
-  constructor(private authService: AuthService, private router: Router, private toastr: ToastrService) {}
+  constructor(private authService: AuthService, private router: Router, private toastService: ToastService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (request.context.get(SKIP_ERROR_HANDLER)) 
@@ -17,35 +19,8 @@ export class ErrorInterceptor implements HttpInterceptor {
     
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error("HTTP Error:", err); // Logs the full error for debugging
-        console.log(err.status)
-        if (err.status === 400) {
-          if (err.error.errors) {
-            const modelStateErrors = [];
-            for (const key in err.error.errors) {
-              if (err.error.errors[key]) {
-                modelStateErrors.push(err.error.errors[key]);
-              }
-            }
-            this.toastr.error(modelStateErrors.flat().join(" "), "Validation Error");
-          } else {
-            this.toastr.error(err.error.title || err.error.message || "Bad Request", "Error 400");
-          }
-        }
-        else if (err.status === 401) {
-        }
-        else if (err.status === 403) {
-          
-        }
-        else if (err.status === 404) {
-          this.router.navigateByUrl("/not-found");
-        }
-        else if (err.status === 500) {
-          this.router.navigateByUrl("/server-error", { state: { error: err.error } });
-        }
-        else {
-          this.router.navigateByUrl("/server-error", { state: { error: err.error } });
-        }
+        const { title, message } = extractHttpErrorMessage(err);
+        this.toastService.showError(title, message);
         return throwError(() => err);
       })
     );

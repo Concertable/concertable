@@ -3,14 +3,14 @@ using Application.Responses;
 
 namespace Infrastructure.Services
 {
-    public class EventSchedulingService : IEventSchedulingService
+    public class ListingApplicationValidationService : Application.Interfaces.IListingApplicationValidationService
     {
         private readonly IEventRepository eventRepository;
         private readonly IListingRepository listingRepository;
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly ICurrentUserService currentUserService;
 
-        public EventSchedulingService(
+        public ListingApplicationValidationService(
             IEventRepository eventRepository, 
             IListingRepository listingRepository, 
             IListingApplicationRepository listingApplicationRepository,

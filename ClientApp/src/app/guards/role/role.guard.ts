@@ -19,7 +19,7 @@ export const roleGuard: CanActivateFn = (route) => {
       if(["Admin", role].includes(currentUser?.role)){
         return true;
       } else {
-        toastService.showError("You do not have the role to access this page", "Unauthorized");
+        toastService.showError("You do not have the role to access this page", "401 Unauthorized");
         const previousUrl = navService.getPreviousUrl();
         router.navigateByUrl(previousUrl);
         return false;

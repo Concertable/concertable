@@ -12,17 +12,17 @@ namespace Web.Controllers
     public class ListingApplicationController : ControllerBase
     {
         private readonly IListingApplicationService listingApplicationService;
-        private readonly IEventSchedulingService eventSchedulingService;
+        private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IArtistService artistService;
 
         public ListingApplicationController(
             IListingApplicationService listingApplicationService, 
-            IEventSchedulingService eventSchedulingService,
+            IListingApplicationValidationService eventSchedulingService,
             IArtistService artistService
             )
         {
             this.listingApplicationService = listingApplicationService;
-            this.eventSchedulingService = eventSchedulingService;
+            this.applicationValidationService = applicationValidationService;
             this.artistService = artistService;
         }
 
@@ -56,7 +56,7 @@ namespace Web.Controllers
             if (artist is null)
                 return NotFound("Artist not found");
 
-            var response = await eventSchedulingService.CanApplyForListingAsync(listingId, artist.Id);
+            var response = await applicationValidationService.CanApplyForListingAsync(listingId, artist.Id);
 
             if (!response.IsValid)
                 return BadRequest(response.Reason);
@@ -68,7 +68,7 @@ namespace Web.Controllers
         [HttpGet("can-accept/{applicationId}")]
         public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
         {
-            var result = await eventSchedulingService.CanAcceptListingApplicationAsync(applicationId);
+            var result = await applicationValidationService.CanAcceptListingApplicationAsync(applicationId);
 
             if (!result.IsValid)
                 return BadRequest(result.Reason);
