@@ -77,10 +77,7 @@ jobs:
         run: dotnet tool install --global dotnet-ef
 
       - name: Run EF Core Migrations
-        run: |
-          dotnet ef database update \
-            --project src/Infrastructure/Infrastructure.csproj \
-            --startup-project src/Web/Web.csproj
+        run: dotnet ef database update --project src/Infrastructure/Infrastructure.csproj --startup-project src/Web/Web.csproj
         env:
           ConnectionStrings__DefaultConnection: ${{ secrets.PROD_SQL_CONNECTION_STRING }}
 
