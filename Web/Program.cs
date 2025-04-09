@@ -23,6 +23,8 @@ using Web.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables();
+
 // Add services to the container.
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -203,8 +205,6 @@ try
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-
-    await context.Database.MigrateAsync();
 
     await ApplicationDbInitializer.InitializeAsync(context, userManager);
 
