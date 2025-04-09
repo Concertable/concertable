@@ -32,7 +32,6 @@ jobs:
           npm install
           ng build --configuration production
 
-
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
@@ -61,17 +60,34 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
+      - uses: actions/checkout@v4
+        
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C9668E43E2494432944F93DFACC9E5F8 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BF851F2B73B645C298E688BCE825E9A3 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_03CB9942E6EE42FEA473D19267A56D03 }}
+
+      - name: Install EF Core CLI
+        run: dotnet tool install --global dotnet-ef
+
+      - name: DEBUG - Show Infrastructure directory contents
+        run: |
+          echo "WORKSPACE: ${{ github.workspace }}"
+          dir ${{ github.workspace }}\Infrastructure
+
+      - name: Create EF Migration Bundle
+        run: dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --startup-project Web/Web.csproj --output efbundle
+        working-directory: ${{ github.workspace }}
+        
+      - name: Run EF Migrations
+        run: ./efbundle --connection "${{ secrets.PROD_SQL_CONNECTION_STRING }}"
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -80,4 +96,3 @@ jobs:
           app-name: 'concertable-app'
           slot-name: 'Production'
           package: .
-          
