@@ -83,7 +83,7 @@ jobs:
           dir ${{ github.workspace }}\Infrastructure
 
       - name: Create EF Migration Bundle
-        run: dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --output efbundle
+        run: dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --startup-project Web/Web.csproj --output efbundle
         working-directory: ${{ github.workspace }}
         
       - name: Run EF Migrations
