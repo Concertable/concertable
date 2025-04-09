@@ -16,7 +16,7 @@ namespace Infrastructure.Services
 
         public BlobStorageService(IConfiguration configuration)
         {
-            blobServiceClient = new BlobServiceClient(configuration["AzureBlobStorage:ConnectionString"]);
+            blobServiceClient = new BlobServiceClient(configuration["AzureBlobStorage:ConnStr"]);
             containerName = configuration["AzureBlobStorage:ContainerName"];
         }
 
