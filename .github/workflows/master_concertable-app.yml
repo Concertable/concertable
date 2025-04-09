@@ -77,7 +77,8 @@ jobs:
 
       - name: Create EF Migration Bundle
         run: dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --output efbundle
-
+        working-directory: ${{ github.workspace }}
+        
       - name: Run EF Migrations
         run: ./efbundle --connection "${{ secrets.PROD_SQL_CONNECTION_STRING }}"
 
