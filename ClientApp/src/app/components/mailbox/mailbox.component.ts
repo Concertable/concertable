@@ -30,7 +30,7 @@ export class MailboxComponent implements OnInit, OnDestroy {
   constructor(protected authService: AuthService, private messageService: MessageService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    if (this.authService.isNotRole("Customer")) {
+    if (this.authService.isAuthenticated() && this.authService.isNotRole("Customer")) {
       this.subscriptions.push(this.messageService.getUnreadCountForUser().subscribe(count => {
         this.unreadCount = count;
       }));      

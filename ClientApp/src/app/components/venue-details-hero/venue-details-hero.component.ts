@@ -19,7 +19,6 @@ export class VenueDetailsHeroComponent extends DetailsHeroDirective<Venue>{
   }
 
   @Input() set venue(venue: Venue) {
-    if(this.item)
       this.item = venue;
   }
 

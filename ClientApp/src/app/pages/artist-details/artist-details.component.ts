@@ -44,7 +44,6 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
 
   @Input()
   set artist(artist: Artist | undefined) {
-    console.log("Call");
     this.item = artist;
   }
 
