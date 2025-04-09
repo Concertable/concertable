@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { computed, Injectable, signal } from '@angular/core';
 import { LoginCredentials } from '../../models/login-credentials';
 import { BehaviorSubject, distinctUntilChanged, map, Observable, tap } from 'rxjs';
@@ -84,8 +84,8 @@ export class AuthService {
     );
   }
 
-  getCurrentUser() : Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/current-user`).pipe(
+  getCurrentUser(context?: HttpContext) : Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/current-user`, { context }).pipe(
       tap(user => {
         this.currentUserSubject.next(user);
       })

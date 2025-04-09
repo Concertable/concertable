@@ -4,6 +4,8 @@ import { forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
 import { SignalRService } from '../signalr/signalr.service';
 import { EventService } from '../event/event.service';
+import { HttpContext } from '@angular/common/http';
+import { SKIP_ERROR_HANDLER } from '../../shared/http/http-context.token';
 
 @Injectable({
   providedIn: 'root'
@@ -18,17 +20,18 @@ export class InitService {
 
   init(): Promise<void> {
     return new Promise((resolve) => {
-      this.authService.getCurrentUser().subscribe({
+      const context = new HttpContext().set(SKIP_ERROR_HANDLER, true);
+      this.authService.getCurrentUser(context).subscribe({
         next: (user) => {
           console.log(user);
           if (user) {
             this.signalRService.createHubConnections();
           }
-          resolve(); // ✅ still resolves when successful
+          resolve(); // still resolves when successful
         },
         error: (err) => {
           console.warn('Init failed to get current user:', err);
-          resolve(); // ✅ make sure app still starts
+          resolve(); // make sure app still starts
         }
       });
     });

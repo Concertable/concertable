@@ -13,6 +13,8 @@ export class ToastService {
   }
 
   showError(message: string, title: string = "Error") {
+    console.log("t", title);
+    console.log("m",message)
     this.toastr.error(message, title);
   }
 
