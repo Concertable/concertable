@@ -50,16 +50,16 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
   }
 
   get event(): Event | undefined {
-    return this.entity;
+    return this.item;
   }
 
   @Input()
   set event(value: Event | undefined) {
-    this.entity = value;
+    this.item = value;
   }
 
   @Output()
-  get venueChange() {
+  get eventChange() {
     return this.itemChange;
   }
   

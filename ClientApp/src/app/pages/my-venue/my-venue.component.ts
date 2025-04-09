@@ -42,8 +42,6 @@ export class MyVenueComponent extends ConfigDirective<Venue> {
   }
 
   update(venue: Venue): Observable<Venue> {
-    if (!this.image) 
-      throw new Error("Image is required to update a venue");
     return this.venueService.update(venue, this.image);
   }
 

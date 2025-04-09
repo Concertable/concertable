@@ -12,10 +12,10 @@ namespace Core.Entities
         public string About { get; set; }
         public string ImageUrl { get; set; }
         public ArtistManager User { get; set; }
-        public ICollection<ArtistGenre> ArtistGenres { get; set; }
-        public ICollection<SocialMedia> SocialMedias { get; }
-        public ICollection<ListingApplication> Applications { get; }
-        public ICollection<Video> Videos { get; }
+        public ICollection<ArtistGenre> ArtistGenres { get; set; } = new List<ArtistGenre>();
+        public ICollection<SocialMedia> SocialMedias { get; } = new List<SocialMedia>();
+        public ICollection<ListingApplication> Applications { get; } = new List<ListingApplication>();
+        public ICollection<Video> Videos { get; } = new List<Video>();
         
     }
 }

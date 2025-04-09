@@ -1,6 +1,6 @@
 @if(venue) {
     <app-venue-details-hero 
-        [venue]="venue" 
+        ([venue])="venue" 
         [editMode]="editMode" 
         (contentChange)="onChangeDetected()"
         (latLongChange)="updateLatLong($event)"

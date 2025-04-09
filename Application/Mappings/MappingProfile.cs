@@ -72,30 +72,25 @@ namespace Application.Mappings
                 src => src.ListingGenres.Select(lg => new GenreDto { Name = lg.Genre.Name })));
 
             //Events
-            CreateMap<EventDto, Event>();
             CreateMap<Event, EventHeaderDto>();
             CreateMap<EventHeaderDto, Event>();
             CreateMap<EventDto, EventHeaderDto>();
             CreateMap<EventHeaderDto, EventDto>();
             CreateMap<Event, EventDto>()
-            .ForMember(
-                dest => dest.StartDate,
-                opt => opt.MapFrom(src => src.Application.Listing.StartDate)
-            )
-            .ForMember(
-                dest => dest.EndDate,
-                opt => opt.MapFrom(src => src.Application.Listing.EndDate)
-            )
-            .ForMember(
-                dest => dest.Venue,
-                opt => opt.MapFrom(src => src.Application.Listing.Venue)
-            )
-            .ForMember(
-                dest => dest.Artist,
-                opt => opt.MapFrom(src => src.Application.Artist == null ? null : src.Application.Artist)
-            )
-            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.EventGenres.Select(eg => eg.Genre)))
+            .ForMember(dest => dest.StartDate,
+                opt => opt.MapFrom(src => src.Application.Listing.StartDate))
+            .ForMember(dest => dest.EndDate,
+                opt => opt.MapFrom(src => src.Application.Listing.EndDate))
+            .ForMember(dest => dest.Venue,
+                opt => opt.MapFrom(src => src.Application.Listing.Venue))
+            .ForMember(dest => dest.Artist,
+                opt => opt.MapFrom(src => src.Application.Artist))
+            .ForMember(dest => dest.Genres,
+                opt => opt.MapFrom(src => src.EventGenres.Select(eg => eg.Genre)))
+            .ForMember(dest => dest.DatePosted,
+                opt => opt.MapFrom(src => src.DatePosted))
             .ReverseMap();
+
 
 
             //Messages

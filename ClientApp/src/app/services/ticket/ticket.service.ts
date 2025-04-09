@@ -18,6 +18,7 @@ export class TicketService {
     return this.http.post<TicketPurchase>(`${this.apiUrl}/purchase`, {
       eventId,
       paymentMethodId,
+      quantity
     });
   }
 

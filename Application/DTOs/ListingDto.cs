@@ -10,7 +10,7 @@ namespace Application.DTOs
         public int? Id { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public IEnumerable<GenreDto> Genres { get; set; }
+        public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
         public double Pay { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

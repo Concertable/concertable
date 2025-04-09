@@ -9,8 +9,9 @@ import { BlobStorageService } from '../services/blob-storage/blob-storage.servic
   standalone: false
 })
 export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
+  @Input() item?: T;
+  @Output() itemChange = new EventEmitter<T>();
   @Input() editMode?: boolean = false;
-  @Output() contentChange = new EventEmitter<void>();
   @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
   @Output() locationChange = new EventEmitter<{ county: string, town: string }>();
 
@@ -18,8 +19,6 @@ export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
   imageEditable?: boolean = false;
 
   constructor(protected blobStorageService: BlobStorageService) { }
-
-  protected abstract get entity(): T | undefined;
 
   abstract get county(): string | undefined;
 
@@ -46,21 +45,20 @@ export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
   abstract set imageUrl(imageUrl: string);
 
   get name(): string | undefined {
-    return this.entity?.name;
+    return this.item?.name;
   }
 
   set name(name: string) {
-    if (this.entity)
-      this.entity.name = name;
+    if (this.item)
+      this.item.name = name;
   }
 
   get rating(): number | undefined {
-    return this.entity?.rating;
+    return this.item?.rating;
   }
 
   onChangeDetected() {
-    console.log(this.name);
-    this.contentChange.emit()
+    this.itemChange.emit(this.item)
   }
 
   onLatLongChange(latLong?: google.maps.LatLngLiteral | undefined) {

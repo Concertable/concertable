@@ -27,7 +27,7 @@ public class EventDto : ItemDto, IValidatableObject
 
     [Required(ErrorMessage = "Artist is required.")]
     public ArtistDto Artist { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -40,5 +40,10 @@ public class EventDto : ItemDto, IValidatableObject
         {
             yield return new ValidationResult("End date must be after start date.", new[] { nameof(EndDate) });
         }
+    }
+
+    public EventDto()
+    {
+        Type = "event";
     }
 }

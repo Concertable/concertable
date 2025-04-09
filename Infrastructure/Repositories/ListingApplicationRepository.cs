@@ -33,15 +33,16 @@ namespace Infrastructure.Repositories
         {
             var query = await context.ListingApplications
                 .Where(la => la.Id == id)
-                .Select(la => new
-                {
-                    la.Artist,
-                    la.Listing.Venue
-                })
+                .Include(la => la.Artist)              // Ensure the Artist is loaded
+                    .ThenInclude(a => a.ArtistGenres)
+                .Include(la => la.Listing)             // Ensure the Listing is loaded (to access Venue)
+                    .ThenInclude(l => l.Venue)             // Ensure the Venue is loaded
+                .Include(la => la.Listing.ListingGenres)
                 .FirstAsync();
 
-            return (query.Artist, query.Venue);
+            return (query.Artist, query.Listing.Venue);
         }
+
 
         public async Task<decimal> GetListingPayByIdAsync(int id)
         {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -16,6 +17,13 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Genre>> GetAllAsync()
         {
             return await base.GetAllAsync();
+        }
+
+        public async Task<IEnumerable<Genre>> GetByIdsAsync(IEnumerable<int> ids)
+        {
+            return await context.Genres
+                .Where(g => ids.Contains(g.Id))
+                .ToListAsync();
         }
     }
 }

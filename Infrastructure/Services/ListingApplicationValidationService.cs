@@ -3,7 +3,7 @@ using Application.Responses;
 
 namespace Infrastructure.Services
 {
-    public class ListingApplicationValidationService : Application.Interfaces.IListingApplicationValidationService
+    public class ListingApplicationValidationService : IListingApplicationValidationService
     {
         private readonly IEventRepository eventRepository;
         private readonly IListingRepository listingRepository;
@@ -23,11 +23,10 @@ namespace Infrastructure.Services
             
         }
 
-        public async Task<ValidationResponse> CanAcceptListingApplicationAsync(int applicationId)
+        public async Task<ValidationResponse> CanAcceptListingApplicationAsync(int applicationId, int userId)
         {
             var listing = await listingRepository.GetByApplicationIdAsync(applicationId);
             var listingApplication = await listingApplicationRepository.GetByIdAsync(applicationId);
-            var user = await currentUserService.GetEntityAsync();
 
             if(listing is null)
                 return ValidationResponse.Failure("Listing does not exist");
@@ -35,7 +34,7 @@ namespace Infrastructure.Services
             if (listingApplication is null)
                 return ValidationResponse.Failure("Listing Application does not exist");
 
-            if (listing.Venue.UserId != user.Id)
+            if (listing.Venue.UserId != userId)
                 return ValidationResponse.Failure("You do not own this Listing");
 
             if (listing.StartDate < DateTime.UtcNow)

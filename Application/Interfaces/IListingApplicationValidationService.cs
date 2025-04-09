@@ -23,6 +23,6 @@ namespace Application.Interfaces
         /// <summary>
         /// Checks whether a venue manager can accept a listing application, based on availability.
         /// </summary>
-        Task<ValidationResponse> CanAcceptListingApplicationAsync(int applicationId);
+        Task<ValidationResponse> CanAcceptListingApplicationAsync(int applicationId, int userI);
     }
 }

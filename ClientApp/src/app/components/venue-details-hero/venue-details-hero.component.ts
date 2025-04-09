@@ -9,14 +9,24 @@ import { DetailsHeroDirective } from '../../directives/details-hero.directive';
   styleUrl: '../../shared/components/details-hero/details-hero.component.scss'
 })
 export class VenueDetailsHeroComponent extends DetailsHeroDirective<Venue>{
-  @Input() venue?: Venue;
+  @Output() 
   @Output() imageChange = new EventEmitter<File>
   override locationEditable?: boolean = true;
   override imageEditable?: boolean = true;
-  
-    get entity() {
-      return this.venue;
-    }
+
+  get venue() : Venue | undefined {
+    return this.item;
+  }
+
+  @Input() set venue(venue: Venue) {
+    if(this.item)
+      this.item = venue;
+  }
+
+  @Output() get venueChange() {
+    return this.itemChange;
+  }
+
   
     get county(): string | undefined {
       return this.venue?.county;

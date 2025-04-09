@@ -16,7 +16,6 @@ namespace Application.DTOs
         public string Name { get; set; }
         [StringLength(1000, ErrorMessage = "About section cannot exceed 1000 characters.")]
         public string About { get; set; }
-        [Required(ErrorMessage = "ImageUrl is required.")]
         public string Type { get; set; }
         public double? Rating { get; set; }
     }

@@ -14,16 +14,18 @@ namespace Web.Controllers
         private readonly IListingApplicationService listingApplicationService;
         private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IArtistService artistService;
+        private readonly ICurrentUserService currentUserService;
 
         public ListingApplicationController(
             IListingApplicationService listingApplicationService, 
-            IListingApplicationValidationService eventSchedulingService,
-            IArtistService artistService
-            )
+            IListingApplicationValidationService applicationValidationService,
+            IArtistService artistService,
+            ICurrentUserService currentUserService)
         {
             this.listingApplicationService = listingApplicationService;
             this.applicationValidationService = applicationValidationService;
             this.artistService = artistService;
+            this.currentUserService = currentUserService;
         }
 
         [Authorize(Roles = "VenueManager")]
@@ -68,7 +70,8 @@ namespace Web.Controllers
         [HttpGet("can-accept/{applicationId}")]
         public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
         {
-            var result = await applicationValidationService.CanAcceptListingApplicationAsync(applicationId);
+            var userId = await currentUserService.GetIdAsync();
+            var result = await applicationValidationService.CanAcceptListingApplicationAsync(applicationId, userId);
 
             if (!result.IsValid)
                 return BadRequest(result.Reason);

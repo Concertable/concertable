@@ -78,7 +78,7 @@ namespace Infrastructure.Services
             var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
             var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId).ToHashSet();
 
-            if (!artistGenreIds.Overlaps(listingGenreIds))
+            if (listingGenreIds.Count > 0 && !artistGenreIds.Overlaps(listingGenreIds))
                 throw new BadRequestException("You need to have the same genres as the Listing to be able to apply to it");
 
             var applicationRepository = unitOfWork.GetRepository<ListingApplication>();

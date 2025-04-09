@@ -6,7 +6,7 @@ import { Venue } from '../models/venue';
   providedIn: 'root'
 })
 export class VenueFormDataSerializerService extends FormDataSerializerService<Venue> {
-  serializeWithImage(venue: Partial<Venue>, image: File): FormData {
+  serializeWithImage(venue: Partial<Venue>, image?: File): FormData {
     const formData = new FormData();
   
     for (const [key, value] of Object.entries(venue)) {
@@ -14,7 +14,8 @@ export class VenueFormDataSerializerService extends FormDataSerializerService<Ve
         formData.append(`Venue.${key}`, value as any);
       }
 
-    formData.append('Image', image, image.name); 
+    if(image)
+      formData.append('Image', image, image.name); 
   
     return formData;
   }

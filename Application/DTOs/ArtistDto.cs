@@ -8,7 +8,7 @@ namespace Application.DTOs
 {
     public class ArtistDto : ItemDto
     {
-        public IEnumerable<GenreDto> Genres { get; set; }
+        public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
         public int UserId { get; set; }
         public string ImageUrl { get; set; }
         public string County { get; set; }

@@ -45,7 +45,7 @@ namespace Infrastructure.Services
             {
                 PaymentMethodId = paymentMethodId,
                 FromUserEmail = user.Email,
-                Amount = eventEntity.Price,
+                Amount = eventEntity.Price * quantity,
                 DestinationStripeId = toUser.StripeId,
                 Metadata = new Dictionary<string, string>()
             {

@@ -3,7 +3,7 @@
     <app-card [isEmpty]="applications.length === 0">  
         <div *ngFor="let application of applications" class="item">
           <app-artist-summary [artist]="application.artist"></app-artist-summary>
-          <button mat-flat-button (click)="acceptApplication(application)">Accept</button>
+          <button mat-flat-button color="success" (click)="acceptApplication(application)">Accept</button>
         </div>
     </app-card>
 </div>

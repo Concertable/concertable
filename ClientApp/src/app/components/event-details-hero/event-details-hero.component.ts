@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output } from '@angular/core';
 import { Event } from '../../models/event';
 import { DetailsHeroDirective } from '../../directives/details-hero.directive';
 
@@ -9,11 +9,18 @@ import { DetailsHeroDirective } from '../../directives/details-hero.directive';
   styleUrl: '../../shared/components/details-hero/details-hero.component.scss'
 })
 export class EventDetailsHeroComponent extends DetailsHeroDirective<Event> {
-  @Input() event?: Event;
   @Input() override locationEditable?: boolean = true;
 
-  get entity() {
-    return this.event;
+  get event() : Event | undefined {
+    return this.item;
+  }
+
+  @Input() set event(event: Event) {
+      this.item = event;
+  }
+
+  @Output() get eventChange() {
+    return this.itemChange;
   }
 
   get county(): string | undefined {

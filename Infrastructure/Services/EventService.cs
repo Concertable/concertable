@@ -32,19 +32,21 @@ namespace Infrastructure.Services
         private readonly IPreferenceService preferenceService;
         private readonly IListingRepository listingRepository;
         private readonly IListingApplicationRepository listingApplicationRepository;
+        private readonly IGenreRepository genreRepository;
         private readonly IMapper mapper;
 
         public EventService(
             IEventRepository eventRepository, 
             ICurrentUserService currentUserService,
             IUserPaymentService userPaymentService,
-            IListingApplicationValidationService eventSchedulingService,
+            IListingApplicationValidationService applicationValidationService,
             IMessageService messageService,
             IReviewService reviewService, 
             ILocationService locationService,
             IPreferenceService preferenceService,
             IListingRepository listingRepository,
             IListingApplicationRepository listingApplicationRepository,
+            IGenreRepository genreRepository,
             IMapper mapper) : base(eventRepository, locationService)
         {
             this.eventRepository = eventRepository;
@@ -57,6 +59,7 @@ namespace Infrastructure.Services
             this.listingApplicationRepository = listingApplicationRepository;
             this.preferenceService = preferenceService;
             this.listingRepository = listingRepository;
+            this.genreRepository = genreRepository;
             this.mapper = mapper;
         }
 
@@ -126,7 +129,7 @@ namespace Infrastructure.Services
         {
             var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
 
-            var response = await applicationValidationService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId);
+            var response = await applicationValidationService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId, purchaseCompleteDto.FromUserId);
 
             if (!response.IsValid)
                 throw new BadRequestException(response.Reason!);
@@ -162,21 +165,30 @@ namespace Infrastructure.Services
             var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId);
 
             // Genres of the event should be the intersection of the artist, and listing genres
-            var matchingGenreIds = artistGenreIds.Intersect(listingGenreIds);
+            var matchingGenreIds = listingGenreIds.Any()
+                ? artistGenreIds.Intersect(listingGenreIds)
+                : artistGenreIds;
 
             if (!matchingGenreIds.Any())
                 throw new BadRequestException("The artist does not match any genres required by the listing");
+
+            var matchingGenres = await genreRepository.GetByIdsAsync(matchingGenreIds);
 
             var eventEntity = new Event
             {
                 ApplicationId = purchaseCompleteDto.EntityId,
                 Name = $"{artist.Name} performing at {listing.Venue.Name}",
+                About = listing.Venue.About,
                 Price = 0,
                 TotalTickets = 0,
                 AvailableTickets = 0,
                 DatePosted = null,
-                EventGenres = matchingGenreIds
-                    .Select(genreId => new EventGenre { GenreId = genreId })
+                EventGenres  = matchingGenres
+                    .Select(g => new EventGenre
+                    {
+                        GenreId = g.Id,
+                        Genre = g 
+                    })
                     .ToList()
             };
 
@@ -258,7 +270,7 @@ namespace Infrastructure.Services
 
             return new EventPostResponse
             {
-                Event = eventDto,
+                Event = mapper.Map<EventDto>(eventEntity),
                 EventHeader = eventHeaderDto,
                 UserIds = userIdsToNotify
             };

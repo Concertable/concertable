@@ -38,7 +38,7 @@ export class VenueService {
     return this.http.post<Venue>(`${this.apiUrl}`, formData);
   }
 
-  update(venue: Venue, image: File) : Observable<Venue> {
+  update(venue: Venue, image?: File) : Observable<Venue> {
     const formData = this.venueFormDataSerializer.serializeWithImage(venue, image);
     return this.http.put<Venue>(`${this.apiUrl}/${venue.id}`, formData)
   }

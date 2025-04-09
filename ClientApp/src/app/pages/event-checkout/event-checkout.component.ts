@@ -61,6 +61,6 @@ export class EventCheckoutComponent extends CheckoutDirective<Event> {
   }
 
   updateQuantity(quantity: number) {
-    throw new Error('Method not implemented.');
+    this.quantity = quantity;
   }
 }

@@ -1,5 +1,5 @@
 @if(event) {
-    <app-event-details-hero [event]="event" [editMode]="editMode" (contentChange)="onChangeDetected()"></app-event-details-hero>
+    <app-event-details-hero [(event)]="event" [editMode]="editMode" (eventChange)="onChangeDetected()"></app-event-details-hero>
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
     <div class="container" *ngIf="event">
         <div class="wrapper">
@@ -9,7 +9,7 @@
             </div>              
             <section [id]="navItems[0].fragment">
                 <h1>{{navItems[0].name}}</h1>
-                    <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about"/>
+                    <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about" (contentChange)="onChangeDetected()"/>
                     <app-badges
                         [items]="eventGenres"
                         [displayProperty]="'name'">
@@ -51,7 +51,7 @@
               
                 <app-card>
                   <div class="ticket-info">
-                    <p><strong>Price:</strong><app-price [(price)]="event.price" [editMode]="editMode" (valueChange)="onChangeDetected()"/></p>
+                    <p><strong>Price:</strong><app-price [(price)]="event.price" [editMode]="editMode" (priceChange)="onChangeDetected()"/></p>
                     <p><strong>Total Tickets:</strong> <app-number [(value)]="event.totalTickets" [editMode]="editMode" (valueChange)="onChangeDetected()"/></p>
                     <p><strong>Tickets Available:</strong> {{ event.availableTickets }}</p>
                   </div>

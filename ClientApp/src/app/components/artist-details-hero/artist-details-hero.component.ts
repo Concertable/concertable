@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output } from '@angular/core';
 import { Artist } from '../../models/artist';
 import { DetailsHeroDirective } from '../../directives/details-hero.directive';
 
@@ -9,12 +9,20 @@ import { DetailsHeroDirective } from '../../directives/details-hero.directive';
   styleUrl: '../../shared/components/details-hero/details-hero.component.scss'
 })
 export class ArtistDetailsHeroComponent extends DetailsHeroDirective<Artist>{
-  @Input() artist?: Artist;
   @Input() override locationEditable?: boolean = true;
   @Input() override imageEditable?: boolean = true;
   
-    get entity() {
-      return this.artist;
+    get artist() : Artist | undefined {
+      return this.item;
+    }
+
+    @Input() set artist(artist: Artist) {
+      if(this.item)
+        this.item = artist;
+    }
+
+    @Output() get artistChange() {
+      return this.itemChange;
     }
   
     get county(): string | undefined {

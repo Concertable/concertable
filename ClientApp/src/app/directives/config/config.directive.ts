@@ -49,6 +49,7 @@ export abstract class ConfigDirective<T extends Venue | Artist | Event | User | 
   saveChanges() {
     if(this.item)
       this.update(this.item).subscribe(v => {
+        console.log(v);
         this.item = v;
         this.originalItem = cloneDeep(this.item);
         this.showUpdated(v)

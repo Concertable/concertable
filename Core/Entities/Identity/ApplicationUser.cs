@@ -15,15 +15,15 @@ namespace Core.Entities.Identity
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public string? StripeId { get; set; }
-        public ICollection<Message> SentMessages { get; set; }
-        public ICollection<Message> ReceivedMessages { get; set; }
+        public ICollection<Message> SentMessages { get; set; } = new List<Message>();
+        public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
     }
 
     public class Admin: ApplicationUser { }
 
     public class Customer : ApplicationUser
     {
-        public ICollection<Ticket> Tickets { get; set; }
+        public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     }
 
     public class VenueManager : ApplicationUser
