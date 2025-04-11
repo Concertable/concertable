@@ -26,7 +26,6 @@ namespace Web.Controllers
         private readonly ITicketService ticketService;
         private readonly IEventService eventService;
         private readonly IPurchaseService purchaseService;
-        private readonly IEmailService emailService;
         private readonly ILogger<WebhookController> logger;
 
         private readonly string webhookSecret;
@@ -39,7 +38,6 @@ namespace Web.Controllers
             ITicketService ticketService,
             IEventService eventService,
             IPurchaseService purchaseService,
-            IEmailService emailService,
             IConfiguration configuration,
             ILogger<WebhookController> logger)
         {
@@ -50,7 +48,6 @@ namespace Web.Controllers
             this.ticketService = ticketService;
             this.eventService = eventService;
             this.purchaseService = purchaseService;
-            this.emailService = emailService;
             webhookSecret = configuration["Stripe:WebhookSecret"];
             this.logger = logger;
         }
@@ -58,12 +55,11 @@ namespace Web.Controllers
         [HttpPost]
         public async Task<IActionResult> HandleWebhook()
         {
-            string json;
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             Stripe.Event stripeEvent;
 
             try
             {
-                json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
                 stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
             }
             catch (StripeException ex)
