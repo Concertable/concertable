@@ -57,6 +57,13 @@ namespace Web.Controllers
             if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
                 return Ok();
 
+            var newEvent = new StripeEvent
+            {
+                EventId = stripeEvent.Id,
+                EventProcessedAt = DateTime.UtcNow
+            };
+            await stripeEventRepository.AddEventAsync(newEvent);
+
             switch (intent.Status)
             {
                 case "succeeded":
@@ -102,13 +109,6 @@ namespace Web.Controllers
                         var response = await eventService.CompleteAsync(purchaseCompleteDto);
                         await hubContext.Clients.Group(userId.ToString()).SendAsync("EventCreated", response);
                     }
-
-                    var newEvent = new StripeEvent
-                    {
-                        EventId = stripeEvent.Id,
-                        EventProcessedAt = DateTime.UtcNow
-                    };
-                    await stripeEventRepository.AddEventAsync(newEvent);
 
                     return Ok();
             }
