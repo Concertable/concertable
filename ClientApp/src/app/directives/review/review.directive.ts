@@ -9,6 +9,7 @@ import { PaginationParams } from '../../models/pagination-params';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AddReviewComponent } from '../../components/add-review/add-review.component';
 import { ToastService } from '../../services/toast/toast.service';
+import { EventReviewsComponent } from '../../components/event-reviews/event-reviews.component';
 
 @Directive({
   selector: '[appReview]',
@@ -27,6 +28,7 @@ export abstract class ReviewDirective implements OnInit {
   reviewsPage?: Pagination<Review>;
   summary?: ReviewSummary;
   canReview$?: Observable<boolean>;
+  isEventReview = false;
 
   constructor(protected reviewService: ReviewService, protected dialog: MatDialog, protected toastService: ToastService) {}
 
@@ -59,9 +61,7 @@ export abstract class ReviewDirective implements OnInit {
 
   abstract get(id: number): Observable<Pagination<Review>>;
 
-  onAddReview(): void {
-    this.dialogRef = this.dialog.open(AddReviewComponent, {
-      width: '500px',
-    });
+  onAddReview() {
+
   }
 }

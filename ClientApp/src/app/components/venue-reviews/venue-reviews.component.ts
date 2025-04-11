@@ -12,9 +12,6 @@ import { ReviewSummary } from '../../models/review-summary';
   styleUrl: '../../shared/templates/reviews/reviews.template.scss'
 })
 export class VenueReviewsComponent extends ReviewDirective{
-  override onAddReview(): void {
-    throw new Error('Method not implemented.');
-  }
   getSummary(id: number): Observable<ReviewSummary> {
     return this.reviewService.getSummaryByVenueId(id);
   }
@@ -25,5 +22,15 @@ export class VenueReviewsComponent extends ReviewDirective{
 
   canReview(id: number): Observable<boolean> {
     return this.reviewService.canUserReviewVenue(id);
+  }
+
+  override onAddReview() {
+    super.onAddReview()
+      this.dialogRef?.afterClosed().subscribe(result => {
+        if (result) {
+          console.log('Review submitted:', result);
+          // TODO: Emit to parent, send to API, or update state
+        }
+      });
   }
 }

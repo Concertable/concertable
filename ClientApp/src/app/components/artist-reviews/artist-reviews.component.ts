@@ -32,14 +32,4 @@ export class ArtistReviewsComponent extends ReviewDirective {
   canReview(id: number): Observable<boolean> {
       return this.reviewService.canUserReviewArtist(id);
   }
-
-  override onAddReview(): void {
-      super.onAddReview()
-      this.dialogRef?.afterClosed().subscribe(result => {
-        if (result) {
-          console.log('Review submitted:', result);
-          // TODO: Emit to parent, send to API, or update state
-        }
-      });
-  }
 }

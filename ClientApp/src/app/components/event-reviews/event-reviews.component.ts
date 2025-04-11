@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Pagination } from '../../models/pagination';
 import { Review } from '../../models/review';
 import { ReviewSummary } from '../../models/review-summary';
+import { AddReviewComponent } from '../add-review/add-review.component';
 
 @Component({
   selector: 'app-event-reviews',
@@ -12,9 +13,8 @@ import { ReviewSummary } from '../../models/review-summary';
   styleUrl: '../../shared/templates/reviews/reviews.template.scss'
 })
 export class EventReviewsComponent extends ReviewDirective {
-  override onAddReview(): void {
-    throw new Error('Method not implemented.');
-  }
+  override isEventReview: boolean = true;
+  
   getSummary(id: number): Observable<ReviewSummary> {
     return this.reviewService.getSummaryByEventId(id);
   }
@@ -25,5 +25,17 @@ export class EventReviewsComponent extends ReviewDirective {
 
   canReview(id: number): Observable<boolean> {
       return this.reviewService.canUserReviewEvent(id);
+  }
+
+  override onAddReview(): void {
+    const dialogRef = this.dialog.open(AddReviewComponent, {
+      width: '500px',
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Review submitted:', result);
+        // TODO: Emit to parent, send to API, or update state
+      }
+    });
   }
 }

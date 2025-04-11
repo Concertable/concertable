@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CreateReview } from '../../models/create-review';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-add-review',
@@ -8,11 +9,16 @@ import { CreateReview } from '../../models/create-review';
   styleUrl: './add-review.component.scss'
 })
 export class AddReviewComponent {
-onSubmit() {
-throw new Error('Method not implemented.');
-}
   review: CreateReview = {
     stars: 0,
     details: ''
   }
+
+  constructor(private dialogRef: MatDialogRef<AddReviewComponent>) { }
+
+  onSubmit() {
+    if (this.review.stars && this.review.details?.trim()) {
+      this.dialogRef.close(this.review); // Send data back
+  }
+}
 }
