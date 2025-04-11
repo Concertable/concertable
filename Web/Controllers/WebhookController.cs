@@ -11,6 +11,7 @@ using NetTopologySuite.Index.HPRtree;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using Stripe;
+using Stripe.V2;
 using Web.Hubs;
 
 namespace Web.Controllers
@@ -24,7 +25,8 @@ namespace Web.Controllers
         private readonly IEventService eventService;
         private readonly IPurchaseService purchaseService;
         private readonly IEmailService emailService;
-        
+        private readonly ILogger<WebhookController> logger;
+
         private readonly string webhookSecret;
 
         public WebhookController(
@@ -34,7 +36,8 @@ namespace Web.Controllers
             IEventService eventService,
             IPurchaseService purchaseService,
             IEmailService emailService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ILogger<WebhookController> logger)
         {
             this.hubContext = hubContext;
             this.stripeEventRepository = stripeEventRepository;
@@ -43,30 +46,52 @@ namespace Web.Controllers
             this.purchaseService = purchaseService;
             this.emailService = emailService;
             webhookSecret = configuration["Stripe:WebhookSecret"];
+            this.logger = logger;
         }
 
         [HttpPost]
         public async Task<IActionResult> HandleWebhook()
         {
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-            var stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
+            string json;
+            Stripe.Event stripeEvent;
 
-            if (stripeEvent.Data.Object is not PaymentIntent intent)
-                return BadRequest("Invalid event data");
-
-            if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
-                return Ok();
-
-            var newEvent = new StripeEvent
+            try
             {
-                EventId = stripeEvent.Id,
-                EventProcessedAt = DateTime.UtcNow
-            };
-            await stripeEventRepository.AddEventAsync(newEvent);
-
-            switch (intent.Status)
+                json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+                stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
+            }
+            catch (StripeException ex)
             {
-                case "succeeded":
+                logger.LogError(ex, "Webhook validation failed");
+                return Problem("Webhook validation failed");
+            }
+
+            // Respond to Stripe in the background
+            _ = Task.Run(() => ProcessStripeWebhook(stripeEvent));
+
+            return Ok(); // 200 OK immediately so stripe doesnt send another query
+        }
+
+        private async Task ProcessStripeWebhook(Stripe.Event stripeEvent)
+        {
+            try
+            {
+                if (stripeEvent.Data.Object is not PaymentIntent intent)
+                    return;
+
+                if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
+                    return;
+
+                var newEvent = new StripeEvent
+                {
+                    EventId = stripeEvent.Id,
+                    EventProcessedAt = DateTime.UtcNow
+                };
+
+                await stripeEventRepository.AddEventAsync(newEvent);
+
+                if (intent.Status == "succeeded")
+                {
                     var paymentType = intent.Metadata["type"];
                     var purchaseDto = new PurchaseDto
                     {
@@ -79,20 +104,14 @@ namespace Web.Controllers
                         CreatedAt = DateTime.Now
                     };
 
-                    /*
-                     * Log the payment immediately
-                     * in case we have any faults later in this controller (such as a database fail),
-                     * the log is in the database so an administrator could issue a refund
-                     */
-                    await purchaseService.LogAsync(purchaseDto); 
+                    await purchaseService.LogAsync(purchaseDto);
 
                     var userId = int.Parse(intent.Metadata["fromUserId"]);
-                    var email = intent.Metadata["fromUserEmail"];
 
                     var purchaseCompleteDto = new PurchaseCompleteDto
                     {
                         TransactionId = intent.Id,
-                        FromUserId = int.Parse(intent.Metadata["fromUserId"]),
+                        FromUserId = userId,
                         FromEmail = intent.Metadata["fromUserEmail"],
                         ToUserId = int.Parse(intent.Metadata["toUserId"]),
                     };
@@ -109,10 +128,12 @@ namespace Web.Controllers
                         var response = await eventService.CompleteAsync(purchaseCompleteDto);
                         await hubContext.Clients.Group(userId.ToString()).SendAsync("EventCreated", response);
                     }
-
-                    return Ok();
+                }
             }
-            return BadRequest();
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error processing Stripe webhook in background");
+            }
         }
     }
 }

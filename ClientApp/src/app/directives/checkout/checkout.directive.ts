@@ -62,16 +62,16 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
                 await this.stripeService.confirmPayment(response.clientSecret);
                 this.stripeToastService.showSuccess(`${this.entityType} purchased`, "Payment Successful")
               } catch (error: any) {
-                this.stripeToastService.showSuccess(error.message, "Payment authentication failed")
+                this.stripeToastService.showError(error.message, "Payment authentication failed")
               }
             } else if (response.success) { //payment successful first time
               this.stripeToastService.showSuccess(`${this.entityType} purchased`, "Payment Successful")
             } else {
-              this.stripeToastService.showSuccess("Error processing payment", "Payment Failed")
+              this.stripeToastService.showError("Error processing payment", "Payment Failed")
             }
           },
           (error) => {
-            this.stripeToastService.showSuccess("Error processing payment", "Payment Failed")
+            this.stripeToastService.showError("Error processing payment", "Payment Failed")
             console.error(error);
           }
         );
