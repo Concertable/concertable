@@ -42,6 +42,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddLogging();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

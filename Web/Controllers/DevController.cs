@@ -17,15 +17,18 @@ namespace Web.Controllers
         private readonly StripeSettings stripeSettings;
         private readonly IHubContext<PaymentHub> hubContext;
         private readonly IEmailService emailService;
+        private readonly ILogger<DevController> logger;
 
         public DevController(
             IOptions<StripeSettings> stripeOptions,
             IHubContext<PaymentHub> hubContext,
-            IEmailService emailService)
+            IEmailService emailService,
+            ILogger<DevController> logger)
         {
             stripeSettings = stripeOptions.Value;
             this.hubContext = hubContext;
             this.emailService = emailService;
+            this.logger = logger;
         }
 
         [HttpGet("di-stripe-key")]
@@ -104,6 +107,26 @@ namespace Web.Controllers
             });
         }
 
+        [HttpPost("test-logging")]
+        public IActionResult TestLogging()
+        {
+            // Information Log: Basic info log
+            logger.LogInformation("This is an informational log.");
+
+            // Debug Log: For debugging purposes
+            logger.LogDebug("This is a debug log with more detailed info.");
+
+            // Warning Log: Log for warnings or potential issues
+            logger.LogWarning("This is a warning log, something might need attention.");
+
+            // Error Log: Log for errors or exceptions
+            logger.LogError("This is an error log, something went wrong!");
+
+            return Ok(new
+            {
+                Message = "Test logging successful"
+            });
+        }
 
 
     }
