@@ -67,7 +67,7 @@ namespace Web.Controllers
             }
 
             // Respond to Stripe in the background
-            _ = Task.Run(() => ProcessStripeWebhook(stripeEvent));
+            await ProcessStripeWebhook(stripeEvent);
 
             return Ok(); // 200 OK immediately so stripe doesnt send another query
         }
