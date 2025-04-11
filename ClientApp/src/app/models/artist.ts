@@ -7,6 +7,6 @@ export interface Artist extends Item {
     type: 'artist';
     county: string;
     town: string;
-    userId: number;
-    imageUrl: string
+    imageUrl: string;
+    email: string;
 }

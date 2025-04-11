@@ -98,6 +98,8 @@ namespace Infrastructure.Services
             var venueRepository = unitOfWork.GetRepository<Venue>();
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
+            var averageRating = venueDto.Rating;
+
             var venue = await venueRepository.GetByIdAsync(venueDto.Id);
             var user = await currentUserService.GetEntityAsync();
 
@@ -119,7 +121,9 @@ namespace Infrastructure.Services
 
             await unitOfWork.SaveChangesAsync();
 
-            return mapper.Map<VenueDto>(venue);
+            mapper.Map(venue, venueDto);
+            venueDto.Rating = averageRating;
+            return venueDto;
         }
 
         public async Task<VenueDto?> GetDetailsForCurrentUserAsync()

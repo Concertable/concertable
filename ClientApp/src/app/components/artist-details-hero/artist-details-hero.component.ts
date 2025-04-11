@@ -43,10 +43,7 @@ export class ArtistDetailsHeroComponent extends DetailsHeroDirective<Artist>{
     }
   
     get email(): string | undefined {
-      return 'okok';
-    }
-  
-    set email(value: string) {
+      return this.artist?.email;
     }
   
     get imageUrl(): string | undefined {

@@ -32,7 +32,7 @@ export class VenueFormDataSerializerService extends FormDataSerializerService<Ve
       town: formData.get('Town') as string,
       latitude: parseFloat(formData.get('Latitude') as string),
       longitude: parseFloat(formData.get('Longitude') as string),
-      userId: parseInt(formData.get('UserId') as string, 0),
+      email: formData.get('email') as string,
       approved: formData.get('Approved') === 'true',
     };
   }

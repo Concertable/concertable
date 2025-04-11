@@ -9,12 +9,12 @@ namespace Application.DTOs
     public class ArtistDto : ItemDto
     {
         public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
-        public int UserId { get; set; }
         public string ImageUrl { get; set; }
         public string County { get; set; }
         public string Town { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+        public string Email { get; set; }
 
         public ArtistDto()
         {

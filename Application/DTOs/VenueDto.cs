@@ -10,7 +10,7 @@ namespace Application.DTOs
         public string County { get; set; }
         public string Town { get; set; }
         public bool Approved { get; set; } = false;
-        public int UserId { get; set; }
+        public string Email { get; set; }
 
         public VenueDto()
         {

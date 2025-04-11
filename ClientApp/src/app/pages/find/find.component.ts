@@ -49,10 +49,10 @@ triggerNewSubscription() {
 
   ngOnInit(): void {
     console.log("yea")
+    this.searchParamsSerializerService.defaultHeaderType = this.headerType;
     this.route.queryParams.subscribe((params: Params) => {
       if (Object.keys(params).length > 0) {
         this.searchParams = this.searchParamsSerializerService.deserialize(params);
-        this.searchParams.headerType = this.headerType;
         this.loadPage();
       }
     });
@@ -68,7 +68,6 @@ triggerNewSubscription() {
       if (!this.searchParams.latitude || !this.searchParams.longitude) {
         this.searchParams.radiusKm = undefined;
       }
-      this.searchParams.headerType = this.headerType;
       const params = this.searchParamsSerializerService.serialize(this.searchParams);
       this.router.navigate([], {
         relativeTo: this.route,

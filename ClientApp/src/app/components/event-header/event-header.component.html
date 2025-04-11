@@ -2,5 +2,5 @@
     <span class="icon-text mt-2"><mat-icon>calendar_today</mat-icon>
         {{ header?.startDate | date: 'd MMM' }} {{ header?.startDate | date: 'HH:mm' }} - 
         {{ header?.endDate | date: 'HH:mm' }}</span>
-    <span class="time-ago icon-text mt-2"><mat-icon>schedule</mat-icon>{{ header?.datePosted | timeAgo }}</span>
+    <span class="time-ago icon-text mt-2"><mat-icon>schedule</mat-icon>{{ header?.startDate | timeAgo }}</span>
 </app-header>

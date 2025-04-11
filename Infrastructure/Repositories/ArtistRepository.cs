@@ -52,7 +52,8 @@ namespace Infrastructure.Repositories
             var query = context.Artists
                 .Where(v => v.UserId == id)
                 .Include(a => a.ArtistGenres)
-                    .ThenInclude(ag => ag.Genre);
+                    .ThenInclude(ag => ag.Genre)
+                .Include(a => a.User);
 
             return await query.FirstOrDefaultAsync();
         }

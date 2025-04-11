@@ -37,8 +37,8 @@ namespace Application.Mappings
                 dest => dest.Town,
                 opt => opt.MapFrom(src => src.User.Town))
             .ForMember(
-                dest => dest.UserId,
-                opt => opt.MapFrom(src => src.User.Id))
+                dest => dest.Email,
+                opt => opt.MapFrom(src => src.User.Email))
             .ReverseMap();
 
             //Artist
@@ -50,8 +50,8 @@ namespace Application.Mappings
                 opt => opt.MapFrom(src => src.User.County))
             .ForMember(dest => dest.Town,
                 opt => opt.MapFrom(src => src.User.Town))
-            .ForMember(dest => dest.UserId,
-                opt => opt.MapFrom(src => src.User.Id));
+            .ForMember(dest => dest.Email,
+                opt => opt.MapFrom(src => src.User.Email));
             CreateMap<CreateVenueDto, Venue>();
 
             CreateMap<ArtistDto, Artist>()

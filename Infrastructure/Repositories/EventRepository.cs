@@ -43,14 +43,13 @@ namespace Infrastructure.Repositories
             var filters = new List<Expression<Func<Event, bool>>>();
 
             if (searchParams.Date != null)
-            {
                 filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
-            }
 
             if (searchParams.GenreIds != null && searchParams.GenreIds.Any())
-            {
                 filters.Add(e => e.Application.Artist.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
-            }
+
+            // Only show events that haven't passed
+            filters.Add(e => e.Application.Listing.StartDate >= DateTime.UtcNow);
 
             return filters;
         }
@@ -58,6 +57,9 @@ namespace Infrastructure.Repositories
         // Event needs to be able to sort by Date Posted as well as name
         protected override IQueryable<Event> ApplyOrdering(IQueryable<Event> query, string? sort)
         {
+            if (string.IsNullOrEmpty(sort))
+                return query.OrderBy(e => e.Application.Listing.StartDate);
+
             return sort?.ToLower() switch
             {
                 "name_asc" => query.OrderBy(e => e.Name),

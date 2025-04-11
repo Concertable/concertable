@@ -43,5 +43,17 @@ namespace Web.Controllers
             });
         }
 
+        [HttpPost("broadcast-test")]
+        public async Task<IActionResult> BroadcastTestEvent([FromBody] object testPayload)
+        {
+            await hubContext.Clients.All.SendAsync("EventCreated", testPayload);
+
+            return Ok(new
+            {
+                SentTo = "Everyone",
+                Payload = testPayload
+            });
+        }
+
     }
 }

@@ -26,8 +26,6 @@ export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
 
   abstract get email(): string | undefined;
 
-  abstract set email(email: string);
-
   abstract get town(): string | undefined;
 
   abstract set town(town: string);

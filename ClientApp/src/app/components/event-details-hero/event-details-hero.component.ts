@@ -9,7 +9,7 @@ import { DetailsHeroDirective } from '../../directives/details-hero.directive';
   styleUrl: '../../shared/components/details-hero/details-hero.component.scss'
 })
 export class EventDetailsHeroComponent extends DetailsHeroDirective<Event> {
-  @Input() override locationEditable?: boolean = true;
+  @Input() override locationEditable?: boolean = false;
 
   get event() : Event | undefined {
     return this.item;
@@ -42,11 +42,9 @@ export class EventDetailsHeroComponent extends DetailsHeroDirective<Event> {
   }
 
   get email(): string | undefined {
-    return 'okok';
+    return this.event?.venue.email;
   }
 
-  set email(value: string) {
-  }
 
   get imageUrl(): string | undefined {
     return this.event?.artist.imageUrl;

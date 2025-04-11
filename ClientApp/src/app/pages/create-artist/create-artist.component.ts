@@ -41,7 +41,7 @@ export class CreateArtistComponent extends CreateItemDirective<Artist> {
       genres: [],
       county: "",
       town: "",
-      userId: 0,
+      email: '',
       rating: 0
     };
   }
