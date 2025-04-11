@@ -56,6 +56,8 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
         console.log("subscribed", response);
         if(event)
           this.router.navigateByUrl(`venue/my/events/event/${event.id}`);
+        else
+          this.stripeToastService.showError(response?.message ?? "", "Please contact support for a refund")
       })
   }
 

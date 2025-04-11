@@ -111,6 +111,11 @@ namespace Infrastructure.Services
             if (role != "VenueManager")
                 throw new ForbiddenException("Only VenueManagers can book events");
 
+            var response = await applicationValidationService.CanAcceptListingApplicationAsync(bookingParams.ApplicationId, user.Id);
+
+            if (!response.IsValid)
+                throw new BadRequestException(response.Reason!);
+
             var paymentResponse = await userPaymentService.PayArtistManagerByApplicationIdAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
 
             return new ListingApplicationPurchaseResponse
@@ -127,32 +132,40 @@ namespace Infrastructure.Services
 
         public async Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
         {
-            var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
-
-            var response = await applicationValidationService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId, purchaseCompleteDto.FromUserId);
-
-            if (!response.IsValid)
-                throw new BadRequestException(response.Reason!);
-
-            var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
-
-            var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
-
-            await messageService.SendAsync(
-                purchaseCompleteDto.FromUserId,
-                purchaseCompleteDto.ToUserId,
-                "event",
-                eventDto.Id,
-                "Your Application has been accepted! View your event here"
-            );
-
-            return new ListingApplicationPurchaseResponse
+            try
             {
-                Success = true,
-                Message = "Event successfully booked!",
-                ApplicationId = purchaseCompleteDto.EntityId,
-                Event = eventDto
-            };
+                var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
+
+                var response = await applicationValidationService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId, purchaseCompleteDto.FromUserId);
+
+                var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
+
+                var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
+
+                await messageService.SendAsync(
+                    purchaseCompleteDto.FromUserId,
+                    purchaseCompleteDto.ToUserId,
+                    "event",
+                    eventDto.Id,
+                    "Your Application has been accepted! View your event here"
+                );
+
+                return new ListingApplicationPurchaseResponse
+                {
+                    Success = true,
+                    Message = "Event successfully booked!",
+                    ApplicationId = purchaseCompleteDto.EntityId,
+                    Event = eventDto
+                };
+            } catch (Exception ex)
+            {
+                return new ListingApplicationPurchaseResponse
+                {
+                    Success = false,
+                    Message = "An error occurred while completing your booking. Please contact support.",
+                    ApplicationId = purchaseCompleteDto.EntityId
+                };
+            }
         }
 
         /// <summary>

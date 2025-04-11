@@ -17,8 +17,7 @@ export class ArtistDetailsHeroComponent extends DetailsHeroDirective<Artist>{
     }
 
     @Input() set artist(artist: Artist) {
-      if(this.item)
-        this.item = artist;
+      this.item = artist;
     }
 
     @Output() get artistChange() {
@@ -51,6 +50,7 @@ export class ArtistDetailsHeroComponent extends DetailsHeroDirective<Artist>{
     }
   
     get imageUrl(): string | undefined {
+      console.log("ar", this.artist?.imageUrl)
       return this.artist?.imageUrl;
     }
   

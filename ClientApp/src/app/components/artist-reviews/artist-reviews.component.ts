@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { Pagination } from '../../models/pagination';
 import { Review } from '../../models/review';
 import { ReviewSummary } from '../../models/review-summary';
+import { ToastService } from '../../services/toast/toast.service';
+import { ReviewService } from '../../services/review/review.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-artist-reviews',
@@ -12,9 +15,13 @@ import { ReviewSummary } from '../../models/review-summary';
   styleUrl: '../../shared/templates/reviews/reviews.template.scss'
 })
 export class ArtistReviewsComponent extends ReviewDirective {
-  override onAddReview(): void {
-    throw new Error('Method not implemented.');
+  constructor(reviewService: ReviewService,
+    dialog: MatDialog,
+    toastService: ToastService
+  ) {
+    super(reviewService, dialog, toastService)
   }
+
   getSummary(id: number): Observable<ReviewSummary> {
     return this.reviewService.getSummaryByArtistId(id);
   }
@@ -24,5 +31,15 @@ export class ArtistReviewsComponent extends ReviewDirective {
 
   canReview(id: number): Observable<boolean> {
       return this.reviewService.canUserReviewArtist(id);
+  }
+
+  override onAddReview(): void {
+      super.onAddReview()
+      this.dialogRef?.afterClosed().subscribe(result => {
+        if (result) {
+          console.log('Review submitted:', result);
+          // TODO: Emit to parent, send to API, or update state
+        }
+      });
   }
 }

@@ -10,6 +10,7 @@ using AutoMapper;
 public class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
+    private readonly ITicketValidationService ticketValidationService;
     private readonly IUnitOfWork unitOfWork;
     private readonly IUserPaymentService userPaymentService;
     private readonly IEmailService emailService;
@@ -20,6 +21,7 @@ public class TicketService : ITicketService
 
     public TicketService(
         ITicketRepository ticketRepository,
+        ITicketValidationService ticketValidationService,
         IUnitOfWork unitOfWork,
         IUserPaymentService userPaymentService,
         IEmailService emailService,
@@ -30,6 +32,7 @@ public class TicketService : ITicketService
         )
     {
         this.ticketRepository = ticketRepository;
+        this.ticketValidationService = ticketValidationService;
         this.unitOfWork = unitOfWork;
         this.userPaymentService = userPaymentService;
         this.emailService = emailService;
@@ -46,6 +49,11 @@ public class TicketService : ITicketService
 
         if (role != "Customer")
             throw new ForbiddenException("Only Customers can buy tickets");
+
+        var response =  await ticketValidationService.CanPurchaseTicketAsync(purchaseParams.EventId);
+
+        if (!response.IsValid)
+            throw new BadRequestException(response.Reason!);
 
         var paymentResponse = await userPaymentService.PayVenueManagerByEventIdAsync(purchaseParams.EventId, purchaseParams.Quantity , purchaseParams.PaymentMethodId);
 
@@ -114,7 +122,11 @@ public class TicketService : ITicketService
              * Rollback if the any of the try block fails
              */
             await transaction.RollbackAsync();
-            throw new InternalServerException("Failed to Create Ticket. Please contact support");
+            return new TicketPurchaseResponse
+            {
+                Message = "Failed to Create Ticket. Please contact support",
+                EventId = purchaseCompleteDto.EntityId,
+            };
         }
 
         if(!tickets.Any())

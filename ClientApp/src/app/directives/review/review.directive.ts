@@ -6,6 +6,9 @@ import { Pagination } from '../../models/pagination';
 import { Review } from '../../models/review';
 import { ReviewService } from '../../services/review/review.service';
 import { PaginationParams } from '../../models/pagination-params';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { AddReviewComponent } from '../../components/add-review/add-review.component';
+import { ToastService } from '../../services/toast/toast.service';
 
 @Directive({
   selector: '[appReview]',
@@ -13,6 +16,7 @@ import { PaginationParams } from '../../models/pagination-params';
 })
 export abstract class ReviewDirective implements OnInit {
   @Input() id?: number;
+  protected dialogRef?: MatDialogRef<AddReviewComponent, Review | undefined>;
 
   pageParams: PaginationParams = {
     pageNumber: 1,
@@ -24,7 +28,7 @@ export abstract class ReviewDirective implements OnInit {
   summary?: ReviewSummary;
   canReview$?: Observable<boolean>;
 
-  constructor(protected reviewService: ReviewService) {}
+  constructor(protected reviewService: ReviewService, protected dialog: MatDialog, protected toastService: ToastService) {}
 
   ngOnInit(): void {
     if (this.id) {
@@ -55,6 +59,9 @@ export abstract class ReviewDirective implements OnInit {
 
   abstract get(id: number): Observable<Pagination<Review>>;
 
-  abstract onAddReview(): void;
-
+  onAddReview(): void {
+    this.dialogRef = this.dialog.open(AddReviewComponent, {
+      width: '500px',
+    });
+  }
 }
