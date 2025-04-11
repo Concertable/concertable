@@ -552,6 +552,19 @@ namespace Infrastructure.Migrations
                     b.ToTable("SocialMedias");
                 });
 
+            modelBuilder.Entity("Core.Entities.StripeEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("EventProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("StripeEvents");
+                });
+
             modelBuilder.Entity("Core.Entities.Ticket", b =>
                 {
                     b.Property<int>("Id")
@@ -803,7 +816,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Core.Entities.Genre", "Genre")
-                        .WithMany()
+                        .WithMany("ArtistGenres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -906,7 +919,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entities.ListingGenre", b =>
                 {
                     b.HasOne("Core.Entities.Genre", "Genre")
-                        .WithMany()
+                        .WithMany("ListingGenres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1118,7 +1131,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Genre", b =>
                 {
+                    b.Navigation("ArtistGenres");
+
                     b.Navigation("EventGenres");
+
+                    b.Navigation("ListingGenres");
                 });
 
             modelBuilder.Entity("Core.Entities.Identity.ApplicationUser", b =>

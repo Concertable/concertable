@@ -125,6 +125,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IPreferenceRepository, PreferenceRepository>();
+builder.Services.AddScoped<IStripeEventRepository, StripeEventRepository>();
 
 builder.Services.AddScoped<IHeaderRepository<Venue, VenueHeaderDto>, VenueRepository>();
 builder.Services.AddScoped<IHeaderRepository<Artist, ArtistHeaderDto>, ArtistRepository>();

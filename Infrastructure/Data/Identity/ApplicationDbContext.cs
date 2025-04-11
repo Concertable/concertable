@@ -31,10 +31,14 @@ namespace Infrastructure.Data.Identity
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<Preference> Preferences { get; set; }
         public DbSet<GenrePreference> GenrePreferences { get; set; }
+        public DbSet<StripeEvent> StripeEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<StripeEvent>()
+                .HasKey(e => e.EventId);
 
             /* Create a new index so that an artist
              * can only register for each listing

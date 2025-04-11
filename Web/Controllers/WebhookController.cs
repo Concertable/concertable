@@ -1,10 +1,15 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Responses;
+using Core.Entities;
+using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using NetTopologySuite.Index.HPRtree;
+using Newtonsoft.Json;
+using StackExchange.Redis;
 using Stripe;
 using Web.Hubs;
 
@@ -14,6 +19,7 @@ namespace Web.Controllers
     public class WebhookController : ControllerBase
     {
         private readonly IHubContext<PaymentHub> hubContext;
+        private readonly IStripeEventRepository stripeEventRepository;
         private readonly ITicketService ticketService;
         private readonly IEventService eventService;
         private readonly IPurchaseService purchaseService;
@@ -22,6 +28,7 @@ namespace Web.Controllers
         private readonly string webhookSecret;
 
         public WebhookController(
+            IStripeEventRepository stripeEventRepository,
             IHubContext<PaymentHub> hubContext,
             ITicketService ticketService,
             IEventService eventService,
@@ -30,6 +37,7 @@ namespace Web.Controllers
             IConfiguration configuration)
         {
             this.hubContext = hubContext;
+            this.stripeEventRepository = stripeEventRepository;
             this.ticketService = ticketService;
             this.eventService = eventService;
             this.purchaseService = purchaseService;
@@ -45,6 +53,9 @@ namespace Web.Controllers
 
             if (stripeEvent.Data.Object is not PaymentIntent intent)
                 return BadRequest("Invalid event data");
+
+            if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
+                return Ok();
 
             switch (intent.Status)
             {
@@ -91,6 +102,13 @@ namespace Web.Controllers
                         var response = await eventService.CompleteAsync(purchaseCompleteDto);
                         await hubContext.Clients.Group(userId.ToString()).SendAsync("EventCreated", response);
                     }
+
+                    var newEvent = new StripeEvent
+                    {
+                        EventId = stripeEvent.Id,
+                        EventProcessedAt = DateTime.UtcNow
+                    };
+                    await stripeEventRepository.AddEventAsync(newEvent);
 
                     return Ok();
             }
