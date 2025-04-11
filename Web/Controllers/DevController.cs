@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Infrastructure.Settings;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Web.Controllers
 {
@@ -6,18 +8,19 @@ namespace Web.Controllers
     [Route("api/[controller]")]
     public class DevController : ControllerBase
     {
-        [HttpGet("stripe-key")]
-        public IActionResult GetStripeKey()
-        {
-            var rawEnv = Environment.GetEnvironmentVariable("Stripe__SecretKey");
-            var configKey = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .Build()["Stripe:SecretKey"];
+        private readonly StripeSettings stripeSettings;
 
+        public DevController(IOptions<StripeSettings> stripeOptions)
+        {
+            stripeSettings = stripeOptions.Value;
+        }
+
+        [HttpGet("di-stripe-key")]
+        public IActionResult GetStripeKeyFromDI()
+        {
             return Ok(new
             {
-                FromEnv = rawEnv?.Substring(0, 8) ?? "NULL",
-                FromConfig = configKey?.Substring(0, 8) ?? "NULL"
+                FromStripeSettings = stripeSettings.SecretKey?.Substring(0, 8) ?? "NULL"
             });
         }
     }
