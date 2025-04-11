@@ -20,6 +20,7 @@ namespace Web.Controllers
     public class WebhookController : ControllerBase
     {
         private readonly IHubContext<PaymentHub> hubContext;
+        private readonly IBackgroundTaskQueue taskQueue;
         private readonly IStripeEventRepository stripeEventRepository;
         private readonly ITicketService ticketService;
         private readonly IEventService eventService;
@@ -31,6 +32,7 @@ namespace Web.Controllers
 
         public WebhookController(
             IStripeEventRepository stripeEventRepository,
+            IBackgroundTaskQueue taskQueue,
             IHubContext<PaymentHub> hubContext,
             ITicketService ticketService,
             IEventService eventService,
@@ -40,6 +42,7 @@ namespace Web.Controllers
             ILogger<WebhookController> logger)
         {
             this.hubContext = hubContext;
+            this.taskQueue = taskQueue;
             this.stripeEventRepository = stripeEventRepository;
             this.ticketService = ticketService;
             this.eventService = eventService;
@@ -67,7 +70,10 @@ namespace Web.Controllers
             }
 
             // Respond to Stripe in the background
-            await ProcessStripeWebhook(stripeEvent);
+            taskQueue.QueueBackgroundWorkItem(async cancellationToken =>
+            {
+                await ProcessStripeWebhook(stripeEvent);
+            });
 
             return Ok(); // 200 OK immediately so stripe doesnt send another query
         }

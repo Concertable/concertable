@@ -21,6 +21,7 @@ using Application.Serializers;
 using Microsoft.AspNetCore.Authorization;
 using Web.Authorization;
 using QuestPDF.Infrastructure;
+using Infrastructure.Background;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +99,8 @@ builder.Services.AddScoped<IUriService, UriService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
 builder.Services.AddScoped<ITicketValidationService, TicketValidationService>();
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+builder.Services.AddHostedService<QueueHostedService>();
 
 builder.Services.AddScoped<IHeaderService<VenueHeaderDto>, VenueService>();
 builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();
