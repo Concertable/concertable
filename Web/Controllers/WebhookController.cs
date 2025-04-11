@@ -21,6 +21,7 @@ namespace Web.Controllers
     {
         private readonly IHubContext<PaymentHub> hubContext;
         private readonly IBackgroundTaskQueue taskQueue;
+        private readonly IServiceScopeFactory scopeFactory;
         private readonly IStripeEventRepository stripeEventRepository;
         private readonly ITicketService ticketService;
         private readonly IEventService eventService;
@@ -33,6 +34,7 @@ namespace Web.Controllers
         public WebhookController(
             IStripeEventRepository stripeEventRepository,
             IBackgroundTaskQueue taskQueue,
+            IServiceScopeFactory scopeFactory,
             IHubContext<PaymentHub> hubContext,
             ITicketService ticketService,
             IEventService eventService,
@@ -43,6 +45,7 @@ namespace Web.Controllers
         {
             this.hubContext = hubContext;
             this.taskQueue = taskQueue;
+            this.scopeFactory = scopeFactory;
             this.stripeEventRepository = stripeEventRepository;
             this.ticketService = ticketService;
             this.eventService = eventService;
@@ -72,14 +75,24 @@ namespace Web.Controllers
             // Respond to Stripe in the background
             taskQueue.QueueBackgroundWorkItem(async cancellationToken =>
             {
-                await ProcessStripeWebhook(stripeEvent);
+                using (var scope = scopeFactory.CreateScope())
+                {
+                    // Call your processing method using these services.
+                    await ProcessStripeWebhook(scope, stripeEvent, cancellationToken);
+                }
             });
 
             return Ok(); // 200 OK immediately so stripe doesnt send another query
         }
 
-        private async Task ProcessStripeWebhook(Stripe.Event stripeEvent)
+        private async Task ProcessStripeWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
         {
+            var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
+            var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
+            var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
+            var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+            var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PaymentHub>>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
             try
             {
                 if (stripeEvent.Data.Object is not PaymentIntent intent)
