@@ -18,7 +18,6 @@ namespace Infrastructure.Services
 
         public PdfService(IQrCodeService qrCodeService , Lazy<ITicketService> ticketService)
         {
-            QuestPDF.Settings.License = LicenseType.Community;
             this.qrCodeService = qrCodeService;
             this.ticketService = ticketService;
         }

@@ -20,8 +20,11 @@ using Web.Hubs;
 using Application.Serializers;
 using Microsoft.AspNetCore.Authorization;
 using Web.Authorization;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Configuration.AddEnvironmentVariables();
 Console.WriteLine("Stripe__SecretKey: " + Environment.GetEnvironmentVariable("Stripe__SecretKey")?.Substring(0, 8) ?? "NULL");
