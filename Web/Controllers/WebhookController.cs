@@ -56,99 +56,122 @@ namespace Web.Controllers
         public async Task<IActionResult> HandleWebhook()
         {
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+
+            logger.LogInformation("🔥 Webhook hit at {Time}", DateTime.UtcNow);
+            logger.LogInformation("📦 Raw payload: {Json}", json);
+
             Stripe.Event stripeEvent;
 
             try
             {
                 stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
+                logger.LogInformation("✅ Stripe event constructed: {EventId} | Type: {EventType}", stripeEvent.Id, stripeEvent.Type);
             }
             catch (StripeException ex)
             {
-                logger.LogError(ex, "Webhook validation failed");
+                logger.LogError(ex, "❌ Webhook validation failed");
                 return Problem("Webhook validation failed");
             }
 
-            // Respond to Stripe in the background
+            logger.LogInformation("📥 Enqueuing background work for event {EventId}", stripeEvent.Id);
+
             taskQueue.QueueBackgroundWorkItem(async cancellationToken =>
             {
-                using (var scope = scopeFactory.CreateScope())
-                {
-                    // Call your processing method using these services.
-                    await ProcessStripeWebhook(scope, stripeEvent, cancellationToken);
-                }
+                using var scope = scopeFactory.CreateScope();
+                await ProcessStripeWebhook(scope, stripeEvent, cancellationToken);
             });
 
-            return Ok(); // 200 OK immediately so stripe doesnt send another query
+            logger.LogInformation("✅ Returning 200 OK to Stripe for event {EventId}", stripeEvent.Id);
+            return Ok();
         }
 
         private async Task ProcessStripeWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
         {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
+            logger.LogInformation("⚙️ ProcessStripeWebhook invoked for event {EventId}", stripeEvent.Id);
+
             var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
             var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
             var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
             var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
             var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PaymentHub>>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
+
             try
             {
                 if (stripeEvent.Data.Object is not PaymentIntent intent)
+                {
+                    logger.LogWarning("🚫 Event is not a PaymentIntent. Skipping. EventId: {EventId}", stripeEvent.Id);
                     return;
+                }
+
+                logger.LogInformation("💳 PaymentIntent received: {IntentId} | Status: {Status}", intent.Id, intent.Status);
 
                 if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
+                {
+                    logger.LogWarning("🛑 Duplicate event detected. Skipping processing. EventId: {EventId}", stripeEvent.Id);
                     return;
+                }
 
-                var newEvent = new StripeEvent
+                await stripeEventRepository.AddEventAsync(new StripeEvent
                 {
                     EventId = stripeEvent.Id,
                     EventProcessedAt = DateTime.UtcNow
-                };
+                });
 
-                await stripeEventRepository.AddEventAsync(newEvent);
+                logger.LogInformation("🧾 Event recorded in database: {EventId}", stripeEvent.Id);
 
                 if (intent.Status == "succeeded")
                 {
-                    var paymentType = intent.Metadata["type"];
+                    var type = intent.Metadata["type"];
+                    var fromUserId = int.Parse(intent.Metadata["fromUserId"]);
+                    var toUserId = int.Parse(intent.Metadata["toUserId"]);
+                    var fromUserEmail = intent.Metadata["fromUserEmail"];
+
+                    logger.LogInformation("💸 Payment succeeded: Type={Type}, From={From}, To={To}", type, fromUserId, toUserId);
+
                     var purchaseDto = new PurchaseDto
                     {
-                        FromUserId = int.Parse(intent.Metadata["fromUserId"]),
-                        ToUserId = int.Parse(intent.Metadata["toUserId"]),
+                        FromUserId = fromUserId,
+                        ToUserId = toUserId,
                         TransactionId = intent.Id,
                         Amount = intent.AmountReceived,
-                        Type = paymentType,
+                        Type = type,
                         Status = intent.Status,
                         CreatedAt = DateTime.Now
                     };
 
                     await purchaseService.LogAsync(purchaseDto);
-
-                    var userId = int.Parse(intent.Metadata["fromUserId"]);
+                    logger.LogInformation("🧾 Purchase logged: {TransactionId}", intent.Id);
 
                     var purchaseCompleteDto = new PurchaseCompleteDto
                     {
                         TransactionId = intent.Id,
-                        FromUserId = userId,
-                        FromEmail = intent.Metadata["fromUserEmail"],
-                        ToUserId = int.Parse(intent.Metadata["toUserId"]),
+                        FromUserId = fromUserId,
+                        FromEmail = fromUserEmail,
+                        ToUserId = toUserId,
                     };
 
-                    if (paymentType == "event")
+                    if (type == "event")
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["eventId"]);
                         purchaseCompleteDto.Quantity = int.Parse(intent.Metadata["quantity"]);
                         await ticketService.CompleteAsync(purchaseCompleteDto);
+                        logger.LogInformation("🎟️ Tickets completed for event: {EventId}", purchaseCompleteDto.EntityId);
                     }
-                    else if (paymentType == "application")
+                    else if (type == "application")
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
                         var response = await eventService.CompleteAsync(purchaseCompleteDto);
-                        await hubContext.Clients.Group(userId.ToString()).SendAsync("EventCreated", response);
+                        await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("EventCreated", response);
+                        logger.LogInformation("📡 Event created and pushed to SignalR for user: {UserId}", fromUserId);
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error processing Stripe webhook in background");
+                logger.LogError(ex, "🔥 Error processing Stripe webhook for event {EventId}", stripeEvent.Id);
             }
         }
+
     }
 }

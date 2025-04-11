@@ -27,6 +27,7 @@ namespace Infrastructure.Services
                 var workItem = await _taskQueue.DequeueAsync(cancellationToken);
                 try
                 {
+                    _logger.LogInformation("Dequeued a work item at {Time}", DateTime.UtcNow);
                     await workItem(cancellationToken);
                 }
                 catch (Exception ex)
