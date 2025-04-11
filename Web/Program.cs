@@ -24,6 +24,7 @@ using Web.Authorization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+Console.WriteLine("Stripe__SecretKey: " + Environment.GetEnvironmentVariable("Stripe__SecretKey")?.Substring(0, 8) ?? "NULL");
 
 // Add services to the container.
 

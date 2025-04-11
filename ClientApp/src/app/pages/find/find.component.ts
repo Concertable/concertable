@@ -16,7 +16,7 @@ import { EventService } from '../../services/event/event.service';
   standalone: false,
   styleUrl: './find.component.scss'
 })
-export class FindComponent extends FindDirective implements OnInit {
+export class FindComponent extends FindDirective<Header> implements OnInit {
 triggerNewSubscription() {
   const newEvent: EventHeader = {
     id: 999,
@@ -35,7 +35,6 @@ triggerNewSubscription() {
   console.log('Injected event into ReplaySubject');
 }
   coordinates?: google.maps.LatLngLiteral;
-  paginatedHeaders?: Pagination<Header>;
   headers: Header[] = [];
 
   constructor(
@@ -49,11 +48,13 @@ triggerNewSubscription() {
   }
 
   ngOnInit(): void {
+    console.log("yea")
     this.searchParamsSerializerService.defaultHeaderType = this.headerType;
     this.route.queryParams.subscribe((params: Params) => {
-      this.searchParams = this.searchParamsSerializerService.deserialize(params);
-      console.log("xxx",this.searchParams)
-      this.fetchHeaders(params);
+      if (Object.keys(params).length > 0) {
+        this.searchParams = this.searchParamsSerializerService.deserialize(params);
+        this.loadPage();
+      }
     });
   }
 
@@ -69,28 +70,18 @@ triggerNewSubscription() {
       }
 
       const params = this.searchParamsSerializerService.serialize(this.searchParams);
-      
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: params,
       });
-    }
-
-
-  fetchHeaders(params: Params) {
-    if (Object.keys(params).length > 0) {
-      this.headerService.get(params).subscribe((p) => {
-        this.headers = p.data;
-        this.paginatedHeaders = p;
-      });
-    } else {
-      this.headers = [];
-    }
   }
 
-  onPageChange(event: { pageIndex: number; pageSize: number }) {
-    this.searchParams.pageNumber = event.pageIndex;
-    this.searchParams.pageSize = event.pageSize;
-    this.handleSearch();
+  override loadPage(): void {
+    console.log("called");
+    this.headerService.get(this.searchParams).subscribe((p) => {
+      this.paginatedData = p;
+      this.headers = p.data;
+    });
   }
+    
 }

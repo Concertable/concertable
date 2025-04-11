@@ -1,5 +1,5 @@
 <app-filter [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)" (headerTypeChange)="changeHeaderType($event)">
-    <app-search (search)="handleSearch()" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)"></app-search>
+    <app-search (search)="loadPage()" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)"></app-search>
     <app-event-carousel *ngIf="recentEventHeaders.length > 0" [headers]="recentEventHeaders" title="Recently Posted Events"></app-event-carousel>
     <mat-divider></mat-divider>
     <!-- Add a button to manually trigger the artificial subscription -->

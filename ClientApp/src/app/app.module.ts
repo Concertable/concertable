@@ -144,6 +144,7 @@ import { SummaryDirective } from './directives/summary.directive';
 import { HeroComponent } from './components/hero/hero.component';
 import { InputDirective } from './directives/input.directive';
 import { ResetPasswordComponent } from './components/pages/reset-password/reset-password.component';
+import { PaginatorComponent } from './components/paginator/paginator.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -260,7 +261,8 @@ export function initApp(initService: InitService) {
     SummaryDirective,
     HeroComponent,
     InputDirective,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    PaginatorComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

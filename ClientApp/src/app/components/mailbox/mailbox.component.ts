@@ -8,6 +8,7 @@ import { Pagination } from '../../models/pagination';
 import { PaginationParams } from '../../models/pagination-params';
 import { PageEvent } from '@angular/material/paginator';
 import { Action } from '../../models/action';
+import { PaginationHandler } from '../../shared/handler/pagination-handler';
 
 @Component({
   selector: 'app-mailbox',
@@ -16,42 +17,37 @@ import { Action } from '../../models/action';
   templateUrl: './mailbox.component.html',
   styleUrl: './mailbox.component.scss'
 })
-export class MailboxComponent implements OnInit, OnDestroy {
-  messagesPage?: Pagination<Message>;
-  pageParams: PaginationParams = {
-    pageNumber: 1,
-    pageSize: 5
-  };
+export class MailboxComponent extends PaginationHandler<Message> implements OnInit, OnDestroy {
   unreadCount: number = 0;
   dropdownOpen = false;
   private subscriptions: Subscription[] = [];
 
 
-  constructor(protected authService: AuthService, private messageService: MessageService, private router: Router, private route: ActivatedRoute) { }
+  constructor(
+    protected authService: AuthService,
+    private messageService: MessageService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    super(); 
+  }
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated() && this.authService.isNotRole("Customer")) {
       this.subscriptions.push(this.messageService.getUnreadCountForUser().subscribe(count => {
         this.unreadCount = count;
       }));      
-      this.loadMessages();
+      this.loadPage();
     }
   }
-  
-  loadMessages(): void {
+
+  override loadPage(): void {
     this.subscriptions.push(
       this.messageService.getForUser(this.pageParams).subscribe(response => {
-        this.messagesPage = response;
+        this.paginatedData = response;
       })
     );
   }
-  
-  onPageChange(event: PageEvent): void {
-    this.pageParams.pageNumber = event.pageIndex + 1;
-    this.pageParams.pageSize = event.pageSize;
-    this.loadMessages();
-  }
-  
 
   onMailClick() {
     this.dropdownOpen = !this.dropdownOpen;

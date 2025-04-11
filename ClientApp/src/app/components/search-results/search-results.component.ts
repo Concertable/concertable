@@ -8,6 +8,7 @@ import { EventHeader } from '../../models/event-header';
 import { HeaderType } from '../../models/header-type';
 import { Pagination } from '../../models/pagination';
 import { PageEvent } from '@angular/material/paginator';
+import { PaginationParams } from '../../models/pagination-params';
 
 @Component({
   selector: 'app-search-results',
@@ -18,7 +19,7 @@ import { PageEvent } from '@angular/material/paginator';
 export class SearchResultsComponent {
   @Input() paginatedHeaders?: Pagination<Header>;
   @Input() headerType?: HeaderType;
-  @Output() pageChange = new EventEmitter<{ pageIndex: number; pageSize: number }>
+  @Output() pageChange = new EventEmitter<PaginationParams>
 
   get artistHeaders(): ArtistHeader[] {
     return this.paginatedHeaders?.data as ArtistHeader[];
@@ -32,10 +33,7 @@ export class SearchResultsComponent {
     return this.paginatedHeaders?.data as EventHeader[];
   }
 
-  onPageChange(event: PageEvent) {
-    this.pageChange.emit({
-      pageIndex: event.pageIndex + 1,
-      pageSize: event.pageSize
-    })
+  onPageChange(params: PaginationParams) {
+    this.pageChange.emit(params);
   }
 }

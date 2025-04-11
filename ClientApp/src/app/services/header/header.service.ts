@@ -12,6 +12,7 @@ import { EventService } from '../event/event.service';
 import { Pagination } from '../../models/pagination';
 import { Venue } from '../../models/venue';
 import { Params } from '@angular/router';
+import { SearchParamsSerializerServiceService } from '../search-params-serializer/search-params-serializer-service.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,30 +23,11 @@ export class HeaderService {
 
   constructor(
     private http: HttpClient,
-    private venueService: VenueService,
-    private artistService: ArtistService,
-    private eventService: EventService
+    private serializerService: SearchParamsSerializerServiceService
   ) { }
 
-  // getVenueHeaders(searchParams: SearchParams): Observable<Pagination<VenueHeader>> {
-  //   const params = this.setParams(searchParams);
-  //   return this.venueService.getHeaders(params);
-  // }
-
-  // getArtistHeaders(searchParams: SearchParams): Observable<Pagination<ArtistHeader>> {
-  //   const params = this.setParams(searchParams);
-  //   return this.artistService.getHeaders(params);
-  // }
-
-  // getEventHeaders(searchParams: SearchParams): Observable<Pagination<EventHeader>> {
-  //   const params = this.setParams(searchParams);
-  //   console.log("xxx",searchParams);
-  //   console.log(params);
-  //   return this.eventService.getHeaders(params);
-  // }
-
-  get<T extends ArtistHeader | VenueHeader | EventHeader>(params: Params): Observable<Pagination<T>> {
-    const httpParams = new HttpParams({ fromObject: params })
+  get<T extends ArtistHeader | VenueHeader | EventHeader>(searchParams: Partial<SearchParams>): Observable<Pagination<T>> {
+    const params = this.serializerService.serialize(searchParams);
     return this.http.get<Pagination<T>>(`${this.apiUrl}`, { params })
   }
 }

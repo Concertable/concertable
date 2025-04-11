@@ -8,6 +8,7 @@ using Stripe;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 
 public class PaymentService : IPaymentService
 {

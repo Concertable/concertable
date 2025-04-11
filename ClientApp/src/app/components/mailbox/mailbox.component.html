@@ -5,21 +5,17 @@
 
     <div *ngIf="dropdownOpen" class="dropdown">
         <mat-list>
-            <mat-list-item *ngFor="let message of messagesPage?.data">
+            <mat-list-item *ngFor="let message of paginatedData?.data">
                 <div class="message-container">
                     <p class="message-text">{{ message.content }}</p>
                     <button *ngIf="message.action" class="message-button primary" (click)="handleAction(message.action)">View</button>
                 </div>
             </mat-list-item>
         </mat-list>
-        <div class="pagination">
-            <mat-paginator
-            [length]="messagesPage?.totalCount || 0"
-            [pageSize]="messagesPage?.pageSize || 5"
-            [pageIndex]="(messagesPage?.pageNumber ?? 1) - 1"
+        <app-paginator
+            [pagination]="paginatedData"
             [pageSizeOptions]="[5, 10]"
-            (page)="onPageChange($event)">
-            </mat-paginator>
-        </div>
+            (pageChange)="onPageChange($event)">
+        </app-paginator>
     </div>
 </div>

@@ -28,7 +28,6 @@ export class SearchComponent implements OnInit{
   }
 
   onSearch() {
-    console.log("emit",this.searchParams.headerType);
     if(this.searchParams.headerType) {
       this.searchParamsChange.emit(this.searchParams);
       this.search.emit();

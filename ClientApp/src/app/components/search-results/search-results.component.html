@@ -7,14 +7,9 @@
       </ng-container>
     </div>
   
-    <div class="pagination" *ngIf="(paginatedHeaders?.data ?? []).length > 0">
-      <mat-paginator
-        [length]="paginatedHeaders?.totalCount || 0"
-        [pageSize]="paginatedHeaders?.pageSize || 10"
-        [pageIndex]="(paginatedHeaders?.pageNumber ?? 1) - 1"
-        [pageSizeOptions]="[5, 10, 25, 50]"
-        (page)="onPageChange($event)">
-      </mat-paginator>
-    </div>
+    <app-paginator
+      [pagination]="paginatedHeaders"
+      (pageChange)="onPageChange($event)"
+    />
 </div>
   

@@ -15,7 +15,7 @@ import { EventHeader } from '../../models/event-header';
   templateUrl: './customer-dashboard.component.html',
   styleUrl: './customer-dashboard.component.scss'
 })
-export class CustomerDashboardComponent extends FindDirective implements OnInit, OnDestroy {
+export class CustomerDashboardComponent extends FindDirective<EventHeader> implements OnInit, OnDestroy {
   triggerNewSubscription() {
     // Create a new EventHeader to simulate a new event being posted
     const newEventHeader: EventHeader = {
@@ -109,7 +109,7 @@ export class CustomerDashboardComponent extends FindDirective implements OnInit,
   ) {
     super(searchParamsSerializerService, router, route);
   }
-  handleSearch() {
+  loadPage() {
     const params = this.searchParamsSerializerService.serialize(this.searchParams);
     this.router.navigate(['/find'],
       { queryParams: params }
