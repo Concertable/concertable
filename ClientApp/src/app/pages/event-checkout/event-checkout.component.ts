@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { TicketPurchase } from '../../models/ticket-purchase';
 import { SignalRService } from '../../services/signalr/signalr.service';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
+import { StripeToastService } from '../../services/toast/stripe-toast.service';
 
 @Component({
   selector: 'app-event-checkout',
@@ -25,8 +26,9 @@ export class EventCheckoutComponent extends CheckoutDirective<Event> {
     stripeService: StripeService, 
     signalRService: SignalRService,
     blobStorageService: BlobStorageService,
+    stripeToastService: StripeToastService,
     private ticketService: TicketService) {
-      super(route, stripeService, signalRService, blobStorageService);
+      super(route, stripeService, signalRService, blobStorageService, stripeToastService);
   }
 
   override ngOnInit(): void {

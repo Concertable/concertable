@@ -108,11 +108,11 @@ namespace Infrastructure.Services
 
             await UpdateUserLocationAsync(user, venueDto.Latitude, venueDto.Longitude);
 
-            if (!string.IsNullOrEmpty(venue.ImageUrl))
+            if (image is not null)
+            {
                 await blobStorageService.DeleteAsync(venue.ImageUrl); // Delete old image
-
-            if (image is not null )
-                venue.ImageUrl = await UploadImageAsync(image, venue.ImageUrl);
+                venue.ImageUrl = await UploadImageAsync(image, venue.ImageUrl); // Replace with new Image
+            }
 
             venueRepository.Update(venue);
             userRepository.Update(user);

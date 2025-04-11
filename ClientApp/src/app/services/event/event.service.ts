@@ -7,6 +7,7 @@ import { EventHeader } from '../../models/event-header';
 import { Pagination } from '../../models/pagination';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
 import { SignalRService } from '../signalr/signalr.service';
+import { EventToastService } from '../toast/event/event-toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,12 +20,13 @@ export class EventService {
 
   constructor(
     private http: HttpClient,
-    private signalRService: SignalRService
+    private signalRService: SignalRService,
+    private eventToastService: EventToastService
   ) {
     this.loadInitialRecommendedHeaders();
     this.signalRService.eventPosted$.subscribe(header => {
+      console.log(header);
       if (header) {
-        console.log(header);
         this.recentEventHeadersSubject.next(header);
       }
     });

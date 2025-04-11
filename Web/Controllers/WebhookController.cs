@@ -89,7 +89,7 @@ namespace Web.Controllers
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
                         var response = await eventService.CompleteAsync(purchaseCompleteDto);
-                        await hubContext.Clients.Group(userId.ToString()).SendAsync("ListingApplicationPurchaseResponse", response);
+                        await hubContext.Clients.Group(userId.ToString()).SendAsync("EventCreated", response);
                     }
 
                     return Ok();

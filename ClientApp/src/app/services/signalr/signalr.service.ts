@@ -16,10 +16,10 @@ export class SignalRService {
   private paymentHubConnection?: signalR.HubConnection;
   private eventHubConnection?: signalR.HubConnection;
 
-  private listingApplicationResponseSubject = new BehaviorSubject<ListingApplicationPurchase | undefined>(undefined);
+  private eventCreatedSubject = new Subject<ListingApplicationPurchase | undefined>();
   private eventPostedSubject = new Subject<EventHeader | undefined>();
 
-  listingApplicationResponse$ = this.listingApplicationResponseSubject.asObservable();
+  eventCreated$ = this.eventCreatedSubject.asObservable();
   eventPosted$ = this.eventPostedSubject.asObservable();
 
   createHubConnections() {
@@ -40,8 +40,9 @@ export class SignalRService {
 
     this.paymentHubConnection.start().catch(error => console.log('PaymentHub Connection Error:', error));
 
-    this.paymentHubConnection.on('ListingApplicationPurchaseResponse', (response: ListingApplicationPurchase) => {
-      this.listingApplicationResponseSubject.next(response);
+    this.paymentHubConnection.on('EventCreated', (response: ListingApplicationPurchase) => {
+      console.log("test123");
+      this.eventCreatedSubject.next(response);
     });
   }
 

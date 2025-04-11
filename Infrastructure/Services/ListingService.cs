@@ -32,23 +32,34 @@ namespace Infrastructure.Services
             var venueDto = await venueService.GetDetailsForCurrentUserAsync();
             listing.VenueId = venueDto.Id;
 
+            listing.ListingGenres = listingDto.Genres
+                .Select(g => new ListingGenre { GenreId = g.Id })
+                .ToList();
+
             await listingRepository.AddAsync(listing);
         }
 
+
         public async Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto)
         {
-            var listings = mapper.Map<IEnumerable<Listing>>(listingsDto);
-
             var venueDto = await venueService.GetDetailsForCurrentUserAsync();
-            listings = listings.Select(listing =>
+
+            var listings = listingsDto.Select(dto =>
             {
+                var listing = mapper.Map<Listing>(dto);
                 listing.VenueId = venueDto.Id;
+
+                listing.ListingGenres = dto.Genres
+                    .Select(g => new ListingGenre { GenreId = g.Id })
+                    .ToList();
+
                 return listing;
-            });
+            }).ToList();
 
             await listingRepository.AddRangeAsync(listings);
             await listingRepository.SaveChangesAsync();
         }
+
 
         public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)
         {

@@ -8,6 +8,7 @@ import { Observable, Subscription } from 'rxjs';
 import { SignalRService } from '../../services/signalr/signalr.service';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 import { PaymentSummaryItem } from '../../models/payment-summary-item';
+import { StripeToastService } from '../../services/toast/stripe-toast.service';
 
 @Directive({
   selector: '[appCheckout]',
@@ -26,7 +27,8 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
     private route: ActivatedRoute, 
     private stripeService: StripeService,
     protected signalRService: SignalRService,
-    protected blobStorageService: BlobStorageService 
+    protected blobStorageService: BlobStorageService,
+    protected stripeToastService: StripeToastService
   ) { }
 
   ngOnInit(): void {
@@ -45,9 +47,6 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
 
   async completeCheckout(paymentMethodId: string) {
     this.isProcessing = true;
-    this.message = '';
-
-    console.log("p",paymentMethodId)
 
     if(!paymentMethodId) {
       return;
@@ -61,25 +60,24 @@ export abstract class CheckoutDirective<T extends Event | ListingApplication> im
             if (response.requiresAction && response.clientSecret) { //payment successful after 3d action complete
               try {
                 await this.stripeService.confirmPayment(response.clientSecret);
-                this.message = `Payment successful! ${this.entityType} purchased.`;
+                this.stripeToastService.showSuccess(`${this.entityType} purchased`, "Payment Successful")
               } catch (error: any) {
-                this.message = `Payment authentication failed: ${error.message}`;
+                this.stripeToastService.showSuccess(error.message, "Payment authentication failed")
               }
             } else if (response.success) { //payment successful first time
-              this.message = `Payment successful! ${this.entityType} purchased.`;
-
+              this.stripeToastService.showSuccess(`${this.entityType} purchased`, "Payment Successful")
             } else {
-              this.message = 'Payment failed.';
+              this.stripeToastService.showSuccess("Error processing payment", "Payment Failed")
             }
           },
           (error) => {
-            this.message = 'Error processing payment.';
+            this.stripeToastService.showSuccess("Error processing payment", "Payment Failed")
             console.error(error);
           }
         );
       }
     } catch (error: any) {
-      this.message = `Payment error: ${error.message}`;
+      this.stripeToastService.showSuccess("Error processing payment", "Payment Failed")
       console.error(error);
     } finally {
       this.isProcessing = false;

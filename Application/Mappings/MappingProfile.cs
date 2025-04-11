@@ -17,18 +17,18 @@ namespace Application.Mappings
     {
         public MappingProfile() 
         {
-            //Venue
-            CreateMap<VenueDto, Venue>();
+            CreateMap<Genre, GenreDto>().ReverseMap();
 
+            //Venue
             CreateMap<Venue, VenueHeaderDto>();
             CreateMap<VenueHeaderDto, Venue>();
             CreateMap<Venue, VenueDto>()
             .ForMember(
                 dest => dest.Latitude,
-                opt => opt.MapFrom(src => src.User.Latitude))
+                opt => opt.MapFrom(src => src.User.Latitude ?? 0))
             .ForMember(
                 dest => dest.Longitude,
-                opt => opt.MapFrom(src => src.User.Longitude)
+                opt => opt.MapFrom(src => src.User.Longitude ?? 0)
             )
             .ForMember(
                 dest => dest.County,
@@ -38,24 +38,19 @@ namespace Application.Mappings
                 opt => opt.MapFrom(src => src.User.Town))
             .ForMember(
                 dest => dest.UserId,
-                opt => opt.MapFrom(src => src.User.Id));
+                opt => opt.MapFrom(src => src.User.Id))
+            .ReverseMap();
 
             //Artist
             CreateMap<Artist, ArtistDto>()
             .ForMember(dest => dest.Genres, opt =>
-                opt.MapFrom(src => src.ArtistGenres.Select(ag => new GenreDto
-                {
-                    Id = ag.Genre.Id,
-                    Name = ag.Genre.Name
-                })))
-            .ForMember(
-                dest => dest.County,
+                opt.MapFrom(src => src.ArtistGenres
+                    .Select(ag => ag.Genre))) // Let AutoMapper map Genre → GenreDto
+            .ForMember(dest => dest.County,
                 opt => opt.MapFrom(src => src.User.County))
-            .ForMember(
-                dest => dest.Town,
+            .ForMember(dest => dest.Town,
                 opt => opt.MapFrom(src => src.User.Town))
-            .ForMember(
-                dest => dest.UserId,
+            .ForMember(dest => dest.UserId,
                 opt => opt.MapFrom(src => src.User.Id));
             CreateMap<CreateVenueDto, Venue>();
 
@@ -65,11 +60,15 @@ namespace Application.Mappings
             CreateMap<ArtistHeaderDto, Artist>();
             CreateMap<CreateArtistDto, Artist>();
             //Listing
-            CreateMap<Listing, ListingDto>();
-            CreateMap<ListingDto, Listing>();
             CreateMap<Listing, ListingDto>()
             .ForMember(dest => dest.Genres, opt => opt.MapFrom(
-                src => src.ListingGenres.Select(lg => new GenreDto { Name = lg.Genre.Name })));
+                src => src.ListingGenres.Select(lg => new GenreDto
+                {
+                    Id = lg.Genre.Id,
+                    Name = lg.Genre.Name
+                })))
+            .ReverseMap();
+
 
             //Events
             CreateMap<Event, EventHeaderDto>();
@@ -87,8 +86,6 @@ namespace Application.Mappings
                 opt => opt.MapFrom(src => src.Application.Artist))
             .ForMember(dest => dest.Genres,
                 opt => opt.MapFrom(src => src.EventGenres.Select(eg => eg.Genre)))
-            .ForMember(dest => dest.DatePosted,
-                opt => opt.MapFrom(src => src.DatePosted))
             .ReverseMap();
 
 
@@ -111,10 +108,6 @@ namespace Application.Mappings
             //Purchase
             CreateMap<Purchase, PurchaseDto>();
             CreateMap<PurchaseDto, Purchase>();
-
-            //Genre
-            CreateMap<Genre, GenreDto>();
-            CreateMap<GenreDto, Genre>();
 
             //ListingApplications
             CreateMap<ListingApplication, ListingApplicationDto>()

@@ -11,6 +11,6 @@ namespace Application.Requests
     public class VenueUpdateRequest
     {
         public VenueDto Venue { get; set; }
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
     }
 }

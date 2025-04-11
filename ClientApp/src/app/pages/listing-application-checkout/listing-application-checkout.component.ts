@@ -10,6 +10,7 @@ import { StripeService } from '../../services/stripe/stripe.service';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
 import { SignalRService } from '../../services/signalr/signalr.service';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
+import { StripeToastService } from '../../services/toast/stripe-toast.service';
 
 @Component({
   selector: 'app-listing-application-checkout',
@@ -19,16 +20,18 @@ import { BlobStorageService } from '../../services/blob-storage/blob-storage.ser
 })
 export class ListingApplicationCheckoutComponent extends CheckoutDirective<ListingApplication> {
   override titleStyle: { [key: string]: string; } = { 'max-width': '1000px' };
+  override entityType = 'ListingApplication'
 
   constructor(
     route: ActivatedRoute, 
     stripeService: StripeService, 
     signalRService: SignalRService,
     blobStorageService: BlobStorageService,
+    stripeToastService: StripeToastService,
     private eventService: EventService,
     private router: Router
   ) {
-    super(route, stripeService, signalRService, blobStorageService);
+    super(route, stripeService, signalRService, blobStorageService, stripeToastService);
   }
 
   get application(): ListingApplication | undefined {
@@ -48,7 +51,7 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
           { label: "Total", value: this.application.listing.pay, isCost: true }
         ];
       console.log(this.summaryItems);
-      this.signalRService.listingApplicationResponse$.subscribe(response => {
+      this.signalRService.eventCreated$.subscribe(response => {
         var event = response?.event
         console.log("subscribed", response);
         if(event)

@@ -3,7 +3,7 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     padding: 16px;
-    height: 100vh;
+    min-height: 100vh;
 
     > :host ::ng-deep [section-one],
     :host ::ng-deep [section-two],
