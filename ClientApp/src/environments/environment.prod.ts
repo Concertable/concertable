@@ -3,5 +3,5 @@ export const environment = {
   apiUrl: '/api',
   paymentHubUrl: '/hubs/payment',
   eventHubUrl: '/hubs/event',
-  stripePublicKey: 'your-production-stripe-key'
+  stripePublicKey: 'pk_test_51QqfARQ1mmqr287NAUt5Jsexk7QliOT4zff45kPeCFkaVMkGOdHAotomui7ySCEhnnGluvl8FA5ZiB2QqWkgU3l900E7T6wzTE'
 };
