@@ -19,7 +19,15 @@ export class SearchParamsSerializerServiceService extends ObjectSerializerServic
       latitude: params['latitude'] ? Number(params['latitude']) : undefined,
       longitude: params['longitude'] ? Number(params['longitude']) : undefined,
       radiusKm: params['radiusKm'] ? Number(params['radiusKm']) : undefined,
-      genreIds: params['genreIds'] ? params['genreIds'].split(',').map(Number) : undefined
+      genreIds: params['genreIds'] ? params['genreIds'].split(',').map(Number) : undefined,
+      showHistory: this.toBoolean(params['showHistory']),
+      showSold: this.toBoolean(params['showSold'])
     };
+  }
+
+  private toBoolean(value: any): boolean | undefined {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return undefined;
   }
 }

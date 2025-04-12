@@ -10,4 +10,6 @@ export interface SearchParams extends PaginationParams {
     longitude?: number;
     radiusKm?: number;
     genreIds?: number[];
+    showHistory?: boolean;
+    showSold?: boolean;
 }

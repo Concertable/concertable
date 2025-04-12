@@ -4,7 +4,7 @@
   
         <mat-nav-list>
           <a mat-list-item routerLink="my" routerLinkActive="active">Profile Details</a>
-          <a mat-list-item routerLink="preferences" routerLinkActive="active">Preferences</a>
+          <a *ngIf="authService.isRole('Customer')" mat-list-item routerLink="preferences" routerLinkActive="active">Preferences</a>
           <a *ngIf="authService.isNotRole('Customer')" mat-list-item routerLink="payment" routerLinkActive="active">Payment</a>
         </mat-nav-list>
   

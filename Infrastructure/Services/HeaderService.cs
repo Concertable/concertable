@@ -62,5 +62,10 @@ namespace Infrastructure.Services
                 headers.PageNumber,
                 headers.PageSize);
         }
+
+        public async Task<IEnumerable<TDto>> GetHeadersAsync(int amount)
+        {
+            return await headerRepository.GetRawHeadersAsync(amount);
+        }
     }
 }

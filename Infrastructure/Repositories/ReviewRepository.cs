@@ -36,28 +36,26 @@ namespace Infrastructure.Repositories
         }
 
 
-        public Task<double?> GetAverageRatingByArtistIdAsync(int id)
+        public Task<double> GetAverageRatingByArtistIdAsync(int id)
         {
             return GetAverageRatingAsync(r => r.Ticket.Event.Application.ArtistId == id);
         }
 
-        public Task<double?> GetAverageRatingByEventIdAsync(int id)
+        public Task<double> GetAverageRatingByEventIdAsync(int id)
         {
             return GetAverageRatingAsync(r => r.Ticket.EventId == id);
         }
 
-        public Task<double?> GetAverageRatingByVenueIdAsync(int id)
+        public Task<double> GetAverageRatingByVenueIdAsync(int id)
         {
             return GetAverageRatingAsync(r => r.Ticket.Event.Application.Listing.VenueId == id);
         }
 
-        private async Task<double?> GetAverageRatingAsync(Expression<Func<Review, bool>> filter)
+        private async Task<double> GetAverageRatingAsync(Expression<Func<Review, bool>> filter)
         {
             var query = context.Reviews.Where(filter);
 
-            return (await query.AverageAsync(r => (double?)r.Stars)) is double avg
-                ? Math.Round(avg, 1)
-                : null;
+            return Math.Round((await query.AverageAsync(r => (double?)r.Stars)) ?? 0.0, 1);
         }
 
         private async Task<ReviewSummaryDto> GetSummaryAsync(Expression<Func<Review, bool>> filter)

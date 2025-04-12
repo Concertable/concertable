@@ -11,7 +11,7 @@ import { PaginationParams } from '../../models/pagination-params';
 })
 export class PaginatorComponent<T> {
   @Input() pagination?: Pagination<T>;
-  @Input() pageSizeOptions: number[] = [5, 10, 25, 50];
+  @Input() pageSizeOptions: number[] = [];
   @Output() pageChange = new EventEmitter<PaginationParams>();
 
   get pageIndex(): number {

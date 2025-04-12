@@ -1,9 +1,9 @@
 <div class="container">
-    <mat-icon>location_on</mat-icon>
-    <div>
-        <p *ngFor="let part of fullAddress.split(',')">
-            {{ part.trim() }}
-          </p>
+    <mat-icon color="primary">location_on</mat-icon>
+    <div class="address-details">
+      <p class="m-0" dark *ngFor="let part of fullAddress.split(',')">
+        {{ part.trim() }}
+      </p>
     </div>
-</div>
+  </div>
   

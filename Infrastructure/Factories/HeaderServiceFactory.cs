@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Infrastructure.Factories
@@ -12,6 +13,7 @@ namespace Infrastructure.Factories
 
         public HeaderServiceFactory(IServiceProvider serviceProvider) : base(serviceProvider) 
         {
+            Debug.WriteLine("Test123");
             serviceTypes.Add("venue", typeof(IHeaderService<VenueHeaderDto>));
             serviceTypes.Add("artist", typeof(IHeaderService<ArtistHeaderDto>));
             serviceTypes.Add("event", typeof(IHeaderService<EventHeaderDto>));

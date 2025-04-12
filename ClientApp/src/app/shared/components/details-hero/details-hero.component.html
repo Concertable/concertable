@@ -22,6 +22,11 @@
             (latLongChange)="onLatLongChange($event)" 
             [type]="'establishment'"
         />
+
+        <p class="icon-text" *ngIf="rating">
+          <mat-icon color="gold">star</mat-icon>
+          {{ rating }}
+        </p>
       </div>
   
         <app-image

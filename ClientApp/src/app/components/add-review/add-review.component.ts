@@ -18,7 +18,11 @@ export class AddReviewComponent {
 
   onSubmit() {
     if (this.review.stars && this.review.details?.trim()) {
-      this.dialogRef.close(this.review); // Send data back
+      this.dialogRef.close(this.review); // Send data back to subscriber
+    }
   }
-}
+
+  onCancel() {
+    this.dialogRef.close()
+  }
 }

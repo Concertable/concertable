@@ -56,8 +56,8 @@ namespace Infrastructure.Services
             var options = new AccountLinkCreateOptions
             {
                 Account = stripeId,
-                RefreshUrl = $"{baseUri}/reauth",   // You can change this to match your app
-                ReturnUrl = $"{baseUri}/dashboard", // This is where users are sent back to
+                RefreshUrl = $"{baseUri}/reauth",
+                ReturnUrl = $"{baseUri}/dashboard", 
                 Type = "account_onboarding"
             };
 

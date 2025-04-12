@@ -39,6 +39,18 @@ namespace Infrastructure.Repositories
             DatePosted = e.DatePosted
         };
 
+        protected override IQueryable<EventHeaderDto> GetRawHeadersQuery(SearchParams searchParams)
+        {
+            return base.GetRawHeadersQuery(searchParams)
+                .OrderBy(e => e.StartDate);
+        }
+
+        protected override IQueryable<EventHeaderDto> GetRawHeadersQuery(int amount)
+        {
+            return base.GetRawHeadersQuery(amount)
+                .OrderByDescending(e => e.StartDate);
+        }
+
         protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) {
             var filters = new List<Expression<Func<Event, bool>>>();
 
@@ -49,7 +61,11 @@ namespace Infrastructure.Repositories
                 filters.Add(e => e.Application.Artist.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
 
             // Only show events that haven't passed
-            filters.Add(e => e.Application.Listing.StartDate >= DateTime.UtcNow);
+            if (searchParams.ShowHistory != true)
+                filters.Add(e => e.Application.Listing.StartDate >= DateTime.UtcNow);
+
+            if (searchParams.ShowSold != true)
+                filters.Add(e => e.AvailableTickets > 0);
 
             return filters;
         }
@@ -57,9 +73,6 @@ namespace Infrastructure.Repositories
         // Event needs to be able to sort by Date Posted as well as name
         protected override IQueryable<Event> ApplyOrdering(IQueryable<Event> query, string? sort)
         {
-            if (string.IsNullOrEmpty(sort))
-                return query.OrderBy(e => e.Application.Listing.StartDate);
-
             return sort?.ToLower() switch
             {
                 "name_asc" => query.OrderBy(e => e.Name),

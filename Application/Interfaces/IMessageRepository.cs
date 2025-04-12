@@ -13,5 +13,6 @@ namespace Application.Interfaces
     {
         Task<PaginationResponse<Message>> GetByUserIdAsync(int id, PaginationParams? pageParams);
         Task<int> GetUnreadCountByUserIdAsync(int id);
+        Task MarkAsReadAsync(List<int> ids);
     }
 }

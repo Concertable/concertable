@@ -74,6 +74,10 @@ export class EventService {
     return this.http.get<Pagination<EventHeader>>(`${this.apiUrl}/headers`, { params });
   }
 
+  getHeadersByAmount(amount: number): Observable<EventHeader[]> {
+    return this.http.get<EventHeader[]>(`${this.apiUrl}/headers/amount/${amount}`,);
+  }
+
   book(paymentMethodId: string, applicationId: number): Observable<ListingApplicationPurchase> {
     return this.http.post<ListingApplicationPurchase>(`${this.apiUrl}/book`, { paymentMethodId, applicationId });
   }

@@ -1,7 +1,22 @@
 .container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); // Two cards per row
+    gap: 1.5rem;
+    max-width: 1000px; // Or whatever fits nicely
+    margin: 0 auto; // 💥 Center the grid horizontally
+    padding: 2rem;
+    justify-content: start; // Left-align last row if it has only one item
+    container-type: inline-size;
+  }
+  
+  .item {
     display: flex;
-    flex-direction: column; /* Stack applications vertically */
-    justify-content: center;
-    align-items: center;
-    min-height: 100%;
-}
+    flex-direction: column;
+  }
+
+  @container(width < 400px) {
+    .container {
+        grid-template-columns: 1fr; // Stack vertically
+    }
+  }
+  

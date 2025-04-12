@@ -9,17 +9,17 @@
             <div class="info">
                 <div class="nested-info">
                     <p class="time icon-text">
-                        <mat-icon>access_time</mat-icon>
+                        <mat-icon small>access_time</mat-icon>
                         <span class="mr-[5px]">{{ listing?.startDate | date:'EEE' }}</span>
                         <span>{{ listing?.startDate | date:'h:mm a' }} - {{ listing?.endDate | date:'h:mm a' }}</span>
                     </p>
                     <p class="icon-text">
-                        <mat-icon>payments</mat-icon>
+                        <mat-icon small>payments</mat-icon>
                         <strong class="mr-[5px]">Pay:</strong> {{ listing.pay | currency: 'GBP':'symbol':'1.2-2' }}
                     </p>
                 </div>
                 <p class="genres icon-text">
-                    <mat-icon>music_note</mat-icon>
+                    <mat-icon small>music_note</mat-icon>
                     <strong class="mr-[5px]">Genres:</strong> 
                     <span *ngFor="let genre of listing.genres" class="genres">{{ genre.name }}, </span>
                 </p>

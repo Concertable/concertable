@@ -62,7 +62,6 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
   }
 
   setRouteData(data: any): void {
-    console.log(data);
     this.application = data['application'];
     console.log("a",this.application);
   }

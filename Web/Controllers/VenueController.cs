@@ -28,6 +28,12 @@ namespace Web.Controllers
             return Ok(await venueService.GetHeadersAsync(searchParams));
         }
 
+        [HttpGet("headers/amount/{amount}")]
+        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders(int amount)
+        {
+            return Ok(await venueService.GetHeadersAsync(amount));
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
         {

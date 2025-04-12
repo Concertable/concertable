@@ -7,15 +7,18 @@
             width="170"
             height="170" />
         <div class="info">
-        <h2>{{ artist?.name }}</h2>
-        <p class="icon-text"><mat-icon>music_note</mat-icon>
+        <h2 class="text-[var(--primary-color)]">{{ artist?.name }}</h2>
+        <p class="icon-text"><mat-icon small light>music_note</mat-icon>
             <span *ngFor="let genre of artist?.genres; let i = index">
                 {{ genre.name }}{{ i < (artist?.genres?.length || 0) - 1 ? ', ' : '' }}
               </span>          
         </p>
-        <p class="icon-text"><mat-icon>location_on</mat-icon> {{ artist?.county }}</p>
-        <button color="primary" class="mt-2" mat-fab extended (click)="onViewDetails()">
-            <mat-icon fontIcon="visibility"></mat-icon>View details
+        <p class="icon-text"><mat-icon small light>location_on</mat-icon> {{ artist?.county }}</p>
+        <button color="secondary" class="mt-2" mat-fab extended (click)="onViewDetails()">
+            <mat-icon>visibility</mat-icon>View details
+        </button>
+        <button *ngIf="showAccept" color="primary" class="mt-2" mat-fab extended (click)="onAccept()">
+            <mat-icon>check</mat-icon>Accept
         </button>
         </div>
     </div>

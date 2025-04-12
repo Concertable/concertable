@@ -53,8 +53,9 @@
 
 /* Apply global styles */
 html, body {
-    min-height: 100vh;
+  min-height: 100vh;
 }
+
 
 body {
     margin: 0;
@@ -67,10 +68,29 @@ body {
     align-items: center;
   
     mat-icon {
-      font-size: 20px;
       margin-right: 2px;
     }
-  }
+}
+
+mat-icon[small]{
+  font-size: 20px;
+}
+
+mat-icon[light] {
+  color: #666;
+}
+
+.mat-icon[color="primary"] {
+  color: var(--primary-color);
+}
+
+.mat-icon[color="secondary"] {
+  color: var(--secondary-color);
+}
+
+p[dark] {
+  color: #333
+}
   
 
   button {
@@ -202,10 +222,10 @@ button.apply, button.buy {
   height: 40px !important;
 }
 
-/* Material UI Overrides */
-mat-icon.star {
-    color: gold;
+mat-icon[color="gold"] {
+  color: gold;
 }
+
 
 mat-divider.light {
     margin-top:20px;

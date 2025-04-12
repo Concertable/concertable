@@ -1,10 +1,7 @@
-
-<div class="container">
-    <app-card [isEmpty]="applications.length === 0">  
+<app-hero [title]="title" [titleStyle]="titleStyle"></app-hero>
+<div class="container"> 
         <div *ngFor="let application of applications" class="item">
-          <app-artist-summary [artist]="application.artist"></app-artist-summary>
-          <button mat-flat-button color="success" (click)="acceptApplication(application)">Accept</button>
+            <app-artist-summary [artist]="application.artist" [showAccept]="true" (accept)="acceptApplication(application)"></app-artist-summary>
         </div>
-    </app-card>
 </div>
   

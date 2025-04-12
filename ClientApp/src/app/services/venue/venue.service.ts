@@ -11,7 +11,6 @@ import { VenueFormDataSerializerService } from '../venue-form-data-serializer.se
   providedIn: 'root'
 })
 export class VenueService {
-
   constructor(private http: HttpClient, private venueFormDataSerializer: VenueFormDataSerializerService) { }
 
   private apiUrl = `${environment.apiUrl}/venue`
@@ -25,6 +24,10 @@ export class VenueService {
 
   getHeaders(params: HttpParams) : Observable<Pagination<VenueHeader>> {
     return this.http.get<Pagination<VenueHeader>>(`${this.apiUrl}/headers`, { params }); 
+  }
+
+  getHeadersByAmount(amount: number): Observable<VenueHeader[]> {
+    return this.http.get<VenueHeader[]>(`${this.apiUrl}/headers/amount/${amount}`,);
   }
 
   getDetailsForCurrentUser() : Observable<Venue> {

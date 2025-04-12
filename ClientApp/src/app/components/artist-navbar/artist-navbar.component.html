@@ -1,5 +1,8 @@
 <app-navbar>
-    <li><a><a routerLink="my" routerLinkActive="active">Your Artist</a></a></li>
-    <li><a><a routerLink="find" routerLinkActive="active">Find a Venue</a></a></li>
-    <li><a><a routerLink="" routerLinkActive="active">Back to Customer Page</a></a></li>
+    <ng-template #content>
+      <li><a routerLink="my" routerLinkActive="active">Your Artist</a></li>
+      <li><a routerLink="find" routerLinkActive="active">Find a Venue</a></li>
+      <li><a routerLink="" routerLinkActive="active">Back to Customer Page</a></li>
+    </ng-template>
 </app-navbar>
+  

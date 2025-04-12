@@ -1,49 +1,131 @@
+/* Container styles (unchanged) */
 .nav {
-    container-type: inline-size;
-}
-
-.container {
+    container-type: inline-size; /* Enable container queries */
+  }
+  
+  .container {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Centers everything vertically */
+    align-items: center;
     background-color: var(--primary-color);
     padding: 10px 20px;
-}
+    position: relative;
+  }
 
-.app-logo {
+  .wrapper {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .app-logo {
     height: 40px;
     cursor: pointer;
-}
-
-.content {
+  }
+  
+  /* Main content styling */
+  .content {
     display: flex;
-    align-items: center; /* Centers the items vertically within .content */
-}
-
-.content ul {
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .content ul {
     display: flex;
     flex-direction: row;
     gap: 20px;
     list-style-type: none;
     padding: 0;
     margin: 0;
-    align-items: center; /* Ensures that the list items are vertically centered */
-}
+    align-items: center;
+  }
 
-.content ul li {
-    display: flex;
-    align-items: center; /* Ensures each list item is centered vertically */
-}
-
-:host ::ng-deep .content ul li a {
+  ul {
+    list-style-type: none;
+  }
+  
+  :host ::ng-deep .content li a {
     color: white;
     font-weight: 600;
     text-decoration: none;
-}
-
-@container (width < 800px) {
-    .container {
-        flex-direction: column;
-        align-items: center;
+  }
+  
+  /* Basic styling for the menu */
+  .menu {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    display: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 5px;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .menu.open {
+    display: block;
+    opacity: 1;
+  }
+  
+  .menu li {
+    padding: 8px 10px;
+  }
+  
+  .menu li a {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .menu li a:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .mat-menu-trigger {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .mat-menu-trigger:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Adjusting display: none based on the screen width */
+  @container (width < 800px) {
+    /* Hide .section-1 when the width is below 800px */
+    .content > .section-1 {
+      display: none;
     }
-}
+  
+    /* Show the menu button */
+    .mat-menu-trigger {
+      display: inline-block;
+    }
+  
+    /* Ensure the dropdown menu is visible when triggered */
+    .menu {
+      display: block !important;
+    }
+  
+    .menu:not(.open) {
+      display: none !important;
+    }
+  }
+  
+  /* For screens above 800px */
+  @container (width > 800px) {
+    .btn-menu {
+      display: none;
+    }
+  
+    .menu {
+      display: none !important;
+    }
+  }
+  

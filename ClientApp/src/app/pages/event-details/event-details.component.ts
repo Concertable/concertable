@@ -32,8 +32,8 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
     { name: 'Info', fragment: 'info' },
     { name: 'Location', fragment: 'location' },
     { name: 'Artist', fragment: 'artist' },
-    { name: 'Videos', fragment: 'videos' },
-    { name: 'Reviews', fragment: 'reviews' }
+    { name: 'Reviews', fragment: 'reviews' },
+    { name: 'Tickets', fragment: 'tickets' }
   ];
 
   constructor(

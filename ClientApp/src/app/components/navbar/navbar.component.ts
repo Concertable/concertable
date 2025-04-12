@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ContentChild, ElementRef, TemplateRef, ViewChild } from '@angular/core';
 import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
 
@@ -9,8 +9,15 @@ import { Router } from '@angular/router';
   styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent {
-  constructor(protected authService: AuthService, private router: Router) { }
-  
+  @ContentChild('content') content!: TemplateRef<any>;
+  isMenuOpen: boolean = false;
+
+  constructor(protected authService: AuthService, private router: Router) {}
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
   onLogoClick() {
     this.router.navigateByUrl('/');
   }

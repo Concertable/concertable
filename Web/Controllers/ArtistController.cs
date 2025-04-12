@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Core.ModelBinders;
+using Application.Responses;
 
 namespace Web.Controllers
 {
@@ -31,6 +32,12 @@ namespace Web.Controllers
         public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
         {
             return Ok(await artistService.GetHeadersAsync(searchParams));
+        }
+
+        [HttpGet("headers/amount/{amount}")]
+        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders(int amount)
+        {
+            return Ok(await artistService.GetHeadersAsync(amount));
         }
 
         [Authorize(Roles = "ArtistManager")]

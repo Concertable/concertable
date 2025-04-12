@@ -3,6 +3,8 @@ import { Ticket } from '../../models/ticket';
 import { TicketService } from '../../services/ticket/ticket.service';
 import { TicketViewType } from '../../models/ticket-view-type';
 import { ActivatedRoute, Router } from '@angular/router';
+import { QrCodeDialogComponent } from '../../qr-code-dialog/qr-code-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-customer-tickets',
@@ -17,6 +19,7 @@ export class CustomerTicketsComponent implements OnInit {
     private ticketService: TicketService, 
     private router: Router,
     private route: ActivatedRoute,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -35,7 +38,14 @@ export class CustomerTicketsComponent implements OnInit {
     this.router.navigate([`/find/event/${ticket.event.id}`]);
   }
 
-  onShowQr(ticket: Ticket) {
-    
+  onShowQr(ticket: Ticket): void {
+    const dialogRef = this.dialog.open(QrCodeDialogComponent, {
+      width: '300px',
+      maxWidth: '90vw',
+    });
+    dialogRef.afterOpened().subscribe(() => {
+      dialogRef.componentInstance.qrCode = ticket.qrCode;
+    });
   }
+  
 }

@@ -32,6 +32,12 @@ namespace Web.Controllers
             return Ok(await eventService.GetHeadersAsync(searchParams));
         }
 
+        [HttpGet("headers/amount/{amount}")]
+        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders(int amount)
+        {
+            return Ok(await eventService.GetHeadersAsync(amount));
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
         {

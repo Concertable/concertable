@@ -1,6 +1,8 @@
 <app-navbar>
-    <li *ngIf="this.authService.isRole('VenueManager')"><a routerLink="/venue">Venue Dashboard</a></li>
-    <li *ngIf="this.authService.isRole('ArtistManager')"><a routerLink="/artist">Artist Dashboard</a></li>
-    <li><a routerLink="/find" routerLinkActive="active">Find Events/Artists/Venues</a></li>
-    <li><a routerLink="/partner" routerLinkActive="active">Partner with Us!</a></li>
+    <ng-template #content>
+        <li *ngIf="this.authService.isRole('VenueManager')"><a routerLink="/venue">Venue Dashboard</a></li>
+        <li *ngIf="this.authService.isRole('ArtistManager')"><a routerLink="/artist">Artist Dashboard</a></li>
+        <li><a routerLink="/find" routerLinkActive="active">Find Events/Artists/Venues</a></li>
+        <li><a routerLink="/partner" routerLinkActive="active">Partner with Us!</a></li>
+    </ng-template>
 </app-navbar>

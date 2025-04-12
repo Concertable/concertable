@@ -17,6 +17,6 @@ namespace Application.DTOs
         [StringLength(1000, ErrorMessage = "About section cannot exceed 1000 characters.")]
         public string About { get; set; }
         public string Type { get; set; }
-        public double? Rating { get; set; }
+        public double Rating { get; set; }
     }
 }

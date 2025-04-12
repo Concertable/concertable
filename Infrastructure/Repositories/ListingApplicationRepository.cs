@@ -62,6 +62,9 @@ namespace Infrastructure.Repositories
             var query = context.ListingApplications
                 .Where(la => la.Id == id)
                 .Include(la => la.Artist)
+                    .ThenInclude(la => la.ArtistGenres)
+                        .ThenInclude(la => la.Genre)
+                .Include(la => la.Artist.User)
                 .Include(la => la.Listing);
 
             return await query.FirstOrDefaultAsync();

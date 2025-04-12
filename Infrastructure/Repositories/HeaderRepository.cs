@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Core.Entities;
+using System.Collections;
 
 namespace Infrastructure.Repositories
 {
@@ -30,7 +31,7 @@ namespace Infrastructure.Repositories
         protected abstract Expression<Func<TEntity, TDto>> Selector { get; }
         protected virtual List<Expression<Func<TEntity, bool>>> Filters(SearchParams searchParams) => new();
 
-        public async Task<PaginationResponse<TDto>> GetRawHeadersAsync(SearchParams? searchParams)
+        protected virtual IQueryable<TDto> GetRawHeadersQuery(SearchParams? searchParams)
         {
             var query = dbSet.AsQueryable();
 
@@ -43,9 +44,24 @@ namespace Infrastructure.Repositories
             if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
                 query = ApplyOrdering(query, searchParams.Sort);
 
-            var result = query.Select(Selector);
+            return query.Select(Selector);
+        }
+
+        public async Task<PaginationResponse<TDto>> GetRawHeadersAsync(SearchParams? searchParams)
+        {
+            var result = GetRawHeadersQuery(searchParams);
 
             return await PaginationHelper.CreatePaginatedResponseAsync(result, searchParams);
+        }
+
+        protected virtual IQueryable<TDto> GetRawHeadersQuery(int amount)
+        {
+            return dbSet.Take(amount).Select(Selector);
+        }
+
+        public async Task<IEnumerable<TDto>> GetRawHeadersAsync(int amount)
+        {
+            return await GetRawHeadersQuery(amount).ToListAsync();
         }
 
         protected virtual IQueryable<TEntity> ApplyOrdering(IQueryable<TEntity> query, string? sort)

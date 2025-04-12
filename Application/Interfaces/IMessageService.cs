@@ -16,5 +16,6 @@ namespace Application.Interfaces
         Task<MessageSummaryDto> GetSummaryForUser();
         Task<PaginationResponse<MessageDto>> GetForUserAsync(PaginationParams? pageParams);
         Task<int> GetUnreadCountForUserAsync();
+        Task MarkAsReadAsync(List<int> ids);
     }
 }

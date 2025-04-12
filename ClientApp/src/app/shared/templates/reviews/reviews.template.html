@@ -1,7 +1,7 @@
 <div class="container">
   <!-- Review Summary -->
   <div class="summary">
-    <mat-icon class="star">star</mat-icon> 
+    <mat-icon color="gold">star</mat-icon> 
     <span class="rating">{{ summary?.averageRating }} / 5</span>
     <span class="total-reviews">based on {{ summary?.totalReviews }} reviews</span>
   </div>
@@ -11,7 +11,7 @@
     <button
       mat-raised-button
       color="primary mb-3"
-      [disabled]="!isEventReview"
+      [disabled]="!(isEventReview && (canReview$ | async))"
       (click)="onAddReview()">
       <mat-icon>rate_review</mat-icon>
       Write a Review
@@ -23,7 +23,7 @@
     <app-card *ngFor="let review of reviewsPage?.data" class="review-card">
       <div class="review-header">
         <div class="rating">
-          <mat-icon class="star">star</mat-icon>
+          <mat-icon color="gold">star</mat-icon>
           <span>{{ review.stars }} / 5</span>
         </div>
         <div class="reviewer-info">

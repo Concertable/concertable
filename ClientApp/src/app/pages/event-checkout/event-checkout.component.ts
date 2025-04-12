@@ -20,6 +20,7 @@ import { StripeToastService } from '../../services/toast/stripe-toast.service';
 export class EventCheckoutComponent extends CheckoutDirective<Event> {
   override titleStyle: { [key: string]: string; } = { 'max-width': '1000px' };
   quantity: number = 1;
+  override entityType = "ticket";
 
   constructor(
     route: ActivatedRoute, 

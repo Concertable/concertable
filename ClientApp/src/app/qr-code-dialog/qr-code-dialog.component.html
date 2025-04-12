@@ -1,0 +1,6 @@
+<mat-dialog-content class="qr-container">
+    <img [src]="'data:image/png;base64,' + qrCode" alt="QR Code" class="qr-image" />
+</mat-dialog-content>
+<mat-dialog-actions class="overflow-hidden" align="end">
+    <button mat-button (click)="onClose()">Close</button>
+</mat-dialog-actions>

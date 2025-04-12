@@ -17,6 +17,7 @@ namespace Core.Parameters
         public double? Longitude { get; set; }
         public int? RadiusKm { get; set; }
         public int[]? GenreIds { get; set; }
+        public bool? ShowHistory { get; set; }
+        public bool? ShowSold { get; set; }
     }
-
 }

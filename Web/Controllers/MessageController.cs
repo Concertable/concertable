@@ -5,6 +5,8 @@ using Core.Parameters;
 using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Application.Requests;
 
 namespace Web.Controllers
 {
@@ -35,6 +37,17 @@ namespace Web.Controllers
         public async Task<ActionResult<int>> GetUnreadCountForUser()
         {
             return Ok(await messageService.GetUnreadCountForUserAsync());
+        }
+
+        [HttpPost("mark-read")]
+        public async Task<ActionResult<int>> MarkAsReadAsync([FromBody] MarkMessagesReadRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            await messageService.MarkAsReadAsync(request.MessageIds);
+
+            var unreadCount = await messageService.GetUnreadCountForUserAsync();
+            return Ok(unreadCount);
         }
     }
 }

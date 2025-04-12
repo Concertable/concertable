@@ -4,6 +4,7 @@ export interface Message {
     id: number;
     fromUserId: number
     content: string;
+    read: boolean;
     action?: Action;
 }
 

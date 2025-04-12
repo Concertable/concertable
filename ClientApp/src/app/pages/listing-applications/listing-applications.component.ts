@@ -14,6 +14,8 @@ import { EventToastService } from '../../services/toast/event/event-toast.servic
 })
 export class ListingApplicationsComponent implements OnInit {
   applications: ListingApplication[] = [];
+  titleStyle: { [key: string]: string; } = { 'max-width': '1000px' };
+  title?: string;
 
   constructor(
     private route: ActivatedRoute, 
@@ -26,7 +28,7 @@ export class ListingApplicationsComponent implements OnInit {
   ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.applications = data['applications'];
-      console.log("apps",this.applications);
+      this.title = `You have ${this.applications.length} application(s)`
     })
   }
 

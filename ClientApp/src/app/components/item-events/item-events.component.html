@@ -13,12 +13,12 @@
     
                 <div class="nested-info">
                     <p class="icon-text time">
-                      <mat-icon>access_time</mat-icon>
+                      <mat-icon small>access_time</mat-icon>
                       {{ event.startDate | date:'h:mm a' }} - {{ event.endDate | date:'h:mm a' }}
                     </p>
                   
                     <p class="icon-text">
-                      <mat-icon>payments</mat-icon>
+                      <mat-icon small>payments</mat-icon>
                       {{ event.price | currency: 'GBP':'symbol':'1.2-2' }}
                     </p>
                 </div>              

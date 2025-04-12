@@ -3,10 +3,14 @@
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
     <div class="container" *ngIf="event">
         <div class="wrapper">
-            <div *ngIf="!event.datePosted" class="warning">
-                <mat-icon class="icon">warning</mat-icon>
-                <span>Please set a ticket price to post this event.</span>
-            </div>              
+            <mat-card class="warning" *ngIf="!event.datePosted">
+                <mat-card-content>
+                    <div class="warning-content">
+                        <mat-icon color="warn">warning</mat-icon>
+                        <span class="text">Please set appropriate fields to post Event</span>
+                      </div>                      
+                </mat-card-content>
+              </mat-card>                            
             <section [id]="navItems[0].fragment">
                 <h1>{{navItems[0].name}}</h1>
                     <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about" (contentChange)="onChangeDetected()"/>
@@ -21,13 +25,11 @@
                 <div class="nested-wrapper">
                     <img width="300" [src]="blobStorageService.getUrl(event.venue.imageUrl)" />
                     <div class="img-about">
-                        <h2>{{ event.venue.name }}</h2>
-                        <p>
-                            <mat-icon class="icon">location_on</mat-icon>
-                            {{ event.venue.county }}
-                            <span>,</span>
-                            {{ event.venue.town }}
-                        </p>
+                        <div class="icon-text">
+                            <mat-icon>home</mat-icon>
+                            <h2 class="ml-1">{{ event.venue.name }}</h2>
+                        </div>
+                        <app-address [lat]="event.venue.latitude" [lng]="event.venue.longitude"></app-address>
                     </div>
                 </div>
                 <app-location-display
@@ -41,21 +43,21 @@
                     <app-artist-summary [artist]="event.artist" />
             </section>
             <mat-divider class="light" />
-            <section [id]="navItems[2].fragment" class="artist-section">
-                <h1>{{ navItems[2].name }}</h1>
+            <section [id]="navItems[3].fragment" class="artist-section">
+                <h1>{{ navItems[3].name }}</h1>
                 <app-event-reviews [id]="event.id"></app-event-reviews>
             </section>
             <mat-divider class="light" />
-            <section [id]="navItems[3].fragment">
-                <h1>Tickets</h1>
+            <section [id]="navItems[4].fragment">
+                <h1>{{ navItems[4].name }}</h1>
               
                 <app-card>
-                  <div class="ticket-info">
-                    <p><strong>Price:</strong><app-price [(price)]="event.price" [editMode]="editMode" (priceChange)="onChangeDetected()"/></p>
-                    <p><strong>Total Tickets:</strong> <app-number [(value)]="event.totalTickets" [editMode]="editMode" (valueChange)="onChangeDetected()"/></p>
-                    <p><strong>Tickets Available:</strong> {{ event.availableTickets }}</p>
-                  </div>
-                </app-card>
+        <div class="ticket-info">
+            <p class="icon-text"><mat-icon light>attach_money</mat-icon><strong class="mr-2">Price:</strong> <app-price [(price)]="event.price" [editMode]="editMode" (priceChange)="onChangeDetected()"/></p>
+            <p class="icon-text"><mat-icon light>confirmation_number</mat-icon><strong class="mr-2">Total Tickets:</strong> <app-number [(value)]="event.totalTickets" [editMode]="editMode" (valueChange)="onChangeDetected()"/></p>
+            <p class="icon-text" *ngIf="event.datePosted"><mat-icon light>event_available</mat-icon><strong class="mr-2">Tickets Available:</strong> {{ event.availableTickets }}</p>
+        </div>
+    </app-card>
               </section>
               
         </div>

@@ -51,10 +51,7 @@ export class MailboxComponent extends PaginationHandler<Message> implements OnIn
 
   onMailClick() {
     this.dropdownOpen = !this.dropdownOpen;
-  }
-
-  onShowMore() {
-
+    this.markReadMessages();
   }
 
   handleAction(action: Action) {
@@ -66,5 +63,25 @@ export class MailboxComponent extends PaginationHandler<Message> implements OnIn
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  markReadMessages() {
+    console.log("??")
+    const unreadIds = this.paginatedData?.data
+    ?.filter(m => !m.read)
+    .map(m => m.id) ?? [];
+
+    if (unreadIds.length === 0) return;
+
+    this.messageService.markAsRead(unreadIds).subscribe(uc => this.unreadCount = uc);
+  }
+
+  override onPageChange(params: PaginationParams): void {
+      super.onPageChange(params);
+      this.markReadMessages();
+  }
+
+  onDelete(message: Message) {
+
   }
 }

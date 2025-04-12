@@ -1,21 +1,35 @@
-<div class="mail-container" *ngIf="authService.isAuthenticated$ | async">
-    <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" (click)="onMailClick()">
-        <mat-icon class="mail-icon">mail</mat-icon>
+<ng-container *ngIf="authService.isAuthenticated$ | async">
+    <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" [matMenuTriggerFor]="menu" (click)="onMailClick()">
+      <mat-icon class="text-white">mail</mat-icon>
     </button>
+  
+    <mat-menu #menu="matMenu" class="menu">
+      <ng-container *ngFor="let message of paginatedData?.data">
+        <div class="wrapper">
+          <div class="text">{{ message.content }}</div>
+          <button
+            mat-flat-button
+            color="primary"
+            class="action"
+            *ngIf="message.action"
+            (click)="handleAction(message.action); $event.stopPropagation();">
+            View
+          </button>
+          <button
+            mat-icon-button
+            color="error"
+            (click)="onDelete(message); $event.stopPropagation();">
+            <mat-icon>delete</mat-icon>
+        </button>
 
-    <div *ngIf="dropdownOpen" class="dropdown">
-        <mat-list>
-            <mat-list-item *ngFor="let message of paginatedData?.data">
-                <div class="message-container">
-                    <p class="message-text">{{ message.content }}</p>
-                    <button *ngIf="message.action" class="message-button primary" (click)="handleAction(message.action)">View</button>
-                </div>
-            </mat-list-item>
-        </mat-list>
-        <app-paginator
-            [pagination]="paginatedData"
-            [pageSizeOptions]="[5, 10]"
-            (pageChange)="onPageChange($event)">
-        </app-paginator>
-    </div>
-</div>
+        </div>
+      </ng-container>
+  
+      <mat-divider></mat-divider>
+      <app-paginator (click)="$event.stopPropagation()"
+        [pagination]="paginatedData"
+        (pageChange)="onPageChange($event)">
+      </app-paginator>
+    </mat-menu>
+</ng-container>
+  

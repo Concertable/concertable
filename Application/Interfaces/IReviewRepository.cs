@@ -13,9 +13,9 @@ namespace Application.Interfaces
 {
     public interface IReviewRepository : IRepository<Review>
     {
-        Task<double?> GetAverageRatingByEventIdAsync(int id);
-        Task<double?> GetAverageRatingByArtistIdAsync(int id);
-        Task<double?> GetAverageRatingByVenueIdAsync(int id);
+        Task<double> GetAverageRatingByEventIdAsync(int id);
+        Task<double> GetAverageRatingByArtistIdAsync(int id);
+        Task<double> GetAverageRatingByVenueIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);

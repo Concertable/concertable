@@ -24,6 +24,10 @@ export class ArtistService {
     return this.http.get<Pagination<ArtistHeader>>(`${this.apiUrl}/headers`, { params });
   }
 
+  getHeadersByAmount(amount: number): Observable<ArtistHeader[]> {
+    return this.http.get<ArtistHeader[]>(`${this.apiUrl}/headers/amount/${amount}`,);
+  }
+
   getDetailsForCurrentUser(): Observable<Artist> {
     return this.http.get<Artist>(`${this.apiUrl}/user`).pipe(
       tap(artist => this.currentUserArtistSubject.next(artist))

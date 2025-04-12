@@ -1,38 +1,35 @@
 
-  <div class="test">
-    
-  </div>
-  <div class="container">
-    <div class="wrapper">
-      <!-- Location Search Component -->
-      <app-location-search 
-        class="location-search" 
-        [longitude]="searchParams.longitude"
-        [latitude]="searchParams.latitude"
-        (latLongChange)="onLatLongChange($event)">
-      </app-location-search>
-  
-      <!-- Search Input Field -->
-      <mat-form-field appearance="outline" class="search-input">
-        <mat-label>Search</mat-label>
-        <input
-          matInput
-          [(ngModel)]="searchParams.searchTerm"
-          [matAutocomplete]="auto">
-        <mat-autocomplete #auto="matAutocomplete">
-          <!-- Options can be added here, such as a list of autocomplete suggestions -->
-        </mat-autocomplete>
-      </mat-form-field>
+<div class="container">
+  <div class="wrapper">
+    <!-- Location Search Component -->
+    <app-location-search 
+      class="location-search" 
+      [longitude]="searchParams.longitude"
+      [latitude]="searchParams.latitude"
+      (latLongChange)="onLatLongChange($event)">
+    </app-location-search>
 
-      <!-- Date Picker Component for 'event' headerType -->
-      <app-date-picker *ngIf="searchParams.headerType === 'event'" 
-                       (dateChange)="onDateChange($event)" 
-                       class="date-picker">
-      </app-date-picker>
-  
-      <!-- Search Button -->
-      <button mat-icon-button color="accent" class="btn-search" (click)="onSearch()">
-        <mat-icon>search</mat-icon>
-      </button>
-    </div>
+    <!-- Search Input Field -->
+    <mat-form-field appearance="outline" class="search-input">
+      <mat-label>Search</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchParams.searchTerm"
+        [matAutocomplete]="auto">
+      <mat-autocomplete #auto="matAutocomplete">
+        <!-- Options can be added here, such as a list of autocomplete suggestions -->
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <!-- Date Picker Component for 'event' headerType -->
+    <app-date-picker *ngIf="searchParams.headerType === 'event'" 
+                      (dateChange)="onDateChange($event)" 
+                      class="date-picker">
+    </app-date-picker>
+
+    <!-- Search Button -->
+    <button mat-icon-button color="accent" class="btn-search" (click)="onSearch()">
+      <mat-icon>search</mat-icon>
+    </button>
   </div>
+</div>

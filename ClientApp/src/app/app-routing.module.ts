@@ -49,6 +49,7 @@ import { CustomerTicketsComponent } from './components/customer-tickets/customer
 import { TicketViewType } from './models/ticket-view-type';
 import { listingApplicationCheckoutGuard } from './guards/listing-application-checkout/listing-application-checkout.guard';
 import { eventCheckoutGuard } from './guards/event-checkout/event-checkout.guard';
+import { FindComponent } from './pages/find/find.component';
 
 const routes: Routes = [
   {
@@ -65,7 +66,7 @@ const routes: Routes = [
         path: 'find',
         data: { breadcrumb: 'Find' },
         children: [
-          { path: '', component: CustomerFindComponent, data: { breadcrumb: 'Search' } },
+          { path: '', component: FindComponent, data: { breadcrumb: 'Search', headerType: 'event' } },
           { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver }, data: { breadcrumb: 'Venue Details' } },
           { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver }, data: { breadcrumb: 'Artist Details' } },
           { path: 'event/:id', component: EventDetailsComponent, resolve: { event: EventDetailsResolver }, data: { breadcrumb: 'Event Details' } }
@@ -147,7 +148,7 @@ const routes: Routes = [
         path: 'find',
         data: { breadcrumb: 'Find Artists' },
         children: [
-          { path: '', component: VenueFindComponent, data: { breadcrumb: 'Browse Artists' } },
+          { path: '', component: FindComponent, data: { breadcrumb: 'Browse Artists', headerType: 'artist' } },
           { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver }, data: { breadcrumb: 'Artist Details' } }
         ]
       },
@@ -175,7 +176,7 @@ const routes: Routes = [
         path: 'find',
         data: { breadcrumb: 'Find Venues' },
         children: [
-          { path: '', component: ArtistFindComponent, data: { breadcrumb: 'Browse Venues' } },
+          { path: '', component: FindComponent, data: { breadcrumb: 'Browse Venues', headerType: 'venue' } },
           { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver }, data: { breadcrumb: 'Venue Details' } }
         ]
       },

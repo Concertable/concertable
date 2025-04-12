@@ -12,5 +12,7 @@ namespace Application.Interfaces
     public interface IHeaderService<TDto> where TDto : HeaderDto
     {
         Task<PaginationResponse<TDto>> GetHeadersAsync(SearchParams searchParams);
+
+        Task<IEnumerable<TDto>> GetHeadersAsync(int amount);
     }
 }

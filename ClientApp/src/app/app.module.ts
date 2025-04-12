@@ -40,7 +40,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDividerModule } from '@angular/material/divider';
-
+import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsComponent } from './components/config/google-maps/google-maps.component';
@@ -123,7 +124,6 @@ import { MyPreferenceComponent } from './components/my-preference/my-preference.
 import { SelectorComponent } from './components/selector/selector.component';
 import { SliderComponent } from './components/slider/slider.component';
 import { PreferenceDetailsComponent } from './components/preference-details/preference-details.component';
-import { EventCarouselComponent } from './components/event-carousel/event-carousel.component';
 import { BadgeComponent } from './components/badge/badge.component';
 import { PriceComponent } from './components/config/price/price.component';
 import { NumberComponent } from './components/config/number/number.component';
@@ -146,6 +146,11 @@ import { InputDirective } from './directives/input.directive';
 import { ResetPasswordComponent } from './components/pages/reset-password/reset-password.component';
 import { PaginatorComponent } from './components/paginator/paginator.component';
 import { AddReviewComponent } from './components/add-review/add-review.component';
+import { HeaderCarouselComponent } from './components/header-carousel/header-carousel.component';
+import { EventHeaderCarouselComponent } from './components/event-header-carousel/event-header-carousel.component';
+import { VenueHeaderCarouselComponent } from './components/venue-header-carousel/venue-header-carousel.component';
+import { ArtistHeaderCarouselComponent } from './components/artist-header-carousel/artist-header-carousel.component';
+import { QrCodeDialogComponent } from './qr-code-dialog/qr-code-dialog.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -243,7 +248,7 @@ export function initApp(initService: InitService) {
     SelectorComponent,
     SliderComponent,
     PreferenceDetailsComponent,
-    EventCarouselComponent,
+    HeaderCarouselComponent,
     BadgeComponent,
     PriceComponent,
     NumberComponent,
@@ -264,7 +269,11 @@ export function initApp(initService: InitService) {
     InputDirective,
     ResetPasswordComponent,
     PaginatorComponent,
-    AddReviewComponent
+    AddReviewComponent,
+    EventHeaderCarouselComponent,
+    VenueHeaderCarouselComponent,
+    ArtistHeaderCarouselComponent,
+    QrCodeDialogComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations
@@ -297,7 +306,9 @@ export function initApp(initService: InitService) {
     MatPaginatorModule,
     MatTimepickerModule,
     MatExpansionModule,
-    MatDividerModule
+    MatDividerModule,
+    MatRadioModule,
+    MatCheckboxModule
 ],
   providers: [
     provideHttpClient(

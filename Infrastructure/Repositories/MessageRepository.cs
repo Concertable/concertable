@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using AutoMapper;
 
 namespace Infrastructure.Repositories
 {
@@ -34,6 +35,18 @@ namespace Infrastructure.Repositories
                 .Where(m => m.ToUserId == id && !m.Read);
 
             return await query.CountAsync();
+        }
+
+        public async Task MarkAsReadAsync(List<int> ids)
+        {
+            var messages = await context.Messages
+                .Where(m =>  ids.Contains(m.Id))
+                .ToListAsync();
+
+            foreach (var message in messages)
+                message.Read = true;
+
+            await context.SaveChangesAsync();
         }
     }
 }

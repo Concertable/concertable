@@ -1,5 +1,6 @@
 .container {
     display: flex;
-    align-items: center; // or center
-    gap: 8px;
-}
+    align-items: flex-start;  /* Align vertically at the top */
+    gap: 12px;               /* Space between icon and text */
+  }
+  

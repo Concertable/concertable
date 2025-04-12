@@ -20,13 +20,12 @@
         [(ngModel)]="review.details"
         name="comment"
         rows="4"
-        required
         ></textarea>
     </mat-form-field>
     </form>
 
     <div align="end">
-        <button mat-button mat-dialog-close color="secondary mr-2">Cancel</button>
+        <button mat-button mat-dialog-close color="secondary mr-2" (click)="onCancel()">Cancel</button>
         <button
             mat-flat-button
             color="primary"

@@ -4,6 +4,7 @@ using Application.Responses;
 using Core.ModelBinders;
 using Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Web.Controllers
@@ -13,14 +14,16 @@ namespace Web.Controllers
     public class HeaderController : ControllerBase
     {
         private readonly IHeaderServiceFactory headerServiceFactory;
+        private readonly Dictionary<string, Func<IHeaderService<HeaderDto>>> headerServiceMap;
 
         public HeaderController(IHeaderServiceFactory headerServiceFactory)
         {
+            Debug.WriteLine("HeaderController instantiated - Dictionary being initialized");
             this.headerServiceFactory = headerServiceFactory;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
+        public async Task<IActionResult> Get([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
         {
                 if (string.IsNullOrWhiteSpace(searchParams.HeaderType))
             {

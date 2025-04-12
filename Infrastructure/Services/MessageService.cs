@@ -91,5 +91,9 @@ namespace Infrastructure.Services
             return await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
         }
 
+        public async Task MarkAsReadAsync(List<int> ids)
+        {
+            await messageRepository.MarkAsReadAsync(ids);
+        }
     }
 }
