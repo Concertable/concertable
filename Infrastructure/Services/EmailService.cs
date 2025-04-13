@@ -25,7 +25,9 @@ namespace Infrastructure.Services
         private async Task SendAsync(EmailDto emailDto)
         {
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("Concertable", configuration["Email:Username"]));
+
+            email.From.Add(new MailboxAddress("Concertable", configuration["Email:From"]));
+
             email.To.Add(MailboxAddress.Parse(emailDto.To));
             email.Subject = emailDto.Subject;
 
@@ -49,8 +51,18 @@ namespace Infrastructure.Services
             email.Body = bodyBuilder.ToMessageBody();
 
             using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(configuration["Email:SmtpServer"], int.Parse(configuration["Email:SmtpPort"]), SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(configuration["Email:From"], configuration["Email:Password"]);
+
+            await smtp.ConnectAsync(
+                configuration["Email:SmtpServer"],
+                int.Parse(configuration["Email:SmtpPort"]),
+                SecureSocketOptions.StartTls
+            );
+
+            await smtp.AuthenticateAsync(
+                configuration["Email:Username"],    // e.g., "concertable"
+                configuration["Email:Password"]     // your SMTP2GO user password
+            );
+
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
         }
