@@ -6,10 +6,17 @@
     max-width: 1200px;
     margin: 0 auto;
     gap: 1.5rem;
+    container-type: inline-size;
 }
   
 .text {
     flex: 1;
+}
+
+@container(width < 700px) {
+    .image {
+        display: none;
+    }
 }
 
   

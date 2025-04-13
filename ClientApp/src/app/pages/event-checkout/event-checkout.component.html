@@ -1,25 +1,27 @@
 <app-hero [title]="'Purchase your Ticket'" [titleStyle]="titleStyle"></app-hero>
-<div class="container">
-  <!-- Event Summary Section -->
-   <div class="wrapper">
-    <app-event-summary [event]="event"></app-event-summary>
-
-    <!-- Payment Summary Section -->
-    <app-payment-summary
-      [title]="'Payment Summary'" 
-      [summaryItems]="summaryItems"
-      (quantityChange)="updateQuantity($event)"
-    ></app-payment-summary>
-   </div>
-
-
-
-  <!-- Checkout Payment Section -->
-  <div class="card-details">
-    <app-card-details
-      buttonName="Buy Ticket"
-      [isProcessing]="isProcessing"
-      (paymentMethodChange)="updatePaymentMethodId($event)">
-    </app-card-details>
+<div class="container-wrapper">
+  <div class="container">
+    <!-- Event Summary Section -->
+     <div class="wrapper">
+      <app-event-summary [event]="event"></app-event-summary>
+  
+      <!-- Payment Summary Section -->
+      <app-payment-summary
+        [title]="'Payment Summary'" 
+        [summaryItems]="summaryItems"
+        (quantityChange)="updateQuantity($event)"
+      ></app-payment-summary>
+     </div>
+  
+  
+  
+    <!-- Checkout Payment Section -->
+    <div class="card-details">
+      <app-card-details
+        buttonName="Buy Ticket"
+        [isProcessing]="isProcessing"
+        (paymentMethodChange)="updatePaymentMethodId($event)">
+      </app-card-details>
+    </div>
   </div>
 </div>

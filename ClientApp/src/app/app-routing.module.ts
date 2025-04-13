@@ -66,7 +66,7 @@ const routes: Routes = [
         path: 'find',
         data: { breadcrumb: 'Find' },
         children: [
-          { path: '', component: FindComponent, data: { breadcrumb: 'Search', headerType: 'event' } },
+          { path: '', component: FindComponent, data: { breadcrumb: 'Search', headerType: 'event', context: 'customer' } },
           { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver }, data: { breadcrumb: 'Venue Details' } },
           { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver }, data: { breadcrumb: 'Artist Details' } },
           { path: 'event/:id', component: EventDetailsComponent, resolve: { event: EventDetailsResolver }, data: { breadcrumb: 'Event Details' } }

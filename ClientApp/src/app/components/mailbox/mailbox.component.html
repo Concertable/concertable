@@ -1,4 +1,4 @@
-<ng-container *ngIf="authService.isAuthenticated$ | async">
+<ng-container *ngIf="(authService.isAuthenticated$ | async) && authService.isNotRole('Customer')">
     <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" [matMenuTriggerFor]="menu" (click)="onMailClick()">
       <mat-icon class="text-white">mail</mat-icon>
     </button>

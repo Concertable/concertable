@@ -1,64 +1,69 @@
+// styles.scss
+
+/* Main container is marked as a container query target */
 .container {
+    position: relative;            // Needed for absolute positioning inside
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    padding-right: 60px;           // Ensure inner content doesn't run under the button
     max-width: 1000px;
     margin: 20px auto;
     background: white;
-    border-radius: 50px; /* Rounded edges */
+    border-radius: 50px;           // Rounded edges
     border: 1px solid #ddd;
-    height: 60px; /* Fixed height for consistent appearance */
     container-type: inline-size;
-}
-
-:host {
-    display: block;
-    background-color: var(--primary-color);
-    overflow: hidden;
-}
-
-.wrapper {
+    min-height: 60px;              // Minimum height for proper vertical centering
+  }
+  
+  /* Wrapper for inner fields */
+  .wrapper {
     display: flex;
-    align-items: center; 
-    justify-content: space-between; 
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-}
-
-.location-search, 
-.search-input,
-.date-picker,
-.btn-search {
+  }
+  
+  /* Ensure inner components are flex children */
+  :host ::ng-deep .location-search mat-form-field, 
+  .search-input,
+  :host ::ng-deep .date-picker mat-form-field {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.location-search, :host ::ng-deep .location-search mat-form-field {
-    flex: 1;
-}
-
-.search-input {
-    flex: 3;
-}
-
-.date-picker, :host ::ng-deep .date-picker mat-form-field {
-    flex: 1;
-}
-
-.btn-search {
-    margin-left: 5px;
-}
-
-@container (width < 800px) {
-    .location-search,
-    .date-picker {
-      display: none;
-    }
+  }
   
-    .search-input {
-      flex: 1; // Takesthe full width
+  /* Sizing for inner components */
+  .location-search {
+    flex: 1;
+  }
+  
+  .search-input {
+    flex: 3;
+  }
+  
+  .date-picker {
+    flex: 1;
+  }
+  
+  /* The search button is absolutely positioned so it remains at the right edge,
+     vertically centered within the container */
+  .btn-search {
+    position: absolute;
+    top: 50%;
+    right: 20px;                  // Adjust this value for desired right spacing
+    transform: translateY(-50%);  // Vertically center the button
+  }
+  
+  /* Container query: When container's inline size is 800px or smaller...
+     re-stack the inner fields vertically. The absolute button remains at its RHS spot */
+  @container (width < 800px) {
+    .wrapper {
+      flex-direction: column;
+      align-items: stretch;       // Stretch inner elements to container's width
+      gap: 10px;                  // Optional spacing between fields
     }
   }
   

@@ -78,7 +78,6 @@ export class AuthService {
   register(credentials: RegisterCredentials) : Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/register`, credentials).pipe(
       tap(() => {
-        this.getCurrentUser().subscribe();
         this.router.navigateByUrl('/login');
       })
     );

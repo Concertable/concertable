@@ -1,3 +1,7 @@
+.container-wrapper {
+  container-type: inline-size;
+}
+
 .container {
     display: flex;
     justify-content: space-between;  /* Ensures space between the left and right sections */
@@ -64,21 +68,15 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    max-width: 500px;
     flex: 1;
     min-width: 320px;
   }
-  
-  app-card-details {
-    display: block;
-    padding: 0;
-    border: none;
-    background: transparent;
-  }
-  
-  .message {
-    margin-top: 12px;
-    color: #d32f2f;
-    font-weight: 500;
+
+  @container (max-width: 800px) {
+    .container {
+      flex-direction: column;     /* Stack items vertically */
+      align-items: flex-start;      /* All items align at the left */
+      justify-content: flex-start;  /* No extra space pushing right items away */
+    }
   }
   

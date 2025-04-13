@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Coordinates } from '../../../models/coordinates';
 import { GoogleMap } from '@angular/google-maps';
 
@@ -8,10 +8,9 @@ import { GoogleMap } from '@angular/google-maps';
   templateUrl: './google-maps.component.html',
   styleUrl: './google-maps.component.scss'
 })
-export class GoogleMapsComponent implements OnInit, OnChanges {
-logEvent() {
-console.log("hey")
-}
+export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit {
+  mapWidth: string = '100%';
+  mapHeight: string = '400px'; // fixed or you can compute based on width
   @Input() editMode?: boolean = false;
   @Input() lat?: number;
   @Input() lng?: number;
@@ -19,6 +18,9 @@ console.log("hey")
   @Output() locationChange = new EventEmitter<{ county: string, town: string} | undefined>
 
   @ViewChild(GoogleMap) map?: GoogleMap;
+  @ViewChild('container', { static: true }) container!: ElementRef;
+
+  private resizeObserver?: ResizeObserver;
 
   options: google.maps.MapOptions = {
     center: { lat: 51, lng: 0.1 }
@@ -26,6 +28,39 @@ console.log("hey")
 
   ngOnInit() {
     console.log(this.lat);
+    this.onResize();
+  }
+
+  ngAfterViewInit() {
+    // Create a ResizeObserver to monitor container's changes
+    this.resizeObserver = new ResizeObserver(entries => {
+      const entry = entries[0];
+      // Get the container's current width
+      const containerWidth = entry.contentRect.width;
+      // Use the container width capped at 800px
+      const newWidth = Math.min(containerWidth, 800);
+      this.mapWidth = `${newWidth}px`;
+    });
+    // Start observing the container
+    if (this.container && this.container.nativeElement) {
+      this.resizeObserver.observe(this.container.nativeElement);
+    }
+  }
+  
+
+  @HostListener('window:resize', ['$event'])
+    onResize(event?: Event) {
+      // Calculate available width. This example uses document.body width.
+      // Adjust this to target the specific container if needed.
+      const currentWidth = window.innerWidth;
+      
+      // For example: use full width on mobile and restrict on larger screens
+      if (currentWidth < 900) {
+        this.mapWidth = '100%';
+      } else {
+        // Optionally constrain the width
+        this.mapWidth = '800px'; 
+      }
   }
 
   ngOnChanges(changes: SimpleChanges): void {

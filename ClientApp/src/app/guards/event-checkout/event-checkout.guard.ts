@@ -1,7 +1,7 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { TicketService } from '../../services/ticket/ticket.service';
 import { ToastService } from '../../services/toast/toast.service';
-import { NavigationService } from '../../services/navigation.service';
+import { NavigationService } from '../../services/navigation/navigation.service';
 import { inject } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';

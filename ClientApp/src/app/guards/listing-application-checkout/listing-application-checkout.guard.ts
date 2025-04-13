@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { ToastService } from '../../services/toast/toast.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Location } from '@angular/common';
-import { NavigationService } from '../../services/navigation.service';
+import { NavigationService } from '../../services/navigation/navigation.service';
 
 export const listingApplicationCheckoutGuard: CanActivateFn = (route, state) => {
   console.log(route.paramMap);

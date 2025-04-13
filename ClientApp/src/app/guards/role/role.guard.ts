@@ -4,7 +4,7 @@ import { catchError, map, of } from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { Location } from '@angular/common';
-import { NavigationService } from '../../services/navigation.service';
+import { NavigationService } from '../../services/navigation/navigation.service';
 
 export const roleGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);

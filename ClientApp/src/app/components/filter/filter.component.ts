@@ -106,7 +106,7 @@ export class FilterComponent implements OnInit {
   }
 
   isCustomerRoute(): boolean {
-    return this.route.component === CustomerFindComponent || this.route.component === CustomerDashboardComponent;
+    return this.route.snapshot.data['context'] === 'customer';
   }
 
   onHeaderTypeChange() {

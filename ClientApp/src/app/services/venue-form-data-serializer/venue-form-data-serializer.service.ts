@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { FormDataSerializerService } from './form-data-serializer.service';
-import { Venue } from '../models/venue';
+import { FormDataSerializerService } from '../form-data-serializer/form-data-serializer.service';
+import { Venue } from '../../models/venue';
 
 @Injectable({
   providedIn: 'root'

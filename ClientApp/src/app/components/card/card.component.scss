@@ -3,10 +3,20 @@
     padding: 12px 16px;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
 
-/* No Content Message */
-.empty-message {
+.empty-content {
     text-align: center;
     color: #777;
     font-size: 1rem;
@@ -24,7 +34,9 @@
         align-items: center;
         border-bottom: 1px solid #ddd;
         padding: 10px 0;
+        width: 100%;
     }
+      
     
     .item:last-child {
         border-bottom: none;

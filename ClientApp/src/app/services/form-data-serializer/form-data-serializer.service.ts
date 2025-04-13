@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ISerializer } from '../shared/interfaces/serializer/iserializer';
+import { ISerializer } from '../../shared/interfaces/serializer/iserializer';
 
 @Injectable({
   providedIn: 'root'

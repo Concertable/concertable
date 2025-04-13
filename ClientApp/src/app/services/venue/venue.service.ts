@@ -5,7 +5,7 @@ import { Venue } from '../../models/venue';
 import { environment } from '../../../environments/environment';
 import { VenueHeader } from '../../models/venue-header';
 import { Pagination } from '../../models/pagination';
-import { VenueFormDataSerializerService } from '../venue-form-data-serializer.service';
+import { VenueFormDataSerializerService } from '../venue-form-data-serializer/venue-form-data-serializer.service';
 
 @Injectable({
   providedIn: 'root'

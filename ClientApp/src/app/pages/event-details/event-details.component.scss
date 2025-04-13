@@ -1,19 +1,20 @@
 @use '../../../styles/details.scss';
 
-.container {
-    position: relative;
-    margin: 0 auto; 
-    padding: 20px;
-    display: flex; /* Enable flexbox layout */
-    flex-direction: row; /* Align items in a row (side by side) */
-    justify-content: flex-start; /* Align content to the start of the container */
-    align-items: flex-start; /* Align content to the top */
-    gap: 20px; /* Add space between content and sticky summary */
-    container-type: inline-size;
+.page-wrapper {
+  position: relative;
+  margin: 0 auto; 
+  padding: 20px;
+  display: flex; /* Enable flexbox layout */
+  flex-direction: row; /* Align items in a row (side by side) */
+  justify-content: flex-start; /* Align content to the start of the container */
+  align-items: flex-start; /* Align content to the top */
+  gap: 20px; /* Add space between content and sticky summary */
+  container-type: inline-size;
 }
 
 .sticky-summary {
     position: sticky; 
+    align-self: flex-start;
     top: 20px;
     max-width: 300px;
     background-color: #fff; 

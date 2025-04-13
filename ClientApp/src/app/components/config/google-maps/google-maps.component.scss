@@ -1,9 +1,3 @@
-.wrapper {
-    display: flex;
-    align-items: center; /* ✅ Vertically centers both elements */
-    gap: 10px; /* Adds spacing between the input and button */
-}
-
 .map-placeholder {
     width: 800px;
     height: 400px;
@@ -14,5 +8,14 @@
     background-color: #f3f4f6; /* bg-gray-100 */
     border: 2px dashed #d1d5db; /* border-gray-300 */
     font-style: italic;
+  }
+  
+  .map-container {
+    width: 100%;
+    max-width: 800px; /* optional: to restrict maximum size */
+    margin: 0 auto;   /* center the map */
+}
+
+.container {
   }
   
