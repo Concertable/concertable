@@ -26,12 +26,10 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceDto)
+        public async Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceDto, int userId)
         {
             var preference = mapper.Map<Preference>(createPreferenceDto);
             preference.GenrePreferences = new List<GenrePreference>();
-
-            var user = await currentUserService.GetAsync();
 
             foreach(var genreDto in createPreferenceDto.Genres)
             {
@@ -42,7 +40,7 @@ namespace Infrastructure.Services
                 });
             }
 
-            preference.UserId = user.Id;
+            preference.UserId = userId;
 
             preferenceRepository.Update(preference);
             await preferenceRepository.SaveChangesAsync();

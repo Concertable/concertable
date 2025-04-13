@@ -89,7 +89,7 @@ namespace Infrastructure.Services
                 Genres = Enumerable.Empty<GenreDto>()
             };
 
-            await preferenceService.CreateAsync(preferenceDto);
+            await preferenceService.CreateAsync(preferenceDto, user.Id);
 
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 

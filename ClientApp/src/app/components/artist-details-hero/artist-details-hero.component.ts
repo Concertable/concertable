@@ -47,7 +47,6 @@ export class ArtistDetailsHeroComponent extends DetailsHeroDirective<Artist>{
     }
   
     get imageUrl(): string | undefined {
-      console.log("ar", this.artist?.imageUrl)
       return this.artist?.imageUrl;
     }
   

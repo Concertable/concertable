@@ -150,7 +150,7 @@ import { HeaderCarouselComponent } from './components/header-carousel/header-car
 import { EventHeaderCarouselComponent } from './components/event-header-carousel/event-header-carousel.component';
 import { VenueHeaderCarouselComponent } from './components/venue-header-carousel/venue-header-carousel.component';
 import { ArtistHeaderCarouselComponent } from './components/artist-header-carousel/artist-header-carousel.component';
-import { QrCodeDialogComponent } from './qr-code-dialog/qr-code-dialog.component';
+import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',

@@ -1,7 +1,7 @@
 <div class="nav">
     <nav class="container">
-      <img class="app-logo" src="../images/logo-long2.png" alt="app-logo" (click)="onLogoClick()">
-  
+        <img src="images/logo-long.png" class="logo-long" alt="Logo long" (click)="onLogoClick()">
+        <img src="images/logo.png" class="logo-short" alt="Logo small" (click)="onLogoClick()">
       <div class="wrapper">
         <div class="content">
             <ul class="section-1">
@@ -14,11 +14,12 @@
           </div>
     
       
-            <button mat-button color="primary" class="btn-menu" (click)="toggleMenu()">
-                Menu
-              </button>
+          <button #btnMenu mat-button color="primary" class="btn-menu" (click)="toggleMenu(); $event.stopPropagation()">
+            Menu
+          </button>
+          
               <!-- Custom dropdown menu -->
-              <div class="menu" [ngClass]="{'open': isMenuOpen}">
+              <div #menu class="menu" [ngClass]="{'open': isMenuOpen}">
                 <ul>
                     <ng-content *ngTemplateOutlet="content"></ng-content>
                 </ul>

@@ -17,7 +17,7 @@
     gap: 20px;
   }
   
-  .app-logo {
+  .logo-long, .logo-short {
     height: 40px;
     cursor: pointer;
   }
@@ -45,6 +45,12 @@
   
   :host ::ng-deep .content li a {
     color: white;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  :host ::ng-deep .menu li a {
+    color: var(--primary-color);
     font-weight: 600;
     text-decoration: none;
   }
@@ -116,6 +122,14 @@
     .menu:not(.open) {
       display: none !important;
     }
+
+    .logo-short {
+        display: block;
+    }
+
+    .logo-long {
+        display: none;
+    }
   }
   
   /* For screens above 800px */
@@ -126,6 +140,14 @@
   
     .menu {
       display: none !important;
+    }
+
+    .logo-short {
+        display: none;
+    }
+
+    .logo-long {
+        display: block;
     }
   }
   

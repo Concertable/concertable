@@ -102,7 +102,7 @@ namespace Infrastructure.Services
         {
             var principal = httpContextAccessor.HttpContext?.User;
             var user = await userManager.GetUserAsync(principal);
-            if (user == null) throw new UnauthorizedException("User not authenticated");
+            if (user is null) throw new UnauthorizedException("User not authenticated");
 
             return user;
         }

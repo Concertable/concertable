@@ -3,7 +3,7 @@ import { Ticket } from '../../models/ticket';
 import { TicketService } from '../../services/ticket/ticket.service';
 import { TicketViewType } from '../../models/ticket-view-type';
 import { ActivatedRoute, Router } from '@angular/router';
-import { QrCodeDialogComponent } from '../../qr-code-dialog/qr-code-dialog.component';
+import { QrCodeDialogComponent } from '../qr-code-dialog/qr-code-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({

@@ -19,6 +19,7 @@ export class ErrorInterceptor implements HttpInterceptor {
     
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
+        console.log("err", err)
         const { title, message } = extractHttpErrorMessage(err);
         console.log(title, "next", message);
         this.toastService.showError(message, title);

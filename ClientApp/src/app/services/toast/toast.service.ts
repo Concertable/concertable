@@ -12,10 +12,13 @@ export class ToastService {
     this.toastr.success(message, title);
   }
 
-  showError(message: string, title: string = "Error") {
-    console.log("t", title);
-    console.log("m",message)
-    this.toastr.error(message, title);
+  showError(message: string, title: string = "Error", status?: number) {
+    const header = 
+      status && title ? `${status} • ${title}` :
+      status ? `${status}` :
+      title ? `${title}` :
+      'Error';
+    this.toastr.error(message, header);
   }
 
   showErrorResponse(error: HttpErrorResponse) {

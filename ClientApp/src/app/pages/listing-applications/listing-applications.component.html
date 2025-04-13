@@ -1,7 +1,7 @@
 <app-hero [title]="title" [titleStyle]="titleStyle"></app-hero>
-<div class="container"> 
-        <div *ngFor="let application of applications" class="item">
-            <app-artist-summary [artist]="application.artist" [showAccept]="true" (accept)="acceptApplication(application)"></app-artist-summary>
-        </div>
+  <div class="container"> 
+      <div *ngFor="let application of applications" class="item">
+          <app-artist-summary [artist]="application.artist" [showAccept]="true" (accept)="acceptApplication(application)"></app-artist-summary>
+      </div>
 </div>
   
