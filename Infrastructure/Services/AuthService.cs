@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Runtime.CompilerServices;
 using static QRCoder.PayloadGenerator;
+using Infrastructure.Constants;
 
 namespace Infrastructure.Services
 {
@@ -132,14 +133,17 @@ namespace Infrastructure.Services
             if (role is null)
                 throw new BadRequestException("User has no role");
 
-            var userDto = new UserDto
+            return new UserDto
             {
                 Id = user.Id,
                 Email = user.Email,
-                Role = role
+                Role = role,
+                County = user.County,
+                Town = user.Town,
+                Latitude = user.Latitude,
+                Longitude = user.Longitude,
+                BaseUrl = RoleRoutes.BaseUrls[role]
             };
-
-            return userDto;
         }
 
         public async Task<bool> ConfirmEmailAsync(string userId, string token)

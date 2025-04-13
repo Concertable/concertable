@@ -22,7 +22,7 @@ export class NavbarComponent {
   }
 
   onLogoClick() {
-    this.router.navigateByUrl('/');
+    this.router.navigateByUrl(this.authService.user?.baseUrl ?? '');
   }
 
   @HostListener('document:click', ['$event'])

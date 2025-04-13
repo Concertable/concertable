@@ -3,6 +3,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Core.Entities.Identity;
 using Core.Exceptions;
+using Infrastructure.Constants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -19,6 +20,14 @@ namespace Infrastructure.Services
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IMapper mapper;
+
+        public static readonly Dictionary<string, string> BaseUrls = new()
+        {
+            { "Admin", "/admin" },
+            { "Customer", "/user" },
+            { "VenueManager", "/venue" },
+            { "ArtistManager", "/artist" },
+        };
 
         public CurrentUserService(
             IHttpContextAccessor httpContextAccessor, 
@@ -44,6 +53,7 @@ namespace Infrastructure.Services
                 Town = user.Town,
                 Latitude = user.Latitude,
                 Longitude = user.Longitude,
+                BaseUrl = RoleRoutes.BaseUrls[role]
             };
         }
 
@@ -63,6 +73,7 @@ namespace Infrastructure.Services
                     Town = user.Town,
                     Latitude = user.Latitude,
                     Longitude = user.Longitude,
+                    BaseUrl = RoleRoutes.BaseUrls[role]
                 };
             }
             catch (UnauthorizedException)

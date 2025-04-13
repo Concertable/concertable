@@ -9,5 +9,6 @@
         public double? Longitude { get; set; }
         public string? County { get; set; }
         public string? Town { get; set; }
+        public string BaseUrl { get; set; } = "/";
     }
 }

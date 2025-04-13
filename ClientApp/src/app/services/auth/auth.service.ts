@@ -41,6 +41,10 @@ export class AuthService {
     this._currentUserLoaded = value;
   }
 
+  get user() {
+    return this.currentUserSubject.value;
+  }
+
   constructor(private http: HttpClient, private router: Router, private signalRService: SignalRService, private toastService: ToastService) { }
 
   isRole = (role: Role) => this.currentUserSubject.getValue()?.role === role;
@@ -57,7 +61,7 @@ export class AuthService {
       tap((user) => {
         this.currentUserSubject.next(user);
         this.currentUserLoaded = true;
-        this.router.navigateByUrl(returnUrl ?? '/');
+        this.router.navigateByUrl(returnUrl ?? user.baseUrl);
         this.signalRService.createHubConnections();
       })
     );
