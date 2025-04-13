@@ -56,6 +56,10 @@
             <p class="icon-text"><mat-icon light>attach_money</mat-icon><strong class="mr-2">Price:</strong> <app-price [(price)]="event.price" [editMode]="editMode" (priceChange)="onChangeDetected()"/></p>
             <p class="icon-text"><mat-icon light>confirmation_number</mat-icon><strong class="mr-2">Total Tickets:</strong> <app-number [(value)]="event.totalTickets" [editMode]="editMode" (valueChange)="onChangeDetected()"/></p>
             <p class="icon-text" *ngIf="event.datePosted"><mat-icon light>event_available</mat-icon><strong class="mr-2">Tickets Available:</strong> {{ event.availableTickets }}</p>
+            <button [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
+                color="success" mat-fab extended (click)="onBuy()">
+                <mat-icon>shopping_cart</mat-icon>Buy Tickets
+            </button>
         </div>
     </app-card>
               </section>
@@ -85,7 +89,7 @@
             </p>
             <button [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
                 color="success" mat-fab extended (click)="onBuy()">
-                <mat-icon>shopping_cart</mat-icon>Buy Ticket
+                <mat-icon>shopping_cart</mat-icon>Buy Tickets
             </button>
         </div>
     </div>

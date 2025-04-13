@@ -9,6 +9,7 @@
     justify-content: flex-start; /* Align content to the start of the container */
     align-items: flex-start; /* Align content to the top */
     gap: 20px; /* Add space between content and sticky summary */
+    container-type: inline-size;
 }
 
 .sticky-summary {
@@ -64,6 +65,13 @@
 
     mat-icon, span {
       color: #856404;
+    }
+  }
+
+  
+  @container (width < 1000px) {
+    .sticky-summary {
+      display: none;
     }
   }
   

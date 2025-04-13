@@ -105,7 +105,7 @@ namespace Infrastructure.Repositories
         public Task<bool> CanUserIdReviewEventIdAsync(int userId, int eventId)
         {
             return GetUnreviewedTicketsByUser(userId)
-                .AnyAsync(t => t.EventId == eventId);
+                .AnyAsync(t => t.EventId == eventId && t.Event.Application.Listing.StartDate <= DateTime.UtcNow);
         }
 
 
