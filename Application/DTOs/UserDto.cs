@@ -1,4 +1,8 @@
-﻿namespace Application.DTOs
+﻿using Common.Helpers;
+using Core.Interfaces;
+using NetTopologySuite.Geometries;
+
+namespace Application.DTOs
 {
     public class UserDto
     {

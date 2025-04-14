@@ -1,10 +1,12 @@
 ﻿using Core.Entities;
 using Core.Entities.Identity;
+using Core.Interfaces;
+using NetTopologySuite.Geometries;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Venue : BaseEntity
+    public class Venue : BaseEntity, ILocation
     {
         public int UserId { get; set; }
         public string Name { get; set; }
@@ -14,6 +16,7 @@ namespace Core.Entities
         public VenueManager User { get; set; }
         public ICollection<Listing> Listings { get; set; } = new List<Listing>();
         public ICollection<VenueImage> Images { get; } = new List<VenueImage>();
-
+        [NotMapped]
+        public Point? Location => User.Location;
     }
 }

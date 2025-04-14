@@ -6,13 +6,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 
 #nullable disable
 
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250401214937_InitialCreate")]
+    [Migration("20250414173230_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -276,17 +277,14 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("float");
+                    b.Property<Point>("Location")
+                        .HasColumnType("geography");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("float");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -555,6 +553,19 @@ namespace Infrastructure.Migrations
                     b.ToTable("SocialMedias");
                 });
 
+            modelBuilder.Entity("Core.Entities.StripeEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("EventProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("StripeEvents");
+                });
+
             modelBuilder.Entity("Core.Entities.Ticket", b =>
                 {
                     b.Property<int>("Id")
@@ -806,7 +817,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Core.Entities.Genre", "Genre")
-                        .WithMany()
+                        .WithMany("ArtistGenres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -909,7 +920,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entities.ListingGenre", b =>
                 {
                     b.HasOne("Core.Entities.Genre", "Genre")
-                        .WithMany()
+                        .WithMany("ListingGenres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1121,7 +1132,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Genre", b =>
                 {
+                    b.Navigation("ArtistGenres");
+
                     b.Navigation("EventGenres");
+
+                    b.Navigation("ListingGenres");
                 });
 
             modelBuilder.Entity("Core.Entities.Identity.ApplicationUser", b =>

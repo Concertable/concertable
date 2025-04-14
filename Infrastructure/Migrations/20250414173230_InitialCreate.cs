@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 
 #nullable disable
 
@@ -36,8 +37,7 @@ namespace Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     County = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Town = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Latitude = table.Column<double>(type: "float", nullable: true),
-                    Longitude = table.Column<double>(type: "float", nullable: true),
+                    Location = table.Column<Point>(type: "geography", nullable: true),
                     StripeId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -71,6 +71,18 @@ namespace Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Genres", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StripeEvents",
+                columns: table => new
+                {
+                    EventId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    EventProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StripeEvents", x => x.EventId);
                 });
 
             migrationBuilder.CreateTable(
@@ -818,6 +830,9 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "SocialMedias");
+
+            migrationBuilder.DropTable(
+                name: "StripeEvents");
 
             migrationBuilder.DropTable(
                 name: "VenueImages");

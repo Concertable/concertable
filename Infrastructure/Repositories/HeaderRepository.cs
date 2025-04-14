@@ -12,58 +12,74 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Core.Entities;
 using System.Collections;
+using NetTopologySuite.Algorithm;
+using Core.Interfaces;
+using NetTopologySuite.Geometries;
+using Stripe.Sigma;
 
 namespace Infrastructure.Repositories
 {
     public abstract class HeaderRepository<TEntity, TDto> : Repository<TEntity>, IHeaderRepository<TEntity, TDto>
-        where TDto : HeaderDto
-        where TEntity : BaseEntity
+    where TDto : HeaderDto
+    where TEntity : BaseEntity, ILocation
     {
         private readonly ApplicationDbContext context;
         private readonly DbSet<TEntity> dbSet;
 
-        public HeaderRepository(
-            ApplicationDbContext context): base(context)
+        public HeaderRepository(ApplicationDbContext context) : base(context)
         {
             this.dbSet = context.Set<TEntity>();
         }
 
         protected abstract Expression<Func<TEntity, TDto>> Selector { get; }
+
         protected virtual List<Expression<Func<TEntity, bool>>> Filters(SearchParams searchParams) => new();
 
-        protected virtual IQueryable<TDto> GetRawHeadersQuery(SearchParams? searchParams)
+        // Add this method to handle radius-based filtering
+        protected abstract IQueryable<TEntity> FilterByRadius(IQueryable<TEntity> query, double latitude, double longitude, double radiusKm);
+
+        protected virtual IQueryable<TDto> GetHeadersQuery(SearchParams? searchParams)
         {
             var query = dbSet.AsQueryable();
 
+            // Search term filtering
             if (!string.IsNullOrWhiteSpace(searchParams?.SearchTerm))
                 query = query.Where(e => EF.Property<string>(e, "Name").Contains(searchParams.SearchTerm));
 
+            // Apply additional filters from SearchParams
             foreach (var filter in Filters(searchParams))
                 query = query.Where(filter);
 
+            // Apply ordering if present
             if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
                 query = ApplyOrdering(query, searchParams.Sort);
+
+            // If location parameters are provided, filter by radius
+            if (GeoHelper.HasValidCoordinates(searchParams))
+                query = FilterByRadius(query, searchParams.Latitude!.Value, searchParams.Longitude!.Value, searchParams.RadiusKm ?? 10);
 
             return query.Select(Selector);
         }
 
-        public async Task<PaginationResponse<TDto>> GetRawHeadersAsync(SearchParams? searchParams)
+        protected virtual IQueryable<TDto> GetHeadersQuery(int amount)
         {
-            var result = GetRawHeadersQuery(searchParams);
+            return dbSet.Select(Selector).Take(amount);
+        }
 
+        // Handle pagination
+        public async Task<PaginationResponse<TDto>> GetHeadersAsync(SearchParams? searchParams)
+        {
+            var result = GetHeadersQuery(searchParams);
             return await PaginationHelper.CreatePaginatedResponseAsync(result, searchParams);
         }
 
-        protected virtual IQueryable<TDto> GetRawHeadersQuery(int amount)
+        public async Task<IEnumerable<TDto>> GetHeadersAsync(int amount)
         {
-            return dbSet.Take(amount).Select(Selector);
+            var query = GetHeadersQuery(amount);
+            return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<TDto>> GetRawHeadersAsync(int amount)
-        {
-            return await GetRawHeadersQuery(amount).ToListAsync();
-        }
-
+        // Default sorting method
         protected virtual IQueryable<TEntity> ApplyOrdering(IQueryable<TEntity> query, string? sort)
         {
             return sort?.ToLower() switch
@@ -73,5 +89,8 @@ namespace Infrastructure.Repositories
                 _ => query
             };
         }
+
+
     }
+
 }

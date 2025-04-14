@@ -16,20 +16,26 @@ export class ItemEventsComponent {
 
   onViewDetails(event: Event) {
     this.authService.currentUser$.subscribe(user => {
-      console.log(this.authService.isRole("VenueManager"))
-      console.log(event.venue.email == user?.email)
-      if(this.authService.isRole("VenueManager"))
-        if(event.venue.email == user?.email)
+      if (this.authService.isRole("VenueManager")) {
+        if (event.venue.email == user?.email) {
           this.router.navigate(['venue/my/events/event', event.id]);
-      else if(this.authService.isRole("ArtistManager"))
-        if(event.artist.email == user?.email)
+        } else {
+          this.router.navigate(['find/event', event.id]);
+        }
+      } else if (this.authService.isRole("ArtistManager")) {
+        if (event.artist.email == user?.email) {
           this.router.navigate(['artist/my/events/event', event.id]);
-      else 
+        } else {
+          this.router.navigate(['find/event', event.id]);
+        }
+      } else {
         this.router.navigate(['find/event', event.id]);
-    })
+      }
+    });
   }
+  
 
   onPurchase(event: Event) {
-    
+    this.router.navigate(['event/checkout', event.id])
   }
 }

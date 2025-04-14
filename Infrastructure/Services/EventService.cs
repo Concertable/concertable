@@ -17,6 +17,9 @@ using Microsoft.Extensions.Logging;
 using Core.Exceptions;
 using Microsoft.AspNetCore.SignalR;
 using Stripe.Terminal;
+using Infrastructure.Helpers;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Services
 {
@@ -259,10 +262,9 @@ namespace Infrastructure.Services
 
             eventHeaderDto.Rating = averageRating;
 
-            var latitude = eventEntity.Application.Listing.Venue.User.Latitude;
-            var longitude = eventEntity.Application.Listing.Venue.User.Longitude;
+            var location = eventEntity.Application.Listing.Venue.Location;
 
-            if (latitude is null || longitude is null)
+            if (location is null)
                 return new EventPostResponse
                 {
                     Event = eventDto,
@@ -272,20 +274,24 @@ namespace Infrastructure.Services
 
             var preferences = await preferenceService.GetAsync();
 
-            var userIdsToNotify = preferences
-            .Where(preference => locationService.IsWithinRadius(
-                preference.User.Latitude.Value,
-                preference.User.Longitude.Value,
-                latitude.Value,
-                longitude.Value,
-                preference.RadiusKm))
-            .Select(preference => preference.User.Id);
+            //var userIdsToNotify = preferences
+            //.Where(preference =>
+            //    preference.User.Latitude.HasValue &&
+            //    preference.User.Longitude.HasValue &&  // ignore users missing location data
+            //    locationService.IsWithinRadius(
+            //        preference.User.Latitude.Value,
+            //        preference.User.Longitude.Value,
+            //        latitude.Value,
+            //        longitude.Value,
+            //        preference.RadiusKm))
+            //.Select(preference => preference.User.Id);
+
 
             return new EventPostResponse
             {
                 Event = mapper.Map<EventDto>(eventEntity),
                 EventHeader = eventHeaderDto,
-                UserIds = userIdsToNotify
+                //UserIds = userIdsToNotify
             };
         }
 
@@ -311,15 +317,11 @@ namespace Infrastructure.Services
                 Take = 10
             };
 
-            var events = await eventRepository.GetFilteredAsync(user.Id, eventParams);
+            var result = await eventRepository.GetFiltered(user.Id, eventParams);
 
-            var nearbyEvents = locationService.FilterByRadius(user.Latitude.Value, user.Longitude.Value, preferences.RadiusKm, events);
+            await reviewService.AddAverageRatingsAsync(result);
 
-            nearbyEvents = nearbyEvents.Take(eventParams.Take);
-
-            await reviewService.AddAverageRatingsAsync(nearbyEvents);
-
-            return nearbyEvents.Take(eventParams.Take);
+            return result.Take(eventParams.Take);
         }
 
         public async Task<IEnumerable<EventDto>> GetUnpostedByArtistIdAsync(int id)

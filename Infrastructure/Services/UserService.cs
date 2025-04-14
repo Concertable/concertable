@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
+using Common.Helpers;
 using Core.Entities.Identity;
 using Org.BouncyCastle.Bcpg;
 using System;
@@ -54,8 +55,7 @@ namespace Infrastructure.Services
         {
             var user = await currentUserService.GetEntityAsync();
 
-            user.Latitude = latitude;
-            user.Longitude = longitude;
+            user.Location = LocationHelper.CreatePoint(latitude, longitude);
 
             var locationDto = await geocodingService.GetLocationAsync(latitude, longitude);
 

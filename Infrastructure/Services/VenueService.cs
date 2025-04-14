@@ -16,6 +16,7 @@ using Application.Responses;
 using System.Runtime.InteropServices;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
+using NetTopologySuite.Geometries;
 
 namespace Infrastructure.Services
 {
@@ -143,8 +144,7 @@ namespace Infrastructure.Services
 
             user.County = location.County;
             user.Town = location.Town;
-            user.Latitude = latitude;
-            user.Longitude = longitude;
+            user.Location = new Point(longitude, latitude);
         }
 
         private async Task<string> UploadImageAsync(IFormFile image, string? oldImageUrl = null)

@@ -16,6 +16,7 @@ export abstract class HeaderCarouselDirective<T extends Header> implements OnIni
   }
 
   ngOnInit(): void {
+    if(!this.headers)
       this.loadHeaders(15)
   }
 }

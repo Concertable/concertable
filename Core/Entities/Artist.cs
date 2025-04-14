@@ -1,11 +1,13 @@
 ﻿
 using Core.Entities;
 using Core.Entities.Identity;
+using Core.Interfaces;
+using NetTopologySuite.Geometries;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Artist : BaseEntity
+    public class Artist : BaseEntity, ILocation
     {
         public int UserId { get; set; }
         public string Name { get; set; }
@@ -16,6 +18,7 @@ namespace Core.Entities
         public ICollection<SocialMedia> SocialMedias { get; } = new List<SocialMedia>();
         public ICollection<ListingApplication> Applications { get; } = new List<ListingApplication>();
         public ICollection<Video> Videos { get; } = new List<Video>();
-        
+        [NotMapped]
+        public Point? Location => User.Location;
     }
 }

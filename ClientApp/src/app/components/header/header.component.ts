@@ -22,9 +22,7 @@ export class HeaderComponent<T extends Header> {
 
   onClick(): void {
     console.log("heee")
-    if(this.header)
-      this.router.navigate([this.headerType, this.header.id], { 
-        relativeTo: this.route,
-    });
+    if (this.header)
+      this.router.navigate(['find', this.headerType, this.header.id]);
   }
 }

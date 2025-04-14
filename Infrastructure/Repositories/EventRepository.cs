@@ -14,6 +14,7 @@ using Application.DTOs;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using GeoCoordinatePortable;
+using NetTopologySuite.Geometries;
 
 namespace Infrastructure.Repositories
 {
@@ -34,21 +35,26 @@ namespace Infrastructure.Repositories
             EndDate = e.Application.Listing.EndDate,
             County = e.Application.Listing.Venue.User.County,
             Town = e.Application.Listing.Venue.User.Town,
-            Latitude = e.Application.Listing.Venue.User.Latitude,
-            Longitude = e.Application.Listing.Venue.User.Longitude,
+            Latitude = e.Application.Listing.Venue.User.Location.Y,
+            Longitude = e.Application.Listing.Venue.User.Location.X,
             DatePosted = e.DatePosted
         };
 
-        protected override IQueryable<EventHeaderDto> GetRawHeadersQuery(SearchParams searchParams)
+        protected override IQueryable<EventHeaderDto> GetHeadersQuery(SearchParams searchParams)
         {
-            return base.GetRawHeadersQuery(searchParams)
+            return base.GetHeadersQuery(searchParams)
                 .OrderBy(e => e.StartDate);
         }
 
-        protected override IQueryable<EventHeaderDto> GetRawHeadersQuery(int amount)
+        protected override IQueryable<EventHeaderDto> GetHeadersQuery(int amount)
         {
-            return base.GetRawHeadersQuery(amount)
+            return base.GetHeadersQuery(amount)
                 .OrderByDescending(e => e.StartDate);
+        }
+
+        public async Task<IEnumerable<EventHeaderDto>> GetFiltered(int amount)
+        {
+            return await base.GetHeadersQuery(amount).Take(10).ToListAsync();
         }
 
         protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) {
@@ -79,6 +85,8 @@ namespace Infrastructure.Repositories
                 "name_desc" => query.OrderByDescending(e => e.Name),
                 "date_asc" => query.OrderBy(e => e.DatePosted),
                 "date_desc" => query.OrderByDescending(e => e.DatePosted),
+                "location_asc" => query.OrderBy(e => e.Application.Listing.Venue.User.Location),
+                "location_desc" => query.OrderByDescending(e => e.Application.Listing.Venue.User.Location),
                 _ => query
             };
         }
@@ -103,28 +111,13 @@ namespace Infrastructure.Repositories
             return await query.FirstAsync();
         }
 
-        public async Task<IEnumerable<EventHeaderDto>> GetFilteredAsync(int userId, EventParams eventParams)
+        protected IQueryable<EventHeaderDto> GetFilteredQuery(int userId, EventParams eventParams)
         {
             var query = context.Events
                 .Where(e => e.DatePosted != null && e.Application.Listing.EndDate > DateTime.UtcNow)
                 .Include(e => e.Application.Listing.Venue.User)
                 .Include(e => e.EventGenres)
                 .AsQueryable();
-
-            if (eventParams.Latitude.HasValue && eventParams.Longitude.HasValue)
-            {
-                double lat = eventParams.Latitude.Value;
-                double lon = eventParams.Longitude.Value;
-                int radius = eventParams.RadiusKm ?? 10;
-
-                var (minLat, maxLat, minLon, maxLon) = GeoApproximatorHelper.GetBoundingBox(lat, lon, radius);
-
-                query = query.Where(e =>
-                    e.Application.Listing.Venue.User.Latitude >= minLat &&
-                    e.Application.Listing.Venue.User.Latitude <= maxLat &&
-                    e.Application.Listing.Venue.User.Longitude >= minLon &&
-                    e.Application.Listing.Venue.User.Longitude <= maxLon);
-            }
 
             //if (eventParams.GenreIds.Count() > 0)
             //    query = query.Where(e =>
@@ -136,23 +129,16 @@ namespace Infrastructure.Repositories
             if (eventParams.OrderByRecent)
                 query = query.OrderByDescending(e => e.DatePosted);
 
-            var eventHeaders = await query
-            .Select(e => new EventHeaderDto
-            {
-                Id = e.Id,
-                Name = e.Name,
-                ImageUrl = e.Application.Artist.ImageUrl,
-                County = e.Application.Listing.Venue.User.County,
-                Town = e.Application.Listing.Venue.User.Town,
-                Latitude = e.Application.Listing.Venue.User.Latitude,
-                Longitude = e.Application.Listing.Venue.User.Longitude,
-                StartDate = e.Application.Listing.StartDate, 
-                EndDate = e.Application.Listing.EndDate,
-                DatePosted = e.DatePosted
-            })
-            .ToListAsync();
+            if (GeoHelper.HasValidCoordinates(eventParams))
+                query = FilterByRadius(query, eventParams.Latitude!.Value, eventParams.Longitude!.Value, eventParams.RadiusKm ?? 10);
 
-            return eventHeaders;
+            return query.Select(Selector);
+        }
+
+        public async Task<IEnumerable<EventHeaderDto>> GetFiltered(int userId, EventParams eventParams)
+        {
+            var query = GetFilteredQuery(userId, eventParams);
+            return await query.ToListAsync();
         }
 
         public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)
@@ -263,6 +249,17 @@ namespace Infrastructure.Repositories
         {
             return context.Events
                 .AnyAsync(e => e.Application.ListingId == listingId);
+        }
+
+        protected override IQueryable<Event> FilterByRadius(IQueryable<Event> query, double latitude, double longitude, double radiusKm)
+        {
+            var center = new Point(longitude, latitude) { SRID = 4326 };
+
+            query = query.Where(e =>
+                e.Application.Listing.Venue.User.Location != null &&
+                e.Application.Listing.Venue.User.Location.Distance(center) <= (radiusKm) * 1000); // Multiply by 1000 to convert km to meters
+
+            return query;
         }
     }
 }

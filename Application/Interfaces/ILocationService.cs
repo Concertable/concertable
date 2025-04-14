@@ -11,12 +11,10 @@ namespace Application.Interfaces
 {
     public interface ILocationService
     {
-        IEnumerable<T> FilterByRadius<T>(double latitude, double longitude, int radiusKm, IEnumerable<T> items)
-            where T : ILocation;
-
-        IEnumerable<T> SortByDistance<T>(double latitude, double longitude, IEnumerable<T> items, bool ascending = true)
-            where T : ILocation;
-
+        IQueryable<T> FilterByRadius<T>(IQueryable<T> query, double latitude, double longitude, double radiusKm) where T : ILocation;
+        IQueryable<T> SortByDistance<T>(IQueryable<T> query,  double latitude, double longitude, bool ascending = true) where T : ILocation;
+        IQueryable<T> FilterAndSortByNearest<T>(IQueryable<T> query,  double latitude, double longitude, int radiusKm, bool ascending = true) where T : ILocation;
         bool IsWithinRadius(double lat1, double lon1, double lat2, double lon2, int radiusKm);
     }
 }
+

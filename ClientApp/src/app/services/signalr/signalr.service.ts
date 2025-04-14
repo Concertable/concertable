@@ -5,6 +5,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
 import { Event } from '../../models/event';
 import { EventHeader } from '../../models/event-header';
+import { TicketPurchase } from '../../models/ticket-purchase';
 
 @Injectable({
   providedIn: 'root'
@@ -16,11 +17,13 @@ export class SignalRService {
   private paymentHubConnection?: signalR.HubConnection;
   private eventHubConnection?: signalR.HubConnection;
 
-  private eventCreatedSubject = new Subject<ListingApplicationPurchase | undefined>();
-  private eventPostedSubject = new Subject<EventHeader | undefined>();
+  private eventCreatedSubject = new Subject<ListingApplicationPurchase>();
+  private eventPostedSubject = new Subject<EventHeader>();
+  private ticketPurchasedSubject = new Subject<TicketPurchase>();
 
   eventCreated$ = this.eventCreatedSubject.asObservable();
   eventPosted$ = this.eventPostedSubject.asObservable();
+  ticketPurchased$ = this.ticketPurchasedSubject.asObservable();
 
   createHubConnections() {
     this.createPaymentHubConnection();
@@ -43,6 +46,10 @@ export class SignalRService {
     this.paymentHubConnection.on('EventCreated', (response: ListingApplicationPurchase) => {
       console.log("test123");
       this.eventCreatedSubject.next(response);
+    });
+
+    this.paymentHubConnection.on('TicketPurchased', (response: TicketPurchase) => {
+      this.ticketPurchasedSubject.next(response);
     });
   }
 

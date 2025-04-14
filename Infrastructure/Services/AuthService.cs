@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http;
 using System.Runtime.CompilerServices;
 using static QRCoder.PayloadGenerator;
 using Infrastructure.Constants;
+using AutoMapper;
 
 namespace Infrastructure.Services
 {
@@ -31,6 +32,7 @@ namespace Infrastructure.Services
         private readonly ICurrentUserService currentUserService;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
+        private readonly IMapper mapper;
 
         public AuthService(
             IStripeAccountService stripeAccountService,
@@ -39,7 +41,8 @@ namespace Infrastructure.Services
             IPreferenceService preferenceService,
             ICurrentUserService currentUserService,
             UserManager<ApplicationUser> userManager, 
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IMapper mapper)
         {
             this.stripeAccountService = stripeAccountService;
             this.emailService = emailService;
@@ -48,6 +51,7 @@ namespace Infrastructure.Services
             this.currentUserService = currentUserService;
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.mapper = mapper;
         }
 
         public async Task Register(RegisterDto registerDto)
@@ -133,17 +137,11 @@ namespace Infrastructure.Services
             if (role is null)
                 throw new BadRequestException("User has no role");
 
-            return new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = role,
-                County = user.County,
-                Town = user.Town,
-                Latitude = user.Latitude,
-                Longitude = user.Longitude,
-                BaseUrl = RoleRoutes.BaseUrls[role]
-            };
+            var userDto = mapper.Map<UserDto>(user);
+            userDto.Role = role;
+            userDto.BaseUrl = RoleRoutes.BaseUrls[role];
+
+            return userDto;
         }
 
         public async Task<bool> ConfirmEmailAsync(string userId, string token)

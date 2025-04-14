@@ -118,25 +118,33 @@ namespace Web.Controllers
             return Ok(eventResponse.Event);
         }
 
-        [HttpPut("test-signalr")]
-        public async Task<IActionResult> TestSignalR([FromBody] int userId)
+        [HttpGet("test-signalr")]
+        public async Task<IActionResult> TestSignalR(
+            [FromQuery] int userId,
+            [FromQuery] string? name,
+            [FromQuery] string? imageUrl)
         {
-            await hubContext.Clients.User(userId.ToString()).SendAsync("EventPosted",
-             new EventDto
-             {
-                 Id = 999,
-                 Name = "Testy Nights: Live Session",
-                 Price = 25.00m,
-                 TotalTickets = 200,
-                 AvailableTickets = 150,
-                 DatePosted = DateTime.UtcNow,
-                 StartDate = DateTime.UtcNow.AddDays(7).AddHours(19), // 7 days from now at 7 PM
-                 EndDate = DateTime.UtcNow.AddDays(7).AddHours(23),   // ends at 11 PM
-             });
+            var eventHeaderDto = new EventHeaderDto
+            {
+                Id = 1,
+                Name = name ?? "Sunset Music Jam",
+                ImageUrl = imageUrl ?? "rockers.jpg",
+                County = "Greater Manchester",
+                Town = "Manchester",
+                Latitude = 53.4808,
+                Longitude = -2.2426,
+                Rating = 4.7,
+                StartDate = new DateTime(2025, 8, 10, 17, 0, 0),
+                EndDate = new DateTime(2025, 8, 10, 23, 30, 0),
+                DatePosted = DateTime.UtcNow
+            };
 
+            await hubContext.Clients.User(userId.ToString())
+                .SendAsync("EventPosted", eventHeaderDto);
 
             return Ok($"SignalR test message sent to User {userId}");
         }
+
 
     }
 }

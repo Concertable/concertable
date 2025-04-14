@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Responses;
 using System.Diagnostics;
+using NetTopologySuite.Geometries;
+using Common.Helpers;
 
 namespace Application.Mappings
 {
@@ -17,6 +19,12 @@ namespace Application.Mappings
     {
         public MappingProfile() 
         {
+            CreateMap<ApplicationUser, UserDto>()
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => LocationHelper.GetLatitude(src.Location)))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => LocationHelper.GetLongitude(src.Location)));
+            CreateMap<UserDto, ApplicationUser>()
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => LocationHelper.CreatePoint(src.Latitude, src.Longitude)));
+
             CreateMap<Genre, GenreDto>().ReverseMap();
 
             //Venue
@@ -25,11 +33,10 @@ namespace Application.Mappings
             CreateMap<Venue, VenueDto>()
             .ForMember(
                 dest => dest.Latitude,
-                opt => opt.MapFrom(src => src.User.Latitude ?? 0))
+                opt => opt.MapFrom(src => src.User.Location != null ? src.User.Location.Y : 0)) // Extract Latitude from Location
             .ForMember(
                 dest => dest.Longitude,
-                opt => opt.MapFrom(src => src.User.Longitude ?? 0)
-            )
+                opt => opt.MapFrom(src => src.User.Location != null ? src.User.Location.X : 0)) // Extract Longitude from Location
             .ForMember(
                 dest => dest.County,
                 opt => opt.MapFrom(src => src.User.County))
@@ -118,9 +125,6 @@ namespace Application.Mappings
             CreateMap<Review, ReviewDto>()
                 .ForMember(dest => dest.Email, opt =>  opt.MapFrom(src => src.Ticket.User.Email));
             CreateMap<ReviewDto, Review>();
-
-            CreateMap<ApplicationUser, UserDto>();
-            CreateMap<UserDto, ApplicationUser>();
 
             CreateMap<CreatePreferenceDto, Preference>();
             CreateMap<Preference, PreferenceDto>()

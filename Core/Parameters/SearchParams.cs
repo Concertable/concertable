@@ -1,4 +1,5 @@
-﻿using Core.ModelBinders;
+﻿using Core.Interfaces;
+using Core.ModelBinders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Core.Parameters
 {
-    public class SearchParams : PaginationParams
+    public class SearchParams : PaginationParams, IGeoParams
     {
         public string? SearchTerm { get; set; }
         public string HeaderType { get; set; }

@@ -1,7 +1,11 @@
 ﻿
+using Core.Interfaces;
+using NetTopologySuite.Geometries;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Core.Entities
 {
-    public class Event : BaseEntity
+    public class Event : BaseEntity, ILocation
     {
         public int ApplicationId { get; set; }
         public string Name { get; set; }
@@ -14,5 +18,7 @@ namespace Core.Entities
         public ICollection<Ticket> Tickets { get; } = new List<Ticket>();
         public ICollection<EventImage> Images { get; } = new List<EventImage>();
         public ICollection<EventGenre> EventGenres { get; set; } = new List<EventGenre>();
+        [NotMapped]
+        public Point? Location => Application.Listing.Venue.User.Location;
     }
 }

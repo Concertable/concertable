@@ -48,9 +48,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
-{
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+        opt.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            opt => opt.UseNetTopologySuite() 
+        )
+    );
 
 builder.Services.AddCors(options =>
 {
@@ -103,6 +105,8 @@ builder.Services.AddScoped<IListingApplicationValidationService, ListingApplicat
 builder.Services.AddScoped<ITicketValidationService, TicketValidationService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueueHostedService>();
+
+builder.Services.AddSingleton<IHeaderServiceMapper, HeaderServiceMapper>();
 
 builder.Services.AddScoped<IHeaderService<VenueHeaderDto>, VenueService>();
 builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();

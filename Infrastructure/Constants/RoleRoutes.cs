@@ -11,7 +11,7 @@ namespace Infrastructure.Constants
         public static readonly Dictionary<string, string> BaseUrls = new()
         {
             { "Admin", "/admin" },
-            { "User", "/user" },
+            { "Customer", "/" },
             { "VenueManager", "/venue" },
             { "ArtistManager", "/artist" }
         };

@@ -7,14 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Entities;
+using Core.Interfaces;
 
 namespace Application.Interfaces
 {
     public interface IHeaderRepository<TEntity, TDto> : IRepository<TEntity> 
         where TDto : HeaderDto
-        where TEntity: BaseEntity
+        where TEntity: BaseEntity, ILocation
     {
-        Task<PaginationResponse<TDto>> GetRawHeadersAsync(SearchParams? searchParams);
-        Task<IEnumerable<TDto>> GetRawHeadersAsync(int amount);
+        Task<PaginationResponse<TDto>> GetHeadersAsync(SearchParams? searchParams);
+        Task<IEnumerable<TDto>> GetHeadersAsync(int amount);
     }
 }

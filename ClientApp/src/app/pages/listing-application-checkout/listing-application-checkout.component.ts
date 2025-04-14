@@ -52,13 +52,14 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
         ];
       console.log(this.summaryItems);
       this.signalRService.eventCreated$.subscribe(response => {
-        var event = response?.event
         console.log("subscribed", response);
-        if(event)
+        if (response.success) {
+          const event = response.event;
           this.router.navigateByUrl(`venue/my/events/event/${event.id}`);
-        else
-          this.stripeToastService.showError(response?.message ?? "", "Please contact support for a refund")
-      })
+        } else {
+          this.stripeToastService.showError(response.message);
+        }
+      });
   }
 
   setRouteData(data: any): void {

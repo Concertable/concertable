@@ -1,9 +1,11 @@
-﻿using Core.Interfaces;
+﻿using Common.Helpers;
+using Core.Interfaces;
+using NetTopologySuite.Geometries;
 using System.ComponentModel.DataAnnotations;
 
 namespace Application.DTOs
 {
-    public class HeaderDto : ILocation
+    public class HeaderDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

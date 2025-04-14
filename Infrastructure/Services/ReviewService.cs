@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Core.Interfaces;
 
 namespace Infrastructure.Services
 {
@@ -28,29 +29,33 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers)
+        public Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers)
         {
-            foreach (var h in headers)
-            {
-                h.Rating = await reviewRepository.GetAverageRatingByArtistIdAsync(h.Id);
-            }
+            return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByArtistIdsAsync);
         }
 
-        public async Task AddAverageRatingsAsync(IEnumerable<EventHeaderDto> headers)
+        public Task AddAverageRatingsAsync(IEnumerable<EventHeaderDto> headers)
         {
-            foreach (var h in headers)
-            {
-                h.Rating = await reviewRepository.GetAverageRatingByEventIdAsync(h.Id);
-            }
+            return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByEventIdsAsync);
         }
 
-        public async Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers)
+        public Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers)
         {
-            foreach (var h in headers)
-            {
-                h.Rating = await reviewRepository.GetAverageRatingByVenueIdAsync(h.Id);
-            }
+            return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByVenueIdsAsync);
         }
+
+        private async Task AddAverageRatingsAsync<THeader>(
+            IEnumerable<THeader> headers,
+            Func<IEnumerable<int>, Task<IDictionary<int, double>>> getRatingsAsync)
+            where THeader : HeaderDto
+        {
+            var ids = headers.Select(h => h.Id).ToList();
+            var ratings = await getRatingsAsync(ids);
+
+            foreach (var h in headers)
+                h.Rating = ratings.TryGetValue(h.Id, out var rating) ? rating : 0.0;
+        }
+
 
         public async Task SetAverageRatingAsync(VenueDto venue)
         {

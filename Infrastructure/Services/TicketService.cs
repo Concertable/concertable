@@ -115,7 +115,7 @@ public class TicketService : ITicketService
             await unitOfWork.SaveChangesAsync();
             await transaction.CommitAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             /* 
              * Since we are forced to save midway through unitOfWork,

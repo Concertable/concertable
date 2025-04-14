@@ -1,8 +1,11 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Common.Helpers;
 using Core.Interfaces;
 using Core.Parameters;
 using GeoCoordinatePortable;
+using MimeKit;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,47 +21,63 @@ namespace Infrastructure.Services
         /// <summary>
         /// Filters items within a specified radius (in km).
         /// </summary>
-        public IEnumerable<T> FilterByRadius<T>(double latitude, double longitude, int radiusKm, IEnumerable<T> items)
+        public IQueryable<T> FilterByRadius<T>(
+            IQueryable<T> query,
+            double latitude,
+            double longitude,
+            double radiusKm)
             where T : ILocation
         {
-            return items
-                .Where(e => e.Latitude.HasValue && e.Longitude.HasValue)
-                .Where(e =>
-                {
-                    if (e.Latitude == 0 && e.Longitude == 0)
-                        return false; 
+            //var userLocation = new Point(longitude, latitude)
+            //{
+            //    SRID = 4326  // Standard for lat/lon (WGS 84)
+            //};
 
-                    return IsWithinRadius(latitude, longitude, e.Latitude.Value, e.Longitude.Value, radiusKm);
-                });
+            //var radiusMeters = radiusKm * 1000;  // Convert radius to meters
+
+            //// Filter the entities based on the distance from the user's location
+            //return query.Where(e => e != null && e.Latitude != null && e.Longitude != null &&
+            //                    new Point(e.Longitude.Value, e.Latitude.Value)
+            //                    {
+            //                        SRID = 4326  // Standard for lat/lon (WGS 84)
+            //                    }.Distance(userLocation) <= radiusMeters);
+            throw new NotImplementedException();
         }
+
 
         /// <summary>
         /// Sorts items by distance to a given point.
         /// </summary>
-        public IEnumerable<T> SortByDistance<T>(double latitude, double longitude, IEnumerable<T> items, bool ascending = true)
+        public IQueryable<T> SortByDistance<T>(
+            IQueryable<T> query,
+            double latitude,
+            double longitude,
+            bool ascending = true)
             where T : ILocation
         {
-            var inputCoordinate = new GeoCoordinate(latitude, longitude);
+            var center = LocationHelper.CreatePoint(latitude, longitude);
 
-            var sortedItems = items.OrderBy(e =>
-            {
-                if (!e.Latitude.HasValue || !e.Longitude.HasValue)
-                    return double.MaxValue; // Push invalid coordinates to the end
-
-                var itemCoordinate = new GeoCoordinate(e.Latitude.Value, e.Longitude.Value);
-                return inputCoordinate.GetDistanceTo(itemCoordinate);
-            });
-
-            return ascending ? sortedItems : sortedItems.Reverse();
+            return ascending
+                ? query.OrderBy(x => x.Location != null ? x.Location.Distance(center) : double.MaxValue)
+                : query.OrderByDescending(x => x.Location != null ? x.Location.Distance(center) : double.MinValue);
         }
 
-        public IEnumerable<T> FilterAndSortByNearest<T>(double latitude, double longitude, int radiusKm, IEnumerable<T> items, bool ascending = true)
+
+        /// <summary>
+        /// Does both Filtering and Sorting in one method
+        /// </summary>
+        public IQueryable<T> FilterAndSortByNearest<T>(
+            IQueryable<T> query,
+            double latitude,
+            double longitude,
+            int radiusKm,
+            bool ascending = true)
             where T : ILocation
         {
-            var filteredItems = FilterByRadius(latitude, longitude, radiusKm, items);
-
-            return SortByDistance(latitude, longitude, filteredItems, ascending);
+            var filtered = FilterByRadius(query, latitude, longitude, radiusKm);
+            return SortByDistance(filtered, latitude, longitude, ascending);
         }
+
 
         public bool IsWithinRadius(double lat1, double lon1,  double lat2, double lon2, int radiusKm)
         {

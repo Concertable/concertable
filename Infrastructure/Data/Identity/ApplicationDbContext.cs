@@ -37,6 +37,10 @@ namespace Infrastructure.Data.Identity
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<ApplicationUser>()
+                .Property(u => u.Location)
+                .HasColumnType("geography");
+
             modelBuilder.Entity<StripeEvent>()
                 .HasKey(e => e.EventId);
 

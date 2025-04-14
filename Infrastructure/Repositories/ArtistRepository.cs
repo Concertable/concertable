@@ -13,6 +13,7 @@ using Infrastructure.Helpers;
 using Application.DTOs;
 using Infrastructure.Factories;
 using System.Linq.Expressions;
+using NetTopologySuite.Geometries;
 
 namespace Infrastructure.Repositories
 {
@@ -30,8 +31,8 @@ namespace Infrastructure.Repositories
             ImageUrl = a.ImageUrl,
             County = a.User.County,
             Town = a.User.Town,
-            Latitude = a.User.Latitude ?? 0,
-            Longitude = a.User.Longitude ?? 0
+            Latitude = a.User.Location.Y,
+            Longitude = a.User.Location.X
         };
 
         protected override List<Expression<Func<Artist, bool>>> Filters(SearchParams searchParams)
@@ -67,6 +68,17 @@ namespace Infrastructure.Repositories
                 .Include(a => a.User);
 
             return await query.FirstOrDefaultAsync();
+        }
+
+        protected override IQueryable<Artist> FilterByRadius(IQueryable<Artist> query, double latitude, double longitude, double radiusKm)
+        {
+            var center = new Point(longitude, latitude) { SRID = 4326 };
+
+            query = query.Where(a =>
+                a.User.Location != null &&
+                a.User.Location.Distance(center) <= (radiusKm) * 1000); // Multiply by 1000 to convert km to meters
+
+            return query;
         }
     }
 }

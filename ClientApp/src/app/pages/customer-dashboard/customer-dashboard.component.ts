@@ -64,6 +64,7 @@ export class CustomerDashboardComponent extends FindDirective<EventHeader> imple
       if (this.recentEventHeaders.length > 10) {
         this.recentEventHeaders.pop();  
       }
+      console.log(this.recentEventHeaders);
     });
   }
   

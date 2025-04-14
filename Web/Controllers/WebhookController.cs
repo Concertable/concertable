@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Responses;
+using Azure;
 using Core.Entities;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -155,7 +156,8 @@ namespace Web.Controllers
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["eventId"]);
                         purchaseCompleteDto.Quantity = int.Parse(intent.Metadata["quantity"]);
-                        await ticketService.CompleteAsync(purchaseCompleteDto);
+                        var response = await ticketService.CompleteAsync(purchaseCompleteDto);
+                        await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("TicketPurchased", response);
                         logger.LogInformation("🎟️ Tickets completed for event: {EventId}", purchaseCompleteDto.EntityId);
                     }
                     else if (type == "application")

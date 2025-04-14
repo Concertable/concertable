@@ -15,6 +15,7 @@ using Core.Entities.Identity;
 using Application.DTOs;
 using System.Linq.Expressions;
 using Infrastructure.Factories;
+using NetTopologySuite.Geometries;
 
 namespace Infrastructure.Repositories
 {
@@ -32,8 +33,8 @@ namespace Infrastructure.Repositories
             ImageUrl = v.ImageUrl,
             County = v.User.County,
             Town = v.User.Town,
-            Latitude = v.User.Latitude ?? 0,
-            Longitude = v.User.Longitude ?? 0
+            Latitude = v.User.Location.Y,
+            Longitude = v.User.Location.X
         };
 
         public async Task<Venue> GetByIdAsync(int id)
@@ -52,6 +53,17 @@ namespace Infrastructure.Repositories
                 .Include(v => v.User);
 
             return await query.FirstOrDefaultAsync();
+        }
+
+        protected override IQueryable<Venue> FilterByRadius(IQueryable<Venue> query, double latitude, double longitude, double radiusKm)
+        {
+            var center = new Point(longitude, latitude) { SRID = 4326 };
+
+            query = query.Where(e =>
+                e.User.Location != null &&
+                e.User.Location.Distance(center) <= (radiusKm) * 1000); // Multiply by 1000 to convert km to meters
+
+            return query;
         }
     }
 }

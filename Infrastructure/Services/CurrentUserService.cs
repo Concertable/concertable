@@ -44,17 +44,11 @@ namespace Infrastructure.Services
             var user = await GetEntityAsync();
             var role = await GetFirstRoleAsync(user);
 
-            return new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = role,
-                County = user.County,
-                Town = user.Town,
-                Latitude = user.Latitude,
-                Longitude = user.Longitude,
-                BaseUrl = RoleRoutes.BaseUrls[role]
-            };
+            var userDto = mapper.Map<UserDto>(user);
+            userDto.Role = role;
+            userDto.BaseUrl = RoleRoutes.BaseUrls[role];
+
+            return userDto;
         }
 
         public async Task<UserDto?> GetOrDefaultAsync()
@@ -64,17 +58,12 @@ namespace Infrastructure.Services
                 var user = await GetEntityAsync();
                 var role = await GetFirstRoleAsync(user);
 
-                return new UserDto
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    Role = role,
-                    County = user.County,
-                    Town = user.Town,
-                    Latitude = user.Latitude,
-                    Longitude = user.Longitude,
-                    BaseUrl = RoleRoutes.BaseUrls[role]
-                };
+                var userDto = mapper.Map<UserDto>(user);
+
+                userDto.Role = role;
+                userDto.BaseUrl = RoleRoutes.BaseUrls[role];
+
+                return userDto;
             }
             catch (UnauthorizedException)
             {

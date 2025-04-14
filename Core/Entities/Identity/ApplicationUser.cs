@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Core.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +10,11 @@ using System.Threading.Tasks;
 
 namespace Core.Entities.Identity
 {
-    public class ApplicationUser : IdentityUser<int> 
+    public class ApplicationUser : IdentityUser<int>, ILocation
     {
         public string? County { get; set; }
         public string? Town { get; set; }
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
+        public Point? Location { get; set; }
         public string? StripeId { get; set; }
         public ICollection<Message> SentMessages { get; set; } = new List<Message>();
         public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();

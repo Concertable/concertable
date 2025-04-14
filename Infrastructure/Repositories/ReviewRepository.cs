@@ -58,6 +58,87 @@ namespace Infrastructure.Repositories
             return Math.Round((await query.AverageAsync(r => (double?)r.Stars)) ?? 0.0, 1);
         }
 
+        private async Task<IDictionary<int, double>> GetAverageRatingsAsync(
+            Expression<Func<Review, int>> keySelector,
+            IEnumerable<int> ids)
+        {
+            /* 
+             * --------------------------------------------
+            *  Build: r => ids.Contains(r.EntityId)
+            *  SQL: WHERE EntityId IN (@ids)
+            *  EF Core: Builds an expression tree for .Where(...)
+            *  --------------------------------------------
+            */
+
+            // EF param: r =>
+            var parameter = keySelector.Parameters[0];
+
+            // EF body: r.EntityId
+            var keyBody = keySelector.Body;
+
+            // Creates Contains method
+            var containsMethod = typeof(Enumerable)
+                .GetMethods() // Gets all methods on IEnumerable
+                .First(m => m.Name == "Contains" && m.GetParameters().Length == 2) // Get the correct Contains method (method overloading)
+                .MakeGenericMethod(typeof(int)); // Contains<int>(IEnumerable<int>, int)
+
+            // r => ids.Contains(r.EntityId)
+            var containsExpr = Expression.Call(
+                containsMethod,
+                Expression.Constant(ids), // Injects `ids` into the tree
+                keyBody                   // r.EntityId (nullable)
+            );
+
+            // Lambda: r => ids.Contains(r.EntityId)
+            var filter = Expression.Lambda<Func<Review, bool>>(containsExpr, parameter);
+
+            /* 
+             * --------------------------------------------
+            *  SQL:
+            *  SELECT EntityId, AVG(Stars)
+            *  FROM Reviews
+            *  WHERE EntityId IN (@ids)
+            *  GROUP BY EntityId
+            * 
+            *  EF Core LINQ:
+            *  context.Reviews
+            *    .Where(filter)
+            *    .GroupBy(keySelector)
+            *    .Select(...)
+            *  --------------------------------------------
+            */
+
+            return await context.Reviews
+                .Where(filter)
+                .GroupBy(keySelector)
+                .Select(g => new
+                {
+                    Id = g.Key, // unwrap nullable int?
+                    AvgRating = g.Average(r => (double?)r.Stars) ?? 0.0
+                })
+                .ToDictionaryAsync(
+                    x => x.Id,
+                    x => Math.Round(x.AvgRating, 1)
+                );
+        }
+
+        public Task<IDictionary<int, double>> GetAverageRatingsByArtistIdsAsync(IEnumerable<int> ids)
+        {
+            return GetAverageRatingsAsync(r => r.Ticket.Event.Application.ArtistId, ids);
+        }
+
+        public Task<IDictionary<int, double>> GetAverageRatingsByVenueIdsAsync(IEnumerable<int> ids)
+        {
+            return GetAverageRatingsAsync(r => r.Ticket.Event.Application.Listing.VenueId,ids);
+        }
+
+        public Task<IDictionary<int, double>> GetAverageRatingsByEventIdsAsync(IEnumerable<int> ids)
+        {
+            return GetAverageRatingsAsync(r => r.Ticket.EventId, ids);
+        }
+
+
+
         private async Task<ReviewSummaryDto> GetSummaryAsync(Expression<Func<Review, bool>> filter)
         {
             var query = context.Reviews.Where(filter);
