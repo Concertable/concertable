@@ -1,6 +1,5 @@
 <div class="container">
     <app-card [isEmpty]="listings.length === 0">
-  
       <!-- Listings Loop -->
       <div *ngFor="let listing of listings" class="item">
         <div class="date-container">
@@ -46,7 +45,7 @@
           <button *ngIf="authService.isRole('ArtistManager')"
                   color="primary" mat-fab extended 
                   (click)="onApply(listing)">
-            <mat-icon fontIcon="visibility"></mat-icon>
+            <mat-icon>check</mat-icon>
             <span class="btn-label">Apply</span>
           </button>
         </div>

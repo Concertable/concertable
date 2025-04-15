@@ -38,8 +38,7 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
     { name: 'About', fragment: 'about' },
     { name: 'Location', fragment: 'location' },
     { name: 'Events', fragment: 'events' },
-    { name: 'Reviews', fragment: 'reviews' },
-    { name: 'Listings', fragment: 'listings' }
+    { name: 'Reviews', fragment: 'reviews' }
   ];
 
   constructor(
@@ -70,6 +69,7 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
 
   override ngOnInit() {
     if(this.authService.isNotRole('Customer')) {
+      console.log("123123")
       this.navItems.push({ name: 'Listings', fragment: 'listings' })
     }
     console.log(this.venue);

@@ -643,8 +643,8 @@ namespace Infrastructure.Data
                 new Listing { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 },
                 new Listing { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 },
                 new Listing { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 },
-                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(50).AddHours(3), Pay = 190 },
-                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(30).AddHours(5), Pay = 190 },
+                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 },
+                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Pay = 190 },
             };
             context.Listings.AddRange(listings);
             await context.SaveChangesAsync();
