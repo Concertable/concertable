@@ -12,7 +12,7 @@ import { Observable } from 'rxjs';
 })
 export class EventHeaderCarouselComponent extends HeaderCarouselDirective<EventHeader> {
   @Input() title: string = '';
-  @Input() declare headers: EventHeader[] = [];
+  @Input() declare headers: EventHeader[];
 
   constructor(private venueService: EventService) {
     super();
