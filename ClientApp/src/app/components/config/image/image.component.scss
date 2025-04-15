@@ -21,9 +21,12 @@
 }
 
 .placeholder {
-    text-align: center;
-    font-size: 18px;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    background-color: #fafafa;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
     color: #999;
-    padding: 20px;
-    background-color: #f4f4f4;
-}
+  }
+  

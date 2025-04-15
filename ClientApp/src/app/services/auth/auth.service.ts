@@ -82,6 +82,7 @@ export class AuthService {
   register(credentials: RegisterCredentials) : Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/register`, credentials).pipe(
       tap(() => {
+        this.toastService.showInfo("Please check your email for verification", "Account created")
         this.router.navigateByUrl('/login');
       })
     );

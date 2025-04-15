@@ -15,8 +15,5 @@ namespace Application.DTOs
         [Required(ErrorMessage = "Coordinates are required.")]
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-
-        [Required(ErrorMessage = "Image URL is required.")] 
-        public string ImageUrl { get; set; }
     }
 }

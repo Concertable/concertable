@@ -1,8 +1,8 @@
 <div class="container">
     <div *ngIf="isEmpty" class="empty-content">
-        <mat-icon>info</mat-icon>No content available
+        <mat-icon>info</mat-icon> No content available
     </div>
     <div class="content">
-        <ng-content *ngIf="!isEmpty"></ng-content>
+        <ng-content></ng-content>
     </div>
 </div>

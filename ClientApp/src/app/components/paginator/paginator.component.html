@@ -1,4 +1,4 @@
-<mat-paginator *ngIf="pagination"
+<mat-paginator *ngIf="pagination && pagination.totalCount > 0"
   [length]="pagination.totalCount"
   [pageSize]="pagination.pageSize"
   [pageIndex]="pagination.pageNumber - 1"

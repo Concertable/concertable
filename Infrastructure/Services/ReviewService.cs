@@ -59,7 +59,8 @@ namespace Infrastructure.Services
 
         public async Task SetAverageRatingAsync(VenueDto venue)
         {
-            venue.Rating = await reviewRepository.GetAverageRatingByVenueIdAsync(venue.Id);
+            if (venue is not null)
+                venue.Rating = await reviewRepository.GetAverageRatingByVenueIdAsync(venue.Id);
         }
 
         public Task<ReviewDto> CreateAsync(ReviewDto review)

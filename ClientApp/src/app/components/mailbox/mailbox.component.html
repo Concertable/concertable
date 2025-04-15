@@ -1,9 +1,16 @@
 <ng-container *ngIf="(authService.isAuthenticated$ | async) && authService.isNotRole('Customer')">
-    <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" [matMenuTriggerFor]="menu" (click)="onMailClick()">
-      <mat-icon class="text-white">mail</mat-icon>
-    </button>
-  
-    <mat-menu #menu="matMenu" class="menu">
+  <button mat-icon-button [matBadge]="unreadCount" matBadgeColor="warn" [matMenuTriggerFor]="menu" (click)="onMailClick()">
+    <mat-icon class="text-white">mail</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu" class="menu">
+    <!-- Check if there are no messages -->
+    <ng-container *ngIf="!paginatedData?.data?.length">
+        <p class="icon-text"><mat-icon light>info</mat-icon>You have no messages</p>
+    </ng-container>
+
+    <!-- Loop through messages if any exist -->
+    <ng-container *ngIf="paginatedData?.data?.length">
       <ng-container *ngFor="let message of paginatedData?.data">
         <div class="wrapper">
           <div class="text">{{ message.content }}</div>
@@ -20,16 +27,13 @@
             color="error"
             (click)="onDelete(message); $event.stopPropagation();">
             <mat-icon>delete</mat-icon>
-        </button>
-
+          </button>
         </div>
       </ng-container>
-  
-      <mat-divider></mat-divider>
-      <app-paginator (click)="$event.stopPropagation()"
-        [pagination]="paginatedData"
-        (pageChange)="onPageChange($event)">
-      </app-paginator>
-    </mat-menu>
+    </ng-container>
+    <app-paginator (click)="$event.stopPropagation()"
+      [pagination]="paginatedData"
+      (pageChange)="onPageChange($event)">
+    </app-paginator>
+  </mat-menu>
 </ng-container>
-  

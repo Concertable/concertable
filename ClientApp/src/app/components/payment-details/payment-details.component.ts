@@ -24,7 +24,6 @@ export class PaymentDetailsComponent {
   ngOnInit(): void {
     this.stripeAccountService.isUserVerified().subscribe({
       next: (verified) => this.isVerified = verified,
-      error: () => this.stripeAccountToastService.notVerified()
     });
   }
 

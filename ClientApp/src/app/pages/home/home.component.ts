@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ToastService } from '../../services/toast/toast.service';
+import { NavigationError, Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -7,5 +9,4 @@ import { Component } from '@angular/core';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
-
 }

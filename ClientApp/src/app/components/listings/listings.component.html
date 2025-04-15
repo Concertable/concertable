@@ -1,106 +1,104 @@
-
 <div class="container">
     <app-card [isEmpty]="listings.length === 0">
-        <div *ngFor="let listing of listings" class="item">
-            <div class="date-container">
-                <p class="date">{{ listing.startDate | date:'d' }}</p>
-                <p class="month">{{ listing.startDate | date:'MMM' }}</p>
-            </div>
-            <div class="info">
-                <div class="nested-info">
-                    <p class="time icon-text">
-                        <mat-icon small>access_time</mat-icon>
-                        <span class="mr-[5px]">{{ listing?.startDate | date:'EEE' }}</span>
-                        <span>{{ listing?.startDate | date:'h:mm a' }} - {{ listing?.endDate | date:'h:mm a' }}</span>
-                    </p>
-                    <p class="icon-text">
-                        <mat-icon small>payments</mat-icon>
-                        <strong class="mr-[5px]">Pay:</strong> {{ listing.pay | currency: 'GBP':'symbol':'1.2-2' }}
-                    </p>
-                </div>
-                <p class="genres icon-text">
-                    <mat-icon small>music_note</mat-icon>
-                    <strong class="mr-[5px]">Genres:</strong> 
-                    <span *ngFor="let genre of listing.genres" class="genres">{{ genre.name }}, </span>
-                </p>
-            </div>
-    
-            <div class="actions">
-                <button *ngIf="authService.isRole('VenueManager') && editMode"
-                        class="delete btn-delete" 
-                        (click)="onDelete(listing)">
-                    <mat-icon>delete</mat-icon> Delete
-                </button>
-    
-                <button *ngIf="authService.isRole('VenueManager') && !editMode"
-                    color="primary" mat-fab extended (click)="onViewApplications(listing)">
-                    <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">View Applications</span>
-                </button>
-
-                <button *ngIf="authService.isRole('ArtistManager')"
-                    color="primary" mat-fab extended (click)="onApply(listing)">
-                    <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">Apply</span>
-                </button>
-            </div>
+  
+      <!-- Listings Loop -->
+      <div *ngFor="let listing of listings" class="item">
+        <div class="date-container">
+          <p class="date">{{ listing.startDate | date: 'd' }}</p>
+          <p class="month">{{ listing.startDate | date: 'MMM' }}</p>
         </div>
-    
-        <!-- Add New Listing -->
-        <div *ngIf="addNew && editMode" class="new-card">
-            <h3>Add New Listing</h3>
-        
-            <div class="grid-container">
-                <div class="grid-item">
-                    <label>Date:</label>
-                    <app-date-picker (dateChange)="onStartDateChange($event)"></app-date-picker>
-                </div>
-        
-                <div class="grid-item">
-                    <label>Pay</label>
-                    <mat-form-field appearance="outline">
-                        <input matInput type="number" [(ngModel)]="newListing.pay" min="0" step="1">
-                    </mat-form-field>
-                </div>
-        
-                <div class="grid-item full-width">
-                    <label>Time:</label>
-                    <div class="time-inputs">
-                        <app-time-picker (timeChange)="onStartTimeChange($event)"></app-time-picker> - 
-                        <app-time-picker (timeChange)="onEndTimeChange($event)"></app-time-picker>
-                    </div>
-                </div>
-        
-                <div class="grid-item full-width">
-                    <label>Genres:</label>
-                    <app-drop-down 
-                        [options]="genres" 
-                        [selectedValue]="newGenre"
-                        [displayProperty]="'name'"
-                        (selectionChange)="newGenre = $event">
-                    </app-drop-down>
-                    <button
-                        color="primary btn-add-genre" mat-fab extended (click)="onAddGenre()">
-                        <mat-icon>add</mat-icon> Add Genre
-                    </button>
-                </div>
-            </div>
-        
-            <!-- Display Added Genres -->
-            <ul class="genre-list">
-                <li *ngFor="let genre of newListing.genres" class="genre-badge">{{ genre.name }}</li>
-            </ul>
+  
+        <div class="info">
+          <div class="nested-info">
+            <p class="time icon-text">
+              <mat-icon small>access_time</mat-icon>
+              <span class="mr-[5px]">{{ listing?.startDate | date: 'EEE' }}</span>
+              <span>{{ listing?.startDate | date: 'h:mm a' }} - {{ listing?.endDate | date: 'h:mm a' }}</span>
+            </p>
+            <p class="icon-text">
+              <mat-icon small>payments</mat-icon>
+              <strong class="mr-[5px]">Pay:</strong>
+              {{ listing.pay | currency: 'GBP':'symbol':'1.2-2' }}
+            </p>
+          </div>
+  
+          <p class="genres icon-text">
+            <mat-icon small>music_note</mat-icon>
+            <strong class="mr-[5px]">Genres:</strong>
+            <span *ngFor="let genre of listing.genres" class="genres">{{ genre.name }}, </span>
+          </p>
         </div>
-        
-    
-        <!-- Add & Save Buttons -->
-        <div *ngIf="editMode" class="actions-container">
-            <button *ngIf="!addNew" class="btn-add"
+  
+        <div class="actions">
+          <button *ngIf="authService.isRole('VenueManager') && editMode"
+                  class="delete btn-delete" 
+                  (click)="onDelete(listing)">
+            <mat-icon>delete</mat-icon> Delete
+          </button>
+  
+          <button *ngIf="authService.isRole('VenueManager') && !editMode"
+                  color="primary" mat-fab extended 
+                  (click)="onViewApplications(listing)">
+            <mat-icon fontIcon="visibility"></mat-icon>
+            <span class="btn-label">View Applications</span>
+          </button>
+  
+          <button *ngIf="authService.isRole('ArtistManager')"
+                  color="primary" mat-fab extended 
+                  (click)="onApply(listing)">
+            <mat-icon fontIcon="visibility"></mat-icon>
+            <span class="btn-label">Apply</span>
+          </button>
+        </div>
+      </div>
+  
+      <!-- Add New Listing -->
+      <div *ngIf="addNew && editMode" class="new-card">
+        <h3>Add New Listing</h3>
+  
+        <div class="grid-container">
+          <div class="grid-item">
+            <label>Date:</label>
+            <app-date-picker (dateChange)="onStartDateChange($event)"></app-date-picker>
+          </div>
+  
+          <div class="grid-item">
+            <label>Pay</label>
+            <mat-form-field appearance="outline">
+              <input matInput type="number" [(ngModel)]="newListing.pay" min="0" step="1" />
+            </mat-form-field>
+          </div>
+  
+          <div class="grid-item full-width">
+            <label>Time:</label>
+            <div class="time-inputs">
+              <app-time-picker (timeChange)="onStartTimeChange($event)"></app-time-picker>
+              -
+              <app-time-picker (timeChange)="onEndTimeChange($event)"></app-time-picker>
+            </div>
+          </div>
+            <app-selector
+                [label]="'Genres'"
+                [options]="genres"
+                [(selectedItems)]="newListing.genres"
+                [displayProperty]="'name'"
+                [editMode]="editMode">
+            </app-selector>
+        </div>
+      </div>
+  
+      <!-- Add & Save Buttons (inside card, always shown in edit mode) -->
+      <div *ngIf="editMode" class="actions-container">
+        <button *ngIf="!addNew" class="btn-add"
                 color="primary btn-add-add" mat-fab extended (click)="onAdd()">
-                <mat-icon>add</mat-icon> Add
-            </button>
-            <button *ngIf="addNew" class="btn-save"
+          <mat-icon>add</mat-icon> Add
+        </button>
+        <button *ngIf="addNew" class="btn-save"
                 color="primary btn-save" mat-fab extended (click)="onSaveItem()">
-                <mat-icon>save</mat-icon> Save
-            </button>
-        </div>
+          <mat-icon>save</mat-icon> Save
+        </button>
+      </div>
+  
     </app-card>
-</div>
+  </div>
+  

@@ -78,9 +78,6 @@ namespace Infrastructure.Services
             var venue = mapper.Map<Venue>(createVenueDto);
             var user = await currentUserService.GetEntityAsync();
 
-            if (venue?.UserId != user.Id)
-                throw new ForbiddenException("You do not own this venue");
-
             venue.UserId = user.Id;
             venue.ImageUrl = await UploadImageAsync(image);
 
@@ -150,7 +147,7 @@ namespace Infrastructure.Services
         {
             if (!string.IsNullOrEmpty(oldImageUrl))
             {
-                await blobStorageService.DeleteAsync(oldImageUrl); // Deletes old image
+                await blobStorageService.DeleteAsync(oldImageUrl); // Deletes old image (if there is one)
             }
 
             var extension = Path.GetExtension(image.FileName);

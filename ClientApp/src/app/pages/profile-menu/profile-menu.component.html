@@ -1,7 +1,6 @@
 <mat-drawer-container class="container">
   <mat-drawer #drawer mode="side" class="sidebar" [opened]="true">
-    <div class="flex flex-col space-y-4">
-
+    <div>
       <mat-nav-list>
         <a mat-list-item routerLink="my" routerLinkActive="active">Profile Details</a>
         <a *ngIf="authService.isRole('Customer')" mat-list-item routerLink="preferences" routerLinkActive="active">Preferences</a>
@@ -23,6 +22,8 @@
     <button mat-icon-button (click)="drawer.toggle()" class="btn-toggle">
       <mat-icon>menu</mat-icon>
     </button>
-    <router-outlet></router-outlet>
+    <div class="mt-10">
+      <router-outlet></router-outlet>
+    </div>
   </mat-drawer-content>
 </mat-drawer-container>

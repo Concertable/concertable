@@ -1,4 +1,4 @@
 <app-create-navbar (create)="createChanges()"></app-create-navbar>
 <div class="container">
-    <app-venue-details [venue]="venue" [editMode]="true" (listingCreate)="addListing($event)" (imageChange)="updateImage($event)"></app-venue-details>
+    <app-venue-details [(venue)]="venue" [editMode]="true" (listingCreate)="addListing($event)" (imageChange)="updateImage($event)"></app-venue-details>
 </div>

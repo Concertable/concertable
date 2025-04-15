@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Validators;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Requests
 {
@@ -13,8 +15,13 @@ namespace Application.Requests
     {
         [Required]
         public CreateVenueDto Venue { get; set; }
-
-        [Required(ErrorMessage = "An image is required.")]
+        [Required]
         public IFormFile Image { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (!ImageValidator.Validate(Image, out var error))
+                yield return new ValidationResult(error, new[] { nameof(Image) });
+        }
     }
 }

@@ -72,11 +72,13 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
     if(this.authService.isNotRole('Customer')) {
       this.navItems.push({ name: 'Listings', fragment: 'listings' })
     }
+    console.log(this.venue);
     super.ngOnInit();
   }
 
   setDetails(data: any): void {
-    this.venue = data['venue'];
+    if (data['venue'])
+      this.venue = data['venue'];
   }
 
   updateLatLong(latLong: google.maps.LatLngLiteral | undefined) {

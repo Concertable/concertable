@@ -19,4 +19,6 @@
             <app-transactions></app-transactions>
         </div>
     </app-dashboard-layout>
+} @else {
+    <app-config-item-not-found [itemName]="'Venue'"></app-config-item-not-found>
 }

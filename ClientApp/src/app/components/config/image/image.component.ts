@@ -25,10 +25,14 @@ export class ImageComponent {
   constructor(private blobStorageService: BlobStorageService) {}
 
   get imageSrc(): string | undefined {
-    return this.preview || this.blobStorageService.getUrl(this.src ?? '');
+    if (this.preview) return this.preview;
+    if (this.src) return this.blobStorageService.getUrl(this.src);
+    return undefined;
   }
+  
 
   onFileSelected(event: Event) {
+    console.log("selected")
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;

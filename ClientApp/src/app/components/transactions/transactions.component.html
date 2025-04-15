@@ -1,4 +1,4 @@
-<app-card>
+<app-card [isEmpty]="paginatedData?.data?.length === 0">
     <div class="transaction item" *ngFor="let transaction of paginatedData?.data">
         <div class="container">
             <div class="header">

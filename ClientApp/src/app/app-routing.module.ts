@@ -192,7 +192,7 @@ const routes: Routes = [
     ]
   },
   { path: 'login', component: LoginComponent, data: { breadcrumb: 'Login' } },
-  { path: 'register', component: RegisterComponent, data: { breadcrumb: 'Register' } }
+  { path: 'register', component: RegisterComponent, data: { breadcrumb: 'Register' } },
 ];
 
 @NgModule({
