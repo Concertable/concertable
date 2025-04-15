@@ -84,9 +84,9 @@ namespace Infrastructure.Repositories
         {
             return sort?.ToLower() switch
             {
-                "name_asc" => query.OrderBy(e => EF.Property<string>(e, "Name")),
-                "name_desc" => query.OrderByDescending(e => EF.Property<string>(e, "Name")),
-                _ => query
+                "name_asc" => query.OrderBy(h => EF.Property<string>(h, "Name")),
+                "name_desc" => query.OrderByDescending(h => EF.Property<string>(h, "Name")),
+                _ => query.OrderBy(h => h.Id)
             };
         }
 

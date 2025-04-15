@@ -19,6 +19,7 @@ namespace Infrastructure.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly ICurrentUserService currentUserService;
         private readonly IListingApplicationValidationService applicationValidationService;
+        private readonly IStripeValidationService stripeValidationService;
         private readonly IMessageService messageService;
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
@@ -29,6 +30,7 @@ namespace Infrastructure.Services
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IListingApplicationValidationService applicationValidationService,
+            IStripeValidationService stripeValidationService,
             IMessageService messageService,
             IListingService listingService,
             IArtistService artistService,
@@ -38,6 +40,7 @@ namespace Infrastructure.Services
             this.unitOfWork = unitOfWork;
             this.currentUserService = currentUserService;
             this.applicationValidationService = applicationValidationService;
+            this.stripeValidationService = stripeValidationService;
             this.messageService = messageService;
             this.listingService = listingService;
             this.artistService = artistService;
@@ -53,6 +56,8 @@ namespace Infrastructure.Services
 
         public async Task ApplyForListingAsync(int listingId)
         {
+            await stripeValidationService.ValidateUserAsync();
+
             var artistDto = await artistService.GetDetailsForCurrentUserAsync();
 
             if (artistDto is null)

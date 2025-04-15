@@ -105,9 +105,10 @@ namespace Application.Mappings
                 {
                     Id = lg.Genre.Id,
                     Name = lg.Genre.Name
-                })))
-            .ReverseMap();
-
+                })));
+            CreateMap<ListingDto, Listing>()
+            .ForMember(dest => dest.ListingGenres, opt => opt.MapFrom(src =>
+                src.Genres.Select(g => new ListingGenre { GenreId = g.Id }).ToList()));
 
             //Events
             CreateMap<Event, EventHeaderDto>()

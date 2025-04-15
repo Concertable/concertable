@@ -87,7 +87,7 @@ namespace Infrastructure.Repositories
                 "date_desc" => query.OrderByDescending(e => e.DatePosted),
                 "location_asc" => query.OrderBy(e => e.Application.Listing.Venue.User.Location),
                 "location_desc" => query.OrderByDescending(e => e.Application.Listing.Venue.User.Location),
-                _ => query
+                _ => query.OrderBy(e => e.Id)
             };
         }
 

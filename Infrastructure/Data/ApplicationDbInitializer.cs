@@ -33,7 +33,6 @@ namespace Infrastructure.Data
                     new Customer { UserName = "customer4@test.com", Email = "customer4@test.com", County = "Edinburgh", Town = "Leith", EmailConfirmed = true, Location = new Point(-3.17, 55.98) { SRID = 4326 } }, //5
                     new Customer { UserName = "customer5@test.com", Email = "customer5@test.com", County = "Sheffield", Town = "Kelham Island", EmailConfirmed = true, Location = new Point(-1.46, 53.39) { SRID = 4326 } }, //6
                     new Customer { UserName = "customer6@test.com", Email = "customer6@test.com", County = "Bath", Town = "Widcombe", EmailConfirmed = true, Location = new Point(-2.36, 51.38) { SRID = 4326 } }, //7
-                    new Customer { UserName = "dummycustomer@test.com", Email = "dummycustomer@test.com", County = "Bath", Town = "Widcombe", EmailConfirmed = true, Location = new Point(-2.36, 51.38) { SRID = 4326 } }, //7
                     // Artist Managers
                     new ArtistManager { UserName = "artistmanager1@test.com", Email = "artistmanager1@test.com", County = "Surrey", Town = "Dorking", EmailConfirmed = true, StripeId = "acct_1R71yoLnJh1ZDYF4", Location = new Point(-0.33, 51.23) { SRID = 4326 } }, //8
                     new ArtistManager { UserName = "artistmanager2@test.com", Email = "artistmanager2@test.com", County = "Surrey", Town = "Reigate", EmailConfirmed = true, StripeId = "acct_1R71z6IBXwkKnqix", Location = new Point(-0.17, 51.23) { SRID = 4326 } }, //9
@@ -70,7 +69,6 @@ namespace Infrastructure.Data
                     new ArtistManager { UserName = "artistmanager33@test.com", Email = "artistmanager33@test.com", County = "Stirling", Town = "Bridge of Allan", EmailConfirmed = true, Location = new Point(-3.93, 56.15) { SRID = 4326 } }, //40
                     new ArtistManager { UserName = "artistmanager34@test.com", Email = "artistmanager34@test.com", County = "Dundee", Town = "Broughty Ferry", EmailConfirmed = true, Location = new Point(-2.87, 56.47) { SRID = 4326 } }, //41
                     new ArtistManager { UserName = "artistmanager35@test.com", Email = "artistmanager35@test.com", County = "Coventry", Town = "Earlsdon", EmailConfirmed = true, Location = new Point(-1.52, 52.4) { SRID = 4326 } }, //42
-                    new ArtistManager { UserName = "dummyartistmanager@test.com", Email = "dummyartistmanager@test.com", County = "Coventry", Town = "Earlsdon", EmailConfirmed = true, Location = new Point(-1.52, 52.4) { SRID = 4326 } }, //42
                     // Venue Managers
                     new VenueManager { UserName = "venuemanager1@test.com", Email = "venuemanager1@test.com", County = "Surrey", Town = "Leatherhead", EmailConfirmed = true, StripeId = "acct_1R71zKBsonWwC9oM", Location = new Point(-0.3, 51.3) { SRID = 4326 } }, //43
                     new VenueManager { UserName = "venuemanager2@test.com", Email = "venuemanager2@test.com", County = "Surrey", Town = "Redhill", EmailConfirmed = true, StripeId = "acct_1R71zvLnLloN6AmB", Location = new Point(-0.17, 51.23) { SRID = 4326 } }, //44
@@ -107,7 +105,16 @@ namespace Infrastructure.Data
                     new VenueManager { UserName = "venuemanager33@test.com", Email = "venuemanager33@test.com", County = "Stirling", Town = "Causewayhead", EmailConfirmed = true, Location = new Point(-3.93, 56.15) { SRID = 4326 } }, //75
                     new VenueManager { UserName = "venuemanager34@test.com", Email = "venuemanager34@test.com", County = "Dundee", Town = "Seagate", EmailConfirmed = true, Location = new Point(-2.87, 56.47) { SRID = 4326 } }, //76
                     new VenueManager { UserName = "venuemanager35@test.com", Email = "venuemanager35@test.com", County = "Coventry", Town = "Far Gosford Street", EmailConfirmed = true, Location = new Point(-1.5, 52.41) { SRID = 4326 } }, //77   
-                    new VenueManager { UserName = "dummyvenuemanager@test.com", Email = "dummyvenuemanager@test.com", County = "Surrey", Town = "Leatherhead", EmailConfirmed = true, Location = new Point(-0.3, 51.3) { SRID = 4326 } },
+                    
+                    new ArtistManager { UserName = "dummyartistmanager1@test.com", Email = "dummyartistmanager1@test.com", County = "Coventry", Town = "Earlsdon", EmailConfirmed = true, Location = new Point(-1.52, 52.4) { SRID = 4326 } }, //42
+                    new ArtistManager { UserName = "dummyartistmanager2@test.com", Email = "dummyartistmanager2@test.com", County = "Coventry", Town = "Earlsdon", EmailConfirmed = true, Location = new Point(-1.52, 52.4) { SRID = 4326 } }, //42
+                    new ArtistManager { UserName = "dummyartistmanager3@test.com", Email = "dummyartistmanager3@test.com", County = "Coventry", Town = "Earlsdon", EmailConfirmed = true, Location = new Point(-1.52, 52.4) { SRID = 4326 } }, //42
+                    new VenueManager { UserName = "dummyvenuemanager1@test.com", Email = "dummyvenuemanager1@test.com", County = "Surrey", Town = "Leatherhead", EmailConfirmed = true, Location = new Point(-0.3, 51.3) { SRID = 4326 } },
+                    new VenueManager { UserName = "dummyvenuemanager2@test.com", Email = "dummyvenuemanager2@test.com", County = "Surrey", Town = "Leatherhead", EmailConfirmed = true, Location = new Point(-0.3, 51.3) { SRID = 4326 } },
+                    new VenueManager { UserName = "dummyvenuemanager3@test.com", Email = "dummyvenuemanager3@test.com", County = "Surrey", Town = "Leatherhead", EmailConfirmed = true, Location = new Point(-0.3, 51.3) { SRID = 4326 } },
+                    new Customer { UserName = "dummycustomer1@test.com", Email = "dummycustomer1@test.com", County = "Bath", Town = "Widcombe", EmailConfirmed = true, Location = new Point(-2.36, 51.38) { SRID = 4326 } }, //7
+                    new Customer { UserName = "dummycustomer2@test.com", Email = "dummycustomer2@test.com", County = "Bath", Town = "Widcombe", EmailConfirmed = true, Location = new Point(-2.36, 51.38) { SRID = 4326 } }, //7
+                    new Customer { UserName = "dummycustomer3@test.com", Email = "dummycustomer3@test.com", County = "Bath", Town = "Widcombe", EmailConfirmed = true, Location = new Point(-2.36, 51.38) { SRID = 4326 } }, //7
                 };
 
 

@@ -9,57 +9,65 @@ using Application.DTOs;
 using AutoMapper;
 using Core.Entities.Identity;
 using System.Runtime.InteropServices;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
     public class ListingService: IListingService
     {
         private readonly IListingRepository listingRepository;
+        private readonly IStripeValidationService stripeValidationService;
         private readonly IVenueService venueService;
         private readonly IMapper mapper;
 
-        public ListingService(IListingRepository listingRepository, IVenueService venueService, IMapper mapper)
+        public ListingService(
+            IListingRepository listingRepository, 
+            IStripeValidationService stripeValidationService,
+            IVenueService venueService, 
+            IMapper mapper)
         {
             this.listingRepository = listingRepository;
+            this.stripeValidationService = stripeValidationService;
             this.venueService = venueService;
             this.mapper = mapper;
         }
 
         public async Task CreateAsync(ListingDto listingDto)
         {
-            var listing = mapper.Map<Listing>(listingDto);
+            await stripeValidationService.ValidateUserAsync();
 
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
-            listing.VenueId = venueDto.Id;
-
-            listing.ListingGenres = listingDto.Genres
-                .Select(g => new ListingGenre { GenreId = g.Id })
-                .ToList();
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync(); // Fetch venue once
+            var listing = MapToListing(listingDto, venueDto); // Use the MapToListing method
 
             await listingRepository.AddAsync(listing);
         }
 
-
         public async Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto)
         {
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
+            await stripeValidationService.ValidateUserAsync();
 
-            var listings = listingsDto.Select(dto =>
-            {
-                var listing = mapper.Map<Listing>(dto);
-                listing.VenueId = venueDto.Id;
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync(); // Fetch venue once
 
-                listing.ListingGenres = dto.Genres
-                    .Select(g => new ListingGenre { GenreId = g.Id })
-                    .ToList();
-
-                return listing;
-            }).ToList();
+            // Use MapToListing for each listing
+            var listings = listingsDto.Select(dto => MapToListing(dto, venueDto)).ToList(); // Map all listings
 
             await listingRepository.AddRangeAsync(listings);
             await listingRepository.SaveChangesAsync();
         }
 
+        private Listing MapToListing(ListingDto listingDto, VenueDto venueDto)
+        {
+            var listing = mapper.Map<Listing>(listingDto); // AutoMapper handles basic mapping
+
+            listing.VenueId = venueDto.Id; // Set VenueId manually
+
+            // Map ListingGenres
+            listing.ListingGenres = listingDto.Genres
+                .Select(g => new ListingGenre { GenreId = g.Id })
+                .ToList();
+
+            return listing;
+        }
 
         public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)
         {
