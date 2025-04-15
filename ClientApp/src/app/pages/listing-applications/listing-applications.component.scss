@@ -1,11 +1,11 @@
 .container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* 🔄 Responsive column sizing */
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr, auto)); 
     gap: 1.5rem;
     max-width: 1000px;
-    margin: 0 auto; /* 💥 Center the grid horizontally */
+    margin: 0 auto; 
     padding: 2rem;
-    justify-content: start; /* Left-align last row if it has only one item */
+    justify-content: start;
 }
   
 .item {

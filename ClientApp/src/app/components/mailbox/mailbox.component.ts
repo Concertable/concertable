@@ -17,11 +17,9 @@ import { PaginationHandler } from '../../shared/handler/pagination-handler';
   templateUrl: './mailbox.component.html',
   styleUrl: './mailbox.component.scss'
 })
-export class MailboxComponent extends PaginationHandler<Message> implements OnInit, OnDestroy {
+export class MailboxComponent extends PaginationHandler<Message> implements OnInit {
   unreadCount: number = 0;
   dropdownOpen = false;
-  private subscriptions: Subscription[] = [];
-
 
   constructor(
     protected authService: AuthService,
@@ -59,10 +57,6 @@ export class MailboxComponent extends PaginationHandler<Message> implements OnIn
       this.router.navigateByUrl(`venue/my/applications/${action.id}`);
     if(action.name === "event")
       this.router.navigateByUrl(`artist/my/events/event/${action.id}`);
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   markReadMessages() {

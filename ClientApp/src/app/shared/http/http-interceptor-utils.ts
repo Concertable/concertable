@@ -12,7 +12,7 @@ export function extractHttpErrorMessage(error: HttpErrorResponse): { title: stri
         }
         return {
           title: "Validation Error",
-          message: modelStateErrors.flat().join(" ")
+          message: modelStateErrors.flat().join("<br>")
         };
       }
     }
@@ -21,7 +21,7 @@ export function extractHttpErrorMessage(error: HttpErrorResponse): { title: stri
     if (error.error) {
       return {
         title: error.error.title,
-        message: error.error.detail || error.message || "An unexpected error occurred"
+        message: error.message || "An unexpected error occurred"
       };
     }
 

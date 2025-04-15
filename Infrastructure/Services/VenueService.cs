@@ -34,17 +34,16 @@ namespace Infrastructure.Services
         public VenueService(
             IVenueRepository venueRepository,
             IBlobStorageService blobStorageService,
-            ILocationService locationService,
             IReviewService reviewService,
             ICurrentUserService currentUserService,
             IGeocodingService geocodingService,
             IUnitOfWork unitOfWork,
+            IGeometryService geometryService,
             IMapper mapper)
-            : base(venueRepository, locationService)
+            : base(venueRepository, geometryService)
         {
             this.venueRepository = venueRepository;
             this.blobStorageService = blobStorageService;
-            this.locationService = locationService;
             this.reviewService = reviewService;
             this.currentUserService = currentUserService;
             this.geocodingService = geocodingService;
@@ -144,7 +143,7 @@ namespace Infrastructure.Services
 
             user.County = location.County;
             user.Town = location.Town;
-            user.Location = new Point(longitude, latitude);
+            user.Location = geometryService.CreatePoint(latitude, longitude);
         }
 
         private async Task<string> UploadImageAsync(IFormFile image, string? oldImageUrl = null)

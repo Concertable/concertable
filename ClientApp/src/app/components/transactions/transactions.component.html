@@ -1,0 +1,22 @@
+<app-card>
+    <div class="transaction item" *ngFor="let transaction of paginatedData?.data">
+        <div class="container">
+            <div class="header">
+                <div class="id">{{ transaction.transactionId }}</div>
+                <div class="amount">{{ transaction.amount | currency }}</div>
+                </div>
+            
+                <div class="meta">
+                <div><strong>From:</strong> {{ transaction.fromUserId }}</div>
+                <div><strong>To:</strong> {{ transaction.toUserId }}</div>
+                <div><strong>Type:</strong> {{ transaction.type | titlecase }}</div>
+                <div><strong>Status:</strong>
+                    <span class="status" [ngClass]="transaction.status">{{ transaction.status }}</span>
+                </div>
+                <div><strong>Date:</strong> {{ transaction.createdAt | date: 'medium' }}</div>
+                </div>
+        </div>
+    </div>
+</app-card>
+<app-paginator [pagination]="paginatedData" (pageChange)="onPageChange($event)"></app-paginator>
+  

@@ -18,7 +18,7 @@ export class ToastService {
       status ? `${status}` :
       title ? `${title}` :
       'Error';
-    this.toastr.error(message, header);
+    this.toastr.error(message, header, { enableHtml: true });
   }
 
   showErrorResponse(error: HttpErrorResponse) {

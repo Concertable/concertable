@@ -31,9 +31,9 @@ namespace Infrastructure.Services
         private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IMessageService messageService;
         private readonly IReviewService reviewService;
-        private readonly ILocationService locationService;
         private readonly IPreferenceService preferenceService;
         private readonly IListingRepository listingRepository;
+        private readonly ILocationService locationService;
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IGenreRepository genreRepository;
         private readonly IMapper mapper;
@@ -45,12 +45,13 @@ namespace Infrastructure.Services
             IListingApplicationValidationService applicationValidationService,
             IMessageService messageService,
             IReviewService reviewService, 
-            ILocationService locationService,
+            IGeometryService geometryService,
             IPreferenceService preferenceService,
+            ILocationService locationService,
             IListingRepository listingRepository,
             IListingApplicationRepository listingApplicationRepository,
             IGenreRepository genreRepository,
-            IMapper mapper) : base(eventRepository, locationService)
+            IMapper mapper) : base(eventRepository, geometryService)
         {
             this.eventRepository = eventRepository;
             this.currentUserService = currentUserService;
@@ -58,10 +59,10 @@ namespace Infrastructure.Services
             this.applicationValidationService = applicationValidationService;
             this.messageService = messageService;
             this.reviewService = reviewService;
-            this.locationService = locationService;
             this.listingApplicationRepository = listingApplicationRepository;
             this.preferenceService = preferenceService;
             this.listingRepository = listingRepository;
+            this.locationService = locationService;
             this.genreRepository = genreRepository;
             this.mapper = mapper;
         }
@@ -274,24 +275,22 @@ namespace Infrastructure.Services
 
             var preferences = await preferenceService.GetAsync();
 
-            //var userIdsToNotify = preferences
-            //.Where(preference =>
-            //    preference.User.Latitude.HasValue &&
-            //    preference.User.Longitude.HasValue &&  // ignore users missing location data
-            //    locationService.IsWithinRadius(
-            //        preference.User.Latitude.Value,
-            //        preference.User.Longitude.Value,
-            //        latitude.Value,
-            //        longitude.Value,
-            //        preference.RadiusKm))
-            //.Select(preference => preference.User.Id);
+            var userIdsToNotify = preferences
+            .Where(preference =>
+                locationService.IsWithinRadius(
+                    preference.User?.Latitude.Value,
+                    preference.User?.Longitude.Value,
+                    eventHeaderDto.Latitude.Value,
+                    eventHeaderDto.Longitude.Value,
+                    preference.RadiusKm))
+            .Select(preference => preference.User.Id);
 
 
             return new EventPostResponse
             {
                 Event = mapper.Map<EventDto>(eventEntity),
                 EventHeader = eventHeaderDto,
-                //UserIds = userIdsToNotify
+                UserIds = userIdsToNotify
             };
         }
 

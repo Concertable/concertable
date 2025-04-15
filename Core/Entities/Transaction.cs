@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Entities
 {
-    public class Purchase : BaseEntity
+    public class Transaction : BaseEntity
     {
         public int FromUserId { get; set; }  
         public ApplicationUser FromUser { get; set; }

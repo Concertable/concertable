@@ -265,7 +265,7 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Purchases",
+                name: "Transactions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -280,14 +280,14 @@ namespace Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Purchases", x => x.Id);
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Purchases_AspNetUsers_FromUserId",
+                        name: "FK_Transactions_AspNetUsers_FromUserId",
                         column: x => x.FromUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Purchases_AspNetUsers_ToUserId",
+                        name: "FK_Transactions_AspNetUsers_ToUserId",
                         column: x => x.ToUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
@@ -739,16 +739,6 @@ namespace Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Purchases_FromUserId",
-                table: "Purchases",
-                column: "FromUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Purchases_ToUserId",
-                table: "Purchases",
-                column: "ToUserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Reviews_TicketId",
                 table: "Reviews",
                 column: "TicketId",
@@ -768,6 +758,16 @@ namespace Infrastructure.Migrations
                 name: "IX_Tickets_UserId",
                 table: "Tickets",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_FromUserId",
+                table: "Transactions",
+                column: "FromUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_ToUserId",
+                table: "Transactions",
+                column: "ToUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VenueImages_VenueId",
@@ -823,9 +823,6 @@ namespace Infrastructure.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Purchases");
-
-            migrationBuilder.DropTable(
                 name: "Reviews");
 
             migrationBuilder.DropTable(
@@ -833,6 +830,9 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "StripeEvents");
+
+            migrationBuilder.DropTable(
+                name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "VenueImages");

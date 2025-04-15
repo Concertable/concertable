@@ -856,17 +856,47 @@ namespace Infrastructure.Data
                 await context.SaveChangesAsync();
             }
 
-            // Purchases
-            if (!context.Purchases.Any())
+            if (!context.Transactions.Any())
             {
-                var purchases = new Purchase[]
+                var transactions = new List<Transaction>
                 {
-                    new Purchase { FromUserId = 2, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.UtcNow },
-                    new Purchase { FromUserId = 3, ToUserId = 1, TransactionId = Guid.NewGuid().ToString(), Amount = 275, Type = "Ticket", Status = "Completed", CreatedAt = DateTime.UtcNow }
+                    // Event payouts: VenueManager (Listing.Venue.UserId) → ArtistManager (Artist.UserId)
+
+                    new Transaction { FromUserId = 43, ToUserId = 8, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-58) },
+                    new Transaction { FromUserId = 44, ToUserId = 9, TransactionId = Guid.NewGuid().ToString(), Amount = 200, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-55) },
+                    new Transaction { FromUserId = 45, ToUserId = 10, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-52) },
+                    new Transaction { FromUserId = 46, ToUserId = 11, TransactionId = Guid.NewGuid().ToString(), Amount = 175, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-49) },
+                    new Transaction { FromUserId = 47, ToUserId = 12, TransactionId = Guid.NewGuid().ToString(), Amount = 160, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-46) },
+
+                    // Ticket purchases: Customer → VenueManager (based on EventId to VenueId mapping)
+
+                    new Transaction { FromUserId = 2, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                    new Transaction { FromUserId = 3, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                    new Transaction { FromUserId = 4, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                    new Transaction { FromUserId = 5, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                    new Transaction { FromUserId = 6, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                    new Transaction { FromUserId = 7, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                    new Transaction { FromUserId = 8, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-55) },
+                    new Transaction { FromUserId = 3, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                    new Transaction { FromUserId = 4, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                    new Transaction { FromUserId = 5, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                    new Transaction { FromUserId = 6, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                    new Transaction { FromUserId = 7, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                    new Transaction { FromUserId = 8, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                    new Transaction { FromUserId = 9, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-52) },
+                    new Transaction { FromUserId = 4, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                    new Transaction { FromUserId = 5, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                    new Transaction { FromUserId = 6, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                    new Transaction { FromUserId = 7, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                    new Transaction { FromUserId = 8, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                    new Transaction { FromUserId = 9, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                    new Transaction { FromUserId = 10, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-49) },
                 };
-                context.Purchases.AddRange(purchases);
+
+                context.Transactions.AddRange(transactions);
                 await context.SaveChangesAsync();
             }
+
         }
     }
 }

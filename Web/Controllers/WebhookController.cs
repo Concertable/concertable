@@ -26,7 +26,7 @@ namespace Web.Controllers
         private readonly IStripeEventRepository stripeEventRepository;
         private readonly ITicketService ticketService;
         private readonly IEventService eventService;
-        private readonly IPurchaseService purchaseService;
+        private readonly ITransactionService purchaseService;
         private readonly ILogger<WebhookController> logger;
 
         private readonly string webhookSecret;
@@ -38,7 +38,7 @@ namespace Web.Controllers
             IHubContext<PaymentHub> hubContext,
             ITicketService ticketService,
             IEventService eventService,
-            IPurchaseService purchaseService,
+            ITransactionService purchaseService,
             IConfiguration configuration,
             ILogger<WebhookController> logger)
         {
@@ -92,7 +92,7 @@ namespace Web.Controllers
             logger.LogInformation("⚙️ ProcessStripeWebhook invoked for event {EventId}", stripeEvent.Id);
 
             var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
-            var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
+            var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
             var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
             var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
             var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PaymentHub>>();
@@ -130,7 +130,7 @@ namespace Web.Controllers
 
                     logger.LogInformation("💸 Payment succeeded: Type={Type}, From={From}, To={To}", type, fromUserId, toUserId);
 
-                    var purchaseDto = new PurchaseDto
+                    var purchaseDto = new TransactionDto
                     {
                         FromUserId = fromUserId,
                         ToUserId = toUserId,

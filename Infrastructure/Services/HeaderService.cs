@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Core.Entities;
 using Infrastructure.Helpers;
 using Core.Interfaces;
+using NetTopologySuite.Geometries;
 
 namespace Infrastructure.Services
 {
@@ -22,14 +23,13 @@ namespace Infrastructure.Services
         where TRepository : IHeaderRepository<TEntity, TDto>
     {
         private readonly TRepository headerRepository;
-        private readonly ILocationService locationService;
+        protected readonly IGeometryService geometryService;
 
         protected HeaderService(
-           TRepository headerRepository,
-           ILocationService locationService)
+           TRepository headerRepository, IGeometryService geometryService)
         {
             this.headerRepository = headerRepository;
-            this.locationService = locationService;
+            this.geometryService = geometryService;
         }
 
         public async virtual Task<PaginationResponse<TDto>> GetHeadersAsync(SearchParams searchParams)

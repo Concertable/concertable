@@ -2,7 +2,7 @@
     <app-venue-details-hero 
         [(venue)]="venue" 
         [editMode]="editMode" 
-        (contentChange)="onChangeDetected()"
+        (venueChange)="onChangeDetected()"
         (latLongChange)="updateLatLong($event)"
         (imageChange)="onImageChange($event)"
         />

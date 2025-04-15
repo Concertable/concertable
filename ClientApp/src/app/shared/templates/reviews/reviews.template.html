@@ -9,9 +9,10 @@
   <!-- Always show Add Review Button, disable if not allowed -->
   <div class="add-review">
     <button
+      *ngIf="isEventReview"
       mat-raised-button
       color="primary mb-3"
-      [disabled]="!(isEventReview && (canReview$ | async))"
+      [disabled]="!(canReview$ | async)"
       (click)="onAddReview()">
       <mat-icon>rate_review</mat-icon>
       Write a Review

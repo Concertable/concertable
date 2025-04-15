@@ -1,8 +1,13 @@
 import { PageEvent } from "@angular/material/paginator";
 import { Pagination } from "../../models/pagination";
 import { PaginationParams } from "../../models/pagination-params";
+import { Subscription } from "rxjs";
+import { Directive, OnDestroy } from "@angular/core";
 
-export abstract class PaginationHandler<T> {
+@Directive()
+export abstract class PaginationHandler<T> implements OnDestroy {
+    protected subscriptions: Subscription[] = [];
+
     protected _pageParams: PaginationParams = {
         pageNumber: 1,
         pageSize: 5
@@ -23,6 +28,10 @@ export abstract class PaginationHandler<T> {
     onPageChange(params: PaginationParams): void {
         this.pageParams = params;
         this.loadPage();
+    }
+
+    ngOnDestroy(): void {
+      this.subscriptions.forEach(sub => sub.unsubscribe());
     }
   }
   

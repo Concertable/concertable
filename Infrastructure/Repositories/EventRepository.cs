@@ -132,7 +132,7 @@ namespace Infrastructure.Repositories
             if (GeoHelper.HasValidCoordinates(eventParams))
                 query = FilterByRadius(query, eventParams.Latitude!.Value, eventParams.Longitude!.Value, eventParams.RadiusKm ?? 10);
 
-            return query.Select(Selector);
+            return query.Select(Selector).Take(10);
         }
 
         public async Task<IEnumerable<EventHeaderDto>> GetFiltered(int userId, EventParams eventParams)

@@ -28,7 +28,14 @@ namespace Application.Mappings
             CreateMap<Genre, GenreDto>().ReverseMap();
 
             //Venue
-            CreateMap<Venue, VenueHeaderDto>();
+            CreateMap<Venue, VenueHeaderDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.County, opt => opt.MapFrom(src => src.User.County))
+                .ForMember(dest => dest.Town, opt => opt.MapFrom(src => src.User.Town))
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.User.Location != null ? src.User.Location.Y : (double?)null))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.User.Location != null ? src.User.Location.X : (double?)null));
             CreateMap<VenueHeaderDto, Venue>();
             CreateMap<Venue, VenueDto>()
             .ForMember(
@@ -47,6 +54,15 @@ namespace Application.Mappings
                 dest => dest.Email,
                 opt => opt.MapFrom(src => src.User.Email))
             .ReverseMap();
+            CreateMap<VenueDto, VenueHeaderDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.County, opt => opt.MapFrom(src => src.County))
+                .ForMember(dest => dest.Town, opt => opt.MapFrom(src => src.Town))
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => (double?)src.Latitude))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => (double?)src.Longitude));
+
 
             //Artist
             CreateMap<Artist, ArtistDto>()
@@ -63,8 +79,24 @@ namespace Application.Mappings
 
             CreateMap<ArtistDto, Artist>()
                 .ForMember(dest => dest.UserId, opt => opt.Ignore());
-            CreateMap<Artist, ArtistHeaderDto>();
+            CreateMap<Artist, ArtistHeaderDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.County, opt => opt.MapFrom(src => src.User.County))
+                .ForMember(dest => dest.Town, opt => opt.MapFrom(src => src.User.Town))
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.User.Location != null ? src.User.Location.Y : (double?)null))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.User.Location != null ? src.User.Location.X : (double?)null));
             CreateMap<ArtistHeaderDto, Artist>();
+            CreateMap<ArtistDto, ArtistHeaderDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.County, opt => opt.MapFrom(src => src.County))
+                .ForMember(dest => dest.Town, opt => opt.MapFrom(src => src.Town))
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => (double?)src.Latitude))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => (double?)src.Longitude));
+
             CreateMap<CreateArtistDto, Artist>();
             //Listing
             CreateMap<Listing, ListingDto>()
@@ -78,9 +110,29 @@ namespace Application.Mappings
 
 
             //Events
-            CreateMap<Event, EventHeaderDto>();
+            CreateMap<Event, EventHeaderDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Application.Artist.ImageUrl))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.Application.Listing.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.Application.Listing.EndDate))
+                .ForMember(dest => dest.County, opt => opt.MapFrom(src => src.Application.Listing.Venue.User.County))
+                .ForMember(dest => dest.Town, opt => opt.MapFrom(src => src.Application.Listing.Venue.User.Town))
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.Application.Listing.Venue.User.Location != null ? src.Application.Listing.Venue.User.Location.Y : (double?)null))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.Application.Listing.Venue.User.Location != null ? src.Application.Listing.Venue.User.Location.X : (double?)null))
+                .ForMember(dest => dest.DatePosted, opt => opt.MapFrom(src => src.DatePosted));
+            CreateMap<EventDto, EventHeaderDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Artist.ImageUrl))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                .ForMember(dest => dest.County, opt => opt.MapFrom(src => src.Venue.County))
+                .ForMember(dest => dest.Town, opt => opt.MapFrom(src => src.Venue.Town))
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.Venue.Latitude))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.Venue.Longitude))
+                .ForMember(dest => dest.DatePosted, opt => opt.MapFrom(src => src.DatePosted));
             CreateMap<EventHeaderDto, Event>();
-            CreateMap<EventDto, EventHeaderDto>();
             CreateMap<EventHeaderDto, EventDto>();
             CreateMap<Event, EventDto>()
             .ForMember(dest => dest.StartDate,
@@ -113,8 +165,8 @@ namespace Application.Mappings
 
 
             //Purchase
-            CreateMap<Purchase, PurchaseDto>();
-            CreateMap<PurchaseDto, Purchase>();
+            CreateMap<Transaction, TransactionDto>();
+            CreateMap<TransactionDto, Transaction>();
 
             //ListingApplications
             CreateMap<ListingApplication, ListingApplicationDto>()

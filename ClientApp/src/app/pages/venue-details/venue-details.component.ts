@@ -38,8 +38,8 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
     { name: 'About', fragment: 'about' },
     { name: 'Location', fragment: 'location' },
     { name: 'Events', fragment: 'events' },
-    { name: 'Videos', fragment: 'videos' },
-    { name: 'Reviews', fragment: 'reviews' }
+    { name: 'Reviews', fragment: 'reviews' },
+    { name: 'Listings', fragment: 'listings' }
   ];
 
   constructor(

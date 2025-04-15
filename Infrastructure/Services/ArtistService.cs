@@ -28,13 +28,12 @@ namespace Infrastructure.Services
             IArtistRepository artistRepository,
             ICurrentUserService currentUserService, 
             IReviewService reviewService, 
-            ILocationService locationService,
+            IGeometryService geometryService,
             IUnitOfWork unitOfWork,
-            IMapper mapper) : base(artistRepository, locationService)
+            IMapper mapper) : base(artistRepository, geometryService)
         {
             this.artistRepository = artistRepository;
             this.reviewService = reviewService;
-            this.locationService = locationService;
             this.currentUserService = currentUserService;
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;

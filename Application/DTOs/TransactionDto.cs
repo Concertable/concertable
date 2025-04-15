@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs
 {
-    public class PurchaseDto
+    public class TransactionDto
     {
         public int FromUserId { get; set; }
         public int ToUserId { get; set; }

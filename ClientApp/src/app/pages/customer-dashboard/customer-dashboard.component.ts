@@ -59,19 +59,13 @@ export class CustomerDashboardComponent extends FindDirective<EventHeader> imple
   }
 
   ngOnInit(): void {
-    this.eventSubscription = this.eventService.recentEventHeaders$.subscribe(header => {
+    this.subscriptions.push(this.eventService.recentEventHeaders$.subscribe(header => {
       this.recentEventHeaders.unshift(header);
       if (this.recentEventHeaders.length > 10) {
         this.recentEventHeaders.pop();  
       }
       console.log(this.recentEventHeaders);
-    });
+    }));
   }
-  
-
-  ngOnDestroy(): void {
-    this.eventSubscription?.unsubscribe();
-  }
-  
 }
 

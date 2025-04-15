@@ -1,5 +1,4 @@
-<!-- index.html -->
-<div class="container">
+<form (ngSubmit)="onSearch()" class="container">
   <div class="wrapper">
     <!-- Location Search Component -->
     <app-location-search 
@@ -14,6 +13,7 @@
       <mat-label>Search</mat-label>
       <input
         matInput
+        name="search"
         [(ngModel)]="searchParams.searchTerm"
         [matAutocomplete]="auto">
       <mat-autocomplete #auto="matAutocomplete">
@@ -28,8 +28,12 @@
     </app-date-picker>
   </div>
 
-  <!-- Search Button (placed outside the wrapper) -->
-  <button mat-icon-button color="accent" class="btn-search" (click)="onSearch()">
+  <!-- Search Button (type="submit") -->
+  <button
+    mat-icon-button
+    type="submit"
+    color="accent"
+    class="btn-search">
     <mat-icon>search</mat-icon>
   </button>
-</div>
+</form>

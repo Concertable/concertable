@@ -22,6 +22,8 @@ using Microsoft.AspNetCore.Authorization;
 using Web.Authorization;
 using QuestPDF.Infrastructure;
 using Infrastructure.Background;
+using NetTopologySuite.Geometries;
+using NetTopologySuite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,7 +88,7 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IListingService, ListingService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
-builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IManagerService, ManagerService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
@@ -103,6 +105,7 @@ builder.Services.AddScoped<IUriService, UriService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
 builder.Services.AddScoped<ITicketValidationService, TicketValidationService>();
+builder.Services.AddScoped<IGeometryService, GeometryService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueueHostedService>();
 
@@ -114,6 +117,8 @@ builder.Services.AddScoped<IHeaderService<EventHeaderDto>, EventService>();
 
 builder.Services.AddSingleton<IHeaderServiceFactory, HeaderServiceFactory>();
 builder.Services.AddSingleton<IReviewServiceMethodFactory, ReviewServiceMethodFactory>();
+builder.Services.AddSingleton<GeometryFactory>(
+    NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
 
 //Lazy Dependency Injections
 builder.Services.AddScoped(provider => new Lazy<IEventService>(() => provider.GetRequiredService<IEventService>()));
@@ -132,7 +137,7 @@ builder.Services.AddScoped<IListingApplicationRepository, ListingApplicationRepo
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
-builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();

@@ -16,75 +16,22 @@ namespace Infrastructure.Services
 {
     public class LocationService : ILocationService
     {
-        public LocationService() { }
+        private readonly IGeometryService geometryService;
 
-        /// <summary>
-        /// Filters items within a specified radius (in km).
-        /// </summary>
-        public IQueryable<T> FilterByRadius<T>(
-            IQueryable<T> query,
-            double latitude,
-            double longitude,
-            double radiusKm)
-            where T : ILocation
+        public LocationService(IGeometryService geometryService)
         {
-            //var userLocation = new Point(longitude, latitude)
-            //{
-            //    SRID = 4326  // Standard for lat/lon (WGS 84)
-            //};
-
-            //var radiusMeters = radiusKm * 1000;  // Convert radius to meters
-
-            //// Filter the entities based on the distance from the user's location
-            //return query.Where(e => e != null && e.Latitude != null && e.Longitude != null &&
-            //                    new Point(e.Longitude.Value, e.Latitude.Value)
-            //                    {
-            //                        SRID = 4326  // Standard for lat/lon (WGS 84)
-            //                    }.Distance(userLocation) <= radiusMeters);
-            throw new NotImplementedException();
+            this.geometryService = geometryService;
         }
 
-
-        /// <summary>
-        /// Sorts items by distance to a given point.
-        /// </summary>
-        public IQueryable<T> SortByDistance<T>(
-            IQueryable<T> query,
-            double latitude,
-            double longitude,
-            bool ascending = true)
-            where T : ILocation
+        public bool IsWithinRadius(double? lat1, double? lon1,  double? lat2, double? lon2, int radiusKm)
         {
-            var center = LocationHelper.CreatePoint(latitude, longitude);
+            var point1 = geometryService.CreatePoint(lat1, lon1);
+            var point2 = geometryService.CreatePoint(lat2, lon2);
 
-            return ascending
-                ? query.OrderBy(x => x.Location != null ? x.Location.Distance(center) : double.MaxValue)
-                : query.OrderByDescending(x => x.Location != null ? x.Location.Distance(center) : double.MinValue);
-        }
+            if (point1 is null || point2 is null)
+                return false;
 
-
-        /// <summary>
-        /// Does both Filtering and Sorting in one method
-        /// </summary>
-        public IQueryable<T> FilterAndSortByNearest<T>(
-            IQueryable<T> query,
-            double latitude,
-            double longitude,
-            int radiusKm,
-            bool ascending = true)
-            where T : ILocation
-        {
-            var filtered = FilterByRadius(query, latitude, longitude, radiusKm);
-            return SortByDistance(filtered, latitude, longitude, ascending);
-        }
-
-
-        public bool IsWithinRadius(double lat1, double lon1,  double lat2, double lon2, int radiusKm)
-        {
-            var userCoordinate = new GeoCoordinate(lat1, lon1);
-            var eventCoordinate = new GeoCoordinate(lat2, lon2);
-
-            double distanceMeters = userCoordinate.GetDistanceTo(eventCoordinate);
+            var distanceMeters = point1!.Distance(point2);
             return distanceMeters <= (radiusKm * 1000);
         }
     }

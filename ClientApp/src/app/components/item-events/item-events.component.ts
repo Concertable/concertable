@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Event } from '../../models/event';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
+import { RoleNavigationService } from '../../services/role-navigation.service';
 
 @Component({
   selector: 'app-item-events',
@@ -12,28 +13,11 @@ import { AuthService } from '../../services/auth/auth.service';
 export class ItemEventsComponent {
   @Input() events: Event[] = [];
 
-  constructor(protected authService: AuthService, private router: Router) { }
+  constructor(protected authService: AuthService, private router: Router, private roleNavigationService: RoleNavigationService) { }
 
   onViewDetails(event: Event) {
-    this.authService.currentUser$.subscribe(user => {
-      if (this.authService.isRole("VenueManager")) {
-        if (event.venue.email == user?.email) {
-          this.router.navigate(['venue/my/events/event', event.id]);
-        } else {
-          this.router.navigate(['find/event', event.id]);
-        }
-      } else if (this.authService.isRole("ArtistManager")) {
-        if (event.artist.email == user?.email) {
-          this.router.navigate(['artist/my/events/event', event.id]);
-        } else {
-          this.router.navigate(['find/event', event.id]);
-        }
-      } else {
-        this.router.navigate(['find/event', event.id]);
-      }
-    });
+    this.roleNavigationService.navigateToResource(event, 'event');
   }
-  
 
   onPurchase(event: Event) {
     this.router.navigate(['event/checkout', event.id])
