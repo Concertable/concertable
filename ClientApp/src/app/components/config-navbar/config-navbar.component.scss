@@ -1,8 +1,12 @@
 .config-header-container {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
     justify-content: end;
     align-items: center;
     padding: 5px 16px;
+    background-color: white;
 }
 
 .config-header-content > ul {

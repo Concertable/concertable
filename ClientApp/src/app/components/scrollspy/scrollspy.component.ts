@@ -3,6 +3,8 @@ import { NavItem } from '../../models/nav-item';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, Subscription } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
+import { StickyService } from '../../services/sticky/sticky.service';
+import { ConfigNavbarService } from '../../services/config-navbar/config-navbar.service';
 
 @Component({
   selector: 'app-scrollspy',
@@ -10,24 +12,26 @@ import { throttleTime } from 'rxjs/operators';
   templateUrl: './scrollspy.component.html',
   styleUrl: './scrollspy.component.scss'
 })
-export class ScrollspyComponent implements AfterViewInit, OnDestroy {
+export class ScrollspyComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() navItems: NavItem[] = [];
   isScrolled = false;
   activeFragment?: string;
-  navOffsetTop!: number;
   private sections!: HTMLElement[];
   private subscriptions: Subscription[] = [];
+  protected configNavbarHeight?: number
 
   @ViewChild('nav', { static: true, read: ElementRef }) nav!: ElementRef;
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private configNavbarService: ConfigNavbarService,
+    private stickyService: StickyService
+  ) {}
 
   ngAfterViewInit(): void {
     this.sections = this.navItems
       .map(item => document.getElementById(item.fragment))
       .filter(section => section !== null)
-
-    this.navOffsetTop = this.nav.nativeElement.offsetTop;
 
     this.subscriptions.push(this.route.fragment.subscribe(fragment => {
       if (fragment) {
@@ -40,31 +44,39 @@ export class ScrollspyComponent implements AfterViewInit, OnDestroy {
         }
       }
     }));
+  }
 
-    this.subscriptions.push(fromEvent(window, 'scroll')
-      .pipe(throttleTime(100))
-      .subscribe(() => this.handleScroll()));
+  ngOnInit(): void {
+    this.configNavbarService.height$.subscribe(height => {
+      this.configNavbarHeight = height;
+      console.log("received height:", height);
+    });
+
+    this.subscriptions.push(
+      this.stickyService.scrollY$.subscribe(scrollY => {
+        this.updateActiveFragment(scrollY);
+      })
+    );
+  }
+
+  private updateActiveFragment(scrollY: number) {
+    const scrollPosition = scrollY + (this.configNavbarHeight ?? 0) + 10;
+
+  let currentSection = this.navItems[0]?.fragment;
+
+  for (const section of this.sections) {
+    if (section.offsetTop <= scrollPosition) {
+      currentSection = section.id;
+    }
+  }
+
+  if (this.activeFragment !== currentSection) {
+    this.activeFragment = currentSection;
+  }
   }
 
   get queryParams() {
     return this.route.snapshot.queryParams;
-  }
-
-  private handleScroll() {
-    this.isScrolled = window.scrollY > this.navOffsetTop;
-
-    let currentSection = this.navItems[0]?.fragment; 
-    const scrollPosition = window.scrollY; 
-
-    for (let section of this.sections) {
-      if (section.offsetTop <= scrollPosition) {
-        currentSection = section.id;
-      }
-    }
-
-    if (this.activeFragment !== currentSection) {
-      this.activeFragment = currentSection;
-    }
   }
 
   ngOnDestroy(): void {

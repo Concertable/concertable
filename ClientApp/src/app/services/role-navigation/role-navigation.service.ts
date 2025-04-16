@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { first } from 'rxjs/operators';
-import { AuthService } from './auth/auth.service';
-import { User } from '../models/user';
-import { Item } from '../models/item';
-import { Role } from '../models/role';
+import { AuthService } from '../auth/auth.service';
+import { User } from '../../models/user';
+import { Item } from '../../models/item';
+import { Role } from '../../models/role';
 
 interface RoleNavigationMapping {
   role: Role;

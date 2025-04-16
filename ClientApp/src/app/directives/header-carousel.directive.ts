@@ -2,10 +2,7 @@ import { Directive, OnInit } from '@angular/core';
 import { Header } from '../models/header';
 import { Observable } from 'rxjs';
 
-@Directive({
-  selector: '[appHeaderCarousel]',
-  standalone: false
-})
+@Directive()
 export abstract class HeaderCarouselDirective<T extends Header> implements OnInit {
   headers: T[] = [];
 
