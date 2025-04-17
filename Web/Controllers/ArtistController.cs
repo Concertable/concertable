@@ -7,6 +7,7 @@ using Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Core.ModelBinders;
 using Application.Responses;
+using Application.Requests;
 
 namespace Web.Controllers
 {
@@ -48,23 +49,23 @@ namespace Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]CreateArtistDto createArtistDto)
+        public async Task<IActionResult> Create([FromBody]ArtistCreateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             //TODO: Talk about security benefits of passing user seperate instead of through the client side
-            var artistDto = await artistService.CreateAsync(createArtistDto);
+            var artistDto = await artistService.CreateAsync(request.Artist, request.Image);
             return CreatedAtAction(nameof(GetDetailsById), new { Id = artistDto.Id }, artistDto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] ArtistDto artistDto)
+        public async Task<IActionResult> Update(int id, [FromBody] ArtistUpdateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            return Ok(await artistService.UpdateAsync(artistDto));
+            return Ok(await artistService.UpdateAsync(request.Artist, request.Image));
         }
     }
 }

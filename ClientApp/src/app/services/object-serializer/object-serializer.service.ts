@@ -11,21 +11,13 @@ export abstract class ObjectSerializerService<T> implements ISerializer<T> {
       Object.entries(obj)
         .filter(([_, value]) => value !== undefined) // Remove undefined values
         .map(([key, value]) => {
-          if (value instanceof Date) {
-            return [key, value.toISOString().split("T")[0]]; 
-          }
-          if (Array.isArray(value)) {
-            return [key, value.join(",")]; 
-          }
-          return [key, (value as any).toString()]; 
+          if (value instanceof Date) 
+            return [key, value.toISOString().split("T")[0]]; // Convert to String Date
+          if (Array.isArray(value))
+            return [key, value.join(",")]; // Convert to comma seperated values 
+          return [key, (value as any).toString()];  // Otherwise, just convert value to string
         })
     )
-  }
-
-  private convertValue(value: any): string {
-    if (Array.isArray(value)) return value.join(','); 
-    if (value instanceof Date) return value.toISOString(); 
-    return value.toString();
   }
 
   abstract deserialize(params: Params): T;

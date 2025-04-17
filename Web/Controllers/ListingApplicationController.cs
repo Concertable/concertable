@@ -32,7 +32,7 @@ namespace Web.Controllers
         [HttpGet("all/{id}")]
         public async Task<ActionResult<IEnumerable<ListingApplicationDto>>> GetAllForListingId(int id)
         {
-            return Ok(await listingApplicationService.GetAllForListingIdAsync(id));
+            return Ok(await listingApplicationService.GetForListingIdAsync(id));
         }
 
         [Authorize(Roles = "ArtistManager")]
@@ -42,6 +42,14 @@ namespace Web.Controllers
             await listingApplicationService.ApplyForListingAsync(listingId);
             return NoContent();
         }
+
+        [HttpGet("active/artist")]
+        [Authorize(Roles = "ArtistManager")]
+        public async Task<ActionResult<IEnumerable<ArtistListingApplicationDto>>> GetActiveForArtist()
+        {
+            return Ok(await listingApplicationService.GetActiveForArtistAsync());
+        }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ListingApplication>> GetById(int id)

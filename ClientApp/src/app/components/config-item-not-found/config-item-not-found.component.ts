@@ -14,6 +14,11 @@ export class ConfigItemNotFoundComponent {
   constructor(private router: Router, private route: ActivatedRoute) { }
 
   createItem() {
-      this.router.navigate(['create'], { relativeTo: this.route });
+    let parent = this.route;
+    
+    while (parent.parent && parent.parent !== this.route.root) 
+      parent = parent.parent;
+    
+    this.router.navigate(['create'], { relativeTo: parent });
   }
 }

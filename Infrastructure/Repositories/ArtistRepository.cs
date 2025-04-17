@@ -20,7 +20,10 @@ namespace Infrastructure.Repositories
     public class ArtistRepository : HeaderRepository<Artist, ArtistHeaderDto>, IArtistRepository
     {
 
-        public ArtistRepository(ApplicationDbContext context) : base(context) 
+        public ArtistRepository(
+            ApplicationDbContext context,
+            IGeometryService geometryService
+            ) : base(context, geometryService) 
         {
         }
 
@@ -72,11 +75,11 @@ namespace Infrastructure.Repositories
 
         protected override IQueryable<Artist> FilterByRadius(IQueryable<Artist> query, double latitude, double longitude, double radiusKm)
         {
-            var center = new Point(longitude, latitude) { SRID = 4326 };
+            var center = geometryService.CreatePoint(latitude, longitude);
 
             query = query.Where(a =>
                 a.User.Location != null &&
-                a.User.Location.Distance(center) <= (radiusKm) * 1000); // Multiply by 1000 to convert km to meters
+                a.User.Location.Distance(center) <= (radiusKm) * 1000);
 
             return query;
         }

@@ -152,6 +152,7 @@ import { VenueHeaderCarouselComponent } from './components/venue-header-carousel
 import { ArtistHeaderCarouselComponent } from './components/artist-header-carousel/artist-header-carousel.component';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { TransactionsComponent } from './components/transactions/transactions.component';
+import { ArtistListingApplicationsComponent } from './components/artist-listing-applications/artist-listing-applications.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -275,7 +276,8 @@ export function initApp(initService: InitService) {
     VenueHeaderCarouselComponent,
     ArtistHeaderCarouselComponent,
     QrCodeDialogComponent,
-    TransactionsComponent
+    TransactionsComponent,
+    ArtistListingApplicationsComponent
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

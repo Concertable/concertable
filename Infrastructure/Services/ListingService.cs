@@ -37,7 +37,7 @@ namespace Infrastructure.Services
             await stripeValidationService.ValidateUserAsync();
 
             var venueDto = await venueService.GetDetailsForCurrentUserAsync(); // Fetch venue once
-            var listing = MapToListing(listingDto, venueDto); // Use the MapToListing method
+            var listing = MapGenres(listingDto, venueDto); // Use the MapToListing method
 
             await listingRepository.AddAsync(listing);
         }
@@ -49,13 +49,13 @@ namespace Infrastructure.Services
             var venueDto = await venueService.GetDetailsForCurrentUserAsync(); // Fetch venue once
 
             // Use MapToListing for each listing
-            var listings = listingsDto.Select(dto => MapToListing(dto, venueDto)).ToList(); // Map all listings
+            var listings = listingsDto.Select(dto => MapGenres(dto, venueDto)).ToList(); // Map all listings
 
             await listingRepository.AddRangeAsync(listings);
             await listingRepository.SaveChangesAsync();
         }
 
-        private Listing MapToListing(ListingDto listingDto, VenueDto venueDto)
+        private Listing MapGenres(ListingDto listingDto, VenueDto venueDto)
         {
             var listing = mapper.Map<Listing>(listingDto); // AutoMapper handles basic mapping
 

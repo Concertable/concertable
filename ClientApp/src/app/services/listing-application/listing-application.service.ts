@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { ListingApplication } from '../../models/listing-application';
 import { ValidationResponse } from '../../models/validation-response';
 import { SKIP_ERROR_HANDLER } from '../../shared/http/http-context.token';
+import { ArtistListingApplication } from '../../models/artist-listing-application';
 
 @Injectable({
   providedIn: 'root'
@@ -37,5 +38,9 @@ export class ListingApplicationService {
     return this.http.get<boolean>(`${this.apiUrl}/can-accept/${listingApplicationId}`, {
       context: new HttpContext().set(SKIP_ERROR_HANDLER, true)
     });
+  }
+
+  getActiveApplicationsForArtist(): Observable<ArtistListingApplication[]> {
+    return this.http.get<ArtistListingApplication[]>(`${this.apiUrl}/active/artist`);
   }
 }

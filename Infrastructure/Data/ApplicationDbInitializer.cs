@@ -751,8 +751,77 @@ namespace Infrastructure.Data
                     await context.SaveChangesAsync();
                 }
 
-        // Tickets
-        if (!context.Tickets.Any())
+            // EventGenres
+            if (!context.EventGenres.Any())
+            {
+                var eventGenres = new List<EventGenre>
+                {
+                // Event 1: ArtistId = 1, ListingId = 1
+                new EventGenre { EventId = 1, GenreId = 1 },
+                new EventGenre { EventId = 1, GenreId = 2 },
+
+                // Event 2: ArtistId = 2, ListingId = 2
+                new EventGenre { EventId = 2, GenreId = 2 },
+                new EventGenre { EventId = 2, GenreId = 5 },
+
+                // Event 3: ArtistId = 3, ListingId = 3
+                new EventGenre { EventId = 3, GenreId = 5 },
+                new EventGenre { EventId = 3, GenreId = 3 },
+
+                // Event 4: ArtistId = 4, ListingId = 4
+                new EventGenre { EventId = 4, GenreId = 4 },
+
+                // Event 5: ArtistId = 5, ListingId = 5
+                new EventGenre { EventId = 5, GenreId = 3 },
+                new EventGenre { EventId = 5, GenreId = 6 },
+                new EventGenre { EventId = 5, GenreId = 1 }, // from listing
+       
+                // Event 6: ArtistId = 6, ListingId = 6
+                new EventGenre { EventId = 6, GenreId = 6 },
+                new EventGenre { EventId = 6, GenreId = 4 },
+
+                // Event 7: ArtistId = 7, ListingId = 7
+                new EventGenre { EventId = 7, GenreId = 2 },
+
+                // Event 8: ArtistId = 8, ListingId = 8
+                new EventGenre { EventId = 8, GenreId = 4 },
+                new EventGenre { EventId = 8, GenreId = 1 },
+
+                // Event 9: ArtistId = 9, ListingId = 9
+                new EventGenre { EventId = 9, GenreId = 2 },
+                new EventGenre { EventId = 9, GenreId = 1 },
+
+                // Event 10 to 26 — assuming listings had no genre seeded, use only artist genres
+                new EventGenre { EventId = 10, GenreId = 6 },
+                new EventGenre { EventId = 11, GenreId = 1 },
+                new EventGenre { EventId = 12, GenreId = 5 },
+                new EventGenre { EventId = 13, GenreId = 4 },
+                new EventGenre { EventId = 14, GenreId = 5 },
+                new EventGenre { EventId = 15, GenreId = 5 },
+                new EventGenre { EventId = 16, GenreId = 5 },
+                new EventGenre { EventId = 17, GenreId = 3 },
+                new EventGenre { EventId = 17, GenreId = 4 },
+                new EventGenre { EventId = 18, GenreId = 3 },
+                new EventGenre { EventId = 18, GenreId = 4 },
+                new EventGenre { EventId = 19, GenreId = 4 },
+                new EventGenre { EventId = 19, GenreId = 3 },
+                new EventGenre { EventId = 20, GenreId = 6 },
+                new EventGenre { EventId = 21, GenreId = 3 },
+                new EventGenre { EventId = 21, GenreId = 4 },
+                new EventGenre { EventId = 22, GenreId = 7 },
+                new EventGenre { EventId = 23, GenreId = 5 },
+                new EventGenre { EventId = 24, GenreId = 7 },
+                new EventGenre { EventId = 25, GenreId = 8 },
+                new EventGenre { EventId = 26, GenreId = 8 },
+                };
+
+                context.EventGenres.AddRange(eventGenres);
+                await context.SaveChangesAsync();
+            }
+
+
+            // Tickets
+            if (!context.Tickets.Any())
         {
             var tickets = new Ticket[]
             {

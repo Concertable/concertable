@@ -12,12 +12,14 @@ using Application.Responses;
 using Infrastructure.Repositories;
 using Core.Entities.Identity;
 using Core.Exceptions;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services
 {
     public class ArtistService : HeaderService<Artist, ArtistHeaderDto, IArtistRepository>, IArtistService
     {
         private readonly IArtistRepository artistRepository;
+        private readonly IImageService imageService;
         private readonly IReviewService reviewService;
         private readonly ILocationService locationService;
         private readonly ICurrentUserService currentUserService;
@@ -26,6 +28,7 @@ namespace Infrastructure.Services
 
         public ArtistService(
             IArtistRepository artistRepository,
+            IImageService imageService,
             ICurrentUserService currentUserService, 
             IReviewService reviewService, 
             IGeometryService geometryService,
@@ -33,6 +36,7 @@ namespace Infrastructure.Services
             IMapper mapper) : base(artistRepository, geometryService)
         {
             this.artistRepository = artistRepository;
+            this.imageService = imageService;
             this.reviewService = reviewService;
             this.currentUserService = currentUserService;
             this.unitOfWork = unitOfWork;
@@ -62,12 +66,14 @@ namespace Infrastructure.Services
             return mapper.Map<ArtistDto>(artist);
         }
 
-        public async Task<ArtistDto> CreateAsync(CreateArtistDto createArtistDto)
+        public async Task<ArtistDto> CreateAsync(CreateArtistDto createArtistDto, IFormFile image)
         {
             var artist = mapper.Map<Artist>(createArtistDto);
 
             var user = await currentUserService.GetAsync();
             artist.UserId = user.Id;
+
+            await imageService.UploadAsync(image);
 
             var createdArtist = await artistRepository.AddAsync(artist);
             await artistRepository.SaveChangesAsync();
@@ -75,7 +81,7 @@ namespace Infrastructure.Services
             return mapper.Map<ArtistDto>(createdArtist);
         }
 
-        public async Task<ArtistDto> UpdateAsync(ArtistDto artistDto)
+        public async Task<ArtistDto> UpdateAsync(ArtistDto artistDto, IFormFile? image)
         {
             var artist = await artistRepository.GetByIdAsync(artistDto.Id);
             mapper.Map(artistDto, artist);
@@ -103,6 +109,9 @@ namespace Infrastructure.Services
                     GenreId = genreId
                 });
             }
+
+            if (image is not null)
+                artist.ImageUrl = await imageService.ReplaceAsync(image, artist.ImageUrl);
 
             artistRepository.Update(artist);
             await artistRepository.SaveChangesAsync();

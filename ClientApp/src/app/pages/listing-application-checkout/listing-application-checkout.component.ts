@@ -50,9 +50,8 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
           { label: "Amount", value: this.application.listing.pay, isCost: true },
           { label: "Total", value: this.application.listing.pay, isCost: true }
         ];
-      console.log(this.summaryItems);
+        
       this.signalRService.eventCreated$.subscribe(response => {
-        console.log("subscribed", response);
         if (response.success) {
           const event = response.event;
           this.router.navigateByUrl(`venue/my/events/event/${event.id}`);

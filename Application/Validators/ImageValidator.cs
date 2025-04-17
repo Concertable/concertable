@@ -23,14 +23,14 @@ namespace Application.Validators
             error = null;
             if (!mimeTypes.Contains(file.ContentType))
             {
-                error = "Unsupported image format.";
+                error = "Unsupported image format";
                 return false;
             }
 
             const long maxFileSize = 5 * 1024 * 1024;
             if (file.Length > maxFileSize)
             {
-                error = "Image file exceeds the maximum size of 5MB.";
+                error = "Image file exceeds the maximum size of 5MB";
                 return false;
             }
 

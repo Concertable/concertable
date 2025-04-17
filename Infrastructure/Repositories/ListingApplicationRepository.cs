@@ -15,7 +15,7 @@ namespace Infrastructure.Repositories
     {
         public ListingApplicationRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int id)
+        public async Task<IEnumerable<ListingApplication>> GetForListingIdAsync(int id)
         {
             var query = context.ListingApplications
             .Where(la => la.ListingId == id)
@@ -26,7 +26,22 @@ namespace Infrastructure.Repositories
                     .ThenInclude(ag => ag.Genre); 
 
             return await query.ToListAsync();
+        }
 
+        public async Task<IEnumerable<ListingApplication>> GetActiveByArtistIdAsync(int artistId)
+        {
+            var query = context.ListingApplications
+            .Include(a => a.Listing)
+            .ThenInclude(l => l.Venue)
+            .Where(a =>
+                a.ArtistId == artistId &&
+                (
+                    // Check an Event exists where the ApplicationId matches this application's ID
+                    !context.Events.Any(e => e.ApplicationId == a.Id) ||
+                    a.Listing.EndDate > DateTime.UtcNow
+                ));
+
+            return await query.ToListAsync();
         }
 
         public async Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id)

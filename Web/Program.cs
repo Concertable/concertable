@@ -107,6 +107,7 @@ builder.Services.AddScoped<IListingApplicationValidationService, ListingApplicat
 builder.Services.AddScoped<ITicketValidationService, TicketValidationService>();
 builder.Services.AddScoped<IGeometryService, GeometryService>();
 builder.Services.AddScoped<IStripeValidationService, StripeValidationService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueueHostedService>();

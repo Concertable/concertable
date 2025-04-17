@@ -111,7 +111,7 @@ namespace Infrastructure.Services
         {
             return await reviewRepository.GetSummaryByVenueIdAsync(id);
         }
-
+        
         public async Task<bool> CanUserReviewEventIdAsync(int eventId)
         {
             var user = await currentUserService.GetAsync();

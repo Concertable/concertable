@@ -40,6 +40,9 @@ public class EventDto : ItemDto, IValidatableObject
         {
             yield return new ValidationResult("End date must be after start date.", new[] { nameof(EndDate) });
         }
+
+        if (StartDate <= DateTime.UtcNow)
+            yield return new ValidationResult("You cannot have an Event in the past", [nameof(EndDate)]);
     }
 
     public EventDto()

@@ -57,6 +57,7 @@ export class ArtistDetailsComponent extends ExtendedDetailsDirective<Artist> {
   }
 
   setDetails(data: any): void {
-    this.artist = data['artist'];
+    if (data['artist'])
+      this.artist = data['artist'];
   }
 }

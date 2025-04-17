@@ -22,7 +22,9 @@ namespace Infrastructure.Repositories
     public class VenueRepository : HeaderRepository<Venue, VenueHeaderDto>, IVenueRepository
     {
         public VenueRepository(
-            ApplicationDbContext context) : base(context) 
+            ApplicationDbContext context,
+            IGeometryService geometryService
+            ) : base(context, geometryService) 
         {
         }
 
@@ -57,11 +59,11 @@ namespace Infrastructure.Repositories
 
         protected override IQueryable<Venue> FilterByRadius(IQueryable<Venue> query, double latitude, double longitude, double radiusKm)
         {
-            var center = new Point(longitude, latitude) { SRID = 4326 };
+            var center = geometryService.CreatePoint(latitude, longitude);
 
             query = query.Where(e =>
                 e.User.Location != null &&
-                e.User.Location.Distance(center) <= (radiusKm) * 1000); // Multiply by 1000 to convert km to meters
+                e.User.Location.Distance(center) <= (radiusKm * 1000));
 
             return query;
         }

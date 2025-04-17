@@ -24,18 +24,23 @@ namespace Infrastructure.Repositories
     where TEntity : BaseEntity, ILocation
     {
         private readonly ApplicationDbContext context;
+        protected readonly IGeometryService geometryService;
         private readonly DbSet<TEntity> dbSet;
 
-        public HeaderRepository(ApplicationDbContext context) : base(context)
+        public HeaderRepository(
+            ApplicationDbContext context,
+            IGeometryService geometryService
+            ) : base(context)
         {
             this.dbSet = context.Set<TEntity>();
+            this.geometryService = geometryService;
         }
 
         protected abstract Expression<Func<TEntity, TDto>> Selector { get; }
 
         protected virtual List<Expression<Func<TEntity, bool>>> Filters(SearchParams searchParams) => new();
 
-        // Add this method to handle radius-based filtering
+        // Each Header handles location filtering differently
         protected abstract IQueryable<TEntity> FilterByRadius(IQueryable<TEntity> query, double latitude, double longitude, double radiusKm);
 
         protected virtual IQueryable<TDto> GetHeadersQuery(SearchParams? searchParams)

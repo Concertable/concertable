@@ -127,10 +127,10 @@ namespace Web.Controllers
             var eventHeaderDto = new EventHeaderDto
             {
                 Id = 1,
-                Name = name ?? "Sunset Music Jam",
+                Name = name ?? "The Rockers performing at the Grand Venue",
                 ImageUrl = imageUrl ?? "rockers.jpg",
-                County = "Greater Manchester",
-                Town = "Manchester",
+                County = "Surrey",
+                Town = "Ashtead",
                 Latitude = 53.4808,
                 Longitude = -2.2426,
                 Rating = 4.7,

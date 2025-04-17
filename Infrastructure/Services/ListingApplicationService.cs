@@ -21,6 +21,7 @@ namespace Infrastructure.Services
         private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IStripeValidationService stripeValidationService;
         private readonly IMessageService messageService;
+        private readonly IEmailService emailService;
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
         private readonly IMapper mapper;
@@ -32,6 +33,7 @@ namespace Infrastructure.Services
             IListingApplicationValidationService applicationValidationService,
             IStripeValidationService stripeValidationService,
             IMessageService messageService,
+            IEmailService emailService,
             IListingService listingService,
             IArtistService artistService,
             IMapper mapper)
@@ -42,16 +44,29 @@ namespace Infrastructure.Services
             this.applicationValidationService = applicationValidationService;
             this.stripeValidationService = stripeValidationService;
             this.messageService = messageService;
+            this.emailService = emailService;
             this.listingService = listingService;
             this.artistService = artistService;
             this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<ListingApplicationDto>> GetAllForListingIdAsync(int id)
+        public async Task<IEnumerable<ListingApplicationDto>> GetForListingIdAsync(int id)
         {
-            var applications = await listingApplicationRepository.GetAllForListingIdAsync(id);
+            var applications = await listingApplicationRepository.GetForListingIdAsync(id);
 
             return mapper.Map<IEnumerable<ListingApplicationDto>>(applications);
+        }
+
+        public async Task<IEnumerable<ArtistListingApplicationDto>> GetActiveForArtistAsync()
+        {
+            var artist = await artistService.GetDetailsForCurrentUserAsync();
+
+            if (artist is null)
+                throw new UnauthorizedAccessException("No Artist Account Found");
+
+            var applications = await listingApplicationRepository.GetActiveByArtistIdAsync(artist.Id);
+            
+            return mapper.Map<IEnumerable<ArtistListingApplicationDto>>(applications);
         }
 
         public async Task ApplyForListingAsync(int listingId)
@@ -77,7 +92,7 @@ namespace Infrastructure.Services
             var response = await applicationValidationService.CanApplyForListingAsync(listingId, artistDto.Id);
 
             if (!response.IsValid)
-                throw new BadRequestException(response.Reason);
+                throw new BadRequestException(response.Reason!);
 
             // Check the Genres match in at least one case
             var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
@@ -91,13 +106,15 @@ namespace Infrastructure.Services
             // Add to application table
             await applicationRepository.AddAsync(application);
 
-            // Send message to venue owner
+            // Send message to Venue Manager
             await messageService.SendAsync(
                 fromUserId: user.Id, 
                 toUserId: listingOwner.Id,
                 content: $"{user.Email} has applied to your listing",
                 action: "application",
-                actionId: listingId); //?
+                actionId: listingId);
+            // Send email to Venue Manager
+            await emailService.SendEmailAsync(user.Id, listingOwner.Email!, "Listing Application", $"{user.Email} has applied to your listing");
 
             // Save changes after both have executed
             try

@@ -15,6 +15,9 @@ namespace Application.DTOs
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            if (StartDate <= DateTime.UtcNow)
+                yield return new ValidationResult("You cannot create a Listing in the past", [nameof(EndDate)]);
+
             if (EndDate <= StartDate)
             {
                 yield return new ValidationResult("EndDate must be after StartDate", [nameof(EndDate)]);

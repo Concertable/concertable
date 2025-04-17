@@ -1,4 +1,5 @@
 import { Genre } from "./genre";
+import { Venue } from "./venue";
 
 export interface Listing {
     id? : number;

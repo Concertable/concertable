@@ -1,0 +1,30 @@
+<div class="container">
+    <app-card [isEmpty]="applications.length === 0">
+      <div *ngFor="let application of applications" class="item">
+  
+        <!-- Date Info (from listing start) -->
+        <div class="date-container">
+          <p class="date">{{ application.listingWithVenue.listing.startDate | date: 'd' }}</p>
+          <p class="month">{{ application.listingWithVenue.listing.startDate | date: 'MMM' }}</p>
+        </div>
+  
+        <!-- Listing Details -->
+        <div class="info">
+          <h3 class="name">{{ application.listingWithVenue.venue.name }}</h3>
+  
+            <p class="icon-text time">
+              <mat-icon small>access_time</mat-icon>
+              {{ application.listingWithVenue.listing.startDate | date: 'h:mm a' }} -
+              {{ application.listingWithVenue.listing.endDate | date: 'h:mm a' }}
+            </p>
+  
+            <p class="genres icon-text">
+                <mat-icon small>music_note</mat-icon>
+                <strong class="mr-[5px]">Genres:</strong>
+                <span *ngFor="let genre of application.listingWithVenue.listing.genres" class="genres">{{ genre.name }}, </span>
+            </p>
+        </div>
+      </div>
+    </app-card>
+  </div>
+  

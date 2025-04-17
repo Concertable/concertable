@@ -17,13 +17,14 @@ using System.Runtime.InteropServices;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 using NetTopologySuite.Geometries;
+using MailKit;
 
 namespace Infrastructure.Services
 {
     public class VenueService : HeaderService<Venue, VenueHeaderDto, IVenueRepository>, IVenueService
     {
         private readonly IVenueRepository venueRepository;
-        private readonly IBlobStorageService blobStorageService;
+        private readonly IImageService imageService;
         private readonly ILocationService locationService;
         private readonly IReviewService reviewService;
         private readonly ICurrentUserService currentUserService;
@@ -33,7 +34,7 @@ namespace Infrastructure.Services
 
         public VenueService(
             IVenueRepository venueRepository,
-            IBlobStorageService blobStorageService,
+            IImageService imageService,
             IReviewService reviewService,
             ICurrentUserService currentUserService,
             IGeocodingService geocodingService,
@@ -43,7 +44,7 @@ namespace Infrastructure.Services
             : base(venueRepository, geometryService)
         {
             this.venueRepository = venueRepository;
-            this.blobStorageService = blobStorageService;
+            this.imageService = imageService;
             this.reviewService = reviewService;
             this.currentUserService = currentUserService;
             this.geocodingService = geocodingService;
@@ -79,7 +80,8 @@ namespace Infrastructure.Services
             var user = await currentUserService.GetEntityAsync();
 
             venue.UserId = user.Id;
-            venue.ImageUrl = await UploadImageAsync(image);
+
+            venue.ImageUrl = await imageService.UploadAsync(image);
 
             await UpdateUserLocationAsync(user, createVenueDto.Latitude, createVenueDto.Longitude);
 
@@ -108,10 +110,7 @@ namespace Infrastructure.Services
             await UpdateUserLocationAsync(user, venueDto.Latitude, venueDto.Longitude);
 
             if (image is not null)
-            {
-                await blobStorageService.DeleteAsync(venue.ImageUrl); // Delete old image
-                venue.ImageUrl = await UploadImageAsync(image, venue.ImageUrl); // Replace with new Image
-            }
+                venue.ImageUrl = await imageService.ReplaceAsync(image); 
 
             venueRepository.Update(venue);
             userRepository.Update(user);
@@ -141,22 +140,6 @@ namespace Infrastructure.Services
             user.County = location.County;
             user.Town = location.Town;
             user.Location = geometryService.CreatePoint(latitude, longitude);
-        }
-
-        private async Task<string> UploadImageAsync(IFormFile image, string? oldImageUrl = null)
-        {
-            if (!string.IsNullOrEmpty(oldImageUrl))
-            {
-                await blobStorageService.DeleteAsync(oldImageUrl); // Deletes old image (if there is one)
-            }
-
-            var extension = Path.GetExtension(image.FileName);
-            var imageUrl = $"{Guid.NewGuid()}{extension}"; // Prevents collisions
-
-            using var stream = image.OpenReadStream();
-            await blobStorageService.UploadAsync(stream, imageUrl); // Upload new image
-
-            return imageUrl;
         }
     }
 }

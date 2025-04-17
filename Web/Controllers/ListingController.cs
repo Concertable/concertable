@@ -24,6 +24,7 @@ namespace Web.Controllers
             return Ok(await listingService.GetActiveByVenueIdAsync(id));
         }
 
+        [Authorize(Roles = "VenueManager")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ListingDto listingDto)
         {
@@ -31,6 +32,7 @@ namespace Web.Controllers
             return CreatedAtAction("", new {Id = 1});
         }
 
+        [Authorize(Roles = "VenueManager")]
         [HttpPost("bulk")]
         public async Task<IActionResult> CreateMultiple([FromBody] IEnumerable<ListingDto> listingsDto)
         {

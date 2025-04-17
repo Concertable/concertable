@@ -9,7 +9,8 @@ namespace Application.Interfaces
 {
     public interface IListingApplicationRepository : IRepository<ListingApplication>
     {
-        Task<IEnumerable<ListingApplication>> GetAllForListingIdAsync(int listingId);
+        Task<IEnumerable<ListingApplication>> GetForListingIdAsync(int listingId);
+        Task<IEnumerable<ListingApplication>> GetActiveByArtistIdAsync(int listingId);
         Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id);
         Task<decimal> GetListingPayByIdAsync(int id);
     }

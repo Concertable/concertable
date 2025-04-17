@@ -171,8 +171,17 @@ namespace Application.Mappings
 
             //ListingApplications
             CreateMap<ListingApplication, ListingApplicationDto>()
-            .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist))
-            .ForMember(dest => dest.Listing, opt => opt.MapFrom(src => src.Listing));
+                .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist))
+                .ForMember(dest => dest.Listing, opt => opt.MapFrom(src => src.Listing));
+
+            CreateMap<ListingApplication, ArtistListingApplicationDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist))
+                .ForMember(dest => dest.ListingWithVenue, opt => opt.MapFrom(src => src.Listing));
+
+            CreateMap<Listing, ListingWithVenueDto>()
+                .ForMember(dest => dest.Listing, opt => opt.MapFrom(src => src))
+                .ForMember(dest => dest.Venue, opt => opt.MapFrom(src => src.Venue));
 
             //Reviews
             CreateMap<Review, ReviewDto>()

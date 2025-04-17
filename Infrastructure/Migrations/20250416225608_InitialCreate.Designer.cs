@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250415194338_InitialCreate")]
+    [Migration("20250416225608_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

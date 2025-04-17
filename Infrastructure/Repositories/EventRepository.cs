@@ -21,8 +21,9 @@ namespace Infrastructure.Repositories
     public class EventRepository : HeaderRepository<Event, EventHeaderDto>, IEventRepository
     {
         public EventRepository(
-            ApplicationDbContext context
-            ) : base(context)
+            ApplicationDbContext context,
+            IGeometryService geometryService
+            ) : base(context, geometryService)
         {
         }
 
@@ -64,7 +65,7 @@ namespace Infrastructure.Repositories
                 filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
 
             if (searchParams.GenreIds != null && searchParams.GenreIds.Any())
-                filters.Add(e => e.Application.Artist.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
+                filters.Add(e => e.EventGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
 
             // Only show events that haven't passed
             if (searchParams.ShowHistory != true)
@@ -253,11 +254,11 @@ namespace Infrastructure.Repositories
 
         protected override IQueryable<Event> FilterByRadius(IQueryable<Event> query, double latitude, double longitude, double radiusKm)
         {
-            var center = new Point(longitude, latitude) { SRID = 4326 };
+            var center = geometryService.CreatePoint(latitude, longitude);
 
             query = query.Where(e =>
                 e.Application.Listing.Venue.User.Location != null &&
-                e.Application.Listing.Venue.User.Location.Distance(center) <= (radiusKm) * 1000); // Multiply by 1000 to convert km to meters
+                e.Application.Listing.Venue.User.Location.Distance(center) <= (radiusKm * 1000));
 
             return query;
         }

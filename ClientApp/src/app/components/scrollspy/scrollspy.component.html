@@ -1,8 +1,4 @@
-<nav
-  #nav
-  class="container"
-  [style.top.px]="configNavbarHeight ?? 0"
->
+<nav #nav class="container" [style.top.px]="configNavbarHeight ?? 0">
   <ul>
     <li *ngFor="let navItem of navItems">
       <a [routerLink]="[]" 

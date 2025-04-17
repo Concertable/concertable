@@ -30,6 +30,7 @@ namespace Infrastructure.Services
         private readonly IUserPaymentService userPaymentService;
         private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IMessageService messageService;
+        private readonly IEmailService emailService;
         private readonly IReviewService reviewService;
         private readonly IPreferenceService preferenceService;
         private readonly IListingRepository listingRepository;
@@ -44,6 +45,7 @@ namespace Infrastructure.Services
             IUserPaymentService userPaymentService,
             IListingApplicationValidationService applicationValidationService,
             IMessageService messageService,
+            IEmailService emailService,
             IReviewService reviewService, 
             IGeometryService geometryService,
             IPreferenceService preferenceService,
@@ -58,6 +60,7 @@ namespace Infrastructure.Services
             this.userPaymentService = userPaymentService;
             this.applicationValidationService = applicationValidationService;
             this.messageService = messageService;
+            this.emailService = emailService;
             this.reviewService = reviewService;
             this.listingApplicationRepository = listingApplicationRepository;
             this.preferenceService = preferenceService;
@@ -140,8 +143,6 @@ namespace Infrastructure.Services
             {
                 var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
 
-                var response = await applicationValidationService.CanAcceptListingApplicationAsync(purchaseCompleteDto.EntityId, purchaseCompleteDto.FromUserId);
-
                 var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
 
                 var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
@@ -153,6 +154,9 @@ namespace Infrastructure.Services
                     eventDto.Id,
                     "Your Application has been accepted! View your event here"
                 );
+
+                await emailService.SendEmailAsync(purchaseCompleteDto.FromUserId, purchaseCompleteDto.FromEmail, "Event Creation", "Your Event has been Created!");
+                //await emailService.SendEmailAsync(purchaseCompleteDto.ToUserId, purchaseCompleteDto.ToEmail, "Event Creation", "An Event has been schedueled for you!");
 
                 return new ListingApplicationPurchaseResponse
                 {
