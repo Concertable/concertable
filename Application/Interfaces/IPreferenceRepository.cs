@@ -9,9 +9,9 @@ namespace Application.Interfaces
 {
     public interface IPreferenceRepository : IRepository<Preference>
     {
-        Task<IEnumerable<Preference>> GetAllAsync();
+        new Task<IEnumerable<Preference>> GetAllAsync();
 
-        Task<Preference> GetByIdAsync(int id);
+        new Task<Preference?> GetByIdAsync(int id);
 
         Task<Preference?> GetByUserIdAsync(int id);
     }

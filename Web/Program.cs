@@ -24,6 +24,7 @@ using QuestPDF.Infrastructure;
 using Infrastructure.Background;
 using NetTopologySuite.Geometries;
 using NetTopologySuite;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles; //Ignore cycles
     options.JsonSerializerOptions.WriteIndented = true; //JSON formatting
     options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 builder.Services.AddHttpContextAccessor();
 
@@ -108,6 +111,7 @@ builder.Services.AddScoped<ITicketValidationService, TicketValidationService>();
 builder.Services.AddScoped<IGeometryService, GeometryService>();
 builder.Services.AddScoped<IStripeValidationService, StripeValidationService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IOwnershipService, OwnershipService>();
 
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueueHostedService>();

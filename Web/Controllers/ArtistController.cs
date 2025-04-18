@@ -48,6 +48,7 @@ namespace Web.Controllers
             return Ok(await artistService.GetDetailsForCurrentUserAsync());
         }
 
+        [Authorize(Roles = "ArtistManager")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]ArtistCreateRequest request)
         {
@@ -59,6 +60,7 @@ namespace Web.Controllers
             return CreatedAtAction(nameof(GetDetailsById), new { Id = artistDto.Id }, artistDto);
         }
 
+        [Authorize (Roles = "ArtistManager")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ArtistUpdateRequest request)
         {

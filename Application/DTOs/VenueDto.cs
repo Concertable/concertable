@@ -11,7 +11,6 @@ namespace Application.DTOs
         public double Longitude { get; set; }
 
         [Required(ErrorMessage = "An image URL is required.")]
-        [Url(ErrorMessage = "ImageUrl must be a valid URL.")]
         public string ImageUrl { get; set; }
 
         [Required(ErrorMessage = "County is required.")]

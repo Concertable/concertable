@@ -13,5 +13,6 @@ namespace Application.Interfaces
     public interface IVenueRepository : IHeaderRepository<Venue, VenueHeaderDto>
     {
         Task<Venue?> GetByUserIdAsync(int id);
+        Task<int?> GetIdByUserIdAsync(int userId);
     }
 }

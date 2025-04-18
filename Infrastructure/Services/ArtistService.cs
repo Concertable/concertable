@@ -118,5 +118,16 @@ namespace Infrastructure.Services
 
             return mapper.Map<ArtistDto>(artist);
         }
+
+        public async Task<int> GetIdForCurrentUserAsync()
+        {
+            var user = await currentUserService.GetAsync();
+            int? id = await artistRepository.GetIdByUserIdAsync(user.Id);
+
+            if (id is null)
+                throw new ForbiddenException("You do not own an Artist");
+
+            return id.Value;
+        }
     }
 }

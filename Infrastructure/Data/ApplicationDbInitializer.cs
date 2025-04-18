@@ -613,38 +613,48 @@ namespace Infrastructure.Data
         {
             var listings = new Listing[]
             {
-                new Listing { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Pay = 150 },
-                new Listing { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Pay = 200 },
-                new Listing { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Pay = 180 },
-                new Listing { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Pay = 175 },
-                new Listing { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Pay = 160 },
-                new Listing { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Pay = 220 },
-                new Listing { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Pay = 210 },
-                new Listing { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Pay = 230 },
-                new Listing { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Pay = 240 },
-                new Listing { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Pay = 250 },
-                new Listing { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Pay = 160 },
-                new Listing { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Pay = 300 },
-                new Listing { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Pay = 280 },
-                new Listing { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Pay = 270 },
-                new Listing { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 265 },
-                new Listing { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Pay = 260 },
-                new Listing { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Pay = 255 },
-                new Listing { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Pay = 250 },
-                new Listing { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Pay = 245 },
-                new Listing { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Pay = 240 },
-                new Listing { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Pay = 235 },
-                new Listing { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Pay = 230 },
-                new Listing { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Pay = 225 },
-                new Listing { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Pay = 220 },
-                new Listing { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Pay = 215 },
-                new Listing { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Pay = 210 },
-                new Listing { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Pay = 205 },
-                new Listing { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 },
-                new Listing { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 },
-                new Listing { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 },
-                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 },
-                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Pay = 190 },
+                new Listing { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Pay = 150 }, //1
+                new Listing { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Pay = 200 }, //2
+                new Listing { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Pay = 180 }, //3
+                new Listing { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Pay = 175 }, //4
+                new Listing { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Pay = 160 }, //5
+                new Listing { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Pay = 220 }, //6
+                new Listing { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Pay = 210 }, //7
+                new Listing { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Pay = 230 }, //8
+                new Listing { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Pay = 240 }, //9
+                new Listing { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Pay = 250 }, //10
+                new Listing { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Pay = 160 }, //11
+                new Listing { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Pay = 300 }, //12
+                new Listing { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Pay = 280 }, //13
+                new Listing { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Pay = 270 }, //14
+                new Listing { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 265 }, //15
+                new Listing { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Pay = 260 }, //16
+                new Listing { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Pay = 255 }, //17
+                new Listing { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Pay = 250 }, //18
+                new Listing { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Pay = 245 }, //19
+                new Listing { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Pay = 240 }, //20
+                new Listing { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Pay = 235 }, //21
+                new Listing { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Pay = 230 }, //22
+                new Listing { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Pay = 225 }, //23
+                new Listing { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Pay = 220 }, //24
+                new Listing { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Pay = 215 }, //25
+                new Listing { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Pay = 210 }, //26
+                new Listing { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Pay = 205 }, //27
+                new Listing { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 }, //28
+                new Listing { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 }, //29
+                new Listing { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //30
+                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //31
+                new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Pay = 190 }, //32
+                new Listing { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Pay = 150 }, //33
+                new Listing { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Pay = 175 }, //34
+                new Listing { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Pay = 200 }, //35
+                new Listing { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Pay = 150 }, //36
+                new Listing { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 175 }, //37
+                new Listing { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Pay = 200 }, //38
+                new Listing { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Pay = 150 }, //39
+                new Listing { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Pay = 175 }, //40
+                new Listing { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Pay = 200 } //41
+
             };
             context.Listings.AddRange(listings);
             await context.SaveChangesAsync();
@@ -710,6 +720,37 @@ namespace Infrastructure.Data
                     new ListingApplication { ArtistId = 28, ListingId = 28 },
                     new ListingApplication { ArtistId = 29, ListingId = 29 },
                     new ListingApplication { ArtistId = 30, ListingId = 30 },
+                    new ListingApplication { ArtistId = 11, ListingId = 31 },
+                    new ListingApplication { ArtistId = 8, ListingId = 32 },
+                    new ListingApplication { ArtistId = 10, ListingId = 33 },
+                    new ListingApplication { ArtistId = 9, ListingId = 34 },
+                    new ListingApplication { ArtistId = 5, ListingId = 34 },
+                    new ListingApplication { ArtistId = 8, ListingId = 33 },
+                    new ListingApplication { ArtistId = 9, ListingId = 33 },
+                    new ListingApplication { ArtistId = 10, ListingId = 34 },
+                    new ListingApplication { ArtistId = 11, ListingId = 34 },
+                    new ListingApplication { ArtistId = 12, ListingId = 35 },
+                    new ListingApplication { ArtistId = 13, ListingId = 36 },
+                    new ListingApplication { ArtistId = 14, ListingId = 36 },
+                    new ListingApplication { ArtistId = 15, ListingId = 36 },
+                    new ListingApplication { ArtistId = 16, ListingId = 37 },
+                    new ListingApplication { ArtistId = 17, ListingId = 38 },
+                    new ListingApplication { ArtistId = 18, ListingId = 38 },
+                    new ListingApplication { ArtistId = 19, ListingId = 39 },
+                    new ListingApplication { ArtistId = 20, ListingId = 40 },
+                    new ListingApplication { ArtistId = 21, ListingId = 40 },
+                    new ListingApplication { ArtistId = 22, ListingId = 40 },
+                    new ListingApplication { ArtistId = 23, ListingId = 40 },
+                    new ListingApplication { ArtistId = 24, ListingId = 41 },
+                    new ListingApplication { ArtistId = 25, ListingId = 41 },
+                    new ListingApplication { ArtistId = 26, ListingId = 41 },
+                    new ListingApplication { ArtistId = 27, ListingId = 41 },
+                    new ListingApplication { ArtistId = 28, ListingId = 41 },
+                    new ListingApplication { ArtistId = 29, ListingId = 41 },
+                    new ListingApplication { ArtistId = 30, ListingId = 41 },
+                    new ListingApplication { ArtistId = 1, ListingId = 27 },
+                    new ListingApplication { ArtistId = 1, ListingId = 30 },
+                    new ListingApplication { ArtistId = 1, ListingId = 33 }
                 };
                 context.ListingApplications.AddRange(applications);
                 await context.SaveChangesAsync();

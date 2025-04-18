@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,6 @@ namespace Application.DTOs
         public int Id { get; set; }
         public ArtistDto Artist { get; set; }
         public ListingDto Listing { get; set; }
+        public ApplicationStatus Status { get; set; }
     }
 }

@@ -4,9 +4,10 @@ import { VenueService } from '../../services/venue/venue.service';
 import { VenueToastService } from '../../services/toast/venue/venue-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CreateItemDirective } from '../../directives/create-item/create-item.directive';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable } from 'rxjs';
 import { ListingService } from '../../services/listing/listing.service';
 import { Listing } from '../../models/listing';
+import { validateObject } from '../../shared/validators/object-validator';
 
 @Component({
   selector: 'app-create-venue',
@@ -55,26 +56,29 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
   }
 
   create(venue: Venue): Observable<Venue> {
-    if (!this.image) 
-      throw new Error("Image is required to create a venue");
+    if (!this.image) {
+      this.venueToastService.showError("Image is required", "Validation Error");
+      return EMPTY;
+    }
+    const errors = validateObject(venue, ['id', 'approved', 'county', 'town', 'imageUrl', 'email']);
+    if (errors.length) {
+      this.venueToastService.showErrors(errors, "Validadasdasdtion Error");
+      return EMPTY;
+    }
+    console.log("????")
     return this.venueService.create(venue, this.image);
   }
+  
 
   showCreated(venue: Venue): void {
     this.venueToastService.showCreated(venue.name); 
   }
 
   addListing(listing: Listing) {
-    this.newListings.push(listing);
+    this.listingService.create(listing).subscribe();
   }
 
   updateImage(image: File) {
     this.image = image;
   }
-
-  override createChanges(): void {
-      super.createChanges()
-      this.listingService.createMultiple(this.newListings).subscribe(l => this.newListings = []);
-  }
-  
 }

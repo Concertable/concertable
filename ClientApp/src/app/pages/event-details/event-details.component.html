@@ -1,100 +1,139 @@
 @if(event) {
-    <app-event-details-hero [(event)]="event" [editMode]="editMode" (eventChange)="onChangeDetected()"></app-event-details-hero>
+    <app-event-details-hero 
+      [(event)]="event" 
+      [editMode]="editMode" 
+      (eventChange)="onChangeDetected()"
+    ></app-event-details-hero>
+  
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
+  
     <div class="page-wrapper">
-        <div class="container" *ngIf="event">
-            <div class="wrapper">
-                <mat-card class="warning" *ngIf="!event.datePosted">
-                    <mat-card-content>
-                        <div class="warning-content">
-                            <mat-icon color="warn">warning</mat-icon>
-                            <span class="text">Please set appropriate fields to post Event</span>
-                          </div>                      
-                    </mat-card-content>
-                  </mat-card>                            
-                <section [id]="navItems[0].fragment">
-                    <h1>{{navItems[0].name}}</h1>
-                        <app-textarea [editMode]="editMode" [label]="'About'" [(content)]="event.artist.about" (contentChange)="onChangeDetected()"/>
-                        <app-badges
-                            [items]="eventGenres"
-                            [displayProperty]="'name'">
-                        </app-badges>
-                </section>
-                <mat-divider class="light" />
-                <section [id]="navItems[1].fragment">
-                    <h1>{{navItems[1].name}}</h1>
-                    <div class="nested-wrapper">
-                        <img width="300" [src]="blobStorageService.getUrl(event.venue.imageUrl)" />
-                        <div class="img-about">
-                            <div class="icon-text">
-                                <mat-icon>home</mat-icon>
-                                <h2 class="ml-1">{{ event.venue.name }}</h2>
-                            </div>
-                            <app-address [lat]="event.venue.latitude" [lng]="event.venue.longitude"></app-address>
-                        </div>
-                    </div>
-                    <app-location-display
-                        [latitude]="event.venue.latitude"
-                        [longitude]="event.venue.longitude">
-                    </app-location-display>
-                </section>
-                <mat-divider class="light" />
-                <section [id]="navItems[2].fragment" class="artist-section">
-                    <h1>{{ navItems[2].name }}</h1>
-                        <app-artist-summary [artist]="event.artist" />
-                </section>
-                <mat-divider class="light" />
-                <section [id]="navItems[3].fragment" class="artist-section">
-                    <h1>{{ navItems[3].name }}</h1>
-                    <app-event-reviews [id]="event.id"></app-event-reviews>
-                </section>
-                <mat-divider class="light" />
-                <section [id]="navItems[4].fragment">
-                    <h1>{{ navItems[4].name }}</h1>
-                  
-                    <app-card>
+      <div class="wrapper">
+        <mat-card class="warning" *ngIf="!event.datePosted">
+          <mat-card-content>
+            <div class="warning-content icon-text">
+              <mat-icon color="warn">warning</mat-icon>
+              <span class="text">Please set appropriate fields to post Event</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+  
+        <section [id]="navItems[0].fragment">
+          <h1>{{ navItems[0].name }}</h1>
+          <app-textarea 
+            [editMode]="editMode" 
+            label="About" 
+            [(content)]="event.artist.about" 
+            (contentChange)="onChangeDetected()"
+          />
+          <app-badges [items]="event.genres" [displayProperty]="'name'"></app-badges>
+        </section>
+  
+        <mat-divider class="light" />
+  
+        <section [id]="navItems[1].fragment">
+          <h1>{{ navItems[1].name }}</h1>
+          <div class="nested-wrapper">
+            <img width="300" [src]="blobStorageService.getUrl(event.venue.imageUrl)" />
+            <div class="img-about">
+              <div class="icon-text">
+                <mat-icon>home</mat-icon>
+                <h2 class="ml-1">{{ event.venue.name }}</h2>
+              </div>
+              <app-address [lat]="event.venue.latitude" [lng]="event.venue.longitude"></app-address>
+            </div>
+          </div>
+          <app-location-display 
+            [latitude]="event.venue.latitude" 
+            [longitude]="event.venue.longitude"
+          ></app-location-display>
+        </section>
+  
+        <mat-divider class="light" />
+  
+        <section [id]="navItems[2].fragment">
+          <h1>{{ navItems[2].name }}</h1>
+          <app-artist-summary [artist]="event.artist" />
+        </section>
+  
+        <mat-divider class="light" />
+  
+        <section [id]="navItems[3].fragment">
+          <h1>{{ navItems[3].name }}</h1>
+          <app-event-reviews [id]="event.id"></app-event-reviews>
+        </section>
+  
+        <mat-divider class="light" />
+  
+        <section [id]="navItems[4].fragment">
+          <h1>{{ navItems[4].name }}</h1>
+          <app-card>
             <div class="ticket-info">
-                <p class="icon-text"><mat-icon light>attach_money</mat-icon><strong class="mr-2">Price:</strong> <app-price [(price)]="event.price" [editMode]="editMode" (priceChange)="onChangeDetected()"/></p>
-                <p class="icon-text"><mat-icon light>confirmation_number</mat-icon><strong class="mr-2">Total Tickets:</strong> <app-number [(value)]="event.totalTickets" [editMode]="editMode" (valueChange)="onChangeDetected()"/></p>
-                <p class="icon-text" *ngIf="event.datePosted"><mat-icon light>event_available</mat-icon><strong class="mr-2">Tickets Available:</strong> {{ event.availableTickets }}</p>
-                <button [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
-                    color="success" mat-fab extended (click)="onBuy()">
-                    <mat-icon>shopping_cart</mat-icon>Buy Tickets
-                </button>
-            </div>
-        </app-card>
-                  </section>
-                  
-            </div>
-    </div>
-        <div class="sticky-summary">
-            <h3>{{ event.name }}</h3>
-            <img width="300" [src]="blobStorageService.getUrl(event.artist.imageUrl)" />
-            <p class="icon-text">
-                <mat-icon>calendar_today</mat-icon>
-                {{ event.startDate | date: 'd MMM' }} {{ event.startDate | date: 'HH:mm' }} - 
-                {{ event.endDate | date: 'HH:mm' }}
-            </p>
-            
-            <p class="icon-text">
-                <mat-icon>location_on</mat-icon> 
-                {{ event.venue.name }} in {{ event.venue.county }}
-            </p>
-            <p class="icon-text">
-                <mat-icon>monetization_on</mat-icon> 
-                <app-price
-                    [(price)]="event.price"
-                    [editMode]="editMode"
-                    (priceChange)="onChangeDetected()">
-                </app-price>
-
-            </p>
-            <button [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
-                color="success" mat-fab extended (click)="onBuy()">
+              <p class="icon-text">
+                <mat-icon light>attach_money</mat-icon>
+                <strong class="mr-2">Price:</strong>
+                <app-price 
+                  [(price)]="event.price" 
+                  [editMode]="editMode" 
+                  (priceChange)="onChangeDetected()" 
+                />
+              </p>
+              <p class="icon-text">
+                <mat-icon light>confirmation_number</mat-icon>
+                <strong class="mr-2">Total Tickets:</strong>
+                <app-number 
+                  [(value)]="event.totalTickets" 
+                  [editMode]="editMode" 
+                  (valueChange)="onChangeDetected()" 
+                />
+              </p>
+              <p class="icon-text" *ngIf="event.datePosted">
+                <mat-icon light>event_available</mat-icon>
+                <strong class="mr-2">Tickets Available:</strong>
+                {{ event.availableTickets }}
+              </p>
+              <button 
+                [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
+                color="success" mat-fab extended 
+                (click)="onBuy()"
+              >
                 <mat-icon>shopping_cart</mat-icon>Buy Tickets
-            </button>
-        </div>
+              </button>
+            </div>
+          </app-card>
+        </section>
+      </div>
+  
+      <div class="sticky-summary">
+        <h3>{{ event.name }}</h3>
+        <img width="300" [src]="blobStorageService.getUrl(event.artist.imageUrl)" />
+        <p class="icon-text">
+          <mat-icon>calendar_today</mat-icon>
+          {{ event.startDate | date: 'd MMM' }} {{ event.startDate | date: 'HH:mm' }} -
+          {{ event.endDate | date: 'HH:mm' }}
+        </p>
+        <p class="icon-text">
+          <mat-icon>location_on</mat-icon>
+          {{ event.venue.name }} in {{ event.venue.county }}
+        </p>
+        <p class="icon-text">
+          <mat-icon>monetization_on</mat-icon>
+          <app-price
+            [(price)]="event.price"
+            [editMode]="editMode"
+            (priceChange)="onChangeDetected()"
+          ></app-price>
+        </p>
+        <button 
+          [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
+          color="success" mat-fab extended 
+          (click)="onBuy()"
+        >
+          <mat-icon>shopping_cart</mat-icon>Buy Tickets
+        </button>
+      </div>
     </div>
-}@else {
+  }@else {
     Venue not found
-}
+  }
+  

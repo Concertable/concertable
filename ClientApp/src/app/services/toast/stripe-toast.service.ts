@@ -32,7 +32,7 @@ export class StripeToastService extends ToastService {
     );
 
     toast.onTap.subscribe(() => {
-      this.router.navigate(['/find/event', ticketId]);
+      this.router.navigate(['/profile/tickets/upcoming']);
       this.toastr.clear();
     });
   }

@@ -13,9 +13,11 @@ namespace Web.Controllers
     public class ListingController : ControllerBase
     {
         private readonly IListingService listingService;
-        public ListingController(IListingService listingService)
+        private readonly IOwnershipService ownershipService;
+        public ListingController(IListingService listingService, IOwnershipService ownershipService)
         {
             this.listingService = listingService;
+            this.ownershipService = ownershipService;
         }
 
         [HttpGet("active/venue/{id}")]
@@ -38,6 +40,12 @@ namespace Web.Controllers
         {
             await listingService.CreateMultipleAsync(listingsDto);
             return Created();
+        }
+
+        [HttpGet("is-owner/{id}")]
+        public async Task<IActionResult> IsOwner(int id)
+        {
+            return Ok(await ownershipService.OwnsListingAsync(id));
         }
     }
 }

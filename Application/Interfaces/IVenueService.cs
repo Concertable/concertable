@@ -20,5 +20,6 @@ namespace Application.Interfaces
         Task<VenueDto?> GetDetailsForCurrentUserAsync();
         Task<VenueDto> CreateAsync(CreateVenueDto venue, IFormFile image);
         Task<VenueDto> UpdateAsync(VenueDto venueDto, IFormFile? image);
+        Task<int> GetIdForCurrentUserAsync();
     }
 }

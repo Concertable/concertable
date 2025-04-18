@@ -40,7 +40,15 @@ export class ListingApplicationService {
     });
   }
 
-  getActiveApplicationsForArtist(): Observable<ArtistListingApplication[]> {
-    return this.http.get<ArtistListingApplication[]>(`${this.apiUrl}/active/artist`);
+  getPendingForArtist(): Observable<ArtistListingApplication[]> {
+    return this.http.get<ArtistListingApplication[]>(`${this.apiUrl}/artist/pending`);
+  }
+
+  getRecentDeniedForArtist(): Observable<ArtistListingApplication[]> {
+    return this.http.get<ArtistListingApplication[]>(`${this.apiUrl}/artist/recently-denied`);
+  }
+
+  isOwner(id: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/is-owner/${id}`);
   }
 }

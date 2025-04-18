@@ -127,11 +127,15 @@ namespace Infrastructure.Services
             var user = await currentUserService.GetAsync();
             var venue = await venueRepository.GetByUserIdAsync(user.Id);
 
+            if (venue is null)
+                throw new ForbiddenException("You do not own a Venue");
+
             var venueDto = mapper.Map<VenueDto>(venue);
             await reviewService.SetAverageRatingAsync(venueDto);
 
             return venueDto;
         }
+
 
         private async Task UpdateUserLocationAsync(ApplicationUser user, double latitude, double longitude)
         {
@@ -140,6 +144,17 @@ namespace Infrastructure.Services
             user.County = location.County;
             user.Town = location.Town;
             user.Location = geometryService.CreatePoint(latitude, longitude);
+        }
+
+        public async Task<int> GetIdForCurrentUserAsync()
+        {
+            var user = await currentUserService.GetAsync();
+            int? id = await venueRepository.GetIdByUserIdAsync(user.Id);
+
+            if (id is null)
+                throw new ForbiddenException("You do not own a Venue");
+
+            return id.Value;
         }
     }
 }

@@ -20,6 +20,7 @@ using System.Runtime.CompilerServices;
 using static QRCoder.PayloadGenerator;
 using Infrastructure.Constants;
 using AutoMapper;
+using Application.Responses;
 
 namespace Infrastructure.Services
 {
@@ -54,34 +55,33 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task Register(RegisterDto registerDto)
+        public async Task<ValidationResponse> Register(RegisterDto registerDto)
         {
+            var reasons = new List<string>();
+
             if (await CheckEmailExistsAsync(registerDto.Email))
-                throw new BadRequestException("Email already exists");
+                reasons.Add("Email already exists");
             if (registerDto.Role.Equals("Admin"))
-                throw new UnauthorizedException("You cannot make yourself an admin");
+                reasons.Add("You cannot make yourself an admin");
 
-            ApplicationUser user;
-
-            switch(registerDto.Role)
+            ApplicationUser? user = registerDto.Role switch
             {
-                case "Customer":
-                    user = new Customer { UserName = registerDto.Email, Email = registerDto.Email };
-                    break;
-                case "VenueManager":
-                    user = new VenueManager { UserName = registerDto.Email, Email = registerDto.Email };
-                    break;
-                case "ArtistManager":
-                    user = new ArtistManager { UserName = registerDto.Email, Email = registerDto.Email };
-                    break;
-                default:
-                    throw new BadRequestException("Invalid role Specified");
-            }
+                "Customer" => new Customer { UserName = registerDto.Email, Email = registerDto.Email },
+                "VenueManager" => new VenueManager { UserName = registerDto.Email, Email = registerDto.Email },
+                "ArtistManager" => new ArtistManager { UserName = registerDto.Email, Email = registerDto.Email },
+                _ => null
+            };
+
+            if (user is null)
+                reasons.Add("Invalid role specified");
+
+            if (reasons.Any())
+                return ValidationResponse.Failure(reasons);
 
             var result = await userManager.CreateAsync(user, registerDto.Password);
 
             if (!result.Succeeded)
-                throw new BadRequestException("Failed to Register User");
+                return ValidationResponse.Failure(result.Errors);
 
             await userManager.AddToRoleAsync(user, registerDto.Role);
 
@@ -102,6 +102,8 @@ namespace Infrastructure.Services
 
             await emailService.SendEmailAsync(0, user.Email, "Confirm Your Email",
             $"Please confirm your email by clicking <a href='{uri}'>here</a>");
+
+            return ValidationResponse.Success();
         }
 
         public async Task Logout()

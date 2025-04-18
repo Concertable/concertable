@@ -1,16 +1,13 @@
 <app-hero [title]="'Purchase your Ticket'" [titleStyle]="titleStyle"></app-hero>
-<div class="container-wrapper">
+<div class="container-wrapper" *ngIf="event">
   <div class="container">
     <!-- Event Summary Section -->
      <div class="wrapper">
       <app-event-summary [event]="event"></app-event-summary>
-  
-      <!-- Payment Summary Section -->
-      <app-payment-summary
-        [title]="'Payment Summary'" 
-        [summaryItems]="summaryItems"
-        (quantityChange)="updateQuantity($event)"
-      ></app-payment-summary>
+      <app-event-payment-summary
+        [price]="event.price"
+        (quantityChange)="quantity = $event">
+      </app-event-payment-summary>
      </div>
   
   

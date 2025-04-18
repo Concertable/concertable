@@ -28,25 +28,20 @@ export class PaymentDetailsComponent {
   }
 
   startOnboarding() {
-    this.stripeAccountService.getOnboardingLink().subscribe({
-      next: (link: string) => {
-        const popup = this.popupService.openPopup(link);
-        this.popupService.monitorPopup(popup, () => {
-          this.stripeAccountService.isUserVerified().subscribe({
-            next: (verified) => {
-              this.isVerified = verified;
-              if (verified) {
-                this.stripeAccountToastService.onboardingSuccess();
-              } else {
-                this.stripeAccountToastService.onboardingFail(); 
-              }
-            },
-            error: () => this.stripeAccountToastService.onboardingFail()
-          });
+    this.stripeAccountService.getOnboardingLink().subscribe((link: string) => {
+      const popup = this.popupService.openPopup(link);
+  
+      this.popupService.monitorPopup(popup, () => {
+        this.stripeAccountService.isUserVerified().subscribe((verified: boolean) => {
+          this.isVerified = verified;
+  
+          if (verified) {
+            this.stripeAccountToastService.onboardingSuccess();
+          } else {
+            this.stripeAccountToastService.onboardingFail();
+          }
         });
-        
-      },
-      error: () => this.stripeAccountToastService.onboardingError()
+      });
     });
-  }
+  }  
 }

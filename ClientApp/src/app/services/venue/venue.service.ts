@@ -45,4 +45,9 @@ export class VenueService {
     const formData = this.venueFormDataSerializer.serializeWithImage(venue, image);
     return this.http.put<Venue>(`${this.apiUrl}/${venue.id}`, formData)
   }
+
+  isOwner(id: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/is-owner/${id}`);
+  }
+  
 }

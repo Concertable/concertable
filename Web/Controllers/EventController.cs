@@ -86,6 +86,7 @@ namespace Web.Controllers
             return Ok(await eventService.GetUnpostedByArtistIdAsync(id));
         }
 
+        [Authorize(Roles = "VenueManager")]
         [HttpPost("book")]
         public async Task<ActionResult<ListingApplicationPurchaseResponse>> Book(EventBookingParams bookingParams)
         {
@@ -98,12 +99,14 @@ namespace Web.Controllers
             return Ok(await eventService.GetRecommendedHeadersAsync());
         }
 
+        [Authorize(Roles = "VenueManager")]
         [HttpPut("{id}")]
         public async Task<ActionResult<IEnumerable<EventDto>>> Update([FromBody]EventDto eventDto)
         {
             return Ok(await eventService.UpdateAsync(eventDto));
         }
 
+        [Authorize(Roles = "VenueManager")]
         [HttpPut("post/{id}")]
         public async Task<ActionResult<EventDto>> Post([FromBody]EventDto eventDto)
         {

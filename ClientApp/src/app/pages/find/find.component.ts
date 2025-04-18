@@ -38,9 +38,11 @@ export class FindComponent extends FindDirective<Header> implements OnInit {
 
     // On URL change, deserialize search parameters and load data
     this.route.queryParams.subscribe((params: Params) => {
-      if (Object.keys(params).length > 0)
+      if (Object.keys(params).length > 0) {
+        console.log("?",params);
         this.searchParams = this.searchParamsSerializerService.deserialize(params);
         this.loadPage();
+      }
     });
   }
 
@@ -65,6 +67,7 @@ export class FindComponent extends FindDirective<Header> implements OnInit {
   }
 
   override loadPage(): void {
+    console.log("etd")
     // Fetch search results based on current parameters
     this.headerService.get(this.searchParams).subscribe((p) => {
       this.paginatedData = p;

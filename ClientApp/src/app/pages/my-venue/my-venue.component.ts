@@ -50,13 +50,8 @@ export class MyVenueComponent extends ConfigDirective<Venue> {
   }
 
   addListing(listing: Listing) {
-    this.newListings.push(listing);
+    this.listingService.create(listing).subscribe()
     this.saveable = true;
-  }
-
-  override saveChanges(): void {
-    super.saveChanges();
-    this.listingService.createMultiple(this.newListings).subscribe(l => this.newListings = []);
   }
 
   updateImage(image: File) {

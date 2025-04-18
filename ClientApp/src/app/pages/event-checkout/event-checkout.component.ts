@@ -15,7 +15,7 @@ import { StripeToastService } from '../../services/toast/stripe-toast.service';
   selector: 'app-event-checkout',
   standalone: false,
   templateUrl: './event-checkout.component.html',
-  styleUrl: '../../shared/components/checkout/checkout.component.scss'
+  styleUrl: '../../shared/components/checkout.component.scss'
 })
 export class EventCheckoutComponent extends CheckoutDirective<Event> {
   override titleStyle: { [key: string]: string; } = { 'max-width': '1000px' };

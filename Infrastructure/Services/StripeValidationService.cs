@@ -27,7 +27,7 @@ namespace Infrastructure.Services
             var user = await currentUserService.GetEntityAsync();
 
             if (user.StripeId is null)
-                throw new UnauthorizedAccessException("You must have a Stripe Account. Contact Support to get one");
+                throw new UnauthorizedAccessException("You do not have a Stripe Id. Contact Support to get one");
 
             if (!await stripeAccountService.IsUserVerifiedAsync(user.StripeId))
                 throw new UnauthorizedAccessException("You must create a Stripe Account first");

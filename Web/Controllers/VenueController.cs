@@ -16,10 +16,12 @@ namespace Web.Controllers
     public class VenueController : ControllerBase
     {
         private readonly IVenueService venueService;
+        private readonly IOwnershipService ownershipService;
 
-        public VenueController(IVenueService venueService)
+        public VenueController(IVenueService venueService, IOwnershipService ownershipService)
         {
             this.venueService = venueService;
+            this.ownershipService = ownershipService;
         }
 
         [HttpGet("headers")]
@@ -68,6 +70,12 @@ namespace Web.Controllers
 
             var venueDto = await venueService.UpdateAsync(venueUpdate.Venue, venueUpdate.Image);
             return Ok(venueDto);
+        }
+
+        [HttpGet("is-owner/{Id}")]
+        public async Task<ActionResult<bool>> IsOwner(int id)
+        {
+            return Ok(await ownershipService.OwnsVenueAsync(id));
         }
     }
 }

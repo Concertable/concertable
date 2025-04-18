@@ -1,0 +1,7 @@
+<p class="genres icon-text">
+    <mat-icon small>music_note</mat-icon>
+    <span *ngFor="let genre of genres; let last = last">
+      {{ genre.name }}<ng-container *ngIf="!last">, </ng-container>
+    </span>
+  </p>
+  

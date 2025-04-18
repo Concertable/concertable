@@ -15,7 +15,7 @@ namespace Infrastructure.Repositories
     {
         public ListingApplicationRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<ListingApplication>> GetForListingIdAsync(int id)
+        public async Task<IEnumerable<ListingApplication>> GetByListingIdAsync(int id)
         {
             var query = context.ListingApplications
             .Where(la => la.ListingId == id)
@@ -28,7 +28,7 @@ namespace Infrastructure.Repositories
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<ListingApplication>> GetActiveByArtistIdAsync(int artistId)
+        public async Task<IEnumerable<ListingApplication>> GetPendingByArtistIdAsync(int artistId)
         {
             var query = context.ListingApplications
             .Include(a => a.Listing)
@@ -83,6 +83,22 @@ namespace Infrastructure.Repositories
                 .Include(la => la.Listing);
 
             return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<ListingApplication>> GetRecentDeniedByArtistIdAsync(int artistId)
+        {
+            var query = context.ListingApplications
+                .Include(a => a.Listing)
+                    .ThenInclude(l => l.Venue)
+                .Where(a =>
+                    a.ArtistId == artistId &&
+                    context.Events.Any(e =>
+                        e.Application.ListingId == a.ListingId &&
+                        e.ApplicationId != a.Id)) // someone else was accepted
+                .OrderByDescending(a => a.Listing.EndDate) // or use CreatedAt if available
+                .Take(5);
+
+            return await query.ToListAsync();
         }
     }
 }

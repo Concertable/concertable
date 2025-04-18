@@ -12,6 +12,7 @@ namespace Application.Interfaces
 {
     public interface IArtistRepository : IHeaderRepository<Artist, ArtistHeaderDto>
     {
+        Task<int?> GetIdByUserIdAsync(int id);
         Task<Artist?> GetByUserIdAsync(int id);
         new Task<Artist?> GetByIdAsync(int id);
     }

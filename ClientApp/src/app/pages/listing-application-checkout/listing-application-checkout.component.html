@@ -3,10 +3,11 @@
   <div class="wrapper">
     <app-artist-summary [artist]="application?.artist"></app-artist-summary>
 
-    <app-payment-summary
-      [title]="'Payment Summary'" 
-      [summaryItems]="summaryItems">
-    </app-payment-summary>
+    <app-listing-application-payment-summary
+      [artistName]="application?.artist?.name || 'Unknown Artist'"
+      [amount]="application?.listing?.pay || 0">
+  </app-listing-application-payment-summary>
+
   </div>
 
   <div class="card-details">

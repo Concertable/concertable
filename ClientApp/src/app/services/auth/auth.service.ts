@@ -47,8 +47,16 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router, private signalRService: SignalRService, private toastService: ToastService) { }
 
-  isRole = (role: Role) => this.currentUserSubject.getValue()?.role === role;
-  isNotRole = (role: Role) => this.currentUserSubject.getValue()?.role !== role;
+  isRole = (role: Role): boolean => {
+    const user = this.currentUserSubject.getValue();
+    return !!user && user.role === role;
+  };
+  
+  isNotRole = (role: Role): boolean => {
+    const user = this.currentUserSubject.getValue();
+    return !!user && user.role !== role;
+  };
+  
 
   isAuthenticated(): boolean {
     return this.currentUserSubject.getValue() !== undefined;

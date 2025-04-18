@@ -10,6 +10,7 @@ using AutoMapper;
 using Core.Exceptions;
 using Core.Enums;
 using System.Reflection;
+using Infrastructure.Repositories;
 
 namespace Infrastructure.Services
 {
@@ -24,6 +25,7 @@ namespace Infrastructure.Services
         private readonly IEmailService emailService;
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
+        private readonly IOwnershipService ownershipService;
         private readonly IMapper mapper;
 
         public ListingApplicationService(
@@ -35,6 +37,7 @@ namespace Infrastructure.Services
             IMessageService messageService,
             IEmailService emailService,
             IListingService listingService,
+            IOwnershipService ownershipService,
             IArtistService artistService,
             IMapper mapper)
         {
@@ -47,25 +50,37 @@ namespace Infrastructure.Services
             this.emailService = emailService;
             this.listingService = listingService;
             this.artistService = artistService;
+            this.ownershipService = ownershipService;
             this.mapper = mapper;
         }
 
         public async Task<IEnumerable<ListingApplicationDto>> GetForListingIdAsync(int id)
         {
-            var applications = await listingApplicationRepository.GetForListingIdAsync(id);
+            var response = await ownershipService.OwnsListingAsync(id);
+
+            if (!response)
+                throw new ForbiddenException("You do not own this Listing");
+
+            var applications = await listingApplicationRepository.GetByListingIdAsync(id);
 
             return mapper.Map<IEnumerable<ListingApplicationDto>>(applications);
         }
 
-        public async Task<IEnumerable<ArtistListingApplicationDto>> GetActiveForArtistAsync()
+        public async Task<IEnumerable<ArtistListingApplicationDto>> GetPendingForArtistAsync()
         {
-            var artist = await artistService.GetDetailsForCurrentUserAsync();
+            var artistId = await artistService.GetIdForCurrentUserAsync();
 
-            if (artist is null)
-                throw new UnauthorizedAccessException("No Artist Account Found");
+            var applications = await listingApplicationRepository.GetPendingByArtistIdAsync(artistId);
 
-            var applications = await listingApplicationRepository.GetActiveByArtistIdAsync(artist.Id);
-            
+            return mapper.Map<IEnumerable<ArtistListingApplicationDto>>(applications);
+        }
+
+        public async Task<IEnumerable<ArtistListingApplicationDto>> GetRecentDeniedForArtistAsync()
+        {
+            var artistId = await artistService.GetIdForCurrentUserAsync();
+
+            var applications = await listingApplicationRepository.GetRecentDeniedByArtistIdAsync(artistId);
+
             return mapper.Map<IEnumerable<ArtistListingApplicationDto>>(applications);
         }
 

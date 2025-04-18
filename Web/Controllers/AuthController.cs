@@ -31,6 +31,18 @@ namespace Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var response = await authService.Register(registerDto);
+
+            if (!response.IsValid)
+            {
+                foreach (var reason in response.Reasons)
+                {
+                    ModelState.AddModelError(string.Empty, reason);
+                }
+
+                return BadRequest(ModelState);
+            }
+
             await authService.Register(registerDto);
             return NoContent();
         }

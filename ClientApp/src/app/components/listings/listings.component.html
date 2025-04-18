@@ -37,6 +37,7 @@
   
           <button *ngIf="authService.isRole('VenueManager') && !editMode"
                   color="primary" mat-fab extended 
+                  [disabled]="!(isOwner$ | async)"
                   (click)="onViewApplications(listing)">
             <mat-icon fontIcon="visibility"></mat-icon>
             <span class="btn-label">View Applications</span>

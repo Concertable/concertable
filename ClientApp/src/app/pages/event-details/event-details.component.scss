@@ -1,78 +1,48 @@
-@use '../../../styles/details.scss';
-
 .page-wrapper {
-  position: relative;
-  margin: 0 auto; 
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
   padding: 20px;
-  display: flex; /* Enable flexbox layout */
-  flex-direction: row; /* Align items in a row (side by side) */
-  justify-content: flex-start; /* Align content to the start of the container */
-  align-items: flex-start; /* Align content to the top */
-  gap: 20px; /* Add space between content and sticky summary */
+  max-width: 1200px;
+  margin: 0 auto;
   container-type: inline-size;
+  container-name: layout;
+}
+
+.wrapper {
+  flex: 1;
+  min-width: 0;
 }
 
 .sticky-summary {
-    position: sticky; 
-    align-self: flex-start;
-    top: 20px;
-    max-width: 300px;
-    background-color: #fff; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-    padding: 20px;
-
-    :host ::ng-deep app-image > img {
-        width:100%;
-        height:auto;
-    }
+  position: sticky;
+  top: 20px;
+  flex-shrink: 0;
+  max-width: 300px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
 }
 
-.nested-wrapper {
-    display: flex;
-    align-items: center; /* Vertically align items */
-    gap: 15px; /* Add space between image and content */
-    margin-bottom: 20px;
-  }
-  
-  img {
-    display: block; /* Ensures the image doesn't have unwanted spacing */
-    max-width: 100%; /* Make sure the image is responsive */
-    height: auto; /* Preserve aspect ratio */
-  }
-  
-  .img-about {
-    display: flex;
-    flex-direction: column; /* Stack content vertically */
-    justify-content: center; /* Vertically center the content inside .img-about */
-    flex: 1; /* Make it take up remaining space */
+.warning {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffa000;
+  display: flex;
+  align-items: flex-start;
+
+  mat-icon {
+    color: #856404;
+    margin-right: 8px;
   }
 
-  .wrapper {
-    flex: 1;
+  .text {
+    color: #856404;
+    font-weight: 500;
   }
-  
-  .warning {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffa000; 
-    display: flex;
-    align-items: start;
-  }
+}
 
-  .warning-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-
-    mat-icon, span {
-      color: #856404;
-    }
+@container layout (width < 1000px) {
+  .sticky-summary {
+    display: none;
   }
-
-  
-  @container (width < 1000px) {
-    .sticky-summary {
-      display: none;
-    }
-  }
-  
+}

@@ -15,15 +15,13 @@
             <mat-divider class="light" />
             <section [id]="navItems[1].fragment">
                 <h1>{{navItems[1].name}}</h1>
-                <div class="wrapper">
-                    <app-google-maps [editMode]="editMode" [lat]="venue.latitude" [lng]="venue.longitude" (latLongChange)="updateLatLong($event)" />
-                    <div>
-                        <app-address [lat]="venue.latitude" [lng]="venue.longitude" />
-                        <button color="secondary" class="mt-2" mat-fab extended (click)="onViewInMaps()">
-                            <mat-icon fontIcon="map"></mat-icon>View in maps
-                        </button>
-                    </div>
+                <div class="address">
+                    <app-address [lat]="venue.latitude" [lng]="venue.longitude" />
+                    <button color="secondary" class="mt-2" mat-fab extended (click)="onViewInMaps()">
+                        <mat-icon fontIcon="map"></mat-icon>View in maps
+                    </button>
                 </div>
+                <app-google-maps [editMode]="editMode" [lat]="venue.latitude" [lng]="venue.longitude" (latLongChange)="updateLatLong($event)" />
             </section>
             <mat-divider class="light" />
             @if (venue.about) {
@@ -39,7 +37,7 @@
             <mat-divider class="light" />
             @if (exists('Listings')) {
                 <section [id]="navItems[4].fragment">
-                    <h2 class="heading-listings">{{ navItems[4].name }}?</h2>
+                    <h2 class="heading-listings">{{ navItems[4].name }}</h2>
                     <app-listings [venueId]="venue.id" [editMode]="editMode" (listingCreate)="onListingCreate($event)" />
                 </section>
             }

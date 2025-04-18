@@ -12,14 +12,20 @@ input, textarea {
     display: block;
 }
 
-.wrapper {
-    display: flex; /* Enables side-by-side alignment */
-    align-items: flex-start; /* Aligns items at the top */
-    gap: 20px; /* Adds spacing between textarea and image */
-    margin-top: 16px;
-}
+.address {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  
 
 mat-divider[vertical] {
     align-self: stretch;
+}
 
+@container (width < 800px){
+    .address{
+        display: none;
+    }
 }

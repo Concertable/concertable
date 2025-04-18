@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Responses;
 using Core.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace Application.Interfaces
 {
     public interface IAuthService
     {
-        public Task Register(RegisterDto registerDto);
+        public Task<ValidationResponse> Register(RegisterDto registerDto);
         public Task<UserDto> Login(LoginDto loginDto);
         public Task Logout();
         Task<bool> ConfirmEmailAsync(string userId, string token);

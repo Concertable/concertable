@@ -29,9 +29,6 @@ export class ListingService {
     return this.http.post<void>(`${this.apiUrl}`, listing);
   }
 
-  createMultiple(listings: Listing[]) : Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/bulk`, listings);
-  }
 
   getActiveByVenueId(id: number) : Observable<Listing[]> {
     return this.http.get<Listing[]>(`${this.apiUrl}/active/venue/${id}`)
@@ -39,5 +36,9 @@ export class ListingService {
 
   addToRecentListings() {
 
+  }
+
+  isOwner(id: number) : Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/is-owner/${id}`)
   }
 }

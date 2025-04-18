@@ -18,5 +18,6 @@ namespace Application.Interfaces
         Task<ArtistDto?> GetDetailsForCurrentUserAsync();
         Task<ArtistDto> CreateAsync(CreateArtistDto createArtistDto, IFormFile image);
         Task<ArtistDto> UpdateAsync(ArtistDto artistDto, IFormFile? image);
+        Task<int> GetIdForCurrentUserAsync();
     }
 }

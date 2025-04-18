@@ -16,7 +16,7 @@ import { StripeToastService } from '../../services/toast/stripe-toast.service';
   selector: 'app-listing-application-checkout',
   standalone: false,
   templateUrl: './listing-application-checkout.component.html',
-  styleUrl: '../../shared/components/checkout/checkout.component.scss'
+  styleUrl: '../../shared/components/checkout.component.scss'
 })
 export class ListingApplicationCheckoutComponent extends CheckoutDirective<ListingApplication> {
   override titleStyle: { [key: string]: string; } = { 'max-width': '1000px' };

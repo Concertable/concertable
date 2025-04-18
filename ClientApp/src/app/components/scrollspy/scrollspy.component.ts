@@ -31,7 +31,9 @@ export class ScrollspyComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.sections = this.navItems
       .map(item => document.getElementById(item.fragment))
-      .filter(section => section !== null)
+      .filter(section => section !== null) as HTMLElement[];
+
+
 
     this.subscriptions.push(this.route.fragment.subscribe(fragment => {
       if (fragment) {

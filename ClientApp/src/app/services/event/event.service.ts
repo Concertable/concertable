@@ -25,7 +25,7 @@ export class EventService {
   ) {
     this.loadInitialRecommendedHeaders();
     this.signalRService.eventPosted$.subscribe(header => {
-      console.log(header);
+      console.log(header)
       if (header) {
         this.eventToastService.showRecommended(header.id);
         this.recentEventHeadersSubject.next(header);

@@ -43,8 +43,7 @@ namespace Infrastructure.Repositories
 
         protected override IQueryable<EventHeaderDto> GetHeadersQuery(SearchParams searchParams)
         {
-            return base.GetHeadersQuery(searchParams)
-                .OrderBy(e => e.StartDate);
+            return base.GetHeadersQuery(searchParams);
         }
 
         protected override IQueryable<EventHeaderDto> GetHeadersQuery(int amount)
@@ -84,11 +83,9 @@ namespace Infrastructure.Repositories
             {
                 "name_asc" => query.OrderBy(e => e.Name),
                 "name_desc" => query.OrderByDescending(e => e.Name),
-                "date_asc" => query.OrderBy(e => e.DatePosted),
-                "date_desc" => query.OrderByDescending(e => e.DatePosted),
-                "location_asc" => query.OrderBy(e => e.Application.Listing.Venue.User.Location),
-                "location_desc" => query.OrderByDescending(e => e.Application.Listing.Venue.User.Location),
-                _ => query.OrderBy(e => e.Id)
+                "date_asc" => query.OrderBy(e => e.Application.Listing.StartDate),
+                "date_desc" => query.OrderByDescending(e => e.Application.Listing.StartDate),
+                _ => query.OrderBy(e => e.Application.Listing.StartDate)
             };
         }
 

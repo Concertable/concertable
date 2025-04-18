@@ -31,8 +31,6 @@ export class FilterComponent implements OnInit {
     const options = ['Name']; 
     if (this.searchParams.headerType === 'event') 
       options.push('Date'); 
-    if (this.searchParams.latitude && this.searchParams.longitude) 
-      options.push('Location');
     return options;
   }
   
@@ -41,24 +39,24 @@ export class FilterComponent implements OnInit {
   }
 
   onOrderByChange() {
-    if(this.selectedOrderBy) 
-    {
-      this.selectedSortOrder = this.selectedSortOrder || 'asc';
-      this.searchParams.sort = `${this.selectedOrderBy}_${this.selectedSortOrder}`;
+    if (this.selectedOrderBy)
+      this.searchParams.sort = `${this.selectedOrderBy}_${this.selectedSortOrder || 'asc'}`;
+    else {
+      this.selectedSortOrder = undefined;
+      this.searchParams.sort = undefined;
     }
-    else 
-      this.selectedSortOrder = undefined; // Reset sort order if Order By is deselected
   }
-
+  
   onSortOrderChange() {
-    if(this.selectedOrderBy)
-      this.searchParams.sort = `${this.selectedOrderBy}_${this.selectedSortOrder}`;
+    this.searchParams.sort = (this.selectedOrderBy && this.selectedSortOrder)
+      ? `${this.selectedOrderBy}_${this.selectedSortOrder}`
+      : undefined;
   }
-
+  
   onDistanceChange() {
-    console.log("change",this.selectedDistance)
-    this.searchParams.radiusKm = this.selectedDistance;
+    this.searchParams.radiusKm = this.selectedDistance || undefined;
   }
+  
 
   constructor(private route: ActivatedRoute, private genreService: GenreService) {}
 

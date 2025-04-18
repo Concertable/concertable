@@ -1,25 +1,39 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Responses
 {
     public class ValidationResponse
     {
         public bool IsValid { get; set; }
-        public string? Reason { get; set; }
+        public IEnumerable<string> Reasons { get; set; } = Enumerable.Empty<string>();
+        public string? Reason => Reasons.FirstOrDefault();
 
         public ValidationResponse() { }
 
-        public ValidationResponse(bool isValid, string? reason = null)
+        public ValidationResponse(bool isValid, IEnumerable<string>? reasons = null)
         {
             IsValid = isValid;
-            Reason = reason;
+            Reasons = reasons ?? Enumerable.Empty<string>();
         }
 
-        public static ValidationResponse Success() => new(true);
-        public static ValidationResponse Failure(string reason) => new(false, reason);
+        public ValidationResponse(IEnumerable<IdentityError> identityErrors)
+        {
+            IsValid = false;
+            Reasons = identityErrors.Select(e => e.Description);
+        }
+
+        public static ValidationResponse Success() =>
+            new ValidationResponse(true);
+
+        public static ValidationResponse Failure(IEnumerable<string> reasons) =>
+            new ValidationResponse(false, reasons);
+
+        public static ValidationResponse Failure(params string[] reasons) =>
+            new ValidationResponse(false, reasons);
+
+        public static ValidationResponse Failure(IEnumerable<IdentityError> identityErrors) =>
+            new ValidationResponse(identityErrors);
     }
 }

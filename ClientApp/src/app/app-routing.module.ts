@@ -50,6 +50,7 @@ import { TicketViewType } from './models/ticket-view-type';
 import { listingApplicationCheckoutGuard } from './guards/listing-application-checkout/listing-application-checkout.guard';
 import { eventCheckoutGuard } from './guards/event-checkout/event-checkout.guard';
 import { FindComponent } from './pages/find/find.component';
+import { listingApplicationsGuard } from './guards/listing-applications.guard';
 
 const routes: Routes = [
   {
@@ -155,11 +156,12 @@ const routes: Routes = [
       { path: 'create', component: CreateVenueComponent, data: { breadcrumb: 'Create Venue' } },
       {
         path: 'my',
+
         data: { breadcrumb: 'My' },
         children: [
           { path: 'events', component: MyEventsComponent, data: { breadcrumb: 'My Events' } },
           { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } },
-          { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationsResolver }, data: { breadcrumb: 'Applications' } }
+          { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationsResolver }, canActivate: [listingApplicationsGuard], data: { breadcrumb: 'Applications' } }
         ]
       }
     ]

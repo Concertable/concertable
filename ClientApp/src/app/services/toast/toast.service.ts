@@ -21,6 +21,11 @@ export class ToastService {
     this.toastr.error(message, header, { enableHtml: true });
   }
 
+  showErrors(errors: string[], title: string) {
+    const message = errors.join('<br>');
+    this.toastr.error(message, title, { enableHtml: true });
+  }
+
   showErrorResponse(error: HttpErrorResponse) {
     this.toastr.error(error.error, `${error.status} ${error.statusText}`);
   }

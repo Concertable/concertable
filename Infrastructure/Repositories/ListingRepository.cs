@@ -52,6 +52,15 @@ namespace Infrastructure.Repositories
             return await query.FirstOrDefaultAsync();
         }
 
+        public async Task<Listing?> GetWithVenueByIdAsync(int id)
+        {
+            var query = context.Listings
+                .Where(l => l.Id == id)
+                .Include(l => l.Venue);
+
+            return await query.FirstOrDefaultAsync();
+        }
+
         public async Task<Listing?> GetByApplicationIdAsync(int id)
         {
             var query = context.Listings

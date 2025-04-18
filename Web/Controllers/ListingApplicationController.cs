@@ -14,17 +14,20 @@ namespace Web.Controllers
         private readonly IListingApplicationService listingApplicationService;
         private readonly IListingApplicationValidationService applicationValidationService;
         private readonly IArtistService artistService;
+        private readonly IOwnershipService ownershipService;
         private readonly ICurrentUserService currentUserService;
 
         public ListingApplicationController(
             IListingApplicationService listingApplicationService, 
             IListingApplicationValidationService applicationValidationService,
             IArtistService artistService,
+            IOwnershipService ownershipService,
             ICurrentUserService currentUserService)
         {
             this.listingApplicationService = listingApplicationService;
             this.applicationValidationService = applicationValidationService;
             this.artistService = artistService;
+            this.ownershipService = ownershipService;
             this.currentUserService = currentUserService;
         }
 
@@ -43,13 +46,19 @@ namespace Web.Controllers
             return NoContent();
         }
 
-        [HttpGet("active/artist")]
+        [HttpGet("artist/pending")]
         [Authorize(Roles = "ArtistManager")]
-        public async Task<ActionResult<IEnumerable<ArtistListingApplicationDto>>> GetActiveForArtist()
+        public async Task<ActionResult<IEnumerable<ArtistListingApplicationDto>>> GetPendingForArtist()
         {
-            return Ok(await listingApplicationService.GetActiveForArtistAsync());
+            return Ok(await listingApplicationService.GetPendingForArtistAsync());
         }
 
+        [HttpGet("artist/recently-denied")]
+        [Authorize(Roles = "ArtistManager")]
+        public async Task<ActionResult<IEnumerable<ArtistListingApplicationDto>>> GetRecentDeniedForArtist()
+        {
+            return Ok(await listingApplicationService.GetRecentDeniedForArtistAsync());
+        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ListingApplication>> GetById(int id)
@@ -87,6 +96,11 @@ namespace Web.Controllers
             return Ok(true);
         }
 
+        [HttpGet("is-owner/{id}")]
+        public async Task<ActionResult<bool>> IsOwner(int id)
+        {
+            return Ok(await ownershipService.OwnsListingByApplicationId(id));
+        }
 
     }
 }

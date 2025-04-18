@@ -67,5 +67,13 @@ namespace Infrastructure.Repositories
 
             return query;
         }
+
+        public async Task<int?> GetIdByUserIdAsync(int userId)
+        {
+            return await context.Venues
+                .Where(a => a.UserId == userId)
+                .Select(a => a.Id)
+                .FirstOrDefaultAsync();
+        }
     }
 }

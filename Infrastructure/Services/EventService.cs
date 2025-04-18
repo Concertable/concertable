@@ -281,13 +281,21 @@ namespace Infrastructure.Services
 
             var userIdsToNotify = preferences
             .Where(preference =>
-                locationService.IsWithinRadius(
-                    preference.User?.Latitude.Value,
-                    preference.User?.Longitude.Value,
-                    eventHeaderDto.Latitude.Value,
-                    eventHeaderDto.Longitude.Value,
-                    preference.RadiusKm))
-            .Select(preference => preference.User.Id);
+             {
+                 var inRange = locationService.IsWithinRadius(
+                    preference.User.Latitude.Value,
+                    preference.User.Longitude.Value,
+                    location.Y,
+                    location.X,
+                    preference.RadiusKm);
+
+                 var hasMatchingGenre = preference.Genres.Any(userGenre =>
+                     eventDto.Genres.Any(eventGenre => eventGenre.Id == userGenre.Id));
+
+                 return inRange && hasMatchingGenre;
+             })
+             .Select(preference => preference.User.Id)
+             .ToList();
 
 
             return new EventPostResponse

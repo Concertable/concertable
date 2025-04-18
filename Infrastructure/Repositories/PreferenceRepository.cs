@@ -14,30 +14,37 @@ namespace Infrastructure.Repositories
     {
         public PreferenceRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<Preference>> GetAllAsync()
+        public async new Task<IEnumerable<Preference>> GetAllAsync()
         {
-            return await context.Preferences
+            var query = context.Preferences
                 .Include(p => p.User)
-                .ToListAsync();
+                .Include(p => p.GenrePreferences)
+                    .ThenInclude(gp => gp.Genre);
+
+            return await query.ToListAsync();
         }
 
-        public async Task<Preference> GetByIdAsync(int id)
+        public async new Task<Preference?> GetByIdAsync(int id)
         {
-            return await context.Preferences
+            var query = context.Preferences
+                .Include(p => p.User)
                 .Include(p => p.GenrePreferences)
                     .ThenInclude(gp => gp.Genre)
-                .Include(p => p.User)
-                .FirstAsync(p => p.Id == id);
+                .Where(p => p.Id == id);
+
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<Preference?> GetByUserIdAsync(int id)
         {
-            return await context.Preferences
-                .Where(p => p.UserId == id)
-                .Include(p => p.GenrePreferences)
-                    .ThenInclude(gp => gp.Genre) 
+            var query = context.Preferences
                 .Include(p => p.User)
-                .FirstOrDefaultAsync();
+                .Include(p => p.GenrePreferences)
+                    .ThenInclude(gp => gp.Genre)
+                .Where(p => p.UserId == id);
+
+            return await query.FirstOrDefaultAsync();
         }
+
     }
 }
