@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP.Net Core app to Azure Web App - concertable-app
 
 on:
@@ -13,7 +10,7 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read # This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -41,13 +38,13 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{ github.workspace }}/myapp"
+        run: dotnet publish -c Release -o "${{ github.workspace }}/myapp"  # Publish directly to GitHub workspace
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ github.workspace }}/myapp  # Upload the correct published app
 
   deploy:
     runs-on: windows-latest
@@ -56,16 +53,16 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
-        
+
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
+          name: .net-app  # Correct artifact name
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -85,7 +82,7 @@ jobs:
       - name: Create EF Migration Bundle
         run: dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --startup-project Web/Web.csproj --output efbundle
         working-directory: ${{ github.workspace }}
-        
+
       - name: Run EF Migrations
         run: ./efbundle --connection "${{ secrets.PROD_SQL_CONNECTION_STRING }}"
 
@@ -95,4 +92,4 @@ jobs:
         with:
           app-name: 'concertable-app'
           slot-name: 'Production'
-          package: ${{ github.workspace }}/myapp
+          package: ${{ github.workspace }}/myapp  # Ensure the correct path is referenced here
