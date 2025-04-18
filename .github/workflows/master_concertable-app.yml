@@ -95,4 +95,4 @@ jobs:
         with:
           app-name: 'concertable-app'
           slot-name: 'Production'
-          package: .
+          package: ${{ github.workspace }}/myapp
