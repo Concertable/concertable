@@ -73,7 +73,16 @@ namespace Infrastructure.Services
             var user = await currentUserService.GetAsync();
             artist.UserId = user.Id;
 
-            await imageService.UploadAsync(image);
+            artist.ImageUrl = await imageService.UploadAsync(image);
+
+            foreach (var genre in createArtistDto.Genres)
+            {
+                artist.ArtistGenres.Add(new ArtistGenre
+                {
+                    ArtistId = artist.Id,
+                    GenreId = genre.Id   
+                });
+            }
 
             var createdArtist = await artistRepository.AddAsync(artist);
             await artistRepository.SaveChangesAsync();
@@ -84,24 +93,31 @@ namespace Infrastructure.Services
         public async Task<ArtistDto> UpdateAsync(ArtistDto artistDto, IFormFile? image)
         {
             var artist = await artistRepository.GetByIdAsync(artistDto.Id);
+            if (artist is null)
+                throw new NotFoundException("Artist not found");
+
             mapper.Map(artistDto, artist);
 
             var user = await currentUserService.GetEntityAsync();
-
-            if (artist?.UserId != user.Id)
+            if (artist.UserId != user.Id)
                 throw new ForbiddenException("You do not own this Artist");
 
-            var existingGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
+            // Safely materialize lists before set operations
+            var existingGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId).ToList();
+            var newGenreIds = artistDto.Genres.Select(g => g.Id).ToList();
 
-            var newGenreIds = artistDto.Genres.Select(g => g.Id);
-
-            foreach (var genreId in existingGenreIds.Except(newGenreIds))
+            // Remove genres that are no longer selected
+            var genreIdsToRemove = existingGenreIds.Except(newGenreIds).ToList();
+            foreach (var genreId in genreIdsToRemove)
             {
-                var genreToRemove = artist.ArtistGenres.First(ag => ag.GenreId == genreId);
-                artist.ArtistGenres.Remove(genreToRemove);
+                var genreToRemove = artist.ArtistGenres.FirstOrDefault(ag => ag.GenreId == genreId);
+                if (genreToRemove != null)
+                    artist.ArtistGenres.Remove(genreToRemove);
             }
 
-            foreach (var genreId in newGenreIds.Except(existingGenreIds))
+            // Add newly selected genres
+            var genreIdsToAdd = newGenreIds.Except(existingGenreIds).ToList();
+            foreach (var genreId in genreIdsToAdd)
             {
                 artist.ArtistGenres.Add(new ArtistGenre
                 {
@@ -110,13 +126,20 @@ namespace Infrastructure.Services
                 });
             }
 
+            mapper.Map(artistDto, artist);
+
+            // Replace image if provided
             if (image is not null)
+            {
                 artist.ImageUrl = await imageService.ReplaceAsync(image, artist.ImageUrl);
+            }
 
             artistRepository.Update(artist);
             await artistRepository.SaveChangesAsync();
 
-            return mapper.Map<ArtistDto>(artist);
+            var result = mapper.Map<ArtistDto>(artist);
+            result.Genres = artistDto.Genres;
+            return result;
         }
 
         public async Task<int> GetIdForCurrentUserAsync()

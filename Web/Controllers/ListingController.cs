@@ -31,7 +31,7 @@ namespace Web.Controllers
         public async Task<IActionResult> Create([FromBody] ListingDto listingDto)
         {
             await listingService.CreateAsync(listingDto);
-            return CreatedAtAction("", new {Id = 1});
+            return Created();
         }
 
         [Authorize(Roles = "VenueManager")]

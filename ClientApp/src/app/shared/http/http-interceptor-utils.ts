@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from "@angular/common/http";
 
-export function extractHttpErrorMessage(error: HttpErrorResponse): { title: string, status?: number, message: string } {
+export function extractHttpErrorMessage(error: HttpErrorResponse): { title: string, status?: number, message?: string } {
     console.log(error)
     // Handle ModelState errors 400
     if (error.status === 400) {
@@ -30,14 +30,14 @@ export function extractHttpErrorMessage(error: HttpErrorResponse): { title: stri
     if (typeof error.error === 'object') {
       return {
         title: error.error.title || `${error.status} ${error.statusText}`,
-        message: error.error.message || "An unexpected error occurred"
+        message: error.error.message
       };
     }
 
     // Fallback
     return {
       title: `${error.status} ${error.statusText}`,
-      message: "An unexpected error occurred"
+      message: error.message 
     };
   }
   

@@ -1,5 +1,5 @@
 @if(artist) {
-    <app-artist-details-hero [(artist)]="artist" [editMode]="editMode" (artistChange)="onChangeDetected()" />
+    <app-artist-details-hero [(artist)]="artist" [editMode]="editMode" (artistChange)="onChangeDetected()" (imageChange)="onImageChange($event)" />
     <app-scrollspy [navItems]="navItems"></app-scrollspy>
     <div class="container" *ngIf="artist">
         <section [id]="navItems[0].fragment">

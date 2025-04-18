@@ -22,7 +22,10 @@ export class ErrorInterceptor implements HttpInterceptor {
         console.log("err", err)
         const { title, message } = extractHttpErrorMessage(err);
         console.log(title, "next", message);
-        this.toastService.showError(message, title);
+        if (message) 
+          this.toastService.showError(message, title);
+        else 
+          this.toastService.showError(title);
         return throwError(() => err);
       })
     );

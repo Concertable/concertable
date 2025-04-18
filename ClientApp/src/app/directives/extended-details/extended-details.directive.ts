@@ -1,4 +1,4 @@
-import { Directive } from '@angular/core';
+import { Directive, EventEmitter, Output } from '@angular/core';
 import { AuthService } from '../../services/auth/auth.service';
 import { BlobStorageService } from '../../services/blob-storage/blob-storage.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +17,7 @@ import { EventViewType } from '../../models/event-view-type';
   standalone: false
 })
 export abstract class ExtendedDetailsDirective<T extends Venue | Artist | Event> extends DetailsDirective<T> {
+  @Output() imageChange = new EventEmitter<File>
   navItems: NavItem[] = [
     { name: 'About', fragment: 'about' },
     { name: 'Reviews', fragment: 'reviews' }
@@ -43,5 +44,10 @@ export abstract class ExtendedDetailsDirective<T extends Venue | Artist | Event>
 
   exists(section: string): boolean {
     return this.navItems.some(n => n.name === section);
+  }
+
+  onImageChange(image: File) {
+    this.imageChange.emit(image);
+    this.onChangeDetected();
   }
 }

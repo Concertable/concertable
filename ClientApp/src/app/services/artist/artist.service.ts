@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ArtistHeader } from '../../models/artist-header';
 import { Pagination } from '../../models/pagination';
+import { ArtistFormDataSerializerService } from '../artist-form-data-serializer.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ import { Pagination } from '../../models/pagination';
 export class ArtistService {
   private apiUrl = `${environment.apiUrl}/artist`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private artistFormDataSerializer: ArtistFormDataSerializerService) { }
 
   private currentUserArtistSubject = new BehaviorSubject<Artist | undefined>(undefined);
 
@@ -34,11 +35,13 @@ export class ArtistService {
     );
   }
 
-  create(artist: Artist): Observable<Artist> {
-    return this.http.post<Artist>(`${this.apiUrl}`, artist);
+  create(artist: Artist, image: File): Observable<Artist> {
+    const formData = this.artistFormDataSerializer.serializeWithImage(artist, image);
+    return this.http.post<Artist>(`${this.apiUrl}`, formData);
   }
 
-  update(artist: Artist) : Observable<Artist> {
-    return this.http.put<Artist>(`${this.apiUrl}/${artist.id}`, artist)
+  update(artist: Artist, image?: File) : Observable<Artist> {
+    const formData = this.artistFormDataSerializer.serializeWithImage(artist, image);
+    return this.http.put<Artist>(`${this.apiUrl}/${artist.id}`, formData)
   }
 }

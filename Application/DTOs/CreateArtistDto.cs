@@ -10,7 +10,6 @@ namespace Application.DTOs
     {
         public string Name { get; set; }
         public string About { get; set; }
-        public string ImageUrl { get; set; }
-        public IEnumerable<string> Genres { get; set; }
+        public IEnumerable<GenreDto> Genres { get; set; }
     }
 }

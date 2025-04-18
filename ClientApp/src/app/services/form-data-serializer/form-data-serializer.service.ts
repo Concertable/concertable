@@ -20,6 +20,4 @@ export abstract class FormDataSerializerService<T> implements ISerializer<T> {
   
     return formData;
   }
-
-  abstract deserialize(formData: FormData): T
 }

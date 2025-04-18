@@ -11,6 +11,7 @@ import { BlobStorageService } from '../services/blob-storage/blob-storage.servic
 export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
   @Input() item?: T;
   @Output() itemChange = new EventEmitter<T>();
+  @Output() imageChange = new EventEmitter<File>
   @Input() editMode?: boolean = false;
   @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
   @Output() locationChange = new EventEmitter<{ county: string, town: string }>();
@@ -68,6 +69,6 @@ export abstract class DetailsHeroDirective<T extends Artist | Event | Venue> {
   }
 
   onImageChange(image: File) {
-    return;
+    this.imageChange.emit(image);
   }
 }

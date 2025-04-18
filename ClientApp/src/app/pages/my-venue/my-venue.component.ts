@@ -19,7 +19,6 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class MyVenueComponent extends ConfigDirective<Venue> {
   newListings: Listing[] = [];
-  image?: File;
 
   constructor(
     route: ActivatedRoute,
@@ -39,6 +38,7 @@ export class MyVenueComponent extends ConfigDirective<Venue> {
 
   setDetails(data: any) {
     this.venue = data['venue'];
+    console.log(this.venue);
   }
 
   update(venue: Venue): Observable<Venue> {
@@ -50,11 +50,6 @@ export class MyVenueComponent extends ConfigDirective<Venue> {
   }
 
   addListing(listing: Listing) {
-    this.listingService.create(listing).subscribe()
-    this.saveable = true;
-  }
-
-  updateImage(image: File) {
-    this.image = image;
+    this.listingService.create(listing).subscribe(() => this.venueToastService.showSuccess("Listing Added Successfully!"))
   }
 }

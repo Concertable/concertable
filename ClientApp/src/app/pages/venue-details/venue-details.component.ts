@@ -25,7 +25,6 @@ import { Genre } from '../../models/genre';
 })
 export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
   @Output() listingCreate = new EventEmitter<Listing>
-  @Output() imageChange = new EventEmitter<File>
   image?: File;
 
   venueGenres: Genre[] = [
@@ -101,10 +100,4 @@ export class VenueDetailsComponent extends ExtendedDetailsDirective<Venue> {
       window.open(url, '_blank');
     }
   }
-
-  onImageChange(image: File) {
-    this.imageChange.emit(image);
-    this.onChangeDetected();
-  }
-
 }

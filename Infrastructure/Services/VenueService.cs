@@ -127,9 +127,6 @@ namespace Infrastructure.Services
             var user = await currentUserService.GetAsync();
             var venue = await venueRepository.GetByUserIdAsync(user.Id);
 
-            if (venue is null)
-                throw new ForbiddenException("You do not own a Venue");
-
             var venueDto = mapper.Map<VenueDto>(venue);
             await reviewService.SetAverageRatingAsync(venueDto);
 

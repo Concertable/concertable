@@ -32,14 +32,11 @@ namespace Infrastructure.Repositories
         {
             var query = context.ListingApplications
             .Include(a => a.Listing)
-            .ThenInclude(l => l.Venue)
+                .ThenInclude(l => l.Venue)
             .Where(a =>
                 a.ArtistId == artistId &&
-                (
-                    // Check an Event exists where the ApplicationId matches this application's ID
-                    !context.Events.Any(e => e.ApplicationId == a.Id) ||
-                    a.Listing.EndDate > DateTime.UtcNow
-                ));
+                !context.Events.Any(e => e.ApplicationId == a.Id) &&
+                a.Listing.StartDate > DateTime.UtcNow);
 
             return await query.ToListAsync();
         }

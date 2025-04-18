@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { Artist } from '../../models/artist';
 import { CreateItemDirective } from '../../directives/create-item/create-item.directive';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable } from 'rxjs';
 import { ArtistService } from '../../services/artist/artist.service';
 import { ArtistToastService } from '../../services/toast/artist/artist-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { validateObject } from '../../shared/validators/object-validator';
 
 @Component({
   selector: 'app-create-artist',
@@ -47,7 +48,16 @@ export class CreateArtistComponent extends CreateItemDirective<Artist> {
   }
 
   create(artist: Artist): Observable<Artist> {
-    return this.artistService.create(artist);
+    if (!this.image) {
+          this.artistToastService.showError("Image is required", "Validation Error");
+          return EMPTY;
+        }
+        const errors = validateObject(artist, ['id', 'email', 'county', 'town', 'imageUrl']);
+        if (errors.length) {
+          this.artistToastService.showErrors(errors, "Validation Error");
+          return EMPTY;
+        }
+        return this.artistService.create(artist, this.image);
   }
   
   showCreated(artist: Artist): void {

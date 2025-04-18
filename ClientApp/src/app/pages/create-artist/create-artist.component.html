@@ -1,2 +1,2 @@
 <app-create-navbar (create)="createChanges()"></app-create-navbar>
-<app-artist-details [artist]="artist" [editMode]="true"></app-artist-details>
+<app-artist-details [(artist)]="artist" [editMode]="true" (imageChange)="updateImage($event)"></app-artist-details>

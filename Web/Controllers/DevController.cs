@@ -1,6 +1,8 @@
 ﻿using Application.Interfaces;
+using Core.Entities.Identity;
 using Infrastructure.Data.Identity;
 using Infrastructure.Settings;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -127,6 +129,60 @@ namespace Web.Controllers
                 Message = "Test logging successful"
             });
         }
+
+        [HttpPost("create-stripe-id-for-user")]
+        public async Task<IActionResult> CreateStripeIdForUser(
+    [FromQuery] string userId,
+    [FromServices] UserManager<ApplicationUser> userManager,
+    [FromServices] IStripeAccountService stripeAccountService,
+    [FromServices] SignInManager<ApplicationUser> signInManager,
+    [FromServices] IHttpContextAccessor httpContextAccessor)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return BadRequest("Missing user ID");
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound($"User with ID '{userId}' not found");
+
+            var currentUser = await userManager.GetUserAsync(httpContextAccessor.HttpContext.User);
+
+            if (!string.IsNullOrWhiteSpace(user.StripeId))
+            {
+                if (currentUser?.Id == user.Id)
+                {
+                    await signInManager.RefreshSignInAsync(user);
+                }
+
+                return Ok(new
+                {
+                    Message = "User already has a Stripe account",
+                    StripeAccountId = user.StripeId
+                });
+            }
+
+            var stripeAccountId = await stripeAccountService.CreateStripeAccountAsync(user);
+            user.StripeId = stripeAccountId;
+            var updateResult = await userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+                return StatusCode(500, "Failed to update user with Stripe ID");
+
+            if (currentUser?.Id == user.Id)
+            {
+                await signInManager.RefreshSignInAsync(user);
+            }
+
+            return Ok(new
+            {
+                Message = "Stripe account created and linked to user",
+                UserId = user.Id,
+                StripeAccountId = stripeAccountId
+            });
+        }
+
+
+
 
 
     }

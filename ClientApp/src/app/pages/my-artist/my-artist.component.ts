@@ -32,10 +32,11 @@ export class MyArtistComponent extends ConfigDirective<Artist> {
 
   setDetails(data: any): void {
     this.artist = data['artist'];    
+    console.log(this.artist);
   }
 
   update(artist: Artist): Observable<Artist> {
-    return this.artistService.update(artist);
+    return this.artistService.update(artist, this.image);
   }
 
   showUpdated(artist: Artist): void {

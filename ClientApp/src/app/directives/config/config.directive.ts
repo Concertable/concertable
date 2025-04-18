@@ -19,6 +19,7 @@ export abstract class ConfigDirective<T extends Venue | Artist | Event | User | 
   protected originalItem?: T;
   protected editMode: boolean = false;
   protected saveable: boolean = false;
+  image?: File;
 
   constructor(protected route: ActivatedRoute) { }
 
@@ -59,5 +60,9 @@ export abstract class ConfigDirective<T extends Venue | Artist | Event | User | 
   onItemChange() {
     this.saveable = true;
     console.log("Item", this.item);
+  }
+
+  updateImage(image: File) {
+    this.image = image;
   }
 }

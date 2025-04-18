@@ -9,8 +9,6 @@ import { DetailsHeroDirective } from '../../directives/details-hero.directive';
   styleUrl: '../../shared/components/details-hero/details-hero.component.scss'
 })
 export class VenueDetailsHeroComponent extends DetailsHeroDirective<Venue>{
-  @Output() 
-  @Output() imageChange = new EventEmitter<File>
   override locationEditable?: boolean = true;
   override imageEditable?: boolean = true;
 
@@ -75,9 +73,5 @@ export class VenueDetailsHeroComponent extends DetailsHeroDirective<Venue>{
   set imageUrl(value: string) {
     if(this.venue)
       this.venue.imageUrl = value;
-  }
-
-  override onImageChange(image: File) {
-    this.imageChange.emit(image);
   }
 }

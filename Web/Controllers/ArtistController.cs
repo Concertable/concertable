@@ -50,7 +50,7 @@ namespace Web.Controllers
 
         [Authorize(Roles = "ArtistManager")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]ArtistCreateRequest request)
+        public async Task<IActionResult> Create([FromForm] ArtistCreateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -62,7 +62,7 @@ namespace Web.Controllers
 
         [Authorize (Roles = "ArtistManager")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] ArtistUpdateRequest request)
+        public async Task<IActionResult> Update(int id, [FromForm] ArtistUpdateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

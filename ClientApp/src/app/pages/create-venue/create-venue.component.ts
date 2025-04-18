@@ -18,7 +18,6 @@ import { validateObject } from '../../shared/validators/object-validator';
 })
 export class CreateVenueComponent extends CreateItemDirective<Venue> {
   newListings: Listing[] = [];
-  image?: File
 
   constructor(
     private venueService: VenueService, 
@@ -65,10 +64,8 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
       this.venueToastService.showErrors(errors, "Validadasdasdtion Error");
       return EMPTY;
     }
-    console.log("????")
     return this.venueService.create(venue, this.image);
   }
-  
 
   showCreated(venue: Venue): void {
     this.venueToastService.showCreated(venue.name); 
@@ -76,9 +73,5 @@ export class CreateVenueComponent extends CreateItemDirective<Venue> {
 
   addListing(listing: Listing) {
     this.listingService.create(listing).subscribe();
-  }
-
-  updateImage(image: File) {
-    this.image = image;
   }
 }

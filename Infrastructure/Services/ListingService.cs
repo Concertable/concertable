@@ -40,6 +40,7 @@ namespace Infrastructure.Services
             var listing = MapGenres(listingDto, venueDto); // Use the MapToListing method
 
             await listingRepository.AddAsync(listing);
+            await listingRepository.SaveChangesAsync();
         }
 
         public async Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto)
