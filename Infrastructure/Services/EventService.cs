@@ -267,7 +267,7 @@ namespace Infrastructure.Services
 
             eventHeaderDto.Rating = averageRating;
 
-            var location = eventEntity.Application?.Listing?.Venue?.Location;
+            var location = eventEntity.Application.Listing.Venue.Location;
 
             if (location?.Y == null || location?.X == null)
                 return new EventPostResponse
@@ -285,8 +285,8 @@ namespace Infrastructure.Services
                  var inRange = locationService.IsWithinRadius(
                     preference.User.Latitude,
                     preference.User.Longitude,
-                    location.Y,
-                    location.X,
+                    location?.Y,
+                    location?.X,
                     preference.RadiusKm);
 
                  var hasMatchingGenre = preference.Genres.Any(userGenre =>
