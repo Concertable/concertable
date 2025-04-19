@@ -40,7 +40,6 @@ export class EventCheckoutComponent extends CheckoutDirective<Event> {
           { label: 'Quantity', value: this.quantity, isCost: false },
           { label: 'Total', value: this.event.price * this.quantity, isCost: true }
         ];
-      console.log(this.summaryItems);
       this.signalRService.ticketPurchased$.subscribe(t => {
         this.stripeToastService.showTicketPurchase(t.ticketId);
       })

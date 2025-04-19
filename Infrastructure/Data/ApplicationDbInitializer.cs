@@ -364,11 +364,98 @@ namespace Infrastructure.Data
                 {
                     new ArtistGenre { ArtistId = 1, GenreId = 1 },
                     new ArtistGenre { ArtistId = 1, GenreId = 2 },
-                    new ArtistGenre { ArtistId = 2, GenreId = 2 },
+                    new ArtistGenre { ArtistId = 1, GenreId = 3 },
+
+                    new ArtistGenre { ArtistId = 2, GenreId = 1 },
+                    new ArtistGenre { ArtistId = 2, GenreId = 5 },
+                    new ArtistGenre { ArtistId = 2, GenreId = 4 },
+
                     new ArtistGenre { ArtistId = 3, GenreId = 5 },
+                    new ArtistGenre { ArtistId = 3, GenreId = 3 },
+
                     new ArtistGenre { ArtistId = 4, GenreId = 4 },
+
+                    new ArtistGenre { ArtistId = 5, GenreId = 6 },
                     new ArtistGenre { ArtistId = 5, GenreId = 3 },
-                    new ArtistGenre { ArtistId = 5, GenreId = 6 }
+
+                    new ArtistGenre { ArtistId = 6, GenreId = 1 },
+                    new ArtistGenre { ArtistId = 6, GenreId = 6 },
+
+                    new ArtistGenre { ArtistId = 7, GenreId = 2 },
+
+                    new ArtistGenre { ArtistId = 8, GenreId = 4 },
+                    new ArtistGenre { ArtistId = 8, GenreId = 2 },
+
+                    new ArtistGenre { ArtistId = 9, GenreId = 5 },
+                    new ArtistGenre { ArtistId = 9, GenreId = 3 },
+
+                    new ArtistGenre { ArtistId = 10, GenreId = 1 },
+                    new ArtistGenre { ArtistId = 10, GenreId = 7 },
+
+                    new ArtistGenre { ArtistId = 11, GenreId = 6 },
+                    new ArtistGenre { ArtistId = 11, GenreId = 1 },
+
+                    new ArtistGenre { ArtistId = 12, GenreId = 2 },
+
+                    new ArtistGenre { ArtistId = 13, GenreId = 6 },
+                    new ArtistGenre { ArtistId = 13, GenreId = 5 },
+
+                    new ArtistGenre { ArtistId = 14, GenreId = 4 },
+
+                    new ArtistGenre { ArtistId = 15, GenreId = 7 },
+
+                    new ArtistGenre { ArtistId = 16, GenreId = 1 },
+
+                    new ArtistGenre { ArtistId = 17, GenreId = 3 },
+
+                    new ArtistGenre { ArtistId = 18, GenreId = 6 },
+
+                    new ArtistGenre { ArtistId = 19, GenreId = 4 },
+
+                    new ArtistGenre { ArtistId = 20, GenreId = 7 },
+
+                    new ArtistGenre { ArtistId = 21, GenreId = 8 },
+
+                    new ArtistGenre { ArtistId = 22, GenreId = 1 },
+
+                    new ArtistGenre { ArtistId = 23, GenreId = 5 },
+
+                    new ArtistGenre { ArtistId = 24, GenreId = 6 },
+
+                    new ArtistGenre { ArtistId = 25, GenreId = 2 },
+
+                    new ArtistGenre { ArtistId = 26, GenreId = 1 },
+
+                    new ArtistGenre { ArtistId = 27, GenreId = 8 },
+
+                    new ArtistGenre { ArtistId = 28, GenreId = 5 },
+
+                    new ArtistGenre { ArtistId = 29, GenreId = 7 },
+
+                    new ArtistGenre { ArtistId = 30, GenreId = 3 },
+
+                    new ArtistGenre { ArtistId = 31, GenreId = 6 },
+
+                    new ArtistGenre { ArtistId = 32, GenreId = 1 },
+
+                    new ArtistGenre { ArtistId = 33, GenreId = 4 },
+
+                    new ArtistGenre { ArtistId = 34, GenreId = 2 },
+
+                    new ArtistGenre { ArtistId = 35, GenreId = 8 },
+
+                    new ArtistGenre { ArtistId = 36, GenreId = 6 },
+
+                    new ArtistGenre { ArtistId = 37, GenreId = 7 },
+
+                    new ArtistGenre { ArtistId = 38, GenreId = 3 },
+
+                    new ArtistGenre { ArtistId = 39, GenreId = 1 },
+
+                    new ArtistGenre { ArtistId = 40, GenreId = 2 },
+
+                    new ArtistGenre { ArtistId = 41, GenreId = 4 },
+                    new ArtistGenre { ArtistId = 41, GenreId = 8 }
                 };
                 context.ArtistGenres.AddRange(artistGenres);
                 await context.SaveChangesAsync();
@@ -665,22 +752,61 @@ namespace Infrastructure.Data
             {
                 var listingGenres = new ListingGenre[]
                 {
-                    new ListingGenre { ListingId = 1, GenreId = 1 }, // Rock for Listing 1
-                    new ListingGenre { ListingId = 1, GenreId = 2 }, // Pop for Listing 1
-                    new ListingGenre { ListingId = 2, GenreId = 5 }, // Electronic for Listing 2
-                    new ListingGenre { ListingId = 3, GenreId = 3 }, // Jazz for Listing 3
-                    new ListingGenre { ListingId = 4, GenreId = 4 }, // Hip-Hop for Listing 4
-                    new ListingGenre { ListingId = 5, GenreId = 6 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 5, GenreId = 1 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 6, GenreId = 6 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 6, GenreId = 4 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 7, GenreId = 2 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 8, GenreId = 4 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 8, GenreId = 1 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 9, GenreId = 2 },  // Indie for Listing 5
-                    new ListingGenre { ListingId = 9, GenreId = 1 },  // Indie for Listing 5
-
-                };
+                    new ListingGenre { ListingId = 1, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 1, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 2, GenreId = 5 }, // Electronic
+                    new ListingGenre { ListingId = 3, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 4, GenreId = 4 }, // Hip-Hop
+                    new ListingGenre { ListingId = 5, GenreId = 6 }, // Indie
+                    new ListingGenre { ListingId = 5, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 6, GenreId = 6 }, // Indie
+                    new ListingGenre { ListingId = 6, GenreId = 4 }, // Hip-Hop
+                    new ListingGenre { ListingId = 7, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 8, GenreId = 4 }, // Hip-Hop
+                    new ListingGenre { ListingId = 8, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 9, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 9, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 9, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 10, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 11, GenreId = 5 }, // Electronic
+                    new ListingGenre { ListingId = 11, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 12, GenreId = 6 }, // Indie
+                    new ListingGenre { ListingId = 13, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 14, GenreId = 7 }, // DnB
+                    new ListingGenre { ListingId = 15, GenreId = 8 }, // House
+                    new ListingGenre { ListingId = 16, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 16, GenreId = 7 }, // DnB
+                    new ListingGenre { ListingId = 17, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 18, GenreId = 6 }, // Indie
+                    new ListingGenre { ListingId = 19, GenreId = 4 }, // Hip-Hop
+                    new ListingGenre { ListingId = 20, GenreId = 7 }, // DnB
+                    new ListingGenre { ListingId = 21, GenreId = 8 }, // House
+                    new ListingGenre { ListingId = 22, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 22, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 23, GenreId = 5 }, // Electronic
+                    new ListingGenre { ListingId = 24, GenreId = 6 }, // Indie
+                    new ListingGenre { ListingId = 25, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 26, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 26, GenreId = 5 }, // Electronic
+                    new ListingGenre { ListingId = 27, GenreId = 8 }, // House
+                    new ListingGenre { ListingId = 28, GenreId = 5 }, // Electronic
+                    new ListingGenre { ListingId = 29, GenreId = 7 }, // DnB
+                    new ListingGenre { ListingId = 30, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 30, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 31, GenreId = 6 }, // Indie
+                    new ListingGenre { ListingId = 32, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 33, GenreId = 4 }, // Hip-Hop
+                    new ListingGenre { ListingId = 34, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 34, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 35, GenreId = 8 }, // House
+                    new ListingGenre { ListingId = 36, GenreId = 6 }, // Indie
+                    new ListingGenre { ListingId = 37, GenreId = 7 }, // DnB
+                    new ListingGenre { ListingId = 38, GenreId = 3 }, // Jazz
+                    new ListingGenre { ListingId = 39, GenreId = 1 }, // Rock
+                    new ListingGenre { ListingId = 40, GenreId = 2 }, // Pop
+                    new ListingGenre { ListingId = 41, GenreId = 4 }, // Hip-Hop
+                    new ListingGenre { ListingId = 41, GenreId = 8 }  // House
+};
                 context.ListingGenres.AddRange(listingGenres);
                 await context.SaveChangesAsync();
             }
@@ -691,66 +817,166 @@ namespace Infrastructure.Data
                 var applications = new ListingApplication[]
                 {
                     new ListingApplication { ArtistId = 1, ListingId = 1 },
+                    new ListingApplication { ArtistId = 2, ListingId = 1 },
+                    new ListingApplication { ArtistId = 3, ListingId = 1 },
+                    new ListingApplication { ArtistId = 4, ListingId = 1 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 2 },
                     new ListingApplication { ArtistId = 2, ListingId = 2 },
-                    new ListingApplication { ArtistId = 3, ListingId = 3 },
-                    new ListingApplication { ArtistId = 4, ListingId = 4 },
-                    new ListingApplication { ArtistId = 5, ListingId = 5 },
-                    new ListingApplication { ArtistId = 6, ListingId = 6 },
-                    new ListingApplication { ArtistId = 7, ListingId = 7 },
-                    new ListingApplication { ArtistId = 8, ListingId = 8 },
-                    new ListingApplication { ArtistId = 9, ListingId = 9 },
-                    new ListingApplication { ArtistId = 10, ListingId = 10 },
-                    new ListingApplication { ArtistId = 11, ListingId = 11 },
-                    new ListingApplication { ArtistId = 12, ListingId = 12 },
-                    new ListingApplication { ArtistId = 13, ListingId = 13 },
-                    new ListingApplication { ArtistId = 14, ListingId = 14 },
-                    new ListingApplication { ArtistId = 15, ListingId = 15 },
-                    new ListingApplication { ArtistId = 16, ListingId = 16 },
-                    new ListingApplication { ArtistId = 17, ListingId = 17 },
-                    new ListingApplication { ArtistId = 18, ListingId = 18 },
-                    new ListingApplication { ArtistId = 19, ListingId = 19 },
-                    new ListingApplication { ArtistId = 20, ListingId = 20 },
-                    new ListingApplication { ArtistId = 21, ListingId = 21 },
-                    new ListingApplication { ArtistId = 22, ListingId = 22 },
-                    new ListingApplication { ArtistId = 23, ListingId = 23 },
-                    new ListingApplication { ArtistId = 24, ListingId = 24 },
-                    new ListingApplication { ArtistId = 25, ListingId = 25 },
-                    new ListingApplication { ArtistId = 26, ListingId = 26 },
-                    new ListingApplication { ArtistId = 27, ListingId = 27 },
-                    new ListingApplication { ArtistId = 28, ListingId = 28 },
-                    new ListingApplication { ArtistId = 29, ListingId = 29 },
-                    new ListingApplication { ArtistId = 30, ListingId = 30 },
-                    new ListingApplication { ArtistId = 11, ListingId = 31 },
-                    new ListingApplication { ArtistId = 8, ListingId = 32 },
-                    new ListingApplication { ArtistId = 10, ListingId = 33 },
-                    new ListingApplication { ArtistId = 9, ListingId = 34 },
-                    new ListingApplication { ArtistId = 5, ListingId = 34 },
-                    new ListingApplication { ArtistId = 8, ListingId = 33 },
-                    new ListingApplication { ArtistId = 9, ListingId = 33 },
-                    new ListingApplication { ArtistId = 10, ListingId = 34 },
-                    new ListingApplication { ArtistId = 11, ListingId = 34 },
-                    new ListingApplication { ArtistId = 12, ListingId = 35 },
-                    new ListingApplication { ArtistId = 13, ListingId = 36 },
-                    new ListingApplication { ArtistId = 14, ListingId = 36 },
-                    new ListingApplication { ArtistId = 15, ListingId = 36 },
-                    new ListingApplication { ArtistId = 16, ListingId = 37 },
-                    new ListingApplication { ArtistId = 17, ListingId = 38 },
-                    new ListingApplication { ArtistId = 18, ListingId = 38 },
-                    new ListingApplication { ArtistId = 19, ListingId = 39 },
-                    new ListingApplication { ArtistId = 20, ListingId = 40 },
-                    new ListingApplication { ArtistId = 21, ListingId = 40 },
-                    new ListingApplication { ArtistId = 22, ListingId = 40 },
-                    new ListingApplication { ArtistId = 23, ListingId = 40 },
-                    new ListingApplication { ArtistId = 24, ListingId = 41 },
-                    new ListingApplication { ArtistId = 25, ListingId = 41 },
-                    new ListingApplication { ArtistId = 26, ListingId = 41 },
-                    new ListingApplication { ArtistId = 27, ListingId = 41 },
-                    new ListingApplication { ArtistId = 28, ListingId = 41 },
-                    new ListingApplication { ArtistId = 29, ListingId = 41 },
-                    new ListingApplication { ArtistId = 30, ListingId = 41 },
+                    new ListingApplication { ArtistId = 5, ListingId = 2 },
+                    new ListingApplication { ArtistId = 6, ListingId = 2 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 3 },
+                    new ListingApplication { ArtistId = 2, ListingId = 3 },
+                    new ListingApplication { ArtistId = 7, ListingId = 3 },
+                    new ListingApplication { ArtistId = 8, ListingId = 3 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 4 },
+                    new ListingApplication { ArtistId = 2, ListingId = 4 },
+                    new ListingApplication { ArtistId = 9, ListingId = 4 },
+                    new ListingApplication { ArtistId = 10, ListingId = 4 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 5 },
+                    new ListingApplication { ArtistId = 2, ListingId = 5 },
+                    new ListingApplication { ArtistId = 11, ListingId = 5 },
+                    new ListingApplication { ArtistId = 12, ListingId = 5 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 6 },
+                    new ListingApplication { ArtistId = 2, ListingId = 6 },
+                    new ListingApplication { ArtistId = 13, ListingId = 6 },
+                    new ListingApplication { ArtistId = 14, ListingId = 6 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 7 },
+                    new ListingApplication { ArtistId = 2, ListingId = 7 },
+                    new ListingApplication { ArtistId = 15, ListingId = 7 },
+                    new ListingApplication { ArtistId = 16, ListingId = 7 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 8 },
+                    new ListingApplication { ArtistId = 2, ListingId = 8 },
+                    new ListingApplication { ArtistId = 17, ListingId = 8 },
+                    new ListingApplication { ArtistId = 18, ListingId = 8 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 9 },
+                    new ListingApplication { ArtistId = 2, ListingId = 9 },
+                    new ListingApplication { ArtistId = 19, ListingId = 9 },
+                    new ListingApplication { ArtistId = 20, ListingId = 9 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 10 },
+                    new ListingApplication { ArtistId = 2, ListingId = 10 },
+                    new ListingApplication { ArtistId = 21, ListingId = 10 },
+                    new ListingApplication { ArtistId = 22, ListingId = 10 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 11 },
+                    new ListingApplication { ArtistId = 2, ListingId = 11 },
+                    new ListingApplication { ArtistId = 23, ListingId = 11 },
+                    new ListingApplication { ArtistId = 24, ListingId = 11 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 12 },
+                    new ListingApplication { ArtistId = 2, ListingId = 12 },
+                    new ListingApplication { ArtistId = 25, ListingId = 12 },
+                    new ListingApplication { ArtistId = 26, ListingId = 12 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 13 },
+                    new ListingApplication { ArtistId = 2, ListingId = 13 },
+                    new ListingApplication { ArtistId = 27, ListingId = 13 },
+                    new ListingApplication { ArtistId = 28, ListingId = 13 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 14 },
+                    new ListingApplication { ArtistId = 2, ListingId = 14 },
+                    new ListingApplication { ArtistId = 29, ListingId = 14 },
+                    new ListingApplication { ArtistId = 30, ListingId = 14 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 15 },
+                    new ListingApplication { ArtistId = 2, ListingId = 15 },
+                    new ListingApplication { ArtistId = 31, ListingId = 15 },
+                    new ListingApplication { ArtistId = 32, ListingId = 15 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 16 },
+                    new ListingApplication { ArtistId = 2, ListingId = 16 },
+                    new ListingApplication { ArtistId = 33, ListingId = 16 },
+                    new ListingApplication { ArtistId = 34, ListingId = 16 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 17 },
+                    new ListingApplication { ArtistId = 2, ListingId = 17 },
+                    new ListingApplication { ArtistId = 35, ListingId = 17 },
+                    new ListingApplication { ArtistId = 36, ListingId = 17 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 18 },
+                    new ListingApplication { ArtistId = 2, ListingId = 18 },
+                    new ListingApplication { ArtistId = 37, ListingId = 18 },
+                    new ListingApplication { ArtistId = 38, ListingId = 18 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 19 },
+                    new ListingApplication { ArtistId = 2, ListingId = 19 },
+                    new ListingApplication { ArtistId = 39, ListingId = 19 },
+                    new ListingApplication { ArtistId = 40, ListingId = 19 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 20 },
+                    new ListingApplication { ArtistId = 2, ListingId = 20 },
+                    new ListingApplication { ArtistId = 41, ListingId = 20 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 21 },
+                    new ListingApplication { ArtistId = 2, ListingId = 21 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 22 },
+                    new ListingApplication { ArtistId = 2, ListingId = 22 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 23 },
+                    new ListingApplication { ArtistId = 2, ListingId = 23 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 24 },
+                    new ListingApplication { ArtistId = 2, ListingId = 24 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 25 },
+                    new ListingApplication { ArtistId = 2, ListingId = 25 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 26 },
+                    new ListingApplication { ArtistId = 2, ListingId = 26 },
+
                     new ListingApplication { ArtistId = 1, ListingId = 27 },
+                    new ListingApplication { ArtistId = 2, ListingId = 27 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 28 },
+                    new ListingApplication { ArtistId = 2, ListingId = 28 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 29 },
+                    new ListingApplication { ArtistId = 2, ListingId = 29 },
+
                     new ListingApplication { ArtistId = 1, ListingId = 30 },
-                    new ListingApplication { ArtistId = 1, ListingId = 33 }
+                    new ListingApplication { ArtistId = 2, ListingId = 30 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 31 },
+                    new ListingApplication { ArtistId = 2, ListingId = 31 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 32 },
+                    new ListingApplication { ArtistId = 2, ListingId = 32 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 33 },
+                    new ListingApplication { ArtistId = 2, ListingId = 33 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 34 },
+                    new ListingApplication { ArtistId = 2, ListingId = 34 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 35 },
+                    new ListingApplication { ArtistId = 2, ListingId = 35 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 36 },
+                    new ListingApplication { ArtistId = 2, ListingId = 36 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 37 },
+                    new ListingApplication { ArtistId = 2, ListingId = 37 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 38 },
+                    new ListingApplication { ArtistId = 2, ListingId = 38 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 39 },
+                    new ListingApplication { ArtistId = 2, ListingId = 39 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 40 },
+                    new ListingApplication { ArtistId = 2, ListingId = 40 },
+
+                    new ListingApplication { ArtistId = 1, ListingId = 41 },
+                    new ListingApplication { ArtistId = 2, ListingId = 41 }
                 };
                 context.ListingApplications.AddRange(applications);
                 await context.SaveChangesAsync();
@@ -797,63 +1023,70 @@ namespace Infrastructure.Data
             {
                 var eventGenres = new List<EventGenre>
                 {
-                // Event 1: ArtistId = 1, ListingId = 1
-                new EventGenre { EventId = 1, GenreId = 1 },
-                new EventGenre { EventId = 1, GenreId = 2 },
+                    new EventGenre { EventId = 1, GenreId = 1 },
+                    new EventGenre { EventId = 1, GenreId = 2 },
 
-                // Event 2: ArtistId = 2, ListingId = 2
-                new EventGenre { EventId = 2, GenreId = 2 },
-                new EventGenre { EventId = 2, GenreId = 5 },
+                    new EventGenre { EventId = 2, GenreId = 2 },
+                    new EventGenre { EventId = 2, GenreId = 5 },
 
-                // Event 3: ArtistId = 3, ListingId = 3
-                new EventGenre { EventId = 3, GenreId = 5 },
-                new EventGenre { EventId = 3, GenreId = 3 },
+                    new EventGenre { EventId = 3, GenreId = 5 },
+                    new EventGenre { EventId = 3, GenreId = 3 },
 
-                // Event 4: ArtistId = 4, ListingId = 4
-                new EventGenre { EventId = 4, GenreId = 4 },
+                    new EventGenre { EventId = 4, GenreId = 4 },
 
-                // Event 5: ArtistId = 5, ListingId = 5
-                new EventGenre { EventId = 5, GenreId = 3 },
-                new EventGenre { EventId = 5, GenreId = 6 },
-                new EventGenre { EventId = 5, GenreId = 1 }, // from listing
-       
-                // Event 6: ArtistId = 6, ListingId = 6
-                new EventGenre { EventId = 6, GenreId = 6 },
-                new EventGenre { EventId = 6, GenreId = 4 },
+                    new EventGenre { EventId = 5, GenreId = 3 },
+                    new EventGenre { EventId = 5, GenreId = 6 },
+                    new EventGenre { EventId = 5, GenreId = 1 },
 
-                // Event 7: ArtistId = 7, ListingId = 7
-                new EventGenre { EventId = 7, GenreId = 2 },
+                    new EventGenre { EventId = 6, GenreId = 6 },
+                    new EventGenre { EventId = 6, GenreId = 4 },
 
-                // Event 8: ArtistId = 8, ListingId = 8
-                new EventGenre { EventId = 8, GenreId = 4 },
-                new EventGenre { EventId = 8, GenreId = 1 },
+                    new EventGenre { EventId = 7, GenreId = 2 },
 
-                // Event 9: ArtistId = 9, ListingId = 9
-                new EventGenre { EventId = 9, GenreId = 2 },
-                new EventGenre { EventId = 9, GenreId = 1 },
+                    new EventGenre { EventId = 8, GenreId = 4 },
+                    new EventGenre { EventId = 8, GenreId = 1 },
 
-                // Event 10 to 26 — assuming listings had no genre seeded, use only artist genres
-                new EventGenre { EventId = 10, GenreId = 6 },
-                new EventGenre { EventId = 11, GenreId = 1 },
-                new EventGenre { EventId = 12, GenreId = 5 },
-                new EventGenre { EventId = 13, GenreId = 4 },
-                new EventGenre { EventId = 14, GenreId = 5 },
-                new EventGenre { EventId = 15, GenreId = 5 },
-                new EventGenre { EventId = 16, GenreId = 5 },
-                new EventGenre { EventId = 17, GenreId = 3 },
-                new EventGenre { EventId = 17, GenreId = 4 },
-                new EventGenre { EventId = 18, GenreId = 3 },
-                new EventGenre { EventId = 18, GenreId = 4 },
-                new EventGenre { EventId = 19, GenreId = 4 },
-                new EventGenre { EventId = 19, GenreId = 3 },
-                new EventGenre { EventId = 20, GenreId = 6 },
-                new EventGenre { EventId = 21, GenreId = 3 },
-                new EventGenre { EventId = 21, GenreId = 4 },
-                new EventGenre { EventId = 22, GenreId = 7 },
-                new EventGenre { EventId = 23, GenreId = 5 },
-                new EventGenre { EventId = 24, GenreId = 7 },
-                new EventGenre { EventId = 25, GenreId = 8 },
-                new EventGenre { EventId = 26, GenreId = 8 },
+                    new EventGenre { EventId = 9, GenreId = 2 },
+                    new EventGenre { EventId = 9, GenreId = 1 },
+
+                    new EventGenre { EventId = 10, GenreId = 6 },
+
+                    new EventGenre { EventId = 11, GenreId = 1 },
+
+                    new EventGenre { EventId = 12, GenreId = 5 },
+
+                    new EventGenre { EventId = 13, GenreId = 4 },
+
+                    new EventGenre { EventId = 14, GenreId = 5 },
+
+                    new EventGenre { EventId = 15, GenreId = 5 },
+
+                    new EventGenre { EventId = 16, GenreId = 5 },
+
+                    new EventGenre { EventId = 17, GenreId = 3 },
+                    new EventGenre { EventId = 17, GenreId = 4 },
+
+                    new EventGenre { EventId = 18, GenreId = 3 },
+                    new EventGenre { EventId = 18, GenreId = 4 },
+
+                    new EventGenre { EventId = 19, GenreId = 4 },
+                    new EventGenre { EventId = 19, GenreId = 3 },
+
+                    new EventGenre { EventId = 20, GenreId = 6 },
+
+                    new EventGenre { EventId = 21, GenreId = 3 },
+
+                    new EventGenre { EventId = 21, GenreId = 4 },
+
+                    new EventGenre { EventId = 22, GenreId = 7 },
+
+                    new EventGenre { EventId = 23, GenreId = 5 },
+
+                    new EventGenre { EventId = 24, GenreId = 7 },
+
+                    new EventGenre { EventId = 25, GenreId = 8 },
+
+                    new EventGenre { EventId = 26, GenreId = 8 }
                 };
 
                 context.EventGenres.AddRange(eventGenres);
@@ -866,45 +1099,131 @@ namespace Infrastructure.Data
         {
             var tickets = new Ticket[]
             {
-                new Ticket { UserId = 2, EventId = 1, PurchaseDate = now.AddDays(-57) },
-                new Ticket { UserId = 3, EventId = 1, PurchaseDate = now.AddDays(-57) },
-                new Ticket { UserId = 4, EventId = 1, PurchaseDate = now.AddDays(-57) },
-                new Ticket { UserId = 5, EventId = 1, PurchaseDate = now.AddDays(-56) },
-                new Ticket { UserId = 6, EventId = 1, PurchaseDate = now.AddDays(-56) },
-                new Ticket { UserId = 7, EventId = 1, PurchaseDate = now.AddDays(-56) },
-                new Ticket { UserId = 8, EventId = 1, PurchaseDate = now.AddDays(-55) },
+                new Ticket { UserId = 2, EventId = 1, PurchaseDate = now.AddDays(-58) },
+                new Ticket { UserId = 3, EventId = 1, PurchaseDate = now.AddDays(-58) },
+                new Ticket { UserId = 4, EventId = 1, PurchaseDate = now.AddDays(-58) },
+                new Ticket { UserId = 5, EventId = 1, PurchaseDate = now.AddDays(-57) },
+                new Ticket { UserId = 6, EventId = 1, PurchaseDate = now.AddDays(-57) },
+                new Ticket { UserId = 7, EventId = 1, PurchaseDate = now.AddDays(-57) },
+                new Ticket { UserId = 8, EventId = 1, PurchaseDate = now.AddDays(-56) },
 
-                new Ticket { UserId = 3, EventId = 2, PurchaseDate = now.AddDays(-54) },
-                new Ticket { UserId = 4, EventId = 2, PurchaseDate = now.AddDays(-54) },
-                new Ticket { UserId = 5, EventId = 2, PurchaseDate = now.AddDays(-54) },
-                new Ticket { UserId = 6, EventId = 2, PurchaseDate = now.AddDays(-53) },
-                new Ticket { UserId = 7, EventId = 2, PurchaseDate = now.AddDays(-53) },
-                new Ticket { UserId = 8, EventId = 2, PurchaseDate = now.AddDays(-53) },
-                new Ticket { UserId = 9, EventId = 2, PurchaseDate = now.AddDays(-52) },
+                new Ticket { UserId = 3, EventId = 2, PurchaseDate = now.AddDays(-55) },
+                new Ticket { UserId = 4, EventId = 2, PurchaseDate = now.AddDays(-55) },
+                new Ticket { UserId = 5, EventId = 2, PurchaseDate = now.AddDays(-55) },
+                new Ticket { UserId = 6, EventId = 2, PurchaseDate = now.AddDays(-54) },
+                new Ticket { UserId = 7, EventId = 2, PurchaseDate = now.AddDays(-54) },
+                new Ticket { UserId = 8, EventId = 2, PurchaseDate = now.AddDays(-54) },
+                new Ticket { UserId = 9, EventId = 2, PurchaseDate = now.AddDays(-53) },
 
-                new Ticket { UserId = 4, EventId = 3, PurchaseDate = now.AddDays(-51) },
-                new Ticket { UserId = 5, EventId = 3, PurchaseDate = now.AddDays(-51) },
-                new Ticket { UserId = 6, EventId = 3, PurchaseDate = now.AddDays(-51) },
-                new Ticket { UserId = 7, EventId = 3, PurchaseDate = now.AddDays(-50) },
-                new Ticket { UserId = 8, EventId = 3, PurchaseDate = now.AddDays(-50) },
-                new Ticket { UserId = 9, EventId = 3, PurchaseDate = now.AddDays(-50) },
-                new Ticket { UserId = 10, EventId = 3, PurchaseDate = now.AddDays(-49) },
+                new Ticket { UserId = 4, EventId = 3, PurchaseDate = now.AddDays(-52) },
+                new Ticket { UserId = 5, EventId = 3, PurchaseDate = now.AddDays(-52) },
+                new Ticket { UserId = 6, EventId = 3, PurchaseDate = now.AddDays(-52) },
+                new Ticket { UserId = 7, EventId = 3, PurchaseDate = now.AddDays(-51) },
+                new Ticket { UserId = 8, EventId = 3, PurchaseDate = now.AddDays(-51) },
+                new Ticket { UserId = 9, EventId = 3, PurchaseDate = now.AddDays(-51) },
+                new Ticket { UserId = 10, EventId = 3, PurchaseDate = now.AddDays(-50) },
 
-                new Ticket { UserId = 2, EventId = 4, PurchaseDate = now.AddDays(-48) },
-                new Ticket { UserId = 3, EventId = 4, PurchaseDate = now.AddDays(-48) },
-                new Ticket { UserId = 4, EventId = 4, PurchaseDate = now.AddDays(-48) },
-                new Ticket { UserId = 5, EventId = 4, PurchaseDate = now.AddDays(-47) },
-                new Ticket { UserId = 6, EventId = 4, PurchaseDate = now.AddDays(-47) },
-                new Ticket { UserId = 7, EventId = 4, PurchaseDate = now.AddDays(-47) },
-                new Ticket { UserId = 8, EventId = 4, PurchaseDate = now.AddDays(-46) },
+                new Ticket { UserId = 2, EventId = 4, PurchaseDate = now.AddDays(-49) },
+                new Ticket { UserId = 3, EventId = 4, PurchaseDate = now.AddDays(-49) },
+                new Ticket { UserId = 4, EventId = 4, PurchaseDate = now.AddDays(-49) },
+                new Ticket { UserId = 5, EventId = 4, PurchaseDate = now.AddDays(-48) },
+                new Ticket { UserId = 6, EventId = 4, PurchaseDate = now.AddDays(-48) },
+                new Ticket { UserId = 7, EventId = 4, PurchaseDate = now.AddDays(-48) },
+                new Ticket { UserId = 8, EventId = 4, PurchaseDate = now.AddDays(-47) },
 
-                new Ticket { UserId = 9, EventId = 5, PurchaseDate = now.AddDays(-45) },
-                new Ticket { UserId = 10, EventId = 5, PurchaseDate = now.AddDays(-45) },
-                new Ticket { UserId = 2, EventId = 5, PurchaseDate = now.AddDays(-45) },
-                new Ticket { UserId = 3, EventId = 5, PurchaseDate = now.AddDays(-44) },
-                new Ticket { UserId = 4, EventId = 5, PurchaseDate = now.AddDays(-44) },
-                new Ticket { UserId = 5, EventId = 5, PurchaseDate = now.AddDays(-44) },
-                new Ticket { UserId = 6, EventId = 5, PurchaseDate = now.AddDays(-43) }
+                new Ticket { UserId = 9, EventId = 5, PurchaseDate = now.AddDays(-46) },
+                new Ticket { UserId = 10, EventId = 5, PurchaseDate = now.AddDays(-46) },
+                new Ticket { UserId = 2, EventId = 5, PurchaseDate = now.AddDays(-46) },
+                new Ticket { UserId = 3, EventId = 5, PurchaseDate = now.AddDays(-45) },
+                new Ticket { UserId = 4, EventId = 5, PurchaseDate = now.AddDays(-45) },
+                new Ticket { UserId = 5, EventId = 5, PurchaseDate = now.AddDays(-45) },
+                new Ticket { UserId = 6, EventId = 5, PurchaseDate = now.AddDays(-44) },
+
+                new Ticket { UserId = 2, EventId = 6, PurchaseDate = now.AddDays(-43) },
+                new Ticket { UserId = 3, EventId = 6, PurchaseDate = now.AddDays(-43) },
+                new Ticket { UserId = 5, EventId = 6, PurchaseDate = now.AddDays(-42) },
+                new Ticket { UserId = 6, EventId = 6, PurchaseDate = now.AddDays(-42) },
+                new Ticket { UserId = 8, EventId = 6, PurchaseDate = now.AddDays(-42) },
+
+                new Ticket { UserId = 2, EventId = 7, PurchaseDate = now.AddDays(-40) },
+                new Ticket { UserId = 3, EventId = 7, PurchaseDate = now.AddDays(-40) },
+                new Ticket { UserId = 9, EventId = 7, PurchaseDate = now.AddDays(-40) },
+
+                new Ticket { UserId = 2, EventId = 8, PurchaseDate = now.AddDays(-38) },
+                new Ticket { UserId = 3, EventId = 8, PurchaseDate = now.AddDays(-38) },
+                new Ticket { UserId = 6, EventId = 8, PurchaseDate = now.AddDays(-37) },
+
+                new Ticket { UserId = 2, EventId = 9, PurchaseDate = now.AddDays(-36) },
+                new Ticket { UserId = 3, EventId = 9, PurchaseDate = now.AddDays(-36) },
+                new Ticket { UserId = 8, EventId = 9, PurchaseDate = now.AddDays(-36) },
+
+                new Ticket { UserId = 2, EventId = 10, PurchaseDate = now.AddDays(-34) },
+                new Ticket { UserId = 3, EventId = 10, PurchaseDate = now.AddDays(-34) },
+                new Ticket { UserId = 9, EventId = 10, PurchaseDate = now.AddDays(-34) },
+
+                new Ticket { UserId = 2, EventId = 11, PurchaseDate = now.AddDays(-32) },
+                new Ticket { UserId = 3, EventId = 11, PurchaseDate = now.AddDays(-32) },
+                new Ticket { UserId = 6, EventId = 11, PurchaseDate = now.AddDays(-32) },
+
+                new Ticket { UserId = 2, EventId = 12, PurchaseDate = now.AddDays(-30) },
+                new Ticket { UserId = 3, EventId = 12, PurchaseDate = now.AddDays(-30) },
+                new Ticket { UserId = 7, EventId = 12, PurchaseDate = now.AddDays(-30) },
+
+                new Ticket { UserId = 2, EventId = 13, PurchaseDate = now.AddDays(-28) },
+                new Ticket { UserId = 3, EventId = 13, PurchaseDate = now.AddDays(-28) },
+                new Ticket { UserId = 8, EventId = 13, PurchaseDate = now.AddDays(-28) },
+
+                new Ticket { UserId = 2, EventId = 14, PurchaseDate = now.AddDays(-26) },
+                new Ticket { UserId = 3, EventId = 14, PurchaseDate = now.AddDays(-26) },
+                new Ticket { UserId = 6, EventId = 14, PurchaseDate = now.AddDays(-26) },
+
+                new Ticket { UserId = 2, EventId = 15, PurchaseDate = now.AddDays(-24) },
+                new Ticket { UserId = 3, EventId = 15, PurchaseDate = now.AddDays(-24) },
+                new Ticket { UserId = 5, EventId = 15, PurchaseDate = now.AddDays(-24) },
+
+                new Ticket { UserId = 2, EventId = 16, PurchaseDate = now.AddDays(-22) },
+                new Ticket { UserId = 3, EventId = 16, PurchaseDate = now.AddDays(-22) },
+                new Ticket { UserId = 9, EventId = 16, PurchaseDate = now.AddDays(-22) },
+
+                new Ticket { UserId = 2, EventId = 17, PurchaseDate = now.AddDays(-20) },
+                new Ticket { UserId = 3, EventId = 17, PurchaseDate = now.AddDays(-20) },
+                new Ticket { UserId = 7, EventId = 17, PurchaseDate = now.AddDays(-20) },
+
+                new Ticket { UserId = 2, EventId = 18, PurchaseDate = now.AddDays(-18) },
+                new Ticket { UserId = 3, EventId = 18, PurchaseDate = now.AddDays(-18) },
+                new Ticket { UserId = 8, EventId = 18, PurchaseDate = now.AddDays(-18) },
+
+                new Ticket { UserId = 2, EventId = 19, PurchaseDate = now.AddDays(-16) },
+                new Ticket { UserId = 3, EventId = 19, PurchaseDate = now.AddDays(-16) },
+                new Ticket { UserId = 6, EventId = 19, PurchaseDate = now.AddDays(-16) },
+
+                new Ticket { UserId = 2, EventId = 20, PurchaseDate = now.AddDays(-14) },
+                new Ticket { UserId = 3, EventId = 20, PurchaseDate = now.AddDays(-14) },
+                new Ticket { UserId = 9, EventId = 20, PurchaseDate = now.AddDays(-14) },
+
+                new Ticket { UserId = 2, EventId = 21, PurchaseDate = now.AddDays(-12) },
+                new Ticket { UserId = 3, EventId = 21, PurchaseDate = now.AddDays(-12) },
+                new Ticket { UserId = 5, EventId = 21, PurchaseDate = now.AddDays(-12) },
+
+                new Ticket { UserId = 2, EventId = 22, PurchaseDate = now.AddDays(-10) },
+                new Ticket { UserId = 3, EventId = 22, PurchaseDate = now.AddDays(-10) },
+                new Ticket { UserId = 8, EventId = 22, PurchaseDate = now.AddDays(-10) },
+
+                new Ticket { UserId = 2, EventId = 23, PurchaseDate = now.AddDays(-8) },
+                new Ticket { UserId = 3, EventId = 23, PurchaseDate = now.AddDays(-8) },
+                new Ticket { UserId = 6, EventId = 23, PurchaseDate = now.AddDays(-8) },
+
+                new Ticket { UserId = 2, EventId = 24, PurchaseDate = now.AddDays(-6) },
+                new Ticket { UserId = 3, EventId = 24, PurchaseDate = now.AddDays(-6) },
+                new Ticket { UserId = 5, EventId = 24, PurchaseDate = now.AddDays(-6) },
+
+                new Ticket { UserId = 2, EventId = 25, PurchaseDate = now.AddDays(-4) },
+                new Ticket { UserId = 3, EventId = 25, PurchaseDate = now.AddDays(-4) },
+                new Ticket { UserId = 9, EventId = 25, PurchaseDate = now.AddDays(-4) },
+
+                new Ticket { UserId = 2, EventId = 26, PurchaseDate = now.AddDays(-2) },
+                new Ticket { UserId = 3, EventId = 26, PurchaseDate = now.AddDays(-2) },
+                new Ticket { UserId = 6, EventId = 26, PurchaseDate = now.AddDays(-2) }
             };
 
             context.Tickets.AddRange(tickets);
@@ -964,14 +1283,280 @@ namespace Infrastructure.Data
             {
                 var messages = new Message[]
                 {
-                    new Message { FromUserId = 2, ToUserId = 43, Content = "Interested in your venue!", SentDate = DateTime.UtcNow.AddDays(-7), Read = true, Action = "application", ActionId = 1 },
-                    new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-5).AddHours(-2), Read = true, Action = "event", ActionId = 1 },
-                    new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-3).AddHours(3), Read = true, Action = "event", ActionId = 1 },
-                    new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-2), Read = false, Action = "event", ActionId = 1 },
-                    new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddDays(-1).AddHours(5), Read = false, Action = "event", ActionId = 1 },
-                    new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow.AddHours(-12), Read = false, Action = "event", ActionId = 1 },
-                    new Message { FromUserId = 4, ToUserId = 43, Content = "Looking for a booking slot.", SentDate = DateTime.UtcNow, Read = false, Action = "event", ActionId = 1 },
-                };
+                    // Application submission messages (action = "application")
+                    new Message
+                    {
+                        FromUserId = 8,  // artistmanager1@test.com
+                        ToUserId = 43,  // venuemanager1@test.com
+                        Action = "application",
+                        Content = "artistmanager1@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-58),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 9,  // artistmanager2@test.com
+                        ToUserId = 44,  // venuemanager2@test.com
+                        Action = "application",
+                        Content = "artistmanager2@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-55),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 10,  // artistmanager3@test.com
+                        ToUserId = 45,  // venuemanager3@test.com
+                        Action = "application",
+                        Content = "artistmanager3@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-52),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 11,  // artistmanager4@test.com
+                        ToUserId = 46,  // venuemanager4@test.com
+                        Action = "application",
+                        Content = "artistmanager4@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-49),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 12,  // artistmanager5@test.com
+                        ToUserId = 47,  // venuemanager5@test.com
+                        Action = "application",
+                        Content = "artistmanager5@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-46),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 13,  // artistmanager6@test.com
+                        ToUserId = 48,  // venuemanager6@test.com
+                        Action = "application",
+                        Content = "artistmanager6@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-43),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 14,  // artistmanager7@test.com
+                        ToUserId = 49,  // venuemanager7@test.com
+                        Action = "application",
+                        Content = "artistmanager7@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-40),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 15,  // artistmanager8@test.com
+                        ToUserId = 50,  // venuemanager8@test.com
+                        Action = "application",
+                        Content = "artistmanager8@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-37),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 16,  // artistmanager9@test.com
+                        ToUserId = 51,  // venuemanager9@test.com
+                        Action = "application",
+                        Content = "artistmanager9@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-34),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 17,  // artistmanager10@test.com
+                        ToUserId = 52,  // venuemanager10@test.com
+                        Action = "application",
+                        Content = "artistmanager10@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-31),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 18,  // artistmanager11@test.com
+                        ToUserId = 53,  // venuemanager11@test.com
+                        Action = "application",
+                        Content = "artistmanager11@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-28),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 19,  // artistmanager12@test.com
+                        ToUserId = 54,  // venuemanager12@test.com
+                        Action = "application",
+                        Content = "artistmanager12@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-25),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 20,  // artistmanager13@test.com
+                        ToUserId = 55,  // venuemanager13@test.com
+                        Action = "application",
+                        Content = "artistmanager13@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-22),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 21,  // artistmanager14@test.com
+                        ToUserId = 56,  // venuemanager14@test.com
+                        Action = "application",
+                        Content = "artistmanager14@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-19),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 22,  // artistmanager15@test.com
+                        ToUserId = 57,  // venuemanager15@test.com
+                        Action = "application",
+                        Content = "artistmanager15@test.com has applied to your listing.",
+                        SentDate = now.AddDays(-16),
+                        Read = false
+                    },
+
+                    // Application acceptance messages (action = "event")
+                    new Message
+                    {
+                        FromUserId = 43,  // venuemanager1@test.com
+                        ToUserId = 8,  // artistmanager1@test.com
+                        Action = "event",
+                        Content = "venuemanager1@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-57),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 44,  // venuemanager2@test.com
+                        ToUserId = 9,  // artistmanager2@test.com
+                        Action = "event",
+                        Content = "venuemanager2@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-54),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 45,  // venuemanager3@test.com
+                        ToUserId = 10,  // artistmanager3@test.com
+                        Action = "event",
+                        Content = "venuemanager3@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-51),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 46,  // venuemanager4@test.com
+                        ToUserId = 11,  // artistmanager4@test.com
+                        Action = "event",
+                        Content = "venuemanager4@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-48),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 47,  // venuemanager5@test.com
+                        ToUserId = 12,  // artistmanager5@test.com
+                        Action = "event",
+                        Content = "venuemanager5@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-45),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 48,  // venuemanager6@test.com
+                        ToUserId = 13,  // artistmanager6@test.com
+                        Action = "event",
+                        Content = "venuemanager6@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-42),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 49,  // venuemanager7@test.com
+                        ToUserId = 14,  // artistmanager7@test.com
+                        Action = "event",
+                        Content = "venuemanager7@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-39),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 50,  // venuemanager8@test.com
+                        ToUserId = 15,  // artistmanager8@test.com
+                        Action = "event",
+                        Content = "venuemanager8@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-36),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 51,  // venuemanager9@test.com
+                        ToUserId = 16,  // artistmanager9@test.com
+                        Action = "event",
+                        Content = "venuemanager9@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-33),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 52,  // venuemanager10@test.com
+                        ToUserId = 17,  // artistmanager10@test.com
+                        Action = "event",
+                        Content = "venuemanager10@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-30),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 53,  // venuemanager11@test.com
+                        ToUserId = 18,  // artistmanager11@test.com
+                        Action = "event",
+                        Content = "venuemanager11@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-27),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 54,  // venuemanager12@test.com
+                        ToUserId = 19,  // artistmanager12@test.com
+                        Action = "event",
+                        Content = "venuemanager12@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-24),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 55,  // venuemanager13@test.com
+                        ToUserId = 20,  // artistmanager13@test.com
+                        Action = "event",
+                        Content = "venuemanager13@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-21),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 56,  // venuemanager14@test.com
+                        ToUserId = 21,  // artistmanager14@test.com
+                        Action = "event",
+                        Content = "venuemanager14@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-18),
+                        Read = false
+                    },
+                    new Message
+                    {
+                        FromUserId = 57,  // venuemanager15@test.com
+                        ToUserId = 22,  // artistmanager15@test.com
+                        Action = "event",
+                        Content = "venuemanager15@test.com has accepted your application. An event has been created.",
+                        SentDate = now.AddDays(-15),
+                        Read = false
+                    }
+            };
                 context.Messages.AddRange(messages);
                 await context.SaveChangesAsync();
             }

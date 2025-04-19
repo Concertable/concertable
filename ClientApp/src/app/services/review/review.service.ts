@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { ReviewSummary } from '../../models/review-summary';
@@ -8,6 +8,7 @@ import { HttpParamsService } from '../http-params/http-params.service';
 import { PaginationParams } from '../../models/pagination-params';
 import { Pagination } from '../../models/pagination';
 import { Review } from '../../models/review';
+import { SKIP_ERROR_HANDLER } from '../../shared/http/http-context.token';
 
 @Injectable({
   providedIn: 'root'
@@ -45,7 +46,9 @@ export class ReviewService {
   }
 
   canUserReviewEvent(id: number) : Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/event/can-review/${id}`);
+    return this.http.get<boolean>(`${this.apiUrl}/event/can-review/${id}`,
+      { context: new HttpContext().set(SKIP_ERROR_HANDLER, true) }
+    );
   }
 
   canUserReviewArtist(id: number) : Observable<boolean> {
