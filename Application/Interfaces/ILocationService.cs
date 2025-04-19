@@ -11,7 +11,7 @@ namespace Application.Interfaces
 {
     public interface ILocationService
     {
-        bool IsWithinRadius(double? lat1, double? lon1, double? lat2, double? lon2, int radiusKm);
+        bool IsWithinRadius(double? lat1, double? lon1, double lat2, double lon2, int radiusKm);
     }
 }
 

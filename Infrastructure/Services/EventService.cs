@@ -269,34 +269,36 @@ namespace Infrastructure.Services
 
             var location = eventEntity.Application.Listing.Venue.User.Location;
 
-            if (location?.Y == null || location?.X == null)
+            if (location == null || location?.Y == null || location?.X == null)
+            {
                 return new EventPostResponse
                 {
                     Event = eventDto,
                     EventHeader = eventHeaderDto,
                     UserIds = Enumerable.Empty<int>()
                 };
+            }
 
             var preferences = await preferenceService.GetAsync();
 
             var userIdsToNotify = preferences
             .Where(preference =>
-             {
-                 var inRange = locationService.IsWithinRadius(
-                    preference.User.Latitude,
-                    preference.User.Longitude,
-                    location?.Y,
-                    location?.X,
+            {
+                // Use IsWithinRadius directly, no need to check for null user coordinates here
+                var inRange = locationService.IsWithinRadius(
+                    preference.User.Latitude,   // Nullable latitude for user
+                    preference.User.Longitude,  // Nullable longitude for user
+                    location.Y,           // Latitude for event location (non-nullable)
+                    location.X,           // Longitude for event location (non-nullable)
                     preference.RadiusKm);
 
-                 var hasMatchingGenre = preference.Genres.Any(userGenre =>
-                     eventDto.Genres.Any(eventGenre => eventGenre.Id == userGenre.Id));
+                var hasMatchingGenre = preference.Genres.Any(userGenre =>
+                    eventDto.Genres.Any(eventGenre => eventGenre.Id == userGenre.Id));
 
-                 return inRange && hasMatchingGenre;
-             })
-             .Select(preference => preference.User.Id)
-             .ToList();
-
+                return inRange && hasMatchingGenre;
+            })
+            .Select(preference => preference.User.Id)
+            .ToList();
 
             return new EventPostResponse
             {
@@ -305,6 +307,7 @@ namespace Infrastructure.Services
                 UserIds = userIdsToNotify
             };
         }
+
 
         public async Task<IEnumerable<EventHeaderDto>> GetRecommendedHeadersAsync()
         {

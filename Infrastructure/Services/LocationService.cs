@@ -23,13 +23,13 @@ namespace Infrastructure.Services
             this.geometryService = geometryService;
         }
 
-        public bool IsWithinRadius(double? lat1, double? lon1, double? lat2, double? lon2, int radiusKm)
+        public bool IsWithinRadius(double? lat1, double? lon1, double lat2, double lon2, int radiusKm)
         {
-            var geo1 = new GeoCoordinate(lat1.Value, lon1.Value);
-            var geo2 = new GeoCoordinate(lat2.Value, lon2.Value);
-
-            if (geo1 is null || geo2 is null)
+            if (!lat1.HasValue || !lon1.HasValue)
                 return false;
+
+            var geo1 = new GeoCoordinate(lat1.Value, lon1.Value);
+            var geo2 = new GeoCoordinate(lat2, lon2);
 
             var distanceMeters = geo1.GetDistanceTo(geo2);
 
