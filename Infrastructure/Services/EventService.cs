@@ -255,7 +255,7 @@ namespace Infrastructure.Services
 
             mapper.Map(eventDto, eventEntity);
 
-            eventEntity.DatePosted = DateTime.Now;
+            eventEntity.DatePosted = DateTime.UtcNow;
             eventEntity.AvailableTickets = eventDto.TotalTickets;
 
             eventRepository.Update(eventEntity);
@@ -267,9 +267,9 @@ namespace Infrastructure.Services
 
             eventHeaderDto.Rating = averageRating;
 
-            var location = eventEntity.Application.Listing.Venue.Location;
+            var location = eventEntity.Application?.Listing?.Venue?.Location;
 
-            if (location is null)
+            if (location?.Y == null || location?.X == null)
                 return new EventPostResponse
                 {
                     Event = eventDto,
@@ -283,8 +283,8 @@ namespace Infrastructure.Services
             .Where(preference =>
              {
                  var inRange = locationService.IsWithinRadius(
-                    preference.User.Latitude.Value,
-                    preference.User.Longitude.Value,
+                    preference.User.Latitude,
+                    preference.User.Longitude,
                     location.Y,
                     location.X,
                     preference.RadiusKm);
