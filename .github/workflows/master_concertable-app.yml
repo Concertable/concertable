@@ -15,6 +15,10 @@ jobs:
     permissions:
       contents: read #This is required for actions/checkout
 
+    env:
+      CLIENT_APP_PATH: ./ClientApp
+      PROJECT_PATH: ./Web
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +32,7 @@ jobs:
       
       - name: Install dependencies and build Angular app
         run: |
-          cd ClientApp
+          cd ${{ env.CLIENT_APP_PATH }}
           npm install
           ng build --configuration production
 
@@ -38,10 +42,10 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish ${{ env.PROJECT_PATH }} -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -83,7 +87,7 @@ jobs:
           dir ${{ github.workspace }}\Infrastructure
 
       - name: Create EF Migration Bundle
-        run: dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --startup-project Web/Web.csproj --output efbundle
+        run: dotnet ef migrations bundle --project ${{ github.workspace }}/Infrastructure/Infrastructure.csproj --startup-project ${{ github.workspace }}/Web/Web.csproj --output efbundle
         working-directory: ${{ github.workspace }}
         
       - name: Run EF Migrations
