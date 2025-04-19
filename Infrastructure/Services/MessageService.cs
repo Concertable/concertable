@@ -42,11 +42,12 @@ namespace Infrastructure.Services
                 ToUserId = toUserId,
                 Action = action,
                 ActionId = actionId,
-                SentDate = DateTime.Now,
+                SentDate = DateTime.UtcNow,
                 Read = false
             };
 
             await messageRepository.AddAsync(message);
+            await messageRepository.SaveChangesAsync();
         }
 
 
