@@ -267,7 +267,7 @@ namespace Infrastructure.Services
 
             eventHeaderDto.Rating = averageRating;
 
-            var location = eventEntity.Application.Listing.Venue.Location;
+            var location = eventEntity.Application.Listing.Venue.User.Location;
 
             if (location?.Y == null || location?.X == null)
                 return new EventPostResponse
