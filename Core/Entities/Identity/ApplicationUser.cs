@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Core.Entities.Identity
 {
-    public class ApplicationUser : IdentityUser<int>, ILocation
+    public class ApplicationUser : IdentityUser<int>
     {
         public string? County { get; set; }
         public string? Town { get; set; }

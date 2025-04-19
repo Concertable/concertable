@@ -13,7 +13,7 @@ namespace Application.Interfaces
 {
     public interface IHeaderRepository<TEntity, TDto> : IRepository<TEntity> 
         where TDto : HeaderDto
-        where TEntity: BaseEntity, ILocation
+        where TEntity: BaseEntity
     {
         Task<PaginationResponse<TDto>> GetHeadersAsync(SearchParams? searchParams);
         Task<IEnumerable<TDto>> GetHeadersAsync(int amount);

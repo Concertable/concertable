@@ -18,7 +18,7 @@ using NetTopologySuite.Geometries;
 namespace Infrastructure.Services
 {
     public class HeaderService<TEntity, TDto, TRepository> : IHeaderService<TDto>
-        where TEntity : BaseEntity, ILocation
+        where TEntity : BaseEntity
         where TDto : HeaderDto
         where TRepository : IHeaderRepository<TEntity, TDto>
     {

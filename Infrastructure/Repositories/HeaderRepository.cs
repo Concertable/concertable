@@ -21,7 +21,7 @@ namespace Infrastructure.Repositories
 {
     public abstract class HeaderRepository<TEntity, TDto> : Repository<TEntity>, IHeaderRepository<TEntity, TDto>
     where TDto : HeaderDto
-    where TEntity : BaseEntity, ILocation
+    where TEntity : BaseEntity
     {
         private readonly ApplicationDbContext context;
         protected readonly IGeometryService geometryService;
