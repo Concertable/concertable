@@ -1,4 +1,7 @@
-name: Build and Deploy ASP.Net Core App to Azure Web App - concertable-app
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - concertable-app
 
 on:
   push:
@@ -7,11 +10,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Build Job
   build:
     runs-on: windows-latest
     permissions:
-      contents: read # This is required for actions/checkout
+      contents: read  # This is required for actions/checkout
+
+    env:
+      PROJECT_PATH: ./API  # Assuming the .NET project is in the API folder
 
     steps:
       - uses: actions/checkout@v4
@@ -35,46 +40,55 @@ jobs:
         with:
           dotnet-version: '8.x'
 
-      - name: Restore .NET dependencies
-        run: dotnet restore
+      # Add the dotnet restore step to ensure that all NuGet packages are restored
+      - name: Restore .NET packages
+        run: dotnet restore ${{env.PROJECT_PATH}}
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build ${{env.PROJECT_PATH}} --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{ env.DOTNET_ROOT }}/myapp"
+        run: dotnet publish ${{env.PROJECT_PATH}} -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
-      - name: Upload build artifact
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: myapp
-          path: ${{ env.DOTNET_ROOT }}/myapp
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
 
-  # Deploy Job
   deploy:
-    runs-on: ubuntu-latest
-    needs: build # Make sure this job runs after the build job
+    runs-on: windows-latest
+    needs: build
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # This is required for requesting the JWT
-      contents: read # This is required for actions/checkout
+      id-token: write  # This is required for requesting the JWT
+      contents: read  # This is required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download build artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: myapp
+          name: .net-app
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C9668E43E2494432944F93DFACC9E5F8 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BF851F2B73B645C298E688BCE825E9A3 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_03CB9942E6EE42FEA473D19267A56D03 }}
 
       - name: Install EF Core CLI
         run: dotnet tool install --global dotnet-ef
 
-      - name: Create EF Migration Bundle
+      - name: DEBUG - Show Infrastructure directory contents
         run: |
-          dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --startup-project Web/Web.csproj --output efbundle
+          echo "WORKSPACE: ${{ github.workspace }}"
+          dir ${{ github.workspace }}\Infrastructure
+
+      - name: Create EF Migration Bundle
+        run: dotnet ef migrations bundle --project Infrastructure/Infrastructure.csproj --startup-project Web/Web.csproj --output efbundle
         working-directory: ${{ github.workspace }}
 
       - name: Run EF Migrations
@@ -86,4 +100,4 @@ jobs:
         with:
           app-name: 'concertable-app'
           slot-name: 'Production'
-          package: './myapp' # Path to the downloaded build artifact
+          package: .
