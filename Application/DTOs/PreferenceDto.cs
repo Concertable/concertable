@@ -11,6 +11,6 @@ namespace Application.DTOs
         public int Id { get; set; }
         public UserDto User { get; set; }
         public int RadiusKm { get; set; }
-        public IEnumerable<GenreDto> Genres { get; set; }
+        public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
     }
 }

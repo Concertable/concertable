@@ -25,7 +25,6 @@ namespace Infrastructure.Services
     {
         private readonly IVenueRepository venueRepository;
         private readonly IImageService imageService;
-        private readonly ILocationService locationService;
         private readonly IReviewService reviewService;
         private readonly ICurrentUserService currentUserService;
         private readonly IGeocodingService geocodingService;
