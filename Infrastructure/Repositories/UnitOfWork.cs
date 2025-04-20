@@ -3,6 +3,7 @@ using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;
 using Infrastructure.Data.Identity;
+using Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -59,7 +60,7 @@ namespace Infrastructure.Repositories
             {
                 await SaveChangesAsync();
             }
-            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("duplicate key") == true)
+            catch (DbUpdateException ex) when (SqlExceptionHelper.IsDuplicateKey(ex))
             {
                 throw new BadRequestException("A record with this Key already exists", ErrorType.DuplicateKey);
             }
