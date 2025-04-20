@@ -2,16 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Diagnostics;
-using Core.Exceptions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using System.Net;
-using Stripe.Issuing;
+using System.Threading;
+using System.Threading.Tasks;
+using Core.Exceptions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace Infrastructure
 {
@@ -33,49 +30,40 @@ namespace Infrastructure
                 Instance = httpContext.Request.Path
             };
 
-            // Handle BadRequestException or other HttpException (inherits from HttpException)
             if (exception is HttpException httpEx)
             {
-                // Set the status code from the exception (this covers both HttpException and BadRequestException)
                 httpContext.Response.StatusCode = (int)httpEx.StatusCode;
+                problemDetails.Status = httpContext.Response.StatusCode;
                 problemDetails.Title = httpEx.Message;
 
-                // If it's a BadRequestException, handle validation errors
-                if (exception is BadRequestException badRequestEx)
+                if (exception is BadRequestException badRequestEx && badRequestEx.Reasons.Any())
                 {
-                    if (badRequestEx.Reasons.Any())
-                    {
-                        problemDetails.Title = "Validation Error";
-                        problemDetails.Detail = "One or more validation errors occurred.";
-                        problemDetails.Extensions["errors"] = badRequestEx.Reasons; // Attach validation errors
-                    }
+                    problemDetails.Title = "Validation Error";
+                    problemDetails.Detail = "One or more validation errors occurred.";
+                    problemDetails.Extensions["errors"] = badRequestEx.Reasons;
                 }
                 else
                 {
-                    // For other HttpExceptions, just use the message as detail
                     problemDetails.Detail = httpEx.Message;
                 }
             }
             else
             {
-                // Default error handling for non-HttpException cases
-                problemDetails.Title = exception.Message;
-                problemDetails.Detail = exception.StackTrace;
                 httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                problemDetails.Status = httpContext.Response.StatusCode;
+                problemDetails.Title = "An unexpected error occurred.";
+                problemDetails.Detail = exception.Message;
+
+                problemDetails.Extensions["stackTrace"] = exception.ToString();
+
+                if (exception.InnerException != null)
+                {
+                    problemDetails.Extensions["innerException"] = exception.InnerException.ToString();
+                }
             }
 
-            // Log the error
-            logger.LogError("{ProblemDetailsTitle}", problemDetails.Title);
-            problemDetails.Status = httpContext.Response.StatusCode;
+            logger.LogError(exception, "Unhandled exception occurred");
 
-            // If in development, show the full stack trace
-            if (env.IsDevelopment())
-            {
-                problemDetails.Detail = exception.StackTrace;
-                logger.LogError("Stack Trace", problemDetails.Detail);
-            }
-
-            // Return error response to the client
             await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken).ConfigureAwait(false);
 
             return true;
