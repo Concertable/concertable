@@ -7,7 +7,7 @@
             <li><button color="secondary" mat-fab extended (click)="onEditModeChange()">
                 <mat-icon fontIcon="edit"></mat-icon>Edit
             </button></li>
-            <li><button color="primary" mat-fab extended [disabled]="editMode || !saveable" (click)="onSave()">
+            <li><button color="primary" mat-fab extended [disabled]="!saveable" (click)="onSave()">
                 <mat-icon fontIcon="save"></mat-icon>Save
             </button></li>
         </ul>

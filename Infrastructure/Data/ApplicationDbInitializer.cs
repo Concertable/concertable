@@ -477,167 +477,77 @@ new Venue { UserId = 77, Name = "Coventry Empire", About = "Live music and club 
             {
                 var applications = new ListingApplication[]
                 {
-                    new ListingApplication { ArtistId = 1, ListingId = 1 },
-                    new ListingApplication { ArtistId = 2, ListingId = 1 },
-                    new ListingApplication { ArtistId = 3, ListingId = 1 },
-                    new ListingApplication { ArtistId = 4, ListingId = 1 },
+                    new ListingApplication { ArtistId = 1, ListingId = 1 }, //1
+                    new ListingApplication { ArtistId = 2, ListingId = 1 }, //2
+                    new ListingApplication { ArtistId = 3, ListingId = 1 }, //3
+                    new ListingApplication { ArtistId = 4, ListingId = 1 }, //4
 
-                    new ListingApplication { ArtistId = 1, ListingId = 2 },
-                    new ListingApplication { ArtistId = 2, ListingId = 2 },
-                    new ListingApplication { ArtistId = 5, ListingId = 2 },
-                    new ListingApplication { ArtistId = 6, ListingId = 2 },
+                    new ListingApplication { ArtistId = 1, ListingId = 2 }, //5
+                    new ListingApplication { ArtistId = 2, ListingId = 2 }, //6
+                    new ListingApplication { ArtistId = 5, ListingId = 2 }, //7
+                    new ListingApplication { ArtistId = 6, ListingId = 2 }, //8
 
-                    new ListingApplication { ArtistId = 1, ListingId = 3 },
-                    new ListingApplication { ArtistId = 2, ListingId = 3 },
-                    new ListingApplication { ArtistId = 7, ListingId = 3 },
-                    new ListingApplication { ArtistId = 8, ListingId = 3 },
+                    new ListingApplication { ArtistId = 1, ListingId = 3 }, //9
+                    new ListingApplication { ArtistId = 2, ListingId = 3 }, //10
+                    new ListingApplication { ArtistId = 7, ListingId = 3 }, //11
+                    new ListingApplication { ArtistId = 8, ListingId = 3 }, //12
 
-                    new ListingApplication { ArtistId = 1, ListingId = 4 },
-                    new ListingApplication { ArtistId = 2, ListingId = 4 },
-                    new ListingApplication { ArtistId = 9, ListingId = 4 },
-                    new ListingApplication { ArtistId = 10, ListingId = 4 },
+                    new ListingApplication { ArtistId = 1, ListingId = 4 }, //13
+                    new ListingApplication { ArtistId = 2, ListingId = 4 }, //14
+                    new ListingApplication { ArtistId = 9, ListingId = 4 }, //15
+                    new ListingApplication { ArtistId = 10, ListingId = 4 }, //16
 
-                    new ListingApplication { ArtistId = 1, ListingId = 5 },
-                    new ListingApplication { ArtistId = 2, ListingId = 5 },
-                    new ListingApplication { ArtistId = 11, ListingId = 5 },
-                    new ListingApplication { ArtistId = 12, ListingId = 5 },
+                    new ListingApplication { ArtistId = 1, ListingId = 5 }, //17
+                    new ListingApplication { ArtistId = 2, ListingId = 5 }, //18
+                    new ListingApplication { ArtistId = 11, ListingId = 5 }, //19
+                    new ListingApplication { ArtistId = 12, ListingId = 5 }, //20
 
-                    new ListingApplication { ArtistId = 1, ListingId = 6 },
-                    new ListingApplication { ArtistId = 2, ListingId = 6 },
-                    new ListingApplication { ArtistId = 13, ListingId = 6 },
-                    new ListingApplication { ArtistId = 14, ListingId = 6 },
+                    new ListingApplication { ArtistId = 1, ListingId = 6 }, //21
+                    new ListingApplication { ArtistId = 2, ListingId = 6 }, //22
+                    new ListingApplication { ArtistId = 13, ListingId = 6 }, //23
+                    new ListingApplication { ArtistId = 14, ListingId = 6 }, //24
 
-                    new ListingApplication { ArtistId = 1, ListingId = 7 },
-                    new ListingApplication { ArtistId = 2, ListingId = 7 },
-                    new ListingApplication { ArtistId = 15, ListingId = 7 },
-                    new ListingApplication { ArtistId = 16, ListingId = 7 },
+                    new ListingApplication { ArtistId = 1, ListingId = 7 }, //25
+                    new ListingApplication { ArtistId = 2, ListingId = 7 }, //26
+                    new ListingApplication { ArtistId = 15, ListingId = 7 }, //27
+                    new ListingApplication { ArtistId = 16, ListingId = 7 }, //28
 
-                    new ListingApplication { ArtistId = 1, ListingId = 8 },
-                    new ListingApplication { ArtistId = 2, ListingId = 8 },
-                    new ListingApplication { ArtistId = 17, ListingId = 8 },
-                    new ListingApplication { ArtistId = 18, ListingId = 8 },
+                    new ListingApplication { ArtistId = 1, ListingId = 8 }, //29
+                    new ListingApplication { ArtistId = 2, ListingId = 8 }, //30
+                    new ListingApplication { ArtistId = 17, ListingId = 8 }, //31
+                    new ListingApplication { ArtistId = 18, ListingId = 8 }, //32
+                    new ListingApplication { ArtistId = 17, ListingId = 40 }, //31
+                    new ListingApplication { ArtistId = 18, ListingId = 41 }, //32
 
-                    new ListingApplication { ArtistId = 1, ListingId = 9 },
-                    new ListingApplication { ArtistId = 2, ListingId = 9 },
-                    new ListingApplication { ArtistId = 19, ListingId = 9 },
-                    new ListingApplication { ArtistId = 20, ListingId = 9 },
+                                    // ListingId 14
+                    new ListingApplication { ArtistId = 1, ListingId = 14 }, //33
+                    new ListingApplication { ArtistId = 2, ListingId = 14 }, //34
+                    new ListingApplication { ArtistId = 3, ListingId = 14 }, //35
+                    new ListingApplication { ArtistId = 4, ListingId = 14 }, //36
 
-                    new ListingApplication { ArtistId = 1, ListingId = 10 },
-                    new ListingApplication { ArtistId = 2, ListingId = 10 },
-                    new ListingApplication { ArtistId = 21, ListingId = 10 },
-                    new ListingApplication { ArtistId = 22, ListingId = 10 },
+                    // ListingId 15
+                    new ListingApplication { ArtistId = 5, ListingId = 15 }, //37
+                    new ListingApplication { ArtistId = 6, ListingId = 15 }, //38
+                    new ListingApplication { ArtistId = 7, ListingId = 15 }, //39
+                    new ListingApplication { ArtistId = 8, ListingId = 15 }, //40
 
-                    new ListingApplication { ArtistId = 1, ListingId = 11 },
-                    new ListingApplication { ArtistId = 2, ListingId = 11 },
-                    new ListingApplication { ArtistId = 23, ListingId = 11 },
-                    new ListingApplication { ArtistId = 24, ListingId = 11 },
+                    // ListingId 16
+                    new ListingApplication { ArtistId = 9, ListingId = 16 }, //41
+                    new ListingApplication { ArtistId = 10, ListingId = 16 }, //42
+                    new ListingApplication { ArtistId = 11, ListingId = 16 }, //43
+                    new ListingApplication { ArtistId = 12, ListingId = 16 }, //44
 
-                    new ListingApplication { ArtistId = 1, ListingId = 12 },
-                    new ListingApplication { ArtistId = 2, ListingId = 12 },
-                    new ListingApplication { ArtistId = 25, ListingId = 12 },
-                    new ListingApplication { ArtistId = 26, ListingId = 12 },
+                    // ListingId 17
+                    new ListingApplication { ArtistId = 13, ListingId = 17 }, //45
+                    new ListingApplication { ArtistId = 14, ListingId = 17 }, //46
+                    new ListingApplication { ArtistId = 15, ListingId = 17 }, //47
+                    new ListingApplication { ArtistId = 16, ListingId = 17 }, //48
 
-                    new ListingApplication { ArtistId = 1, ListingId = 13 },
-                    new ListingApplication { ArtistId = 2, ListingId = 13 },
-                    new ListingApplication { ArtistId = 27, ListingId = 13 },
-                    new ListingApplication { ArtistId = 28, ListingId = 13 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 14 },
-                    new ListingApplication { ArtistId = 2, ListingId = 14 },
-                    new ListingApplication { ArtistId = 29, ListingId = 14 },
-                    new ListingApplication { ArtistId = 30, ListingId = 14 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 15 },
-                    new ListingApplication { ArtistId = 2, ListingId = 15 },
-                    new ListingApplication { ArtistId = 31, ListingId = 15 },
-                    new ListingApplication { ArtistId = 32, ListingId = 15 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 16 },
-                    new ListingApplication { ArtistId = 2, ListingId = 16 },
-                    new ListingApplication { ArtistId = 33, ListingId = 16 },
-                    new ListingApplication { ArtistId = 34, ListingId = 16 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 17 },
-                    new ListingApplication { ArtistId = 2, ListingId = 17 },
-                    new ListingApplication { ArtistId = 35, ListingId = 17 },
-                    new ListingApplication { ArtistId = 14, ListingId = 17 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 18 },
-                    new ListingApplication { ArtistId = 2, ListingId = 18 },
-                    new ListingApplication { ArtistId = 17, ListingId = 18 },
-                    new ListingApplication { ArtistId = 11, ListingId = 18 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 19 },
-                    new ListingApplication { ArtistId = 2, ListingId = 19 },
-                    new ListingApplication { ArtistId = 18, ListingId = 19 },
-                    new ListingApplication { ArtistId = 10, ListingId = 19 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 20 },
-                    new ListingApplication { ArtistId = 2, ListingId = 20 },
-                    new ListingApplication { ArtistId = 30, ListingId = 20 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 21 },
-                    new ListingApplication { ArtistId = 2, ListingId = 21 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 22 },
-                    new ListingApplication { ArtistId = 2, ListingId = 22 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 23 },
-                    new ListingApplication { ArtistId = 2, ListingId = 23 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 24 },
-                    new ListingApplication { ArtistId = 2, ListingId = 24 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 25 },
-                    new ListingApplication { ArtistId = 2, ListingId = 25 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 26 },
-                    new ListingApplication { ArtistId = 2, ListingId = 26 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 27 },
-                    new ListingApplication { ArtistId = 2, ListingId = 27 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 28 },
-                    new ListingApplication { ArtistId = 2, ListingId = 28 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 29 },
-                    new ListingApplication { ArtistId = 2, ListingId = 29 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 30 },
-                    new ListingApplication { ArtistId = 2, ListingId = 30 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 31 },
-                    new ListingApplication { ArtistId = 2, ListingId = 31 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 32 },
-                    new ListingApplication { ArtistId = 2, ListingId = 32 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 33 },
-                    new ListingApplication { ArtistId = 2, ListingId = 33 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 34 },
-                    new ListingApplication { ArtistId = 2, ListingId = 34 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 35 },
-                    new ListingApplication { ArtistId = 2, ListingId = 35 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 36 },
-                    new ListingApplication { ArtistId = 2, ListingId = 36 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 37 },
-                    new ListingApplication { ArtistId = 2, ListingId = 37 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 38 },
-                    new ListingApplication { ArtistId = 2, ListingId = 38 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 39 },
-                    new ListingApplication { ArtistId = 2, ListingId = 39 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 40 },
-                    new ListingApplication { ArtistId = 2, ListingId = 40 },
-
-                    new ListingApplication { ArtistId = 1, ListingId = 41 },
-                    new ListingApplication { ArtistId = 2, ListingId = 41 }
+                    // ListingId 18
+                    new ListingApplication { ArtistId = 17, ListingId = 18 }, //49
+                    new ListingApplication { ArtistId = 18, ListingId = 18 }, //50
+                    new ListingApplication { ArtistId = 19, ListingId = 18 }, //51
+                    new ListingApplication { ArtistId = 20, ListingId = 18 }, //52
                 };
                 context.ListingApplications.AddRange(applications);
                 await context.SaveChangesAsync();
@@ -647,32 +557,38 @@ new Venue { UserId = 77, Name = "Coventry Empire", About = "Live music and club 
                 {
                     var events = new Event[]
                     {
-                        new Event { ApplicationId = 1, Name = "The Rockers performing at The Grand Venue", About = "An epic night of rock music at The Grand Venue.", Price = 15, TotalTickets = 120, AvailableTickets = 80, DatePosted = now.AddDays(-58) },
-                        new Event { ApplicationId = 2, Name = "Indie Vibes performing at Redhill Hall", About = "A cozy indie evening at Redhill Hall.", Price = 12, TotalTickets = 110, AvailableTickets = 70, DatePosted = now.AddDays(-55) },
-                        new Event { ApplicationId = 3, Name = "Electronic Pulse performing at Weybridge Pavilion", About = "Electronic Pulse takes over Weybridge Pavilion.", Price = 18, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(-52) },
-                        new Event { ApplicationId = 4, Name = "Hip-Hop Flow performing at Cobham Arts Centre", About = "Experience raw beats at Cobham Arts Centre.", Price = 10, TotalTickets = 100, AvailableTickets = 60, DatePosted = now.AddDays(-49) },
-                        new Event { ApplicationId = 5, Name = "Jazz Masters performing at Chertsey Arena", About = "Smooth jazz vibes in Chertsey Arena.", Price = 25, TotalTickets = 140, AvailableTickets = 110, DatePosted = now.AddDays(-46) },
-                        new Event { ApplicationId = 6, Name = "Always Punks performing at Camden Electric Ballroom", About = "High-energy punk show in Camden.", Price = 20, TotalTickets = 150, AvailableTickets = 90, DatePosted = now.AddDays(-43) },
-                        new Event { ApplicationId = 7, Name = "The Hollow Frequencies performing at Manchester Night & Day Café", About = "Dreamy atmospheres meet indie rock.", Price = 30, TotalTickets = 170, AvailableTickets = 150, DatePosted = now.AddDays(-40) },
-                        new Event { ApplicationId = 8, Name = "Neon Foxes performing at Birmingham O2 Institute", About = "Neon lights and synth-rock beats.", Price = 16, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(-37) },
-                        new Event { ApplicationId = 9, Name = "Velvet Static performing at Edinburgh Usher Hall", About = "A blend of grunge and ambience.", Price = 14, TotalTickets = 115, AvailableTickets = 75, DatePosted = now.AddDays(-34) },
-                        new Event { ApplicationId = 10, Name = "Echo Bloom performing at Liverpool Philharmonic Hall", About = "Cinematic folk and lush harmonies.", Price = 22, TotalTickets = 135, AvailableTickets = 100, DatePosted = now.AddDays(-31) },
-                        new Event { ApplicationId = 11, Name = "The Wild Chords performing at Leeds Brudenell Social Club", About = "Garage rock energy unleashed.", Price = 13, TotalTickets = 125, AvailableTickets = 85, DatePosted = now.AddDays(-28) },
-                        new Event { ApplicationId = 12, Name = "Glitch & Glow performing at Glasgow Barrowland Ballroom", About = "Experimental beats with neon twists.", Price = 11, TotalTickets = 120, AvailableTickets = 90, DatePosted = now.AddDays(-25) },
-                        new Event { ApplicationId = 13, Name = "Sonic Mirage performing at Sheffield Leadmill", About = "A journey through ambient pop.", Price = 19, TotalTickets = 140, AvailableTickets = 110, DatePosted = now.AddDays(-22) },
-                        new Event { ApplicationId = 14, Name = "Neon Echoes performing at Nottingham Rock City", About = "Retro synths light up the night.", Price = 17, TotalTickets = 135, AvailableTickets = 105, DatePosted = now.AddDays(-19) },
-                        new Event { ApplicationId = 15, Name = "Dreamwave Collective performing at Bristol Thekla", About = "Waves of sound aboard Thekla.", Price = 21, TotalTickets = 145, AvailableTickets = 115, DatePosted = now.AddDays(-16) },
-                        new Event { ApplicationId = 16, Name = "Synth Pulse performing at Brighton Concorde 2", About = "Massive drops and electronic rush.", Price = 18, TotalTickets = 140, AvailableTickets = 120, DatePosted = now.AddDays(-13) },
-                        new Event { ApplicationId = 17, Name = "The Brass Poets performing at Cardiff Tramshed", About = "Brass and poetry unite in Cardiff.", Price = 26, TotalTickets = 155, AvailableTickets = 130, DatePosted = now.AddDays(-10) },
-                        new Event { ApplicationId = 18, Name = "Groove Alchemy performing at Newcastle O2 Academy", About = "Funky grooves fill Newcastle.", Price = 15, TotalTickets = 120, AvailableTickets = 100, DatePosted = now.AddDays(-7) },
-                        new Event { ApplicationId = 19, Name = "Velvet Rhymes performing at Oxford O2 Academy", About = "Hip-hop with a smooth jazz core.", Price = 28, TotalTickets = 160, AvailableTickets = 145, DatePosted = now.AddDays(-4) },
-                        new Event { ApplicationId = 20, Name = "The Lo-Fi Syndicate performing at Cambridge Corn Exchange", About = "Relaxed beats and lo-fi chill.", Price = 24, TotalTickets = 150, AvailableTickets = 130, DatePosted = now.AddDays(-1) },
-                        new Event { ApplicationId = 21, Name = "Beats & Blue Notes performing at Bath Komedia", About = "Bebop swing meets rhymes.", Price = 27, TotalTickets = 160, AvailableTickets = 140, DatePosted = now.AddDays(2) },
-                        new Event { ApplicationId = 22, Name = "Bass Pilots performing at Aberdeen The Lemon Tree", About = "DnB madness in Aberdeen.", Price = 23, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(5) },
-                        new Event { ApplicationId = 23, Name = "The Digital Prophets performing at York Barbican", About = "Glitchy, futuristic techno journey.", Price = 29, TotalTickets = 155, AvailableTickets = 140, DatePosted = now.AddDays(8) },
-                        new Event { ApplicationId = 24, Name = "Neon Bass Theory performing at Belfast Limelight", About = "Bass-driven neon dreamscapes.", Price = 10, TotalTickets = 110, AvailableTickets = 70, DatePosted = now.AddDays(11) },
-                        new Event { ApplicationId = 25, Name = "Wavelength 303 performing at Dublin Vicar Street", About = "Old school acid house revival.", Price = 15, TotalTickets = 125, AvailableTickets = 90, DatePosted = now.AddDays(14) },
-                        new Event { ApplicationId = 26, Name = "Gravity Loops performing at Norwich Waterfront", About = "Deep house and chill fusion night.", Price = 30, TotalTickets = 180, AvailableTickets = 170, DatePosted = now.AddDays(17) }
+                        new Event { ApplicationId = 1, Name = "The Rockers performing at The Grand Venue", About = "An epic night of rock music at The Grand Venue.", Price = 15, TotalTickets = 120, AvailableTickets = 80, DatePosted = now.AddDays(-58) }, //1
+                        new Event { ApplicationId = 2, Name = "Indie Vibes performing at Redhill Hall", About = "A cozy indie evening at Redhill Hall.", Price = 12, TotalTickets = 110, AvailableTickets = 70, DatePosted = now.AddDays(-55) }, //2
+                        new Event { ApplicationId = 3, Name = "Electronic Pulse performing at Weybridge Pavilion", About = "Electronic Pulse takes over Weybridge Pavilion.", Price = 18, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(-52) }, //3
+                        new Event { ApplicationId = 4, Name = "Hip-Hop Flow performing at Cobham Arts Centre", About = "Experience raw beats at Cobham Arts Centre.", Price = 10, TotalTickets = 100, AvailableTickets = 60, DatePosted = now.AddDays(-49) }, //4
+                        new Event { ApplicationId = 5, Name = "Jazz Masters performing at Chertsey Arena", About = "Smooth jazz vibes in Chertsey Arena.", Price = 25, TotalTickets = 140, AvailableTickets = 110, DatePosted = now.AddDays(-46) }, //5
+                        new Event { ApplicationId = 6, Name = "Always Punks performing at Camden Electric Ballroom", About = "High-energy punk show in Camden.", Price = 20, TotalTickets = 150, AvailableTickets = 90, DatePosted = now.AddDays(-43) }, //6
+                        new Event { ApplicationId = 7, Name = "The Hollow Frequencies performing at Manchester Night & Day Café", About = "Dreamy atmospheres meet indie rock.", Price = 30, TotalTickets = 170, AvailableTickets = 150, DatePosted = now.AddDays(-40) }, //7
+                        new Event { ApplicationId = 8, Name = "Neon Foxes performing at Birmingham O2 Institute", About = "Neon lights and synth-rock beats.", Price = 16, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(-37) }, //8
+                        new Event { ApplicationId = 9, Name = "Velvet Static performing at Edinburgh Usher Hall", About = "A blend of grunge and ambience.", Price = 14, TotalTickets = 115, AvailableTickets = 75, DatePosted = now.AddDays(-34) }, //9
+                        new Event { ApplicationId = 10, Name = "Echo Bloom performing at Liverpool Philharmonic Hall", About = "Cinematic folk and lush harmonies.", Price = 22, TotalTickets = 135, AvailableTickets = 100, DatePosted = now.AddDays(-31) }, //10
+                        new Event { ApplicationId = 11, Name = "The Wild Chords performing at Leeds Brudenell Social Club", About = "Garage rock energy unleashed.", Price = 13, TotalTickets = 125, AvailableTickets = 85, DatePosted = now.AddDays(-28) }, //11
+                        new Event { ApplicationId = 12, Name = "Glitch & Glow performing at Glasgow Barrowland Ballroom", About = "Experimental beats with neon twists.", Price = 11, TotalTickets = 120, AvailableTickets = 90, DatePosted = now.AddDays(-25) }, //12
+                        new Event { ApplicationId = 13, Name = "Sonic Mirage performing at Sheffield Leadmill", About = "A journey through ambient pop.", Price = 19, TotalTickets = 140, AvailableTickets = 110, DatePosted = now.AddDays(-22) }, //13
+                        new Event { ApplicationId = 14, Name = "Neon Echoes performing at Nottingham Rock City", About = "Retro synths light up the night.", Price = 17, TotalTickets = 135, AvailableTickets = 105, DatePosted = now.AddDays(-19) }, //14
+                        new Event { ApplicationId = 15, Name = "Dreamwave Collective performing at Bristol Thekla", About = "Waves of sound aboard Thekla.", Price = 21, TotalTickets = 145, AvailableTickets = 115, DatePosted = now.AddDays(-16) }, //15
+                        new Event { ApplicationId = 16, Name = "Synth Pulse performing at Brighton Concorde 2", About = "Massive drops and electronic rush.", Price = 18, TotalTickets = 140, AvailableTickets = 120, DatePosted = now.AddDays(-13) }, //16
+                        new Event { ApplicationId = 17, Name = "The Brass Poets performing at Cardiff Tramshed", About = "Brass and poetry unite in Cardiff.", Price = 26, TotalTickets = 155, AvailableTickets = 130, DatePosted = now.AddDays(-10) }, //17
+                        new Event { ApplicationId = 18, Name = "Groove Alchemy performing at Newcastle O2 Academy", About = "Funky grooves fill Newcastle.", Price = 15, TotalTickets = 120, AvailableTickets = 100, DatePosted = now.AddDays(-7) }, //18
+                        new Event { ApplicationId = 19, Name = "Velvet Rhymes performing at Oxford O2 Academy", About = "Hip-hop with a smooth jazz core.", Price = 28, TotalTickets = 160, AvailableTickets = 145, DatePosted = now.AddDays(-4) }, //19
+                        new Event { ApplicationId = 20, Name = "The Lo-Fi Syndicate performing at Cambridge Corn Exchange", About = "Relaxed beats and lo-fi chill.", Price = 24, TotalTickets = 150, AvailableTickets = 130, DatePosted = now.AddDays(-1) }, //20
+                        new Event { ApplicationId = 21, Name = "Beats & Blue Notes performing at Bath Komedia", About = "Bebop swing meets rhymes.", Price = 27, TotalTickets = 160, AvailableTickets = 140, DatePosted = now.AddDays(2) }, //21
+                        new Event { ApplicationId = 22, Name = "Bass Pilots performing at Aberdeen The Lemon Tree", About = "DnB madness in Aberdeen.", Price = 23, TotalTickets = 130, AvailableTickets = 100, DatePosted = now.AddDays(5) }, //22
+                        new Event { ApplicationId = 23, Name = "The Digital Prophets performing at York Barbican", About = "Glitchy, futuristic techno journey.", Price = 29, TotalTickets = 155, AvailableTickets = 140, DatePosted = now.AddDays(8) }, //23
+                        new Event { ApplicationId = 24, Name = "Neon Bass Theory performing at Belfast Limelight", About = "Bass-driven neon dreamscapes.", Price = 10, TotalTickets = 110, AvailableTickets = 70, DatePosted = now.AddDays(11) }, //24
+                        new Event { ApplicationId = 25, Name = "Wavelength 303 performing at Dublin Vicar Street", About = "Old school acid house revival.", Price = 15, TotalTickets = 125, AvailableTickets = 90, DatePosted = now.AddDays(14) }, //25
+                        new Event { ApplicationId = 26, Name = "Gravity Loops performing at Norwich Waterfront", About = "Deep house and chill fusion night.", Price = 30, TotalTickets = 180, AvailableTickets = 170, DatePosted = now.AddDays(17) }, //26
+                        new Event { ApplicationId = 35, Name = "The Rockers performing at The Grand Venue", About = "This is an event for Listing 14 with Artist 1", Price = 20, TotalTickets = 100, AvailableTickets = 80, DatePosted = now.AddDays(6) },
+                        new Event { ApplicationId = 39, Name = "Indie Vibes performing at Redhill Hall", About = "This is an event for Listing 15 with Artist 5", Price = 25, TotalTickets = 120, AvailableTickets = 100, DatePosted = now.AddDays(12) },
+                        new Event { ApplicationId = 42, Name = "Electronic Pulse performing at Weybridge Pavilion", About = "This is an event for Listing 16 with Artist 9", Price = 30, TotalTickets = 140, AvailableTickets = 120, DatePosted = now.AddDays(18) },
+                        new Event { ApplicationId = 45, Name = "Hip-Hop Flow performing at Cobham Arts Centre", About = "This is an event for Listing 17 with Artist 13", Price = 15, TotalTickets = 100, AvailableTickets = 80, DatePosted = now.AddDays(22) },
+                        new Event { ApplicationId = 52, Name = "Jazz Masters performing at Chertsey Arena", About = "This is an event for Listing 18 with Artist 17", Price = 20, TotalTickets = 150, AvailableTickets = 130, DatePosted = now.AddDays(25) }
+
                     };
 
                     context.Events.AddRange(events);

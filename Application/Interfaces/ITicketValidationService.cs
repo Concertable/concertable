@@ -15,6 +15,6 @@ namespace Application.Interfaces
         /// The event has passed
         /// The event hasn't been posted
         /// </summary>
-        Task<ValidationResponse> CanPurchaseTicketAsync(int eventId);
+        Task<ValidationResponse> CanPurchaseTicketAsync(int eventId, int? quantity = null);
     }
 }

@@ -2,10 +2,7 @@
     <app-card [isEmpty]="listings.length === 0">
       <!-- Listings Loop -->
       <div *ngFor="let listing of listings" class="item">
-        <div class="date-container">
-          <p class="date">{{ listing.startDate | date: 'd' }}</p>
-          <p class="month">{{ listing.startDate | date: 'MMM' }}</p>
-        </div>
+        <app-date-display [date]="listing.startDate" />
   
         <div class="info">
           <div class="nested-info">
@@ -44,7 +41,7 @@
           </button>
   
           <button *ngIf="authService.isRole('ArtistManager')"
-                  color="primary" mat-fab extended 
+                  color="primary" mat-fab extended
                   (click)="onApply(listing)">
             <mat-icon>check</mat-icon>
             <span class="btn-label">Apply</span>

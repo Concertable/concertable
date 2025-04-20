@@ -93,7 +93,7 @@
                 {{ event.availableTickets }}
               </p>
               <button 
-                [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow"
+                [disabled]="authService.isNotRole('Customer') || isStartDateBeforeNow || !(canPurchase$ | async)"
                 color="success" mat-fab extended 
                 (click)="onBuy()"
               >

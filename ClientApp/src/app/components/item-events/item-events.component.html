@@ -1,39 +1,44 @@
 <div class="container">
     <app-card [isEmpty]="events.length === 0">
-        <div *ngFor="let event of events" class="item">
-            <!-- Event Date -->
-            <div class="date-container">
-                <p class="date">{{ event.startDate | date:'d' }}</p>
-                <p class="month">{{ event.startDate | date:'MMM' }}</p>
-            </div>
-    
-            <!-- Event Details -->
-            <div class="info">
-                <h3 class="name">{{ event.name }}</h3>
-    
-                <div class="nested-info">
-                    <p class="icon-text time">
-                      <mat-icon small>access_time</mat-icon>
-                      {{ event.startDate | date:'h:mm a' }} - {{ event.endDate | date:'h:mm a' }}
-                    </p>
-                  
-                    <p class="icon-text">
-                      <mat-icon small>payments</mat-icon>
-                      {{ event.price | currency: 'GBP':'symbol':'1.2-2' }}
-                    </p>
-                </div>
-            </div>
-    
-            <div class="actions">
-                <button color="primary" class="mt-2" mat-fab extended (click)="onViewDetails(event)">
-                    <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">View details</span>
-                </button>
-    
-                <button *ngIf="authService.isRole('Customer')" mat-fab extended color="success" (click)="onPurchase(event)">
-                    <mat-icon>shopping_cart</mat-icon>
-                    <span class="btn-label">Purchase</span>
-                </button>
-            </div>
+      <div *ngFor="let event of events; let i = index" class="item">
+      
+        <!-- Event Date -->
+        <app-date-display [date]="event.startDate"/>
+  
+        <!-- Event Details -->
+        <div class="info">
+          <h3 class="name">{{ event.name }}</h3>
+  
+          <div class="nested-info">
+            <p class="icon-text time">
+              <mat-icon small>access_time</mat-icon>
+              {{ event.startDate | date:'h:mm a' }} - {{ event.endDate | date:'h:mm a' }}
+            </p>
+            
+            <p class="icon-text">
+              <mat-icon small>payments</mat-icon>
+              {{ event.price | currency: 'GBP':'symbol':'1.2-2' }}
+            </p>
+          </div>
         </div>
+  
+        <div class="actions">
+          <button color="primary" class="mt-2" mat-fab extended (click)="onViewDetails(event)">
+            <mat-icon fontIcon="visibility"></mat-icon><span class="btn-label">View details</span>
+          </button>
+  
+          <!-- Use Async Pipe for canPurchase$s -->
+          <button *ngIf="authService.isCustomerOrUnauthenticated()" 
+                  [disabled]="!(canPurchase$s[i] | async)" 
+                  mat-fab 
+                  extended 
+                  color="success" 
+                  (click)="onPurchase(event)">
+            <mat-icon>shopping_cart</mat-icon>
+            <span class="btn-label">Purchase</span>
+          </button>
+        </div>
+      </div>
     </app-card>
-</div>
+  </div>
+  

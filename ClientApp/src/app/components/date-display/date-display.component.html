@@ -1,0 +1,10 @@
+<div class="container" *ngIf="date">
+    <div class="date-info">
+      <p class="date">{{ date | date: 'd' }}</p>
+      <p class="month">{{ date | date: 'MMM' }}</p>
+      <p class="year" *ngIf="isAfterCurrentYear(date)">
+        {{ date | date: 'yyyy' }}
+      </p>
+    </div>
+  </div>
+  

@@ -5,8 +5,11 @@ namespace Application.DTOs
 {
     public class RegisterDto
     {
+        [Required]
+        [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public required string Email { get; set; } 
-        public required string Password { get; set; }
-        public required string Role { get; set; }
+
+        public string Password { get; set; }
+        public string Role { get; set; }
     }
 }

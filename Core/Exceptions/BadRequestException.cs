@@ -11,7 +11,18 @@ namespace Core.Exceptions
 {
     public class BadRequestException : HttpException
     {
-        public BadRequestException(string message) : base(message, HttpStatusCode.BadRequest) { }
+        public IEnumerable<string> Reasons { get; } = new List<string>();
+
+        public BadRequestException(IEnumerable<string> reasons)
+            : base("Bad Request", HttpStatusCode.BadRequest) 
+        {
+            this.Reasons = reasons;
+        }
+
+        public BadRequestException(string message)
+            : base(message)
+        {
+        }
 
         public BadRequestException(string message, ErrorType errorType) : base(message, errorType, HttpStatusCode.BadRequest) { }
     }

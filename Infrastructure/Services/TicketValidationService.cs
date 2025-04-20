@@ -2,8 +2,6 @@
 using Application.Responses;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Services
@@ -17,18 +15,32 @@ namespace Infrastructure.Services
             this.eventService = eventService;
         }
 
-        public async Task<ValidationResponse> CanPurchaseTicketAsync(int eventId)
+        public async Task<ValidationResponse> CanPurchaseTicketAsync(int eventId, int? quantity = null)
         {
+            var reasons = new List<string>();
             var eventEntity = await eventService.GetDetailsByIdAsync(eventId);
 
             if (eventEntity is null)
-                return ValidationResponse.Failure("Event does not exist");
+            {
+                reasons.Add("Event does not exist.");
+            }
+            else
+            {
+                if (eventEntity.StartDate < DateTime.UtcNow)
+                    reasons.Add("You cannot purchase a Ticket for an Event that's already passed.");
 
-            if (eventEntity.StartDate < DateTime.UtcNow)
-                return ValidationResponse.Failure("You cannot purchase a Ticket for an Event that's already passed");
+                if (eventEntity.DatePosted is null)
+                    reasons.Add("Event has not yet been posted.");
 
-            if (eventEntity.DatePosted is null)
-                return ValidationResponse.Failure("Event has not yet been posted");
+                if (eventEntity.AvailableTickets <= 0)
+                    reasons.Add("No Tickets Available for Event");
+
+                if (quantity.HasValue && eventEntity.AvailableTickets - quantity.Value < 0)
+                    reasons.Add($"Not enough tickets available. Only {eventEntity.AvailableTickets} tickets are available.");
+            }
+
+            if (reasons.Any())
+                return ValidationResponse.Failure(reasons);
 
             return ValidationResponse.Success();
         }

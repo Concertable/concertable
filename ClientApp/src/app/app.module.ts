@@ -156,6 +156,7 @@ import { ArtistListingApplicationsComponent } from './components/artist-listing-
 import { GenresComponent } from './components/genres/genres.component';
 import { EventPaymentSummaryComponent } from './components/event-payment-summary/event-payment-summary.component';
 import { ListingApplicationPaymentSummaryComponent } from './components/listing-application-payment-summary/listing-application-payment-summary.component';
+import { DateDisplayComponent } from './components/date-display/date-display.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -283,7 +284,8 @@ export function initApp(initService: InitService) {
     ArtistListingApplicationsComponent,
     GenresComponent,
     EventPaymentSummaryComponent,
-    ListingApplicationPaymentSummaryComponent
+    ListingApplicationPaymentSummaryComponent,
+    DateDisplayComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

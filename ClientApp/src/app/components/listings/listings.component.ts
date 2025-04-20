@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ListingService } from '../../services/listing/listing.service';
 import { Venue } from '../../models/venue';
-import { Observable, of } from 'rxjs';
+import { EMPTY, Observable, of } from 'rxjs';
 import { Listing } from '../../models/listing';
 import { AuthService } from '../../services/auth/auth.service';
 import { ListingApplicationService } from '../../services/listing-application/listing-application.service';
@@ -18,6 +18,7 @@ import { VenueService } from '../../services/venue/venue.service';
   styleUrl: './listings.component.scss'
 })
 export class ListingsComponent  implements OnInit, OnChanges {
+  currentYear: number = new Date().getFullYear();
 
   @Input() venueId?: number
   @Input() editMode?: boolean
@@ -37,7 +38,7 @@ export class ListingsComponent  implements OnInit, OnChanges {
   };
   addNew: boolean = false;
   isOwner$?: Observable<boolean>
-
+  applyResponse$: Observable<void> | null = null;
 
   constructor(
     private listingService: ListingService, 
@@ -54,7 +55,10 @@ export class ListingsComponent  implements OnInit, OnChanges {
     this.getGenres();
     if(this.venueId)
       this.isOwner$ = this.venueService.isOwner(this.venueId);
+  }
 
+  isAfterCurrentYear(date: Date): boolean {
+    return date.getFullYear() > this.currentYear;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -89,26 +93,23 @@ export class ListingsComponent  implements OnInit, OnChanges {
   }
 
   onStartDateChange(date: Date) {
-    this.newListing.startDate.setFullYear(date.getFullYear());
-    this.newListing.startDate.setMonth(date.getMonth());
-    this.newListing.startDate.setDate(date.getDate());
+    this.newListing.startDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+    this.newListing.endDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
   onStartTimeChange(time: Date) {
-    this.newListing.startDate.setHours(time.getHours());
-    this.newListing.startDate.setMinutes(time.getMinutes());
-    this.newListing.startDate.setSeconds(0);
-    this.newListing.startDate.setMilliseconds(0);
-    console.log(this.newListing)
+    this.updateTime(this.newListing.startDate, time);
   }
 
   onEndTimeChange(time: Date) {
-    this.newListing.endDate.setHours(time.getHours());
-    this.newListing.endDate.setMinutes(time.getMinutes());
-    this.newListing.endDate.setSeconds(0);
-    this.newListing.endDate.setMilliseconds(0);
-  
-    console.log(this.newListing);
+    this.updateTime(this.newListing.endDate, time);
+  }
+
+  private updateTime(dateRef: Date, time: Date) {
+    dateRef.setHours(time.getHours());
+    dateRef.setMinutes(time.getMinutes());
+    dateRef.setSeconds(0);
+    dateRef.setMilliseconds(0);
   }
   
   isEndTimeBeforeStartTime(start: Date, end: Date): boolean {

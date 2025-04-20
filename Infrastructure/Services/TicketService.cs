@@ -50,10 +50,10 @@ public class TicketService : ITicketService
         if (role != "Customer")
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var response =  await ticketValidationService.CanPurchaseTicketAsync(purchaseParams.EventId);
+        var response =  await ticketValidationService.CanPurchaseTicketAsync(purchaseParams.EventId, purchaseParams.Quantity);
 
         if (!response.IsValid)
-            throw new BadRequestException(response.Reason!);
+            throw new BadRequestException(response.Reasons);
 
         var paymentResponse = await userPaymentService.PayVenueManagerByEventIdAsync(purchaseParams.EventId, purchaseParams.Quantity , purchaseParams.PaymentMethodId);
 

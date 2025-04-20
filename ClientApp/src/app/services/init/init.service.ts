@@ -15,7 +15,8 @@ export class InitService {
   constructor(
     private authService: AuthService, 
     private signalRService: SignalRService,
-    private eventService: EventService
+    private eventService: EventService,
+    private router: Router
   ) { }
 
   init(): Promise<void> {
@@ -26,8 +27,9 @@ export class InitService {
           console.log(user);
           if (user) {
             this.signalRService.createHubConnections();
+            this.router.navigateByUrl(user.baseUrl)
           }
-          resolve(); // still resolves when successful
+          resolve();
         },
         error: (err) => {
           console.warn('Init failed to get current user:', err);

@@ -23,11 +23,12 @@ namespace Infrastructure.Repositories
                 .Where(l => !context.Events.Any(e => e.ApplicationId == //doesnt have any events associated with it
                     context.ListingApplications //by checking the applications
                         .Where(la => la.ListingId == l.Id) //that have the same listing
-                        .Select(la => la.Id) 
+                        .Select(la => la.Id)
                         .FirstOrDefault())
                 )
                 .Include(l => l.ListingGenres) // Include the ListingGenres relationship
-                .ThenInclude(lg => lg.Genre); // Include the related Genre entity
+                .ThenInclude(lg => lg.Genre) // Include the related Genre entity
+                .OrderBy(l => l.StartDate);
 
             return await query.ToListAsync();
         }

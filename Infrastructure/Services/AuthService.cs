@@ -55,15 +55,17 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<ValidationResponse> Register(RegisterDto registerDto)
+        public async Task Register(RegisterDto registerDto)
         {
             var reasons = new List<string>();
 
+            // Perform checks and add reasons if validation fails
             if (await CheckEmailExistsAsync(registerDto.Email))
                 reasons.Add("Email already exists");
             if (registerDto.Role.Equals("Admin"))
                 reasons.Add("You cannot make yourself an admin");
 
+            // Determine user type based on role
             ApplicationUser? user = registerDto.Role switch
             {
                 "Customer" => new Customer { UserName = registerDto.Email, Email = registerDto.Email },
@@ -76,34 +78,31 @@ namespace Infrastructure.Services
                 reasons.Add("Invalid role specified");
 
             if (reasons.Any())
-                return ValidationResponse.Failure(reasons);
-
+                throw new BadRequestException(reasons);
             var result = await userManager.CreateAsync(user, registerDto.Password);
 
             if (!result.Succeeded)
-                return ValidationResponse.Failure(result.Errors);
+            {
+                reasons.AddRange(result.Errors.Select(e => e.Description));
+                throw new BadRequestException(reasons);
+            }
 
             await userManager.AddToRoleAsync(user, registerDto.Role);
 
             await stripeAccountService.CreateStripeAccountAsync(user);
 
-            // Create default preferences for every user
             var preferenceDto = new CreatePreferenceDto
             {
                 RadiusKm = 10,
                 Genres = Enumerable.Empty<GenreDto>()
             };
-
             await preferenceService.CreateAsync(preferenceDto, user.Id);
 
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-
             var uri = uriService.GetEmailConfirmationUri(user.Id, token);
 
             await emailService.SendEmailAsync(0, user.Email, "Confirm Your Email",
-            $"Please confirm your email by clicking <a href='{uri}'>here</a>");
-
-            return ValidationResponse.Success();
+                $"Please confirm your email by clicking <a href='{uri}'>here</a>");
         }
 
         public async Task Logout()

@@ -11,6 +11,8 @@ import { ExtendedDetailsDirective } from '../../directives/extended-details/exte
 import { ToastService } from '../../services/toast/toast.service';
 import { GenreService } from '../../services/genre/genre.service';
 import { Genre } from '../../models/genre';
+import { Observable } from 'rxjs';
+import { TicketService } from '../../services/ticket/ticket.service';
 
 @Component({
   selector: 'app-event-details',
@@ -35,10 +37,12 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
     { name: 'Reviews', fragment: 'reviews' },
     { name: 'Tickets', fragment: 'tickets' }
   ];
+  canPurchase$?: Observable<boolean>;
 
   constructor(
     private eventService: EventService,
     private eventStateService: EventStateService,
+    private ticketService: TicketService,
     authService: AuthService,
     blobStorageService: BlobStorageService,
     genreService: GenreService,
@@ -66,6 +70,8 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
 
   override ngOnInit(): void {
       super.ngOnInit();
+      if(this.event)
+      this.canPurchase$ = this.ticketService.canPurchase(this.event?.id);
   }
 
   setDetails(data: any): void {
