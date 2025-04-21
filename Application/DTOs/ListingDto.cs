@@ -11,7 +11,8 @@ namespace Application.DTOs
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
-        public double Pay { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Pay cannot be negative")]
+        public decimal Pay { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
@@ -26,6 +27,9 @@ namespace Application.DTOs
 
             if ((EndDate - StartDate).TotalHours > 24)
                 yield return new ValidationResult("EndDate can be at most 24 hours after StartDate", [nameof(EndDate)]);
+
+            if (decimal.Round(Pay, 2) != Pay)
+                yield return new ValidationResult("Pay must have exactly two decimal places", [nameof(Pay)]);
         }
     }
 }
