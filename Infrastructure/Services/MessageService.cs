@@ -47,7 +47,6 @@ namespace Infrastructure.Services
             };
 
             await messageRepository.AddAsync(message);
-            await messageRepository.SaveChangesAsync();
         }
 
 
