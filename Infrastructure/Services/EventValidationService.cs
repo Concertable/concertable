@@ -32,5 +32,13 @@ namespace Infrastructure.Services
 
             return ValidationResponse.Success();
         }
+
+        public async Task<ValidationResponse> CanPostAsync(EventDto eventDto)
+        {
+            if (eventDto.DatePosted is not null)
+                return ValidationResponse.Failure("You have already posted this event");
+
+            return ValidationResponse.Success();
+        }
     }
 }

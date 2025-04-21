@@ -10,5 +10,6 @@ namespace Application.Interfaces
     public interface IEventValidationService
     {
         Task<ValidationResponse> CanUpdateAsync(EventDto eventDto);
+        Task<ValidationResponse> CanPostAsync(EventDto eventDto);
     }
 }

@@ -244,6 +244,8 @@ namespace Infrastructure.Services
             
             mapper.Map(eventDto, eventEntity);
 
+            eventEntity.TotalTickets = eventEntity.AvailableTickets;
+
             eventRepository.Update(eventEntity);
             await eventRepository.SaveChangesAsync();
 
@@ -252,6 +254,10 @@ namespace Infrastructure.Services
 
         public async Task<EventPostResponse> PostAsync(EventDto eventDto)
         {
+            var response = await eventValidationService.CanPostAsync(eventDto);
+            if (!response.IsValid)
+                throw new BadRequestException(response.Reason!);
+
             var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
 
             if (eventEntity is null)
