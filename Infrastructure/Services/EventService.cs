@@ -26,6 +26,7 @@ namespace Infrastructure.Services
     public class EventService : HeaderService<Event, EventHeaderDto, IEventRepository>, IEventService
     {
         private readonly IEventRepository eventRepository;
+        private readonly IEventValidationService eventValidationService;
         private readonly ICurrentUserService currentUserService;
         private readonly IUserPaymentService userPaymentService;
         private readonly IListingApplicationValidationService applicationValidationService;
@@ -40,7 +41,8 @@ namespace Infrastructure.Services
         private readonly IMapper mapper;
 
         public EventService(
-            IEventRepository eventRepository, 
+            IEventRepository eventRepository,
+            IEventValidationService eventValidationService,
             ICurrentUserService currentUserService,
             IUserPaymentService userPaymentService,
             IListingApplicationValidationService applicationValidationService,
@@ -56,6 +58,7 @@ namespace Infrastructure.Services
             IMapper mapper) : base(eventRepository, geometryService)
         {
             this.eventRepository = eventRepository;
+            this.eventValidationService = eventValidationService;
             this.currentUserService = currentUserService;
             this.userPaymentService = userPaymentService;
             this.applicationValidationService = applicationValidationService;
@@ -231,6 +234,10 @@ namespace Infrastructure.Services
 
         public async Task<EventDto> UpdateAsync(EventDto eventDto)
         {
+            var response = await eventValidationService.CanUpdateAsync(eventDto);
+            if (!response.IsValid)
+                throw new BadRequestException(response.Reason!);
+
             var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
             if (eventEntity is null)
                 throw new NotFoundException("Event not found");

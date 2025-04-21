@@ -32,14 +32,13 @@ public class EventDto : ItemDto, IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (Artist != null && string.IsNullOrWhiteSpace(Artist.ImageUrl))
-        {
             yield return new ValidationResult("Artist image is required.", new[] { "Artist.ImageUrl" });
-        }
+
+        if (AvailableTickets > TotalTickets)
+            yield return new ValidationResult("AvailableTickets cannot exceed TotalTickets.", new[] { nameof(AvailableTickets) });
 
         if (StartDate != default && EndDate != default && StartDate >= EndDate)
-        {
             yield return new ValidationResult("End date must be after start date.", new[] { nameof(EndDate) });
-        }
 
         if (StartDate <= DateTime.UtcNow)
             yield return new ValidationResult("You cannot have an Event in the past", [nameof(EndDate)]);

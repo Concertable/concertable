@@ -112,6 +112,7 @@ builder.Services.AddScoped<IGeometryService, GeometryService>();
 builder.Services.AddScoped<IStripeValidationService, StripeValidationService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IOwnershipService, OwnershipService>();
+builder.Services.AddScoped<IEventValidationService, EventValidationService>();
 
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueueHostedService>();
