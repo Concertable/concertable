@@ -27,7 +27,6 @@ export class InitService {
           console.log(user);
           if (user) {
             this.signalRService.createHubConnections();
-            this.router.navigateByUrl(user.baseUrl)
           }
           resolve();
         },
