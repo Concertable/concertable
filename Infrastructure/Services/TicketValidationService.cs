@@ -26,17 +26,20 @@ namespace Infrastructure.Services
             }
             else
             {
+                if(eventEntity.DatePosted is null)
+                    reasons.Add("Event is not posted yet");
+
                 if (eventEntity.StartDate < DateTime.UtcNow)
-                    reasons.Add("You cannot purchase a Ticket for an Event that's already passed.");
+                    reasons.Add("You cannot purchase a Ticket for an Event that's already passed");
 
                 if (eventEntity.DatePosted is null)
-                    reasons.Add("Event has not yet been posted.");
+                    reasons.Add("Event has not yet been posted");
 
                 if (eventEntity.AvailableTickets <= 0)
                     reasons.Add("No Tickets Available for Event");
 
                 if (quantity.HasValue && eventEntity.AvailableTickets - quantity.Value < 0)
-                    reasons.Add($"Not enough tickets available. Only {eventEntity.AvailableTickets} tickets are available.");
+                    reasons.Add($"Not enough tickets available. Only {eventEntity.AvailableTickets} tickets are available");
             }
 
             if (reasons.Any())

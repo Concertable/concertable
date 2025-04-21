@@ -58,7 +58,10 @@ namespace Infrastructure.Repositories
         }
 
         protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) {
-            var filters = new List<Expression<Func<Event, bool>>>();
+            var filters = new List<Expression<Func<Event, bool>>>
+            {
+                e => e.DatePosted != null //Ensure by default no unposted events are shown
+            };
 
             if (searchParams.Date != null)
                 filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
