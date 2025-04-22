@@ -244,7 +244,8 @@ namespace Infrastructure.Services
             
             mapper.Map(eventDto, eventEntity);
 
-            eventEntity.AvailableTickets = eventEntity.TotalTickets;
+            int ticketsSold = eventEntity.TotalTickets - eventEntity.AvailableTickets;
+            eventEntity.AvailableTickets = eventEntity.TotalTickets - ticketsSold;
 
             eventRepository.Update(eventEntity);
             await eventRepository.SaveChangesAsync();
