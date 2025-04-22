@@ -1,6 +1,15 @@
 <form (ngSubmit)="onSearch()" class="container">
   <div class="wrapper">
     <!-- Location Search Component -->
+    <button
+    class="btn-user-location mr-2"
+    mat-icon-button
+    color="primary"
+    (click)="onMyLocation()"
+    matTooltip="Use My Location"
+    aria-label="Use My Location">
+    <mat-icon>my_location</mat-icon>
+  </button>
     <app-location-search 
       class="location-search" 
       [longitude]="searchParams.longitude"
@@ -26,14 +35,12 @@
                      (dateChange)="onDateChange($event)" 
                      class="date-picker">
     </app-date-picker>
-  </div>
-
-  <!-- Search Button (type="submit") -->
-  <button
+    <button
     mat-icon-button
     type="submit"
     color="accent"
     class="btn-search">
     <mat-icon>search</mat-icon>
   </button>
+  </div>
 </form>

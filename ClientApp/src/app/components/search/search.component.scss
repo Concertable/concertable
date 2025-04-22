@@ -7,8 +7,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    padding-right: 60px;           // Ensure inner content doesn't run under the button
+    padding: 20px 60px;
     max-width: 1000px;
     margin: 20px auto;
     background: white;
@@ -56,6 +55,13 @@
     right: 20px;                  // Adjust this value for desired right spacing
     transform: translateY(-50%);  // Vertically center the button
   }
+
+  .btn-user-location {
+    position: absolute;
+    top: 50%;
+    left: 20px;                 
+    transform: translateY(-50%);
+  }
   
   /* Container query: When container's inline size is 800px or smaller...
      re-stack the inner fields vertically. The absolute button remains at its RHS spot */
@@ -65,5 +71,9 @@
       align-items: stretch;       // Stretch inner elements to container's width
       gap: 10px;                  // Optional spacing between fields
     }
+  }
+
+  :host ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
   }
   

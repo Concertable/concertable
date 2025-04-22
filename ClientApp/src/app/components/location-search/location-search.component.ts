@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { update } from 'lodash';
 
 @Component({
@@ -8,14 +8,15 @@ import { update } from 'lodash';
   templateUrl: './location-search.component.html',
   styleUrl: './location-search.component.scss'
 })
-export class LocationSearchComponent implements OnInit, AfterViewInit {
+export class LocationSearchComponent implements AfterViewInit, OnChanges {
   @ViewChild('search', { static: true }) searchElement!: ElementRef;
   @Input() type: string = '(cities)';
   @Input() latitude?: number;
   @Input() longitude?: number;
   @Input() whiteOutline?: boolean;
+
   @Output() latLongChange = new EventEmitter<google.maps.LatLngLiteral | undefined>();
-  @Output() locationChange = new EventEmitter<{county: string, town: string} | undefined>();
+  @Output() locationChange = new EventEmitter<{ county: string, town: string } | undefined>();
 
   locality?: string;
   county?: string;
@@ -24,76 +25,81 @@ export class LocationSearchComponent implements OnInit, AfterViewInit {
 
   locationInput?: string;
 
-  ngOnInit(): void {
-    if (this.latitude && this.longitude) {
-      const latLng = new google.maps.LatLng(this.latitude, this.longitude);
-      const geocoder = new google.maps.Geocoder();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (
+      (changes['latitude']) ||
+      (changes['longitude'])
+    ) {
+      if (this.latitude && this.longitude) {
+        this.resolveLocationFromCoords(this.latitude, this.longitude);
+      }
+    }
+  }
 
-      // Update location if inputs recieved initially
-      geocoder.geocode({ location: latLng }, (results, status) => {
-        if (status === google.maps.GeocoderStatus.OK && results) {
-          this.updateLocationInputs(results[0]?.address_components);
-          if (this.country) {
-            if (this.locality) 
-              // If locality is available, use locality and country
-              this.locationInput = `${this.locality}, ${this.country}`;
-            else if (this.town) 
-              // If locality is not available, use town and country
-              this.locationInput = `${this.town}, ${this.country}`;
+  private resolveLocationFromCoords(lat: number, lng: number): void {
+    const latLng = new google.maps.LatLng(lat, lng);
+    const geocoder = new google.maps.Geocoder();
+
+    geocoder.geocode({ location: latLng }, (results, status) => {
+      if (status === google.maps.GeocoderStatus.OK && results) {
+        this.updateLocationInputs(results[0]?.address_components);
+        if (this.country) {
+          if (this.locality) {
+            this.locationInput = `${this.locality}, ${this.country}`;
+          } else if (this.town) {
+            this.locationInput = `${this.town}, ${this.country}`;
           }
         }
-      })
-    }
+      }
+    });
   }
 
   private updateLocationInputs(components: google.maps.GeocoderAddressComponent[]) {
     components.forEach(component => {
       const types = component.types;
-      if (types.includes('postal_town')) 
-        this.town = component.long_name;
-      if (types.includes('locality'))
-        this.locality = component.long_name;
-      if (types.includes('country')) 
+      if (types.includes('postal_town')) this.town = component.long_name;
+      if (types.includes('locality')) this.locality = component.long_name;
+      if (types.includes('country')) {
         this.country = component.short_name === 'GB' ? 'UK' : component.short_name;
-      if (types.includes('administrative_area_level_2'))
-        this.county = component.long_name
+      }
+      if (types.includes('administrative_area_level_2')) this.county = component.long_name;
     });
   }
-  
 
   ngAfterViewInit(): void {
     const options = {
-      types: [this.type], // Limit results
-      componentRestrictions: { country: 'gb' } // Restrict to UK
+      types: [this.type],
+      componentRestrictions: { country: 'gb' }
     };
-  
+
     const autocomplete = new google.maps.places.Autocomplete(
       this.searchElement.nativeElement,
       options
     );
-  
-    autocomplete.addListener('place_changed', () => { // When the user selects a location from the dropdown
-      const place = autocomplete.getPlace(); // Get its location
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
       const lat = place?.geometry?.location?.lat();
       const lng = place?.geometry?.location?.lng();
-  
-      if (lat && lng)
-        this.latLongChange.emit({ lat, lng }); // Emit the latlong to the parent
-  
+
+      if (lat && lng) {
+        this.latLongChange.emit({ lat, lng });
+      }
+
       if (place?.address_components) {
         this.updateLocationInputs(place.address_components);
-        if (this.county && this.town)
+        if (this.county && this.town) {
           this.locationChange.emit({ county: this.county, town: this.town });
+        }
       }
     });
-  
+
     // Clear input resets values
     this.searchElement.nativeElement.addEventListener('input', () => {
-      if (!this.searchElement.nativeElement.value)
+      if (!this.searchElement.nativeElement.value) {
         this.latLongChange.emit(undefined);
-  
-      this.locationInput = undefined;
+        this.locationInput = undefined;
+      }
     });
   }
-  
 }
