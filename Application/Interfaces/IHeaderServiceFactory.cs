@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IHeaderServiceFactory : IScopeDisposable
+    public interface IHeaderServiceFactory
     {
         IHeaderService<TDto> GetService<TDto>(string entityType) where TDto : HeaderDto;
     }

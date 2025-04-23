@@ -2,12 +2,13 @@
   <div class="wrapper">
     <!-- Location Search Component -->
     <button
-    class="btn-user-location mr-2"
-    mat-icon-button
-    color="primary"
-    (click)="onMyLocation()"
-    matTooltip="Use My Location"
-    aria-label="Use My Location">
+      type="button"
+      class="btn-user-location mr-2"
+      mat-icon-button
+      color="secondary"
+      (click)="onMyLocation()"
+      matTooltip="Use My Location"
+      aria-label="Use My Location">
     <mat-icon>my_location</mat-icon>
   </button>
     <app-location-search 
@@ -19,15 +20,12 @@
 
     <!-- Search Input Field -->
     <mat-form-field appearance="outline" class="search-input">
-      <mat-label>Search</mat-label>
+      <mat-label>{{ searchLabel }}</mat-label>
       <input
         matInput
         name="search"
         [(ngModel)]="searchParams.searchTerm"
-        [matAutocomplete]="auto">
-      <mat-autocomplete #auto="matAutocomplete">
-        <!-- Autocomplete suggestions -->
-      </mat-autocomplete>
+        [placeholder]="searchLabel">
     </mat-form-field>
 
     <!-- Date Picker Component for 'event' headerType -->
@@ -36,10 +34,10 @@
                      class="date-picker">
     </app-date-picker>
     <button
-    mat-icon-button
-    type="submit"
-    color="accent"
-    class="btn-search">
+      mat-icon-button
+      type="submit"
+      color="primary"
+      class="btn-search">
     <mat-icon>search</mat-icon>
   </button>
   </div>

@@ -52,6 +52,7 @@ export class FindComponent extends FindDirective<Header> implements OnInit {
   }
 
   handleSearch() {
+    console.log("test",this.searchParams)
     // Remove radius filter if no location specified
     if (this.searchParams?.headerType)
       if (!this.searchParams.latitude || !this.searchParams.longitude)

@@ -21,6 +21,10 @@ export class SearchComponent implements OnInit{
 
   constructor(private toastService: ToastService) { }
 
+  get searchLabel() {
+    return `Search for ${this.searchParams.headerType}s`
+  }
+
   onDateChange(date: Date) {
     this.searchParams.date = date;
   }
@@ -31,7 +35,6 @@ export class SearchComponent implements OnInit{
   }
 
   onSearch() {
-    console.log("?")
     if(this.searchParams.headerType) {
       this.searchParamsChange.emit(this.searchParams);
       this.search.emit();
@@ -43,6 +46,7 @@ export class SearchComponent implements OnInit{
       pos => {
         this.searchParams.latitude = pos.coords.latitude;
         this.searchParams.longitude = pos.coords.longitude;
+        this.searchParamsChange.emit(this.searchParams);
         this.toastService.showSuccess("Location updated successfully!", "Location Updated");
       },
       () => this.toastService.showError("Location access denied or failed")

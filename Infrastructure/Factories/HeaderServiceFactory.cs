@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,15 @@ using static System.Formats.Asn1.AsnWriter;
 
 namespace Infrastructure.Factories
 {
-    public class HeaderServiceFactory : ServiceFactory, IHeaderServiceFactory
+    public class HeaderServiceFactory : IHeaderServiceFactory
     {
+        private readonly IHttpContextAccessor httpContext;
+        private readonly IDictionary<string, Type> serviceTypes
+          = new Dictionary<string, Type>();
 
-        public HeaderServiceFactory(IServiceProvider serviceProvider) : base(serviceProvider) 
+        public HeaderServiceFactory(IServiceScopeFactory scopeFactory, IHttpContextAccessor httpContext)
         {
-            Debug.WriteLine("Test123");
+            this.httpContext = httpContext;
             serviceTypes.Add("venue", typeof(IHeaderService<VenueHeaderDto>));
             serviceTypes.Add("artist", typeof(IHeaderService<ArtistHeaderDto>));
             serviceTypes.Add("event", typeof(IHeaderService<EventHeaderDto>));
@@ -21,10 +25,18 @@ namespace Infrastructure.Factories
 
         public IHeaderService<TDto> GetService<TDto>(string entityType) where TDto : HeaderDto
         {
-            if (serviceTypes.TryGetValue(entityType, out var serviceType))
-                return (IHeaderService<TDto>)scope.ServiceProvider.GetRequiredService(serviceType);
+            if(!serviceTypes.TryGetValue(entityType, out var svcType))
+            throw new ArgumentOutOfRangeException(
+                nameof(entityType),
+                $"No service for '{entityType}'.");
 
-            throw new ArgumentOutOfRangeException($"No service found for header type '{entityType}'.");
+            var ctx = httpContext.HttpContext
+                      ?? throw new InvalidOperationException("No active HttpContext");
+
+            // Resolve from the current request scope
+            return (IHeaderService<TDto>)ctx
+                .RequestServices
+                .GetRequiredService(svcType);
         }
     }
 }

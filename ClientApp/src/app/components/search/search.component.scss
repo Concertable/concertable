@@ -52,15 +52,16 @@
   .btn-search {
     position: absolute;
     top: 50%;
-    right: 20px;                  // Adjust this value for desired right spacing
+    right: 10px;                  // Adjust this value for desired right spacing
     transform: translateY(-50%);  // Vertically center the button
   }
 
   .btn-user-location {
     position: absolute;
     top: 50%;
-    left: 20px;                 
+    left: 10px;                 
     transform: translateY(-50%);
+    padding-right: 8px;
   }
   
   /* Container query: When container's inline size is 800px or smaller...

@@ -21,4 +21,10 @@ export abstract class ObjectSerializerService<T> implements ISerializer<T> {
   }
 
   abstract deserialize(params: Params): T;
+
+  protected toBoolean(value: any): boolean | undefined {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return undefined;
+  }
 }

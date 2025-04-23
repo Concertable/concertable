@@ -17,6 +17,7 @@ export class FilterComponent implements OnInit {
   @Input() searchParams!: Partial<SearchParams>;
   @Output() headerTypeChange = new EventEmitter<HeaderType | undefined>();
   @Output() searchParamsChange = new EventEmitter<Partial<SearchParams>>();
+  @Output() search = new EventEmitter<void>();
 
   icon: string = 'tune';
   headerTypes: HeaderType[] = ['venue', 'artist', 'event'];
@@ -108,7 +109,7 @@ export class FilterComponent implements OnInit {
   }
 
   onHeaderTypeChange() {
-    this.headerTypeChange.emit(this.searchParams.headerType);
+    this.searchParamsChange.emit(this.searchParams);
   }
 
   onGenreChange(genres: Genre[]) {
@@ -126,5 +127,9 @@ export class FilterComponent implements OnInit {
   removeGenre(genre: Genre) {
     this.selectedGenres = this.selectedGenres.filter(g => g !== genre);
     this.emitChanges();
+  }
+
+  onApply() {
+    this.search.emit();
   }
 }

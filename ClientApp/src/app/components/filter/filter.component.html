@@ -1,15 +1,14 @@
 <app-sidebar [icon]="icon" class="container">
-  <div sidebar>
-    <div class="wrapper">
+  <div sidebar class="sidebar-container">
       <div class="title">
         <mat-icon [innerText]="icon"></mat-icon><h3>Filter {{this.searchParams.headerType}}s</h3>
       </div>
       <div class="header-type" *ngIf="isCustomerRoute()">
         <mat-form-field appearance="outline" class="custom-select">
-          <mat-label>Header Type</mat-label>
+          <mat-label>Search for:</mat-label>
           <mat-select [(value)]="searchParams.headerType" (selectionChange)="onHeaderTypeChange()">
             <mat-option *ngFor="let type of headerTypes" [value]="type">
-              {{ type }}
+              {{ type }}s
             </mat-option>
           </mat-select>
         </mat-form-field>
@@ -51,7 +50,6 @@
           </mat-select>
         </mat-form-field>
       </div>     
-    </div>
     <div *ngIf="searchParams.headerType === 'event'">
       <mat-checkbox [(ngModel)]="searchParams.showHistory">
         Show History
@@ -61,7 +59,10 @@
         Show Sold
       </mat-checkbox>
     </div>
-     
+    <button mat-raised-button color="primary" class="mt-3" (click)="onApply()">
+      <mat-icon>check_circle</mat-icon>
+      Apply
+    </button>    
   </div>
 
   <ng-content></ng-content>

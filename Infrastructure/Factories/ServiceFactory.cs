@@ -9,12 +9,14 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Factories
 {
-    public abstract class ServiceFactory : ScopedServiceManager
+    public abstract class ServiceFactory
     {
         protected readonly IDictionary<string, Type> serviceTypes;
+        protected readonly IServiceScopeFactory scopeFactory;
 
-        public ServiceFactory(IServiceProvider serviceProvider) : base(serviceProvider) 
+        protected ServiceFactory(IServiceScopeFactory scopeFactory)
         {
+            this.scopeFactory = scopeFactory;
             serviceTypes = new Dictionary<string, Type>();
         }
     }

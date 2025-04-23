@@ -1,5 +1,5 @@
-<app-filter [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)" (headerTypeChange)="changeHeaderType($event)">
-    <app-search  (search)="handleSearch()" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)"></app-search>
+<app-filter [(searchParams)]="searchParams" (search)="handleSearch()">
+    <app-search  (search)="handleSearch()" [(searchParams)]="searchParams"></app-search>
     <app-search-results [paginatedHeaders]="paginatedData" [headerType] = "searchParams.headerType" (pageChange)="onPageChange($event)"></app-search-results>
     <!-- <button (click)="triggerNewSubscription()">Trigger New Subscription</button> -->
 </app-filter>    

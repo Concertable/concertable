@@ -14,25 +14,20 @@ namespace Web.Controllers
     public class HeaderController : ControllerBase
     {
         private readonly IHeaderServiceFactory headerServiceFactory;
-        private readonly Dictionary<string, Func<IHeaderService<HeaderDto>>> headerServiceMap;
 
         public HeaderController(IHeaderServiceFactory headerServiceFactory)
         {
-            Debug.WriteLine("HeaderController instantiated - Dictionary being initialized");
             this.headerServiceFactory = headerServiceFactory;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
         {
-                if (string.IsNullOrWhiteSpace(searchParams.HeaderType))
-            {
+            if (string.IsNullOrWhiteSpace(searchParams.HeaderType))
                 return BadRequest("Header type is required");
-            }
 
             try
             {
-                headerServiceFactory.CreateScope();
                 object response = searchParams.HeaderType.ToLower() switch
                 {
                     "venue" => await headerServiceFactory.GetService<VenueHeaderDto>(searchParams.HeaderType)
@@ -51,10 +46,6 @@ namespace Web.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }
-            finally
-            {
-                headerServiceFactory.DisposeScope();
             }
         }
     }
