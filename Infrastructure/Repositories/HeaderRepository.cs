@@ -55,9 +55,7 @@ namespace Infrastructure.Repositories
             foreach (var filter in Filters(searchParams))
                 query = query.Where(filter);
 
-            // Apply ordering if present
-            if (!string.IsNullOrWhiteSpace(searchParams?.Sort))
-                query = ApplyOrdering(query, searchParams.Sort);
+            query = ApplyOrdering(query, searchParams.Sort);
 
             // If location parameters are provided, filter by radius
             if (GeoHelper.HasValidCoordinates(searchParams))
@@ -66,9 +64,12 @@ namespace Infrastructure.Repositories
             return query.Select(Selector);
         }
 
-        protected virtual IQueryable<TDto> GetHeadersQuery(int amount)
+        protected IQueryable<TDto> GetHeadersQuery(int amount)
         {
-            return dbSet.Select(Selector).Take(amount);
+            var query = dbSet.AsQueryable();
+            query = ApplyFilters(query);
+            query = ApplyOrdering(query);
+            return query.Select(Selector).Take(amount);
         }
 
         // Handle pagination
@@ -93,6 +94,16 @@ namespace Infrastructure.Repositories
                 "name_desc" => query.OrderByDescending(h => EF.Property<string>(h, "Name")),
                 _ => query.OrderBy(h => h.Id)
             };
+        }
+
+        protected virtual IQueryable<TEntity> ApplyOrdering(IQueryable<TEntity> query)
+        {
+            return query.OrderBy(h => h.Id);
+        }
+
+        protected virtual IQueryable<TEntity> ApplyFilters(IQueryable<TEntity> query)
+        {
+            return query;
         }
 
 

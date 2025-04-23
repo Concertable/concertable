@@ -345,7 +345,7 @@ namespace Infrastructure.Services
                 Take = 10
             };
 
-            var result = await eventRepository.GetFiltered(user.Id, eventParams);
+            var result = await eventRepository.GetHeaders(user.Id, eventParams);
 
             await reviewService.AddAverageRatingsAsync(result);
 

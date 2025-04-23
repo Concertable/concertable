@@ -13,9 +13,9 @@ namespace Application.Interfaces
 {
     public interface IEventRepository : IHeaderRepository<Event, EventHeaderDto>
     {
-        Task<IEnumerable<EventHeaderDto>> GetFiltered(int userId, EventParams eventParams);
+        Task<IEnumerable<EventHeaderDto>> GetHeaders(int userId, EventParams eventParams);
         Task<Event> GetByIdAsync(int id);
-        Task<IEnumerable<EventHeaderDto>> GetFiltered(int amount);
+        Task<IEnumerable<EventHeaderDto>> GetHeaders(int amount);
         Task<Event?> GetByApplicationIdAsync(int applicationId);
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);

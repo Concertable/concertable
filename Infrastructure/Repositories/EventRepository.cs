@@ -41,27 +41,13 @@ namespace Infrastructure.Repositories
             DatePosted = e.DatePosted
         };
 
-        protected override IQueryable<EventHeaderDto> GetHeadersQuery(SearchParams searchParams)
+        public async Task<IEnumerable<EventHeaderDto>> GetHeaders(int amount)
         {
-            return base.GetHeadersQuery(searchParams);
-        }
-
-        protected override IQueryable<EventHeaderDto> GetHeadersQuery(int amount)
-        {
-            return base.GetHeadersQuery(amount)
-                .OrderByDescending(e => e.StartDate);
-        }
-
-        public async Task<IEnumerable<EventHeaderDto>> GetFiltered(int amount)
-        {
-            return await base.GetHeadersQuery(amount).Take(10).ToListAsync();
+            return await base.GetHeadersQuery(amount).Where(e => e.DatePosted != null).OrderBy(e => e.StartDate).Take(10).ToListAsync();
         }
 
         protected override List<Expression<Func<Event, bool>>> Filters(SearchParams searchParams) {
-            var filters = new List<Expression<Func<Event, bool>>>
-            {
-                e => e.DatePosted != null //Ensure by default no unposted events are shown
-            };
+            var filters = new List<Expression<Func<Event, bool>>>();
 
             if (searchParams.Date != null)
                 filters.Add(e => e.Application.Listing.StartDate >= searchParams.Date);
@@ -112,20 +98,22 @@ namespace Infrastructure.Repositories
             return await query.FirstAsync();
         }
 
-        protected IQueryable<EventHeaderDto> GetFilteredQuery(int userId, EventParams eventParams)
+        protected IQueryable<EventHeaderDto> GetHeadersQuery(int userId, EventParams eventParams)
         {
-            var query = context.Events
-                .Where(e => e.DatePosted != null && e.Application.Listing.EndDate > DateTime.UtcNow)
-                .Include(e => e.Application.Listing.Venue.User)
-                .Include(e => e.EventGenres)
-                .AsQueryable();
+            var query = context.Events.AsQueryable();
 
-            //if (eventParams.GenreIds.Count() > 0)
-            //    query = query.Where(e =>
-            //        e.EventGenre.Any(eg => eventParams.GenreIds.Contains(eg.GenreId)));
+            query = ApplyFilters(query);
+            query = ApplyOrdering(query);
 
-            //// Exclude events where the user already has a ticket
-            //query = query.Where(e => !context.Tickets.Any(t => t.EventId == e.Id && t.UserId == userId));
+            query = query.Include(e => e.Application.Listing.Venue.User)
+                         .Include(e => e.EventGenres);
+
+            query = query.Include(e => e.Application.Listing.Venue.User)
+                         .Include(e => e.EventGenres);
+
+            if (eventParams.GenreIds.Any())
+                query = query.Where(e =>
+                    e.EventGenres.Any(eg => eventParams.GenreIds.Contains(eg.GenreId)));
 
             if (eventParams.OrderByRecent)
                 query = query.OrderByDescending(e => e.DatePosted);
@@ -136,9 +124,9 @@ namespace Infrastructure.Repositories
             return query.Select(Selector).Take(10);
         }
 
-        public async Task<IEnumerable<EventHeaderDto>> GetFiltered(int userId, EventParams eventParams)
+        public async Task<IEnumerable<EventHeaderDto>> GetHeaders(int userId, EventParams eventParams)
         {
-            var query = GetFilteredQuery(userId, eventParams);
+            var query = GetHeadersQuery(userId, eventParams);
             return await query.ToListAsync();
         }
 
@@ -262,5 +250,26 @@ namespace Infrastructure.Repositories
 
             return query;
         }
+
+        private IQueryable<Event> GetDefaultHeadersQuery()
+        {
+            return context.Events
+                .Where(e => e.DatePosted != null)
+                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .OrderBy(e => e.Application.Listing.StartDate); 
+        }
+
+        protected override IQueryable<Event> ApplyFilters(IQueryable<Event> query)
+        {
+            return query
+                .Where(e => e.DatePosted != null)
+                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow);
+        }
+
+        protected override IQueryable<Event> ApplyOrdering(IQueryable<Event> query)
+        {
+            return query.OrderBy(e => e.Application.Listing.StartDate);
+        }
+
     }
 }
