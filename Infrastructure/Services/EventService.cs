@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 
 namespace Infrastructure.Services
 {
-    public class EventService : HeaderService<Event, EventHeaderDto, IEventRepository>, IEventService
+    public class EventService : HeaderService<Event, EventHeaderDto>, IEventService
     {
         private readonly IEventRepository eventRepository;
         private readonly IEventValidationService eventValidationService;

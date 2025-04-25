@@ -10,7 +10,6 @@ export const roleGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);
   const toastService = inject(ToastService);
   const navService = inject(NavigationService);
-  const location = inject(Location);
   const router = inject(Router);
   const role = route.data['role'];
 

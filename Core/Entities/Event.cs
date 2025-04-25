@@ -16,7 +16,6 @@ namespace Core.Entities
         public DateTime? DatePosted { get; set; }
         public ListingApplication Application { get; set; }
         public ICollection<Ticket> Tickets { get; } = new List<Ticket>();
-        public ICollection<EventImage> Images { get; } = new List<EventImage>();
         public ICollection<EventGenre> EventGenres { get; set; } = new List<EventGenre>();
     }
 }

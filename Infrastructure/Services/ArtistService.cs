@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services
 {
-    public class ArtistService : HeaderService<Artist, ArtistHeaderDto, IArtistRepository>, IArtistService
+    public class ArtistService : HeaderService<Artist, ArtistHeaderDto>, IArtistService
     {
         private readonly IArtistRepository artistRepository;
         private readonly IImageService imageService;

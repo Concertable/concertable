@@ -15,6 +15,5 @@ namespace Core.Entities
         public bool Approved { get; set; }
         public VenueManager User { get; set; }
         public ICollection<Listing> Listings { get; set; } = new List<Listing>();
-        public ICollection<VenueImage> Images { get; } = new List<VenueImage>();
     }
 }

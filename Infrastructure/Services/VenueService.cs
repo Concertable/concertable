@@ -21,7 +21,7 @@ using MailKit;
 
 namespace Infrastructure.Services
 {
-    public class VenueService : HeaderService<Venue, VenueHeaderDto, IVenueRepository>, IVenueService
+    public class VenueService : HeaderService<Venue, VenueHeaderDto>, IVenueService
     {
         private readonly IVenueRepository venueRepository;
         private readonly IImageService imageService;
