@@ -42,5 +42,12 @@ namespace Infrastructure.Repositories
             return await query.ToListAsync();
         }
 
+        public async Task<Ticket?> GetByUserIdAndEventIdAsync(int userId, int eventId)
+        {
+            return await context.Tickets
+                .Include(t => t.Event)
+                .FirstOrDefaultAsync(t => t.UserId == userId && t.EventId == eventId);
+        }
+
     }
 }

@@ -12,5 +12,6 @@ namespace Application.Interfaces
         Task<byte[]> GetQrCodeByIdAsync(int id);
         Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id);
         Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id);
+        Task<Ticket?> GetByUserIdAndEventIdAsync(int userId, int eventId);
     }
 }

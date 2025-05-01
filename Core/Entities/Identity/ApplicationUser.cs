@@ -39,4 +39,3 @@ namespace Core.Entities.Identity
 
     public class ApplicationRole : IdentityRole<int> { }
 }
-S

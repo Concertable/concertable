@@ -18,6 +18,7 @@ import { VenueService } from '../../services/venue/venue.service';
   styleUrl: './listings.component.scss'
 })
 export class ListingsComponent  implements OnInit, OnChanges {
+  isLoading: boolean = false;
   currentYear: number = new Date().getFullYear();
 
   @Input() venueId?: number

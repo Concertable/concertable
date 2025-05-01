@@ -13,18 +13,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Core.Interfaces;
+using Application.Requests;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
     public class ReviewService : IReviewService
     {
         private readonly IReviewRepository reviewRepository;
+        private readonly ITicketRepository ticketRepository;
         private readonly ICurrentUserService currentUserService;
         private readonly IMapper mapper;
 
-        public ReviewService(IReviewRepository reviewRepository, ICurrentUserService currentUserService, IMapper mapper)
+        public ReviewService(
+            IReviewRepository reviewRepository, 
+            ITicketRepository ticketRepository,
+            ICurrentUserService currentUserService, 
+            IMapper mapper)
         {
             this.reviewRepository = reviewRepository;
+            this.ticketRepository = ticketRepository;
             this.currentUserService = currentUserService;
             this.mapper = mapper;
         }
@@ -63,9 +71,23 @@ namespace Infrastructure.Services
                 venue.Rating = await reviewRepository.GetAverageRatingByVenueIdAsync(venue.Id);
         }
 
-        public Task<ReviewDto> CreateAsync(ReviewDto review)
+        public async Task<ReviewDto> CreateAsync(CreateReviewRequest request)
         {
-            throw new NotImplementedException();
+            var review = mapper.Map<Review>(request);
+
+            var userId = await currentUserService.GetIdAsync();
+
+            var ticket = await ticketRepository.GetByUserIdAndEventIdAsync(userId, request.EventId);
+
+            if (ticket is null)
+                throw new NotFoundException("Cannot find ticket");
+
+            review.TicketId = ticket.Id;
+
+            await reviewRepository.AddAsync(review);
+            await reviewRepository.SaveChangesAsync();
+
+            return mapper.Map<ReviewDto>(review);
         }
 
         private async Task<PaginationResponse<ReviewDto>> GetAsync(

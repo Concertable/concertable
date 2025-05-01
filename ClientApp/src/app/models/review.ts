@@ -4,3 +4,9 @@ export interface Review {
     stars: number;
     details?: string;
 }
+
+export interface CreateReview {
+    eventId: number;
+    stars: number;
+    details?: string;
+}

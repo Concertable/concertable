@@ -159,7 +159,6 @@ const routes: Routes = [
 
         data: { breadcrumb: 'My' },
         children: [
-          { path: 'events', component: MyEventsComponent, data: { breadcrumb: 'My Events' } },
           { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } },
           { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationsResolver }, canActivate: [listingApplicationsGuard], data: { breadcrumb: 'Applications' } }
         ]
@@ -187,8 +186,7 @@ const routes: Routes = [
         path: 'my',
         data: { breadcrumb: 'My' },
         children: [
-          { path: 'events', component: MyEventsComponent, data: { breadcrumb: 'My Events' } },
-          { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } }
+          { path: 'events/event/:id', component: EventDetailsComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } }
         ]
       }
     ]

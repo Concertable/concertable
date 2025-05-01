@@ -12,6 +12,7 @@ using Application.Responses;
 using System.Diagnostics;
 using NetTopologySuite.Geometries;
 using Common.Helpers;
+using Application.Requests;
 
 namespace Application.Mappings
 {
@@ -187,6 +188,7 @@ namespace Application.Mappings
             CreateMap<Review, ReviewDto>()
                 .ForMember(dest => dest.Email, opt =>  opt.MapFrom(src => src.Ticket.User.Email));
             CreateMap<ReviewDto, Review>();
+            CreateMap<CreateReviewRequest, Review>();
 
             CreateMap<CreatePreferenceDto, Preference>();
             CreateMap<Preference, PreferenceDto>()

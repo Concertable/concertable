@@ -7,7 +7,7 @@ import { ReviewParams } from '../../models/review-params';
 import { HttpParamsService } from '../http-params/http-params.service';
 import { PaginationParams } from '../../models/pagination-params';
 import { Pagination } from '../../models/pagination';
-import { Review } from '../../models/review';
+import { CreateReview, Review } from '../../models/review';
 import { SKIP_ERROR_HANDLER } from '../../shared/http/http-context.token';
 
 @Injectable({
@@ -57,5 +57,9 @@ export class ReviewService {
 
   canUserReviewVenue(id: number) : Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/venue/can-review/${id}`);
+  }
+
+  create(review: CreateReview) : Observable<Review> {
+    return this.http.post<Review>(`${this.apiUrl}`, review);
   }
 }

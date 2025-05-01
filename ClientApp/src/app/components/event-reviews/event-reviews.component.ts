@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ReviewDirective } from '../../directives/review/review.directive';
 import { Observable } from 'rxjs';
 import { Pagination } from '../../models/pagination';
-import { Review } from '../../models/review';
+import { CreateReview, Review } from '../../models/review';
 import { ReviewSummary } from '../../models/review-summary';
 import { AddReviewComponent } from '../add-review/add-review.component';
 
@@ -33,9 +33,20 @@ export class EventReviewsComponent extends ReviewDirective {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Review submitted:', result);
-        // TODO: Emit to parent, send to API, or update state
+        if (this.id) {
+          const review: CreateReview = {
+            eventId: this.id,
+            stars: result.stars,
+            details: result.details
+          };
+    
+          this.reviewService.create(review).subscribe(createdReview => {
+            this.reviewsPage?.data.unshift(createdReview);
+            this.toastService.showSuccess("Added Review")
+          });
+        }
       }
     });
+    
   }
 }

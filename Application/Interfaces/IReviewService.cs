@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Entities;
+using Application.Requests;
 
 namespace Application.Interfaces
 {
@@ -26,7 +27,7 @@ namespace Application.Interfaces
         Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id);
 
-        Task<ReviewDto> CreateAsync(ReviewDto review);
+        Task<ReviewDto> CreateAsync(CreateReviewRequest review);
         Task<bool> CanUserReviewEventIdAsync(int eventId);
         Task<bool> CanUserReviewVenueIdAsync(int venueId);
         Task<bool> CanUserReviewArtistIdAsync(int artistId);

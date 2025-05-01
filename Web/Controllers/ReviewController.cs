@@ -5,6 +5,7 @@ using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Infrastructure.Factories;
+using Application.Requests;
 
 namespace Web.Controllers
 {
@@ -22,9 +23,10 @@ namespace Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ReviewDto review)
+        public async Task<IActionResult> Create(CreateReviewRequest request)
         {
-            return Created();
+            var createdReview = await reviewService.CreateAsync(request);
+            return CreatedAtAction(nameof(GetByEventId), new { id = createdReview.Id }, createdReview);
         }
 
         [HttpGet("venue/summary/{id}")]
