@@ -56,8 +56,8 @@ namespace Infrastructure.Services
             var options = new AccountLinkCreateOptions
             {
                 Account = stripeId,
-                RefreshUrl = $"{baseUri}/reauth",
-                ReturnUrl = $"{baseUri}/dashboard", 
+                RefreshUrl = $"{baseUri}/fail",
+                ReturnUrl = $"{baseUri}/success", 
                 Type = "account_onboarding"
             };
 

@@ -157,6 +157,8 @@ import { GenresComponent } from './components/genres/genres.component';
 import { EventPaymentSummaryComponent } from './components/event-payment-summary/event-payment-summary.component';
 import { ListingApplicationPaymentSummaryComponent } from './components/listing-application-payment-summary/listing-application-payment-summary.component';
 import { DateDisplayComponent } from './components/date-display/date-display.component';
+import { SuccessComponent } from './success/success.component';
+import { FailComponent } from './fail/fail.component';
 
 const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
@@ -286,6 +288,8 @@ export function initApp(initService: InitService) {
     EventPaymentSummaryComponent,
     ListingApplicationPaymentSummaryComponent,
     DateDisplayComponent,
+    SuccessComponent,
+    FailComponent,
   ],
   imports: [
     BrowserAnimationsModule, // Required for animations

@@ -16,7 +16,7 @@
             <section [id]="navItems[1].fragment">
                 <h1>{{navItems[1].name}}</h1>
                 <div class="address">
-                    <app-address [lat]="venue.latitude" [lng]="venue.longitude" />
+                    <app-address [lat]="venue.latitude" [lng]="venue.longitude" class="mb-3" />
                     <button color="secondary" class="mt-2" mat-fab extended (click)="onViewInMaps()">
                         <mat-icon fontIcon="map"></mat-icon>View in maps
                     </button>

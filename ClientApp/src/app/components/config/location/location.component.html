@@ -1,7 +1,7 @@
 <div class="wrapper icon-text" *ngIf="county && town && !editMode">
     <mat-icon>location_on</mat-icon>
     <p>{{ county }}</p>
-    <span>,</span>
+    <span>,&nbsp;</span>
     <p>{{ town }}</p>
 </div>
 <app-location-search *ngIf="editMode" (locationChange)="onLocationChange($event)" (latLongChange)="onLatLongChange($event)" [type]="'establishment'" [whiteOutline]="whiteOutline"/>

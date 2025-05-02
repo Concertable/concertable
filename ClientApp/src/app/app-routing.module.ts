@@ -51,6 +51,8 @@ import { listingApplicationCheckoutGuard } from './guards/listing-application-ch
 import { eventCheckoutGuard } from './guards/event-checkout/event-checkout.guard';
 import { FindComponent } from './pages/find/find.component';
 import { listingApplicationsGuard } from './guards/listing-applications.guard';
+import { SuccessComponent } from './success/success.component';
+import { FailComponent } from './fail/fail.component';
 
 const routes: Routes = [
   {
@@ -193,6 +195,8 @@ const routes: Routes = [
   },
   { path: 'login', component: LoginComponent, data: { breadcrumb: 'Login' } },
   { path: 'register', component: RegisterComponent, data: { breadcrumb: 'Register' } },
+  { path: 'success', component: SuccessComponent },
+  { path: 'fail', component: FailComponent },
 ];
 
 @NgModule({
