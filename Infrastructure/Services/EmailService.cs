@@ -68,7 +68,7 @@ namespace Infrastructure.Services
         }
 
 
-        public async Task SendEmailAsync(int userId, string toEmail, string subject, string body)
+        public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             var emailDto = new EmailDto
             {
@@ -80,7 +80,7 @@ namespace Infrastructure.Services
             await SendAsync(emailDto);
         }
 
-        public async Task SendTicketsToEmailAsync(int userId, string toEmail, IEnumerable<int> ticketIds)
+        public async Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds)
         {
             var attachments = new List<AttachmentDto>();
 

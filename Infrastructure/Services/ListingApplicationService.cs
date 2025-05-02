@@ -129,7 +129,7 @@ namespace Infrastructure.Services
                 action: "application",
                 actionId: listingId);
             // Send email to Venue Manager
-            await emailService.SendEmailAsync(user.Id, listingOwner.Email!, "Listing Application", $"{user.Email} has applied to your listing");
+            await emailService.SendEmailAsync(listingOwner.Email!, "Listing Application", $"{user.Email} has applied to your listing");
 
             // Save changes after both have executed
             try

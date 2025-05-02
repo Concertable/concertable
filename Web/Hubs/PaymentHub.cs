@@ -11,7 +11,8 @@ namespace Web.Hubs
         {
             string userId = Context.User?.GetId();
 
-            if(!string.IsNullOrEmpty(userId)) await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            if(!string.IsNullOrEmpty(userId)) 
+                await Groups.AddToGroupAsync(Context.ConnectionId, userId);
 
             await base.OnConnectedAsync();
         }
@@ -20,7 +21,8 @@ namespace Web.Hubs
         {
             string userId = Context.User?.GetId();
 
-            if (!string.IsNullOrEmpty(userId)) await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+            if (!string.IsNullOrEmpty(userId)) 
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
 
             await base.OnDisconnectedAsync(exception);
         }

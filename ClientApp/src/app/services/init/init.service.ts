@@ -26,7 +26,9 @@ export class InitService {
         next: (user) => {
           console.log(user);
           if (user) {
-            this.signalRService.createHubConnections();
+            this.signalRService.createPaymentHubConnection();
+            if(user.role === "Customer")
+              this.signalRService.createEventHubConnection();
           }
           resolve();
         },

@@ -148,7 +148,7 @@ namespace Infrastructure.Services
 
                 var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
 
-                var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
+                var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!); // Create event with default values
 
                 await messageService.SendAsync(
                     purchaseCompleteDto.FromUserId,
@@ -158,8 +158,7 @@ namespace Infrastructure.Services
                     "Your Application has been accepted! View your event here"
                 );
 
-                await emailService.SendEmailAsync(purchaseCompleteDto.FromUserId, purchaseCompleteDto.FromEmail, "Event Creation", "Your Event has been Created!");
-                //await emailService.SendEmailAsync(purchaseCompleteDto.ToUserId, purchaseCompleteDto.ToEmail, "Event Creation", "An Event has been schedueled for you!");
+                await emailService.SendEmailAsync(artist.User.Email, "Event Creation", "Your Application was chosen! An Event has been schedueled for you!"); // Send email to Artist Manager
 
                 return new ListingApplicationPurchaseResponse
                 {
@@ -168,7 +167,7 @@ namespace Infrastructure.Services
                     ApplicationId = purchaseCompleteDto.EntityId,
                     Event = eventDto
                 };
-            } catch (Exception ex)
+            } catch (Exception)
             {
                 return new ListingApplicationPurchaseResponse
                 {

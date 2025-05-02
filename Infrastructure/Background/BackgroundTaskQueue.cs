@@ -1,32 +1,39 @@
 ﻿using Application.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Background
 {
     public class BackgroundTaskQueue : IBackgroundTaskQueue
     {
-        private readonly ConcurrentQueue<Func<CancellationToken, Task>> _workItems = new();
-        private readonly SemaphoreSlim _signal = new(0);
+        private readonly Channel<Func<CancellationToken, Task>> queue;
+        public BackgroundTaskQueue(int capacity = 100)
+        {
+            var options = new BoundedChannelOptions(capacity)
+            {
+                FullMode = BoundedChannelFullMode.Wait // Keep waiting until space is available
+            };
 
-        public void QueueBackgroundWorkItem(Func<CancellationToken, Task> workItem)
+            this.queue = Channel.CreateBounded<Func<CancellationToken, Task>>(options);
+        }
+
+        public async Task EnqueueAsync(Func<CancellationToken, Task> workItem)
         {
             if (workItem == null)
                 throw new ArgumentNullException(nameof(workItem));
 
-            _workItems.Enqueue(workItem);
-            _signal.Release();
+            await queue.Writer.WriteAsync(workItem);
         }
 
         public async Task<Func<CancellationToken, Task>> DequeueAsync(CancellationToken cancellationToken)
         {
-            await _signal.WaitAsync(cancellationToken);
-            _workItems.TryDequeue(out var workItem);
-            return workItem;
+            return await queue.Reader.ReadAsync(cancellationToken);
         }
     }
 }

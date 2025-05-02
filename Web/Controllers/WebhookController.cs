@@ -68,7 +68,7 @@ namespace Web.Controllers
                 return Problem("Webhook validation failed");
             }
 
-            taskQueue.QueueBackgroundWorkItem(async cancellationToken =>
+            await taskQueue.EnqueueAsync(async cancellationToken =>
             {
                 using var scope = scopeFactory.CreateScope();
                 await ProcessStripeWebhook(scope, stripeEvent, cancellationToken);
@@ -80,7 +80,6 @@ namespace Web.Controllers
         private async Task ProcessStripeWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
         {
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
-
             var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
             var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
             var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();

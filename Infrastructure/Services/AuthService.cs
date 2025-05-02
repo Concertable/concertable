@@ -101,7 +101,7 @@ namespace Infrastructure.Services
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var uri = uriService.GetEmailConfirmationUri(user.Id, token);
 
-            await emailService.SendEmailAsync(0, user.Email, "Confirm Your Email",
+            await emailService.SendEmailAsync(user.Email, "Confirm Your Email",
                 $"Please confirm your email by clicking <a href='{uri}'>here</a>");
         }
 
@@ -166,7 +166,7 @@ namespace Infrastructure.Services
 
                 var resetLink = uriService.GetPasswordResetUri(user.Id, token);
 
-                await emailService.SendEmailAsync(user.Id, user.Email, "Reset your password",
+                await emailService.SendEmailAsync(user.Email, "Reset your password",
                     $"Please reset your password by clicking <a href='{resetLink}'>here</a>");
             }
             return new ForgotPasswordResponseDto { Message = "If this email is associated with an account, a password reset link has been sent" };
@@ -194,7 +194,7 @@ namespace Infrastructure.Services
             var token = await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
             var uri = uriService.GetEmailChangeConfirmationUri(user.Id, token, newEmail);
 
-            await emailService.SendEmailAsync(user.Id, user.Email, "Confirm your new email",
+            await emailService.SendEmailAsync(user.Email, "Confirm your new email",
                 $"Please confirm your email change by clicking <a href='{uri}'>here</a>");
         }
 

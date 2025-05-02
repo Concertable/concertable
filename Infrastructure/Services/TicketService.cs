@@ -133,7 +133,7 @@ public class TicketService : ITicketService
             throw new NotFoundException("No Tickets found");
 
         var ticketIds = tickets.Select(t => t.Id);
-        await emailService.SendTicketsToEmailAsync(purchaseCompleteDto.FromUserId, purchaseCompleteDto.FromEmail, ticketIds);
+        await emailService.SendTicketsToEmailAsync(purchaseCompleteDto.FromEmail, ticketIds);
 
         return new TicketPurchaseResponse
         {

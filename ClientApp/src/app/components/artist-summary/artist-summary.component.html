@@ -8,11 +8,7 @@
             height="170" />
         <div class="info">
         <h2 class="text-[var(--primary-color)]">{{ artist?.name }}</h2>
-        <p class="icon-text"><mat-icon small light>music_note</mat-icon>
-            <span *ngFor="let genre of artist?.genres; let i = index">
-                {{ genre.name }}{{ i < (artist?.genres?.length || 0) - 1 ? ', ' : '' }}
-              </span>          
-        </p>
+        <app-genres *ngIf="artist" [genres]="artist.genres"></app-genres>
         <p class="icon-text"><mat-icon small light>location_on</mat-icon> {{ artist?.county }}</p>
         <button color="secondary" class="mt-2" mat-fab extended (click)="onViewDetails()">
             <mat-icon>visibility</mat-icon>View details

@@ -68,29 +68,10 @@ export class FindComponent extends FindDirective<Header> implements OnInit {
   }
 
   override loadPage(): void {
-    console.log("etd")
     // Fetch search results based on current parameters
     this.headerService.get(this.searchParams).subscribe((p) => {
       this.paginatedData = p;
       this.headers = p.data;
     });
-  }
-
-  // DEV: Adds a test event manually into stream
-  triggerNewSubscription() {
-    const newEvent: EventHeader = {
-      id: 999,
-      name: '🔥 Injected Event',
-      imageUrl: 'https://via.placeholder.com/200x200?text=🔥+Injected',
-      county: 'Test County',
-      town: 'Test Town',
-      latitude: 51.5,
-      longitude: -0.12,
-      rating: 5,
-      startDate: new Date(),
-      endDate: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
-    };
-
-    this.eventService.addFakeEvent(newEvent);
   }
 }

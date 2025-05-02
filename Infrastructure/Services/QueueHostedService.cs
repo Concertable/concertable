@@ -11,28 +11,27 @@ namespace Infrastructure.Services
 {
     public class QueueHostedService : BackgroundService
     {
-        private readonly IBackgroundTaskQueue _taskQueue;
-        private readonly ILogger<QueueHostedService> _logger;
+        private readonly IBackgroundTaskQueue taskQueue;
+        private readonly ILogger<QueueHostedService> logger;
 
         public QueueHostedService(IBackgroundTaskQueue taskQueue, ILogger<QueueHostedService> logger)
         {
-            _taskQueue = taskQueue;
-            _logger = logger;
+            this.taskQueue = taskQueue;
+            this.logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var workItem = await _taskQueue.DequeueAsync(cancellationToken);
+                var workItem = await taskQueue.DequeueAsync(cancellationToken);
                 try
                 {
-                    _logger.LogInformation("Dequeued a work item at {Time}", DateTime.UtcNow);
                     await workItem(cancellationToken);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred executing background work item.");
+                    logger.LogError(ex, "Error occurred executing background work item.");
                 }
             }
         }

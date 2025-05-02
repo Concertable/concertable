@@ -78,7 +78,6 @@ namespace Web.Controllers
             try
             {
                 await emailService.SendEmailAsync(
-                    userId: 0,
                     toEmail: to,
                     subject: "Test Email from Concertable DevController",
                     body: "<p>This is a <strong>test email</strong> from your API in development mode.</p>"

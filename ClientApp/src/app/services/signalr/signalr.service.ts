@@ -43,14 +43,13 @@ export class SignalRService {
 
     this.paymentHubConnection.start().catch(error => console.log('PaymentHub Connection Error:', error));
 
-    this.paymentHubConnection.on('EventCreated', (response: ListingApplicationPurchase) => {
-      console.log("test123");
-      this.eventCreatedSubject.next(response);
-    });
+    this.paymentHubConnection.on('EventCreated', (response: ListingApplicationPurchase) => 
+      this.eventCreatedSubject.next(response)
+    );
 
-    this.paymentHubConnection.on('TicketPurchased', (response: TicketPurchase) => {
-      this.ticketPurchasedSubject.next(response);
-    });
+    this.paymentHubConnection.on('TicketPurchased', (response: TicketPurchase) => 
+      this.ticketPurchasedSubject.next(response)
+    );
   }
 
   public createEventHubConnection() {

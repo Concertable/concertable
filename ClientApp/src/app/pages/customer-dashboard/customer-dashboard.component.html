@@ -1,11 +1,8 @@
 <app-filter [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)" (headerTypeChange)="changeHeaderType($event)">
     <app-search (search)="loadPage()" [searchParams]="searchParams" (searchParamsChange)="updateSearchParams($event)"></app-search>
     <div class="carousels">
-        <app-event-header-carousel *ngIf="recentEventHeaders.length > 0" [headers]="recentEventHeaders" title="Recommended Events for You"></app-event-header-carousel>
-        <mat-divider *ngIf="recentEventHeaders.length > 0"></mat-divider>
-        <!-- Add a button to manually trigger the artificial subscription -->
-        <!-- <button (click)="triggerNewSubscription()">Trigger New Subscription</button> -->
-
+        <app-event-header-carousel *ngIf="recommendedEventHeaders.length > 0" [headers]="recommendedEventHeaders" title="Recommended Events for You"></app-event-header-carousel>
+        <mat-divider *ngIf="recommendedEventHeaders.length > 0"></mat-divider>
         <app-event-header-carousel title="Discover Events"></app-event-header-carousel>
         <mat-divider></mat-divider>
         <app-artist-header-carousel title="Discover Artists"></app-artist-header-carousel>

@@ -2,3 +2,9 @@ app-event-carousel {
     display: block;
     margin-bottom: 16px;
 }
+
+.carousels {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; 
+}

@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Event } from '../../models/event';
 import { EventHeader } from '../../models/event-header';
 import { Pagination } from '../../models/pagination';
 import { ListingApplicationPurchase } from '../../models/listing-application-purchase';
-import { SignalRService } from '../signalr/signalr.service';
-import { EventToastService } from '../toast/event/event-toast.service';
 import { DateService } from '../date.service';
 
 @Injectable({
@@ -16,29 +14,10 @@ import { DateService } from '../date.service';
 export class EventService {
   private apiUrl = `${environment.apiUrl}/event`;
 
-  recentEventHeadersSubject = new ReplaySubject<EventHeader>(10);
-  recentEventHeaders$ = this.recentEventHeadersSubject.asObservable();
-
   constructor(
     private http: HttpClient,
-    private signalRService: SignalRService,
-    private eventToastService: EventToastService,
     private dateService: DateService
-  ) {
-    this.loadInitialRecommendedHeaders();
-    this.signalRService.eventPosted$.subscribe(header => {
-      if (header) {
-        this.eventToastService.showRecommended(header.id);
-        this.recentEventHeadersSubject.next(header);
-      }
-    });
-  }
-
-  private loadInitialRecommendedHeaders(): void {
-    this.getRecommendedHeaders().subscribe(headers => {
-      headers.forEach(header => this.recentEventHeadersSubject.next(header));
-    });
-  }
+  ) {}
 
   getUpcomingByVenueId(id: number): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/upcoming/venue/${id}`).pipe(
@@ -110,10 +89,6 @@ export class EventService {
 
   getFreeHeaders(): Observable<EventHeader[]> {
     return this.http.get<EventHeader[]>(`${this.apiUrl}/headers/free`);
-  }
-
-  addFakeEvent(header: EventHeader): void {
-    this.recentEventHeadersSubject.next(header);
   }
 
   post(event: Event): Observable<Event> {
