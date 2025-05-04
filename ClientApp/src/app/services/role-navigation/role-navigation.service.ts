@@ -52,7 +52,6 @@ export class RoleNavigationService {
   navigateToResource(resource: any, resourceType: string) {
     this.authService.currentUser$.subscribe(user => {
       if (!user) {
-        // No user? Use default fallback.
         this.router.navigate(fallbackRoutes[resourceType]?.(resource));
         return;
       }

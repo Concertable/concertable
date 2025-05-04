@@ -4,14 +4,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6b7280; /* text-gray-500 */
-    background-color: #f3f4f6; /* bg-gray-100 */
-    border: 2px dashed #d1d5db; /* border-gray-300 */
+    color: #6b7280;
+    background-color: #f3f4f6; 
+    border: 2px dashed #d1d5db; 
     font-style: italic;
   }
   
   .map-container {
     width: 100%;
-    max-width: 800px; /* optional: to restrict maximum size */
-    margin: 0 auto;   /* center the map */
+    max-width: 800px; 
+    margin: 0 auto;
 }

@@ -50,7 +50,7 @@ import { TicketViewType } from './models/ticket-view-type';
 import { listingApplicationCheckoutGuard } from './guards/listing-application-checkout/listing-application-checkout.guard';
 import { eventCheckoutGuard } from './guards/event-checkout/event-checkout.guard';
 import { FindComponent } from './pages/find/find.component';
-import { listingApplicationsGuard } from './guards/listing-applications.guard';
+import { listingApplicationsGuard } from './guards/listing-applications/listing-applications.guard';
 import { SuccessComponent } from './success/success.component';
 import { FailComponent } from './fail/fail.component';
 

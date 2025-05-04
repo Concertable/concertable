@@ -97,7 +97,7 @@ public class TicketService : ITicketService
                 };
 
                 var ticketResponse = await ticketRepository.AddAsync(ticket);
-                await unitOfWork.SaveChangesAsync(); // Required to get ticketResponse.Id
+                await unitOfWork.SaveChangesAsync(); // Required to get the Id of the ticket
 
                 // Adds newly created QR Code to the ticket
                 ticket.QrCode = qrCodeService.GenerateFromTicketId(ticketResponse.Id);

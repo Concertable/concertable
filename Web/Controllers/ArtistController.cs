@@ -55,7 +55,6 @@ namespace Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //TODO: Talk about security benefits of passing user seperate instead of through the client side
             var artistDto = await artistService.CreateAsync(request.Artist, request.Image);
             return CreatedAtAction(nameof(GetDetailsById), new { Id = artistDto.Id }, artistDto);
         }

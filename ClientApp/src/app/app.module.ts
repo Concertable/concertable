@@ -292,9 +292,9 @@ export function initApp(initService: InitService) {
     FailComponent,
   ],
   imports: [
-    BrowserAnimationsModule, // Required for animations
+    BrowserAnimationsModule, 
     ToastrModule.forRoot({
-      positionClass: 'toast-bottom-right', // Position of toast (top-right, bottom-right, etc.)
+      positionClass: 'toast-bottom-right', 
       timeOut: 7000, // Auto-dismiss after 3 seconds
       closeButton: true,
       progressBar: true

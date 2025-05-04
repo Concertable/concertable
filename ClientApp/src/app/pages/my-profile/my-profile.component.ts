@@ -57,7 +57,6 @@ export class MyProfileComponent extends ConfigDirective<User> {
     if (!this.user || !this.originalItem) return;
   
     if (this.user?.email !== this.prevEmail) {
-      // Send email confirmation instead of directly saving
       this.authService.requestEmailChange(this.user?.email).subscribe();
     }
     

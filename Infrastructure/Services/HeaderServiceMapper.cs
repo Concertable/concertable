@@ -20,7 +20,6 @@ namespace Infrastructure.Services
 
         public IHeaderService<TDto> Resolve<TDto>(string headerType) where TDto : HeaderDto
         {
-            // Debugging: Log the types for reference
             Debug.WriteLine($"HeaderType: {headerType}, Expected Type: {typeof(TDto).Name}");
 
             return headerType.ToLower() switch

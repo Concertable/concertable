@@ -14,7 +14,6 @@ export class ListingService {
   private apiUrl = `${environment.apiUrl}/listing`;
 
   private userVenueId?: number;
-  private listingIds = new Set<number>(); // Prevents duplicates being added to ReplaySubject
 
   constructor(
     private http: HttpClient,
@@ -36,14 +35,9 @@ export class ListingService {
   getActiveByVenueId(id: number): Observable<Listing[]> {
     return this.http.get<Listing[]>(`${this.apiUrl}/active/venue/${id}`).pipe(
       tap((listings) => {
-        // Use DateService to convert startDate and endDate to Date objects for each listing
         this.dateService.convertItemsToDates(listings); // Use DateService for date conversion
       })
     );
-  }
-
-  addToRecentListings() {
-    // This method can be implemented based on your logic (currently empty)
   }
 
   isOwner(id: number): Observable<boolean> {

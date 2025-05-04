@@ -34,7 +34,7 @@ namespace Infrastructure.Services
                     page.Size(PageSizes.A5); // Use a small ticket format
 
                     page.Header()
-                        .Text($"🎟 Ticket")
+                        .Text($"Ticket")
                         .FontSize(20)
                         .Bold()
                         .AlignCenter();
@@ -51,12 +51,12 @@ namespace Infrastructure.Services
                                 column.Item().Image(qrCode);
                             }
 
-                            column.Item().Text("Show this QR code at the entrance").Italic();
+                            column.Item().Text("Show this QR code at entrance").Italic();
                         });
 
                     page.Footer()
                         .AlignCenter()
-                        .Text("Thank you for using Concertable! 🎶");
+                        .Text("Thank you for using Concertable");
                 });
             }).GeneratePdf();
         }

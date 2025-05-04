@@ -6,48 +6,48 @@ using System.Threading.Tasks;
 
 namespace Core.ModelBinders
 {
-    //c
+    /*
+     *   Create me custom model binder in .NET that binds a full model object from query parameters. 
+     *   The binder should handle int[] properties by splitting comma-separated values, and use default conversion for all other property types. 
+     *   This will be applied to a full object within a controller
+     */
     public class SearchParamsModelBinder : IModelBinder
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-                throw new ArgumentNullException(nameof(bindingContext));
+            var modelType = bindingContext.ModelType;
+            var modelInstance = Activator.CreateInstance(modelType);
 
-            var model = Activator.CreateInstance(bindingContext.ModelType);
-            var values = bindingContext.ValueProvider;
-
-            foreach (var property in bindingContext.ModelType.GetProperties())
+            foreach (var property in modelType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                var rawValue = values.GetValue(property.Name).FirstValue;
-                if (string.IsNullOrEmpty(rawValue)) continue;
+                var valueProviderResult = bindingContext.ValueProvider.GetValue(property.Name);
+                if (valueProviderResult == ValueProviderResult.None)
+                    continue;
 
-                object convertedValue = rawValue;
+                var rawValue = valueProviderResult.FirstValue;
 
-                // Handle int[] (e.g., GenreIds)
-                if (property.PropertyType == typeof(int[]))
+                try
                 {
-                    convertedValue = rawValue.Split(',')
-                        .Select(x => int.TryParse(x, out var num) ? num : (int?)null)
-                        .Where(x => x.HasValue)
-                        .Select(x => x.Value)
-                        .ToArray();
+                    object convertedValue;
+                    if (property.PropertyType == typeof(int[]))
+                    {
+                        var parts = rawValue.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        convertedValue = parts.Select(int.Parse).ToArray();
+                    }
+                    else
+                    {
+                        convertedValue = Convert.ChangeType(rawValue, property.PropertyType);
+                    }
+
+                    property.SetValue(modelInstance, convertedValue);
                 }
-                else
+                catch
                 {
-                    // Determine if the property is nullable and extract its underlying type
-                    // Otherwise, keep as is
-                    var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-
-                    // Convert the value to the appropriate type
-                    convertedValue = Convert.ChangeType(rawValue, targetType);
+                    bindingContext.ModelState.AddModelError(property.Name, $"Invalid value for {property.Name}");
                 }
-
-                property.SetValue(model, convertedValue);
             }
-
-            bindingContext.Result = ModelBindingResult.Success(model);
+            bindingContext.Result = ModelBindingResult.Success(modelInstance);
             return Task.CompletedTask;
         }
     }
-}
+    }

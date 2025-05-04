@@ -299,10 +299,10 @@ namespace Infrastructure.Services
             {
                 // Use IsWithinRadius directly, no need to check for null user coordinates here
                 var inRange = locationService.IsWithinRadius(
-                    preference.User.Latitude,   // Nullable latitude for user
-                    preference.User.Longitude,  // Nullable longitude for user
-                    location.Y,           // Latitude for event location (non-nullable)
-                    location.X,           // Longitude for event location (non-nullable)
+                    preference.User.Latitude, // Users Latitude
+                    preference.User.Longitude, // Users Longitude
+                    location.Y, // Evemts Latitude
+                    location.X, // Events Longitude
                     preference.RadiusKm);
 
                 var hasMatchingGenre = preference.Genres.Any(userGenre =>

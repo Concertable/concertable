@@ -1,7 +1,7 @@
 .container {
     display: flex;
     min-height: 80vh; 
-    flex: 1; /* 50% width */
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -10,21 +10,21 @@
   }
 
 
-  :host ::ng-deep { //applies styles to its children
+  :host ::ng-deep { 
     form {
       display: flex;
-      flex-direction: column; /* Ensures the form is stacked vertically */
-      gap: 15px; /* Optional: Adds some spacing between form elements */
+      flex-direction: column; 
+      gap: 15px; 
     }
   
     .form-container {
       display: flex;
-      flex-direction: column; /* Stack the label and input vertically */
+      flex-direction: column; 
     }
   
     label {
-      font-weight: bold; /* Optional: Makes labels bold */
-      margin-bottom: 5px; /* Adds space between the label and input */
+      font-weight: bold; 
+      margin-bottom: 5px; 
     }
   
     input {
@@ -35,10 +35,10 @@
     }
   
     .title {
-      text-align: center; /* Center the title horizontally */
-      margin-bottom: 30px; /* Space between the title and form */
-      font-size: 2rem; /* Optional: Adjust title size */
-      display: block; /* Make sure it takes up its own line */
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      display: block;
     }
   }
   

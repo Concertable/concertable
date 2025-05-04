@@ -57,9 +57,10 @@ export class AuthService {
     return !!user && user.role !== role;
   };
 
+  // Returns true if user is unauthenticated or a customer
   isCustomerOrUnauthenticated = (): boolean => {
     const user = this.currentUserSubject.getValue();
-    return !user || user.role === 'Customer';  // Returns true if user is unauthenticated or a customer
+    return !user || user.role === 'Customer';  
   };
 
   isAuthenticated(): boolean {

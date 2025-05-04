@@ -81,7 +81,6 @@ namespace Infrastructure.Data.Identity
                 .HasForeignKey(p => p.ToUserId)
                 .OnDelete(DeleteBehavior.NoAction);  
 
-            //Temporary Fix
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.Application)
                 .WithOne()

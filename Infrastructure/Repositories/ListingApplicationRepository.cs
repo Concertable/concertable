@@ -92,7 +92,7 @@ namespace Infrastructure.Repositories
                     context.Events.Any(e =>
                         e.Application.ListingId == a.ListingId &&
                         e.ApplicationId != a.Id)) // someone else was accepted
-                .OrderByDescending(a => a.Listing.EndDate) // or use CreatedAt if available
+                .OrderByDescending(a => a.Listing.EndDate)
                 .Take(5);
 
             return await query.ToListAsync();

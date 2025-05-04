@@ -1,8 +1,5 @@
-// styles.scss
-
-/* Main container is marked as a container query target */
 .container {
-    position: relative;            // Needed for absolute positioning inside
+    position: relative; // Needed for absolute positioning inside
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -11,10 +8,10 @@
     max-width: 1000px;
     margin: 20px auto;
     background: white;
-    border-radius: 50px;           // Rounded edges
+    border-radius: 50px;
     border: 1px solid #ddd;
     container-type: inline-size;
-    min-height: 60px;              // Minimum height for proper vertical centering
+    min-height: 60px;
   }
   
   /* Wrapper for inner fields */
@@ -25,7 +22,6 @@
     width: 100%;
   }
   
-  /* Ensure inner components are flex children */
   :host ::ng-deep .location-search mat-form-field, 
   .search-input,
   :host ::ng-deep .date-picker mat-form-field {
@@ -34,7 +30,6 @@
     justify-content: center;
   }
   
-  /* Sizing for inner components */
   .location-search {
     flex: 1;
   }
@@ -52,7 +47,7 @@
   .btn-search {
     position: absolute;
     top: 50%;
-    right: 10px;                  // Adjust this value for desired right spacing
+    right: 10px;                  
     transform: translateY(-50%);  // Vertically center the button
   }
 
@@ -64,13 +59,12 @@
     padding-right: 8px;
   }
   
-  /* Container query: When container's inline size is 800px or smaller...
-     re-stack the inner fields vertically. The absolute button remains at its RHS spot */
+  /* ReStack the inner fields vertically */
   @container (width < 800px) {
     .wrapper {
       flex-direction: column;
-      align-items: stretch;       // Stretch inner elements to container's width
-      gap: 10px;                  // Optional spacing between fields
+      align-items: stretch;
+      gap: 10px;
     }
   }
 

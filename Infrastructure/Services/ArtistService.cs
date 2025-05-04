@@ -102,7 +102,7 @@ namespace Infrastructure.Services
             if (artist.UserId != user.Id)
                 throw new ForbiddenException("You do not own this Artist");
 
-            // Safely materialize lists before set operations
+            // Get current ids, and any new ones that were added
             var existingGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId).ToList();
             var newGenreIds = artistDto.Genres.Select(g => g.Id).ToList();
 

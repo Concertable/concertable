@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
+		<PackageReference Include="Bogus" Version="35.6.3" />
 		<PackageReference Include="GeoCoordinate.NetCore" Version="1.0.0.1" />
 		<PackageReference Include="MailKit" Version="4.10.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.1.39" />
@@ -32,6 +33,10 @@
 		<ProjectReference Include="..\Core\Core.csproj" />
 		<ProjectReference Include="..\Application\Application.csproj" />
 		<ProjectReference Include="..\Common\Common.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Abstractions\" />
 	</ItemGroup>
 
 </Project>

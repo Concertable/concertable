@@ -125,7 +125,6 @@ builder.Services.AddScoped<IHeaderService<ArtistHeaderDto>, ArtistService>();
 builder.Services.AddScoped<IHeaderService<EventHeaderDto>, EventService>();
 
 builder.Services.AddSingleton<IHeaderServiceFactory, HeaderServiceFactory>();
-builder.Services.AddSingleton<IReviewServiceMethodFactory, ReviewServiceMethodFactory>();
 builder.Services.AddSingleton<GeometryFactory>(
     NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
 

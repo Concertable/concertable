@@ -14,12 +14,10 @@ namespace Web.Controllers
     public class ReviewController : ControllerBase
     {
         private readonly IReviewService reviewService;
-        private readonly IReviewServiceMethodFactory reviewFactory;
 
-        public ReviewController(IReviewService reviewService, IReviewServiceMethodFactory reviewFactory)
+        public ReviewController(IReviewService reviewService)
         {
             this.reviewService = reviewService;
-            this.reviewFactory = reviewFactory;
         }
 
         [HttpPost]

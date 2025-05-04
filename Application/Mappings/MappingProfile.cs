@@ -69,7 +69,7 @@ namespace Application.Mappings
             CreateMap<Artist, ArtistDto>()
             .ForMember(dest => dest.Genres, opt =>
                 opt.MapFrom(src => src.ArtistGenres
-                    .Select(ag => ag.Genre))) // Let AutoMapper map Genre → GenreDto
+                    .Select(ag => ag.Genre)))
             .ForMember(dest => dest.County,
                 opt => opt.MapFrom(src => src.User.County))
             .ForMember(dest => dest.Town,

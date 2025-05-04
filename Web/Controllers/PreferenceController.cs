@@ -20,7 +20,7 @@ namespace Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]CreatePreferenceDto createPreferenceDto)
         {
-            //var preference = await preferenceService.CreateAsync(createPreferenceDto);
+            var preference = await preferenceService.CreateAsync(createPreferenceDto);
             return Created();
         }
 

@@ -71,15 +71,16 @@ namespace Web.Controllers
             await taskQueue.EnqueueAsync(async cancellationToken =>
             {
                 using var scope = scopeFactory.CreateScope();
-                await ProcessStripeWebhook(scope, stripeEvent, cancellationToken);
+                await ProcessWebhook(scope, stripeEvent, cancellationToken);
             });
 
             return Ok();
         }
 
-        private async Task ProcessStripeWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
+        private async Task ProcessWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
         {
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
+
             var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
             var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
             var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();

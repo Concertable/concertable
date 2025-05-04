@@ -131,7 +131,7 @@ namespace Infrastructure.Services
             // Send email to Venue Manager
             await emailService.SendEmailAsync(listingOwner.Email!, "Listing Application", $"{user.Email} has applied to your listing");
 
-            // Save changes after both have executed
+            // Attempt to Save Changes and Throw informative error if there is a duplicate key
             try
             {
                 await unitOfWork.TrySaveChangesAsync();

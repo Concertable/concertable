@@ -59,8 +59,8 @@ namespace Infrastructure.Services
             );
 
             await smtp.AuthenticateAsync(
-                configuration["Email:Username"],    // e.g., "concertable"
-                configuration["Email:Password"]     // your SMTP2GO user password
+                configuration["Email:Username"],
+                configuration["Email:Password"]
             );
 
             await smtp.SendAsync(email);

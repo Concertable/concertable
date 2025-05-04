@@ -21,14 +21,6 @@ namespace Infrastructure.Services
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IMapper mapper;
 
-        public static readonly Dictionary<string, string> BaseUrls = new()
-        {
-            { "Admin", "/admin" },
-            { "Customer", "/user" },
-            { "VenueManager", "/venue" },
-            { "ArtistManager", "/artist" },
-        };
-
         public CurrentUserService(
             IHttpContextAccessor httpContextAccessor, 
             UserManager<ApplicationUser> userManager,

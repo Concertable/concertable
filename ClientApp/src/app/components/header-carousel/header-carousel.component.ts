@@ -25,6 +25,6 @@ export class HeaderCarouselComponent {
     2400: { slidesPerView: 8 }
   };
 
-  // This template will be provided by the component's consumer.
+  // reference of the child
   @ContentChild(TemplateRef) headerTemplate!: TemplateRef<any>;
 }

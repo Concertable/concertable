@@ -1,11 +1,11 @@
 import { CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
-import { VenueService } from '../services/venue/venue.service';
-import { ToastService } from '../services/toast/toast.service';
+import { VenueService } from '../../services/venue/venue.service';
+import { ToastService } from '../../services/toast/toast.service';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { ListingApplicationService } from '../services/listing-application/listing-application.service';
-import { ListingService } from '../services/listing/listing.service';
+import { ListingApplicationService } from '../../services/listing-application/listing-application.service';
+import { ListingService } from '../../services/listing/listing.service';
 
 export const listingApplicationsGuard: CanActivateFn = (route, state) => {
   const listingService = inject(ListingService);

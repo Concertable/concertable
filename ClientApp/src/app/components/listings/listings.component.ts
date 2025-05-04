@@ -161,8 +161,6 @@ export class ListingsComponent  implements OnInit, OnChanges {
     this.router.navigate(['venue/my/applications', listing.id]);
   }
   
-
-  //?
   private createDummyListing() {
     this.newListing = {
       startDate: new Date(),

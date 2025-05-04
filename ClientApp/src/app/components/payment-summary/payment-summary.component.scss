@@ -4,25 +4,25 @@
     font-size: 1.8rem;
     font-weight: bold;
     color: #333;
-    margin-bottom: 24px;  /* Increase the space below the title */
+    margin-bottom: 24px;
   }
   
   .summary-item {
     display: flex;
     justify-content: space-between;
-    padding: 12px 0;  /* Increased padding for more space between items */
+    padding: 12px 0;
     border-bottom: 1px solid #ddd;
-    font-size: 1.1rem;  /* Slightly increase font size for better readability */
+    font-size: 1.1rem;
   }
   
   .summary-item:last-child {
-    border-bottom: none;  /* Remove the border on the last item */
+    border-bottom: none;
   }
   
   .label {
     font-weight: 500;
     color: #555;
-    margin-right: 10px;  /* Added margin to separate label and value */
+    margin-right: 10px;
   }
   
   .value {
@@ -50,7 +50,7 @@
 
   .btn-quantity {
     border-radius: 100%;
-    background-color: var(--secondary-color); // blue-600
+    background-color: var(--secondary-color);
     color: white;
     font-weight: bold;
     border: none;

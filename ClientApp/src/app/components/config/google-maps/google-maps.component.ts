@@ -10,7 +10,7 @@ import { GoogleMap } from '@angular/google-maps';
 })
 export class GoogleMapsComponent implements OnChanges, AfterViewInit {
   mapWidth: string = '100%';
-  mapHeight: string = '400px'; // fixed or you can compute based on width
+  mapHeight: string = '400px';
   @Input() editMode?: boolean = false;
   @Input() lat?: number;
   @Input() lng?: number;

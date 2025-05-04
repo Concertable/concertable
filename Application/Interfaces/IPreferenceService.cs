@@ -13,7 +13,7 @@ namespace Application.Interfaces
         Task<PreferenceDto> GetByUserIdAsync(int userId);
         Task<PreferenceDto> GetByUserAsync();
         Task<IEnumerable<PreferenceDto>> GetAsync();
-        Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceceDto, int userId);
+        Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceceDto, int? userId = null);
         Task<PreferenceDto> UpdateAsync(PreferenceDto preferenceDto);
     }
 

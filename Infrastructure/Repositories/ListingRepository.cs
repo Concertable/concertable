@@ -20,14 +20,14 @@ namespace Infrastructure.Repositories
         {
             var query = context.Listings
                 .Where(l => l.VenueId == id && l.StartDate >= DateTime.Now)
-                .Where(l => !context.Events.Any(e => e.ApplicationId == //doesnt have any events associated with it
-                    context.ListingApplications //by checking the applications
-                        .Where(la => la.ListingId == l.Id) //that have the same listing
+                .Where(l => !context.Events.Any(e => e.ApplicationId == // doesnt have any events associated with it
+                    context.ListingApplications // by checking the applications
+                        .Where(la => la.ListingId == l.Id) // that have the same listing
                         .Select(la => la.Id)
                         .FirstOrDefault())
                 )
-                .Include(l => l.ListingGenres) // Include the ListingGenres relationship
-                .ThenInclude(lg => lg.Genre) // Include the related Genre entity
+                .Include(l => l.ListingGenres)
+                .ThenInclude(lg => lg.Genre)
                 .OrderBy(l => l.StartDate);
 
             return await query.ToListAsync();

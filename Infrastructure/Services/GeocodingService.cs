@@ -30,9 +30,9 @@ namespace Infrastructure.Services
             var query = $"latlng={Uri.EscapeDataString(latLng)}&key={Uri.EscapeDataString(apiKey)}"; //Adds latlong to url safely
             Uri requestUri = new Uri(httpClient.BaseAddress, $"json?{query}");
 
-            //Send to api
+            // Send to api
             var response = await httpClient.GetStringAsync(requestUri);
-            //Deserialize response
+            // Deserialize response
             var result = JsonConvert.DeserializeObject<GoogleGeocodeResponse>(response);
 
             string county = null;

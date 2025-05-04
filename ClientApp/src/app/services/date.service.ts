@@ -13,9 +13,8 @@ export class DateService {
 
   constructor() { }
 
-  // Helper method to convert an individual date field to a Date object
   private convertToDate(date: Date | string): Date {
-    return new Date(date);  // This ensures date is converted into a Date object
+    return new Date(date); 
   }
 
   // Converts both startDate and endDate of a single object to Date
@@ -37,7 +36,6 @@ export class DateService {
     return date.getFullYear() > this.currentYear;
   }
 
-  // Format a date as a string (optional)
   formatDate(date: Date, format: string): string {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Intl.DateTimeFormat('en-GB', options).format(date);

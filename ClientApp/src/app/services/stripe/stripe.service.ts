@@ -32,15 +32,15 @@ export class StripeService {
   async createCardElements() {
     const style = {
       base: {
-        fontSize: '20px',  /* Larger text */
+        fontSize: '20px', 
         color: '#333',
         fontFamily: 'Arial, sans-serif',
-        padding: '12px', /* Bigger padding */
+        padding: '12px',
         borderRadius: '10px',
         background: '#f7f7f7',
         '::placeholder': {
           color: '#999',
-          fontSize: '20px', /* Bigger placeholder */
+          fontSize: '20px', 
         },
       },
       invalid: {
