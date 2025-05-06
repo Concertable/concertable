@@ -51,12 +51,12 @@ namespace Infrastructure.Data
                     await userManager.AddToRoleAsync(customer, "Customer");
                 }
 
-                var firstArtistManager = ArtistManagerFaker.GetFaker(1, locations[1]).Generate();
+                var firstArtistManager = ArtistManagerFaker.GetFaker(1, locations[0]).Generate();
                 firstArtistManager.StripeId = "acct_1R71yoLnJh1ZDYF4";
                 await userManager.CreateAsync(firstArtistManager, "Password11!");
                 await userManager.AddToRoleAsync(firstArtistManager, "ArtistManager");
 
-                var secondArtistManager = ArtistManagerFaker.GetFaker(2, locations[2]).Generate();
+                var secondArtistManager = ArtistManagerFaker.GetFaker(2, locations[0]).Generate();
                 secondArtistManager.StripeId = "acct_1R71z6IBXwkKnqix";
                 await userManager.CreateAsync(secondArtistManager, "Password11!");
                 await userManager.AddToRoleAsync(secondArtistManager, "ArtistManager");
@@ -69,12 +69,12 @@ namespace Infrastructure.Data
                     await userManager.AddToRoleAsync(artistManager, "ArtistManager");
                 }
 
-                var firstVenueManager = VenueManagerFaker.GetFaker(1, locations[3]).Generate();
+                var firstVenueManager = VenueManagerFaker.GetFaker(1, locations[0]).Generate();
                 firstVenueManager.StripeId = "acct_1R71zKBsonWwC9oM";
                 await userManager.CreateAsync(firstVenueManager, "Password11!");
                 await userManager.AddToRoleAsync(firstVenueManager, "VenueManager");
 
-                var secondVenueManager = VenueManagerFaker.GetFaker(2, locations[4]).Generate();
+                var secondVenueManager = VenueManagerFaker.GetFaker(2, locations[0]).Generate();
                 secondVenueManager.StripeId = "acct_1R71zvLnLloN6AmB";
                 await userManager.CreateAsync(secondVenueManager, "Password11!");
                 await userManager.AddToRoleAsync(secondVenueManager, "VenueManager");
@@ -499,10 +499,15 @@ namespace Infrastructure.Data
                     new ListingApplication { ArtistId = 15, ListingId = 17 }, //47
                     new ListingApplication { ArtistId = 16, ListingId = 17 }, //48
 
-                    new ListingApplication { ArtistId = 17, ListingId = 18 }, //49
-                    new ListingApplication { ArtistId = 18, ListingId = 18 }, //50
-                    new ListingApplication { ArtistId = 19, ListingId = 18 }, //51
-                    new ListingApplication { ArtistId = 20, ListingId = 18 }, //52
+                    new ListingApplication { ArtistId = 1, ListingId = 34 }, //49
+                    new ListingApplication { ArtistId = 2, ListingId = 34 }, //50
+                    new ListingApplication { ArtistId = 19, ListingId = 34 }, //51
+                    new ListingApplication { ArtistId = 20, ListingId = 34 }, //52
+
+                    new ListingApplication { ArtistId = 1, ListingId = 38 }, //53
+                    new ListingApplication { ArtistId = 2, ListingId = 38 }, //54
+                    new ListingApplication { ArtistId = 12, ListingId = 38 }, //55
+                    new ListingApplication { ArtistId = 4, ListingId = 38 }, //56
                 };
                 context.ListingApplications.AddRange(applications);
                 await context.SaveChangesAsync();
@@ -512,38 +517,38 @@ namespace Infrastructure.Data
                 {
                     var events = new Event[]
                     {
-                        EventFaker.GetFaker(1, "The Rockers performing at The Grand Venue", 15m, 120, 80, now.AddDays(-58)).Generate(), //1
-                        EventFaker.GetFaker(2, "Indie Vibes performing at Redhill Hall", 12m, 110, 70, now.AddDays(-55)).Generate(), //2
-                        EventFaker.GetFaker(3, "Electronic Pulse performing at Weybridge Pavilion", 18m, 130, 100, now.AddDays(-52)).Generate(), //3
-                        EventFaker.GetFaker(4, "Hip-Hop Flow performing at Cobham Arts Centre", 10m, 100, 60, now.AddDays(-49)).Generate(), //4
-                        EventFaker.GetFaker(5, "Jazz Masters performing at Chertsey Arena", 25m, 140, 110, now.AddDays(-46)).Generate(), //5
-                        EventFaker.GetFaker(6, "Always Punks performing at Camden Electric Ballroom", 20m, 150, 90, now.AddDays(-43)).Generate(), //6
-                        EventFaker.GetFaker(7, "The Hollow Frequencies performing at Manchester Night & Day Café", 30m, 170, 150, now.AddDays(-40)).Generate(), //7
-                        EventFaker.GetFaker(8, "Neon Foxes performing at Birmingham O2 Institute", 16m, 130, 100, now.AddDays(-37)).Generate(), //8
-                        EventFaker.GetFaker(9, "Velvet Static performing at Edinburgh Usher Hall", 14m, 115, 75, now.AddDays(-34)).Generate(), //9
-                        EventFaker.GetFaker(10, "Echo Bloom performing at Liverpool Philharmonic Hall", 22m, 135, 100, now.AddDays(-31)).Generate(), //10
-                        EventFaker.GetFaker(11, "The Wild Chords performing at Leeds Brudenell Social Club", 13m, 125, 85, now.AddDays(-28)).Generate(), //11
-                        EventFaker.GetFaker(12, "Glitch & Glow performing at Glasgow Barrowland Ballroom", 11m, 120, 90, now.AddDays(-25)).Generate(), //12
-                        EventFaker.GetFaker(13, "Sonic Mirage performing at Sheffield Leadmill", 19m, 140, 110, now.AddDays(-22)).Generate(), //13
-                        EventFaker.GetFaker(14, "Neon Echoes performing at Nottingham Rock City", 17m, 135, 105, now.AddDays(-19)).Generate(), //14
-                        EventFaker.GetFaker(15, "Dreamwave Collective performing at Bristol Thekla", 21m, 145, 115, now.AddDays(-16)).Generate(), //15
-                        EventFaker.GetFaker(16, "Synth Pulse performing at Brighton Concorde 2", 18m, 140, 120, now.AddDays(-13)).Generate(), //16
-                        EventFaker.GetFaker(17, "The Brass Poets performing at Cardiff Tramshed", 26m, 155, 130, now.AddDays(-10)).Generate(), //17
-                        EventFaker.GetFaker(18, "Groove Alchemy performing at Newcastle O2 Academy", 15m, 120, 100, now.AddDays(-7)).Generate(), //18
-                        EventFaker.GetFaker(19, "Velvet Rhymes performing at Oxford O2 Academy", 28m, 160, 145, now.AddDays(-4)).Generate(), //19
-                        EventFaker.GetFaker(20, "The Lo-Fi Syndicate performing at Cambridge Corn Exchange", 24m, 150, 130, now.AddDays(-1)).Generate(), //20
-                        EventFaker.GetFaker(21, "Beats & Blue Notes performing at Bath Komedia", 27m, 160, 140, now.AddDays(2)).Generate(), //21
-                        EventFaker.GetFaker(22, "Bass Pilots performing at Aberdeen The Lemon Tree", 23m, 130, 100, now.AddDays(5)).Generate(), //22
-                        EventFaker.GetFaker(23, "The Digital Prophets performing at York Barbican", 29m, 155, 140, now.AddDays(8)).Generate(), //23
-                        EventFaker.GetFaker(24, "Neon Bass Theory performing at Belfast Limelight", 10m, 110, 70, now.AddDays(11)).Generate(), //24
-                        EventFaker.GetFaker(25, "Wavelength 303 performing at Dublin Vicar Street", 15m, 125, 90, now.AddDays(14)).Generate(), //25
-                        EventFaker.GetFaker(26, "Gravity Loops performing at Norwich Waterfront", 30m, 180, 170, now.AddDays(17)).Generate(), //26
-                        EventFaker.GetFaker(35, "The Rockers performing at The Grand Venue", 20m, 100, 80, now.AddDays(6)).Generate(), //27
-                        EventFaker.GetFaker(39, "Indie Vibes performing at Redhill Hall", 25m, 120, 100, now.AddDays(12)).Generate(), //28
-                        EventFaker.GetFaker(42, "Electronic Pulse performing at Weybridge Pavilion", 30m, 140, 120, now.AddDays(18)).Generate(), //29
-                        EventFaker.GetFaker(45, "Hip-Hop Flow performing at Cobham Arts Centre", 15m, 100, 80, now.AddDays(22)).Generate(), //30
-                        EventFaker.GetFaker(52, "Jazz Masters performing at Chertsey Arena", 20m, 150, 130, now.AddDays(25)).Generate() //31
-
+                        EventFaker.GetFaker(1, "Rockin' all Night", 15m, 120, 80, now.AddDays(-58)).Generate(), //1
+                        EventFaker.GetFaker(2, "Non Stop Party", 12m, 110, 70, now.AddDays(-55)).Generate(), //2
+                        EventFaker.GetFaker(3, "Super Mix", 18m, 130, 100, now.AddDays(-52)).Generate(), //3
+                        EventFaker.GetFaker(4, "Hip-Hop till you flip-flop", 10m, 100, 60, now.AddDays(-49)).Generate(), //4
+                        EventFaker.GetFaker(5, "Dance the night away", 25m, 140, 110, now.AddDays(-46)).Generate(), //5
+                        EventFaker.GetFaker(6, "Dizzy One", 20m, 150, 90, now.AddDays(-43)).Generate(), //6
+                        EventFaker.GetFaker(7, "Beers and Boombox", 30m, 170, 150, now.AddDays(-40)).Generate(), //7
+                        EventFaker.GetFaker(8, "Rockin' Tonight!", 16m, 130, 100, now.AddDays(-37)).Generate(), //8
+                        EventFaker.GetFaker(9, "Groovin' All Night", 14m, 115, 75, now.AddDays(-34)).Generate(), //9
+                        EventFaker.GetFaker(10, "Nonstop Vibes", 22m, 135, 100, now.AddDays(-31)).Generate(), //10
+                        EventFaker.GetFaker(11, "Electric Dreams", 13m, 125, 85, now.AddDays(-28)).Generate(), //11
+                        EventFaker.GetFaker(12, "Beat Drop Frenzy", 11m, 120, 90, now.AddDays(-25)).Generate(), //12
+                        EventFaker.GetFaker(13, "Summer Jam", 19m, 140, 110, now.AddDays(-22)).Generate(), //13
+                        EventFaker.GetFaker(14, "Midnight Madness", 17m, 135, 105, now.AddDays(-19)).Generate(), //14
+                        EventFaker.GetFaker(15, "Like a Boss", 21m, 145, 115, now.AddDays(-16)).Generate(), //15
+                        EventFaker.GetFaker(16, "Lights and Sound", 18m, 140, 120, now.AddDays(-13)).Generate(), //16
+                        EventFaker.GetFaker(17, "Rhythm Nation", 26m, 155, 130, now.AddDays(-10)).Generate(), //17
+                        EventFaker.GetFaker(18, "Bass Drop Party", 15m, 120, 100, now.AddDays(-7)).Generate(), //18
+                        EventFaker.GetFaker(19, "Chill & Thrill", 28m, 160, 145, now.AddDays(-4)).Generate(), //19
+                        EventFaker.GetFaker(20, "Vibin' till Night", 24m, 150, 130, now.AddDays(-1)).Generate(), //20
+                        EventFaker.GetFaker(21, "Ultimate Dance Party", 27m, 160, 140, now.AddDays(2)).Generate(), //21
+                        EventFaker.GetFaker(22, "Rock Your Soul", 23m, 130, 100, now.AddDays(5)).Generate(), //22
+                        EventFaker.GetFaker(23, "Danceaway", 29m, 155, 140, now.AddDays(8)).Generate(), //23
+                        EventFaker.GetFaker(24, "Bassline Groove Beats", 10m, 110, 70, now.AddDays(11)).Generate(), //24
+                        EventFaker.GetFaker(25, "Once in a Lifetime!", 15m, 125, 90, now.AddDays(14)).Generate(), //25
+                        EventFaker.GetFaker(26, "Jungle Fever", 30m, 180, 170, now.AddDays(17)).Generate(), //26
+                        EventFaker.GetFaker(35, "Boogie Nights", 20m, 100, 80, now.AddDays(6)).Generate(), //27
+                        EventFaker.GetFaker(39, "Boogie Wonderland", 25m, 120, 100, now.AddDays(12)).Generate(), //28
+                        EventFaker.GetFaker(42, "Bass in the Air", 30m, 140, 120, now.AddDays(18)).Generate(), //29
+                        EventFaker.GetFaker(45, "Jumpin and thumpin", 15m, 100, 80, now.AddDays(22)).Generate(), //30
+                        EventFaker.GetFaker(49, "Funk it up", 20m, 150, 130, now.AddDays(25)).Generate(), //31
+                        EventFaker.GetFaker(54, "Boogie it up!", 20m, 150, 130, now.AddDays(25)).Generate() //32
                     };
 
                     context.Events.AddRange(events);
@@ -618,7 +623,35 @@ namespace Infrastructure.Data
 
                     new EventGenre { EventId = 25, GenreId = 8 },
 
-                    new EventGenre { EventId = 26, GenreId = 8 }
+                    new EventGenre { EventId = 26, GenreId = 7 },
+                    new EventGenre { EventId = 26, GenreId = 1 },
+                    new EventGenre { EventId = 26, GenreId = 2 },
+                    new EventGenre { EventId = 26, GenreId = 6 },
+
+                    new EventGenre { EventId = 27, GenreId = 3 },
+                    new EventGenre { EventId = 27, GenreId = 2 },
+                    new EventGenre { EventId = 27, GenreId = 5 },
+                    new EventGenre { EventId = 27, GenreId = 1 },
+
+                    new EventGenre { EventId = 28, GenreId = 6 },
+                    new EventGenre { EventId = 28, GenreId = 2 },
+                    new EventGenre { EventId = 28, GenreId = 4 },
+
+                    new EventGenre { EventId = 29, GenreId = 2 },
+                    new EventGenre { EventId = 29, GenreId = 1 },
+
+                    new EventGenre { EventId = 30, GenreId = 8 },
+                    new EventGenre { EventId = 30, GenreId = 1 },
+                    new EventGenre { EventId = 30, GenreId = 4 },
+                    new EventGenre { EventId = 30, GenreId = 5 },
+
+                    new EventGenre { EventId = 31, GenreId = 3 },
+                    new EventGenre { EventId = 31, GenreId = 5 },
+                    new EventGenre { EventId = 31, GenreId = 7 },
+
+                    new EventGenre { EventId = 32, GenreId = 3 },
+                    new EventGenre { EventId = 32, GenreId = 5 },
+                    new EventGenre { EventId = 32, GenreId = 7 },
                 };
 
                 context.EventGenres.AddRange(eventGenres);
@@ -819,27 +852,27 @@ namespace Infrastructure.Data
                     new Transaction { FromUserId = 46, ToUserId = 11, TransactionId = Guid.NewGuid().ToString(), Amount = 175, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-49) },
                     new Transaction { FromUserId = 47, ToUserId = 12, TransactionId = Guid.NewGuid().ToString(), Amount = 160, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-46) },
 
-                    new Transaction { FromUserId = 2, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                    new Transaction { FromUserId = 3, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                    new Transaction { FromUserId = 4, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                    new Transaction { FromUserId = 5, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                    new Transaction { FromUserId = 6, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                    new Transaction { FromUserId = 7, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                    new Transaction { FromUserId = 8, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 15, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-55) },
-                    new Transaction { FromUserId = 3, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                    new Transaction { FromUserId = 4, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                    new Transaction { FromUserId = 5, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                    new Transaction { FromUserId = 6, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                    new Transaction { FromUserId = 7, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                    new Transaction { FromUserId = 8, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                    new Transaction { FromUserId = 9, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 12, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-52) },
-                    new Transaction { FromUserId = 4, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                    new Transaction { FromUserId = 5, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                    new Transaction { FromUserId = 6, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                    new Transaction { FromUserId = 7, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                    new Transaction { FromUserId = 8, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                    new Transaction { FromUserId = 9, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                    new Transaction { FromUserId = 10, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 18, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-49) },
+                    new Transaction { FromUserId = 2, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                    new Transaction { FromUserId = 3, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                    new Transaction { FromUserId = 4, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                    new Transaction { FromUserId = 5, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                    new Transaction { FromUserId = 6, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                    new Transaction { FromUserId = 7, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                    new Transaction { FromUserId = 8, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-55) },
+                    new Transaction { FromUserId = 3, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                    new Transaction { FromUserId = 4, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                    new Transaction { FromUserId = 5, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                    new Transaction { FromUserId = 6, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                    new Transaction { FromUserId = 7, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                    new Transaction { FromUserId = 8, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                    new Transaction { FromUserId = 9, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-52) },
+                    new Transaction { FromUserId = 4, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                    new Transaction { FromUserId = 5, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                    new Transaction { FromUserId = 6, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                    new Transaction { FromUserId = 7, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                    new Transaction { FromUserId = 8, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                    new Transaction { FromUserId = 9, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                    new Transaction { FromUserId = 10, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-49) },
                 };
 
                 context.Transactions.AddRange(transactions);
