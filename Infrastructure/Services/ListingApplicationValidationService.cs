@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Responses;
+using Core.Entities;
 
 namespace Infrastructure.Services
 {
@@ -46,6 +47,9 @@ namespace Infrastructure.Services
             if (await ArtistHasEventOnDateAsync(listingApplication.ArtistId, listing.StartDate))
                 return ValidationResponse.Failure("This artist already has an event on this day");
 
+            if (await VenueHasEventOnDateAsync(listing.VenueId, listing.StartDate))
+                return ValidationResponse.Failure("You already have an event on this day");
+
             return ValidationResponse.Success();
         }
 
@@ -75,9 +79,16 @@ namespace Infrastructure.Services
             return eventRepository.ArtistHasEventOnDateAsync(artistId, date);
         }
 
+        private Task<bool> VenueHasEventOnDateAsync(int venueId, DateTime date)
+        {
+            return eventRepository.VenueHasEventOnDateAsync(venueId, date);
+        }
+
         private Task<bool> ListingHasEventAsync(int listingId)
         {
             return eventRepository.ListingHasEventAsync(listingId);
         }
+
+
     }
 }

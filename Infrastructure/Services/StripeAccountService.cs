@@ -30,12 +30,12 @@ namespace Infrastructure.Services
             var accountService = new AccountService();
             var accountOptions = new AccountCreateOptions
             {
-                Type = "express",
+                Type = "express", // Simplest form of account creation, where delegate the KYC to stripe entirely
                 Email = user.Email,
                 Country = "GB",
-                Capabilities = new AccountCapabilitiesOptions
+                Capabilities = new AccountCapabilitiesOptions //Make sure user is capable of accepting payments and transferring funds
                 {
-                    CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },
+                    CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true }, 
                     Transfers = new AccountCapabilitiesTransfersOptions { Requested = true }
                 }
             };

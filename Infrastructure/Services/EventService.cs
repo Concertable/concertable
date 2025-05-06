@@ -150,7 +150,7 @@ namespace Infrastructure.Services
 
                 var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!); // Create event with default values
 
-                await messageService.SendAsync(
+                await messageService.SendAndSaveAsync(
                     purchaseCompleteDto.FromUserId,
                     purchaseCompleteDto.ToUserId,
                     "event",

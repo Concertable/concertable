@@ -12,7 +12,15 @@ namespace Application.Interfaces
     {
         Task<ListingApplicationDto> GetByIdAsync(int id);
         Task<IEnumerable<ListingApplicationDto>> GetForListingIdAsync(int id);
+        /// <summary>
+        /// Gets the list of Applications that havent expired, and dont yet have
+        /// an event created
+        /// </summary>
         Task<IEnumerable<ArtistListingApplicationDto>> GetPendingForArtistAsync();
+        /// <summary>
+        /// Gets the list of Applications where another application was accepted
+        /// over these ones
+        /// </summary>
         Task<IEnumerable<ArtistListingApplicationDto>> GetRecentDeniedForArtistAsync();
         Task ApplyForListingAsync(int listingId);
         Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);

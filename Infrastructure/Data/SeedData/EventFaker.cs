@@ -15,7 +15,7 @@ namespace Infrastructure.Data.SeedData
             return new Faker<Event>()
                 .RuleFor(e => e.ApplicationId, applicationId)
                 .RuleFor(e => e.Name, f => name) 
-                .RuleFor(e => e.About, f => f.Lorem.Paragraph())
+                .RuleFor(e => e.About, f => f.Lorem.Paragraph(7))
                 .RuleFor(e => e.Price, price)
                 .RuleFor(e => e.TotalTickets, totalTickets)
                 .RuleFor(e => e.AvailableTickets, availableTickets)

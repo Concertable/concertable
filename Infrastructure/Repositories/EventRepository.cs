@@ -134,7 +134,7 @@ namespace Infrastructure.Repositories
         {
             var query = context.Events // Get all events
                 .Where(e => e.Application.Listing.VenueId == id // That are associated with the venue
-                            && e.Application.Listing.StartDate >= DateTime.Now // And event hasn't passed yet
+                            && e.Application.Listing.StartDate >= DateTime.UtcNow // And event hasn't passed yet
                             && e.DatePosted != null) // And has been posted
                 .Include(e => e.Application)
                     .ThenInclude(a => a.Listing) // To retrieve the start date
@@ -150,7 +150,7 @@ namespace Infrastructure.Repositories
         {
             var query = context.Events // Get all events
                 .Where(e => e.Application.ArtistId == id // That are associated with the artist
-                            && e.Application.Listing.StartDate >= DateTime.Now // And event hasn't passed yet
+                            && e.Application.Listing.StartDate >= DateTime.UtcNow // And event hasn't passed yet
                             && e.DatePosted != null) // And has been posted
                 .Include(e => e.Application)
                     .ThenInclude(a => a.Listing) // To retrieve the start date
@@ -175,7 +175,7 @@ namespace Infrastructure.Repositories
         {
             var query = context.Events // Get all events
             .Where(e => e.Application.ArtistId == id // That are associated with the artist
-                        && e.Application.Listing.StartDate < DateTime.Now // That have already started
+                        && e.Application.Listing.StartDate < DateTime.UtcNow // That have already started
                         && e.DatePosted != null) // And have been posted
             .Include(e => e.Application)
                 .ThenInclude(a => a.Listing) // To retrieve start/end dates
@@ -191,7 +191,7 @@ namespace Infrastructure.Repositories
         {
             var query = context.Events // Get all events
             .Where(e => e.Application.Listing.VenueId == id // That are associated with the venue
-                        && e.Application.Listing.StartDate < DateTime.Now // That have already started
+                        && e.Application.Listing.StartDate < DateTime.UtcNow // That have already started
                         && e.DatePosted != null) // And have been posted
             .Include(e => e.Application)
                 .ThenInclude(a => a.Listing) // To retrieve start/end dates
@@ -271,5 +271,11 @@ namespace Infrastructure.Repositories
             return query.OrderBy(e => e.Application.Listing.StartDate);
         }
 
+        public async Task<bool> VenueHasEventOnDateAsync(int venueId, DateTime date)
+        {
+            return await context.Events
+                .Where(e => e.Application.Listing.VenueId == venueId) 
+                .AnyAsync(e => e.Application.Listing.StartDate.Date == date.Date);
+        }
     }
 }

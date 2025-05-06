@@ -19,7 +19,7 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id)
         {
             var query = context.Listings
-                .Where(l => l.VenueId == id && l.StartDate >= DateTime.Now)
+                .Where(l => l.VenueId == id && l.StartDate >= DateTime.UtcNow)
                 .Where(l => !context.Events.Any(e => e.ApplicationId == // doesnt have any events associated with it
                     context.ListingApplications // by checking the applications
                         .Where(la => la.ListingId == l.Id) // that have the same listing

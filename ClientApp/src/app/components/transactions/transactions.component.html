@@ -1,11 +1,9 @@
 <app-card [isEmpty]="paginatedData?.data?.length === 0">
     <div class="transaction item" *ngFor="let transaction of paginatedData?.data">
         <div class="container">
-            <div class="header">
-                <div class="id">{{ transaction.transactionId }}</div>
-                <div class="amount">{{ transaction.amount | currency }}</div>
-                </div>
-            
+                <div class="header">
+                    <div class="amount"><strong>Amount:</strong> {{ (transaction.amount / 100) | currency:"GBP" }}</div>
+                </div>            
                 <div class="meta">
                 <div><strong>From:</strong> {{ transaction.fromUserId }}</div>
                 <div><strong>To:</strong> {{ transaction.toUserId }}</div>

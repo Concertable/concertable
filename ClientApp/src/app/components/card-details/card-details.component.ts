@@ -20,7 +20,7 @@ export class CardDetailsComponent {
     try {
       await this.stripeService.createCardElements(); 
     } catch (error) {
-      this.stripeToastService.showError('Failed to initialize payment fields.', "Error")
+      this.stripeToastService.showError('Failed to initialize payment fields. Please refresh the page', "Error")
       console.error(error);
     }
   }

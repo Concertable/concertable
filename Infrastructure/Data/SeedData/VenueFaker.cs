@@ -16,7 +16,7 @@ namespace Infrastructure.Data.SeedData
                 .RuleFor(v => v.UserId, userId)
                 .RuleFor(v => v.Name, name)
                 .RuleFor(v => v.ImageUrl, imageUrl)
-                .RuleFor(v => v.About, f => f.Lorem.Paragraph())
+                .RuleFor(v => v.About, f => f.Lorem.Paragraph(7))
                 .RuleFor(v => v.Approved, true);
         }
     }

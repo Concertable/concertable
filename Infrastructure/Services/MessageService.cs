@@ -49,6 +49,25 @@ namespace Infrastructure.Services
             await messageRepository.AddAsync(message);
         }
 
+        public async Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content)
+        {
+            var messageRepository = unitOfWork.GetRepository<Message>();
+
+            var message = new Message
+            {
+                Content = content,
+                FromUserId = fromUserId,
+                ToUserId = toUserId,
+                Action = action,
+                ActionId = actionId,
+                SentDate = DateTime.UtcNow,
+                Read = false
+            };
+
+            await messageRepository.AddAsync(message);
+            await messageRepository.SaveChangesAsync();
+        }
+
 
         public async Task<PaginationResponse<MessageDto>> GetForUserAsync(PaginationParams? pageParams)
         {

@@ -12,6 +12,9 @@ namespace Application.Interfaces
     {
         Task<string> CreateStripeAccountAsync(ApplicationUser user);
         Task<string> GetOnboardingLinkAsync(string stripeId);
+        /// <summary>
+        /// Checks if stripeId is associated with a stripe account or not
+        /// </summary>
         Task<bool> IsUserVerifiedAsync(string stripeId);
     }
 }

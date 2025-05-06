@@ -74,8 +74,4 @@ export class MailboxComponent extends PaginationHandler<Message> implements OnIn
       super.onPageChange(params);
       this.markReadMessages();
   }
-
-  onDelete(message: Message) {
-
-  }
 }

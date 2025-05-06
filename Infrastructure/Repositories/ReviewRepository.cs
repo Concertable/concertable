@@ -58,62 +58,27 @@ namespace Infrastructure.Repositories
             return Math.Round((await query.AverageAsync(r => (double?)r.Stars)) ?? 0.0, 1);
         }
 
+        /// <summary>
+        /// Creates the full expression tree through the passing of specific expressions
+        /// from other function calls
+        /// </summary>
         private async Task<IDictionary<int, double>> GetAverageRatingsAsync(
+            IEnumerable<int> ids,
             Expression<Func<Review, int>> keySelector,
-            IEnumerable<int> ids)
+            Expression<Func<Review, bool>> idFilter)
         {
-            /* 
-             * --------------------------------------------
-            *  Build: r => ids.Contains(r.EntityId)
-            *  SQL: WHERE EntityId IN (@ids)
-            *  EF Core: Builds an expression tree for .Where(...)
-            *  --------------------------------------------
-            */
+            if (!ids.Any())
+                return new Dictionary<int, double>();
 
-            // EF param: r =>
-            var parameter = keySelector.Parameters[0];
+            var query = context.Reviews.AsQueryable();
 
-            // EF body: r.EntityId
-            var keyBody = keySelector.Body;
+            query = query.Where(idFilter);
 
-            // Creates Contains method
-            var containsMethod = typeof(Enumerable)
-                .GetMethods() // Gets all methods on IEnumerable
-                .First(m => m.Name == "Contains" && m.GetParameters().Length == 2) // Get the correct Contains method (method overloading)
-                .MakeGenericMethod(typeof(int)); // Contains<int>(IEnumerable<int>, int)
-
-            // r => ids.Contains(r.EntityId)
-            var containsExpr = Expression.Call(
-                containsMethod,
-                Expression.Constant(ids), // Injects `ids` into the tree
-                keyBody                   // r.EntityId (nullable)
-            );
-
-            // Lambda: r => ids.Contains(r.EntityId)
-            var filter = Expression.Lambda<Func<Review, bool>>(containsExpr, parameter);
-
-            /* 
-             * --------------------------------------------
-            *  SQL:
-            *  SELECT EntityId, AVG(Stars)
-            *  FROM Reviews
-            *  WHERE EntityId IN (@ids)
-            *  GROUP BY EntityId
-            * 
-            *  EF Core LINQ:
-            *  context.Reviews
-            *    .Where(filter)
-            *    .GroupBy(keySelector)
-            *    .Select(...)
-            *  --------------------------------------------
-            */
-
-            return await context.Reviews
-                .Where(filter)
+            return await query
                 .GroupBy(keySelector)
                 .Select(g => new
                 {
-                    Id = g.Key, // unwrap nullable int?
+                    Id = g.Key,
                     AvgRating = g.Average(r => (double?)r.Stars) ?? 0.0
                 })
                 .ToDictionaryAsync(
@@ -124,17 +89,26 @@ namespace Infrastructure.Repositories
 
         public Task<IDictionary<int, double>> GetAverageRatingsByArtistIdsAsync(IEnumerable<int> ids)
         {
-            return GetAverageRatingsAsync(r => r.Ticket.Event.Application.ArtistId, ids);
-        }
-
-        public Task<IDictionary<int, double>> GetAverageRatingsByVenueIdsAsync(IEnumerable<int> ids)
-        {
-            return GetAverageRatingsAsync(r => r.Ticket.Event.Application.Listing.VenueId,ids);
+            return GetAverageRatingsAsync(
+                ids,
+                r => r.Ticket.Event.Application.ArtistId,
+                r => ids.Contains(r.Ticket.Event.Application.ArtistId));
         }
 
         public Task<IDictionary<int, double>> GetAverageRatingsByEventIdsAsync(IEnumerable<int> ids)
         {
-            return GetAverageRatingsAsync(r => r.Ticket.EventId, ids);
+            return GetAverageRatingsAsync(
+                ids,
+                r => r.Ticket.EventId,
+                r => ids.Contains(r.Ticket.EventId));
+        }
+
+        public Task<IDictionary<int, double>> GetAverageRatingsByVenueIdsAsync(IEnumerable<int> ids)
+        {
+            return GetAverageRatingsAsync(
+                ids,
+                r => r.Ticket.Event.Application.Listing.VenueId,
+                r => ids.Contains(r.Ticket.Event.Application.Listing.VenueId));
         }
 
 

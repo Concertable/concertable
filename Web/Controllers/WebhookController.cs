@@ -116,7 +116,7 @@ namespace Web.Controllers
                         Amount = intent.AmountReceived,
                         Type = type,
                         Status = intent.Status,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     };
 
                     await purchaseService.LogAsync(purchaseDto);

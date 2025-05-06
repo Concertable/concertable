@@ -93,7 +93,7 @@ public class TicketService : ITicketService
                 {
                     UserId = purchaseCompleteDto.FromUserId,
                     EventId = purchaseCompleteDto.EntityId,
-                    PurchaseDate = DateTime.Now
+                    PurchaseDate = DateTime.UtcNow
                 };
 
                 var ticketResponse = await ticketRepository.AddAsync(ticket);
