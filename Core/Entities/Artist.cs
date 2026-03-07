@@ -7,13 +7,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Artist : BaseEntity
+    public class Artist : BaseEntity, ILocation
     {
         public int UserId { get; set; }
         public string Name { get; set; }
         public string About { get; set; }
         public string ImageUrl { get; set; }
         public ArtistManager User { get; set; }
+        public Point? Location => User.Location;
         public ICollection<ArtistGenre> ArtistGenres { get; set; } = new List<ArtistGenre>();
         public ICollection<SocialMedia> SocialMedias { get; } = new List<SocialMedia>();
         public ICollection<ListingApplication> Applications { get; } = new List<ListingApplication>();

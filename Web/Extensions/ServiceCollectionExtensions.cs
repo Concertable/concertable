@@ -126,20 +126,24 @@ namespace Web.Extensions
 
         public static IServiceCollection AddSearch(this IServiceCollection services)
         {
-            services.AddScoped<ISearchSpecification<Artist>>(sp =>
-                new SearchSpecification<Artist>(
+            services.AddScoped<IGeometrySpecification<Artist>>(sp =>
+                new GeometrySpecification<Artist>(
                     sp.GetRequiredService<IGeometryProvider>(),
                     (center, radius) => a => a.User.Location != null && a.User.Location.Distance(center) <= radius * 1000));
 
-            services.AddScoped<ISearchSpecification<Venue>>(sp =>
-                new SearchSpecification<Venue>(
+            services.AddScoped<IGeometrySpecification<Venue>>(sp =>
+                new GeometrySpecification<Venue>(
                     sp.GetRequiredService<IGeometryProvider>(),
                     (center, radius) => v => v.User.Location != null && v.User.Location.Distance(center) <= radius * 1000));
 
-            services.AddScoped<ISearchSpecification<Event>>(sp =>
-                new SearchSpecification<Event>(
+            services.AddScoped<IGeometrySpecification<Event>>(sp =>
+                new GeometrySpecification<Event>(
                     sp.GetRequiredService<IGeometryProvider>(),
                     (center, radius) => e => e.Application.Listing.Venue.User.Location != null && e.Application.Listing.Venue.User.Location.Distance(center) <= radius * 1000));
+
+            services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
+            services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();
+            services.AddScoped<ISearchSpecification<Event>, SearchSpecification<Event>>();
 
             services.AddScoped<IArtistSearchSpecification, ArtistSearchSpecification>();
             services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Venue : BaseEntity
+    public class Venue : BaseEntity, ILocation
     {
         public int UserId { get; set; }
         public string Name { get; set; }
@@ -14,6 +14,7 @@ namespace Core.Entities
         public string ImageUrl { get; set; }
         public bool Approved { get; set; }
         public VenueManager User { get; set; }
+        public Point? Location => User.Location;
         public ICollection<Listing> Listings { get; set; } = new List<Listing>();
     }
 }
