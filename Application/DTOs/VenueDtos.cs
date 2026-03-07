@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+using Application.Interfaces.Search;
+using System.ComponentModel.DataAnnotations;
 
 namespace Application.DTOs
 {
-    public class VenueDto : ItemDto
+    public record VenueDto : ItemDto
     {
         [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90.")]
         public double Latitude { get; set; }
@@ -31,5 +32,17 @@ namespace Application.DTOs
         {
             Type = "venue";
         }
+    }
+
+    public record VenueHeaderDto : ISearchHeader, IAddressHeader
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string ImageUrl { get; set; }
+        public double? Rating { get; set; }
+        public string County { get; set; }
+        public string Town { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
     }
 }

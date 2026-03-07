@@ -7,7 +7,6 @@ using System.Security.Claims;
 using Application.DTOs;
 using Infrastructure.Services;
 using Core.Exceptions;
-using Microsoft.AspNetCore.Identity.Data;
 using Application.Requests;
 
 namespace Web.Controllers
@@ -26,20 +25,20 @@ namespace Web.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            await authService.Register(registerDto);
+            await authService.Register(request);
 
             return NoContent();
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto loginDto)
+        public async Task<ActionResult<UserDto>> Login([FromBody] LoginRequest request)
         {
-            return Ok(await authService.Login(loginDto));
+            return Ok(await authService.Login(request));
         }
 
         [Authorize]
@@ -69,15 +68,15 @@ namespace Web.Controllers
         }
 
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto requestDto)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
-            return Ok(await authService.ForgotPasswordAsync(requestDto));
+            return Ok(await authService.ForgotPasswordAsync(request));
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto requestDto)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
-            return Ok(await authService.ResetPasswordAsync(requestDto));
+            return Ok(await authService.ResetPasswordAsync(request));
         }
 
         [Authorize]

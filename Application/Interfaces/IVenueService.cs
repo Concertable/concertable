@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Requests;
 using Microsoft.AspNetCore.Http;
 
 namespace Application.Interfaces
@@ -7,7 +8,7 @@ namespace Application.Interfaces
     {
         Task<VenueDto> GetDetailsByIdAsync(int id);
         Task<VenueDto?> GetDetailsForCurrentUserAsync();
-        Task<VenueDto> CreateAsync(CreateVenueDto venue, IFormFile image);
+        Task<VenueDto> CreateAsync(CreateVenueRequest request, IFormFile image);
         Task<VenueDto> UpdateAsync(VenueDto venueDto, IFormFile? image);
         Task<int> GetIdForCurrentUserAsync();
     }

@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Requests;
 using Application.Interfaces;
 using Core.Exceptions;
 using Application.Responses;
@@ -22,11 +23,11 @@ public class PaymentService : IPaymentService
         this.stripeAccountService = stripeAccountService;
     }
 
-    public async Task<PaymentResponse> ProcessAsync(TransactionRequestDto transactionRequestDto)
+    public async Task<PaymentResponse> ProcessAsync(TransactionRequest request)
     {
         try
         {
-            if (string.IsNullOrEmpty(transactionRequestDto.DestinationStripeId))
+            if (string.IsNullOrEmpty(request.DestinationStripeId))
             {
                 return new PaymentResponse
                 {
@@ -35,7 +36,7 @@ public class PaymentService : IPaymentService
                 };
             }
 
-            if (!await stripeAccountService.IsUserVerifiedAsync(transactionRequestDto.DestinationStripeId))
+            if (!await stripeAccountService.IsUserVerifiedAsync(request.DestinationStripeId))
             {
                 return new PaymentResponse
                 {
@@ -44,22 +45,22 @@ public class PaymentService : IPaymentService
                 };
             }
 
-            long amount = (long)(transactionRequestDto.Amount * 100);
+            long amount = (long)(request.Amount * 100);
 
             var options = new PaymentIntentCreateOptions
             {
                 Amount = amount,
                 Currency = "GBP",
-                PaymentMethod = transactionRequestDto.PaymentMethodId,
+                PaymentMethod = request.PaymentMethodId,
                 Confirm = true,
                 ConfirmationMethod = "automatic",
                 CaptureMethod = "automatic",
                 PaymentMethodTypes = new List<string> { "card" },
-                ReceiptEmail = transactionRequestDto.FromUserEmail,
-                Metadata = transactionRequestDto.Metadata,
+                ReceiptEmail = request.FromUserEmail,
+                Metadata = request.Metadata,
                 TransferData = new PaymentIntentTransferDataOptions
                 {
-                    Destination = transactionRequestDto.DestinationStripeId
+                    Destination = request.DestinationStripeId
                 }
             };
 

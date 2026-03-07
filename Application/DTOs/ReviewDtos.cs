@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Application.DTOs
 {
-    public class ReviewDto
+    public record ReviewDto
     {
         public int Id { get; set; }
         public string Email { get; set; }
         public int Stars { get; set; }
         public string? Details { get; set; }
+    }
+
+    public record ReviewSummaryDto
+    {
+        public int TotalReviews { get; set; }
+        public double? AverageRating { get; set; }
     }
 }

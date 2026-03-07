@@ -4,6 +4,7 @@ using Application.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Application.Requests;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 
@@ -47,14 +48,14 @@ namespace Infrastructure.Services
             return mapper.Map<ArtistDto>(artist);
         }
 
-        public async Task<ArtistDto> CreateAsync(CreateArtistDto createArtistDto, IFormFile image)
+        public async Task<ArtistDto> CreateAsync(CreateArtistRequest request, IFormFile image)
         {
-            var artist = mapper.Map<Artist>(createArtistDto);
+            var artist = mapper.Map<Artist>(request);
             var user = await currentUserService.GetAsync();
             artist.UserId = user.Id;
             artist.ImageUrl = await imageService.UploadAsync(image);
 
-            foreach (var genre in createArtistDto.Genres)
+            foreach (var genre in request.Genres)
             {
                 artist.ArtistGenres.Add(new ArtistGenre
                 {

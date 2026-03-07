@@ -4,6 +4,7 @@ using Core.Entities.Identity;
 using Application.Interfaces;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Application.Requests;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 
@@ -48,18 +49,18 @@ namespace Infrastructure.Services
             return venueDto;
         }
 
-        public async Task<VenueDto> CreateAsync(CreateVenueDto createVenueDto, IFormFile image)
+        public async Task<VenueDto> CreateAsync(CreateVenueRequest request, IFormFile image)
         {
             var venueRepository = unitOfWork.GetRepository<Venue>();
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
-            var venue = mapper.Map<Venue>(createVenueDto);
+            var venue = mapper.Map<Venue>(request);
             var user = await currentUserService.GetEntityAsync();
 
             venue.UserId = user.Id;
             venue.ImageUrl = await imageService.UploadAsync(image);
 
-            await UpdateUserLocationAsync(user, createVenueDto.Latitude, createVenueDto.Longitude);
+            await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
             var createdVenue = await venueRepository.AddAsync(venue);
             userRepository.Update(user);

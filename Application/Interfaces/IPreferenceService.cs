@@ -1,10 +1,5 @@
 ﻿using Application.DTOs;
-using Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Application.Requests;
 
 namespace Application.Interfaces
 {
@@ -13,8 +8,7 @@ namespace Application.Interfaces
         Task<PreferenceDto> GetByUserIdAsync(int userId);
         Task<PreferenceDto> GetByUserAsync();
         Task<IEnumerable<PreferenceDto>> GetAsync();
-        Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceceDto, int? userId = null);
+        Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, int? userId = null);
         Task<PreferenceDto> UpdateAsync(PreferenceDto preferenceDto);
     }
-
 }

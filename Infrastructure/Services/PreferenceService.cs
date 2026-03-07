@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Requests;
 using Application.Interfaces;
 using AutoMapper;
 using Core.Entities;
@@ -26,14 +27,14 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task<PreferenceDto> CreateAsync(CreatePreferenceDto createPreferenceDto, int? userId = null)
+        public async Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, int? userId = null)
         {
             var resolvedUserId = userId ?? await currentUserService.GetIdAsync();
 
-            var preference = mapper.Map<Preference>(createPreferenceDto);
+            var preference = mapper.Map<Preference>(request);
             preference.GenrePreferences = new List<GenrePreference>();
 
-            foreach(var genreDto in createPreferenceDto.Genres)
+            foreach(var genreDto in request.Genres)
             {
                 preference.GenrePreferences.Add(new GenrePreference
                 {

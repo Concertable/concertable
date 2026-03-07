@@ -4,6 +4,7 @@ using Core.Entities.Identity;
 using Application.Interfaces;
 using Core.Parameters;
 using Application.DTOs;
+using Application.Requests;
 using Application.Responses;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -78,7 +79,7 @@ namespace Infrastructure.Tests.Services
         {
             // Arrange
             var user = new ApplicationUser { Id = 1 };
-            var createVenueDto = new CreateVenueDto { Name = "New Venue", Latitude = 1.0, Longitude = 2.0 };
+            var createVenueDto = new CreateVenueRequest { Name = "New Venue", Latitude = 1.0, Longitude = 2.0 };
             var venue = new Venue { Name = createVenueDto.Name };
             var createdVenue = new Venue { Id = 1, Name = createVenueDto.Name, UserId = user.Id };
             var venueDto = new VenueDto { Id = 1, Name = "New Venue" };
@@ -91,7 +92,7 @@ namespace Infrastructure.Tests.Services
             unitOfWorkMock.Setup(u => u.GetBaseRepository<ApplicationUser>()).Returns(userRepoMock.Object);
 
             currentUserServiceMock.Setup(x => x.GetEntityAsync()).ReturnsAsync(user);
-            mapperMock.Setup(x => x.Map<Venue>(createVenueDto)).Returns(venue);
+            mapperMock.Setup(x => x.Map<Venue>(It.IsAny<CreateVenueRequest>())).Returns(venue);
             mapperMock.Setup(x => x.Map<VenueDto>(createdVenue)).Returns(venueDto);
             imageServiceMock.Setup(x => x.UploadAsync(imageMock.Object)).ReturnsAsync("image_url");
             venueRepoMock.Setup(r => r.AddAsync(It.IsAny<Venue>())).ReturnsAsync(createdVenue);

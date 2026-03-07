@@ -1,11 +1,11 @@
-﻿using Application.Serializers;
-using Core.Entities;
+using Application.Serializers;
+using Core.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Application.DTOs
 {
-    public class ListingDto : IValidatableObject
+    public record ListingDto : IValidatableObject
     {
         public int? Id { get; set; }
         public DateTime StartDate { get; set; }
@@ -31,5 +31,37 @@ namespace Application.DTOs
             if (decimal.Round(Pay, 2) != Pay)
                 yield return new ValidationResult("Pay must have exactly two decimal places", [nameof(Pay)]);
         }
+    }
+
+    public record ListingResponse
+    {
+        public int? Id { get; set; }
+        public DateTime StartDate { get; set; }
+        [JsonConverter(typeof(TimeOnlyJsonConverter))]
+        public TimeOnly EndTime { get; set; }
+        public IEnumerable<GenreDto> Genres { get; set; }
+        public double Pay { get; set; }
+    }
+
+    public record ListingWithVenueDto
+    {
+        public ListingDto Listing { get; set; }
+        public VenueDto Venue { get; set; }
+    }
+
+    public record ListingApplicationDto
+    {
+        public int Id { get; set; }
+        public ArtistDto Artist { get; set; }
+        public ListingDto Listing { get; set; }
+        public ApplicationStatus Status { get; set; }
+    }
+
+    public record ArtistListingApplicationDto
+    {
+        public int Id { get; set; }
+        public ArtistDto Artist { get; set; }
+        public ListingWithVenueDto ListingWithVenue { get; set; }
+        public ApplicationStatus Status { get; set; }
     }
 }

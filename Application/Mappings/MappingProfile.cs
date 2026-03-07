@@ -1,18 +1,11 @@
 ﻿using Application.DTOs;
+using Application.Requests;
+using Application.Responses;
 using AutoMapper;
+using Common.Helpers;
 using Core.Entities;
 using Core.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.DTOs;
-using Application.Responses;
-using System.Diagnostics;
 using NetTopologySuite.Geometries;
-using Common.Helpers;
-using Application.Requests;
 
 namespace Application.Mappings
 {
@@ -76,7 +69,7 @@ namespace Application.Mappings
                 opt => opt.MapFrom(src => src.User.Town))
             .ForMember(dest => dest.Email,
                 opt => opt.MapFrom(src => src.User.Email));
-            CreateMap<CreateVenueDto, Venue>();
+            CreateMap<CreateVenueRequest, Venue>();
 
             CreateMap<ArtistDto, Artist>()
                 .ForMember(dest => dest.UserId, opt => opt.Ignore());
@@ -98,7 +91,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => (double?)src.Latitude))
                 .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => (double?)src.Longitude));
 
-            CreateMap<CreateArtistDto, Artist>();
+            CreateMap<CreateArtistRequest, Artist>();
             //Listing
             CreateMap<Listing, ListingDto>()
             .ForMember(dest => dest.Genres, opt => opt.MapFrom(
@@ -190,7 +183,7 @@ namespace Application.Mappings
             CreateMap<ReviewDto, Review>();
             CreateMap<CreateReviewRequest, Review>();
 
-            CreateMap<CreatePreferenceDto, Preference>();
+            CreateMap<CreatePreferenceRequest, Preference>();
             CreateMap<Preference, PreferenceDto>()
                 .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.GenrePreferences

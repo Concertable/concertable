@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Requests;
 using Application.Interfaces;
 using Core.Exceptions;
 using Application.Responses;
@@ -41,7 +42,7 @@ namespace Infrastructure.Services
             var toUser = await userService.GetByEventIdAsync(eventId);
             var eventEntity = await eventService.Value.GetDetailsByIdAsync(eventId);
 
-            var transactionRequestDto = new TransactionRequestDto
+            var transactionRequestDto = new TransactionRequest
             {
                 PaymentMethodId = paymentMethodId,
                 FromUserEmail = user.Email,
@@ -72,7 +73,7 @@ namespace Infrastructure.Services
             var toUser = await userService.GetByApplicationIdAsync(applicationId);
             var pay = await listingApplicationService.GetListingPayByIdAsync(applicationId);
 
-            var transactionRequestDto = new TransactionRequestDto
+            var transactionRequestDto = new TransactionRequest
             {
                 PaymentMethodId = paymentMethodId,
                 FromUserEmail = user.Email,

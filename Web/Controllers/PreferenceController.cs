@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Application.Requests;
 using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -18,9 +19,9 @@ namespace Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]CreatePreferenceDto createPreferenceDto)
+        public async Task<IActionResult> Create([FromBody]CreatePreferenceRequest request)
         {
-            var preference = await preferenceService.CreateAsync(createPreferenceDto);
+            var preference = await preferenceService.CreateAsync(request);
             return Created();
         }
 

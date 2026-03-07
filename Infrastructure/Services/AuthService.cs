@@ -14,6 +14,7 @@ using Application.Interfaces;
 using Core.Entities.Identity;
 using Microsoft.AspNetCore.Http;
 using Application.DTOs;
+using Application.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Runtime.CompilerServices;
@@ -55,22 +56,22 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async Task Register(RegisterDto registerDto)
+        public async Task Register(RegisterRequest request)
         {
             var reasons = new List<string>();
 
             // Perform checks and add reasons if validation fails
-            if (await CheckEmailExistsAsync(registerDto.Email))
+            if (await CheckEmailExistsAsync(request.Email))
                 reasons.Add("Email already exists");
-            if (registerDto.Role.Equals("Admin"))
+            if (request.Role.Equals("Admin"))
                 reasons.Add("You cannot make yourself an admin");
 
             // Determine user type based on role
-            ApplicationUser? user = registerDto.Role switch
+            ApplicationUser? user = request.Role switch
             {
-                "Customer" => new Customer { UserName = registerDto.Email, Email = registerDto.Email },
-                "VenueManager" => new VenueManager { UserName = registerDto.Email, Email = registerDto.Email },
-                "ArtistManager" => new ArtistManager { UserName = registerDto.Email, Email = registerDto.Email },
+                "Customer" => new Customer { UserName = request.Email, Email = request.Email },
+                "VenueManager" => new VenueManager { UserName = request.Email, Email = request.Email },
+                "ArtistManager" => new ArtistManager { UserName = request.Email, Email = request.Email },
                 _ => null
             };
 
@@ -79,7 +80,7 @@ namespace Infrastructure.Services
 
             if (reasons.Any())
                 throw new BadRequestException(reasons);
-            var result = await userManager.CreateAsync(user, registerDto.Password);
+            var result = await userManager.CreateAsync(user, request.Password);
 
             if (!result.Succeeded)
             {
@@ -87,16 +88,16 @@ namespace Infrastructure.Services
                 throw new BadRequestException(reasons);
             }
 
-            await userManager.AddToRoleAsync(user, registerDto.Role);
+            await userManager.AddToRoleAsync(user, request.Role);
 
             await stripeAccountService.CreateStripeAccountAsync(user);
 
-            var preferenceDto = new CreatePreferenceDto
+            var createPreferenceRequest = new CreatePreferenceRequest
             {
                 RadiusKm = 10,
                 Genres = Enumerable.Empty<GenreDto>()
             };
-            await preferenceService.CreateAsync(preferenceDto, user.Id);
+            await preferenceService.CreateAsync(createPreferenceRequest, user.Id);
 
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var uri = uriService.GetEmailConfirmationUri(user.Id, token);
@@ -115,9 +116,9 @@ namespace Infrastructure.Services
             return await userManager.FindByEmailAsync(email) != null;
         }
 
-        public async Task<UserDto> Login(LoginDto loginDto)
+        public async Task<UserDto> Login(LoginRequest request)
         {
-            var user = await userManager.FindByEmailAsync(loginDto.Email);
+            var user = await userManager.FindByEmailAsync(request.Email);
             if (user is null)
                 throw new BadRequestException("Invalid email or password.");
 
@@ -125,9 +126,9 @@ namespace Infrastructure.Services
                 throw new BadRequestException("Please confirm your email before logging in.");
 
             var result = await signInManager.PasswordSignInAsync(
-                loginDto.Email,
-                loginDto.Password,
-                loginDto.RememberMe,
+                request.Email,
+                request.Password,
+                request.RememberMe,
                 true);
 
             if (!result.Succeeded)
@@ -156,9 +157,9 @@ namespace Infrastructure.Services
             return result.Succeeded;
         }
 
-        public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto requestDto)
+        public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-            var user = await userManager.FindByEmailAsync(requestDto.Email);
+            var user = await userManager.FindByEmailAsync(request.Email);
 
             if (user is not null)
             {
@@ -169,19 +170,19 @@ namespace Infrastructure.Services
                 await emailService.SendEmailAsync(user.Email, "Reset your password",
                     $"Please reset your password by clicking <a href='{resetLink}'>here</a>");
             }
-            return new ForgotPasswordResponseDto { Message = "If this email is associated with an account, a password reset link has been sent" };
+            return new ForgotPasswordResponse { Message = "If this email is associated with an account, a password reset link has been sent" };
         }
 
-        public async Task<ResetPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto requestDto)
+        public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await userManager.FindByIdAsync(requestDto.UserId.ToString());
+            var user = await userManager.FindByIdAsync(request.UserId.ToString());
 
-            var result = await userManager.ResetPasswordAsync(user, requestDto.Token, requestDto.NewPassword);
+            var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
 
             if (!result.Succeeded)
                 throw new BadRequestException("Password reset failed.");
 
-            return new ResetPasswordResponseDto { Message = "Password has been reset successfully." };
+            return new ResetPasswordResponse { Message = "Password has been reset successfully." };
         }
 
         public async Task RequestEmailChangeAsync(string newEmail)

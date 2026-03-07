@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace Application.DTOs
+namespace Application.Requests
 {
-    public class UpdateLocationRequest
+    public record UpdateLocationRequest
     {
         [Required(ErrorMessage = "Latitude is required.")]
         public double Latitude { get; set; }
