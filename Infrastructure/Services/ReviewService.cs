@@ -1,21 +1,14 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Search;
-using AutoMapper;
+using Application.Mappers;
+using Application.Requests;
 using Core.Entities;
+using Core.Exceptions;
+using Core.Interfaces;
 using Core.Parameters;
 using Application.Responses;
 using Infrastructure.Helpers;
-using Infrastructure.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Core.Interfaces;
-using Application.Requests;
-using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
@@ -24,18 +17,15 @@ namespace Infrastructure.Services
         private readonly IReviewRepository reviewRepository;
         private readonly ITicketRepository ticketRepository;
         private readonly ICurrentUserService currentUserService;
-        private readonly IMapper mapper;
 
         public ReviewService(
-            IReviewRepository reviewRepository, 
+            IReviewRepository reviewRepository,
             ITicketRepository ticketRepository,
-            ICurrentUserService currentUserService, 
-            IMapper mapper)
+            ICurrentUserService currentUserService)
         {
             this.reviewRepository = reviewRepository;
             this.ticketRepository = ticketRepository;
             this.currentUserService = currentUserService;
-            this.mapper = mapper;
         }
 
         public Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers)
@@ -65,7 +55,6 @@ namespace Infrastructure.Services
                 h.Rating = ratings.TryGetValue(h.Id, out var rating) ? rating : 0.0;
         }
 
-
         public async Task SetAverageRatingAsync(VenueDto venue)
         {
             if (venue is not null)
@@ -74,10 +63,9 @@ namespace Infrastructure.Services
 
         public async Task<ReviewDto> CreateAsync(CreateReviewRequest request)
         {
-            var review = mapper.Map<Review>(request);
+            var review = request.ToEntity();
 
             var userId = await currentUserService.GetIdAsync();
-
             var ticket = await ticketRepository.GetByUserIdAndEventIdAsync(userId, request.EventId);
 
             if (ticket is null)
@@ -88,7 +76,7 @@ namespace Infrastructure.Services
             await reviewRepository.AddAsync(review);
             await reviewRepository.SaveChangesAsync();
 
-            return mapper.Map<ReviewDto>(review);
+            return review.ToDto();
         }
 
         private async Task<Pagination<ReviewDto>> GetAsync(
@@ -96,10 +84,9 @@ namespace Infrastructure.Services
             IPageParams pageParams)
         {
             var reviews = await getAsync(pageParams);
-            var reviewsDto = mapper.Map<IEnumerable<ReviewDto>>(reviews.Data);
 
             return new Pagination<ReviewDto>(
-                reviewsDto,
+                reviews.Data.ToDtos(),
                 reviews.TotalCount,
                 reviews.PageNumber,
                 reviews.PageSize);
@@ -134,25 +121,22 @@ namespace Infrastructure.Services
         {
             return await reviewRepository.GetSummaryByVenueIdAsync(id);
         }
-        
+
         public async Task<bool> CanUserReviewEventIdAsync(int eventId)
         {
             var user = await currentUserService.GetAsync();
-
             return await reviewRepository.CanUserIdReviewEventIdAsync(user.Id, eventId);
         }
 
         public async Task<bool> CanUserReviewVenueIdAsync(int venueId)
         {
             var user = await currentUserService.GetAsync();
-
             return await reviewRepository.CanUserIdReviewVenueIdAsync(user.Id, venueId);
         }
 
         public async Task<bool> CanUserReviewArtistIdAsync(int artistId)
         {
             var user = await currentUserService.GetAsync();
-
             return await reviewRepository.CanUserIdReviewArtistIdAsync(user.Id, artistId);
         }
     }

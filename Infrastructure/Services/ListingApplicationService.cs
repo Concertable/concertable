@@ -1,15 +1,9 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Application.DTOs;
-using AutoMapper;
+using Application.Mappers;
 using Core.Exceptions;
 using Core.Enums;
-using System.Reflection;
 using Infrastructure.Repositories;
 
 namespace Infrastructure.Services
@@ -26,7 +20,6 @@ namespace Infrastructure.Services
         private readonly IListingService listingService;
         private readonly IArtistService artistService;
         private readonly IOwnershipService ownershipService;
-        private readonly IMapper mapper;
 
         public ListingApplicationService(
             IListingApplicationRepository listingApplicationRepository,
@@ -38,8 +31,7 @@ namespace Infrastructure.Services
             IEmailService emailService,
             IListingService listingService,
             IOwnershipService ownershipService,
-            IArtistService artistService,
-            IMapper mapper)
+            IArtistService artistService)
         {
             this.listingApplicationRepository = listingApplicationRepository;
             this.unitOfWork = unitOfWork;
@@ -51,7 +43,6 @@ namespace Infrastructure.Services
             this.listingService = listingService;
             this.artistService = artistService;
             this.ownershipService = ownershipService;
-            this.mapper = mapper;
         }
 
         public async Task<IEnumerable<ListingApplicationDto>> GetForListingIdAsync(int id)
@@ -63,25 +54,21 @@ namespace Infrastructure.Services
 
             var applications = await listingApplicationRepository.GetByListingIdAsync(id);
 
-            return mapper.Map<IEnumerable<ListingApplicationDto>>(applications);
+            return applications.ToDtos();
         }
 
         public async Task<IEnumerable<ArtistListingApplicationDto>> GetPendingForArtistAsync()
         {
             var artistId = await artistService.GetIdForCurrentUserAsync();
-
             var applications = await listingApplicationRepository.GetPendingByArtistIdAsync(artistId);
-
-            return mapper.Map<IEnumerable<ArtistListingApplicationDto>>(applications);
+            return applications.ToArtistListingApplicationDtos();
         }
 
         public async Task<IEnumerable<ArtistListingApplicationDto>> GetRecentDeniedForArtistAsync()
         {
             var artistId = await artistService.GetIdForCurrentUserAsync();
-
             var applications = await listingApplicationRepository.GetRecentDeniedByArtistIdAsync(artistId);
-
-            return mapper.Map<IEnumerable<ArtistListingApplicationDto>>(applications);
+            return applications.ToArtistListingApplicationDtos();
         }
 
         public async Task ApplyForListingAsync(int listingId)
@@ -101,7 +88,6 @@ namespace Infrastructure.Services
 
             var user = await currentUserService.GetAsync();
             var listingOwner = await listingService.GetOwnerByIdAsync(listingId);
-
             var listing = await listingService.GetByIdAsync(listingId);
 
             var response = await applicationValidationService.CanApplyForListingAsync(listingId, artistDto.Id);
@@ -109,7 +95,6 @@ namespace Infrastructure.Services
             if (!response.IsValid)
                 throw new BadRequestException(response.Reason!);
 
-            // Check the Genres match in at least one case
             var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
             var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId).ToHashSet();
 
@@ -117,21 +102,17 @@ namespace Infrastructure.Services
                 throw new BadRequestException("You need to have the same genres as the Listing to be able to apply to it");
 
             var applicationRepository = unitOfWork.GetRepository<ListingApplication>();
-
-            // Add to application table
             await applicationRepository.AddAsync(application);
 
-            // Send message to Venue Manager
             await messageService.SendAsync(
-                fromUserId: user.Id, 
+                fromUserId: user.Id,
                 toUserId: listingOwner.Id,
                 content: $"{user.Email} has applied to your listing",
                 action: "application",
                 actionId: listingId);
-            // Send email to Venue Manager
+
             await emailService.SendEmailAsync(listingOwner.Email!, "Listing Application", $"{user.Email} has applied to your listing");
 
-            // Attempt to Save Changes and Throw informative error if there is a duplicate key
             try
             {
                 await unitOfWork.TrySaveChangesAsync();
@@ -142,14 +123,10 @@ namespace Infrastructure.Services
             }
         }
 
-        /// <summary>
-        /// Gets the Artist and Venue from the ListingApplicationId Associated with it
-        /// </summary>
         public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
         {
             var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(id);
-
-            return (mapper.Map<ArtistDto>(artist), mapper.Map<VenueDto>(venue));
+            return (artist.ToDto(), venue.ToDto());
         }
 
         public async Task<decimal> GetListingPayByIdAsync(int id)
@@ -160,8 +137,7 @@ namespace Infrastructure.Services
         public async Task<ListingApplicationDto> GetByIdAsync(int id)
         {
             var application = await listingApplicationRepository.GetByIdAsync(id);
-
-            return mapper.Map<ListingApplicationDto>(application);
+            return application.ToDto();
         }
     }
 }

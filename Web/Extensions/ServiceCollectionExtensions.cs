@@ -3,7 +3,6 @@ using Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Application.Interfaces.Search;
-using Application.Mappings;
 using Application.Serializers;
 using Core.Entities;
 using Core.Entities.Identity;
@@ -65,7 +64,6 @@ namespace Web.Extensions
                 client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
             });
 
-            services.AddAutoMapper(typeof(MappingProfile));
             services.AddSignalR();
 
             return services;

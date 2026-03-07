@@ -1,13 +1,8 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Requests;
 using Application.Interfaces;
-using AutoMapper;
+using Application.Mappers;
 using Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -15,60 +10,43 @@ namespace Infrastructure.Services
     {
         private readonly IPreferenceRepository preferenceRepository;
         private readonly ICurrentUserService currentUserService;
-        private readonly IMapper mapper;
 
         public PreferenceService(
             IPreferenceRepository preferenceRepository,
-            ICurrentUserService currentUserService,
-            IMapper mapper)
+            ICurrentUserService currentUserService)
         {
-            this.preferenceRepository = preferenceRepository;  
+            this.preferenceRepository = preferenceRepository;
             this.currentUserService = currentUserService;
-            this.mapper = mapper;
         }
 
         public async Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, int? userId = null)
         {
             var resolvedUserId = userId ?? await currentUserService.GetIdAsync();
 
-            var preference = mapper.Map<Preference>(request);
-            preference.GenrePreferences = new List<GenrePreference>();
-
-            foreach(var genreDto in request.Genres)
-            {
-                preference.GenrePreferences.Add(new GenrePreference
-                {
-                    PreferenceId = preference.Id,
-                    GenreId = genreDto.Id
-                });
-            }
-
+            var preference = request.ToEntity();
             preference.UserId = resolvedUserId;
 
             preferenceRepository.Update(preference);
             await preferenceRepository.SaveChangesAsync();
 
-            return mapper.Map<PreferenceDto>(preference);
+            return preference.ToDto();
         }
 
         public async Task<IEnumerable<PreferenceDto>> GetAsync()
         {
             var preferences = await preferenceRepository.GetAllAsync();
-
-            return mapper.Map<IEnumerable<PreferenceDto>>(preferences);
+            return preferences.ToDtos();
         }
 
         public async Task<PreferenceDto> GetByUserIdAsync(int userId)
         {
             var preference = await preferenceRepository.GetByUserIdAsync(userId);
-
-            return mapper.Map<PreferenceDto>(preference);
+            return preference.ToDto();
         }
 
         public async Task<PreferenceDto> GetByUserAsync()
         {
             var user = await currentUserService.GetAsync();
-
             return await GetByUserIdAsync(user.Id);
         }
 
@@ -96,8 +74,7 @@ namespace Infrastructure.Services
             await preferenceRepository.SaveChangesAsync();
 
             var updatedPreference = await preferenceRepository.GetByIdAsync(preference.Id);
-            return mapper.Map<PreferenceDto>(updatedPreference);
+            return updatedPreference.ToDto();
         }
-
     }
 }

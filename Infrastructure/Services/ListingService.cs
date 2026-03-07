@@ -1,43 +1,35 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Application.DTOs;
-using AutoMapper;
+using Application.Mappers;
 using Core.Entities.Identity;
-using System.Runtime.InteropServices;
 using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
-    public class ListingService: IListingService
+    public class ListingService : IListingService
     {
         private readonly IListingRepository listingRepository;
         private readonly IStripeValidationService stripeValidationService;
         private readonly IVenueService venueService;
-        private readonly IMapper mapper;
 
         public ListingService(
-            IListingRepository listingRepository, 
+            IListingRepository listingRepository,
             IStripeValidationService stripeValidationService,
-            IVenueService venueService, 
-            IMapper mapper)
+            IVenueService venueService)
         {
             this.listingRepository = listingRepository;
             this.stripeValidationService = stripeValidationService;
             this.venueService = venueService;
-            this.mapper = mapper;
         }
 
         public async Task CreateAsync(ListingDto listingDto)
         {
             await stripeValidationService.ValidateUserAsync();
 
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync(); // Fetch venue once
-            var listing = MapGenres(listingDto, venueDto); // Use the MapToListing method
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
+            var listing = listingDto.ToEntity();
+            listing.VenueId = venueDto.Id;
 
             await listingRepository.AddAsync(listing);
             await listingRepository.SaveChangesAsync();
@@ -47,33 +39,23 @@ namespace Infrastructure.Services
         {
             await stripeValidationService.ValidateUserAsync();
 
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync(); // Fetch venue once
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
 
-            // Use MapToListing for each listing
-            var listings = listingsDto.Select(dto => MapGenres(dto, venueDto)).ToList(); // Map all listings
+            var listings = listingsDto.Select(dto =>
+            {
+                var listing = dto.ToEntity();
+                listing.VenueId = venueDto.Id;
+                return listing;
+            }).ToList();
 
             await listingRepository.AddRangeAsync(listings);
             await listingRepository.SaveChangesAsync();
         }
 
-        private Listing MapGenres(ListingDto listingDto, VenueDto venueDto)
-        {
-            var listing = mapper.Map<Listing>(listingDto); // AutoMapper handles basic mapping
-
-            listing.VenueId = venueDto.Id; // Set VenueId manually
-
-            // Map ListingGenres
-            listing.ListingGenres = listingDto.Genres
-                .Select(g => new ListingGenre { GenreId = g.Id })
-                .ToList();
-
-            return listing;
-        }
-
         public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)
         {
             var listings = await listingRepository.GetActiveByVenueIdAsync(id);
-            return mapper.Map<IEnumerable<ListingDto>>(listings);
+            return listings.ToDtos();
         }
 
         public async Task<Listing> GetByIdAsync(int id)
@@ -83,7 +65,7 @@ namespace Infrastructure.Services
 
         public async Task<VenueManager> GetOwnerByIdAsync(int id)
         {
-            return await listingRepository.GetOwnerByIdAsync(id); 
+            return await listingRepository.GetOwnerByIdAsync(id);
         }
     }
 }

@@ -1,15 +1,10 @@
 using Core.Interfaces;
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
-using AutoMapper;
+using Application.Mappers;
 using Core.Entities;
 using Core.Parameters;
 using Application.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -18,18 +13,15 @@ namespace Infrastructure.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IMessageRepository messageRepository;
         private readonly ICurrentUserService currentUserService;
-        private readonly IMapper mapper;
 
         public MessageService(
-            IUnitOfWork unitOfWork, 
+            IUnitOfWork unitOfWork,
             IMessageRepository messageRepository,
-            ICurrentUserService currentUserService,
-            IMapper mapper)
+            ICurrentUserService currentUserService)
         {
             this.unitOfWork = unitOfWork;
             this.messageRepository = messageRepository;
             this.currentUserService = currentUserService;
-            this.mapper = mapper;
         }
 
         public async Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content)
@@ -69,15 +61,13 @@ namespace Infrastructure.Services
             await messageRepository.SaveChangesAsync();
         }
 
-
         public async Task<Pagination<MessageDto>> GetForUserAsync(IPageParams? pageParams)
         {
             var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
 
-            var messagesDto = mapper.Map<IEnumerable<MessageDto>>(messages.Data);
             return new Pagination<MessageDto>(
-                messagesDto,
+                messages.Data.Select(m => m.ToDto()),
                 messages.TotalCount,
                 messages.PageNumber,
                 messages.PageSize);
@@ -91,12 +81,10 @@ namespace Infrastructure.Services
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
             var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
 
-            var messagesDto = mapper.Map<IEnumerable<MessageDto>>(messages.Data);
-
             return new MessageSummaryDto
             {
                 Messages = new Pagination<MessageDto>(
-                    messagesDto,
+                    messages.Data.Select(m => m.ToDto()),
                     messages.TotalCount,
                     messages.PageNumber,
                     messages.PageSize

@@ -1,17 +1,12 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
-using AutoMapper;
+using Application.Mappers;
 using Core.Entities.Identity;
 using Core.Exceptions;
 using Infrastructure.Constants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -19,16 +14,13 @@ namespace Infrastructure.Services
     {
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly IMapper mapper;
 
         public CurrentUserService(
-            IHttpContextAccessor httpContextAccessor, 
-            UserManager<ApplicationUser> userManager,
-            IMapper mapper)
+            IHttpContextAccessor httpContextAccessor,
+            UserManager<ApplicationUser> userManager)
         {
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
-            this.mapper = mapper;
         }
 
         public async Task<UserDto> GetAsync()
@@ -36,7 +28,7 @@ namespace Infrastructure.Services
             var user = await GetEntityAsync();
             var role = await GetFirstRoleAsync(user);
 
-            var userDto = mapper.Map<UserDto>(user);
+            var userDto = user.ToDto();
             userDto.Role = role;
             userDto.BaseUrl = RoleRoutes.BaseUrls[role];
 
@@ -50,8 +42,7 @@ namespace Infrastructure.Services
                 var user = await GetEntityAsync();
                 var role = await GetFirstRoleAsync(user);
 
-                var userDto = mapper.Map<UserDto>(user);
-
+                var userDto = user.ToDto();
                 userDto.Role = role;
                 userDto.BaseUrl = RoleRoutes.BaseUrls[role];
 

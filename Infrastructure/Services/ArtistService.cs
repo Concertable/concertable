@@ -1,9 +1,7 @@
-using AutoMapper;
 using Core.Entities;
 using Application.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Application.DTOs;
+using Application.Mappers;
 using Application.Requests;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -17,56 +15,44 @@ namespace Infrastructure.Services
         private readonly IReviewService reviewService;
         private readonly ICurrentUserService currentUserService;
         private readonly IUnitOfWork unitOfWork;
-        private readonly IMapper mapper;
 
         public ArtistService(
             IArtistRepository artistRepository,
             IImageService imageService,
             ICurrentUserService currentUserService,
             IReviewService reviewService,
-            IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IUnitOfWork unitOfWork)
         {
             this.artistRepository = artistRepository;
             this.imageService = imageService;
             this.reviewService = reviewService;
             this.currentUserService = currentUserService;
             this.unitOfWork = unitOfWork;
-            this.mapper = mapper;
         }
 
         public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
         {
             var user = await currentUserService.GetAsync();
             var artist = await artistRepository.GetByUserIdAsync(user.Id);
-            return mapper.Map<ArtistDto?>(artist);
+            return artist?.ToDto();
         }
 
         public async Task<ArtistDto> GetDetailsByIdAsync(int id)
         {
             var artist = await artistRepository.GetByIdAsync(id);
-            return mapper.Map<ArtistDto>(artist);
+            return artist.ToDto();
         }
 
         public async Task<ArtistDto> CreateAsync(CreateArtistRequest request, IFormFile image)
         {
-            var artist = mapper.Map<Artist>(request);
+            var artist = request.ToEntity();
             var user = await currentUserService.GetAsync();
             artist.UserId = user.Id;
             artist.ImageUrl = await imageService.UploadAsync(image);
 
-            foreach (var genre in request.Genres)
-            {
-                artist.ArtistGenres.Add(new ArtistGenre
-                {
-                    ArtistId = artist.Id,
-                    GenreId = genre.Id
-                });
-            }
-
             var createdArtist = await artistRepository.AddAsync(artist);
             await artistRepository.SaveChangesAsync();
-            return mapper.Map<ArtistDto>(createdArtist);
+            return createdArtist.ToDto();
         }
 
         public async Task<ArtistDto> UpdateAsync(ArtistDto artistDto, IFormFile? image)
@@ -75,34 +61,28 @@ namespace Infrastructure.Services
             if (artist is null)
                 throw new NotFoundException("Artist not found");
 
-            mapper.Map(artistDto, artist);
-
             var user = await currentUserService.GetEntityAsync();
             if (artist.UserId != user.Id)
                 throw new ForbiddenException("You do not own this Artist");
 
+            artist.Name = artistDto.Name;
+            artist.About = artistDto.About;
+            artist.ImageUrl = artistDto.ImageUrl;
+
             var existingGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId).ToList();
             var newGenreIds = artistDto.Genres.Select(g => g.Id).ToList();
 
-            var genreIdsToRemove = existingGenreIds.Except(newGenreIds).ToList();
-            foreach (var genreId in genreIdsToRemove)
+            foreach (var genreId in existingGenreIds.Except(newGenreIds).ToList())
             {
-                var genreToRemove = artist.ArtistGenres.FirstOrDefault(ag => ag.GenreId == genreId);
-                if (genreToRemove != null)
-                    artist.ArtistGenres.Remove(genreToRemove);
+                var toRemove = artist.ArtistGenres.FirstOrDefault(ag => ag.GenreId == genreId);
+                if (toRemove != null)
+                    artist.ArtistGenres.Remove(toRemove);
             }
 
-            var genreIdsToAdd = newGenreIds.Except(existingGenreIds).ToList();
-            foreach (var genreId in genreIdsToAdd)
+            foreach (var genreId in newGenreIds.Except(existingGenreIds).ToList())
             {
-                artist.ArtistGenres.Add(new ArtistGenre
-                {
-                    ArtistId = artist.Id,
-                    GenreId = genreId
-                });
+                artist.ArtistGenres.Add(new ArtistGenre { ArtistId = artist.Id, GenreId = genreId });
             }
-
-            mapper.Map(artistDto, artist);
 
             if (image is not null)
                 artist.ImageUrl = await imageService.ReplaceAsync(image, artist.ImageUrl);
@@ -110,7 +90,7 @@ namespace Infrastructure.Services
             artistRepository.Update(artist);
             await artistRepository.SaveChangesAsync();
 
-            var result = mapper.Map<ArtistDto>(artist);
+            var result = artist.ToDto();
             result.Genres = artistDto.Genres;
             return result;
         }

@@ -1,13 +1,10 @@
-using AutoMapper;
 using Core.Entities;
 using Application.Interfaces;
 using Core.Parameters;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Application.DTOs;
+using Application.Mappers;
 using Application.Responses;
 using Core.Exceptions;
-using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services
 {
@@ -26,7 +23,6 @@ namespace Infrastructure.Services
         private readonly ILocationService locationService;
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IGenreRepository genreRepository;
-        private readonly IMapper mapper;
 
         public EventService(
             IEventRepository eventRepository,
@@ -41,8 +37,7 @@ namespace Infrastructure.Services
             ILocationService locationService,
             IListingRepository listingRepository,
             IListingApplicationRepository listingApplicationRepository,
-            IGenreRepository genreRepository,
-            IMapper mapper)
+            IGenreRepository genreRepository)
         {
             this.eventRepository = eventRepository;
             this.eventValidationService = eventValidationService;
@@ -57,37 +52,36 @@ namespace Infrastructure.Services
             this.listingRepository = listingRepository;
             this.locationService = locationService;
             this.genreRepository = genreRepository;
-            this.mapper = mapper;
         }
 
         public async Task<IEnumerable<EventDto>> GetUpcomingByVenueIdAsync(int id)
         {
             var events = await eventRepository.GetUpcomingByVenueIdAsync(id);
-            return mapper.Map<IEnumerable<EventDto>>(events);
+            return events.ToDtos();
         }
 
         public async Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id)
         {
             var events = await eventRepository.GetUpcomingByArtistIdAsync(id);
-            return mapper.Map<IEnumerable<EventDto>>(events);
+            return events.ToDtos();
         }
 
         public async Task<IEnumerable<EventDto>> GetHistoryByArtistIdAsync(int id)
         {
             var events = await eventRepository.GetHistoryByVenueIdAsync(id);
-            return mapper.Map<IEnumerable<EventDto>>(events);
+            return events.ToDtos();
         }
 
         public async Task<IEnumerable<EventDto>> GetHistoryByVenueIdAsync(int id)
         {
             var events = await eventRepository.GetHistoryByVenueIdAsync(id);
-            return mapper.Map<IEnumerable<EventDto>>(events);
+            return events.ToDtos();
         }
 
         public async Task<EventDto> GetDetailsByIdAsync(int id)
         {
             var eventEntity = await eventRepository.GetByIdAsync(id);
-            return mapper.Map<EventDto>(eventEntity);
+            return eventEntity.ToDto();
         }
 
         public async Task<ListingApplicationPurchaseResponse> BookAsync(EventBookingParams bookingParams)
@@ -184,7 +178,7 @@ namespace Infrastructure.Services
             await eventRepository.AddAsync(eventEntity);
             await eventRepository.SaveChangesAsync();
 
-            return mapper.Map<EventDto>(eventEntity);
+            return eventEntity.ToDto();
         }
 
         public async Task<EventDto> GetDetailsByApplicationIdAsync(int applicationId)
@@ -194,7 +188,7 @@ namespace Infrastructure.Services
             if (eventEntity is null)
                 throw new NotFoundException($"No event found for Application ID {applicationId}");
 
-            return mapper.Map<EventDto>(eventEntity);
+            return eventEntity.ToDto();
         }
 
         public async Task<EventDto> UpdateAsync(EventDto eventDto)
@@ -207,7 +201,11 @@ namespace Infrastructure.Services
             if (eventEntity is null)
                 throw new NotFoundException("Event not found");
 
-            mapper.Map(eventDto, eventEntity);
+            eventEntity.Name = eventDto.Name;
+            eventEntity.About = eventDto.About;
+            eventEntity.Price = eventDto.Price;
+            eventEntity.TotalTickets = eventDto.TotalTickets;
+            eventEntity.AvailableTickets = eventDto.AvailableTickets;
 
             int ticketsSold = eventEntity.TotalTickets - eventEntity.AvailableTickets;
             eventEntity.AvailableTickets = eventEntity.TotalTickets - ticketsSold;
@@ -215,7 +213,7 @@ namespace Infrastructure.Services
             eventRepository.Update(eventEntity);
             await eventRepository.SaveChangesAsync();
 
-            return mapper.Map<EventDto>(eventEntity);
+            return eventEntity.ToDto();
         }
 
         public async Task<EventPostResponse> PostAsync(EventDto eventDto)
@@ -232,15 +230,17 @@ namespace Infrastructure.Services
             if (eventEntity.DatePosted.HasValue)
                 throw new BadRequestException("Event has already been posted");
 
-            mapper.Map(eventDto, eventEntity);
-
+            eventEntity.Name = eventDto.Name;
+            eventEntity.About = eventDto.About;
+            eventEntity.Price = eventDto.Price;
+            eventEntity.TotalTickets = eventDto.TotalTickets;
             eventEntity.DatePosted = DateTime.UtcNow;
             eventEntity.AvailableTickets = eventDto.TotalTickets;
 
             eventRepository.Update(eventEntity);
             await eventRepository.SaveChangesAsync();
 
-            var eventHeaderDto = mapper.Map<EventHeaderDto>(eventDto);
+            var eventHeaderDto = eventDto.ToHeaderDto();
             var averageRating = (await reviewService.GetSummaryByEventIdAsync(eventDto.Id)).AverageRating;
             eventHeaderDto.Rating = averageRating;
 
@@ -278,7 +278,7 @@ namespace Infrastructure.Services
 
             return new EventPostResponse
             {
-                Event = mapper.Map<EventDto>(eventEntity),
+                Event = eventEntity.ToDto(),
                 EventHeader = eventHeaderDto,
                 UserIds = userIdsToNotify
             };
@@ -314,13 +314,13 @@ namespace Infrastructure.Services
         public async Task<IEnumerable<EventDto>> GetUnpostedByArtistIdAsync(int id)
         {
             var events = await eventRepository.GetUnpostedByArtistIdAsync(id);
-            return mapper.Map<IEnumerable<EventDto>>(events);
+            return events.ToDtos();
         }
 
         public async Task<IEnumerable<EventDto>> GetUnpostedByVenueIdAsync(int id)
         {
             var events = await eventRepository.GetUnpostedByVenueIdAsync(id);
-            return mapper.Map<IEnumerable<EventDto>>(events);
+            return events.ToDtos();
         }
     }
 }

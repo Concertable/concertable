@@ -1,6 +1,6 @@
 using NetTopologySuite.Geometries;
 
-namespace Infrastructure.Mappers
+namespace Application.Mappers
 {
     public static class PointMappers
     {

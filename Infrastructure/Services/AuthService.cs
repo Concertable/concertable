@@ -1,27 +1,15 @@
-﻿using Infrastructure.Repositories;
+using Infrastructure.Repositories;
 using Core.Exceptions;
 using Infrastructure.Data.Identity;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Application.Interfaces;
 using Core.Entities.Identity;
-using Microsoft.AspNetCore.Http;
 using Application.DTOs;
+using Application.Mappers;
 using Application.Requests;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Runtime.CompilerServices;
-using static QRCoder.PayloadGenerator;
-using Infrastructure.Constants;
-using AutoMapper;
 using Application.Responses;
+using Infrastructure.Constants;
+using static QRCoder.PayloadGenerator;
 
 namespace Infrastructure.Services
 {
@@ -34,7 +22,6 @@ namespace Infrastructure.Services
         private readonly ICurrentUserService currentUserService;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
-        private readonly IMapper mapper;
 
         public AuthService(
             IStripeAccountService stripeAccountService,
@@ -42,9 +29,8 @@ namespace Infrastructure.Services
             IUriService uriService,
             IPreferenceService preferenceService,
             ICurrentUserService currentUserService,
-            UserManager<ApplicationUser> userManager, 
-            SignInManager<ApplicationUser> signInManager,
-            IMapper mapper)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             this.stripeAccountService = stripeAccountService;
             this.emailService = emailService;
@@ -53,20 +39,17 @@ namespace Infrastructure.Services
             this.currentUserService = currentUserService;
             this.userManager = userManager;
             this.signInManager = signInManager;
-            this.mapper = mapper;
         }
 
         public async Task Register(RegisterRequest request)
         {
             var reasons = new List<string>();
 
-            // Perform checks and add reasons if validation fails
             if (await CheckEmailExistsAsync(request.Email))
                 reasons.Add("Email already exists");
             if (request.Role.Equals("Admin"))
                 reasons.Add("You cannot make yourself an admin");
 
-            // Determine user type based on role
             ApplicationUser? user = request.Role switch
             {
                 "Customer" => new Customer { UserName = request.Email, Email = request.Email },
@@ -80,6 +63,7 @@ namespace Infrastructure.Services
 
             if (reasons.Any())
                 throw new BadRequestException(reasons);
+
             var result = await userManager.CreateAsync(user, request.Password);
 
             if (!result.Succeeded)
@@ -89,7 +73,6 @@ namespace Infrastructure.Services
             }
 
             await userManager.AddToRoleAsync(user, request.Role);
-
             await stripeAccountService.CreateStripeAccountAsync(user);
 
             var createPreferenceRequest = new CreatePreferenceRequest
@@ -139,7 +122,7 @@ namespace Infrastructure.Services
             if (role is null)
                 throw new BadRequestException("User has no role");
 
-            var userDto = mapper.Map<UserDto>(user);
+            var userDto = user.ToDto();
             userDto.Role = role;
             userDto.BaseUrl = RoleRoutes.BaseUrls[role];
 
@@ -153,7 +136,6 @@ namespace Infrastructure.Services
                 throw new NotFoundException("User not found");
 
             var result = await userManager.ConfirmEmailAsync(user, token);
-
             return result.Succeeded;
         }
 
@@ -164,7 +146,6 @@ namespace Infrastructure.Services
             if (user is not null)
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(user);
-
                 var resetLink = uriService.GetPasswordResetUri(user.Id, token);
 
                 await emailService.SendEmailAsync(user.Email, "Reset your password",
@@ -176,7 +157,6 @@ namespace Infrastructure.Services
         public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request)
         {
             var user = await userManager.FindByIdAsync(request.UserId.ToString());
-
             var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
 
             if (!result.Succeeded)
@@ -199,19 +179,16 @@ namespace Infrastructure.Services
                 $"Please confirm your email change by clicking <a href='{uri}'>here</a>");
         }
 
-
         public async Task<bool> ConfirmEmailChangeAsync(string token, string newEmail)
         {
             var user = await currentUserService.GetEntityAsync();
-
             var result = await userManager.ChangeEmailAsync(user, newEmail, token);
+
             if (!result.Succeeded)
                 throw new BadRequestException("Failed to change email");
 
             await userManager.SetUserNameAsync(user, newEmail);
             return true;
         }
-
-
     }
 }

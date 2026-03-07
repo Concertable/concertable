@@ -2,7 +2,7 @@ using Application.Interfaces;
 using Application.Interfaces.Search;
 using Application.Responses;
 using Core.Parameters;
-using Infrastructure.Mappers;
+using Application.Mappers;
 
 namespace Infrastructure.Services.Search
 {
@@ -20,7 +20,7 @@ namespace Infrastructure.Services.Search
         public async Task<Pagination<ISearchHeader>> SearchAsync(SearchParams searchParams)
         {
             var result = await eventSearchRepository.SearchAsync(searchParams);
-            var headers = result.Data.Select(e => e.ToSearchHeader()).ToList();
+            var headers = result.Data.ToHeaderDtos().ToList();
             await reviewService.AddAverageRatingsAsync(headers);
             return new Pagination<ISearchHeader>(headers, result.TotalCount, result.PageNumber, result.PageSize);
         }

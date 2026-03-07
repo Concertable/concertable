@@ -1,14 +1,8 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
-using AutoMapper;
+using Application.Mappers;
 using Common.Helpers;
 using Core.Entities.Identity;
-using Org.BouncyCastle.Bcpg;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -17,18 +11,15 @@ namespace Infrastructure.Services
         private readonly IUserRepository userRepsitory;
         private readonly ICurrentUserService currentUserService;
         private readonly IGeocodingService geocodingService;
-        private readonly IMapper mapper;
 
         public UserService(
-            IUserRepository userRepsitory, 
+            IUserRepository userRepsitory,
             ICurrentUserService currentUserService,
-            IGeocodingService geocodingService,
-            IMapper mapper)
+            IGeocodingService geocodingService)
         {
             this.userRepsitory = userRepsitory;
             this.currentUserService = currentUserService;
             this.geocodingService = geocodingService;
-            this.mapper = mapper;
         }
 
         public async Task<int> GetIdByApplicationIdAsync(int applicationId)
@@ -65,8 +56,7 @@ namespace Infrastructure.Services
             userRepsitory.Update(user);
             await userRepsitory.SaveChangesAsync();
 
-            return mapper.Map<UserDto>(user);
+            return user.ToDto();
         }
-
     }
 }

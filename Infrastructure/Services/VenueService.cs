@@ -1,9 +1,8 @@
-using AutoMapper;
 using Core.Entities;
 using Core.Entities.Identity;
 using Application.Interfaces;
-using System.Threading.Tasks;
 using Application.DTOs;
+using Application.Mappers;
 using Application.Requests;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +18,6 @@ namespace Infrastructure.Services
         private readonly IGeocodingService geocodingService;
         private readonly IGeometryProvider geometryService;
         private readonly IUnitOfWork unitOfWork;
-        private readonly IMapper mapper;
 
         public VenueService(
             IVenueRepository venueRepository,
@@ -28,8 +26,7 @@ namespace Infrastructure.Services
             ICurrentUserService currentUserService,
             IGeocodingService geocodingService,
             IUnitOfWork unitOfWork,
-            IGeometryProvider geometryService,
-            IMapper mapper)
+            IGeometryProvider geometryService)
         {
             this.venueRepository = venueRepository;
             this.imageService = imageService;
@@ -38,13 +35,12 @@ namespace Infrastructure.Services
             this.geocodingService = geocodingService;
             this.unitOfWork = unitOfWork;
             this.geometryService = geometryService;
-            this.mapper = mapper;
         }
 
         public async Task<VenueDto> GetDetailsByIdAsync(int id)
         {
             var venue = await venueRepository.GetByIdAsync(id);
-            var venueDto = mapper.Map<VenueDto>(venue);
+            var venueDto = venue.ToDto();
             await reviewService.SetAverageRatingAsync(venueDto);
             return venueDto;
         }
@@ -54,7 +50,7 @@ namespace Infrastructure.Services
             var venueRepository = unitOfWork.GetRepository<Venue>();
             var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
-            var venue = mapper.Map<Venue>(request);
+            var venue = request.ToEntity();
             var user = await currentUserService.GetEntityAsync();
 
             venue.UserId = user.Id;
@@ -66,7 +62,7 @@ namespace Infrastructure.Services
             userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
 
-            return mapper.Map<VenueDto>(createdVenue);
+            return createdVenue.ToDto();
         }
 
         public async Task<VenueDto> UpdateAsync(VenueDto venueDto, IFormFile? image)
@@ -81,7 +77,11 @@ namespace Infrastructure.Services
             if (venue?.UserId != user.Id)
                 throw new ForbiddenException("You do not own this venue");
 
-            mapper.Map(venueDto, venue);
+            venue.Name = venueDto.Name;
+            venue.About = venueDto.About;
+            venue.Approved = venueDto.Approved;
+            venue.ImageUrl = venueDto.ImageUrl;
+
             await UpdateUserLocationAsync(user, venueDto.Latitude, venueDto.Longitude);
 
             if (image is not null)
@@ -91,16 +91,18 @@ namespace Infrastructure.Services
             userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
 
-            mapper.Map(venue, venueDto);
-            venueDto.Rating = averageRating;
-            return venueDto;
+            var result = venue.ToDto();
+            result.Rating = averageRating;
+            return result;
         }
 
         public async Task<VenueDto?> GetDetailsForCurrentUserAsync()
         {
             var user = await currentUserService.GetAsync();
             var venue = await venueRepository.GetByUserIdAsync(user.Id);
-            var venueDto = mapper.Map<VenueDto>(venue);
+            if (venue is null)
+                return null;
+            var venueDto = venue.ToDto();
             await reviewService.SetAverageRatingAsync(venueDto);
             return venueDto;
         }
