@@ -36,7 +36,7 @@ namespace Infrastructure.Services
             await purchaseRepository.SaveChangesAsync();
         }
 
-        public async Task<PaginationResponse<TransactionDto>> GetAsync(PaginationParams pageParams)
+        public async Task<Pagination<TransactionDto>> GetAsync(PaginationParams pageParams)
         {
             var userId = await currentUserService.GetIdAsync();
 
@@ -44,7 +44,7 @@ namespace Infrastructure.Services
 
             var resultDto = mapper.Map<IEnumerable<TransactionDto>>(result.Data);
 
-            return new PaginationResponse<TransactionDto>(
+            return new Pagination<TransactionDto>(
                 resultDto,
                 result.TotalCount,
                 result.PageNumber,

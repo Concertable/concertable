@@ -127,7 +127,7 @@ namespace Infrastructure.Repositories
             };
         }
 
-        private async Task<PaginationResponse<Review>> GetAsync(
+        private async Task<Pagination<Review>> GetAsync(
             Expression<Func<Review, bool>> predicate,
             PaginationParams pageParams)
         {
@@ -140,13 +140,13 @@ namespace Infrastructure.Repositories
             return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
         }
 
-        public Task<PaginationResponse<Review>> GetByEventIdAsync(int eventId, PaginationParams pageParams) =>
+        public Task<Pagination<Review>> GetByEventIdAsync(int eventId, PaginationParams pageParams) =>
             GetAsync(r => r.Ticket.EventId == eventId, pageParams);
 
-        public Task<PaginationResponse<Review>> GetByArtistIdAsync(int artistId, PaginationParams pageParams) =>
+        public Task<Pagination<Review>> GetByArtistIdAsync(int artistId, PaginationParams pageParams) =>
             GetAsync(r => r.Ticket.Event.Application.ArtistId == artistId, pageParams);
 
-        public Task<PaginationResponse<Review>> GetByVenueIdAsync(int venueId, PaginationParams pageParams) =>
+        public Task<Pagination<Review>> GetByVenueIdAsync(int venueId, PaginationParams pageParams) =>
             GetAsync(r => r.Ticket.Event.Application.Listing.VenueId == venueId, pageParams);
 
 

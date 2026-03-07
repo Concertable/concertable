@@ -11,6 +11,6 @@ namespace Application.Interfaces
 {
     public interface ITransactionRepository : IRepository<Transaction>
     {
-        Task<PaginationResponse<Transaction>> GetAsync(PaginationParams pageParams, int userId);
+        Task<Pagination<Transaction>> GetAsync(PaginationParams pageParams, int userId);
     }
 }

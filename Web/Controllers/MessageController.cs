@@ -28,7 +28,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("user")]
-        public async Task<ActionResult<PaginationResponse<Message>>> GetForUser([FromQuery] PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<Message>>> GetForUser([FromQuery] PaginationParams pageParams)
         {
             return Ok(await messageService.GetForUserAsync(pageParams));
         }

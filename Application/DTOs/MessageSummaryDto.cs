@@ -10,7 +10,7 @@ namespace Application.DTOs
 {
     public class MessageSummaryDto
     {
-        public PaginationResponse<MessageDto> Messages { get; set; }
+        public Pagination<MessageDto> Messages { get; set; }
         public int UnreadCount { get; set; }
     }
 }

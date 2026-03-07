@@ -69,13 +69,13 @@ namespace Infrastructure.Services
         }
 
 
-        public async Task<PaginationResponse<MessageDto>> GetForUserAsync(PaginationParams? pageParams)
+        public async Task<Pagination<MessageDto>> GetForUserAsync(PaginationParams? pageParams)
         {
             var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
 
             var messagesDto = mapper.Map<IEnumerable<MessageDto>>(messages.Data);
-            return new PaginationResponse<MessageDto>(
+            return new Pagination<MessageDto>(
                 messagesDto,
                 messages.TotalCount,
                 messages.PageNumber,
@@ -94,7 +94,7 @@ namespace Infrastructure.Services
 
             return new MessageSummaryDto
             {
-                Messages = new PaginationResponse<MessageDto>(
+                Messages = new Pagination<MessageDto>(
                     messagesDto,
                     messages.TotalCount,
                     messages.PageNumber,

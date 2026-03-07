@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
-    public class GeometryService : IGeometryService
+    public class GeometryProvider : IGeometryProvider
     {
         private readonly GeometryFactory geometryFactory;
 
-        public GeometryService(GeometryFactory geometryFactory)
+        public GeometryProvider(GeometryFactory geometryFactory)
         {
             this.geometryFactory = geometryFactory;
         }
@@ -20,12 +20,8 @@ namespace Infrastructure.Services
         public Point? CreatePoint(double? latitude, double? longitude)
         {
             return (latitude.HasValue && longitude.HasValue)
-            ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
-            : null;
+                ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
+                : null;
         }
-
-        public double? GetLatitude(Point? point) => point?.Y;
-
-        public double? GetLongitude(Point? point) => point?.X;
     }
 }

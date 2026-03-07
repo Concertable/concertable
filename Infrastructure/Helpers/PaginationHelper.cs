@@ -12,7 +12,7 @@ namespace Infrastructure.Helpers
 {
     public static class PaginationHelper
     {
-        public static async Task<PaginationResponse<T>> CreatePaginatedResponseAsync<T>(
+        public static async Task<Pagination<T>> CreatePaginatedResponseAsync<T>(
         IQueryable<T> query, PaginationParams pageParams)
         {
             int totalCount = await query.CountAsync();
@@ -21,8 +21,12 @@ namespace Infrastructure.Helpers
                 .Take(pageParams.PageSize)
                 .ToListAsync();
 
-            return new PaginationResponse<T>(data, totalCount, pageParams.PageNumber, pageParams.PageSize);
+            return new Pagination<T>(data, totalCount, pageParams.PageNumber, pageParams.PageSize);
         }
+
+        public static async Task<Pagination<T>> ToPaginationAsync<T>(
+            this IQueryable<T> query, PaginationParams pageParams)
+            => await CreatePaginatedResponseAsync(query, pageParams);
 
         public static PaginationParams CreateDefaultSummaryParams() => new PaginationParams {PageNumber = 1, PageSize = 5};
 

@@ -16,9 +16,9 @@ namespace Infrastructure.Services
 {
     public class LocationService : ILocationService
     {
-        private readonly IGeometryService geometryService;
+        private readonly IGeometryProvider geometryService;
 
-        public LocationService(IGeometryService geometryService)
+        public LocationService(IGeometryProvider geometryService)
         {
             this.geometryService = geometryService;
         }

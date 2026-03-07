@@ -1,16 +1,9 @@
-﻿using Application.DTOs;
 using Core.Entities;
-using Core.Parameters;
-using Application.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.Interfaces;
 
 namespace Application.Interfaces
 {
-    public interface IVenueRepository : IHeaderRepository<Venue, VenueHeaderDto>
+    public interface IVenueRepository : IRepository<Venue>
     {
         Task<Venue?> GetByUserIdAsync(int id);
         Task<int?> GetIdByUserIdAsync(int userId);

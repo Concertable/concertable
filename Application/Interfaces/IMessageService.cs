@@ -15,7 +15,7 @@ namespace Application.Interfaces
         Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content);
         Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content);
         Task<MessageSummaryDto> GetSummaryForUser();
-        Task<PaginationResponse<MessageDto>> GetForUserAsync(PaginationParams? pageParams);
+        Task<Pagination<MessageDto>> GetForUserAsync(PaginationParams? pageParams);
         Task<int> GetUnreadCountForUserAsync();
         Task MarkAsReadAsync(List<int> ids);
     }

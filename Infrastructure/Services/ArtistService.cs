@@ -1,39 +1,30 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.Entities;
 using Application.Interfaces;
-using Core.Parameters;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
-using Application.Responses;
-using Infrastructure.Repositories;
-using Core.Entities.Identity;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services
 {
-    public class ArtistService : HeaderService<Artist, ArtistHeaderDto>, IArtistService
+    public class ArtistService : IArtistService
     {
         private readonly IArtistRepository artistRepository;
         private readonly IImageService imageService;
         private readonly IReviewService reviewService;
-        private readonly ILocationService locationService;
         private readonly ICurrentUserService currentUserService;
-        private IUnitOfWork unitOfWork;
+        private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
 
         public ArtistService(
             IArtistRepository artistRepository,
             IImageService imageService,
-            ICurrentUserService currentUserService, 
-            IReviewService reviewService, 
-            IGeometryService geometryService,
+            ICurrentUserService currentUserService,
+            IReviewService reviewService,
             IUnitOfWork unitOfWork,
-            IMapper mapper) : base(artistRepository, geometryService)
+            IMapper mapper)
         {
             this.artistRepository = artistRepository;
             this.imageService = imageService;
@@ -43,20 +34,10 @@ namespace Infrastructure.Services
             this.mapper = mapper;
         }
 
-        public async override Task<PaginationResponse<ArtistHeaderDto>> GetHeadersAsync(SearchParams searchParams)
-        {
-            var headers = await base.GetHeadersAsync(searchParams);
-
-            await reviewService.AddAverageRatingsAsync(headers.Data);
-
-            return headers;
-        }
-
         public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
         {
             var user = await currentUserService.GetAsync();
             var artist = await artistRepository.GetByUserIdAsync(user.Id);
-
             return mapper.Map<ArtistDto?>(artist);
         }
 
@@ -69,10 +50,8 @@ namespace Infrastructure.Services
         public async Task<ArtistDto> CreateAsync(CreateArtistDto createArtistDto, IFormFile image)
         {
             var artist = mapper.Map<Artist>(createArtistDto);
-
             var user = await currentUserService.GetAsync();
             artist.UserId = user.Id;
-
             artist.ImageUrl = await imageService.UploadAsync(image);
 
             foreach (var genre in createArtistDto.Genres)
@@ -80,13 +59,12 @@ namespace Infrastructure.Services
                 artist.ArtistGenres.Add(new ArtistGenre
                 {
                     ArtistId = artist.Id,
-                    GenreId = genre.Id   
+                    GenreId = genre.Id
                 });
             }
 
             var createdArtist = await artistRepository.AddAsync(artist);
             await artistRepository.SaveChangesAsync();
-
             return mapper.Map<ArtistDto>(createdArtist);
         }
 
@@ -102,11 +80,9 @@ namespace Infrastructure.Services
             if (artist.UserId != user.Id)
                 throw new ForbiddenException("You do not own this Artist");
 
-            // Get current ids, and any new ones that were added
             var existingGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId).ToList();
             var newGenreIds = artistDto.Genres.Select(g => g.Id).ToList();
 
-            // Remove genres that are no longer selected
             var genreIdsToRemove = existingGenreIds.Except(newGenreIds).ToList();
             foreach (var genreId in genreIdsToRemove)
             {
@@ -115,7 +91,6 @@ namespace Infrastructure.Services
                     artist.ArtistGenres.Remove(genreToRemove);
             }
 
-            // Add newly selected genres
             var genreIdsToAdd = newGenreIds.Except(existingGenreIds).ToList();
             foreach (var genreId in genreIdsToAdd)
             {
@@ -128,11 +103,8 @@ namespace Infrastructure.Services
 
             mapper.Map(artistDto, artist);
 
-            // Replace image if provided
             if (image is not null)
-            {
                 artist.ImageUrl = await imageService.ReplaceAsync(image, artist.ImageUrl);
-            }
 
             artistRepository.Update(artist);
             await artistRepository.SaveChangesAsync();

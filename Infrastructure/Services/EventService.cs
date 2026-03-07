@@ -1,29 +1,17 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.Entities;
 using Application.Interfaces;
 using Core.Parameters;
-using Infrastructure.Repositories;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Responses;
-using System.Diagnostics;
-using Application.Responses;
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Logging;
 using Core.Exceptions;
-using Microsoft.AspNetCore.SignalR;
-using Stripe.Terminal;
-using Infrastructure.Helpers;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services
 {
-    public class EventService : HeaderService<Event, EventHeaderDto>, IEventService
+    public class EventService : IEventService
     {
         private readonly IEventRepository eventRepository;
         private readonly IEventValidationService eventValidationService;
@@ -48,14 +36,13 @@ namespace Infrastructure.Services
             IListingApplicationValidationService applicationValidationService,
             IMessageService messageService,
             IEmailService emailService,
-            IReviewService reviewService, 
-            IGeometryService geometryService,
+            IReviewService reviewService,
             IPreferenceService preferenceService,
             ILocationService locationService,
             IListingRepository listingRepository,
             IListingApplicationRepository listingApplicationRepository,
             IGenreRepository genreRepository,
-            IMapper mapper) : base(eventRepository, geometryService)
+            IMapper mapper)
         {
             this.eventRepository = eventRepository;
             this.eventValidationService = eventValidationService;
@@ -79,15 +66,6 @@ namespace Infrastructure.Services
             return mapper.Map<IEnumerable<EventDto>>(events);
         }
 
-        public async override Task<PaginationResponse<EventHeaderDto>> GetHeadersAsync(SearchParams? searchParams)
-        {
-            var headers = await base.GetHeadersAsync(searchParams);
-
-            await reviewService.AddAverageRatingsAsync(headers.Data);
-
-            return headers;
-        }
-
         public async Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id)
         {
             var events = await eventRepository.GetUpcomingByArtistIdAsync(id);
@@ -109,7 +87,6 @@ namespace Infrastructure.Services
         public async Task<EventDto> GetDetailsByIdAsync(int id)
         {
             var eventEntity = await eventRepository.GetByIdAsync(id);
-
             return mapper.Map<EventDto>(eventEntity);
         }
 
@@ -145,20 +122,17 @@ namespace Infrastructure.Services
             try
             {
                 var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
-
                 var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
-
-                var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!); // Create event with default values
+                var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
 
                 await messageService.SendAndSaveAsync(
                     purchaseCompleteDto.FromUserId,
                     purchaseCompleteDto.ToUserId,
                     "event",
                     eventDto.Id,
-                    "Your Application has been accepted! View your event here"
-                );
+                    "Your Application has been accepted! View your event here");
 
-                await emailService.SendEmailAsync(artist.User.Email, "Event Creation", "Your Application was chosen! An Event has been schedueled for you!"); // Send email to Artist Manager
+                await emailService.SendEmailAsync(artist.User.Email, "Event Creation", "Your Application was chosen! An Event has been schedueled for you!");
 
                 return new ListingApplicationPurchaseResponse
                 {
@@ -167,7 +141,8 @@ namespace Infrastructure.Services
                     ApplicationId = purchaseCompleteDto.EntityId,
                     Event = eventDto
                 };
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 return new ListingApplicationPurchaseResponse
                 {
@@ -178,16 +153,11 @@ namespace Infrastructure.Services
             }
         }
 
-        /// <summary>
-        /// Creates default event
-        /// i.e. Event without a defined price, and being labled as unposted
-        /// </summary>
         public async Task<EventDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, Artist artist, Listing listing)
         {
             var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
             var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId);
 
-            // Genres of the event should be the intersection of the artist, and listing genres
             var matchingGenreIds = listingGenreIds.Any()
                 ? artistGenreIds.Intersect(listingGenreIds)
                 : artistGenreIds;
@@ -206,12 +176,8 @@ namespace Infrastructure.Services
                 TotalTickets = 0,
                 AvailableTickets = 0,
                 DatePosted = null,
-                EventGenres  = matchingGenres
-                    .Select(g => new EventGenre
-                    {
-                        GenreId = g.Id,
-                        Genre = g 
-                    })
+                EventGenres = matchingGenres
+                    .Select(g => new EventGenre { GenreId = g.Id, Genre = g })
                     .ToList()
             };
 
@@ -240,7 +206,7 @@ namespace Infrastructure.Services
             var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
             if (eventEntity is null)
                 throw new NotFoundException("Event not found");
-            
+
             mapper.Map(eventDto, eventEntity);
 
             int ticketsSold = eventEntity.TotalTickets - eventEntity.AvailableTickets;
@@ -275,9 +241,7 @@ namespace Infrastructure.Services
             await eventRepository.SaveChangesAsync();
 
             var eventHeaderDto = mapper.Map<EventHeaderDto>(eventDto);
-
             var averageRating = (await reviewService.GetSummaryByEventIdAsync(eventDto.Id)).AverageRating;
-
             eventHeaderDto.Rating = averageRating;
 
             var location = eventEntity.Application.Listing.Venue.User.Location;
@@ -295,23 +259,22 @@ namespace Infrastructure.Services
             var preferences = await preferenceService.GetAsync();
 
             var userIdsToNotify = preferences
-            .Where(preference =>
-            {
-                // Use IsWithinRadius directly, no need to check for null user coordinates here
-                var inRange = locationService.IsWithinRadius(
-                    preference.User.Latitude, // Users Latitude
-                    preference.User.Longitude, // Users Longitude
-                    location.Y, // Evemts Latitude
-                    location.X, // Events Longitude
-                    preference.RadiusKm);
+                .Where(preference =>
+                {
+                    var inRange = locationService.IsWithinRadius(
+                        preference.User.Latitude,
+                        preference.User.Longitude,
+                        location.Y,
+                        location.X,
+                        preference.RadiusKm);
 
-                var hasMatchingGenre = preference.Genres.Any(userGenre =>
-                    eventDto.Genres.Any(eventGenre => eventGenre.Id == userGenre.Id));
+                    var hasMatchingGenre = preference.Genres.Any(userGenre =>
+                        eventDto.Genres.Any(eventGenre => eventGenre.Id == userGenre.Id));
 
-                return inRange && hasMatchingGenre;
-            })
-            .Select(preference => preference.User.Id)
-            .ToList();
+                    return inRange && hasMatchingGenre;
+                })
+                .Select(preference => preference.User.Id)
+                .ToList();
 
             return new EventPostResponse
             {
@@ -320,7 +283,6 @@ namespace Infrastructure.Services
                 UserIds = userIdsToNotify
             };
         }
-
 
         public async Task<IEnumerable<EventHeaderDto>> GetRecommendedHeadersAsync()
         {
@@ -345,9 +307,7 @@ namespace Infrastructure.Services
             };
 
             var result = await eventRepository.GetHeaders(user.Id, eventParams);
-
             await reviewService.AddAverageRatingsAsync(result);
-
             return result.Take(eventParams.Take);
         }
 

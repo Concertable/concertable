@@ -4,7 +4,6 @@ using Core.Parameters;
 using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Infrastructure.Factories;
 using Application.Requests;
 
 namespace Web.Controllers
@@ -46,19 +45,19 @@ namespace Web.Controllers
         }
 
         [HttpGet("venue/{id}")]
-        public async Task<ActionResult<PaginationResponse<ReviewDto>>> GetByVenueId(int id, [FromQuery] PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<ReviewDto>>> GetByVenueId(int id, [FromQuery] PaginationParams pageParams)
         {
             return Ok(await reviewService.GetByVenueIdAsync(id, pageParams));
         }
 
         [HttpGet("artist/{id}")]
-        public async Task<ActionResult<PaginationResponse<ReviewDto>>> GetByArtistId(int id, [FromQuery] PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<ReviewDto>>> GetByArtistId(int id, [FromQuery] PaginationParams pageParams)
         {
             return Ok(await reviewService.GetByArtistIdAsync(id, pageParams));
         }
 
         [HttpGet("event/{id}")]
-        public async Task<ActionResult<PaginationResponse<ReviewDto>>> GetByEventId(int id, [FromQuery]PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<ReviewDto>>> GetByEventId(int id, [FromQuery]PaginationParams pageParams)
         {
             return Ok(await reviewService.GetByEventIdAsync(id, pageParams));
         }

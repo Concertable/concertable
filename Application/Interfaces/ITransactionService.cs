@@ -12,6 +12,6 @@ namespace Application.Interfaces
     public interface ITransactionService
     {
         Task LogAsync(TransactionDto purchaseDto);
-        Task<PaginationResponse<TransactionDto>> GetAsync(PaginationParams pageParams);
+        Task<Pagination<TransactionDto>> GetAsync(PaginationParams pageParams);
     }
 }

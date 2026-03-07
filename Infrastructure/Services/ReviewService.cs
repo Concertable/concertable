@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Search;
 using AutoMapper;
 using Core.Entities;
 using Core.Parameters;
@@ -55,7 +56,7 @@ namespace Infrastructure.Services
         private async Task AddAverageRatingsAsync<THeader>(
             IEnumerable<THeader> headers,
             Func<IEnumerable<int>, Task<IDictionary<int, double>>> getRatingsAsync)
-            where THeader : HeaderDto
+            where THeader : ISearchHeader
         {
             var ids = headers.Select(h => h.Id).ToList();
             var ratings = await getRatingsAsync(ids);
@@ -90,31 +91,31 @@ namespace Infrastructure.Services
             return mapper.Map<ReviewDto>(review);
         }
 
-        private async Task<PaginationResponse<ReviewDto>> GetAsync(
-            Func<PaginationParams, Task<PaginationResponse<Review>>> getAsync,
+        private async Task<Pagination<ReviewDto>> GetAsync(
+            Func<PaginationParams, Task<Pagination<Review>>> getAsync,
             PaginationParams pageParams)
         {
             var reviews = await getAsync(pageParams);
             var reviewsDto = mapper.Map<IEnumerable<ReviewDto>>(reviews.Data);
 
-            return new PaginationResponse<ReviewDto>(
+            return new Pagination<ReviewDto>(
                 reviewsDto,
                 reviews.TotalCount,
                 reviews.PageNumber,
                 reviews.PageSize);
         }
 
-        public async Task<PaginationResponse<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams)
         {
             return await GetAsync(p => reviewRepository.GetByArtistIdAsync(id, p), pageParams);
         }
 
-        public async Task<PaginationResponse<ReviewDto>> GetByEventIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, PaginationParams pageParams)
         {
             return await GetAsync(p => reviewRepository.GetByEventIdAsync(id, p), pageParams);
         }
 
-        public async Task<PaginationResponse<ReviewDto>> GetByVenueIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, PaginationParams pageParams)
         {
             return await GetAsync(p => reviewRepository.GetByVenueIdAsync(id, p), pageParams);
         }

@@ -23,9 +23,9 @@ namespace Application.Interfaces
         Task<IDictionary<int, double>> GetAverageRatingsByVenueIdsAsync(IEnumerable<int> ids);
 
         // Paginated Review Retrieval
-        Task<PaginationResponse<Review>> GetByEventIdAsync(int  eventId, PaginationParams pageParams);
-        Task<PaginationResponse<Review>> GetByArtistIdAsync(int artistId, PaginationParams pageParams);
-        Task<PaginationResponse<Review>> GetByVenueIdAsync(int venueId, PaginationParams pageParams);
+        Task<Pagination<Review>> GetByEventIdAsync(int  eventId, PaginationParams pageParams);
+        Task<Pagination<Review>> GetByArtistIdAsync(int artistId, PaginationParams pageParams);
+        Task<Pagination<Review>> GetByVenueIdAsync(int venueId, PaginationParams pageParams);
 
         // Review Permission Checks
         Task<bool> CanUserIdReviewEventIdAsync(int userId, int eventId);

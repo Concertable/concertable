@@ -29,18 +29,6 @@ namespace Web.Controllers
             return Ok(await artistService.GetDetailsByIdAsync(id));
         }
 
-        [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
-        {
-            return Ok(await artistService.GetHeadersAsync(searchParams));
-        }
-
-        [HttpGet("headers/amount/{amount}")]
-        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders(int amount)
-        {
-            return Ok(await artistService.GetHeadersAsync(amount));
-        }
-
         [Authorize(Roles = "ArtistManager")]
         [HttpGet("user")]
         public async Task<ActionResult<ArtistDto?>> GetDetailsForCurrentUser()

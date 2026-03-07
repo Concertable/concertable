@@ -19,7 +19,7 @@ namespace Infrastructure.Repositories
     {
         public MessageRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<PaginationResponse<Message>> GetByUserIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<Message>> GetByUserIdAsync(int id, PaginationParams pageParams)
         {
             var query = context.Messages
                 .Include(m => m.FromUser)

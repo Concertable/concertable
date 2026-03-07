@@ -26,18 +26,6 @@ namespace Web.Controllers
             this.hubContext = hubContext;
         }
 
-        [HttpGet("headers")]
-        public async Task<ActionResult<IEnumerable<EventHeaderDto>>> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
-        {
-            return Ok(await eventService.GetHeadersAsync(searchParams));
-        }
-
-        [HttpGet("headers/amount/{amount}")]
-        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders(int amount)
-        {
-            return Ok(await eventService.GetHeadersAsync(amount));
-        }
-
         [HttpGet("{id}")]
         public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
         {

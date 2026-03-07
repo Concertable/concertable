@@ -26,7 +26,7 @@ namespace Infrastructure.Tests.Services
         private Mock<IGeocodingService> geocodingServiceMock;
         private Mock<IUnitOfWork> unitOfWorkMock;
         private Mock<IMapper> mapperMock;
-        private Mock<IGeometryService> geometryServiceMock;
+        private Mock<IGeometryProvider> geometryServiceMock;
         private VenueService venueService;
 
         [SetUp]
@@ -39,7 +39,7 @@ namespace Infrastructure.Tests.Services
             geocodingServiceMock = new Mock<IGeocodingService>();
             unitOfWorkMock = new Mock<IUnitOfWork>();
             mapperMock = new Mock<IMapper>();
-            geometryServiceMock = new Mock<IGeometryService>();
+            geometryServiceMock = new Mock<IGeometryProvider>();
 
             venueService = new VenueService(
                 venueRepositoryMock.Object,
@@ -51,52 +51,6 @@ namespace Infrastructure.Tests.Services
                 geometryServiceMock.Object,
                 mapperMock.Object
             );
-        }
-
-        [Test]
-        public async Task GetHeadersAsync_ShouldReturnHeadersWithRatings()
-        {
-            // Arrange
-            var venueParams = new SearchParams { Sort = "Name" };
-
-            var venues = new List<Venue>
-            {
-                new Venue { Id = 1, Name = "Venue 1" },
-                new Venue { Id = 2, Name = "Venue 2" }
-            };
-
-            var venueHeaders = new List<VenueHeaderDto>
-            {
-                new VenueHeaderDto { Id = 1, Name = "Venue 1" },
-                new VenueHeaderDto { Id = 2, Name = "Venue 2" }
-            };
-
-            var paginationResponse = new PaginationResponse<VenueHeaderDto>(
-                venueHeaders,
-                pageNumber: 1,
-                pageSize: 2,
-                totalCount: 2
-);
-
-            venueRepositoryMock
-                .Setup(x => x.GetHeadersAsync(venueParams))
-                .ReturnsAsync(paginationResponse);
-
-            mapperMock
-                .Setup(x => x.Map<IEnumerable<VenueHeaderDto>>(venues))
-                .Returns(venueHeaders);
-
-            reviewServiceMock
-                .Setup(x => x.AddAverageRatingsAsync(venueHeaders))
-                .Returns(Task.CompletedTask);
-
-            // Act
-            var result = await venueService.GetHeadersAsync(venueParams);
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Data.Count());
-            Assert.AreEqual("Venue 1", result.Data.First().Name);
         }
 
         [Test]

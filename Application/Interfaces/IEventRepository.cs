@@ -1,21 +1,14 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Core.Entities;
+using Core.Interfaces;
 using Core.Parameters;
-using Application.Responses;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IEventRepository : IHeaderRepository<Event, EventHeaderDto>
+    public interface IEventRepository : IRepository<Event>
     {
         Task<IEnumerable<EventHeaderDto>> GetHeaders(int userId, EventParams eventParams);
         Task<Event> GetByIdAsync(int id);
-        Task<IEnumerable<EventHeaderDto>> GetHeaders(int amount);
         Task<Event?> GetByApplicationIdAsync(int applicationId);
         Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id);
         Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id);

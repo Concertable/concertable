@@ -19,9 +19,9 @@ namespace Application.Interfaces
 
         Task SetAverageRatingAsync(VenueDto venue);
 
-        Task<PaginationResponse<ReviewDto>> GetByVenueIdAsync(int id, PaginationParams pageParams);
-        Task<PaginationResponse<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams);
-        Task<PaginationResponse<ReviewDto>> GetByEventIdAsync(int id, PaginationParams pageParams);
+        Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, PaginationParams pageParams);
+        Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams);
+        Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, PaginationParams pageParams);
 
         Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);

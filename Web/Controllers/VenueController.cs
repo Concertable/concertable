@@ -24,18 +24,6 @@ namespace Web.Controllers
             this.ownershipService = ownershipService;
         }
 
-        [HttpGet("headers")]
-        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders([ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams? searchParams)
-        {
-            return Ok(await venueService.GetHeadersAsync(searchParams));
-        }
-
-        [HttpGet("headers/amount/{amount}")]
-        public async Task<ActionResult<PaginationResponse<VenueHeaderDto>>> GetHeaders(int amount)
-        {
-            return Ok(await venueService.GetHeadersAsync(amount));
-        }
-
         [HttpGet("{id}")]
         public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
         {

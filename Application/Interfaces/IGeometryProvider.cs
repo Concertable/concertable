@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IGeometryService
+    public interface IGeometryProvider
     {
         Point? CreatePoint(double? latitude, double? longitude);
-        double? GetLatitude(Point? point);
-        double? GetLongitude(Point? point);
     }
 }

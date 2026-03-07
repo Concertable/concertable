@@ -1,17 +1,10 @@
-﻿using Core.Entities;
-using Core.Parameters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Responses;
-using Microsoft.AspNetCore.Mvc;
+using Core.Parameters;
 
 namespace Application.Interfaces
 {
-    public interface IEventService : IHeaderService<EventHeaderDto>
+    public interface IEventService
     {
         Task<EventDto> GetDetailsByIdAsync(int id);
         Task<EventDto> GetDetailsByApplicationIdAsync(int applicationId);
