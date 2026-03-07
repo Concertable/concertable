@@ -1,11 +1,7 @@
 ﻿using Application.Interfaces;
 using Azure.Storage.Blobs;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Infrastructure.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Services
 {
@@ -14,17 +10,17 @@ namespace Infrastructure.Services
         private readonly BlobServiceClient blobServiceClient;
         private readonly string containerName;
 
-        public BlobStorageService(IConfiguration configuration)
+        public BlobStorageService(IOptions<BlobStorageSettings> options)
         {
-            blobServiceClient = new BlobServiceClient(configuration.GetConnectionString("AzureBlobStorage"));
-            containerName = configuration["AzureBlobStorage:ContainerName"];
+            var settings = options.Value;
+            blobServiceClient = new BlobServiceClient(settings.ConnectionString);
+            containerName = settings.ContainerName!;
         }
 
         public async Task UploadAsync(Stream stream, string blobName)
         {
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
-
             await blobClient.UploadAsync(stream, overwrite: true);
         }
 
@@ -32,7 +28,6 @@ namespace Infrastructure.Services
         {
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
-
             await blobClient.DeleteIfExistsAsync();
         }
 
@@ -40,7 +35,6 @@ namespace Infrastructure.Services
         {
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
-            
             var response = await blobClient.DownloadAsync();
             return response.Value.Content;
         }

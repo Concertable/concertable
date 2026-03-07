@@ -49,6 +49,12 @@ namespace Web.Extensions
                 .AddApiEndpoints();
 
             services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
+            services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
+
+            if (!string.IsNullOrEmpty(configuration.GetSection("BlobStorage")["ConnectionString"]))
+                services.AddScoped<IBlobStorageService, BlobStorageService>();
+            else
+                services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
 
             services.AddSingleton<GeometryFactory>(
                 NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
@@ -84,7 +90,6 @@ namespace Web.Extensions
             services.AddScoped<IManagerService, ManagerService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGenreService, GenreService>();
-            services.AddScoped<IBlobStorageService, BlobStorageService>();
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<IEmailService, EmailService>();
