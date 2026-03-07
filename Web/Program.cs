@@ -22,7 +22,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.FullName);
+});
 
 builder.Services.AddCors(options =>
 {
@@ -42,6 +45,7 @@ services.AddServices();
 services.AddRepositories();
 services.AddSearch();
 services.AddAuth();
+services.AddValidation();
 
 builder.Services.AddExceptionHandler<Infrastructure.GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

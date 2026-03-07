@@ -1,4 +1,7 @@
 using Application.Interfaces;
+using Application.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Application.Interfaces.Search;
 using Application.Mappings;
 using Application.Serializers;
@@ -22,6 +25,7 @@ using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
 using System.Text.Json.Serialization;
 using Web.Authorization;
+using Application.DTOs;
 
 namespace Web.Extensions
 {
@@ -158,6 +162,14 @@ namespace Web.Extensions
             services.AddKeyedScoped<ISearchService, EventSearchService>("event");
 
             services.AddScoped<ISearchServiceFactory, SearchServiceFactory>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddValidation(this IServiceCollection services)
+        {
+            services.AddFluentValidationAutoValidation();
+            services.AddValidatorsFromAssemblyContaining<UserDto>();
 
             return services;
         }

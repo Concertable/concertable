@@ -1,15 +1,11 @@
 using Common.Helpers;
-using System.ComponentModel.DataAnnotations;
 
 namespace Application.DTOs
 {
     public record ItemDto
     {
         public int Id { get; set; }
-        [Required(ErrorMessage = "Name is required.")]
-        [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
         public string Name { get; set; }
-        [StringLength(1000, ErrorMessage = "About section cannot exceed 1000 characters.")]
         public string About { get; set; }
         public string Type { get; set; }
         public double Rating { get; set; }
@@ -62,10 +58,7 @@ namespace Application.DTOs
 
     public record CoordinatesDto
     {
-        [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90 degrees")]
         public double Latitude { get; set; }
-
-        [Range(-180, 180, ErrorMessage = "Longitude must be between -180 and 180 degrees")]
         public double Longitude { get; set; }
     }
 
