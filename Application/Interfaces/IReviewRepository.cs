@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Core.Entities;
 using Core.Parameters;
@@ -23,9 +24,9 @@ namespace Application.Interfaces
         Task<IDictionary<int, double>> GetAverageRatingsByVenueIdsAsync(IEnumerable<int> ids);
 
         // Paginated Review Retrieval
-        Task<Pagination<Review>> GetByEventIdAsync(int  eventId, PaginationParams pageParams);
-        Task<Pagination<Review>> GetByArtistIdAsync(int artistId, PaginationParams pageParams);
-        Task<Pagination<Review>> GetByVenueIdAsync(int venueId, PaginationParams pageParams);
+        Task<Pagination<Review>> GetByEventIdAsync(int  eventId, IPageParams pageParams);
+        Task<Pagination<Review>> GetByArtistIdAsync(int artistId, IPageParams pageParams);
+        Task<Pagination<Review>> GetByVenueIdAsync(int venueId, IPageParams pageParams);
 
         // Review Permission Checks
         Task<bool> CanUserIdReviewEventIdAsync(int userId, int eventId);

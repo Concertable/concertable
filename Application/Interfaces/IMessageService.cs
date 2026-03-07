@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Core.Entities;
 using Core.Parameters;
@@ -15,7 +16,7 @@ namespace Application.Interfaces
         Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content);
         Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content);
         Task<MessageSummaryDto> GetSummaryForUser();
-        Task<Pagination<MessageDto>> GetForUserAsync(PaginationParams? pageParams);
+        Task<Pagination<MessageDto>> GetForUserAsync(IPageParams? pageParams);
         Task<int> GetUnreadCountForUserAsync();
         Task MarkAsReadAsync(List<int> ids);
     }

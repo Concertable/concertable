@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Responses;
@@ -19,7 +20,7 @@ namespace Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Pagination<TransactionDto>>> GetPurchases([FromQuery] PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<TransactionDto>>> GetPurchases([FromQuery] IPageParams pageParams)
         {
             var result = await purchaseService.GetAsync(pageParams);
             return Ok(result);

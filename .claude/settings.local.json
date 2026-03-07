@@ -4,7 +4,8 @@
       "Bash(rm:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet-ef database:*)",
-      "Bash(~/.dotnet/tools/dotnet-ef database:*)"
+      "Bash(~/.dotnet/tools/dotnet-ef database:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

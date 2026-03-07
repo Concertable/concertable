@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Core.Parameters;
@@ -45,19 +46,19 @@ namespace Web.Controllers
         }
 
         [HttpGet("venue/{id}")]
-        public async Task<ActionResult<Pagination<ReviewDto>>> GetByVenueId(int id, [FromQuery] PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<ReviewDto>>> GetByVenueId(int id, [FromQuery] IPageParams pageParams)
         {
             return Ok(await reviewService.GetByVenueIdAsync(id, pageParams));
         }
 
         [HttpGet("artist/{id}")]
-        public async Task<ActionResult<Pagination<ReviewDto>>> GetByArtistId(int id, [FromQuery] PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<ReviewDto>>> GetByArtistId(int id, [FromQuery] IPageParams pageParams)
         {
             return Ok(await reviewService.GetByArtistIdAsync(id, pageParams));
         }
 
         [HttpGet("event/{id}")]
-        public async Task<ActionResult<Pagination<ReviewDto>>> GetByEventId(int id, [FromQuery]PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<ReviewDto>>> GetByEventId(int id, [FromQuery]IPageParams pageParams)
         {
             return Ok(await reviewService.GetByEventIdAsync(id, pageParams));
         }

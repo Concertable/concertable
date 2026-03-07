@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.Interfaces;
 using Application.Responses;
 using Core.Entities;
@@ -16,7 +17,7 @@ namespace Infrastructure.Repositories
     {
         public TransactionRepository(ApplicationDbContext context) : base(context) { }
 
-        public Task<Pagination<Transaction>> GetAsync(PaginationParams pageParams, int userId)
+        public Task<Pagination<Transaction>> GetAsync(IPageParams pageParams, int userId)
         {
             var query = context.Transactions
                 .Where(t => t.FromUserId == userId || t.ToUserId == userId)

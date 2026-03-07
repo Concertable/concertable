@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Application.Responses;
 using Core.Parameters;
@@ -12,6 +13,6 @@ namespace Application.Interfaces
     public interface ITransactionService
     {
         Task LogAsync(TransactionDto purchaseDto);
-        Task<Pagination<TransactionDto>> GetAsync(PaginationParams pageParams);
+        Task<Pagination<TransactionDto>> GetAsync(IPageParams pageParams);
     }
 }

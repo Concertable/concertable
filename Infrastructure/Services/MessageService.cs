@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
@@ -69,7 +70,7 @@ namespace Infrastructure.Services
         }
 
 
-        public async Task<Pagination<MessageDto>> GetForUserAsync(PaginationParams? pageParams)
+        public async Task<Pagination<MessageDto>> GetForUserAsync(IPageParams? pageParams)
         {
             var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
@@ -84,7 +85,7 @@ namespace Infrastructure.Services
 
         public async Task<MessageSummaryDto> GetSummaryForUser()
         {
-            var pageParams = new PaginationParams() { PageNumber = 1, PageSize = 5 };
+            var pageParams = new ReviewParams { PageNumber = 1, PageSize = 5 };
 
             var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);

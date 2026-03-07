@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Core.Entities;
@@ -129,7 +130,7 @@ namespace Infrastructure.Repositories
 
         private async Task<Pagination<Review>> GetAsync(
             Expression<Func<Review, bool>> predicate,
-            PaginationParams pageParams)
+            IPageParams pageParams)
         {
             var query = context.Reviews
                 .Include(r => r.Ticket)
@@ -140,13 +141,13 @@ namespace Infrastructure.Repositories
             return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
         }
 
-        public Task<Pagination<Review>> GetByEventIdAsync(int eventId, PaginationParams pageParams) =>
+        public Task<Pagination<Review>> GetByEventIdAsync(int eventId, IPageParams pageParams) =>
             GetAsync(r => r.Ticket.EventId == eventId, pageParams);
 
-        public Task<Pagination<Review>> GetByArtistIdAsync(int artistId, PaginationParams pageParams) =>
+        public Task<Pagination<Review>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
             GetAsync(r => r.Ticket.Event.Application.ArtistId == artistId, pageParams);
 
-        public Task<Pagination<Review>> GetByVenueIdAsync(int venueId, PaginationParams pageParams) =>
+        public Task<Pagination<Review>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
             GetAsync(r => r.Ticket.Event.Application.Listing.VenueId == venueId, pageParams);
 
 

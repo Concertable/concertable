@@ -92,8 +92,8 @@ namespace Infrastructure.Services
         }
 
         private async Task<Pagination<ReviewDto>> GetAsync(
-            Func<PaginationParams, Task<Pagination<Review>>> getAsync,
-            PaginationParams pageParams)
+            Func<IPageParams, Task<Pagination<Review>>> getAsync,
+            IPageParams pageParams)
         {
             var reviews = await getAsync(pageParams);
             var reviewsDto = mapper.Map<IEnumerable<ReviewDto>>(reviews.Data);
@@ -105,17 +105,17 @@ namespace Infrastructure.Services
                 reviews.PageSize);
         }
 
-        public async Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams)
         {
             return await GetAsync(p => reviewRepository.GetByArtistIdAsync(id, p), pageParams);
         }
 
-        public async Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, IPageParams pageParams)
         {
             return await GetAsync(p => reviewRepository.GetByEventIdAsync(id, p), pageParams);
         }
 
-        public async Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams)
         {
             return await GetAsync(p => reviewRepository.GetByVenueIdAsync(id, p), pageParams);
         }

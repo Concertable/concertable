@@ -1,15 +1,11 @@
-﻿using Core.Interfaces;
-using Core.ModelBinders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.Interfaces;
 
 namespace Core.Parameters
 {
-    public class SearchParams : PaginationParams, IGeoParams
+    public class SearchParams : IPageParams, IGeoParams
     {
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
         public string? SearchTerm { get; set; }
         public string HeaderType { get; set; }
         public DateTime? Date { get; set; }

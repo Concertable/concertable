@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Core.Parameters;
 using Application.Responses;
@@ -19,9 +20,9 @@ namespace Application.Interfaces
 
         Task SetAverageRatingAsync(VenueDto venue);
 
-        Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, PaginationParams pageParams);
-        Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, PaginationParams pageParams);
-        Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, PaginationParams pageParams);
+        Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams);
+        Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams);
+        Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, IPageParams pageParams);
 
         Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);

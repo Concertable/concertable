@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.Interfaces;
 using Core.Entities;
 using Core.Parameters;
@@ -19,7 +20,7 @@ namespace Infrastructure.Repositories
     {
         public MessageRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<Pagination<Message>> GetByUserIdAsync(int id, PaginationParams pageParams)
+        public async Task<Pagination<Message>> GetByUserIdAsync(int id, IPageParams pageParams)
         {
             var query = context.Messages
                 .Include(m => m.FromUser)

@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.Responses;
 using Core.Entities;
 using Core.Parameters;
@@ -11,6 +12,6 @@ namespace Application.Interfaces
 {
     public interface ITransactionRepository : IRepository<Transaction>
     {
-        Task<Pagination<Transaction>> GetAsync(PaginationParams pageParams, int userId);
+        Task<Pagination<Transaction>> GetAsync(IPageParams pageParams, int userId);
     }
 }

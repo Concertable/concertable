@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Responses;
@@ -36,7 +37,7 @@ namespace Infrastructure.Services
             await purchaseRepository.SaveChangesAsync();
         }
 
-        public async Task<Pagination<TransactionDto>> GetAsync(PaginationParams pageParams)
+        public async Task<Pagination<TransactionDto>> GetAsync(IPageParams pageParams)
         {
             var userId = await currentUserService.GetIdAsync();
 

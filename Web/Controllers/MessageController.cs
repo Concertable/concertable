@@ -1,3 +1,4 @@
+using Core.Interfaces;
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Core.Entities;
@@ -28,7 +29,7 @@ namespace Web.Controllers
         }
 
         [HttpGet("user")]
-        public async Task<ActionResult<Pagination<Message>>> GetForUser([FromQuery] PaginationParams pageParams)
+        public async Task<ActionResult<Pagination<Message>>> GetForUser([FromQuery] IPageParams pageParams)
         {
             return Ok(await messageService.GetForUserAsync(pageParams));
         }
