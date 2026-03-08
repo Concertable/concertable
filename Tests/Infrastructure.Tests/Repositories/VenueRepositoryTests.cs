@@ -1,4 +1,5 @@
 using Core.Entities;
+using Core.Enums;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
@@ -27,7 +28,7 @@ namespace Infrastructure.Tests.Repositories
         public async Task GetHeadersAsync_ShouldReturnHeaders()
         {
             // Arrange
-            var venueParams = new SearchParams { Sort = "Name", HeaderType = "venue" };
+            var venueParams = new SearchParams { Sort = "Name", HeaderType = HeaderType.Venue };
 
             var venueHeaders = new List<Venue> {
                 new Venue { Id = 1, Name = "Test Venue 1", About = "About 1", ImageUrl = "", UserId = 1 },

@@ -1,4 +1,5 @@
 using Application.Interfaces.Search;
+using Core.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Factories
@@ -12,7 +13,7 @@ namespace Infrastructure.Factories
             this.serviceProvider = serviceProvider;
         }
 
-        public IHeaderService? Create(string type)
-            => serviceProvider.GetKeyedService<IHeaderService>(type.ToLower());
+        public IHeaderService? Create(HeaderType type)
+            => serviceProvider.GetKeyedService<IHeaderService>(type.ToString().ToLower());
     }
 }

@@ -88,8 +88,11 @@ namespace Core.ModelBinders
                         // Otherwise, keep as is
                         var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
 
-                        // Convert the value to the appropriate type
-                        convertedValue = Convert.ChangeType(rawValue, targetType);
+                        // Handle enum types with case-insensitive parsing
+                        if (targetType.IsEnum)
+                            convertedValue = Enum.Parse(targetType, rawValue!, ignoreCase: true);
+                        else
+                            convertedValue = Convert.ChangeType(rawValue, targetType);
                     }
 
                     property.SetValue(modelInstance, convertedValue);

@@ -1,3 +1,4 @@
+using Core.Enums;
 using Core.Interfaces;
 
 namespace Core.Parameters
@@ -7,7 +8,7 @@ namespace Core.Parameters
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
         public string? SearchTerm { get; set; }
-        public required string HeaderType { get; set; }
+        public HeaderType? HeaderType { get; set; }
         public DateTime? Date { get; set; }
         public string? Sort { get; set; }
         public double? Latitude { get; set; }
