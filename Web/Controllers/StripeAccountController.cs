@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,18 +9,18 @@ namespace Web.Controllers;
 public class StripeAccountController : ControllerBase
 {
     private readonly IStripeAccountService stripeAccountService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
 
-    public StripeAccountController(IStripeAccountService stripeAccountService, ICurrentUserService currentUserService)
+    public StripeAccountController(IStripeAccountService stripeAccountService, ICurrentUser currentUser)
     {
         this.stripeAccountService = stripeAccountService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     [HttpGet("onboarding-link")]
     public async Task<ActionResult<string>> GetOnboardingLink()
     {
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
 
         if (string.IsNullOrWhiteSpace(user.StripeId))
             return BadRequest("You must have a Stripe Id, contact support to get one");
@@ -33,7 +33,7 @@ public class StripeAccountController : ControllerBase
     [HttpGet("verified")]
     public async Task<ActionResult<bool>> IsUserVerified()
     {
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
 
         if (user.StripeId is null)
         {

@@ -14,7 +14,7 @@ public class VenueService : IVenueService
     private readonly IVenueRepository venueRepository;
     private readonly IImageService imageService;
     private readonly IReviewService reviewService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryService;
     private readonly IUnitOfWork unitOfWork;
@@ -23,7 +23,7 @@ public class VenueService : IVenueService
         IVenueRepository venueRepository,
         IImageService imageService,
         IReviewService reviewService,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IGeocodingService geocodingService,
         IUnitOfWork unitOfWork,
         IGeometryProvider geometryService)
@@ -31,7 +31,7 @@ public class VenueService : IVenueService
         this.venueRepository = venueRepository;
         this.imageService = imageService;
         this.reviewService = reviewService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.geocodingService = geocodingService;
         this.unitOfWork = unitOfWork;
         this.geometryService = geometryService;
@@ -52,7 +52,7 @@ public class VenueService : IVenueService
         var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
 
         var venue = request.ToEntity();
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
 
         venue.UserId = user.Id;
         venue.ImageUrl = await imageService.UploadAsync(image);
@@ -73,7 +73,7 @@ public class VenueService : IVenueService
 
         var averageRating = venueDto.Rating;
         var venue = await venueRepository.GetByIdAsync(venueDto.Id);
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
 
         if (venue?.UserId != user.Id)
             throw new ForbiddenException("You do not own this venue");
@@ -99,7 +99,7 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto?> GetDetailsForCurrentUserAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var venue = await venueRepository.GetByUserIdAsync(user.Id);
         if (venue is null)
             return null;
@@ -110,7 +110,7 @@ public class VenueService : IVenueService
 
     public async Task<int> GetIdForCurrentUserAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         int? id = await venueRepository.GetIdByUserIdAsync(user.Id);
 
         if (id is null)

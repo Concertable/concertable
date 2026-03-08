@@ -1,9 +1,11 @@
 using Core.Entities.Identity;
 using Infrastructure.Data;
 using Infrastructure.Data.Identity;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Web.Extensions;
 using Web.Hubs;
+using Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +59,7 @@ var app = builder.Build();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<CurrentUserMiddleware>();
 
 app.MapControllers();
 app.MapGroup("/api").MapIdentityApi<ApplicationUser>();

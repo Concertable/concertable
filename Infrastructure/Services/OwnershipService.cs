@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Core.Entities;
 using Core.Exceptions;
 using System;
@@ -11,18 +11,18 @@ namespace Infrastructure.Services;
 
 public class OwnershipService : IOwnershipService
 {
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IVenueService venueService;
     private readonly IArtistService artistService;
     private readonly IListingRepository listingRepository;
 
     public OwnershipService(
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IVenueService venueService,
         IArtistService artistService,
         IListingRepository listingRepository)
     {
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.venueService = venueService;
         this.artistService = artistService;
         this.listingRepository = listingRepository;
@@ -37,14 +37,14 @@ public class OwnershipService : IOwnershipService
 
     public async Task<bool> OwnsListingAsync(int listingId)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var listing = await listingRepository.GetWithVenueByIdAsync(listingId);
         return listing != null && listing.Venue?.UserId == user.Id;
     }
 
     public async Task<bool> OwnsListingByApplicationId(int applicationId)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var listing = await listingRepository.GetByApplicationIdAsync(applicationId);
         return listing != null && listing.Venue?.UserId == user.Id;
     }

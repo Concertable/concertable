@@ -12,7 +12,7 @@ public class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
     private readonly IConcertValidationService concertValidationService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IUserPaymentService userPaymentService;
     private readonly IListingApplicationValidationService applicationValidationService;
     private readonly IMessageService messageService;
@@ -28,7 +28,7 @@ public class ConcertService : IConcertService
     public ConcertService(
         IConcertRepository concertRepository,
         IConcertValidationService concertValidationService,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IUserPaymentService userPaymentService,
         IListingApplicationValidationService applicationValidationService,
         IMessageService messageService,
@@ -43,7 +43,7 @@ public class ConcertService : IConcertService
     {
         this.concertRepository = concertRepository;
         this.concertValidationService = concertValidationService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.userPaymentService = userPaymentService;
         this.applicationValidationService = applicationValidationService;
         this.messageService = messageService;
@@ -90,8 +90,8 @@ public class ConcertService : IConcertService
 
     public async Task<ListingApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams)
     {
-        var user = await currentUserService.GetAsync();
-        var role = await currentUserService.GetFirstRoleAsync();
+        var user = currentUser.Get();
+        var role = currentUser.GetFirstRole();
 
         if (role != "VenueManager")
             throw new ForbiddenException("Only VenueManagers can book concerts");
@@ -290,7 +290,7 @@ public class ConcertService : IConcertService
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync()
     {
-        var user = await currentUserService.GetOrDefaultAsync();
+        var user = currentUser.GetOrDefault();
 
         if (user is null)
             return Enumerable.Empty<ConcertHeaderDto>();

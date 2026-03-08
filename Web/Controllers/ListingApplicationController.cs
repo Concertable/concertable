@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +15,20 @@ public class ListingApplicationController : ControllerBase
     private readonly IListingApplicationValidationService applicationValidationService;
     private readonly IArtistService artistService;
     private readonly IOwnershipService ownershipService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
 
     public ListingApplicationController(
         IListingApplicationService listingApplicationService,
         IListingApplicationValidationService applicationValidationService,
         IArtistService artistService,
         IOwnershipService ownershipService,
-        ICurrentUserService currentUserService)
+        ICurrentUser currentUser)
     {
         this.listingApplicationService = listingApplicationService;
         this.applicationValidationService = applicationValidationService;
         this.artistService = artistService;
         this.ownershipService = ownershipService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     [Authorize(Roles = "VenueManager")]
@@ -87,7 +87,7 @@ public class ListingApplicationController : ControllerBase
     [HttpGet("can-accept/{applicationId}")]
     public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
     {
-        var userId = await currentUserService.GetIdAsync();
+        var userId = currentUser.GetId();
         var result = await applicationValidationService.CanAcceptListingApplicationAsync(applicationId, userId);
 
         if (!result.IsValid)

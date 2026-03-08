@@ -16,16 +16,16 @@ public class ReviewService : IReviewService
 {
     private readonly IReviewRepository reviewRepository;
     private readonly ITicketRepository ticketRepository;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
 
     public ReviewService(
         IReviewRepository reviewRepository,
         ITicketRepository ticketRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUser currentUser)
     {
         this.reviewRepository = reviewRepository;
         this.ticketRepository = ticketRepository;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     public Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers)
@@ -65,7 +65,7 @@ public class ReviewService : IReviewService
     {
         var review = request.ToEntity();
 
-        var userId = await currentUserService.GetIdAsync();
+        var userId = currentUser.GetId();
         var ticket = await ticketRepository.GetByUserIdAndConcertIdAsync(userId, request.ConcertId);
 
         if (ticket is null)
@@ -124,19 +124,19 @@ public class ReviewService : IReviewService
 
     public async Task<bool> CanUserReviewConcertIdAsync(int concertId)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         return await reviewRepository.CanUserIdReviewConcertIdAsync(user.Id, concertId);
     }
 
     public async Task<bool> CanUserReviewVenueIdAsync(int venueId)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         return await reviewRepository.CanUserIdReviewVenueIdAsync(user.Id, venueId);
     }
 
     public async Task<bool> CanUserReviewArtistIdAsync(int artistId)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         return await reviewRepository.CanUserIdReviewArtistIdAsync(user.Id, artistId);
     }
 }

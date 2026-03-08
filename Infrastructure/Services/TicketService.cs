@@ -14,7 +14,7 @@ public class TicketService : ITicketService
     private readonly IUserPaymentService userPaymentService;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IManagerService managerService;
     private readonly TimeProvider timeProvider;
 
@@ -25,7 +25,7 @@ public class TicketService : ITicketService
         IUserPaymentService userPaymentService,
         IEmailService emailService,
         IQrCodeService qrCodeService,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IManagerService managerService,
         TimeProvider timeProvider)
     {
@@ -35,15 +35,15 @@ public class TicketService : ITicketService
         this.userPaymentService = userPaymentService;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.managerService = managerService;
         this.timeProvider = timeProvider;
     }
 
     public async Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
-        var user = await currentUserService.GetAsync();
-        var role = await currentUserService.GetFirstRoleAsync();
+        var user = currentUser.Get();
+        var role = currentUser.GetFirstRole();
 
         if (role != "Customer")
             throw new ForbiddenException("Only Customers can buy tickets");
@@ -142,14 +142,14 @@ public class TicketService : ITicketService
 
     public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var tickets = await ticketRepository.GetUpcomingByUserIdAsync(user.Id);
         return tickets.ToDtos();
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserHistoryAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var tickets = await ticketRepository.GetHistoryByUserIdAsync(user.Id);
         return tickets.ToDtos();
     }

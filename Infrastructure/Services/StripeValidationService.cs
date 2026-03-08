@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Responses;
 using System;
 using System.Collections.Generic;
@@ -10,21 +10,21 @@ namespace Infrastructure.Services;
 
 public class StripeValidationService : IStripeValidationService
 {
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IStripeAccountService stripeAccountService;
 
     public StripeValidationService(
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IStripeAccountService stripeAccountService
         )
     {
         this.stripeAccountService = stripeAccountService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     public async Task ValidateUserAsync()
     {
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
 
         if (user.StripeId is null)
             throw new UnauthorizedAccessException("You do not have a Stripe Id. Contact Support to get one");

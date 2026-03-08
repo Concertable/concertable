@@ -19,7 +19,7 @@ public class AuthService : IAuthService
     private readonly IEmailService emailService;
     private readonly IUriService uriService;
     private readonly IPreferenceService preferenceService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly UserManager<ApplicationUser> userManager;
     private readonly SignInManager<ApplicationUser> signInManager;
 
@@ -28,7 +28,7 @@ public class AuthService : IAuthService
         IEmailService emailService,
         IUriService uriService,
         IPreferenceService preferenceService,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager)
     {
@@ -36,7 +36,7 @@ public class AuthService : IAuthService
         this.emailService = emailService;
         this.uriService = uriService;
         this.preferenceService = preferenceService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.userManager = userManager;
         this.signInManager = signInManager;
     }
@@ -168,7 +168,7 @@ public class AuthService : IAuthService
 
     public async Task RequestEmailChangeAsync(string newEmail)
     {
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
 
         if (await userManager.FindByEmailAsync(newEmail) is not null)
             throw new BadRequestException("Email already in use");
@@ -182,7 +182,7 @@ public class AuthService : IAuthService
 
     public async Task<bool> ConfirmEmailChangeAsync(string token, string newEmail)
     {
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
         var result = await userManager.ChangeEmailAsync(user, newEmail, token);
 
         if (!result.Succeeded)

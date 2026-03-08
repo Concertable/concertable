@@ -17,7 +17,7 @@ public class VenueServiceTests
     private Mock<IVenueRepository> venueRepositoryMock;
     private Mock<IImageService> imageServiceMock;
     private Mock<IReviewService> reviewServiceMock;
-    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<ICurrentUser> currentUserMock;
     private Mock<IGeocodingService> geocodingServiceMock;
     private Mock<IUnitOfWork> unitOfWorkMock;
     private Mock<IGeometryProvider> geometryServiceMock;
@@ -29,7 +29,7 @@ public class VenueServiceTests
         venueRepositoryMock = new Mock<IVenueRepository>();
         imageServiceMock = new Mock<IImageService>();
         reviewServiceMock = new Mock<IReviewService>();
-        currentUserServiceMock = new Mock<ICurrentUserService>();
+        currentUserMock = new Mock<ICurrentUser>();
         geocodingServiceMock = new Mock<IGeocodingService>();
         unitOfWorkMock = new Mock<IUnitOfWork>();
         geometryServiceMock = new Mock<IGeometryProvider>();
@@ -38,7 +38,7 @@ public class VenueServiceTests
             venueRepositoryMock.Object,
             imageServiceMock.Object,
             reviewServiceMock.Object,
-            currentUserServiceMock.Object,
+            currentUserMock.Object,
             geocodingServiceMock.Object,
             unitOfWorkMock.Object,
             geometryServiceMock.Object
@@ -78,7 +78,7 @@ public class VenueServiceTests
         unitOfWorkMock.Setup(u => u.GetRepository<Venue>()).Returns(venueRepoMock.Object);
         unitOfWorkMock.Setup(u => u.GetBaseRepository<ApplicationUser>()).Returns(userRepoMock.Object);
 
-        currentUserServiceMock.Setup(x => x.GetEntityAsync()).ReturnsAsync(user);
+        currentUserMock.Setup(x => x.GetEntity()).Returns(user);
         imageServiceMock.Setup(x => x.UploadAsync(imageMock.Object)).ReturnsAsync("image_url");
         venueRepoMock.Setup(r => r.AddAsync(It.IsAny<Venue>())).ReturnsAsync(createdVenue);
         geocodingServiceMock.Setup(x => x.GetLocationAsync(1.0, 2.0))

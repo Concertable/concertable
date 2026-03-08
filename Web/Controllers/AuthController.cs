@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
@@ -16,12 +16,12 @@ namespace Web.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService authService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
 
-    public AuthController(IAuthService authService, ICurrentUserService currentUserService)
+    public AuthController(IAuthService authService, ICurrentUser currentUser)
     {
         this.authService = authService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     [HttpPost("register")]
@@ -51,9 +51,9 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("current-user")]
-    public async Task<ActionResult<UserDto>> GetCurrentUser()
+    public ActionResult<UserDto> GetCurrentUser()
     {
-        return Ok(await currentUserService.GetAsync());
+        return Ok(currentUser.Get());
     }
 
 

@@ -12,7 +12,7 @@ public class ListingApplicationService : IListingApplicationService
 {
     private readonly IListingApplicationRepository listingApplicationRepository;
     private readonly IUnitOfWork unitOfWork;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IListingApplicationValidationService applicationValidationService;
     private readonly IStripeValidationService stripeValidationService;
     private readonly IMessageService messageService;
@@ -24,7 +24,7 @@ public class ListingApplicationService : IListingApplicationService
     public ListingApplicationService(
         IListingApplicationRepository listingApplicationRepository,
         IUnitOfWork unitOfWork,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IListingApplicationValidationService applicationValidationService,
         IStripeValidationService stripeValidationService,
         IMessageService messageService,
@@ -35,7 +35,7 @@ public class ListingApplicationService : IListingApplicationService
     {
         this.listingApplicationRepository = listingApplicationRepository;
         this.unitOfWork = unitOfWork;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.applicationValidationService = applicationValidationService;
         this.stripeValidationService = stripeValidationService;
         this.messageService = messageService;
@@ -86,7 +86,7 @@ public class ListingApplicationService : IListingApplicationService
             ArtistId = artistDto.Id,
         };
 
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var listingOwner = await listingService.GetOwnerByIdAsync(listingId);
         var listing = await listingService.GetByIdAsync(listingId);
 

@@ -9,16 +9,16 @@ namespace Infrastructure.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository userRepsitory;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IGeocodingService geocodingService;
 
     public UserService(
         IUserRepository userRepsitory,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IGeocodingService geocodingService)
     {
         this.userRepsitory = userRepsitory;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.geocodingService = geocodingService;
     }
 
@@ -44,7 +44,7 @@ public class UserService : IUserService
 
     public async Task<UserDto> UpdateLocationAsync(double latitude, double longitude)
     {
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
 
         user.Location = LocationHelper.CreatePoint(latitude, longitude);
 

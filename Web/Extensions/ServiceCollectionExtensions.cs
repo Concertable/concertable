@@ -102,7 +102,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeAccountService, StripeAccountService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddScoped<IUriService, UriService>();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<CurrentUser>();
+        services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<CurrentUser>());
         services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
         services.AddScoped<ITicketValidationService, TicketValidationService>();
         services.AddScoped<IGeometryProvider, GeometryProvider>();

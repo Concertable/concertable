@@ -10,19 +10,19 @@ namespace Infrastructure.Services;
 public class PreferenceService : IPreferenceService
 {
     private readonly IPreferenceRepository preferenceRepository;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
 
     public PreferenceService(
         IPreferenceRepository preferenceRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUser currentUser)
     {
         this.preferenceRepository = preferenceRepository;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     public async Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, int? userId = null)
     {
-        var resolvedUserId = userId ?? await currentUserService.GetIdAsync();
+        var resolvedUserId = userId ?? currentUser.GetId();
 
         var preference = request.ToEntity();
         preference.UserId = resolvedUserId;
@@ -47,7 +47,7 @@ public class PreferenceService : IPreferenceService
 
     public async Task<PreferenceDto?> GetByUserAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         return await GetByUserIdAsync(user.Id);
     }
 
@@ -55,7 +55,7 @@ public class PreferenceService : IPreferenceService
     {
         var preference = await preferenceRepository.GetByIdAsync(preferenceDto.Id)
             ?? throw new NotFoundException("Preference not found");
-        var userId = (await currentUserService.GetAsync()).Id;
+        var userId = currentUser.Get().Id;
 
         if (userId != preference.User.Id)
             throw new UnauthorizedAccessException("You do not own this preference");

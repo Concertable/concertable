@@ -19,24 +19,24 @@ public class UserPaymentService : IUserPaymentService
     private IUserService userService;
     private Lazy<IConcertService> concertService;
     private IListingApplicationService listingApplicationService;
-    private ICurrentUserService currentUserService;
+    private ICurrentUser currentUser;
     public UserPaymentService(
         IPaymentService paymentService,
         IUserService userService,
         Lazy<IConcertService> concertService,
         IListingApplicationService listingApplicationService,
-        ICurrentUserService currentUserService)
+        ICurrentUser currentUser)
     {
         this.paymentService = paymentService;
         this.userService = userService;
         this.concertService = concertService;
         this.listingApplicationService = listingApplicationService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     public async Task<PaymentResponse> PayVenueManagerByConcertIdAsync(int concertId, int quantity, string paymentMethodId)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var toUser = await userService.GetByConcertIdAsync(concertId);
         var concertEntity = await concertService.Value.GetDetailsByIdAsync(concertId);
 
@@ -67,7 +67,7 @@ public class UserPaymentService : IUserPaymentService
 
     public async Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var toUser = await userService.GetByApplicationIdAsync(applicationId);
         var pay = await listingApplicationService.GetListingPayByIdAsync(applicationId);
 

@@ -11,14 +11,14 @@ namespace Infrastructure.Services;
 public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository purchaseRepository;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
 
     public TransactionService(
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         ITransactionRepository purchaseRepository)
     {
         this.purchaseRepository = purchaseRepository;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
     }
 
     public async Task LogAsync(TransactionDto purchaseDto)
@@ -31,7 +31,7 @@ public class TransactionService : ITransactionService
 
     public async Task<Pagination<TransactionDto>> GetAsync(IPageParams pageParams)
     {
-        var userId = await currentUserService.GetIdAsync();
+        var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
 
         return new Pagination<TransactionDto>(

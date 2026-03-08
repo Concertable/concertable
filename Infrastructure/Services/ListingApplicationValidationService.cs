@@ -9,20 +9,20 @@ public class ListingApplicationValidationService : IListingApplicationValidation
     private readonly IConcertRepository concertRepository;
     private readonly IListingRepository listingRepository;
     private readonly IListingApplicationRepository listingApplicationRepository;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly TimeProvider timeProvider;
 
     public ListingApplicationValidationService(
         IConcertRepository concertRepository,
         IListingRepository listingRepository,
         IListingApplicationRepository listingApplicationRepository,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
         this.listingRepository = listingRepository;
         this.listingApplicationRepository = listingApplicationRepository;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.timeProvider = timeProvider;
     }
 

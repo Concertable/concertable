@@ -13,26 +13,26 @@ public class ArtistService : IArtistService
     private readonly IArtistRepository artistRepository;
     private readonly IImageService imageService;
     private readonly IReviewService reviewService;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly IUnitOfWork unitOfWork;
 
     public ArtistService(
         IArtistRepository artistRepository,
         IImageService imageService,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         IReviewService reviewService,
         IUnitOfWork unitOfWork)
     {
         this.artistRepository = artistRepository;
         this.imageService = imageService;
         this.reviewService = reviewService;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.unitOfWork = unitOfWork;
     }
 
     public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var artist = await artistRepository.GetByUserIdAsync(user.Id);
         return artist?.ToDto();
     }
@@ -47,7 +47,7 @@ public class ArtistService : IArtistService
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request, IFormFile image)
     {
         var artist = request.ToEntity();
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         artist.UserId = user.Id;
         artist.ImageUrl = await imageService.UploadAsync(image);
 
@@ -62,7 +62,7 @@ public class ArtistService : IArtistService
         if (artist is null)
             throw new NotFoundException("Artist not found");
 
-        var user = await currentUserService.GetEntityAsync();
+        var user = currentUser.GetEntity();
         if (artist.UserId != user.Id)
             throw new ForbiddenException("You do not own this Artist");
 
@@ -98,7 +98,7 @@ public class ArtistService : IArtistService
 
     public async Task<int> GetIdForCurrentUserAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         int? id = await artistRepository.GetIdByUserIdAsync(user.Id);
 
         if (id is null)

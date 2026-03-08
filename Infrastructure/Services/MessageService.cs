@@ -12,18 +12,18 @@ public class MessageService : IMessageService
 {
     private readonly IUnitOfWork unitOfWork;
     private readonly IMessageRepository messageRepository;
-    private readonly ICurrentUserService currentUserService;
+    private readonly ICurrentUser currentUser;
     private readonly TimeProvider timeProvider;
 
     public MessageService(
         IUnitOfWork unitOfWork,
         IMessageRepository messageRepository,
-        ICurrentUserService currentUserService,
+        ICurrentUser currentUser,
         TimeProvider timeProvider)
     {
         this.unitOfWork = unitOfWork;
         this.messageRepository = messageRepository;
-        this.currentUserService = currentUserService;
+        this.currentUser = currentUser;
         this.timeProvider = timeProvider;
 
     }
@@ -67,7 +67,7 @@ public class MessageService : IMessageService
 
     public async Task<Pagination<MessageDto>> GetForUserAsync(IPageParams pageParams)
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
 
         return new Pagination<MessageDto>(
@@ -81,7 +81,7 @@ public class MessageService : IMessageService
     {
         var pageParams = new PageParams { PageNumber = 1, PageSize = 5 };
 
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
         var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
 
@@ -96,7 +96,7 @@ public class MessageService : IMessageService
 
     public async Task<int> GetUnreadCountForUserAsync()
     {
-        var user = await currentUserService.GetAsync();
+        var user = currentUser.Get();
         return await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
     }
 
