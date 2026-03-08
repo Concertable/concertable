@@ -1,6 +1,7 @@
 using Core.Entities;
 using Application.Interfaces;
 using Application.DTOs;
+using Application.Mappers;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Helpers;
@@ -43,22 +44,11 @@ namespace Infrastructure.Repositories
                     e.Application.Listing.Venue.User.Location.Distance(center) <= radiusKm * 1000);
             }
 
-            return await query
-                .Select(e => new ConcertHeaderDto
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    ImageUrl = e.Application.Artist.ImageUrl,
-                    StartDate = e.Application.Listing.StartDate,
-                    EndDate = e.Application.Listing.EndDate,
-                    County = e.Application.Listing.Venue.User.County,
-                    Town = e.Application.Listing.Venue.User.Town,
-                    Latitude = e.Application.Listing.Venue.User.Location.Y,
-                    Longitude = e.Application.Listing.Venue.User.Location.X,
-                    DatePosted = e.DatePosted
-                })
+            var concerts = await query
                 .Take(10)
                 .ToListAsync();
+
+            return concerts.ToHeaderDtos();
         }
 
         public async Task<Concert> GetByIdAsync(int id)
