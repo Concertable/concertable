@@ -5,16 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Helpers
-{
-    public static class LocationHelper
-    {
-        public static Point? CreatePoint(double? latitude, double? longitude)
-        {
-            if (!latitude.HasValue || !longitude.HasValue)
-                return null;
+namespace Infrastructure.Helpers;
 
-            return new Point(longitude.Value, latitude.Value) { SRID = 4326 };
-        }
+public static class LocationHelper
+{
+    public static Point? CreatePoint(double? latitude, double? longitude)
+    {
+        if (!latitude.HasValue || !longitude.HasValue)
+            return null;
+
+        return new Point(longitude.Value, latitude.Value) { SRID = 4326 };
     }
 }

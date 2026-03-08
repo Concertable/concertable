@@ -6,23 +6,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class QrCodeService : IQrCodeService
 {
-    public class QrCodeService : IQrCodeService
+    private readonly QRCodeGenerator qrCodeGenerator;
+
+    public QrCodeService()
     {
-        private readonly QRCodeGenerator qrCodeGenerator;
+        this.qrCodeGenerator = new QRCodeGenerator();
+    }
 
-        public QrCodeService()
-        {
-            this.qrCodeGenerator = new QRCodeGenerator();
-        }
+    public byte[] GenerateFromTicketId(int id)
+    {
+        QRCodeData qrCodeData = qrCodeGenerator.CreateQrCode(id.ToString(), QRCodeGenerator.ECCLevel.Q);
+        PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
 
-        public byte[] GenerateFromTicketId(int id)
-        {
-            QRCodeData qrCodeData = qrCodeGenerator.CreateQrCode(id.ToString(), QRCodeGenerator.ECCLevel.Q);
-            PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
-
-            return qrCode.GetGraphic(20);
-        }
+        return qrCode.GetGraphic(20);
     }
 }

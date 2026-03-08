@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Enums
+namespace Core.Enums;
+
+public enum ManagerType
 {
-    public enum ManagerType
-    {
-        VenueManager,
-        ArtistManager
-    }
+    VenueManager,
+    ArtistManager
 }

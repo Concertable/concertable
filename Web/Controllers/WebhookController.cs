@@ -15,142 +15,141 @@ using Stripe;
 using Stripe.V2;
 using Web.Hubs;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+[Route("api/[controller]")]
+public class WebhookController : ControllerBase
 {
-    [Route("api/[controller]")]
-    public class WebhookController : ControllerBase
+    private readonly IHubContext<PaymentHub> hubContext;
+    private readonly IBackgroundTaskQueue taskQueue;
+    private readonly IServiceScopeFactory scopeFactory;
+    private readonly IStripeEventRepository stripeEventRepository;
+    private readonly ITicketService ticketService;
+    private readonly IConcertService concertService;
+    private readonly ITransactionService purchaseService;
+    private readonly TimeProvider timeProvider;
+    private readonly ILogger<WebhookController> logger;
+
+    private readonly string webhookSecret;
+
+    public WebhookController(
+        IStripeEventRepository stripeEventRepository,
+        IBackgroundTaskQueue taskQueue,
+        IServiceScopeFactory scopeFactory,
+        IHubContext<PaymentHub> hubContext,
+        ITicketService ticketService,
+        IConcertService concertService,
+        ITransactionService purchaseService,
+        IConfiguration configuration,
+        TimeProvider timeProvider,
+        ILogger<WebhookController> logger)
     {
-        private readonly IHubContext<PaymentHub> hubContext;
-        private readonly IBackgroundTaskQueue taskQueue;
-        private readonly IServiceScopeFactory scopeFactory;
-        private readonly IStripeEventRepository stripeEventRepository;
-        private readonly ITicketService ticketService;
-        private readonly IConcertService concertService;
-        private readonly ITransactionService purchaseService;
-        private readonly TimeProvider timeProvider;
-        private readonly ILogger<WebhookController> logger;
+        this.hubContext = hubContext;
+        this.taskQueue = taskQueue;
+        this.scopeFactory = scopeFactory;
+        this.stripeEventRepository = stripeEventRepository;
+        this.ticketService = ticketService;
+        this.concertService = concertService;
+        this.purchaseService = purchaseService;
+        webhookSecret = configuration["Stripe:WebhookSecret"]!;
+        this.timeProvider = timeProvider;
+        this.logger = logger;
+    }
 
-        private readonly string webhookSecret;
+    [HttpPost]
+    public async Task<IActionResult> HandleWebhook()
+    {
+        var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+        Stripe.Event stripeEvent;
 
-        public WebhookController(
-            IStripeEventRepository stripeEventRepository,
-            IBackgroundTaskQueue taskQueue,
-            IServiceScopeFactory scopeFactory,
-            IHubContext<PaymentHub> hubContext,
-            ITicketService ticketService,
-            IConcertService concertService,
-            ITransactionService purchaseService,
-            IConfiguration configuration,
-            TimeProvider timeProvider,
-            ILogger<WebhookController> logger)
+        try
         {
-            this.hubContext = hubContext;
-            this.taskQueue = taskQueue;
-            this.scopeFactory = scopeFactory;
-            this.stripeEventRepository = stripeEventRepository;
-            this.ticketService = ticketService;
-            this.concertService = concertService;
-            this.purchaseService = purchaseService;
-            webhookSecret = configuration["Stripe:WebhookSecret"]!;
-            this.timeProvider = timeProvider;
-            this.logger = logger;
+            stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
+        }
+        catch (StripeException)
+        {
+            return Problem("Webhook validation failed");
         }
 
-        [HttpPost]
-        public async Task<IActionResult> HandleWebhook()
+        await taskQueue.EnqueueAsync(async cancellationToken =>
         {
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-            Stripe.Event stripeEvent;
+            using var scope = scopeFactory.CreateScope();
+            await ProcessWebhook(scope, stripeEvent, cancellationToken);
+        });
 
-            try
-            {
-                stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
-            }
-            catch (StripeException)
-            {
-                return Problem("Webhook validation failed");
-            }
+        return Ok();
+    }
 
-            await taskQueue.EnqueueAsync(async cancellationToken =>
+    private async Task ProcessWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
+
+        var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
+        var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
+        var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
+        var concertService = scope.ServiceProvider.GetRequiredService<IConcertService>();
+        var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PaymentHub>>();
+
+        try
+        {
+            if (stripeEvent.Data.Object is not PaymentIntent intent)
+                return;
+
+            if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
+                return;
+
+            await stripeEventRepository.AddEventAsync(new StripeEvent
             {
-                using var scope = scopeFactory.CreateScope();
-                await ProcessWebhook(scope, stripeEvent, cancellationToken);
+                EventId = stripeEvent.Id,
+                EventProcessedAt = timeProvider.GetUtcNow().DateTime
             });
 
-            return Ok();
-        }
-
-        private async Task ProcessWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
-        {
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
-
-            var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
-            var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
-            var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
-            var concertService = scope.ServiceProvider.GetRequiredService<IConcertService>();
-            var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PaymentHub>>();
-
-            try
+            if (intent.Status == "succeeded")
             {
-                if (stripeEvent.Data.Object is not PaymentIntent intent)
-                    return;
+                var type = intent.Metadata["type"];
+                var fromUserId = int.Parse(intent.Metadata["fromUserId"]);
+                var toUserId = int.Parse(intent.Metadata["toUserId"]);
+                var fromUserEmail = intent.Metadata["fromUserEmail"];
 
-                if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
-                    return;
-
-                await stripeEventRepository.AddEventAsync(new StripeEvent
+                var purchaseDto = new TransactionDto
                 {
-                    EventId = stripeEvent.Id,
-                    EventProcessedAt = timeProvider.GetUtcNow().DateTime
-                });
+                    FromUserId = fromUserId,
+                    ToUserId = toUserId,
+                    TransactionId = intent.Id,
+                    Amount = intent.AmountReceived,
+                    Type = type,
+                    Status = intent.Status,
+                    CreatedAt = timeProvider.GetUtcNow().DateTime
+                };
 
-                if (intent.Status == "succeeded")
+                await purchaseService.LogAsync(purchaseDto);
+
+                var purchaseCompleteDto = new PurchaseCompleteDto
                 {
-                    var type = intent.Metadata["type"];
-                    var fromUserId = int.Parse(intent.Metadata["fromUserId"]);
-                    var toUserId = int.Parse(intent.Metadata["toUserId"]);
-                    var fromUserEmail = intent.Metadata["fromUserEmail"];
+                    TransactionId = intent.Id,
+                    FromUserId = fromUserId,
+                    FromEmail = fromUserEmail,
+                    ToUserId = toUserId,
+                };
 
-                    var purchaseDto = new TransactionDto
-                    {
-                        FromUserId = fromUserId,
-                        ToUserId = toUserId,
-                        TransactionId = intent.Id,
-                        Amount = intent.AmountReceived,
-                        Type = type,
-                        Status = intent.Status,
-                        CreatedAt = timeProvider.GetUtcNow().DateTime
-                    };
-
-                    await purchaseService.LogAsync(purchaseDto);
-
-                    var purchaseCompleteDto = new PurchaseCompleteDto
-                    {
-                        TransactionId = intent.Id,
-                        FromUserId = fromUserId,
-                        FromEmail = fromUserEmail,
-                        ToUserId = toUserId,
-                    };
-
-                    if (type == "concert")
-                    {
-                        purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["concertId"]);
-                        purchaseCompleteDto.Quantity = int.Parse(intent.Metadata["quantity"]);
-                        var response = await ticketService.CompleteAsync(purchaseCompleteDto);
-                        await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("TicketPurchased", response);
-                    }
-                    else if (type == "application")
-                    {
-                        purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
-                        var response = await concertService.CompleteAsync(purchaseCompleteDto);
-                        await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("ConcertCreated", response);
-                    }
+                if (type == "concert")
+                {
+                    purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["concertId"]);
+                    purchaseCompleteDto.Quantity = int.Parse(intent.Metadata["quantity"]);
+                    var response = await ticketService.CompleteAsync(purchaseCompleteDto);
+                    await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("TicketPurchased", response);
+                }
+                else if (type == "application")
+                {
+                    purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
+                    var response = await concertService.CompleteAsync(purchaseCompleteDto);
+                    await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("ConcertCreated", response);
                 }
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error processing Stripe webhook for event {EventId}", stripeEvent.Id);
-            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error processing Stripe webhook for event {EventId}", stripeEvent.Id);
         }
     }
 }

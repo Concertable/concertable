@@ -1,34 +1,33 @@
-namespace Application.Requests
+namespace Application.Requests;
+
+public record LoginRequest
 {
-    public record LoginRequest
-    {
-        public required string Email { get; set; }
-        public required string Password { get; set; }
-        public bool RememberMe { get; set; }
-    }
+    public required string Email { get; set; }
+    public required string Password { get; set; }
+    public bool RememberMe { get; set; }
+}
 
-    public record RegisterRequest
-    {
-        public required string Email { get; set; }
-        public required string Password { get; set; }
-        public required string Role { get; set; }
-    }
+public record RegisterRequest
+{
+    public required string Email { get; set; }
+    public required string Password { get; set; }
+    public required string Role { get; set; }
+}
 
-    public record ForgotPasswordRequest
-    {
-        public required string Email { get; set; }
-    }
+public record ForgotPasswordRequest
+{
+    public required string Email { get; set; }
+}
 
-    public record ResetPasswordRequest
-    {
-        public int UserId { get; set; }
-        public required string Token { get; set; }
-        public required string NewPassword { get; set; }
-        public required string ConfirmPassword { get; set; }
-    }
+public record ResetPasswordRequest
+{
+    public int UserId { get; set; }
+    public required string Token { get; set; }
+    public required string NewPassword { get; set; }
+    public required string ConfirmPassword { get; set; }
+}
 
-    public record ChangeEmailRequest
-    {
-        public required string NewEmail { get; set; }
-    }
+public record ChangeEmailRequest
+{
+    public required string NewEmail { get; set; }
 }

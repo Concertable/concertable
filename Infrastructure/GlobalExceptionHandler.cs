@@ -10,63 +10,62 @@ using Core.Exceptions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Diagnostics;
 
-namespace Infrastructure
+namespace Infrastructure;
+
+public class GlobalExceptionHandler : IExceptionHandler
 {
-    public class GlobalExceptionHandler : IExceptionHandler
+    private readonly ILogger<GlobalExceptionHandler> logger;
+    private readonly IHostEnvironment env;
+
+    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment env)
     {
-        private readonly ILogger<GlobalExceptionHandler> logger;
-        private readonly IHostEnvironment env;
+        this.logger = logger;
+        this.env = env;
+    }
 
-        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment env)
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    {
+        var problemDetails = new ProblemDetails
         {
-            this.logger = logger;
-            this.env = env;
-        }
+            Instance = httpContext.Request.Path
+        };
 
-        public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+        if (exception is HttpException httpEx)
         {
-            var problemDetails = new ProblemDetails
-            {
-                Instance = httpContext.Request.Path
-            };
+            httpContext.Response.StatusCode = (int)httpEx.StatusCode;
+            problemDetails.Status = httpContext.Response.StatusCode;
+            problemDetails.Title = httpEx.Message;
 
-            if (exception is HttpException httpEx)
+            if (exception is BadRequestException badRequestEx && badRequestEx.Reasons.Any())
             {
-                httpContext.Response.StatusCode = (int)httpEx.StatusCode;
-                problemDetails.Status = httpContext.Response.StatusCode;
-                problemDetails.Title = httpEx.Message;
-
-                if (exception is BadRequestException badRequestEx && badRequestEx.Reasons.Any())
-                {
-                    problemDetails.Title = "Validation Error";
-                    problemDetails.Detail = "One or more validation errors occurred.";
-                    problemDetails.Extensions["errors"] = badRequestEx.Reasons;
-                }
-                else
-                {
-                    problemDetails.Detail = httpEx.Message;
-                }
+                problemDetails.Title = "Validation Error";
+                problemDetails.Detail = "One or more validation errors occurred.";
+                problemDetails.Extensions["errors"] = badRequestEx.Reasons;
             }
             else
             {
-                httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                problemDetails.Status = httpContext.Response.StatusCode;
-                problemDetails.Title = "An unexpected error occurred.";
-                problemDetails.Detail = exception.Message;
-
-                problemDetails.Extensions["stackTrace"] = exception.ToString();
-
-                if (exception.InnerException != null)
-                {
-                    problemDetails.Extensions["innerException"] = exception.InnerException.ToString();
-                }
+                problemDetails.Detail = httpEx.Message;
             }
-
-            logger.LogError(exception, "Unhandled exception occurred");
-
-            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken).ConfigureAwait(false);
-
-            return true;
         }
+        else
+        {
+            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            problemDetails.Status = httpContext.Response.StatusCode;
+            problemDetails.Title = "An unexpected error occurred.";
+            problemDetails.Detail = exception.Message;
+
+            problemDetails.Extensions["stackTrace"] = exception.ToString();
+
+            if (exception.InnerException != null)
+            {
+                problemDetails.Extensions["innerException"] = exception.InnerException.ToString();
+            }
+        }
+
+        logger.LogError(exception, "Unhandled exception occurred");
+
+        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken).ConfigureAwait(false);
+
+        return true;
     }
 }

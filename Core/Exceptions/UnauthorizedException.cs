@@ -5,10 +5,9 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Exceptions
+namespace Core.Exceptions;
+
+public class UnauthorizedException : HttpException
 {
-    public class UnauthorizedException : HttpException
-    {
-        public UnauthorizedException(string message) : base(message, HttpStatusCode.Unauthorized) { }
-    }
+    public UnauthorizedException(string message) : base(message, HttpStatusCode.Unauthorized) { }
 }

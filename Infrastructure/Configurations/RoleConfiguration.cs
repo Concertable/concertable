@@ -7,37 +7,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Configurations
+namespace Infrastructure.Configurations;
+
+public class RoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
+    public void Configure(EntityTypeBuilder<ApplicationRole> builder)
     {
-        public void Configure(EntityTypeBuilder<ApplicationRole> builder)
-        {
-            builder.HasData(
-                new ApplicationRole()
-                {
-                    Id = 1,
-                    Name = "Admin",
-                    NormalizedName = "ADMIN"
-                },
-                new ApplicationRole()
-                {
-                    Id = 2,
-                    Name = "Customer",
-                    NormalizedName = "CUSTOMER"
-                },
-                new ApplicationRole()
-                {
-                    Id = 3,
-                    Name = "ArtistManager",
-                    NormalizedName = "ARTISTMANAGER"
-                },
-                new ApplicationRole()
-                {
-                    Id = 4,
-                    Name = "VenueManager",
-                    NormalizedName = "VENUEMANAGER"
-                });
-        }
+        builder.HasData(
+            new ApplicationRole()
+            {
+                Id = 1,
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+            },
+            new ApplicationRole()
+            {
+                Id = 2,
+                Name = "Customer",
+                NormalizedName = "CUSTOMER"
+            },
+            new ApplicationRole()
+            {
+                Id = 3,
+                Name = "ArtistManager",
+                NormalizedName = "ARTISTMANAGER"
+            },
+            new ApplicationRole()
+            {
+                Id = 4,
+                Name = "VenueManager",
+                NormalizedName = "VENUEMANAGER"
+            });
     }
 }

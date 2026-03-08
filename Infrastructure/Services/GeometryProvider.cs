@@ -6,22 +6,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class GeometryProvider : IGeometryProvider
 {
-    public class GeometryProvider : IGeometryProvider
+    private readonly GeometryFactory geometryFactory;
+
+    public GeometryProvider(GeometryFactory geometryFactory)
     {
-        private readonly GeometryFactory geometryFactory;
+        this.geometryFactory = geometryFactory;
+    }
 
-        public GeometryProvider(GeometryFactory geometryFactory)
-        {
-            this.geometryFactory = geometryFactory;
-        }
-
-        public Point? CreatePoint(double? latitude, double? longitude)
-        {
-            return (latitude.HasValue && longitude.HasValue)
-                ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
-                : null;
-        }
+    public Point? CreatePoint(double? latitude, double? longitude)
+    {
+        return (latitude.HasValue && longitude.HasValue)
+            ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
+            : null;
     }
 }

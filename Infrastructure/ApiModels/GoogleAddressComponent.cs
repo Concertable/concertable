@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.ApiModels
+namespace Infrastructure.ApiModels;
+
+public class GoogleAddressComponent
 {
-    public class GoogleAddressComponent
-    {
-        public string Long_Name { get; set; } = string.Empty;
-        public List<string> Types { get; set; } = [];
-    }
+    public string Long_Name { get; set; } = string.Empty;
+    public List<string> Types { get; set; } = [];
 }

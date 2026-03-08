@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IPdfService
 {
-    public interface IPdfService
-    {
-        Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId);
-    }
+    Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId);
 }

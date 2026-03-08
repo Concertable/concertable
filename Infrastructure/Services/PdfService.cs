@@ -10,57 +10,56 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Exceptions;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class PdfService : IPdfService
 {
-    public class PdfService : IPdfService
+    private readonly IQrCodeService qrCodeService;
+    private readonly Lazy<ITicketService> ticketService;
+
+    public PdfService(IQrCodeService qrCodeService, Lazy<ITicketService> ticketService)
     {
-        private readonly IQrCodeService qrCodeService;
-        private readonly Lazy<ITicketService> ticketService;
+        this.qrCodeService = qrCodeService;
+        this.ticketService = ticketService;
+    }
 
-        public PdfService(IQrCodeService qrCodeService , Lazy<ITicketService> ticketService)
+    public async Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId)
+    {
+        byte[] qrCode = await ticketService.Value.GetQrCodeByIdAsync(ticketId)
+            ?? throw new NotFoundException("QR Code not found");
+
+        return Document.Create(container =>
         {
-            this.qrCodeService = qrCodeService;
-            this.ticketService = ticketService;
-        }
-
-        public async Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId)
-        {
-            byte[] qrCode = await ticketService.Value.GetQrCodeByIdAsync(ticketId)
-                ?? throw new NotFoundException("QR Code not found");
-
-            return Document.Create(container =>
+            container.Page(page =>
             {
-                container.Page(page =>
-                {
-                    page.Margin(20);
-                    page.Size(PageSizes.A5); // Use a small ticket format
+                page.Margin(20);
+                page.Size(PageSizes.A5); // Use a small ticket format
 
-                    page.Header()
-                        .Text($"Ticket")
-                        .FontSize(20)
-                        .Bold()
-                        .AlignCenter();
+                page.Header()
+                    .Text($"Ticket")
+                    .FontSize(20)
+                    .Bold()
+                    .AlignCenter();
 
-                    page.Content()
-                        .Column(column =>
+                page.Content()
+                    .Column(column =>
+                    {
+                        column.Spacing(10);
+                        column.Item().Text($"Email: {email}").FontSize(14);
+                        column.Item().Text($"TicketId: {ticketId}").FontSize(14);
+
+                        if (qrCode != null)
                         {
-                            column.Spacing(10);
-                            column.Item().Text($"Email: {email}").FontSize(14);
-                            column.Item().Text($"TicketId: {ticketId}").FontSize(14);
+                            column.Item().Image(qrCode);
+                        }
 
-                            if (qrCode != null)
-                            {
-                                column.Item().Image(qrCode);
-                            }
+                        column.Item().Text("Show this QR code at entrance").Italic();
+                    });
 
-                            column.Item().Text("Show this QR code at entrance").Italic();
-                        });
-
-                    page.Footer()
-                        .AlignCenter()
-                        .Text("Thank you for using Concertable");
-                });
-            }).GeneratePdf();
-        }
+                page.Footer()
+                    .AlignCenter()
+                    .Text("Thank you for using Concertable");
+            });
+        }).GeneratePdf();
     }
 }

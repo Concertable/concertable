@@ -7,11 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface ILocationService
 {
-    public interface ILocationService
-    {
-        bool IsWithinRadius(double? lat1, double? lon1, double lat2, double lon2, int radiusKm);
-    }
+    bool IsWithinRadius(double? lat1, double? lon1, double lat2, double lon2, int radiusKm);
 }
 

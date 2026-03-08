@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Enums
+namespace Core.Enums;
+
+public enum ErrorType
 {
-    public enum ErrorType
-    {
-        DuplicateKey = 0,
-    }
+    DuplicateKey = 0,
 }

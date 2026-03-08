@@ -1,6 +1,5 @@
-﻿namespace Core.Enums
+﻿namespace Core.Enums;
+
+public enum ImageType
 {
-    public enum ImageType
-    {
-    }
 }

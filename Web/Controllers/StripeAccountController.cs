@@ -2,45 +2,44 @@
 using Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class StripeAccountController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class StripeAccountController : ControllerBase
+    private readonly IStripeAccountService stripeAccountService;
+    private readonly ICurrentUserService currentUserService;
+
+    public StripeAccountController(IStripeAccountService stripeAccountService, ICurrentUserService currentUserService)
     {
-        private readonly IStripeAccountService stripeAccountService;
-        private readonly ICurrentUserService currentUserService;
+        this.stripeAccountService = stripeAccountService;
+        this.currentUserService = currentUserService;
+    }
 
-        public StripeAccountController(IStripeAccountService stripeAccountService, ICurrentUserService currentUserService)
+    [HttpGet("onboarding-link")]
+    public async Task<ActionResult<string>> GetOnboardingLink()
+    {
+        var user = await currentUserService.GetEntityAsync();
+
+        if (string.IsNullOrWhiteSpace(user.StripeId))
+            return BadRequest("You must have a Stripe Id, contact support to get one");
+
+        var link = await stripeAccountService.GetOnboardingLinkAsync(user.StripeId);
+        return Ok(link);
+    }
+
+
+    [HttpGet("verified")]
+    public async Task<ActionResult<bool>> IsUserVerified()
+    {
+        var user = await currentUserService.GetEntityAsync();
+
+        if (user.StripeId is null)
         {
-            this.stripeAccountService = stripeAccountService;
-            this.currentUserService = currentUserService;
+            return NotFound(false);
         }
 
-        [HttpGet("onboarding-link")]
-        public async Task<ActionResult<string>> GetOnboardingLink()
-        {
-            var user = await currentUserService.GetEntityAsync();
-
-            if (string.IsNullOrWhiteSpace(user.StripeId))
-                return BadRequest("You must have a Stripe Id, contact support to get one");
-
-            var link = await stripeAccountService.GetOnboardingLinkAsync(user.StripeId);
-            return Ok(link);
-        }
-
-
-        [HttpGet("verified")]
-        public async Task<ActionResult<bool>> IsUserVerified()
-        {
-            var user = await currentUserService.GetEntityAsync();
-
-            if (user.StripeId is null)
-            {
-                return NotFound(false);
-            }
-
-            return Ok(await stripeAccountService.IsUserVerifiedAsync(user.StripeId));   
-        }
+        return Ok(await stripeAccountService.IsUserVerifiedAsync(user.StripeId));
     }
 }

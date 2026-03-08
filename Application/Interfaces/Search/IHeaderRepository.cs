@@ -1,10 +1,9 @@
 using Application.Responses;
 using Core.Parameters;
 
-namespace Application.Interfaces.Search
+namespace Application.Interfaces.Search;
+
+public interface IHeaderRepository<TEntity>
 {
-    public interface IHeaderRepository<TEntity>
-    {
-        Task<Pagination<TEntity>> SearchAsync(SearchParams searchParams);
-    }
+    Task<Pagination<TEntity>> SearchAsync(SearchParams searchParams);
 }

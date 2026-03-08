@@ -1,13 +1,12 @@
 using Application.Requests;
 using FluentValidation;
 
-namespace Application.Validators
+namespace Application.Validators;
+
+public class CreatePreferenceRequestValidator : AbstractValidator<CreatePreferenceRequest>
 {
-    public class CreatePreferenceRequestValidator : AbstractValidator<CreatePreferenceRequest>
+    public CreatePreferenceRequestValidator()
     {
-        public CreatePreferenceRequestValidator()
-        {
-            RuleFor(x => x.RadiusKm).GreaterThan(0);
-        }
+        RuleFor(x => x.RadiusKm).GreaterThan(0);
     }
 }

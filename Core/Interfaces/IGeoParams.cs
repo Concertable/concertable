@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Interfaces;
+
+public interface IGeoParams
 {
-    public interface IGeoParams
-    {
-        double? Latitude { get; }
-        double? Longitude { get; }
-        int? RadiusKm { get; }
-    }
+    double? Latitude { get; }
+    double? Longitude { get; }
+    int? RadiusKm { get; }
 }

@@ -5,75 +5,74 @@ using Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[AllowAnonymous]
+public class HeaderController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    [AllowAnonymous]
-    public class HeaderController : ControllerBase
+    private readonly IHeaderServiceFactory headerServiceFactory;
+
+    public HeaderController(IHeaderServiceFactory headerServiceFactory)
     {
-        private readonly IHeaderServiceFactory headerServiceFactory;
+        this.headerServiceFactory = headerServiceFactory;
+    }
 
-        public HeaderController(IHeaderServiceFactory headerServiceFactory)
-        {
-            this.headerServiceFactory = headerServiceFactory;
-        }
+    [HttpGet]
+    public async Task<IActionResult> Search(
+        [ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
+    {
+        if (searchParams.HeaderType is null)
+            return BadRequest("Search type is required.");
 
-        [HttpGet]
-        public async Task<IActionResult> Search(
-            [ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
-        {
-            if (searchParams.HeaderType is null)
-                return BadRequest("Search type is required.");
+        var service = headerServiceFactory.Create(searchParams.HeaderType.Value);
 
-            var service = headerServiceFactory.Create(searchParams.HeaderType.Value);
+        if (service is null)
+            return BadRequest($"Invalid header type '{searchParams.HeaderType}'.");
 
-            if (service is null)
-                return BadRequest($"Invalid header type '{searchParams.HeaderType}'.");
+        return Ok(await service.SearchAsync(searchParams));
+    }
 
-            return Ok(await service.SearchAsync(searchParams));
-        }
+    [HttpGet("amount/{amount}")]
+    public async Task<IActionResult> GetByAmount(int amount, [FromQuery] HeaderType? headerType)
+    {
+        if (headerType is null)
+            return BadRequest("Header type is required.");
 
-        [HttpGet("amount/{amount}")]
-        public async Task<IActionResult> GetByAmount(int amount, [FromQuery] HeaderType? headerType)
-        {
-            if (headerType is null)
-                return BadRequest("Header type is required.");
+        var service = headerServiceFactory.Create(headerType.Value);
 
-            var service = headerServiceFactory.Create(headerType.Value);
+        if (service is null)
+            return BadRequest($"Invalid header type '{headerType}'.");
 
-            if (service is null)
-                return BadRequest($"Invalid header type '{headerType}'.");
+        return Ok(await service.GetByAmountAsync(amount));
+    }
 
-            return Ok(await service.GetByAmountAsync(amount));
-        }
+    [HttpGet("popular")]
+    public async Task<IActionResult> GetPopular([FromQuery] HeaderType? headerType)
+    {
+        if (headerType is null)
+            return BadRequest("Header type is required.");
 
-        [HttpGet("popular")]
-        public async Task<IActionResult> GetPopular([FromQuery] HeaderType? headerType)
-        {
-            if (headerType is null)
-                return BadRequest("Header type is required.");
+        var service = headerServiceFactory.Create(headerType.Value);
 
-            var service = headerServiceFactory.Create(headerType.Value);
+        if (service is null)
+            return BadRequest($"Invalid header type '{headerType}'.");
 
-            if (service is null)
-                return BadRequest($"Invalid header type '{headerType}'.");
+        return Ok(await service.GetPopularAsync());
+    }
 
-            return Ok(await service.GetPopularAsync());
-        }
+    [HttpGet("free")]
+    public async Task<IActionResult> GetFree([FromQuery] HeaderType? headerType)
+    {
+        if (headerType is null)
+            return BadRequest("Header type is required.");
 
-        [HttpGet("free")]
-        public async Task<IActionResult> GetFree([FromQuery] HeaderType? headerType)
-        {
-            if (headerType is null)
-                return BadRequest("Header type is required.");
+        var service = headerServiceFactory.Create(headerType.Value);
 
-            var service = headerServiceFactory.Create(headerType.Value);
+        if (service is null)
+            return BadRequest($"Invalid header type '{headerType}'.");
 
-            if (service is null)
-                return BadRequest($"Invalid header type '{headerType}'.");
-
-            return Ok(await service.GetFreeAsync());
-        }
+        return Ok(await service.GetFreeAsync());
     }
 }

@@ -1,9 +1,8 @@
-namespace Core.Enums
+namespace Core.Enums;
+
+public enum HeaderType
 {
-    public enum HeaderType
-    {
-        Artist,
-        Venue,
-        Concert
-    }
+    Artist,
+    Venue,
+    Concert
 }

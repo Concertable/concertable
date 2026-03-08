@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Interfaces;
+
+public interface IRating
 {
-    public interface IRating
-    {
-        public double? Rating { get; set; }
-    }
+    public double? Rating { get; set; }
 }

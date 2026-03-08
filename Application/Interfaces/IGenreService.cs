@@ -6,10 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IGenreService
 {
-    public interface IGenreService
-    {
-        Task<IEnumerable<GenreDto>> GetAllAsync();
-    }
+    Task<IEnumerable<GenreDto>> GetAllAsync();
 }

@@ -7,24 +7,23 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Exceptions
+namespace Core.Exceptions;
+
+public class HttpException : Exception
 {
-    public class HttpException : Exception
+    public HttpStatusCode StatusCode { get; }
+    public ErrorType? ErrorType { get; }
+
+    public HttpException(string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError) : base(message)
     {
-        public HttpStatusCode StatusCode { get; }
-        public ErrorType? ErrorType { get; }
-
-        public HttpException(string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError) : base(message)
-        {
-            this.StatusCode = statusCode;
-        }
-
-        public HttpException(string message, ErrorType errorType, HttpStatusCode statusCode = HttpStatusCode.InternalServerError) : base(message)
-        {
-            this.StatusCode = statusCode;
-            this.ErrorType = errorType;
-        }
-
-
+        this.StatusCode = statusCode;
     }
+
+    public HttpException(string message, ErrorType errorType, HttpStatusCode statusCode = HttpStatusCode.InternalServerError) : base(message)
+    {
+        this.StatusCode = statusCode;
+        this.ErrorType = errorType;
+    }
+
+
 }

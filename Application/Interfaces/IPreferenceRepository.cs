@@ -5,14 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IPreferenceRepository : IRepository<Preference>
 {
-    public interface IPreferenceRepository : IRepository<Preference>
-    {
-        new Task<IEnumerable<Preference>> GetAllAsync();
+    new Task<IEnumerable<Preference>> GetAllAsync();
 
-        new Task<Preference?> GetByIdAsync(int id);
+    new Task<Preference?> GetByIdAsync(int id);
 
-        Task<Preference?> GetByUserIdAsync(int id);
-    }
+    Task<Preference?> GetByUserIdAsync(int id);
 }

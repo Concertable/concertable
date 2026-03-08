@@ -1,6 +1,5 @@
-namespace Application.Interfaces.Search
+namespace Application.Interfaces.Search;
+
+public interface IArtistHeaderService : IHeaderService
 {
-    public interface IArtistHeaderService : IHeaderService
-    {
-    }
 }

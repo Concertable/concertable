@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
 {
-    public interface IRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
-    {
-        Task<TEntity?> GetByIdAsync(int id);
-        bool Exists(int id);
-    }
+    Task<TEntity?> GetByIdAsync(int id);
+    bool Exists(int id);
 }

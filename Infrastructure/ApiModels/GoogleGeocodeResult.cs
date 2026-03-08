@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.ApiModels
+namespace Infrastructure.ApiModels;
+
+public class GoogleGeocodeResult
 {
-    public class GoogleGeocodeResult
-    {
-        public List<GoogleAddressComponent> Address_Components { get; set; } = [];
-    }
+    public List<GoogleAddressComponent> Address_Components { get; set; } = [];
 }

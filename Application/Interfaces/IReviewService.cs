@@ -1,5 +1,5 @@
 using Core.Interfaces;
-﻿using Application.DTOs;
+using Application.DTOs;
 using Core.Parameters;
 using Application.Responses;
 using System;
@@ -10,27 +10,26 @@ using System.Threading.Tasks;
 using Core.Entities;
 using Application.Requests;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IReviewService
 {
-    public interface IReviewService
-    {
-        Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers);
-        Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers);
-        Task AddAverageRatingsAsync(IEnumerable<ConcertHeaderDto> headers);
+    Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers);
+    Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers);
+    Task AddAverageRatingsAsync(IEnumerable<ConcertHeaderDto> headers);
 
-        Task SetAverageRatingAsync(VenueDto venue);
+    Task SetAverageRatingAsync(VenueDto venue);
 
-        Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams);
-        Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams);
-        Task<Pagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams);
+    Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams);
+    Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams);
+    Task<Pagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams);
 
-        Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
-        Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);
-        Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id);
+    Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
+    Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);
+    Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id);
 
-        Task<ReviewDto> CreateAsync(CreateReviewRequest review);
-        Task<bool> CanUserReviewConcertIdAsync(int concertId);
-        Task<bool> CanUserReviewVenueIdAsync(int venueId);
-        Task<bool> CanUserReviewArtistIdAsync(int artistId);
-    }
+    Task<ReviewDto> CreateAsync(CreateReviewRequest review);
+    Task<bool> CanUserReviewConcertIdAsync(int concertId);
+    Task<bool> CanUserReviewVenueIdAsync(int venueId);
+    Task<bool> CanUserReviewArtistIdAsync(int artistId);
 }

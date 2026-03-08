@@ -1,4 +1,3 @@
-namespace Application.Requests
-{
-    public record UpdateLocationRequest(double Latitude, double Longitude);
-}
+namespace Application.Requests;
+
+public record UpdateLocationRequest(double Latitude, double Longitude);

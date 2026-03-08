@@ -6,31 +6,30 @@ using Infrastructure.Helpers;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
-namespace Infrastructure.Specifications
+namespace Infrastructure.Specifications;
+
+public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
+    where TEntity : class, IHasLocation
 {
-    public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
-        where TEntity : class, IHasLocation
+    private readonly IGeometryProvider geometryProvider;
+    private readonly Func<Point, double, Expression<Func<TEntity, bool>>> locationFilter;
+
+    public GeometrySpecification(
+        IGeometryProvider geometryProvider,
+        Func<Point, double, Expression<Func<TEntity, bool>>> locationFilter)
     {
-        private readonly IGeometryProvider geometryProvider;
-        private readonly Func<Point, double, Expression<Func<TEntity, bool>>> locationFilter;
+        this.geometryProvider = geometryProvider;
+        this.locationFilter = locationFilter;
+    }
 
-        public GeometrySpecification(
-            IGeometryProvider geometryProvider,
-            Func<Point, double, Expression<Func<TEntity, bool>>> locationFilter)
-        {
-            this.geometryProvider = geometryProvider;
-            this.locationFilter = locationFilter;
-        }
+    public IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams)
+    {
+        if (!GeoHelper.HasValidCoordinates(searchParams))
+            return query;
 
-        public IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams)
-        {
-            if (!GeoHelper.HasValidCoordinates(searchParams))
-                return query;
+        var center = geometryProvider.CreatePoint(searchParams.Latitude!.Value, searchParams.Longitude!.Value);
+        var radiusKm = searchParams.RadiusKm ?? 10;
 
-            var center = geometryProvider.CreatePoint(searchParams.Latitude!.Value, searchParams.Longitude!.Value);
-            var radiusKm = searchParams.RadiusKm ?? 10;
-
-            return query.Where(locationFilter(center!, radiusKm));
-        }
+        return query.Where(locationFilter(center!, radiusKm));
     }
 }

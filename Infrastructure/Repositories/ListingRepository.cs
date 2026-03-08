@@ -10,73 +10,72 @@ using System.Threading.Tasks;
 using Core.Entities.Identity;
 using Application.DTOs;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories;
+
+public class ListingRepository : Repository<Listing>, IListingRepository
 {
-    public class ListingRepository : Repository<Listing>, IListingRepository
+    private readonly TimeProvider timeProvider;
+
+    public ListingRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context)
     {
-        private readonly TimeProvider timeProvider;
+        this.timeProvider = timeProvider;
+    }
 
-        public ListingRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context) 
-        {
-            this.timeProvider = timeProvider;
-        }
+    public async Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id)
+    {
+        var query = context.Listings
+            .Where(l => l.VenueId == id && l.StartDate >= timeProvider.GetUtcNow())
+            .Where(l => !context.Concerts.Any(e => e.ApplicationId == // doesnt have any events associated with it
+                context.ListingApplications // by checking the applications
+                    .Where(la => la.ListingId == l.Id) // that have the same listing
+                    .Select(la => la.Id)
+                    .FirstOrDefault())
+            )
+            .Include(l => l.ListingGenres)
+            .ThenInclude(lg => lg.Genre)
+            .OrderBy(l => l.StartDate);
 
-        public async Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id)
-        {
-            var query = context.Listings
-                .Where(l => l.VenueId == id && l.StartDate >= timeProvider.GetUtcNow())
-                .Where(l => !context.Concerts.Any(e => e.ApplicationId == // doesnt have any events associated with it
-                    context.ListingApplications // by checking the applications
-                        .Where(la => la.ListingId == l.Id) // that have the same listing
-                        .Select(la => la.Id)
-                        .FirstOrDefault())
-                )
-                .Include(l => l.ListingGenres)
+        return await query.ToListAsync();
+    }
+
+    public async Task<VenueManager> GetOwnerByIdAsync(int listingId)
+    {
+        var query = context.Users
+            .Where(u => EF.Property<string>(u, "Discriminator") == "VenueManager")
+            .OfType<VenueManager>()
+            .Where(vm => vm.Venue != null && vm.Venue.Listings.Any(l => l.Id == listingId));
+
+        return await query.FirstAsync();
+    }
+
+    public async new Task<Listing?> GetByIdAsync(int id)
+    {
+        var query = context.Listings
+            .Where(l => l.Id == id)
+            .Include(l => l.ListingGenres)
+                .ThenInclude(lg => lg.Genre);
+
+        return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task<Listing?> GetWithVenueByIdAsync(int id)
+    {
+        var query = context.Listings
+            .Where(l => l.Id == id)
+            .Include(l => l.Venue);
+
+        return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task<Listing?> GetByApplicationIdAsync(int id)
+    {
+        var query = context.Listings
+            .Include(l => l.ListingGenres)
                 .ThenInclude(lg => lg.Genre)
-                .OrderBy(l => l.StartDate);
+            .Include(l => l.Venue)
+                .ThenInclude(v => v.User)
+            .Where(l => l.Applications.Any(a => a.Id == id));
 
-            return await query.ToListAsync();
-        }
-
-        public async Task<VenueManager> GetOwnerByIdAsync(int listingId)
-        {
-            var query = context.Users
-                .Where(u => EF.Property<string>(u, "Discriminator") == "VenueManager")
-                .OfType<VenueManager>()
-                .Where(vm => vm.Venue != null && vm.Venue.Listings.Any(l => l.Id == listingId));
-
-            return await query.FirstAsync();
-        }
-
-        public async new Task<Listing?> GetByIdAsync(int id)
-        {
-            var query = context.Listings
-                .Where(l => l.Id == id)
-                .Include(l => l.ListingGenres)
-                    .ThenInclude(lg => lg.Genre);
-
-            return await query.FirstOrDefaultAsync();
-        }
-
-        public async Task<Listing?> GetWithVenueByIdAsync(int id)
-        {
-            var query = context.Listings
-                .Where(l => l.Id == id)
-                .Include(l => l.Venue);
-
-            return await query.FirstOrDefaultAsync();
-        }
-
-        public async Task<Listing?> GetByApplicationIdAsync(int id)
-        {
-            var query = context.Listings
-                .Include(l => l.ListingGenres)
-                    .ThenInclude(lg => lg.Genre)
-                .Include(l => l.Venue)
-                    .ThenInclude(v => v.User)
-                .Where(l => l.Applications.Any(a => a.Id == id));
-
-            return await query.FirstOrDefaultAsync();
-        }
+        return await query.FirstOrDefaultAsync();
     }
 }

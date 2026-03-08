@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IQrCodeService
 {
-    public interface IQrCodeService
-    {
-        byte[] GenerateFromTicketId(int id);
-    }
+    byte[] GenerateFromTicketId(int id);
 }

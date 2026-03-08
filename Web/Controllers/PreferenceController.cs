@@ -5,36 +5,35 @@ using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class PreferenceController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class PreferenceController : ControllerBase
+    private readonly IPreferenceService preferenceService;
+
+    public PreferenceController(IPreferenceService preferenceService)
     {
-        private readonly IPreferenceService preferenceService;
+        this.preferenceService = preferenceService;
+    }
 
-        public PreferenceController(IPreferenceService preferenceService)
-        {
-            this.preferenceService = preferenceService;
-        }
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreatePreferenceRequest request)
+    {
+        var preference = await preferenceService.CreateAsync(request);
+        return Created();
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody]CreatePreferenceRequest request)
-        {
-            var preference = await preferenceService.CreateAsync(request);
-            return Created();
-        }
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] PreferenceDto preferenceDto)
+    {
+        return Ok(await preferenceService.UpdateAsync(preferenceDto));
+    }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody]PreferenceDto preferenceDto)
-        {
-            return Ok(await preferenceService.UpdateAsync(preferenceDto));
-        }
-
-        [HttpGet("user")]
-        public async Task<ActionResult<Preference>> GetByUser()
-        {
-            return Ok(await preferenceService.GetByUserAsync());
-        }
+    [HttpGet("user")]
+    public async Task<ActionResult<Preference>> GetByUser()
+    {
+        return Ok(await preferenceService.GetByUserAsync());
     }
 }

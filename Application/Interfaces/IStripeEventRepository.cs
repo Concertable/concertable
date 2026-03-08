@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IStripeEventRepository
 {
-    public interface IStripeEventRepository
-    {
-        Task<StripeEvent?> GetEventByIdAsync(string eventId);
-        Task AddEventAsync(StripeEvent stripeEvent);
-        Task<bool> EventExistsAsync(string eventId);
-    }
+    Task<StripeEvent?> GetEventByIdAsync(string eventId);
+    Task AddEventAsync(StripeEvent stripeEvent);
+    Task<bool> EventExistsAsync(string eventId);
 }

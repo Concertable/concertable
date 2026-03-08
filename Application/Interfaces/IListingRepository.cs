@@ -7,14 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IListingRepository : IRepository<Listing>
 {
-    public interface IListingRepository : IRepository<Listing>
-    {
-        new Task<Listing?> GetByIdAsync(int id);
-        Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
-        Task<Listing?> GetWithVenueByIdAsync(int id);
-        Task<Listing?> GetByApplicationIdAsync(int id);
-        Task<VenueManager> GetOwnerByIdAsync(int id);
-    }
+    new Task<Listing?> GetByIdAsync(int id);
+    Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
+    Task<Listing?> GetWithVenueByIdAsync(int id);
+    Task<Listing?> GetByApplicationIdAsync(int id);
+    Task<VenueManager> GetOwnerByIdAsync(int id);
 }

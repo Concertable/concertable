@@ -1,9 +1,8 @@
 using Core.Enums;
 
-namespace Application.Interfaces.Search
+namespace Application.Interfaces.Search;
+
+public interface IHeaderServiceFactory
 {
-    public interface IHeaderServiceFactory
-    {
-        IHeaderService? Create(HeaderType type);
-    }
+    IHeaderService? Create(HeaderType type);
 }

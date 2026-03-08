@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Interfaces;
+
+public interface IHasLocation
 {
-    public interface IHasLocation
-    {
-        Point? Location { get; }
-    }
+    Point? Location { get; }
 }

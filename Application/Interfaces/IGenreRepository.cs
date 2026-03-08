@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IGenreRepository : IRepository<Genre>
 {
-    public interface IGenreRepository: IRepository<Genre>
-    {
-        new Task<IEnumerable<Genre>> GetAllAsync();
-        Task<IEnumerable<Genre>> GetByIdsAsync(IEnumerable<int> ids);
-    }
+    new Task<IEnumerable<Genre>> GetAllAsync();
+    Task<IEnumerable<Genre>> GetByIdsAsync(IEnumerable<int> ids);
 }

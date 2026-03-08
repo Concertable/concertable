@@ -1,5 +1,5 @@
 using Core.Interfaces;
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Responses;
 using Core.Entities;
 using Core.Parameters;
@@ -11,19 +11,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories;
+
+public class TransactionRepository : Repository<Transaction>, ITransactionRepository
 {
-    public class TransactionRepository : Repository<Transaction>, ITransactionRepository
+    public TransactionRepository(ApplicationDbContext context) : base(context) { }
+
+    public Task<Pagination<Transaction>> GetAsync(IPageParams pageParams, int userId)
     {
-        public TransactionRepository(ApplicationDbContext context) : base(context) { }
+        var query = context.Transactions
+            .Where(t => t.FromUserId == userId || t.ToUserId == userId)
+            .OrderByDescending(t => t.CreatedAt);
 
-        public Task<Pagination<Transaction>> GetAsync(IPageParams pageParams, int userId)
-        {
-            var query = context.Transactions
-                .Where(t => t.FromUserId == userId || t.ToUserId == userId)
-                .OrderByDescending(t => t.CreatedAt);
-
-            return PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
-        }
+        return PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
     }
 }

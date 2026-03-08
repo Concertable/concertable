@@ -1,9 +1,8 @@
 using Core.Parameters;
 
-namespace Application.Interfaces.Search
+namespace Application.Interfaces.Search;
+
+public interface ISearchSpecification<TEntity>
 {
-    public interface ISearchSpecification<TEntity>
-    {
-        IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams);
-    }
+    IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams);
 }

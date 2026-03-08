@@ -8,46 +8,45 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Application.Requests;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class MessageController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class MessageController : ControllerBase
+    private readonly IMessageService messageService;
+
+    public MessageController(IMessageService messageService)
     {
-        private readonly IMessageService messageService;
+        this.messageService = messageService;
+    }
 
-        public MessageController(IMessageService messageService)
-        {
-            this.messageService = messageService;
-        }
+    [HttpGet("user/summary")]
+    public async Task<ActionResult<MessageSummaryDto>> GetSummaryForUser()
+    {
+        return Ok(await messageService.GetSummaryForUser());
+    }
 
-        [HttpGet("user/summary")]
-        public async Task<ActionResult<MessageSummaryDto>> GetSummaryForUser()
-        {
-            return Ok(await messageService.GetSummaryForUser());
-        }
+    [HttpGet("user")]
+    public async Task<ActionResult<Pagination<Message>>> GetForUser([FromQuery] PageParams pageParams)
+    {
+        return Ok(await messageService.GetForUserAsync(pageParams));
+    }
 
-        [HttpGet("user")]
-        public async Task<ActionResult<Pagination<Message>>> GetForUser([FromQuery] PageParams pageParams)
-        {
-            return Ok(await messageService.GetForUserAsync(pageParams));
-        }
+    [HttpGet("user/unread-count")]
+    public async Task<ActionResult<int>> GetUnreadCountForUser()
+    {
+        return Ok(await messageService.GetUnreadCountForUserAsync());
+    }
 
-        [HttpGet("user/unread-count")]
-        public async Task<ActionResult<int>> GetUnreadCountForUser()
-        {
-            return Ok(await messageService.GetUnreadCountForUserAsync());
-        }
+    [HttpPost("mark-read")]
+    public async Task<ActionResult<int>> MarkAsReadAsync([FromBody] MarkMessagesReadRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest();
+        await messageService.MarkAsReadAsync(request.MessageIds);
 
-        [HttpPost("mark-read")]
-        public async Task<ActionResult<int>> MarkAsReadAsync([FromBody] MarkMessagesReadRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest();
-            await messageService.MarkAsReadAsync(request.MessageIds);
-
-            var unreadCount = await messageService.GetUnreadCountForUserAsync();
-            return Ok(unreadCount);
-        }
+        var unreadCount = await messageService.GetUnreadCountForUserAsync();
+        return Ok(unreadCount);
     }
 }

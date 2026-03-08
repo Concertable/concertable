@@ -8,46 +8,45 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories;
+
+public class UserRepository : BaseRepository<ApplicationUser>, IUserRepository
 {
-    public class UserRepository : BaseRepository<ApplicationUser>, IUserRepository
+    public UserRepository(ApplicationDbContext context) : base(context) { }
+
+    public async Task<ApplicationUser> GetByApplicationIdAsync(int applicationId)
     {
-        public UserRepository(ApplicationDbContext context) : base(context) { }
+        var query = context.ListingApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => a.Artist.User);
 
-        public async Task<ApplicationUser> GetByApplicationIdAsync(int applicationId)
-        {
-            var query = context.ListingApplications
-                .Where(a => a.Id == applicationId)
-                .Select(a => a.Artist.User);
+        return await query.FirstAsync();
+    }
 
-            return await query.FirstAsync();
-        }
+    public async Task<ApplicationUser> GetByConcertIdAsync(int concertId)
+    {
+        var query = context.Concerts
+             .Where(e => e.Id == concertId)
+             .Select(e => e.Application.Artist.User);
 
-        public async Task<ApplicationUser> GetByConcertIdAsync(int concertId)
-        {
-            var query = context.Concerts
-                 .Where(e => e.Id == concertId)
-                 .Select(e => e.Application.Artist.User);
+        return await query.FirstAsync();
+    }
 
-            return await query.FirstAsync();
-        }
+    public async Task<int> GetIdByApplicationIdAsync(int applicationId)
+    {
+        var query = context.ListingApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => a.Artist.UserId);
 
-        public async Task<int> GetIdByApplicationIdAsync(int applicationId)
-        {
-            var query = context.ListingApplications
-                .Where(a => a.Id == applicationId)
-                .Select(a => a.Artist.UserId);
+        return await query.FirstAsync();
+    }
 
-            return await query.FirstAsync();
-        }
+    public async Task<int> GetIdByConcertIdAsync(int concertId)
+    {
+        var query = context.Concerts
+            .Where(e => e.Id == concertId)
+            .Select(e => e.Application.Artist.UserId);
 
-        public async Task<int> GetIdByConcertIdAsync(int concertId)
-        {
-            var query = context.Concerts
-                .Where(e => e.Id == concertId)
-                .Select(e => e.Application.Artist.UserId);
-
-            return await query.FirstAsync();
-        }
+        return await query.FirstAsync();
     }
 }

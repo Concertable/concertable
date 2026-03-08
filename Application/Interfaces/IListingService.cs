@@ -7,14 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IListingService
 {
-    public interface IListingService
-    {
-        Task CreateAsync(ListingDto listingDto);
-        Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto);
-        Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id);
-        Task<VenueManager> GetOwnerByIdAsync(int id);
-        Task<Listing> GetByIdAsync(int id);
-    }
+    Task CreateAsync(ListingDto listingDto);
+    Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto);
+    Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id);
+    Task<VenueManager> GetOwnerByIdAsync(int id);
+    Task<Listing> GetByIdAsync(int id);
 }

@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Entities
+namespace Core.Entities;
+
+public class StripeEvent
 {
-    public class StripeEvent
-    {
-        public required string EventId { get; set; }
-        public DateTime EventProcessedAt { get; set; }
-    }
+    public required string EventId { get; set; }
+    public DateTime EventProcessedAt { get; set; }
 }

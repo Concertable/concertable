@@ -11,85 +11,84 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class UserPaymentService : IUserPaymentService
 {
-    public class UserPaymentService : IUserPaymentService
+    private readonly IPaymentService paymentService;
+    private IUserService userService;
+    private Lazy<IConcertService> concertService;
+    private IListingApplicationService listingApplicationService;
+    private ICurrentUserService currentUserService;
+    public UserPaymentService(
+        IPaymentService paymentService,
+        IUserService userService,
+        Lazy<IConcertService> concertService,
+        IListingApplicationService listingApplicationService,
+        ICurrentUserService currentUserService)
     {
-        private readonly IPaymentService paymentService;
-        private IUserService userService;
-        private Lazy<IConcertService> concertService;
-        private IListingApplicationService listingApplicationService;
-        private ICurrentUserService currentUserService;
-        public UserPaymentService(
-            IPaymentService paymentService, 
-            IUserService userService,
-            Lazy<IConcertService> concertService,
-            IListingApplicationService listingApplicationService,
-            ICurrentUserService currentUserService)
-        {
-            this.paymentService = paymentService;
-            this.userService = userService;
-            this.concertService = concertService;
-            this.listingApplicationService = listingApplicationService;
-            this.currentUserService = currentUserService;
-        }
-
-        public async Task<PaymentResponse> PayVenueManagerByConcertIdAsync(int concertId, int quantity, string paymentMethodId) 
-        {
-            var user = await currentUserService.GetAsync();
-            var toUser = await userService.GetByConcertIdAsync(concertId);
-            var concertEntity = await concertService.Value.GetDetailsByIdAsync(concertId);
-
-            var transactionRequestDto = new TransactionRequest
-            {
-                PaymentMethodId = paymentMethodId,
-                FromUserEmail = user.Email,
-                Amount = concertEntity.Price * quantity,
-                DestinationStripeId = toUser.StripeId,
-                Metadata = new Dictionary<string, string>()
-            {
-                { "fromUserId", user.Id.ToString() },
-                { "fromUserEmail", user.Email },
-                { "toUserId", toUser.Id.ToString() },
-                { "type", "concert" },
-                { "concertId", concertId.ToString() },
-                { "quantity", quantity.ToString() }
-            }
-            };
-
-            if (concertEntity == null) throw new NotFoundException("Concert not found");
-            if (concertEntity.AvailableTickets <= 0) throw new BadRequestException("No tickets available");
-
-            var paymentResponse = await paymentService.ProcessAsync(transactionRequestDto);
-
-            return paymentResponse;
-        }
-
-        public async Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId)
-        {
-            var user = await currentUserService.GetAsync();
-            var toUser = await userService.GetByApplicationIdAsync(applicationId);
-            var pay = await listingApplicationService.GetListingPayByIdAsync(applicationId);
-
-            var transactionRequestDto = new TransactionRequest
-            {
-                PaymentMethodId = paymentMethodId,
-                FromUserEmail = user.Email,
-                Amount = pay,
-                DestinationStripeId = toUser.StripeId,
-                Metadata = new Dictionary<string, string>()
-            {
-                { "fromUserId", user.Id.ToString() },
-                { "fromUserEmail", user.Email },
-                { "toUserId", toUser.Id.ToString() },
-                { "type", "application" },
-                { "applicationId", applicationId.ToString() }
-            }
-            };
-
-            var paymentResponse = await paymentService.ProcessAsync(transactionRequestDto);
-            return paymentResponse;
-        }
-
+        this.paymentService = paymentService;
+        this.userService = userService;
+        this.concertService = concertService;
+        this.listingApplicationService = listingApplicationService;
+        this.currentUserService = currentUserService;
     }
+
+    public async Task<PaymentResponse> PayVenueManagerByConcertIdAsync(int concertId, int quantity, string paymentMethodId)
+    {
+        var user = await currentUserService.GetAsync();
+        var toUser = await userService.GetByConcertIdAsync(concertId);
+        var concertEntity = await concertService.Value.GetDetailsByIdAsync(concertId);
+
+        var transactionRequestDto = new TransactionRequest
+        {
+            PaymentMethodId = paymentMethodId,
+            FromUserEmail = user.Email,
+            Amount = concertEntity.Price * quantity,
+            DestinationStripeId = toUser.StripeId,
+            Metadata = new Dictionary<string, string>()
+        {
+            { "fromUserId", user.Id.ToString() },
+            { "fromUserEmail", user.Email },
+            { "toUserId", toUser.Id.ToString() },
+            { "type", "concert" },
+            { "concertId", concertId.ToString() },
+            { "quantity", quantity.ToString() }
+        }
+        };
+
+        if (concertEntity == null) throw new NotFoundException("Concert not found");
+        if (concertEntity.AvailableTickets <= 0) throw new BadRequestException("No tickets available");
+
+        var paymentResponse = await paymentService.ProcessAsync(transactionRequestDto);
+
+        return paymentResponse;
+    }
+
+    public async Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId)
+    {
+        var user = await currentUserService.GetAsync();
+        var toUser = await userService.GetByApplicationIdAsync(applicationId);
+        var pay = await listingApplicationService.GetListingPayByIdAsync(applicationId);
+
+        var transactionRequestDto = new TransactionRequest
+        {
+            PaymentMethodId = paymentMethodId,
+            FromUserEmail = user.Email,
+            Amount = pay,
+            DestinationStripeId = toUser.StripeId,
+            Metadata = new Dictionary<string, string>()
+        {
+            { "fromUserId", user.Id.ToString() },
+            { "fromUserEmail", user.Email },
+            { "toUserId", toUser.Id.ToString() },
+            { "type", "application" },
+            { "applicationId", applicationId.ToString() }
+        }
+        };
+
+        var paymentResponse = await paymentService.ProcessAsync(transactionRequestDto);
+        return paymentResponse;
+    }
+
 }

@@ -1,8 +1,7 @@
-namespace Application.Responses
+namespace Application.Responses;
+
+public record AddedBankAccountResponse
 {
-    public record AddedBankAccountResponse
-    {
-        public required string AccountId { get; set; }
-        public string? RedirectUri { get; set; }
-    }
+    public required string AccountId { get; set; }
+    public string? RedirectUri { get; set; }
 }

@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IEmailService
 {
-    public interface IEmailService
-    {
-        Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds);
-        Task SendEmailAsync(string toEmail, string subject, string body);
-    }
+    Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds);
+    Task SendEmailAsync(string toEmail, string subject, string body);
 }

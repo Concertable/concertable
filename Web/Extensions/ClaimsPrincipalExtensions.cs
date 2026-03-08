@@ -1,12 +1,11 @@
 ﻿using System.Security.Claims;
 
-namespace Web.Extentions
+namespace Web.Extentions;
+
+public static class ClaimsPrincipalExtensions
 {
-    public static class ClaimsPrincipalExtensions
+    public static string GetId(this ClaimsPrincipal user)
     {
-        public static string GetId(this ClaimsPrincipal user)
-        {
-            return user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-        }
+        return user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
     }
 }

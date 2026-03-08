@@ -7,14 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Entities
+namespace Core.Entities;
+
+public class ListingApplication : BaseEntity
 {
-    public  class ListingApplication : BaseEntity
-    {
-        public int ListingId { get; set; }
-        public int ArtistId { get; set; }
-        public Listing Listing { get; set; } = null!;
-        public Artist Artist { get; set; } = null!;
-        public Concert? Concert { get; set; }
-    }
+    public int ListingId { get; set; }
+    public int ArtistId { get; set; }
+    public Listing Listing { get; set; } = null!;
+    public Artist Artist { get; set; } = null!;
+    public Concert? Concert { get; set; }
 }

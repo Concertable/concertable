@@ -1,14 +1,13 @@
 using Application.Requests;
 using FluentValidation;
 
-namespace Application.Validators
+namespace Application.Validators;
+
+public class CreateReviewRequestValidator : AbstractValidator<CreateReviewRequest>
 {
-    public class CreateReviewRequestValidator : AbstractValidator<CreateReviewRequest>
+    public CreateReviewRequestValidator()
     {
-        public CreateReviewRequestValidator()
-        {
-            RuleFor(x => x.ConcertId).GreaterThan(0);
-            RuleFor(x => x.Stars).InclusiveBetween(1, 5);
-        }
+        RuleFor(x => x.ConcertId).GreaterThan(0);
+        RuleFor(x => x.Stars).InclusiveBetween(1, 5);
     }
 }

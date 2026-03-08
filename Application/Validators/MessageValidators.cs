@@ -1,13 +1,12 @@
 using Application.Requests;
 using FluentValidation;
 
-namespace Application.Validators
+namespace Application.Validators;
+
+public class MarkMessagesReadRequestValidator : AbstractValidator<MarkMessagesReadRequest>
 {
-    public class MarkMessagesReadRequestValidator : AbstractValidator<MarkMessagesReadRequest>
+    public MarkMessagesReadRequestValidator()
     {
-        public MarkMessagesReadRequestValidator()
-        {
-            RuleFor(x => x.MessageIds).NotEmpty().WithMessage("Require one MessageId minimum.");
-        }
+        RuleFor(x => x.MessageIds).NotEmpty().WithMessage("Require one MessageId minimum.");
     }
 }

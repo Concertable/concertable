@@ -71,7 +71,7 @@ public class PaymentService : IPaymentService
             {
                 Success = paymentIntent.Status == "succeeded",
                 RequiresAction = paymentIntent.Status == "requires_action" || paymentIntent.Status == "requires_confirmation",
-                ClientSecret = paymentIntent.ClientSecret, 
+                ClientSecret = paymentIntent.ClientSecret,
                 TransactionId = paymentIntent.Id,
                 Message = paymentIntent.Status == "succeeded" ? "Payment successful" : "Additional authentication required"
             };

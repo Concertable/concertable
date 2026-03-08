@@ -6,15 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IStripeAccountService
 {
-    public interface IStripeAccountService
-    {
-        Task<string> CreateStripeAccountAsync(ApplicationUser user);
-        Task<string> GetOnboardingLinkAsync(string stripeId);
-        /// <summary>
-        /// Checks if stripeId is associated with a stripe account or not
-        /// </summary>
-        Task<bool> IsUserVerifiedAsync(string stripeId);
-    }
+    Task<string> CreateStripeAccountAsync(ApplicationUser user);
+    Task<string> GetOnboardingLinkAsync(string stripeId);
+    /// <summary>
+    /// Checks if stripeId is associated with a stripe account or not
+    /// </summary>
+    Task<bool> IsUserVerifiedAsync(string stripeId);
 }

@@ -6,39 +6,38 @@ using Application.Responses;
 using Core.Entities;
 using Core.Parameters;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class TransactionService : ITransactionService
 {
-    public class TransactionService : ITransactionService
+    private readonly ITransactionRepository purchaseRepository;
+    private readonly ICurrentUserService currentUserService;
+
+    public TransactionService(
+        ICurrentUserService currentUserService,
+        ITransactionRepository purchaseRepository)
     {
-        private readonly ITransactionRepository purchaseRepository;
-        private readonly ICurrentUserService currentUserService;
+        this.purchaseRepository = purchaseRepository;
+        this.currentUserService = currentUserService;
+    }
 
-        public TransactionService(
-            ICurrentUserService currentUserService,
-            ITransactionRepository purchaseRepository)
-        {
-            this.purchaseRepository = purchaseRepository;
-            this.currentUserService = currentUserService;
-        }
+    public async Task LogAsync(TransactionDto purchaseDto)
+    {
+        var purchase = purchaseDto.ToEntity();
 
-        public async Task LogAsync(TransactionDto purchaseDto)
-        {
-            var purchase = purchaseDto.ToEntity();
+        await purchaseRepository.AddAsync(purchase);
+        await purchaseRepository.SaveChangesAsync();
+    }
 
-            await purchaseRepository.AddAsync(purchase);
-            await purchaseRepository.SaveChangesAsync();
-        }
+    public async Task<Pagination<TransactionDto>> GetAsync(IPageParams pageParams)
+    {
+        var userId = await currentUserService.GetIdAsync();
+        var result = await purchaseRepository.GetAsync(pageParams, userId);
 
-        public async Task<Pagination<TransactionDto>> GetAsync(IPageParams pageParams)
-        {
-            var userId = await currentUserService.GetIdAsync();
-            var result = await purchaseRepository.GetAsync(pageParams, userId);
-
-            return new Pagination<TransactionDto>(
-                result.Data.ToDtos(),
-                result.TotalCount,
-                result.PageNumber,
-                result.PageSize);
-        }
+        return new Pagination<TransactionDto>(
+            result.Data.ToDtos(),
+            result.TotalCount,
+            result.PageNumber,
+            result.PageSize);
     }
 }

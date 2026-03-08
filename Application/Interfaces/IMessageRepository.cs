@@ -1,5 +1,5 @@
 using Core.Interfaces;
-﻿using Core.Entities;
+using Core.Entities;
 using Core.Parameters;
 using Application.Responses;
 using System;
@@ -8,12 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IMessageRepository : IRepository<Message>
 {
-    public interface IMessageRepository : IRepository<Message>
-    {
-        Task<Pagination<Message>> GetByUserIdAsync(int id, IPageParams pageParams);
-        Task<int> GetUnreadCountByUserIdAsync(int id);
-        Task MarkAsReadAsync(List<int> ids);
-    }
+    Task<Pagination<Message>> GetByUserIdAsync(int id, IPageParams pageParams);
+    Task<int> GetUnreadCountByUserIdAsync(int id);
+    Task MarkAsReadAsync(List<int> ids);
 }

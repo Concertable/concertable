@@ -1,8 +1,7 @@
-namespace Infrastructure.Settings
+namespace Infrastructure.Settings;
+
+public class BlobStorageSettings
 {
-    public class BlobStorageSettings
-    {
-        public string? ConnectionString { get; set; }
-        public string? ContainerName { get; set; }
-    }
+    public string? ConnectionString { get; set; }
+    public string? ContainerName { get; set; }
 }

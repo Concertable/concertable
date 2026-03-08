@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IGeometryProvider
 {
-    public interface IGeometryProvider
-    {
-        Point? CreatePoint(double? latitude, double? longitude);
-    }
+    Point? CreatePoint(double? latitude, double? longitude);
 }

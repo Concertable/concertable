@@ -6,14 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IListingApplicationRepository : IRepository<ListingApplication>
 {
-    public interface IListingApplicationRepository : IRepository<ListingApplication>
-    {
-        Task<IEnumerable<ListingApplication>> GetByListingIdAsync(int listingId);
-        Task<IEnumerable<ListingApplication>> GetPendingByArtistIdAsync(int id);
-        Task<IEnumerable<ListingApplication>> GetRecentDeniedByArtistIdAsync(int id);
-        Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id);
-        Task<decimal> GetListingPayByIdAsync(int id);
-    }
+    Task<IEnumerable<ListingApplication>> GetByListingIdAsync(int listingId);
+    Task<IEnumerable<ListingApplication>> GetPendingByArtistIdAsync(int id);
+    Task<IEnumerable<ListingApplication>> GetRecentDeniedByArtistIdAsync(int id);
+    Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id);
+    Task<decimal> GetListingPayByIdAsync(int id);
 }

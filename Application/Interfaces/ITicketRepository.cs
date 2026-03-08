@@ -5,13 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface ITicketRepository : IRepository<Ticket>
 {
-    public interface ITicketRepository : IRepository<Ticket>
-    {
-        Task<byte[]?> GetQrCodeByIdAsync(int id);
-        Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id);
-        Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id);
-        Task<Ticket?> GetByUserIdAndConcertIdAsync(int userId, int concertId);
-    }
+    Task<byte[]?> GetQrCodeByIdAsync(int id);
+    Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id);
+    Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id);
+    Task<Ticket?> GetByUserIdAndConcertIdAsync(int userId, int concertId);
 }

@@ -1,8 +1,7 @@
-namespace Core.Interfaces
+namespace Core.Interfaces;
+
+public interface IPageParams
 {
-    public interface IPageParams
-    {
-        int PageNumber { get; set; }
-        int PageSize { get; set; }
-    }
+    int PageNumber { get; set; }
+    int PageSize { get; set; }
 }

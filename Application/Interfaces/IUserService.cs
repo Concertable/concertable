@@ -6,14 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IUserService
 {
-    public interface IUserService
-    {
-        Task<ApplicationUser> GetByApplicationIdAsync(int applicationId);
-        Task<ApplicationUser> GetByConcertIdAsync(int id);
-        Task<int> GetIdByApplicationIdAsync(int id);
-        Task<int> GetIdByConcertIdAsync(int id);
-        Task<UserDto> UpdateLocationAsync(double latitude, double longitude);
-    }
+    Task<ApplicationUser> GetByApplicationIdAsync(int applicationId);
+    Task<ApplicationUser> GetByConcertIdAsync(int id);
+    Task<int> GetIdByApplicationIdAsync(int id);
+    Task<int> GetIdByConcertIdAsync(int id);
+    Task<UserDto> UpdateLocationAsync(double latitude, double longitude);
 }

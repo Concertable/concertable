@@ -1,5 +1,5 @@
 using Core.Interfaces;
-﻿using Application.DTOs;
+using Application.DTOs;
 using Core.Entities;
 using Core.Parameters;
 using Application.Responses;
@@ -9,15 +9,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IMessageService
 {
-    public interface IMessageService
-    {
-        Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content);
-        Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content);
-        Task<MessageSummaryDto> GetSummaryForUser();
-        Task<Pagination<MessageDto>> GetForUserAsync(IPageParams pageParams);
-        Task<int> GetUnreadCountForUserAsync();
-        Task MarkAsReadAsync(List<int> ids);
-    }
+    Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content);
+    Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content);
+    Task<MessageSummaryDto> GetSummaryForUser();
+    Task<Pagination<MessageDto>> GetForUserAsync(IPageParams pageParams);
+    Task<int> GetUnreadCountForUserAsync();
+    Task MarkAsReadAsync(List<int> ids);
 }

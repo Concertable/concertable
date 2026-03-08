@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IScopeDisposable : IDisposable
 {
-    public interface IScopeDisposable : IDisposable
-    {
-        void CreateScope();
-        void DisposeScope();
-    }
+    void CreateScope();
+    void DisposeScope();
 }

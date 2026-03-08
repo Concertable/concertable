@@ -6,31 +6,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class StripeValidationService : IStripeValidationService
 {
-    public class StripeValidationService : IStripeValidationService
+    private readonly ICurrentUserService currentUserService;
+    private readonly IStripeAccountService stripeAccountService;
+
+    public StripeValidationService(
+        ICurrentUserService currentUserService,
+        IStripeAccountService stripeAccountService
+        )
     {
-        private readonly ICurrentUserService currentUserService;
-        private readonly IStripeAccountService stripeAccountService;
+        this.stripeAccountService = stripeAccountService;
+        this.currentUserService = currentUserService;
+    }
 
-        public StripeValidationService(
-            ICurrentUserService currentUserService,
-            IStripeAccountService stripeAccountService
-            )
-        {
-            this.stripeAccountService = stripeAccountService;
-            this.currentUserService = currentUserService;
-        }
+    public async Task ValidateUserAsync()
+    {
+        var user = await currentUserService.GetEntityAsync();
 
-        public async Task ValidateUserAsync()
-        {
-            var user = await currentUserService.GetEntityAsync();
+        if (user.StripeId is null)
+            throw new UnauthorizedAccessException("You do not have a Stripe Id. Contact Support to get one");
 
-            if (user.StripeId is null)
-                throw new UnauthorizedAccessException("You do not have a Stripe Id. Contact Support to get one");
-
-            if (!await stripeAccountService.IsUserVerifiedAsync(user.StripeId))
-                throw new UnauthorizedAccessException("You must create a Stripe Account first");
-        }
+        if (!await stripeAccountService.IsUserVerifiedAsync(user.StripeId))
+            throw new UnauthorizedAccessException("You must create a Stripe Account first");
     }
 }

@@ -6,14 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface ICurrentUserService
 {
-    public interface ICurrentUserService
-    {
-        Task<UserDto> GetAsync();
-        Task<UserDto?> GetOrDefaultAsync();
-        Task<ApplicationUser> GetEntityAsync();
-        Task<int> GetIdAsync();
-        Task<string> GetFirstRoleAsync();
-    }
+    Task<UserDto> GetAsync();
+    Task<UserDto?> GetOrDefaultAsync();
+    Task<ApplicationUser> GetEntityAsync();
+    Task<int> GetIdAsync();
+    Task<string> GetFirstRoleAsync();
 }

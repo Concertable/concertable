@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IUriService
 {
-    public interface IUriService
-    {
-        Uri GetEmailConfirmationUri(int userId, string token);
-        Uri GetEmailChangeConfirmationUri(int userId, string token, string newEmail);
-        Uri GetPasswordResetUri(int userId, string token);
-    }
+    Uri GetEmailConfirmationUri(int userId, string token);
+    Uri GetEmailChangeConfirmationUri(int userId, string token, string newEmail);
+    Uri GetPasswordResetUri(int userId, string token);
 }

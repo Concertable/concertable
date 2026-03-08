@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Interfaces;
+
+public interface IHasName
 {
-    public interface IHasName
-    {
-        string Name { get; }
-    }
+    string Name { get; }
 }

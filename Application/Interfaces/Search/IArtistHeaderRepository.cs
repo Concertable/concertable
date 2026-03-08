@@ -1,10 +1,9 @@
 using Application.DTOs;
 using Core.Entities;
 
-namespace Application.Interfaces.Search
+namespace Application.Interfaces.Search;
+
+public interface IArtistHeaderRepository : IHeaderRepository<Artist>
 {
-    public interface IArtistHeaderRepository : IHeaderRepository<Artist>
-    {
-        Task<IEnumerable<ArtistHeaderDto>> GetByAmountAsync(int amount);
-    }
+    Task<IEnumerable<ArtistHeaderDto>> GetByAmountAsync(int amount);
 }

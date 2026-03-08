@@ -1,10 +1,9 @@
 ﻿using Application.Requests;
 using Application.Responses;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IPaymentService
 {
-    public interface IPaymentService
-    {
-        Task<PaymentResponse> ProcessAsync(TransactionRequest request);
-    }
+    Task<PaymentResponse> ProcessAsync(TransactionRequest request);
 }

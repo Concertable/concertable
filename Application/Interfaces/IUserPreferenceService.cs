@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IUserPreferenceService
 {
-    public interface IUserPreferenceService
-    {
-        Task<IEnumerable<int>> GetUserIdsByPreferencesAsync();
-    }
+    Task<IEnumerable<int>> GetUserIdsByPreferencesAsync();
 }

@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Parameters
+namespace Core.Parameters;
+
+public class ConcertBookingParams
 {
-    public class ConcertBookingParams
-    {
-        public required string PaymentMethodId { get; set; }
-        public int ApplicationId { get; set; }
-    }
+    public required string PaymentMethodId { get; set; }
+    public int ApplicationId { get; set; }
 }

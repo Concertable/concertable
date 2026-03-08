@@ -1,29 +1,28 @@
 using Core.Interfaces;
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Responses;
 using Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class TransactionController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class TransactionController : ControllerBase
+    private readonly ITransactionService purchaseService;
+
+    public TransactionController(ITransactionService purchaseService)
     {
-        private readonly ITransactionService purchaseService;
+        this.purchaseService = purchaseService;
+    }
 
-        public TransactionController(ITransactionService purchaseService)
-        {
-            this.purchaseService = purchaseService;
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<Pagination<TransactionDto>>> GetPurchases([FromQuery] IPageParams pageParams)
-        {
-            var result = await purchaseService.GetAsync(pageParams);
-            return Ok(result);
-        }
+    [HttpGet]
+    public async Task<ActionResult<Pagination<TransactionDto>>> GetPurchases([FromQuery] IPageParams pageParams)
+    {
+        var result = await purchaseService.GetAsync(pageParams);
+        return Ok(result);
     }
 }

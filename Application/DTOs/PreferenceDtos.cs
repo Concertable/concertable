@@ -1,10 +1,9 @@
-namespace Application.DTOs
+namespace Application.DTOs;
+
+public record PreferenceDto
 {
-    public record PreferenceDto
-    {
-        public int Id { get; set; }
-        public required UserDto User { get; set; }
-        public int RadiusKm { get; set; }
-        public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
-    }
+    public int Id { get; set; }
+    public required UserDto User { get; set; }
+    public int RadiusKm { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
 }

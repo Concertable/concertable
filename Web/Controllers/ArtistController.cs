@@ -9,53 +9,52 @@ using Core.ModelBinders;
 using Application.Responses;
 using Application.Requests;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+
+[ApiController]
+[Route("api/[controller]")]
+public class ArtistController : ControllerBase
 {
+    private readonly IArtistService artistService;
 
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ArtistController : ControllerBase
+    public ArtistController(IArtistService artistService)
     {
-        private readonly IArtistService artistService;
-
-        public ArtistController(IArtistService artistService)
-        {
-            this.artistService = artistService;
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
-        {
-            return Ok(await artistService.GetDetailsByIdAsync(id));
-        }
-
-        [Authorize(Roles = "ArtistManager")]
-        [HttpGet("user")]
-        public async Task<ActionResult<ArtistDto?>> GetDetailsForCurrentUser()
-        {
-            return Ok(await artistService.GetDetailsForCurrentUserAsync());
-        }
-
-        [Authorize(Roles = "ArtistManager")]
-        [HttpPost]
-        public async Task<IActionResult> Create([FromForm] ArtistCreateRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var artistDto = await artistService.CreateAsync(request.Artist, request.Image);
-            return CreatedAtAction(nameof(GetDetailsById), new { Id = artistDto.Id }, artistDto);
-        }
-
-        [Authorize (Roles = "ArtistManager")]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromForm] ArtistUpdateRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            return Ok(await artistService.UpdateAsync(request.Artist, request.Image));
-        }
-
+        this.artistService = artistService;
     }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
+    {
+        return Ok(await artistService.GetDetailsByIdAsync(id));
+    }
+
+    [Authorize(Roles = "ArtistManager")]
+    [HttpGet("user")]
+    public async Task<ActionResult<ArtistDto?>> GetDetailsForCurrentUser()
+    {
+        return Ok(await artistService.GetDetailsForCurrentUserAsync());
+    }
+
+    [Authorize(Roles = "ArtistManager")]
+    [HttpPost]
+    public async Task<IActionResult> Create([FromForm] ArtistCreateRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var artistDto = await artistService.CreateAsync(request.Artist, request.Image);
+        return CreatedAtAction(nameof(GetDetailsById), new { Id = artistDto.Id }, artistDto);
+    }
+
+    [Authorize(Roles = "ArtistManager")]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromForm] ArtistUpdateRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return Ok(await artistService.UpdateAsync(request.Artist, request.Image));
+    }
+
 }

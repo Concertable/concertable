@@ -5,13 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Entities
+namespace Core.Entities;
+
+public class Preference : BaseEntity
 {
-    public class Preference : BaseEntity
-    {
-        public int UserId { get; set; }
-        public double RadiusKm  { get; set; }
-        public Customer User { get; set; } = null!;
-        public ICollection<GenrePreference> GenrePreferences { get; set; } = new List<GenrePreference>();
-    }
+    public int UserId { get; set; }
+    public double RadiusKm { get; set; }
+    public Customer User { get; set; } = null!;
+    public ICollection<GenrePreference> GenrePreferences { get; set; } = new List<GenrePreference>();
 }

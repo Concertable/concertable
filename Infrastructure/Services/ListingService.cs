@@ -5,69 +5,68 @@ using Application.Mappers;
 using Core.Entities.Identity;
 using Core.Exceptions;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class ListingService : IListingService
 {
-    public class ListingService : IListingService
+    private readonly IListingRepository listingRepository;
+    private readonly IStripeValidationService stripeValidationService;
+    private readonly IVenueService venueService;
+
+    public ListingService(
+        IListingRepository listingRepository,
+        IStripeValidationService stripeValidationService,
+        IVenueService venueService)
     {
-        private readonly IListingRepository listingRepository;
-        private readonly IStripeValidationService stripeValidationService;
-        private readonly IVenueService venueService;
+        this.listingRepository = listingRepository;
+        this.stripeValidationService = stripeValidationService;
+        this.venueService = venueService;
+    }
 
-        public ListingService(
-            IListingRepository listingRepository,
-            IStripeValidationService stripeValidationService,
-            IVenueService venueService)
+    public async Task CreateAsync(ListingDto listingDto)
+    {
+        await stripeValidationService.ValidateUserAsync();
+
+        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+            ?? throw new NotFoundException("Venue not found for current user");
+        var listing = listingDto.ToEntity();
+        listing.VenueId = venueDto.Id;
+
+        await listingRepository.AddAsync(listing);
+        await listingRepository.SaveChangesAsync();
+    }
+
+    public async Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto)
+    {
+        await stripeValidationService.ValidateUserAsync();
+
+        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+            ?? throw new NotFoundException("Venue not found for current user");
+
+        var listings = listingsDto.Select(dto =>
         {
-            this.listingRepository = listingRepository;
-            this.stripeValidationService = stripeValidationService;
-            this.venueService = venueService;
-        }
-
-        public async Task CreateAsync(ListingDto listingDto)
-        {
-            await stripeValidationService.ValidateUserAsync();
-
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync()
-                ?? throw new NotFoundException("Venue not found for current user");
-            var listing = listingDto.ToEntity();
+            var listing = dto.ToEntity();
             listing.VenueId = venueDto.Id;
+            return listing;
+        }).ToList();
 
-            await listingRepository.AddAsync(listing);
-            await listingRepository.SaveChangesAsync();
-        }
+        await listingRepository.AddRangeAsync(listings);
+        await listingRepository.SaveChangesAsync();
+    }
 
-        public async Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto)
-        {
-            await stripeValidationService.ValidateUserAsync();
+    public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)
+    {
+        var listings = await listingRepository.GetActiveByVenueIdAsync(id);
+        return listings.ToDtos();
+    }
 
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync()
-                ?? throw new NotFoundException("Venue not found for current user");
+    public async Task<Listing> GetByIdAsync(int id)
+    {
+        return (await listingRepository.GetByIdAsync(id))!;
+    }
 
-            var listings = listingsDto.Select(dto =>
-            {
-                var listing = dto.ToEntity();
-                listing.VenueId = venueDto.Id;
-                return listing;
-            }).ToList();
-
-            await listingRepository.AddRangeAsync(listings);
-            await listingRepository.SaveChangesAsync();
-        }
-
-        public async Task<IEnumerable<ListingDto>> GetActiveByVenueIdAsync(int id)
-        {
-            var listings = await listingRepository.GetActiveByVenueIdAsync(id);
-            return listings.ToDtos();
-        }
-
-        public async Task<Listing> GetByIdAsync(int id)
-        {
-            return (await listingRepository.GetByIdAsync(id))!;
-        }
-
-        public async Task<VenueManager> GetOwnerByIdAsync(int id)
-        {
-            return await listingRepository.GetOwnerByIdAsync(id);
-        }
+    public async Task<VenueManager> GetOwnerByIdAsync(int id)
+    {
+        return await listingRepository.GetOwnerByIdAsync(id);
     }
 }

@@ -6,11 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IConcertValidationService
 {
-    public interface IConcertValidationService
-    {
-        Task<ValidationResponse> CanUpdateAsync(ConcertDto concertDto);
-        Task<ValidationResponse> CanPostAsync(ConcertDto concertDto);
-    }
+    Task<ValidationResponse> CanUpdateAsync(ConcertDto concertDto);
+    Task<ValidationResponse> CanPostAsync(ConcertDto concertDto);
 }

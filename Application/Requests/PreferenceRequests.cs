@@ -1,10 +1,9 @@
 using Application.DTOs;
 
-namespace Application.Requests
+namespace Application.Requests;
+
+public record CreatePreferenceRequest
 {
-    public record CreatePreferenceRequest
-    {
-        public int RadiusKm { get; set; }
-        public IEnumerable<GenreDto> Genres { get; set; } = [];
-    }
+    public int RadiusKm { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
 }

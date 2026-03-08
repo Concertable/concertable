@@ -1,7 +1,6 @@
-namespace Application.Requests
+namespace Application.Requests;
+
+public record MarkMessagesReadRequest
 {
-    public record MarkMessagesReadRequest
-    {
-        public required List<int> MessageIds { get; set; }
-    }
+    public required List<int> MessageIds { get; set; }
 }

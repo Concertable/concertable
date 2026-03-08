@@ -2,24 +2,23 @@
 using Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers
+namespace Web.Controllers;
+
+[ApiController]
+[Route("api/payment")]
+public class PaymentController : ControllerBase
 {
-    [ApiController]
-    [Route("api/payment")]
-    public class PaymentController : ControllerBase
+    private readonly IPaymentService paymentService;
+
+    public PaymentController(IPaymentService paymentService)
     {
-        private readonly IPaymentService paymentService;
+        this.paymentService = paymentService;
+    }
 
-        public PaymentController(IPaymentService paymentService)
-        {
-            this.paymentService = paymentService;
-        }
-
-        [HttpPost("dummy")]
-        public Task<IActionResult> CreateDummy([FromBody] string transactionId)
-        {
-            //var response = await paymentService.ProcessAsync(paymentParams, 100, "ticket");
-            return Task.FromResult<IActionResult>(Ok());
-        }
+    [HttpPost("dummy")]
+    public Task<IActionResult> CreateDummy([FromBody] string transactionId)
+    {
+        //var response = await paymentService.ProcessAsync(paymentParams, 100, "ticket");
+        return Task.FromResult<IActionResult>(Ok());
     }
 }

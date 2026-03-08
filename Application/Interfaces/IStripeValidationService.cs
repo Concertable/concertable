@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IStripeValidationService
 {
-    public interface IStripeValidationService
-    {
-        Task ValidateUserAsync();
-    }
+    Task ValidateUserAsync();
 }

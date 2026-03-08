@@ -9,62 +9,61 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services;
+
+public class UriService : IUriService
 {
-    public class UriService : IUriService
+    private IHttpContextAccessor httpContextAccessor;
+    private readonly LinkGenerator linkGenerator;
+
+    public UriService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
     {
-        private IHttpContextAccessor httpContextAccessor;
-        private readonly LinkGenerator linkGenerator;
+        this.httpContextAccessor = httpContextAccessor;
+        this.linkGenerator = linkGenerator;
+    }
 
-        public UriService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
-        {
-            this.httpContextAccessor = httpContextAccessor;
-            this.linkGenerator = linkGenerator;
-        }
+    public Uri GetEmailConfirmationUri(int userId, string token)
+    {
+        var uri = linkGenerator.GetUriByAction(
+            httpContextAccessor.HttpContext!,
+            action: "ConfirmEmail",
+            controller: "Auth",
+            values: new { userId, token }
+        );
 
-        public Uri GetEmailConfirmationUri(int userId, string token)
-        {
-            var uri = linkGenerator.GetUriByAction(
-                httpContextAccessor.HttpContext!,
-                action: "ConfirmEmail",
-                controller: "Auth",
-                values: new { userId, token }
-            );
+        if (uri is null)
+            throw new ArgumentException("Failed to generate email confirmation link");
 
-            if (uri is null)
-                throw new ArgumentException("Failed to generate email confirmation link");
+        return new Uri(uri);
+    }
 
-            return new Uri(uri);
-        }
+    public Uri GetEmailChangeConfirmationUri(int userId, string token, string newEmail)
+    {
+        var uri = linkGenerator.GetUriByAction(
+            httpContextAccessor.HttpContext!,
+            action: "ConfirmEmailChange",
+            controller: "Auth",
+            values: new { userId, token, newEmail }
+        );
 
-        public Uri GetEmailChangeConfirmationUri(int userId, string token, string newEmail)
-        {
-            var uri = linkGenerator.GetUriByAction(
-                httpContextAccessor.HttpContext!,
-                action: "ConfirmEmailChange",
-                controller: "Auth",
-                values: new { userId, token, newEmail }
-            );
+        if (uri is null)
+            throw new ArgumentException("Failed to generate email change confirmation link");
 
-            if (uri is null)
-                throw new ArgumentException("Failed to generate email change confirmation link");
+        return new Uri(uri);
+    }
 
-            return new Uri(uri);
-        }
+    public Uri GetPasswordResetUri(int userId, string token)
+    {
+        var uri = linkGenerator.GetUriByAction(
+            httpContextAccessor.HttpContext!,
+            action: "ForgotPassword",
+            controller: "Auth",
+            values: new { userId, token }
+        );
 
-        public Uri GetPasswordResetUri(int userId, string token)
-        {
-            var uri = linkGenerator.GetUriByAction(
-                httpContextAccessor.HttpContext!,
-                action: "ForgotPassword",
-                controller: "Auth",
-                values: new { userId, token }
-            );
+        if (uri is null)
+            throw new ArgumentException("Failed to generate email confirmation link");
 
-            if (uri is null)
-                throw new ArgumentException("Failed to generate email confirmation link");
-
-            return new Uri(uri);
-        }
+        return new Uri(uri);
     }
 }

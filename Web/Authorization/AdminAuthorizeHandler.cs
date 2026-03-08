@@ -1,32 +1,31 @@
 ﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Web.Authorization
+namespace Web.Authorization;
+
+public class AdminAuthorizeHandler : AuthorizationHandler<RolesAuthorizationRequirement>
 {
-    public class AdminAuthorizeHandler : AuthorizationHandler<RolesAuthorizationRequirement>
+    private readonly IWebHostEnvironment environment;
+
+    public AdminAuthorizeHandler(IWebHostEnvironment environment)
     {
-        private readonly IWebHostEnvironment environment;
+        this.environment = environment;
+    }
 
-        public AdminAuthorizeHandler(IWebHostEnvironment environment)
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
+    {
+        if (requirement.AllowedRoles.Any(context.User.IsInRole) || IsAdmin(context))
         {
-            this.environment = environment;
+            context.Succeed(requirement);
         }
 
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
-        {
-            if (requirement.AllowedRoles.Any(context.User.IsInRole) || IsAdmin(context))
-            {
-                context.Succeed(requirement);
-            }
+        return Task.CompletedTask;
+    }
 
-            return Task.CompletedTask;
-        }
-
-        private bool IsAdmin(AuthorizationHandlerContext context)
-        {
-            if (context.User.IsInRole("Admin"))
-                return true;
-            return false;
-        }
+    private bool IsAdmin(AuthorizationHandlerContext context)
+    {
+        if (context.User.IsInRole("Admin"))
+            return true;
+        return false;
     }
 }

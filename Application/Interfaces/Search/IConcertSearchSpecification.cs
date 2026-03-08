@@ -1,10 +1,9 @@
 using Core.Entities;
 using Core.Parameters;
 
-namespace Application.Interfaces.Search
+namespace Application.Interfaces.Search;
+
+public interface IConcertSearchSpecification
 {
-    public interface IConcertSearchSpecification
-    {
-        IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams);
-    }
+    IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams);
 }
