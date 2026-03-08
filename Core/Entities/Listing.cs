@@ -9,6 +9,6 @@ public class Listing : BaseEntity
     public DateTime EndDate { get; set; }
     public decimal Pay { get; set; }
     public Venue Venue { get; set; } = null!;
-    public ICollection<ListingApplication> Applications { get; set; } = new List<ListingApplication>();
-    public ICollection<ListingGenre> ListingGenres { get; set; } = new List<ListingGenre>();
+    public ICollection<ListingApplication> Applications { get; set; } = [];
+    public ICollection<ListingGenre> ListingGenres { get; set; } = [];
 }
