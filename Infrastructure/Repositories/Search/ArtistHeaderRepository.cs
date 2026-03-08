@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces.Search;
+using Application.Mappers;
 using Application.Responses;
 using Core.Entities;
 using Core.Parameters;
@@ -28,21 +29,13 @@ namespace Infrastructure.Repositories.Search
 
         public async Task<IEnumerable<ArtistHeaderDto>> GetByAmountAsync(int amount)
         {
-            return await context.Artists
+            var artists = await context.Artists
                 .Include(a => a.User)
                 .OrderBy(a => a.Id)
                 .Take(amount)
-                .Select(a => new ArtistHeaderDto
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    ImageUrl = a.ImageUrl,
-                    County = a.User.County,
-                    Town = a.User.Town,
-                    Latitude = a.User.Location != null ? a.User.Location.Y : (double?)null,
-                    Longitude = a.User.Location != null ? a.User.Location.X : (double?)null
-                })
                 .ToListAsync();
+
+            return artists.ToHeaderDtos();
         }
     }
 }
