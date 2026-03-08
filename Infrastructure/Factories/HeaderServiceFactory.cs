@@ -14,5 +14,5 @@ public class HeaderServiceFactory : IHeaderServiceFactory
     }
 
     public IHeaderService? Create(HeaderType type)
-        => serviceProvider.GetKeyedService<IHeaderService>(type.ToString().ToLower());
+        => serviceProvider.GetKeyedService<IHeaderService>(type);
 }

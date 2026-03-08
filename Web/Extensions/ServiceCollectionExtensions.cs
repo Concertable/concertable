@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Core.Enums;
 using Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -162,9 +163,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();
         services.AddScoped<IConcertHeaderRepository, ConcertHeaderRepository>();
 
-        services.AddKeyedScoped<IHeaderService, ArtistHeaderService>("artist");
-        services.AddKeyedScoped<IHeaderService, VenueHeaderService>("venue");
-        services.AddKeyedScoped<IHeaderService, ConcertHeaderService>("concert");
+        services.AddKeyedScoped<IHeaderService, ArtistHeaderService>(HeaderType.Artist);
+        services.AddKeyedScoped<IHeaderService, VenueHeaderService>(HeaderType.Venue);
+        services.AddKeyedScoped<IHeaderService, ConcertHeaderService>(HeaderType.Concert);
 
         services.AddScoped<IHeaderServiceFactory, HeaderServiceFactory>();
 
