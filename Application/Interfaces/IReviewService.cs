@@ -16,20 +16,20 @@ namespace Application.Interfaces
     {
         Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers);
         Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers);
-        Task AddAverageRatingsAsync(IEnumerable<EventHeaderDto> headers);
+        Task AddAverageRatingsAsync(IEnumerable<ConcertHeaderDto> headers);
 
         Task SetAverageRatingAsync(VenueDto venue);
 
         Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams);
         Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams);
-        Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, IPageParams pageParams);
+        Task<Pagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams);
 
         Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
         Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);
-        Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id);
+        Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id);
 
         Task<ReviewDto> CreateAsync(CreateReviewRequest review);
-        Task<bool> CanUserReviewEventIdAsync(int eventId);
+        Task<bool> CanUserReviewConcertIdAsync(int concertId);
         Task<bool> CanUserReviewVenueIdAsync(int venueId);
         Task<bool> CanUserReviewArtistIdAsync(int artistId);
     }

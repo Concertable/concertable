@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Application.Interfaces;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +35,7 @@ namespace Infrastructure.Repositories
                 .ThenInclude(l => l.Venue)
             .Where(a =>
                 a.ArtistId == artistId &&
-                !context.Events.Any(e => e.ApplicationId == a.Id) &&
+                !context.Concerts.Any(e => e.ApplicationId == a.Id) &&
                 a.Listing.StartDate > DateTime.UtcNow);
 
             return await query.ToListAsync();
@@ -89,7 +89,7 @@ namespace Infrastructure.Repositories
                     .ThenInclude(l => l.Venue)
                 .Where(a =>
                     a.ArtistId == artistId &&
-                    context.Events.Any(e =>
+                    context.Concerts.Any(e =>
                         e.Application.ListingId == a.ListingId &&
                         e.ApplicationId != a.Id)) // someone else was accepted
                 .OrderByDescending(a => a.Listing.EndDate)

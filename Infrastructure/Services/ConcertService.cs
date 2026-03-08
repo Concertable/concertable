@@ -8,10 +8,10 @@ using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
-    public class EventService : IEventService
+    public class ConcertService : IConcertService
     {
-        private readonly IEventRepository eventRepository;
-        private readonly IEventValidationService eventValidationService;
+        private readonly IConcertRepository concertRepository;
+        private readonly IConcertValidationService concertValidationService;
         private readonly ICurrentUserService currentUserService;
         private readonly IUserPaymentService userPaymentService;
         private readonly IListingApplicationValidationService applicationValidationService;
@@ -24,9 +24,9 @@ namespace Infrastructure.Services
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IGenreRepository genreRepository;
 
-        public EventService(
-            IEventRepository eventRepository,
-            IEventValidationService eventValidationService,
+        public ConcertService(
+            IConcertRepository concertRepository,
+            IConcertValidationService concertValidationService,
             ICurrentUserService currentUserService,
             IUserPaymentService userPaymentService,
             IListingApplicationValidationService applicationValidationService,
@@ -39,8 +39,8 @@ namespace Infrastructure.Services
             IListingApplicationRepository listingApplicationRepository,
             IGenreRepository genreRepository)
         {
-            this.eventRepository = eventRepository;
-            this.eventValidationService = eventValidationService;
+            this.concertRepository = concertRepository;
+            this.concertValidationService = concertValidationService;
             this.currentUserService = currentUserService;
             this.userPaymentService = userPaymentService;
             this.applicationValidationService = applicationValidationService;
@@ -54,43 +54,43 @@ namespace Infrastructure.Services
             this.genreRepository = genreRepository;
         }
 
-        public async Task<IEnumerable<EventDto>> GetUpcomingByVenueIdAsync(int id)
+        public async Task<IEnumerable<ConcertDto>> GetUpcomingByVenueIdAsync(int id)
         {
-            var events = await eventRepository.GetUpcomingByVenueIdAsync(id);
-            return events.ToDtos();
+            var concerts = await concertRepository.GetUpcomingByVenueIdAsync(id);
+            return concerts.ToDtos();
         }
 
-        public async Task<IEnumerable<EventDto>> GetUpcomingByArtistIdAsync(int id)
+        public async Task<IEnumerable<ConcertDto>> GetUpcomingByArtistIdAsync(int id)
         {
-            var events = await eventRepository.GetUpcomingByArtistIdAsync(id);
-            return events.ToDtos();
+            var concerts = await concertRepository.GetUpcomingByArtistIdAsync(id);
+            return concerts.ToDtos();
         }
 
-        public async Task<IEnumerable<EventDto>> GetHistoryByArtistIdAsync(int id)
+        public async Task<IEnumerable<ConcertDto>> GetHistoryByArtistIdAsync(int id)
         {
-            var events = await eventRepository.GetHistoryByVenueIdAsync(id);
-            return events.ToDtos();
+            var concerts = await concertRepository.GetHistoryByArtistIdAsync(id);
+            return concerts.ToDtos();
         }
 
-        public async Task<IEnumerable<EventDto>> GetHistoryByVenueIdAsync(int id)
+        public async Task<IEnumerable<ConcertDto>> GetHistoryByVenueIdAsync(int id)
         {
-            var events = await eventRepository.GetHistoryByVenueIdAsync(id);
-            return events.ToDtos();
+            var concerts = await concertRepository.GetHistoryByVenueIdAsync(id);
+            return concerts.ToDtos();
         }
 
-        public async Task<EventDto> GetDetailsByIdAsync(int id)
+        public async Task<ConcertDto> GetDetailsByIdAsync(int id)
         {
-            var eventEntity = await eventRepository.GetByIdAsync(id);
-            return eventEntity.ToDto();
+            var concertEntity = await concertRepository.GetByIdAsync(id);
+            return concertEntity.ToDto();
         }
 
-        public async Task<ListingApplicationPurchaseResponse> BookAsync(EventBookingParams bookingParams)
+        public async Task<ListingApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams)
         {
             var user = await currentUserService.GetAsync();
             var role = await currentUserService.GetFirstRoleAsync();
 
             if (role != "VenueManager")
-                throw new ForbiddenException("Only VenueManagers can book events");
+                throw new ForbiddenException("Only VenueManagers can book concerts");
 
             var response = await applicationValidationService.CanAcceptListingApplicationAsync(bookingParams.ApplicationId, user.Id);
 
@@ -117,23 +117,23 @@ namespace Infrastructure.Services
             {
                 var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
                 var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
-                var eventDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
+                var concertDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
 
                 await messageService.SendAndSaveAsync(
                     purchaseCompleteDto.FromUserId,
                     purchaseCompleteDto.ToUserId,
-                    "event",
-                    eventDto.Id,
-                    "Your Application has been accepted! View your event here");
+                    "concert",
+                    concertDto.Id,
+                    "Your Application has been accepted! View your concert here");
 
-                await emailService.SendEmailAsync(artist.User.Email, "Event Creation", "Your Application was chosen! An Event has been schedueled for you!");
+                await emailService.SendEmailAsync(artist.User.Email, "Concert Creation", "Your Application was chosen! A Concert has been scheduled for you!");
 
                 return new ListingApplicationPurchaseResponse
                 {
                     Success = true,
-                    Message = "Event successfully booked!",
+                    Message = "Concert successfully booked!",
                     ApplicationId = purchaseCompleteDto.EntityId,
-                    Event = eventDto
+                    Concert = concertDto
                 };
             }
             catch (Exception)
@@ -147,7 +147,7 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task<EventDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, Artist artist, Listing listing)
+        public async Task<ConcertDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, Artist artist, Listing listing)
         {
             var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
             var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId);
@@ -161,7 +161,7 @@ namespace Infrastructure.Services
 
             var matchingGenres = await genreRepository.GetByIdsAsync(matchingGenreIds);
 
-            var eventEntity = new Event
+            var concertEntity = new Concert
             {
                 ApplicationId = purchaseCompleteDto.EntityId,
                 Name = $"{artist.Name} performing at {listing.Venue.Name}",
@@ -170,88 +170,88 @@ namespace Infrastructure.Services
                 TotalTickets = 0,
                 AvailableTickets = 0,
                 DatePosted = null,
-                EventGenres = matchingGenres
-                    .Select(g => new EventGenre { GenreId = g.Id, Genre = g })
+                ConcertGenres = matchingGenres
+                    .Select(g => new ConcertGenre { GenreId = g.Id, Genre = g })
                     .ToList()
             };
 
-            await eventRepository.AddAsync(eventEntity);
-            await eventRepository.SaveChangesAsync();
+            await concertRepository.AddAsync(concertEntity);
+            await concertRepository.SaveChangesAsync();
 
-            return eventEntity.ToDto();
+            return concertEntity.ToDto();
         }
 
-        public async Task<EventDto> GetDetailsByApplicationIdAsync(int applicationId)
+        public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
         {
-            var eventEntity = await eventRepository.GetByApplicationIdAsync(applicationId);
+            var concertEntity = await concertRepository.GetByApplicationIdAsync(applicationId);
 
-            if (eventEntity is null)
-                throw new NotFoundException($"No event found for Application ID {applicationId}");
+            if (concertEntity is null)
+                throw new NotFoundException($"No concert found for Application ID {applicationId}");
 
-            return eventEntity.ToDto();
+            return concertEntity.ToDto();
         }
 
-        public async Task<EventDto> UpdateAsync(EventDto eventDto)
+        public async Task<ConcertDto> UpdateAsync(ConcertDto concertDto)
         {
-            var response = await eventValidationService.CanUpdateAsync(eventDto);
+            var response = await concertValidationService.CanUpdateAsync(concertDto);
             if (!response.IsValid)
                 throw new BadRequestException(response.Reason!);
 
-            var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
-            if (eventEntity is null)
-                throw new NotFoundException("Event not found");
+            var concertEntity = await concertRepository.GetByIdAsync(concertDto.Id);
+            if (concertEntity is null)
+                throw new NotFoundException("Concert not found");
 
-            eventEntity.Name = eventDto.Name;
-            eventEntity.About = eventDto.About;
-            eventEntity.Price = eventDto.Price;
-            eventEntity.TotalTickets = eventDto.TotalTickets;
-            eventEntity.AvailableTickets = eventDto.AvailableTickets;
+            concertEntity.Name = concertDto.Name;
+            concertEntity.About = concertDto.About;
+            concertEntity.Price = concertDto.Price;
+            concertEntity.TotalTickets = concertDto.TotalTickets;
+            concertEntity.AvailableTickets = concertDto.AvailableTickets;
 
-            int ticketsSold = eventEntity.TotalTickets - eventEntity.AvailableTickets;
-            eventEntity.AvailableTickets = eventEntity.TotalTickets - ticketsSold;
+            int ticketsSold = concertEntity.TotalTickets - concertEntity.AvailableTickets;
+            concertEntity.AvailableTickets = concertEntity.TotalTickets - ticketsSold;
 
-            eventRepository.Update(eventEntity);
-            await eventRepository.SaveChangesAsync();
+            concertRepository.Update(concertEntity);
+            await concertRepository.SaveChangesAsync();
 
-            return eventEntity.ToDto();
+            return concertEntity.ToDto();
         }
 
-        public async Task<EventPostResponse> PostAsync(EventDto eventDto)
+        public async Task<ConcertPostResponse> PostAsync(ConcertDto concertDto)
         {
-            var response = await eventValidationService.CanPostAsync(eventDto);
+            var response = await concertValidationService.CanPostAsync(concertDto);
             if (!response.IsValid)
                 throw new BadRequestException(response.Reason!);
 
-            var eventEntity = await eventRepository.GetByIdAsync(eventDto.Id);
+            var concertEntity = await concertRepository.GetByIdAsync(concertDto.Id);
 
-            if (eventEntity is null)
-                throw new NotFoundException("Event not found");
+            if (concertEntity is null)
+                throw new NotFoundException("Concert not found");
 
-            if (eventEntity.DatePosted.HasValue)
-                throw new BadRequestException("Event has already been posted");
+            if (concertEntity.DatePosted.HasValue)
+                throw new BadRequestException("Concert has already been posted");
 
-            eventEntity.Name = eventDto.Name;
-            eventEntity.About = eventDto.About;
-            eventEntity.Price = eventDto.Price;
-            eventEntity.TotalTickets = eventDto.TotalTickets;
-            eventEntity.DatePosted = DateTime.UtcNow;
-            eventEntity.AvailableTickets = eventDto.TotalTickets;
+            concertEntity.Name = concertDto.Name;
+            concertEntity.About = concertDto.About;
+            concertEntity.Price = concertDto.Price;
+            concertEntity.TotalTickets = concertDto.TotalTickets;
+            concertEntity.DatePosted = DateTime.UtcNow;
+            concertEntity.AvailableTickets = concertDto.TotalTickets;
 
-            eventRepository.Update(eventEntity);
-            await eventRepository.SaveChangesAsync();
+            concertRepository.Update(concertEntity);
+            await concertRepository.SaveChangesAsync();
 
-            var eventHeaderDto = eventDto.ToHeaderDto();
-            var averageRating = (await reviewService.GetSummaryByEventIdAsync(eventDto.Id)).AverageRating;
-            eventHeaderDto.Rating = averageRating;
+            var concertHeaderDto = concertDto.ToHeaderDto();
+            var averageRating = (await reviewService.GetSummaryByConcertIdAsync(concertDto.Id)).AverageRating;
+            concertHeaderDto.Rating = averageRating;
 
-            var location = eventEntity.Application.Listing.Venue.User.Location;
+            var location = concertEntity.Application.Listing.Venue.User.Location;
 
             if (location == null || location?.Y == null || location?.X == null)
             {
-                return new EventPostResponse
+                return new ConcertPostResponse
                 {
-                    Event = eventDto,
-                    EventHeader = eventHeaderDto,
+                    Concert = concertDto,
+                    ConcertHeader = concertHeaderDto,
                     UserIds = Enumerable.Empty<int>()
                 };
             }
@@ -269,34 +269,34 @@ namespace Infrastructure.Services
                         preference.RadiusKm);
 
                     var hasMatchingGenre = preference.Genres.Any(userGenre =>
-                        eventDto.Genres.Any(eventGenre => eventGenre.Id == userGenre.Id));
+                        concertDto.Genres.Any(concertGenre => concertGenre.Id == userGenre.Id));
 
                     return inRange && hasMatchingGenre;
                 })
                 .Select(preference => preference.User.Id)
                 .ToList();
 
-            return new EventPostResponse
+            return new ConcertPostResponse
             {
-                Event = eventEntity.ToDto(),
-                EventHeader = eventHeaderDto,
+                Concert = concertEntity.ToDto(),
+                ConcertHeader = concertHeaderDto,
                 UserIds = userIdsToNotify
             };
         }
 
-        public async Task<IEnumerable<EventHeaderDto>> GetRecommendedHeadersAsync()
+        public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync()
         {
             var user = await currentUserService.GetOrDefaultAsync();
 
             if (user is null)
-                return Enumerable.Empty<EventHeaderDto>();
+                return Enumerable.Empty<ConcertHeaderDto>();
 
             var preferences = await preferenceService.GetByUserIdAsync(user.Id);
 
             if (preferences is null)
-                return Enumerable.Empty<EventHeaderDto>();
+                return Enumerable.Empty<ConcertHeaderDto>();
 
-            var eventParams = new EventParams
+            var concertParams = new ConcertParams
             {
                 Latitude = user.Latitude,
                 Longitude = user.Longitude,
@@ -306,21 +306,42 @@ namespace Infrastructure.Services
                 Take = 10
             };
 
-            var result = await eventRepository.GetHeaders(user.Id, eventParams);
+            var result = await concertRepository.GetHeaders(user.Id, concertParams);
             await reviewService.AddAverageRatingsAsync(result);
-            return result.Take(eventParams.Take);
+            return result.Take(concertParams.Take);
         }
 
-        public async Task<IEnumerable<EventDto>> GetUnpostedByArtistIdAsync(int id)
+        public async Task<IEnumerable<ConcertDto>> GetUnpostedByArtistIdAsync(int id)
         {
-            var events = await eventRepository.GetUnpostedByArtistIdAsync(id);
-            return events.ToDtos();
+            var concerts = await concertRepository.GetUnpostedByArtistIdAsync(id);
+            return concerts.ToDtos();
         }
 
-        public async Task<IEnumerable<EventDto>> GetUnpostedByVenueIdAsync(int id)
+        public async Task<IEnumerable<ConcertDto>> GetUnpostedByVenueIdAsync(int id)
         {
-            var events = await eventRepository.GetUnpostedByVenueIdAsync(id);
-            return events.ToDtos();
+            var concerts = await concertRepository.GetUnpostedByVenueIdAsync(id);
+            return concerts.ToDtos();
+        }
+
+        public async Task<IEnumerable<ConcertHeaderDto>> GetHeadersByAmountAsync(int amount)
+        {
+            var headers = await concertRepository.GetHeadersByAmountAsync(amount);
+            await reviewService.AddAverageRatingsAsync(headers);
+            return headers;
+        }
+
+        public async Task<IEnumerable<ConcertHeaderDto>> GetPopularHeadersAsync()
+        {
+            var headers = await concertRepository.GetPopularHeadersAsync();
+            await reviewService.AddAverageRatingsAsync(headers);
+            return headers;
+        }
+
+        public async Task<IEnumerable<ConcertHeaderDto>> GetFreeHeadersAsync()
+        {
+            var headers = await concertRepository.GetFreeHeadersAsync();
+            await reviewService.AddAverageRatingsAsync(headers);
+            return headers;
         }
     }
 }

@@ -5,16 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Specifications
 {
-    public class EventSearchSpecification : IEventSearchSpecification
+    public class ConcertSearchSpecification : IConcertSearchSpecification
     {
-        private readonly ISearchSpecification<Event> searchSpecification;
+        private readonly ISearchSpecification<Concert> searchSpecification;
 
-        public EventSearchSpecification(ISearchSpecification<Event> searchSpecification)
+        public ConcertSearchSpecification(ISearchSpecification<Concert> searchSpecification)
         {
             this.searchSpecification = searchSpecification;
         }
 
-        public IQueryable<Event> Apply(IQueryable<Event> query, SearchParams searchParams)
+        public IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams)
         {
             query = query
                 .Include(e => e.Application).ThenInclude(a => a.Artist)
@@ -26,7 +26,7 @@ namespace Infrastructure.Specifications
                 query = query.Where(e => e.Application.Listing.StartDate >= searchParams.Date);
 
             if (searchParams.GenreIds?.Any() == true)
-                query = query.Where(e => e.EventGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
+                query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
 
             if (searchParams.ShowHistory != true)
                 query = query.Where(e => e.Application.Listing.StartDate >= DateTime.UtcNow);

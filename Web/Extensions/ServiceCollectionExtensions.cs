@@ -59,7 +59,7 @@ namespace Web.Extensions
             services.AddSingleton<GeometryFactory>(
                 NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
 
-            services.AddScoped(provider => new Lazy<IEventService>(() => provider.GetRequiredService<IEventService>()));
+            services.AddScoped(provider => new Lazy<IConcertService>(() => provider.GetRequiredService<IConcertService>()));
             services.AddScoped(provider => new Lazy<ITicketService>(() => provider.GetRequiredService<ITicketService>()));
 
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -80,7 +80,7 @@ namespace Web.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IVenueService, VenueService>();
             services.AddScoped<IArtistService, ArtistService>();
-            services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IConcertService, ConcertService>();
             services.AddScoped<IListingApplicationService, ListingApplicationService>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IListingService, ListingService>();
@@ -106,7 +106,7 @@ namespace Web.Extensions
             services.AddScoped<IStripeValidationService, StripeValidationService>();
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<IOwnershipService, OwnershipService>();
-            services.AddScoped<IEventValidationService, EventValidationService>();
+            services.AddScoped<IConcertValidationService, ConcertValidationService>();
 
             return services;
         }
@@ -115,7 +115,7 @@ namespace Web.Extensions
         {
             services.AddScoped<IVenueRepository, VenueRepository>();
             services.AddScoped<IArtistRepository, ArtistRepository>();
-            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IConcertRepository, ConcertRepository>();
             services.AddScoped<IListingApplicationRepository, ListingApplicationRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IListingRepository, ListingRepository>();
@@ -143,26 +143,26 @@ namespace Web.Extensions
                     sp.GetRequiredService<IGeometryProvider>(),
                     (center, radius) => v => v.User.Location != null && v.User.Location.Distance(center) <= radius * 1000));
 
-            services.AddScoped<IGeometrySpecification<Event>>(sp =>
-                new GeometrySpecification<Event>(
+            services.AddScoped<IGeometrySpecification<Concert>>(sp =>
+                new GeometrySpecification<Concert>(
                     sp.GetRequiredService<IGeometryProvider>(),
                     (center, radius) => e => e.Application.Listing.Venue.User.Location != null && e.Application.Listing.Venue.User.Location.Distance(center) <= radius * 1000));
 
             services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
             services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();
-            services.AddScoped<ISearchSpecification<Event>, SearchSpecification<Event>>();
+            services.AddScoped<ISearchSpecification<Concert>, SearchSpecification<Concert>>();
 
             services.AddScoped<IArtistSearchSpecification, ArtistSearchSpecification>();
             services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();
-            services.AddScoped<IEventSearchSpecification, EventSearchSpecification>();
+            services.AddScoped<IConcertSearchSpecification, ConcertSearchSpecification>();
 
             services.AddScoped<IArtistSearchRepository, ArtistSearchRepository>();
             services.AddScoped<IVenueSearchRepository, VenueSearchRepository>();
-            services.AddScoped<IEventSearchRepository, EventSearchRepository>();
+            services.AddScoped<IConcertSearchRepository, ConcertSearchRepository>();
 
             services.AddKeyedScoped<ISearchService, ArtistSearchService>("artist");
             services.AddKeyedScoped<ISearchService, VenueSearchService>("venue");
-            services.AddKeyedScoped<ISearchService, EventSearchService>("event");
+            services.AddKeyedScoped<ISearchService, ConcertSearchService>("concert");
 
             services.AddScoped<ISearchServiceFactory, SearchServiceFactory>();
 

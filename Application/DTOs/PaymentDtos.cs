@@ -6,7 +6,7 @@ namespace Application.DTOs
         public string Currency { get; set; } = "GBP";
         public string PaymentMethodId { get; set; }
         public string Description { get; set; }
-        public int EventId { get; set; }
+        public int ConcertId { get; set; }
         public int UserId { get; set; }
     }
 

@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Responses;
 using Azure;
@@ -25,7 +25,7 @@ namespace Web.Controllers
         private readonly IServiceScopeFactory scopeFactory;
         private readonly IStripeEventRepository stripeEventRepository;
         private readonly ITicketService ticketService;
-        private readonly IEventService eventService;
+        private readonly IConcertService concertService;
         private readonly ITransactionService purchaseService;
         private readonly ILogger<WebhookController> logger;
 
@@ -37,7 +37,7 @@ namespace Web.Controllers
             IServiceScopeFactory scopeFactory,
             IHubContext<PaymentHub> hubContext,
             ITicketService ticketService,
-            IEventService eventService,
+            IConcertService concertService,
             ITransactionService purchaseService,
             IConfiguration configuration,
             ILogger<WebhookController> logger)
@@ -47,7 +47,7 @@ namespace Web.Controllers
             this.scopeFactory = scopeFactory;
             this.stripeEventRepository = stripeEventRepository;
             this.ticketService = ticketService;
-            this.eventService = eventService;
+            this.concertService = concertService;
             this.purchaseService = purchaseService;
             webhookSecret = configuration["Stripe:WebhookSecret"];
             this.logger = logger;
@@ -84,7 +84,7 @@ namespace Web.Controllers
             var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
             var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
             var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
-            var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+            var concertService = scope.ServiceProvider.GetRequiredService<IConcertService>();
             var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PaymentHub>>();
 
             try
@@ -129,9 +129,9 @@ namespace Web.Controllers
                         ToUserId = toUserId,
                     };
 
-                    if (type == "event")
+                    if (type == "concert")
                     {
-                        purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["eventId"]);
+                        purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["concertId"]);
                         purchaseCompleteDto.Quantity = int.Parse(intent.Metadata["quantity"]);
                         var response = await ticketService.CompleteAsync(purchaseCompleteDto);
                         await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("TicketPurchased", response);
@@ -139,8 +139,8 @@ namespace Web.Controllers
                     else if (type == "application")
                     {
                         purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
-                        var response = await eventService.CompleteAsync(purchaseCompleteDto);
-                        await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("EventCreated", response);
+                        var response = await concertService.CompleteAsync(purchaseCompleteDto);
+                        await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("ConcertCreated", response);
                     }
                 }
             }

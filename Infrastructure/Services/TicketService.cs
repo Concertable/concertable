@@ -45,12 +45,12 @@ public class TicketService : ITicketService
         if (role != "Customer")
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var response = await ticketValidationService.CanPurchaseTicketAsync(purchaseParams.EventId, purchaseParams.Quantity);
+        var response = await ticketValidationService.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
 
         if (!response.IsValid)
             throw new BadRequestException(response.Reasons);
 
-        var paymentResponse = await userPaymentService.PayVenueManagerByEventIdAsync(purchaseParams.EventId, purchaseParams.Quantity, purchaseParams.PaymentMethodId);
+        var paymentResponse = await userPaymentService.PayVenueManagerByConcertIdAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId);
 
         return new TicketPurchaseResponse
         {
@@ -66,9 +66,9 @@ public class TicketService : ITicketService
     public async Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
     {
         var ticketRepository = unitOfWork.GetRepository<Ticket>();
-        var eventRepository = unitOfWork.GetRepository<Event>();
+        var concertRepository = unitOfWork.GetRepository<Concert>();
 
-        var eventEntity = await eventRepository.GetByIdAsync(purchaseCompleteDto.EntityId);
+        var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId);
 
         using var transaction = await unitOfWork.BeginTransactionAsync();
 
@@ -82,7 +82,7 @@ public class TicketService : ITicketService
                 var ticket = new Ticket
                 {
                     UserId = purchaseCompleteDto.FromUserId,
-                    EventId = purchaseCompleteDto.EntityId,
+                    ConcertId = purchaseCompleteDto.EntityId,
                     PurchaseDate = DateTime.UtcNow
                 };
 
@@ -95,8 +95,8 @@ public class TicketService : ITicketService
                 tickets.Add(ticket);
             }
 
-            eventEntity.AvailableTickets -= quantity;
-            eventRepository.Update(eventEntity);
+            concertEntity.AvailableTickets -= quantity;
+            concertRepository.Update(concertEntity);
 
             await unitOfWork.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -107,7 +107,7 @@ public class TicketService : ITicketService
             return new TicketPurchaseResponse
             {
                 Message = "Failed to Create Ticket. Please contact support",
-                EventId = purchaseCompleteDto.EntityId,
+                ConcertId = purchaseCompleteDto.EntityId,
             };
         }
 
@@ -122,9 +122,9 @@ public class TicketService : ITicketService
             Success = true,
             Message = "Ticket purchased successfully!",
             TicketIds = ticketIds,
-            EventId = purchaseCompleteDto.EntityId,
+            ConcertId = purchaseCompleteDto.EntityId,
             PurchaseDate = tickets[0].PurchaseDate,
-            Amount = eventEntity.Price,
+            Amount = concertEntity.Price,
             Currency = "GBP",
             TransactionId = purchaseCompleteDto.TransactionId,
             UserEmail = purchaseCompleteDto.FromEmail

@@ -1,4 +1,3 @@
-﻿using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +7,7 @@ using Web.Extentions;
 namespace Web.Hubs
 {
     [Authorize]
-    public class EventHub : Hub
+    public class ConcertHub : Hub
     {
         public override async Task OnConnectedAsync()
         {

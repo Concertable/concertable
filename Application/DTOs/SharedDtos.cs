@@ -67,7 +67,7 @@ namespace Application.DTOs
         public int Id { get; set; }
         public DateTime PurchaseDate { get; set; }
         public byte[]? QrCode { get; set; }
-        public EventDto Event { get; set; }
+        public ConcertDto Concert { get; set; }
         public UserDto User { get; set; }
     }
 }

@@ -2,7 +2,7 @@ using Application.Interfaces.Search;
 
 namespace Application.DTOs
 {
-    public record EventDto : ItemDto
+    public record ConcertDto : ItemDto
     {
         public decimal Price { get; set; }
         public int TotalTickets { get; set; }
@@ -14,13 +14,13 @@ namespace Application.DTOs
         public ArtistDto Artist { get; set; }
         public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
 
-        public EventDto()
+        public ConcertDto()
         {
-            Type = "event";
+            Type = "concert";
         }
     }
 
-    public record EventHeaderDto : ISearchHeader, IAddressHeader
+    public record ConcertHeaderDto : ISearchHeader, IAddressHeader
     {
         public int Id { get; set; }
         public string Name { get; set; }

@@ -32,14 +32,14 @@ namespace Infrastructure.Services
             return await userRepsitory.GetByApplicationIdAsync(applicationId);
         }
 
-        public async Task<int> GetIdByEventIdAsync(int eventId)
+        public async Task<int> GetIdByConcertIdAsync(int concertId)
         {
-            return await userRepsitory.GetIdByEventIdAsync(eventId);
+            return await userRepsitory.GetIdByConcertIdAsync(concertId);
         }
 
-        public async Task<ApplicationUser> GetByEventIdAsync(int eventId)
+        public async Task<ApplicationUser> GetByConcertIdAsync(int concertId)
         {
-            return await userRepsitory.GetByEventIdAsync(eventId);
+            return await userRepsitory.GetByConcertIdAsync(concertId);
         }
 
         public async Task<UserDto> UpdateLocationAsync(double latitude, double longitude)

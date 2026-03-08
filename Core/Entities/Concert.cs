@@ -1,11 +1,11 @@
-﻿
+
 using Core.Interfaces;
 using NetTopologySuite.Geometries;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Event : BaseEntity, ILocation
+    public class Concert : BaseEntity, ILocation
     {
         public int ApplicationId { get; set; }
         public string Name { get; set; }
@@ -17,6 +17,7 @@ namespace Core.Entities
         public Point? Location => Application.Listing.Venue.User.Location;
         public ListingApplication Application { get; set; }
         public ICollection<Ticket> Tickets { get; } = new List<Ticket>();
-        public ICollection<EventGenre> EventGenres { get; set; } = new List<EventGenre>();
+        public ICollection<ConcertGenre> ConcertGenres { get; set; } = new List<ConcertGenre>();
+        public ICollection<ConcertImage> Images { get; set; } = new List<ConcertImage>();
     }
 }

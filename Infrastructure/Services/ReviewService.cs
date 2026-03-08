@@ -33,9 +33,9 @@ namespace Infrastructure.Services
             return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByArtistIdsAsync);
         }
 
-        public Task AddAverageRatingsAsync(IEnumerable<EventHeaderDto> headers)
+        public Task AddAverageRatingsAsync(IEnumerable<ConcertHeaderDto> headers)
         {
-            return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByEventIdsAsync);
+            return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByConcertIdsAsync);
         }
 
         public Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers)
@@ -66,7 +66,7 @@ namespace Infrastructure.Services
             var review = request.ToEntity();
 
             var userId = await currentUserService.GetIdAsync();
-            var ticket = await ticketRepository.GetByUserIdAndEventIdAsync(userId, request.EventId);
+            var ticket = await ticketRepository.GetByUserIdAndConcertIdAsync(userId, request.ConcertId);
 
             if (ticket is null)
                 throw new NotFoundException("Cannot find ticket");
@@ -97,9 +97,9 @@ namespace Infrastructure.Services
             return await GetAsync(p => reviewRepository.GetByArtistIdAsync(id, p), pageParams);
         }
 
-        public async Task<Pagination<ReviewDto>> GetByEventIdAsync(int id, IPageParams pageParams)
+        public async Task<Pagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams)
         {
-            return await GetAsync(p => reviewRepository.GetByEventIdAsync(id, p), pageParams);
+            return await GetAsync(p => reviewRepository.GetByConcertIdAsync(id, p), pageParams);
         }
 
         public async Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams)
@@ -112,9 +112,9 @@ namespace Infrastructure.Services
             return await reviewRepository.GetSummaryByArtistIdAsync(id);
         }
 
-        public async Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id)
+        public async Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id)
         {
-            return await reviewRepository.GetSummaryByEventIdAsync(id);
+            return await reviewRepository.GetSummaryByConcertIdAsync(id);
         }
 
         public async Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
@@ -122,10 +122,10 @@ namespace Infrastructure.Services
             return await reviewRepository.GetSummaryByVenueIdAsync(id);
         }
 
-        public async Task<bool> CanUserReviewEventIdAsync(int eventId)
+        public async Task<bool> CanUserReviewConcertIdAsync(int concertId)
         {
             var user = await currentUserService.GetAsync();
-            return await reviewRepository.CanUserIdReviewEventIdAsync(user.Id, eventId);
+            return await reviewRepository.CanUserIdReviewConcertIdAsync(user.Id, concertId);
         }
 
         public async Task<bool> CanUserReviewVenueIdAsync(int venueId)

@@ -10,7 +10,7 @@ namespace Application.Mappers
             Id = ticket.Id,
             PurchaseDate = ticket.PurchaseDate,
             QrCode = ticket.QrCode,
-            Event = ticket.Event.ToDto(),
+            Concert = ticket.Concert.ToDto(),
             User = ticket.User.ToDto()
         };
 

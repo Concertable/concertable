@@ -23,33 +23,33 @@ namespace Infrastructure.Repositories
 
         public Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id)
         {
-            return GetSummaryAsync(r => r.Ticket.Event.Application.ArtistId == id);
+            return GetSummaryAsync(r => r.Ticket.Concert.Application.ArtistId == id);
         }
 
-        public Task<ReviewSummaryDto> GetSummaryByEventIdAsync(int id)
+        public Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id)
         {
-            return GetSummaryAsync(r => r.Ticket.EventId == id);
+            return GetSummaryAsync(r => r.Ticket.ConcertId == id);
         }
 
         public Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
         {
-            return GetSummaryAsync(r => r.Ticket.Event.Application.Listing.VenueId == id);
+            return GetSummaryAsync(r => r.Ticket.Concert.Application.Listing.VenueId == id);
         }
 
 
         public Task<double> GetAverageRatingByArtistIdAsync(int id)
         {
-            return GetAverageRatingAsync(r => r.Ticket.Event.Application.ArtistId == id);
+            return GetAverageRatingAsync(r => r.Ticket.Concert.Application.ArtistId == id);
         }
 
-        public Task<double> GetAverageRatingByEventIdAsync(int id)
+        public Task<double> GetAverageRatingByConcertIdAsync(int id)
         {
-            return GetAverageRatingAsync(r => r.Ticket.EventId == id);
+            return GetAverageRatingAsync(r => r.Ticket.ConcertId == id);
         }
 
         public Task<double> GetAverageRatingByVenueIdAsync(int id)
         {
-            return GetAverageRatingAsync(r => r.Ticket.Event.Application.Listing.VenueId == id);
+            return GetAverageRatingAsync(r => r.Ticket.Concert.Application.Listing.VenueId == id);
         }
 
         private async Task<double> GetAverageRatingAsync(Expression<Func<Review, bool>> filter)
@@ -92,24 +92,24 @@ namespace Infrastructure.Repositories
         {
             return GetAverageRatingsAsync(
                 ids,
-                r => r.Ticket.Event.Application.ArtistId,
-                r => ids.Contains(r.Ticket.Event.Application.ArtistId));
+                r => r.Ticket.Concert.Application.ArtistId,
+                r => ids.Contains(r.Ticket.Concert.Application.ArtistId));
         }
 
-        public Task<IDictionary<int, double>> GetAverageRatingsByEventIdsAsync(IEnumerable<int> ids)
+        public Task<IDictionary<int, double>> GetAverageRatingsByConcertIdsAsync(IEnumerable<int> ids)
         {
             return GetAverageRatingsAsync(
                 ids,
-                r => r.Ticket.EventId,
-                r => ids.Contains(r.Ticket.EventId));
+                r => r.Ticket.ConcertId,
+                r => ids.Contains(r.Ticket.ConcertId));
         }
 
         public Task<IDictionary<int, double>> GetAverageRatingsByVenueIdsAsync(IEnumerable<int> ids)
         {
             return GetAverageRatingsAsync(
                 ids,
-                r => r.Ticket.Event.Application.Listing.VenueId,
-                r => ids.Contains(r.Ticket.Event.Application.Listing.VenueId));
+                r => r.Ticket.Concert.Application.Listing.VenueId,
+                r => ids.Contains(r.Ticket.Concert.Application.Listing.VenueId));
         }
 
 
@@ -141,14 +141,14 @@ namespace Infrastructure.Repositories
             return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
         }
 
-        public Task<Pagination<Review>> GetByEventIdAsync(int eventId, IPageParams pageParams) =>
-            GetAsync(r => r.Ticket.EventId == eventId, pageParams);
+        public Task<Pagination<Review>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>
+            GetAsync(r => r.Ticket.ConcertId == concertId, pageParams);
 
         public Task<Pagination<Review>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
-            GetAsync(r => r.Ticket.Event.Application.ArtistId == artistId, pageParams);
+            GetAsync(r => r.Ticket.Concert.Application.ArtistId == artistId, pageParams);
 
         public Task<Pagination<Review>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
-            GetAsync(r => r.Ticket.Event.Application.Listing.VenueId == venueId, pageParams);
+            GetAsync(r => r.Ticket.Concert.Application.Listing.VenueId == venueId, pageParams);
 
 
         private IQueryable<Ticket> GetUnreviewedTicketsByUser(int userId)
@@ -158,24 +158,24 @@ namespace Infrastructure.Repositories
         }
 
 
-        public Task<bool> CanUserIdReviewEventIdAsync(int userId, int eventId)
+        public Task<bool> CanUserIdReviewConcertIdAsync(int userId, int concertId)
         {
             return GetUnreviewedTicketsByUser(userId)
-                .AnyAsync(t => t.EventId == eventId && t.Event.Application.Listing.StartDate <= DateTime.UtcNow);
+                .AnyAsync(t => t.ConcertId == concertId && t.Concert.Application.Listing.StartDate <= DateTime.UtcNow);
         }
 
 
         public Task<bool> CanUserIdReviewArtistIdAsync(int userId, int artistId)
         {
             return GetUnreviewedTicketsByUser(userId)
-                .AnyAsync(t => t.Event.Application.Artist.Id == artistId);
+                .AnyAsync(t => t.Concert.Application.Artist.Id == artistId);
         }
 
 
         public Task<bool> CanUserIdReviewVenueIdAsync(int userId, int venueId)
         {
             return GetUnreviewedTicketsByUser(userId)
-                .AnyAsync(t => t.Event.Application.Listing.Venue.Id == venueId);
+                .AnyAsync(t => t.Concert.Application.Listing.Venue.Id == venueId);
         }
 
     }

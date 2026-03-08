@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Application.Interfaces;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +20,7 @@ namespace Infrastructure.Repositories
         {
             var query = context.Listings
                 .Where(l => l.VenueId == id && l.StartDate >= DateTime.UtcNow)
-                .Where(l => !context.Events.Any(e => e.ApplicationId == // doesnt have any events associated with it
+                .Where(l => !context.Concerts.Any(e => e.ApplicationId == // doesnt have any events associated with it
                     context.ListingApplications // by checking the applications
                         .Where(la => la.ListingId == l.Id) // that have the same listing
                         .Select(la => la.Id)

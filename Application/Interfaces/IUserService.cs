@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Core.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -11,9 +11,9 @@ namespace Application.Interfaces
     public interface IUserService
     {
         Task<ApplicationUser> GetByApplicationIdAsync(int applicationId);
-        Task<ApplicationUser> GetByEventIdAsync(int id);
+        Task<ApplicationUser> GetByConcertIdAsync(int id);
         Task<int> GetIdByApplicationIdAsync(int id);
-        Task<int> GetIdByEventIdAsync(int id);
+        Task<int> GetIdByConcertIdAsync(int id);
         Task<UserDto> UpdateLocationAsync(double latitude, double longitude);
     }
 }

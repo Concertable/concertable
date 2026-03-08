@@ -118,6 +118,13 @@ namespace Infrastructure.Services
             return id.Value;
         }
 
+        public async Task<IEnumerable<VenueHeaderDto>> GetHeadersByAmountAsync(int amount)
+        {
+            var headers = await venueRepository.GetHeadersByAmountAsync(amount);
+            await reviewService.AddAverageRatingsAsync(headers);
+            return headers;
+        }
+
         private async Task UpdateUserLocationAsync(ApplicationUser user, double latitude, double longitude)
         {
             var location = await geocodingService.GetLocationAsync(latitude, longitude);

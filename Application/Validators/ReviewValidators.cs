@@ -7,7 +7,7 @@ namespace Application.Validators
     {
         public CreateReviewRequestValidator()
         {
-            RuleFor(x => x.EventId).GreaterThan(0);
+            RuleFor(x => x.ConcertId).GreaterThan(0);
             RuleFor(x => x.Stars).InclusiveBetween(1, 5);
         }
     }

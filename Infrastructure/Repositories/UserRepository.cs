@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Core.Entities.Identity;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,10 +23,10 @@ namespace Infrastructure.Repositories
             return await query.FirstAsync();
         }
 
-        public async Task<ApplicationUser> GetByEventIdAsync(int eventId)
+        public async Task<ApplicationUser> GetByConcertIdAsync(int concertId)
         {
-            var query = context.Events
-                 .Where(e => e.Id == eventId)
+            var query = context.Concerts
+                 .Where(e => e.Id == concertId)
                  .Select(e => e.Application.Artist.User);
 
             return await query.FirstAsync();
@@ -41,10 +41,10 @@ namespace Infrastructure.Repositories
             return await query.FirstAsync();
         }
 
-        public async Task<int> GetIdByEventIdAsync(int eventId)
+        public async Task<int> GetIdByConcertIdAsync(int concertId)
         {
-            var query = context.Events
-                .Where(e => e.Id == eventId)
+            var query = context.Concerts
+                .Where(e => e.Id == concertId)
                 .Select(e => e.Application.Artist.UserId);
 
             return await query.FirstAsync();

@@ -6,7 +6,7 @@ namespace Application.Interfaces.Search
     [JsonPolymorphic]
     [JsonDerivedType(typeof(ArtistHeaderDto), "artist")]
     [JsonDerivedType(typeof(VenueHeaderDto), "venue")]
-    [JsonDerivedType(typeof(EventHeaderDto), "event")]
+    [JsonDerivedType(typeof(ConcertHeaderDto), "concert")]
     public interface ISearchHeader
     {
         int Id { get; set; }

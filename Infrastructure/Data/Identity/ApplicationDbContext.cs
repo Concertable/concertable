@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Core.Entities.Identity;
 using Infrastructure.Configurations;
 using Microsoft.AspNetCore.Identity;
@@ -13,9 +13,9 @@ namespace Infrastructure.Data.Identity
     {
         public DbSet<Artist> Artists { get; set; }
         public DbSet<ArtistGenre> ArtistGenres { get; set; }
-        public DbSet<Event> Events { get; set; }
-        public DbSet<EventGenre> EventGenres { get; set; }
-        public DbSet<EventImage> EventImages { get; set; }
+        public DbSet<Concert> Concerts { get; set; }
+        public DbSet<ConcertGenre> ConcertGenres { get; set; }
+        public DbSet<ConcertImage> ConcertImages { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Listing> Listings { get; set; }
         public DbSet<ListingGenre> ListingGenres { get; set; }
@@ -44,18 +44,13 @@ namespace Infrastructure.Data.Identity
             modelBuilder.Entity<StripeEvent>()
                 .HasKey(e => e.EventId);
 
-            /* Create a new index so that an artist
-             * can only register for each listing
-             * once
-             */
+            /* Ensure an artist can only register for each listing once */
             modelBuilder.Entity<ListingApplication>()
                 .HasIndex(la => new { la.ListingId, la.ArtistId })
                 .IsUnique();
 
-            base.OnModelCreating(modelBuilder);
-
             modelBuilder.Entity<ListingApplication>()
-                .Ignore(l => l.Event);
+                .Ignore(l => l.Concert);
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.FromUser)
@@ -73,43 +68,62 @@ namespace Infrastructure.Data.Identity
                 .HasOne(p => p.FromUser)
                 .WithMany()
                 .HasForeignKey(p => p.FromUserId)
-                .OnDelete(DeleteBehavior.NoAction); 
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Transaction>()
                 .HasOne(p => p.ToUser)
                 .WithMany()
                 .HasForeignKey(p => p.ToUserId)
-                .OnDelete(DeleteBehavior.NoAction);  
+                .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Event>()
+            modelBuilder.Entity<Concert>()
                 .HasOne(e => e.Application)
                 .WithOne()
-                .HasForeignKey<Event>(e => e.ApplicationId)
+                .HasForeignKey<Concert>(e => e.ApplicationId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ConcertGenre>()
+                .HasOne(cg => cg.Concert)
+                .WithMany(c => c.ConcertGenres)
+                .HasForeignKey(cg => cg.ConcertId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            modelBuilder.Entity<ConcertGenre>()
+                .HasOne(cg => cg.Genre)
+                .WithMany(g => g.ConcertGenres)
+                .HasForeignKey(cg => cg.GenreId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            modelBuilder.Entity<ConcertImage>()
+                .HasOne(ci => ci.Concert)
+                .WithMany(c => c.Images)
+                .HasForeignKey(ci => ci.ConcertId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
             modelBuilder.Entity<ListingApplication>()
                 .HasOne(r => r.Listing)
-                .WithMany(l => l.Applications)  
+                .WithMany(l => l.Applications)
                 .HasForeignKey(r => r.ListingId)
                 .IsRequired()
-                .OnDelete(DeleteBehavior.NoAction); 
+                .OnDelete(DeleteBehavior.NoAction);
 
-            // One-to-Many: An Artist can have multiple Registers
             modelBuilder.Entity<ListingApplication>()
                 .HasOne(r => r.Artist)
-                .WithMany(a => a.Applications)  
+                .WithMany(a => a.Applications)
                 .HasForeignKey(r => r.ArtistId)
                 .IsRequired();
 
             modelBuilder.Entity<Ticket>()
-                .HasOne(t => t.Event)
-                .WithMany(e => e.Tickets) 
-                .HasForeignKey(t => t.EventId)
+                .HasOne(t => t.Concert)
+                .WithMany(e => e.Tickets)
+                .HasForeignKey(t => t.ConcertId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
-        
         }
 
     }

@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Responses;
 using System;
 using System.Collections.Generic;
@@ -8,38 +8,38 @@ namespace Infrastructure.Services
 {
     public class TicketValidationService : ITicketValidationService
     {
-        private readonly IEventService eventService;
+        private readonly IConcertService concertService;
 
-        public TicketValidationService(IEventService eventService)
+        public TicketValidationService(IConcertService concertService)
         {
-            this.eventService = eventService;
+            this.concertService = concertService;
         }
 
-        public async Task<ValidationResponse> CanPurchaseTicketAsync(int eventId, int? quantity = null)
+        public async Task<ValidationResponse> CanPurchaseTicketAsync(int concertId, int? quantity = null)
         {
             var reasons = new List<string>();
-            var eventEntity = await eventService.GetDetailsByIdAsync(eventId);
+            var concertEntity = await concertService.GetDetailsByIdAsync(concertId);
 
-            if (eventEntity is null)
+            if (concertEntity is null)
             {
-                reasons.Add("Event does not exist.");
+                reasons.Add("Concert does not exist.");
             }
             else
             {
-                if(eventEntity.DatePosted is null)
-                    reasons.Add("Event is not posted yet");
+                if(concertEntity.DatePosted is null)
+                    reasons.Add("Concert is not posted yet");
 
-                if (eventEntity.StartDate < DateTime.UtcNow)
-                    reasons.Add("You cannot purchase a Ticket for an Event that's already passed");
+                if (concertEntity.StartDate < DateTime.UtcNow)
+                    reasons.Add("You cannot purchase a Ticket for a Concert that's already passed");
 
-                if (eventEntity.DatePosted is null)
-                    reasons.Add("Event has not yet been posted");
+                if (concertEntity.DatePosted is null)
+                    reasons.Add("Concert has not yet been posted");
 
-                if (eventEntity.AvailableTickets <= 0)
-                    reasons.Add("No Tickets Available for Event");
+                if (concertEntity.AvailableTickets <= 0)
+                    reasons.Add("No Tickets Available for Concert");
 
-                if (quantity.HasValue && eventEntity.AvailableTickets - quantity.Value < 0)
-                    reasons.Add($"Not enough tickets available. Only {eventEntity.AvailableTickets} tickets are available");
+                if (quantity.HasValue && concertEntity.AvailableTickets - quantity.Value < 0)
+                    reasons.Add($"Not enough tickets available. Only {concertEntity.AvailableTickets} tickets are available");
             }
 
             if (reasons.Any())

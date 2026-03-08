@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Core.Enums;
 using System;
 using System.Collections.Generic;
@@ -17,9 +17,9 @@ namespace Infrastructure.Services
             this.userService = userService;
         }
 
-        public async Task<int> GetIdByEventIdAsync(int id)
+        public async Task<int> GetIdByConcertIdAsync(int id)
         {
-            return await userService.GetIdByEventIdAsync(id);
+            return await userService.GetIdByConcertIdAsync(id);
         }
 
         public async Task<int> GetIdByApplicationIdAsync(int id)

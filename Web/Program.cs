@@ -59,7 +59,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGroup("/api").MapIdentityApi<ApplicationUser>();
 app.MapHub<PaymentHub>("/hub/payments");
-app.MapHub<EventHub>("/hub/events");
+app.MapHub<ConcertHub>("/hub/concerts");
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

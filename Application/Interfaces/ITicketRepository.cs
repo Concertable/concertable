@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +12,6 @@ namespace Application.Interfaces
         Task<byte[]> GetQrCodeByIdAsync(int id);
         Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id);
         Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id);
-        Task<Ticket?> GetByUserIdAndEventIdAsync(int userId, int eventId);
+        Task<Ticket?> GetByUserIdAndConcertIdAsync(int userId, int concertId);
     }
 }

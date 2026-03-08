@@ -1,4 +1,4 @@
-﻿using Application.Responses;
+using Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface IUserPaymentService
     {
-        Task<PaymentResponse> PayVenueManagerByEventIdAsync(int eventId, int quantity, string paymentMethodId);
+        Task<PaymentResponse> PayVenueManagerByConcertIdAsync(int concertId, int quantity, string paymentMethodId);
         Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId);
     }
 }

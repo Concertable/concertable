@@ -1,4 +1,4 @@
-﻿using Core.Enums;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface IManagerService
     {
-        Task<int> GetIdByEventIdAsync(int id);
+        Task<int> GetIdByConcertIdAsync(int id);
         Task<int> GetIdByApplicationIdAsync(int id);
     }
 }

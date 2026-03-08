@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Core.Entities.Identity;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
@@ -513,148 +513,148 @@ namespace Infrastructure.Data
                 await context.SaveChangesAsync();
             }
 
-                if (!context.Events.Any())
+                if (!context.Concerts.Any())
                 {
-                    var events = new Event[]
+                    var concerts = new Concert[]
                     {
-                        EventFaker.GetFaker(1, "Rockin' all Night", 15m, 120, 80, now.AddDays(-58)).Generate(), //1
-                        EventFaker.GetFaker(2, "Non Stop Party", 12m, 110, 70, now.AddDays(-55)).Generate(), //2
-                        EventFaker.GetFaker(3, "Super Mix", 18m, 130, 100, now.AddDays(-52)).Generate(), //3
-                        EventFaker.GetFaker(4, "Hip-Hop till you flip-flop", 10m, 100, 60, now.AddDays(-49)).Generate(), //4
-                        EventFaker.GetFaker(5, "Dance the night away", 25m, 140, 110, now.AddDays(-46)).Generate(), //5
-                        EventFaker.GetFaker(6, "Dizzy One", 20m, 150, 90, now.AddDays(-43)).Generate(), //6
-                        EventFaker.GetFaker(7, "Beers and Boombox", 30m, 170, 150, now.AddDays(-40)).Generate(), //7
-                        EventFaker.GetFaker(8, "Rockin' Tonight!", 16m, 130, 100, now.AddDays(-37)).Generate(), //8
-                        EventFaker.GetFaker(9, "Groovin' All Night", 14m, 115, 75, now.AddDays(-34)).Generate(), //9
-                        EventFaker.GetFaker(10, "Nonstop Vibes", 22m, 135, 100, now.AddDays(-31)).Generate(), //10
-                        EventFaker.GetFaker(11, "Electric Dreams", 13m, 125, 85, now.AddDays(-28)).Generate(), //11
-                        EventFaker.GetFaker(12, "Beat Drop Frenzy", 11m, 120, 90, now.AddDays(-25)).Generate(), //12
-                        EventFaker.GetFaker(13, "Summer Jam", 19m, 140, 110, now.AddDays(-22)).Generate(), //13
-                        EventFaker.GetFaker(14, "Midnight Madness", 17m, 135, 105, now.AddDays(-19)).Generate(), //14
-                        EventFaker.GetFaker(15, "Like a Boss", 21m, 145, 115, now.AddDays(-16)).Generate(), //15
-                        EventFaker.GetFaker(16, "Lights and Sound", 18m, 140, 120, now.AddDays(-13)).Generate(), //16
-                        EventFaker.GetFaker(17, "Rhythm Nation", 26m, 155, 130, now.AddDays(-10)).Generate(), //17
-                        EventFaker.GetFaker(18, "Bass Drop Party", 15m, 120, 100, now.AddDays(-7)).Generate(), //18
-                        EventFaker.GetFaker(19, "Chill & Thrill", 28m, 160, 145, now.AddDays(-4)).Generate(), //19
-                        EventFaker.GetFaker(20, "Vibin' till Night", 24m, 150, 130, now.AddDays(-1)).Generate(), //20
-                        EventFaker.GetFaker(21, "Ultimate Dance Party", 27m, 160, 140, now.AddDays(2)).Generate(), //21
-                        EventFaker.GetFaker(22, "Rock Your Soul", 23m, 130, 100, now.AddDays(5)).Generate(), //22
-                        EventFaker.GetFaker(23, "Danceaway", 29m, 155, 140, now.AddDays(8)).Generate(), //23
-                        EventFaker.GetFaker(24, "Bassline Groove Beats", 10m, 110, 70, now.AddDays(11)).Generate(), //24
-                        EventFaker.GetFaker(25, "Once in a Lifetime!", 15m, 125, 90, now.AddDays(14)).Generate(), //25
-                        EventFaker.GetFaker(26, "Jungle Fever", 30m, 180, 170, now.AddDays(17)).Generate(), //26
-                        EventFaker.GetFaker(35, "Boogie Nights", 20m, 100, 80, now.AddDays(6)).Generate(), //27
-                        EventFaker.GetFaker(39, "Boogie Wonderland", 25m, 120, 100, now.AddDays(12)).Generate(), //28
-                        EventFaker.GetFaker(42, "Bass in the Air", 30m, 140, 120, now.AddDays(18)).Generate(), //29
-                        EventFaker.GetFaker(45, "Jumpin and thumpin", 15m, 100, 80, now.AddDays(22)).Generate(), //30
-                        EventFaker.GetFaker(49, "Funk it up", 20m, 150, 130, now.AddDays(25)).Generate(), //31
-                        EventFaker.GetFaker(54, "Boogie it up!", 20m, 150, 130, now.AddDays(25)).Generate() //32
+                        ConcertFaker.GetFaker(1, "Rockin' all Night", 15m, 120, 80, now.AddDays(-58)).Generate(), //1
+                        ConcertFaker.GetFaker(2, "Non Stop Party", 12m, 110, 70, now.AddDays(-55)).Generate(), //2
+                        ConcertFaker.GetFaker(3, "Super Mix", 18m, 130, 100, now.AddDays(-52)).Generate(), //3
+                        ConcertFaker.GetFaker(4, "Hip-Hop till you flip-flop", 10m, 100, 60, now.AddDays(-49)).Generate(), //4
+                        ConcertFaker.GetFaker(5, "Dance the night away", 25m, 140, 110, now.AddDays(-46)).Generate(), //5
+                        ConcertFaker.GetFaker(6, "Dizzy One", 20m, 150, 90, now.AddDays(-43)).Generate(), //6
+                        ConcertFaker.GetFaker(7, "Beers and Boombox", 30m, 170, 150, now.AddDays(-40)).Generate(), //7
+                        ConcertFaker.GetFaker(8, "Rockin' Tonight!", 16m, 130, 100, now.AddDays(-37)).Generate(), //8
+                        ConcertFaker.GetFaker(9, "Groovin' All Night", 14m, 115, 75, now.AddDays(-34)).Generate(), //9
+                        ConcertFaker.GetFaker(10, "Nonstop Vibes", 22m, 135, 100, now.AddDays(-31)).Generate(), //10
+                        ConcertFaker.GetFaker(11, "Electric Dreams", 13m, 125, 85, now.AddDays(-28)).Generate(), //11
+                        ConcertFaker.GetFaker(12, "Beat Drop Frenzy", 11m, 120, 90, now.AddDays(-25)).Generate(), //12
+                        ConcertFaker.GetFaker(13, "Summer Jam", 19m, 140, 110, now.AddDays(-22)).Generate(), //13
+                        ConcertFaker.GetFaker(14, "Midnight Madness", 17m, 135, 105, now.AddDays(-19)).Generate(), //14
+                        ConcertFaker.GetFaker(15, "Like a Boss", 21m, 145, 115, now.AddDays(-16)).Generate(), //15
+                        ConcertFaker.GetFaker(16, "Lights and Sound", 18m, 140, 120, now.AddDays(-13)).Generate(), //16
+                        ConcertFaker.GetFaker(17, "Rhythm Nation", 26m, 155, 130, now.AddDays(-10)).Generate(), //17
+                        ConcertFaker.GetFaker(18, "Bass Drop Party", 15m, 120, 100, now.AddDays(-7)).Generate(), //18
+                        ConcertFaker.GetFaker(19, "Chill & Thrill", 28m, 160, 145, now.AddDays(-4)).Generate(), //19
+                        ConcertFaker.GetFaker(20, "Vibin' till Night", 24m, 150, 130, now.AddDays(-1)).Generate(), //20
+                        ConcertFaker.GetFaker(21, "Ultimate Dance Party", 27m, 160, 140, now.AddDays(2)).Generate(), //21
+                        ConcertFaker.GetFaker(22, "Rock Your Soul", 23m, 130, 100, now.AddDays(5)).Generate(), //22
+                        ConcertFaker.GetFaker(23, "Danceaway", 29m, 155, 140, now.AddDays(8)).Generate(), //23
+                        ConcertFaker.GetFaker(24, "Bassline Groove Beats", 10m, 110, 70, now.AddDays(11)).Generate(), //24
+                        ConcertFaker.GetFaker(25, "Once in a Lifetime!", 15m, 125, 90, now.AddDays(14)).Generate(), //25
+                        ConcertFaker.GetFaker(26, "Jungle Fever", 30m, 180, 170, now.AddDays(17)).Generate(), //26
+                        ConcertFaker.GetFaker(35, "Boogie Nights", 20m, 100, 80, now.AddDays(6)).Generate(), //27
+                        ConcertFaker.GetFaker(39, "Boogie Wonderland", 25m, 120, 100, now.AddDays(12)).Generate(), //28
+                        ConcertFaker.GetFaker(42, "Bass in the Air", 30m, 140, 120, now.AddDays(18)).Generate(), //29
+                        ConcertFaker.GetFaker(45, "Jumpin and thumpin", 15m, 100, 80, now.AddDays(22)).Generate(), //30
+                        ConcertFaker.GetFaker(49, "Funk it up", 20m, 150, 130, now.AddDays(25)).Generate(), //31
+                        ConcertFaker.GetFaker(54, "Boogie it up!", 20m, 150, 130, now.AddDays(25)).Generate() //32
                     };
 
-                    context.Events.AddRange(events);
+                    context.Concerts.AddRange(concerts);
                     await context.SaveChangesAsync();
                 }
 
-            // EventGenres
-            if (!context.EventGenres.Any())
+            // ConcertGenres
+            if (!context.ConcertGenres.Any())
             {
-                var eventGenres = new List<EventGenre>
+                var concertGenres = new List<ConcertGenre>
                 {
-                    new EventGenre { EventId = 1, GenreId = 1 },
-                    new EventGenre { EventId = 1, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 1, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 1, GenreId = 2 },
 
-                    new EventGenre { EventId = 2, GenreId = 2 },
-                    new EventGenre { EventId = 2, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 2, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 2, GenreId = 5 },
 
-                    new EventGenre { EventId = 3, GenreId = 5 },
-                    new EventGenre { EventId = 3, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 3, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 3, GenreId = 3 },
 
-                    new EventGenre { EventId = 4, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 4, GenreId = 4 },
 
-                    new EventGenre { EventId = 5, GenreId = 3 },
-                    new EventGenre { EventId = 5, GenreId = 6 },
-                    new EventGenre { EventId = 5, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 5, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 5, GenreId = 6 },
+                    new ConcertGenre { ConcertId = 5, GenreId = 1 },
 
-                    new EventGenre { EventId = 6, GenreId = 6 },
-                    new EventGenre { EventId = 6, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 6, GenreId = 6 },
+                    new ConcertGenre { ConcertId = 6, GenreId = 4 },
 
-                    new EventGenre { EventId = 7, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 7, GenreId = 2 },
 
-                    new EventGenre { EventId = 8, GenreId = 4 },
-                    new EventGenre { EventId = 8, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 8, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 8, GenreId = 1 },
 
-                    new EventGenre { EventId = 9, GenreId = 2 },
-                    new EventGenre { EventId = 9, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 9, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 9, GenreId = 1 },
 
-                    new EventGenre { EventId = 10, GenreId = 6 },
+                    new ConcertGenre { ConcertId = 10, GenreId = 6 },
 
-                    new EventGenre { EventId = 11, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 11, GenreId = 1 },
 
-                    new EventGenre { EventId = 12, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 12, GenreId = 5 },
 
-                    new EventGenre { EventId = 13, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 13, GenreId = 4 },
 
-                    new EventGenre { EventId = 14, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 14, GenreId = 5 },
 
-                    new EventGenre { EventId = 15, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 15, GenreId = 5 },
 
-                    new EventGenre { EventId = 16, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 16, GenreId = 5 },
 
-                    new EventGenre { EventId = 17, GenreId = 3 },
-                    new EventGenre { EventId = 17, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 17, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 17, GenreId = 4 },
 
-                    new EventGenre { EventId = 18, GenreId = 3 },
-                    new EventGenre { EventId = 18, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 18, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 18, GenreId = 4 },
 
-                    new EventGenre { EventId = 19, GenreId = 4 },
-                    new EventGenre { EventId = 19, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 19, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 19, GenreId = 3 },
 
-                    new EventGenre { EventId = 20, GenreId = 6 },
+                    new ConcertGenre { ConcertId = 20, GenreId = 6 },
 
-                    new EventGenre { EventId = 21, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 21, GenreId = 3 },
 
-                    new EventGenre { EventId = 21, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 21, GenreId = 4 },
 
-                    new EventGenre { EventId = 22, GenreId = 7 },
+                    new ConcertGenre { ConcertId = 22, GenreId = 7 },
 
-                    new EventGenre { EventId = 23, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 23, GenreId = 5 },
 
-                    new EventGenre { EventId = 24, GenreId = 7 },
+                    new ConcertGenre { ConcertId = 24, GenreId = 7 },
 
-                    new EventGenre { EventId = 25, GenreId = 8 },
+                    new ConcertGenre { ConcertId = 25, GenreId = 8 },
 
-                    new EventGenre { EventId = 26, GenreId = 7 },
-                    new EventGenre { EventId = 26, GenreId = 1 },
-                    new EventGenre { EventId = 26, GenreId = 2 },
-                    new EventGenre { EventId = 26, GenreId = 6 },
+                    new ConcertGenre { ConcertId = 26, GenreId = 7 },
+                    new ConcertGenre { ConcertId = 26, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 26, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 26, GenreId = 6 },
 
-                    new EventGenre { EventId = 27, GenreId = 3 },
-                    new EventGenre { EventId = 27, GenreId = 2 },
-                    new EventGenre { EventId = 27, GenreId = 5 },
-                    new EventGenre { EventId = 27, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 27, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 27, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 27, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 27, GenreId = 1 },
 
-                    new EventGenre { EventId = 28, GenreId = 6 },
-                    new EventGenre { EventId = 28, GenreId = 2 },
-                    new EventGenre { EventId = 28, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 28, GenreId = 6 },
+                    new ConcertGenre { ConcertId = 28, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 28, GenreId = 4 },
 
-                    new EventGenre { EventId = 29, GenreId = 2 },
-                    new EventGenre { EventId = 29, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 29, GenreId = 2 },
+                    new ConcertGenre { ConcertId = 29, GenreId = 1 },
 
-                    new EventGenre { EventId = 30, GenreId = 8 },
-                    new EventGenre { EventId = 30, GenreId = 1 },
-                    new EventGenre { EventId = 30, GenreId = 4 },
-                    new EventGenre { EventId = 30, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 30, GenreId = 8 },
+                    new ConcertGenre { ConcertId = 30, GenreId = 1 },
+                    new ConcertGenre { ConcertId = 30, GenreId = 4 },
+                    new ConcertGenre { ConcertId = 30, GenreId = 5 },
 
-                    new EventGenre { EventId = 31, GenreId = 3 },
-                    new EventGenre { EventId = 31, GenreId = 5 },
-                    new EventGenre { EventId = 31, GenreId = 7 },
+                    new ConcertGenre { ConcertId = 31, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 31, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 31, GenreId = 7 },
 
-                    new EventGenre { EventId = 32, GenreId = 3 },
-                    new EventGenre { EventId = 32, GenreId = 5 },
-                    new EventGenre { EventId = 32, GenreId = 7 },
+                    new ConcertGenre { ConcertId = 32, GenreId = 3 },
+                    new ConcertGenre { ConcertId = 32, GenreId = 5 },
+                    new ConcertGenre { ConcertId = 32, GenreId = 7 },
                 };
 
-                context.EventGenres.AddRange(eventGenres);
+                context.ConcertGenres.AddRange(concertGenres);
                 await context.SaveChangesAsync();
             }
 
@@ -664,131 +664,131 @@ namespace Infrastructure.Data
         {
             var tickets = new Ticket[]
             {
-                new Ticket { UserId = 2, EventId = 1, PurchaseDate = now.AddDays(-58) },
-                new Ticket { UserId = 3, EventId = 1, PurchaseDate = now.AddDays(-58) },
-                new Ticket { UserId = 4, EventId = 1, PurchaseDate = now.AddDays(-58) },
-                new Ticket { UserId = 5, EventId = 1, PurchaseDate = now.AddDays(-57) },
-                new Ticket { UserId = 6, EventId = 1, PurchaseDate = now.AddDays(-57) },
-                new Ticket { UserId = 7, EventId = 1, PurchaseDate = now.AddDays(-57) },
-                new Ticket { UserId = 8, EventId = 1, PurchaseDate = now.AddDays(-56) },
+                new Ticket { UserId = 2, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+                new Ticket { UserId = 3, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+                new Ticket { UserId = 4, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+                new Ticket { UserId = 5, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+                new Ticket { UserId = 6, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+                new Ticket { UserId = 7, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+                new Ticket { UserId = 8, ConcertId = 1, PurchaseDate = now.AddDays(-56) },
 
-                new Ticket { UserId = 3, EventId = 2, PurchaseDate = now.AddDays(-55) },
-                new Ticket { UserId = 4, EventId = 2, PurchaseDate = now.AddDays(-55) },
-                new Ticket { UserId = 5, EventId = 2, PurchaseDate = now.AddDays(-55) },
-                new Ticket { UserId = 6, EventId = 2, PurchaseDate = now.AddDays(-54) },
-                new Ticket { UserId = 7, EventId = 2, PurchaseDate = now.AddDays(-54) },
-                new Ticket { UserId = 8, EventId = 2, PurchaseDate = now.AddDays(-54) },
-                new Ticket { UserId = 9, EventId = 2, PurchaseDate = now.AddDays(-53) },
+                new Ticket { UserId = 3, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+                new Ticket { UserId = 4, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+                new Ticket { UserId = 5, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+                new Ticket { UserId = 6, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+                new Ticket { UserId = 7, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+                new Ticket { UserId = 8, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+                new Ticket { UserId = 9, ConcertId = 2, PurchaseDate = now.AddDays(-53) },
 
-                new Ticket { UserId = 4, EventId = 3, PurchaseDate = now.AddDays(-52) },
-                new Ticket { UserId = 5, EventId = 3, PurchaseDate = now.AddDays(-52) },
-                new Ticket { UserId = 6, EventId = 3, PurchaseDate = now.AddDays(-52) },
-                new Ticket { UserId = 7, EventId = 3, PurchaseDate = now.AddDays(-51) },
-                new Ticket { UserId = 8, EventId = 3, PurchaseDate = now.AddDays(-51) },
-                new Ticket { UserId = 9, EventId = 3, PurchaseDate = now.AddDays(-51) },
-                new Ticket { UserId = 10, EventId = 3, PurchaseDate = now.AddDays(-50) },
+                new Ticket { UserId = 4, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+                new Ticket { UserId = 5, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+                new Ticket { UserId = 6, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+                new Ticket { UserId = 7, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+                new Ticket { UserId = 8, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+                new Ticket { UserId = 9, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+                new Ticket { UserId = 10, ConcertId = 3, PurchaseDate = now.AddDays(-50) },
 
-                new Ticket { UserId = 2, EventId = 4, PurchaseDate = now.AddDays(-49) },
-                new Ticket { UserId = 3, EventId = 4, PurchaseDate = now.AddDays(-49) },
-                new Ticket { UserId = 4, EventId = 4, PurchaseDate = now.AddDays(-49) },
-                new Ticket { UserId = 5, EventId = 4, PurchaseDate = now.AddDays(-48) },
-                new Ticket { UserId = 6, EventId = 4, PurchaseDate = now.AddDays(-48) },
-                new Ticket { UserId = 7, EventId = 4, PurchaseDate = now.AddDays(-48) },
-                new Ticket { UserId = 8, EventId = 4, PurchaseDate = now.AddDays(-47) },
+                new Ticket { UserId = 2, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+                new Ticket { UserId = 3, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+                new Ticket { UserId = 4, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+                new Ticket { UserId = 5, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+                new Ticket { UserId = 6, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+                new Ticket { UserId = 7, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+                new Ticket { UserId = 8, ConcertId = 4, PurchaseDate = now.AddDays(-47) },
 
-                new Ticket { UserId = 9, EventId = 5, PurchaseDate = now.AddDays(-46) },
-                new Ticket { UserId = 10, EventId = 5, PurchaseDate = now.AddDays(-46) },
-                new Ticket { UserId = 2, EventId = 5, PurchaseDate = now.AddDays(-46) },
-                new Ticket { UserId = 3, EventId = 5, PurchaseDate = now.AddDays(-45) },
-                new Ticket { UserId = 4, EventId = 5, PurchaseDate = now.AddDays(-45) },
-                new Ticket { UserId = 5, EventId = 5, PurchaseDate = now.AddDays(-45) },
-                new Ticket { UserId = 6, EventId = 5, PurchaseDate = now.AddDays(-44) },
+                new Ticket { UserId = 9, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+                new Ticket { UserId = 10, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+                new Ticket { UserId = 2, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+                new Ticket { UserId = 3, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+                new Ticket { UserId = 4, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+                new Ticket { UserId = 5, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+                new Ticket { UserId = 6, ConcertId = 5, PurchaseDate = now.AddDays(-44) },
 
-                new Ticket { UserId = 2, EventId = 6, PurchaseDate = now.AddDays(-43) },
-                new Ticket { UserId = 3, EventId = 6, PurchaseDate = now.AddDays(-43) },
-                new Ticket { UserId = 5, EventId = 6, PurchaseDate = now.AddDays(-42) },
-                new Ticket { UserId = 6, EventId = 6, PurchaseDate = now.AddDays(-42) },
-                new Ticket { UserId = 8, EventId = 6, PurchaseDate = now.AddDays(-42) },
+                new Ticket { UserId = 2, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
+                new Ticket { UserId = 3, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
+                new Ticket { UserId = 5, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+                new Ticket { UserId = 6, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+                new Ticket { UserId = 8, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
 
-                new Ticket { UserId = 2, EventId = 7, PurchaseDate = now.AddDays(-40) },
-                new Ticket { UserId = 3, EventId = 7, PurchaseDate = now.AddDays(-40) },
-                new Ticket { UserId = 9, EventId = 7, PurchaseDate = now.AddDays(-40) },
+                new Ticket { UserId = 2, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+                new Ticket { UserId = 3, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+                new Ticket { UserId = 9, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
 
-                new Ticket { UserId = 2, EventId = 8, PurchaseDate = now.AddDays(-38) },
-                new Ticket { UserId = 3, EventId = 8, PurchaseDate = now.AddDays(-38) },
-                new Ticket { UserId = 6, EventId = 8, PurchaseDate = now.AddDays(-37) },
+                new Ticket { UserId = 2, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
+                new Ticket { UserId = 3, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
+                new Ticket { UserId = 6, ConcertId = 8, PurchaseDate = now.AddDays(-37) },
 
-                new Ticket { UserId = 2, EventId = 9, PurchaseDate = now.AddDays(-36) },
-                new Ticket { UserId = 3, EventId = 9, PurchaseDate = now.AddDays(-36) },
-                new Ticket { UserId = 8, EventId = 9, PurchaseDate = now.AddDays(-36) },
+                new Ticket { UserId = 2, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+                new Ticket { UserId = 3, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+                new Ticket { UserId = 8, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
 
-                new Ticket { UserId = 2, EventId = 10, PurchaseDate = now.AddDays(-34) },
-                new Ticket { UserId = 3, EventId = 10, PurchaseDate = now.AddDays(-34) },
-                new Ticket { UserId = 9, EventId = 10, PurchaseDate = now.AddDays(-34) },
+                new Ticket { UserId = 2, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+                new Ticket { UserId = 3, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+                new Ticket { UserId = 9, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
 
-                new Ticket { UserId = 2, EventId = 11, PurchaseDate = now.AddDays(-32) },
-                new Ticket { UserId = 3, EventId = 11, PurchaseDate = now.AddDays(-32) },
-                new Ticket { UserId = 6, EventId = 11, PurchaseDate = now.AddDays(-32) },
+                new Ticket { UserId = 2, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+                new Ticket { UserId = 3, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+                new Ticket { UserId = 6, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
 
-                new Ticket { UserId = 2, EventId = 12, PurchaseDate = now.AddDays(-30) },
-                new Ticket { UserId = 3, EventId = 12, PurchaseDate = now.AddDays(-30) },
-                new Ticket { UserId = 7, EventId = 12, PurchaseDate = now.AddDays(-30) },
+                new Ticket { UserId = 2, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+                new Ticket { UserId = 3, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+                new Ticket { UserId = 7, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
 
-                new Ticket { UserId = 2, EventId = 13, PurchaseDate = now.AddDays(-28) },
-                new Ticket { UserId = 3, EventId = 13, PurchaseDate = now.AddDays(-28) },
-                new Ticket { UserId = 8, EventId = 13, PurchaseDate = now.AddDays(-28) },
+                new Ticket { UserId = 2, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+                new Ticket { UserId = 3, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+                new Ticket { UserId = 8, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
 
-                new Ticket { UserId = 2, EventId = 14, PurchaseDate = now.AddDays(-26) },
-                new Ticket { UserId = 3, EventId = 14, PurchaseDate = now.AddDays(-26) },
-                new Ticket { UserId = 6, EventId = 14, PurchaseDate = now.AddDays(-26) },
+                new Ticket { UserId = 2, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+                new Ticket { UserId = 3, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+                new Ticket { UserId = 6, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
 
-                new Ticket { UserId = 2, EventId = 15, PurchaseDate = now.AddDays(-24) },
-                new Ticket { UserId = 3, EventId = 15, PurchaseDate = now.AddDays(-24) },
-                new Ticket { UserId = 5, EventId = 15, PurchaseDate = now.AddDays(-24) },
+                new Ticket { UserId = 2, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+                new Ticket { UserId = 3, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+                new Ticket { UserId = 5, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
 
-                new Ticket { UserId = 2, EventId = 16, PurchaseDate = now.AddDays(-22) },
-                new Ticket { UserId = 3, EventId = 16, PurchaseDate = now.AddDays(-22) },
-                new Ticket { UserId = 9, EventId = 16, PurchaseDate = now.AddDays(-22) },
+                new Ticket { UserId = 2, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+                new Ticket { UserId = 3, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+                new Ticket { UserId = 9, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
 
-                new Ticket { UserId = 2, EventId = 17, PurchaseDate = now.AddDays(-20) },
-                new Ticket { UserId = 3, EventId = 17, PurchaseDate = now.AddDays(-20) },
-                new Ticket { UserId = 7, EventId = 17, PurchaseDate = now.AddDays(-20) },
+                new Ticket { UserId = 2, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+                new Ticket { UserId = 3, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+                new Ticket { UserId = 7, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
 
-                new Ticket { UserId = 2, EventId = 18, PurchaseDate = now.AddDays(-18) },
-                new Ticket { UserId = 3, EventId = 18, PurchaseDate = now.AddDays(-18) },
-                new Ticket { UserId = 8, EventId = 18, PurchaseDate = now.AddDays(-18) },
+                new Ticket { UserId = 2, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+                new Ticket { UserId = 3, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+                new Ticket { UserId = 8, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
 
-                new Ticket { UserId = 2, EventId = 19, PurchaseDate = now.AddDays(-16) },
-                new Ticket { UserId = 3, EventId = 19, PurchaseDate = now.AddDays(-16) },
-                new Ticket { UserId = 6, EventId = 19, PurchaseDate = now.AddDays(-16) },
+                new Ticket { UserId = 2, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+                new Ticket { UserId = 3, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+                new Ticket { UserId = 6, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
 
-                new Ticket { UserId = 2, EventId = 20, PurchaseDate = now.AddDays(-14) },
-                new Ticket { UserId = 3, EventId = 20, PurchaseDate = now.AddDays(-14) },
-                new Ticket { UserId = 9, EventId = 20, PurchaseDate = now.AddDays(-14) },
+                new Ticket { UserId = 2, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+                new Ticket { UserId = 3, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+                new Ticket { UserId = 9, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
 
-                new Ticket { UserId = 2, EventId = 21, PurchaseDate = now.AddDays(-12) },
-                new Ticket { UserId = 3, EventId = 21, PurchaseDate = now.AddDays(-12) },
-                new Ticket { UserId = 5, EventId = 21, PurchaseDate = now.AddDays(-12) },
+                new Ticket { UserId = 2, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+                new Ticket { UserId = 3, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+                new Ticket { UserId = 5, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
 
-                new Ticket { UserId = 2, EventId = 22, PurchaseDate = now.AddDays(-10) },
-                new Ticket { UserId = 3, EventId = 22, PurchaseDate = now.AddDays(-10) },
-                new Ticket { UserId = 8, EventId = 22, PurchaseDate = now.AddDays(-10) },
+                new Ticket { UserId = 2, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+                new Ticket { UserId = 3, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+                new Ticket { UserId = 8, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
 
-                new Ticket { UserId = 2, EventId = 23, PurchaseDate = now.AddDays(-8) },
-                new Ticket { UserId = 3, EventId = 23, PurchaseDate = now.AddDays(-8) },
-                new Ticket { UserId = 6, EventId = 23, PurchaseDate = now.AddDays(-8) },
+                new Ticket { UserId = 2, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+                new Ticket { UserId = 3, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+                new Ticket { UserId = 6, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
 
-                new Ticket { UserId = 2, EventId = 24, PurchaseDate = now.AddDays(-6) },
-                new Ticket { UserId = 3, EventId = 24, PurchaseDate = now.AddDays(-6) },
-                new Ticket { UserId = 5, EventId = 24, PurchaseDate = now.AddDays(-6) },
+                new Ticket { UserId = 2, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+                new Ticket { UserId = 3, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+                new Ticket { UserId = 5, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
 
-                new Ticket { UserId = 2, EventId = 25, PurchaseDate = now.AddDays(-4) },
-                new Ticket { UserId = 3, EventId = 25, PurchaseDate = now.AddDays(-4) },
-                new Ticket { UserId = 9, EventId = 25, PurchaseDate = now.AddDays(-4) },
+                new Ticket { UserId = 2, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+                new Ticket { UserId = 3, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+                new Ticket { UserId = 9, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
 
-                new Ticket { UserId = 2, EventId = 26, PurchaseDate = now.AddDays(-2) },
-                new Ticket { UserId = 3, EventId = 26, PurchaseDate = now.AddDays(-2) },
-                new Ticket { UserId = 6, EventId = 26, PurchaseDate = now.AddDays(-2) }
+                new Ticket { UserId = 2, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
+                new Ticket { UserId = 3, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
+                new Ticket { UserId = 6, ConcertId = 26, PurchaseDate = now.AddDays(-2) }
             };
 
             context.Tickets.AddRange(tickets);

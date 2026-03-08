@@ -65,5 +65,11 @@ namespace Web.Controllers
         {
             return Ok(await ownershipService.OwnsVenueAsync(id));
         }
+
+        [HttpGet("headers/amount/{amount}")]
+        public async Task<ActionResult<IEnumerable<VenueHeaderDto>>> GetHeadersByAmount(int amount)
+        {
+            return Ok(await venueService.GetHeadersByAmountAsync(amount));
+        }
     }
 }

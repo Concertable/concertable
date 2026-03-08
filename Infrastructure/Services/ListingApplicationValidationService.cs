@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Responses;
 using Core.Entities;
 
@@ -6,18 +6,18 @@ namespace Infrastructure.Services
 {
     public class ListingApplicationValidationService : IListingApplicationValidationService
     {
-        private readonly IEventRepository eventRepository;
+        private readonly IConcertRepository concertRepository;
         private readonly IListingRepository listingRepository;
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly ICurrentUserService currentUserService;
 
         public ListingApplicationValidationService(
-            IEventRepository eventRepository, 
+            IConcertRepository concertRepository, 
             IListingRepository listingRepository, 
             IListingApplicationRepository listingApplicationRepository,
             ICurrentUserService currentUserService)
         {
-            this.eventRepository = eventRepository;
+            this.concertRepository = concertRepository;
             this.listingRepository = listingRepository;
             this.listingApplicationRepository = listingApplicationRepository;
             this.currentUserService = currentUserService;
@@ -41,14 +41,14 @@ namespace Infrastructure.Services
             if (listing.StartDate < DateTime.UtcNow)
                 return ValidationResponse.Failure("You can't accept this application because the listing has already passed");
 
-            if (await ListingHasEventAsync(listing.Id))
-                return ValidationResponse.Failure("This listing already has an event booked");
+            if (await ListingHasConcertAsync(listing.Id))
+                return ValidationResponse.Failure("This listing already has a concert booked");
 
-            if (await ArtistHasEventOnDateAsync(listingApplication.ArtistId, listing.StartDate))
-                return ValidationResponse.Failure("This artist already has an event on this day");
+            if (await ArtistHasConcertOnDateAsync(listingApplication.ArtistId, listing.StartDate))
+                return ValidationResponse.Failure("This artist already has a concert on this day");
 
-            if (await VenueHasEventOnDateAsync(listing.VenueId, listing.StartDate))
-                return ValidationResponse.Failure("You already have an event on this day");
+            if (await VenueHasConcertOnDateAsync(listing.VenueId, listing.StartDate))
+                return ValidationResponse.Failure("You already have a concert on this day");
 
             return ValidationResponse.Success();
         }
@@ -64,29 +64,29 @@ namespace Infrastructure.Services
             if (listing.StartDate < DateTime.UtcNow)
                 return ValidationResponse.Failure("This listing has already passed.");
 
-            if (await ListingHasEventAsync(listingId))
-                return ValidationResponse.Failure("This listing has already been booked for an event.");
+            if (await ListingHasConcertAsync(listingId))
+                return ValidationResponse.Failure("This listing has already been booked for a concert.");
 
-            if (await ArtistHasEventOnDateAsync(artistId, listing.StartDate))
-                return ValidationResponse.Failure("You already have an event on this day.");
+            if (await ArtistHasConcertOnDateAsync(artistId, listing.StartDate))
+                return ValidationResponse.Failure("You already have a concert on this day.");
 
             return ValidationResponse.Success();
         }
 
 
-        private Task<bool> ArtistHasEventOnDateAsync(int artistId, DateTime date)
+        private Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date)
         {
-            return eventRepository.ArtistHasEventOnDateAsync(artistId, date);
+            return concertRepository.ArtistHasConcertOnDateAsync(artistId, date);
         }
 
-        private Task<bool> VenueHasEventOnDateAsync(int venueId, DateTime date)
+        private Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date)
         {
-            return eventRepository.VenueHasEventOnDateAsync(venueId, date);
+            return concertRepository.VenueHasConcertOnDateAsync(venueId, date);
         }
 
-        private Task<bool> ListingHasEventAsync(int listingId)
+        private Task<bool> ListingHasConcertAsync(int listingId)
         {
-            return eventRepository.ListingHasEventAsync(listingId);
+            return concertRepository.ListingHasConcertAsync(listingId);
         }
 
 

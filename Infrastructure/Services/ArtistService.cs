@@ -105,5 +105,12 @@ namespace Infrastructure.Services
 
             return id.Value;
         }
+
+        public async Task<IEnumerable<ArtistHeaderDto>> GetHeadersByAmountAsync(int amount)
+        {
+            var headers = await artistRepository.GetHeadersByAmountAsync(amount);
+            await reviewService.AddAverageRatingsAsync(headers);
+            return headers;
+        }
     }
 }

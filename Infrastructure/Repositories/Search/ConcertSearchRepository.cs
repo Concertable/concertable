@@ -6,20 +6,20 @@ using Infrastructure.Data.Identity;
 using Infrastructure.Helpers;
 namespace Infrastructure.Repositories.Search
 {
-    public class EventSearchRepository : IEventSearchRepository
+    public class ConcertSearchRepository : IConcertSearchRepository
     {
         private readonly ApplicationDbContext context;
-        private readonly IEventSearchSpecification specification;
+        private readonly IConcertSearchSpecification specification;
 
-        public EventSearchRepository(ApplicationDbContext context, IEventSearchSpecification specification)
+        public ConcertSearchRepository(ApplicationDbContext context, IConcertSearchSpecification specification)
         {
             this.context = context;
             this.specification = specification;
         }
 
-        public async Task<Pagination<Event>> SearchAsync(SearchParams searchParams)
+        public async Task<Pagination<Concert>> SearchAsync(SearchParams searchParams)
         {
-            var query = specification.Apply(context.Events.AsQueryable(), searchParams);
+            var query = specification.Apply(context.Concerts.AsQueryable(), searchParams);
             return await query.ToPaginationAsync(searchParams);
         }
     }

@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
 namespace Core.Entities
 {
-    [PrimaryKey(nameof(EventId), nameof(GenreId))]
-    public class EventGenre
+    [PrimaryKey(nameof(ConcertId), nameof(GenreId))]
+    public class ConcertGenre
     {
-        public int EventId { get; set; }
+        public int ConcertId { get; set; }
         public int GenreId { get; set; }
-        public Event Event { get; set; }
+        public Concert Concert { get; set; }
         public Genre Genre { get; set; }
     }
 }

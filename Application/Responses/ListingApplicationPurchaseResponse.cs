@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,6 @@ namespace Application.Responses
     public class ListingApplicationPurchaseResponse : PurchaseResponse
     {
         public int ApplicationId { get; set; }
-        public EventDto Event { get; set; }
+        public ConcertDto Concert { get; set; }
     }
 }

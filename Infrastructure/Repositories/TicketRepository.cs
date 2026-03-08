@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Core.Entities;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,8 +27,8 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id)
         {
             var query = context.Tickets
-                .Where(t => t.UserId == id && t.Event.Application.Listing.StartDate < DateTime.UtcNow)
-                .Include(t => t.Event);
+                .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate < DateTime.UtcNow)
+                .Include(t => t.Concert);
 
             return await query.ToListAsync();
         }
@@ -36,17 +36,17 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id)
         {
             var query = context.Tickets
-                 .Where(t => t.UserId == id && t.Event.Application.Listing.StartDate >= DateTime.UtcNow)
-                 .Include(t => t.Event);
+                 .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate >= DateTime.UtcNow)
+                 .Include(t => t.Concert);
 
             return await query.ToListAsync();
         }
 
-        public async Task<Ticket?> GetByUserIdAndEventIdAsync(int userId, int eventId)
+        public async Task<Ticket?> GetByUserIdAndConcertIdAsync(int userId, int concertId)
         {
             return await context.Tickets
-                .Include(t => t.Event)
-                .FirstOrDefaultAsync(t => t.UserId == userId && t.EventId == eventId);
+                .Include(t => t.Concert)
+                .FirstOrDefaultAsync(t => t.UserId == userId && t.ConcertId == concertId);
         }
 
     }

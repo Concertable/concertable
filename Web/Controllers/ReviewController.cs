@@ -24,7 +24,7 @@ namespace Web.Controllers
         public async Task<IActionResult> Create(CreateReviewRequest request)
         {
             var createdReview = await reviewService.CreateAsync(request);
-            return CreatedAtAction(nameof(GetByEventId), new { id = createdReview.Id }, createdReview);
+            return CreatedAtAction(nameof(GetByConcertId), new { id = createdReview.Id }, createdReview);
         }
 
         [HttpGet("venue/summary/{id}")]
@@ -39,10 +39,10 @@ namespace Web.Controllers
             return Ok(await reviewService.GetSummaryByArtistIdAsync(id));
         }
 
-        [HttpGet("event/summary/{id}")]
-        public async Task<ActionResult<ReviewSummaryDto>> GetSummaryByEventId(int id)
+        [HttpGet("concert/summary/{id}")]
+        public async Task<ActionResult<ReviewSummaryDto>> GetSummaryByConcertId(int id)
         {
-            return Ok(await reviewService.GetSummaryByEventIdAsync(id));
+            return Ok(await reviewService.GetSummaryByConcertIdAsync(id));
         }
 
         [HttpGet("venue/{id}")]
@@ -57,16 +57,16 @@ namespace Web.Controllers
             return Ok(await reviewService.GetByArtistIdAsync(id, pageParams));
         }
 
-        [HttpGet("event/{id}")]
-        public async Task<ActionResult<Pagination<ReviewDto>>> GetByEventId(int id, [FromQuery]IPageParams pageParams)
+        [HttpGet("concert/{id}")]
+        public async Task<ActionResult<Pagination<ReviewDto>>> GetByConcertId(int id, [FromQuery]IPageParams pageParams)
         {
-            return Ok(await reviewService.GetByEventIdAsync(id, pageParams));
+            return Ok(await reviewService.GetByConcertIdAsync(id, pageParams));
         }
 
-        [HttpGet("event/can-review/{eventId}")]
-        public async Task<ActionResult<bool>> CanUserReviewEventId( int eventId)
+        [HttpGet("concert/can-review/{concertId}")]
+        public async Task<ActionResult<bool>> CanUserReviewConcertId( int concertId)
         {
-            return Ok(await reviewService.CanUserReviewEventIdAsync(eventId));
+            return Ok(await reviewService.CanUserReviewConcertIdAsync(concertId));
         }
 
         [HttpGet("artist/can-review/{artistId}")]

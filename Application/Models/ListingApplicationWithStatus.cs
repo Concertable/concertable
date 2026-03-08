@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Application.Models
     public class ListingApplicationWithStatus
     {
         public ListingApplication Application { get; set; }
-        public bool HasEvent { get; set; }
+        public bool HasConcert { get; set; }
     }
 }
 

@@ -1,4 +1,4 @@
-﻿using Application.Responses;
+using Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +15,6 @@ namespace Application.Interfaces
         /// The event has passed
         /// The event hasn't been posted
         /// </summary>
-        Task<ValidationResponse> CanPurchaseTicketAsync(int eventId, int? quantity = null);
+        Task<ValidationResponse> CanPurchaseTicketAsync(int concertId, int? quantity = null);
     }
 }

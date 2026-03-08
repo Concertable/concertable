@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,6 +15,6 @@ namespace Core.Entities
         public int ArtistId { get; set; }
         public Listing Listing { get; set; }
         public Artist Artist { get; set; }
-        public Event? Event { get; set; }
+        public Concert? Concert { get; set; }
     }
 }

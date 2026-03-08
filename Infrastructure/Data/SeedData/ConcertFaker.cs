@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data.SeedData
 {
-    public static class EventFaker
+    public static class ConcertFaker
     {
-        public static Faker<Event> GetFaker(int applicationId, string name, decimal price, int totalTickets, int availableTickets, DateTime datePosted)
+        public static Faker<Concert> GetFaker(int applicationId, string name, decimal price, int totalTickets, int availableTickets, DateTime datePosted)
         {
-            return new Faker<Event>()
+            return new Faker<Concert>()
                 .RuleFor(e => e.ApplicationId, applicationId)
                 .RuleFor(e => e.Name, f => name) 
                 .RuleFor(e => e.About, f => f.Lorem.Paragraph(7))

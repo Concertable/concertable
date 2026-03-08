@@ -8,41 +8,41 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class EventRepository : Repository<Event>, IEventRepository
+    public class ConcertRepository : Repository<Concert>, IConcertRepository
     {
         private readonly IGeometryProvider geometryService;
 
-        public EventRepository(ApplicationDbContext context, IGeometryProvider geometryService) : base(context)
+        public ConcertRepository(ApplicationDbContext context, IGeometryProvider geometryService) : base(context)
         {
             this.geometryService = geometryService;
         }
 
-        public async Task<IEnumerable<EventHeaderDto>> GetHeaders(int userId, EventParams eventParams)
+        public async Task<IEnumerable<ConcertHeaderDto>> GetHeaders(int userId, ConcertParams concertParams)
         {
-            var query = context.Events
+            var query = context.Concerts
                 .Where(e => e.DatePosted != null)
                 .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
                 .AsQueryable();
 
-            if (eventParams.GenreIds.Any())
-                query = query.Where(e => e.EventGenres.Any(eg => eventParams.GenreIds.Contains(eg.GenreId)));
+            if (concertParams.GenreIds.Any())
+                query = query.Where(e => e.ConcertGenres.Any(eg => concertParams.GenreIds.Contains(eg.GenreId)));
 
-            if (eventParams.OrderByRecent)
+            if (concertParams.OrderByRecent)
                 query = query.OrderByDescending(e => e.DatePosted);
             else
                 query = query.OrderBy(e => e.Application.Listing.StartDate);
 
-            if (GeoHelper.HasValidCoordinates(eventParams))
+            if (GeoHelper.HasValidCoordinates(concertParams))
             {
-                var center = geometryService.CreatePoint(eventParams.Latitude!.Value, eventParams.Longitude!.Value);
-                var radiusKm = eventParams.RadiusKm ?? 10;
+                var center = geometryService.CreatePoint(concertParams.Latitude!.Value, concertParams.Longitude!.Value);
+                var radiusKm = concertParams.RadiusKm ?? 10;
                 query = query.Where(e =>
                     e.Application.Listing.Venue.User.Location != null &&
                     e.Application.Listing.Venue.User.Location.Distance(center) <= radiusKm * 1000);
             }
 
             return await query
-                .Select(e => new EventHeaderDto
+                .Select(e => new ConcertHeaderDto
                 {
                     Id = e.Id,
                     Name = e.Name,
@@ -59,9 +59,9 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Event> GetByIdAsync(int id)
+        public async Task<Concert> GetByIdAsync(int id)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Id == id)
                 .Include(e => e.Application)
                     .ThenInclude(la => la.Artist)
@@ -73,14 +73,14 @@ namespace Infrastructure.Repositories
                 .Include(e => e.Application.Listing)
                     .ThenInclude(l => l.Venue)
                         .ThenInclude(v => v.User)
-                .Include(e => e.EventGenres)
+                .Include(e => e.ConcertGenres)
                     .ThenInclude(eg => eg.Genre)
                 .FirstAsync();
         }
 
-        public async Task<IEnumerable<Event>> GetUpcomingByVenueIdAsync(int id)
+        public async Task<IEnumerable<Concert>> GetUpcomingByVenueIdAsync(int id)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.Listing.VenueId == id
                             && e.Application.Listing.StartDate >= DateTime.UtcNow
                             && e.DatePosted != null)
@@ -93,9 +93,9 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Event>> GetUpcomingByArtistIdAsync(int id)
+        public async Task<IEnumerable<Concert>> GetUpcomingByArtistIdAsync(int id)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.ArtistId == id
                             && e.Application.Listing.StartDate >= DateTime.UtcNow
                             && e.DatePosted != null)
@@ -108,16 +108,16 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Event?> GetByApplicationIdAsync(int applicationId)
+        public async Task<Concert?> GetByApplicationIdAsync(int applicationId)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.ApplicationId == applicationId)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Event>> GetHistoryByArtistIdAsync(int id)
+        public async Task<IEnumerable<Concert>> GetHistoryByArtistIdAsync(int id)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.ArtistId == id
                             && e.Application.Listing.StartDate < DateTime.UtcNow
                             && e.DatePosted != null)
@@ -130,9 +130,9 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Event>> GetHistoryByVenueIdAsync(int id)
+        public async Task<IEnumerable<Concert>> GetHistoryByVenueIdAsync(int id)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.Listing.VenueId == id
                             && e.Application.Listing.StartDate < DateTime.UtcNow
                             && e.DatePosted != null)
@@ -145,9 +145,9 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Event>> GetUnpostedByArtistIdAsync(int id)
+        public async Task<IEnumerable<Concert>> GetUnpostedByArtistIdAsync(int id)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.ArtistId == id && e.DatePosted == null)
                 .Include(e => e.Application.Listing)
                 .Include(e => e.Application.Listing.Venue)
@@ -157,9 +157,9 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Event>> GetUnpostedByVenueIdAsync(int id)
+        public async Task<IEnumerable<Concert>> GetUnpostedByVenueIdAsync(int id)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.Listing.VenueId == id && e.DatePosted == null)
                 .Include(e => e.Application.Listing)
                 .Include(e => e.Application.Listing.Venue)
@@ -169,23 +169,93 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> ArtistHasEventOnDateAsync(int artistId, DateTime date)
+        public async Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.ArtistId == artistId)
                 .AnyAsync(e => e.Application.Listing.StartDate.Date == date.Date);
         }
 
-        public Task<bool> ListingHasEventAsync(int listingId)
+        public Task<bool> ListingHasConcertAsync(int listingId)
         {
-            return context.Events.AnyAsync(e => e.Application.ListingId == listingId);
+            return context.Concerts.AnyAsync(e => e.Application.ListingId == listingId);
         }
 
-        public async Task<bool> VenueHasEventOnDateAsync(int venueId, DateTime date)
+        public async Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date)
         {
-            return await context.Events
+            return await context.Concerts
                 .Where(e => e.Application.Listing.VenueId == venueId)
                 .AnyAsync(e => e.Application.Listing.StartDate.Date == date.Date);
+        }
+
+        public async Task<IEnumerable<ConcertHeaderDto>> GetHeadersByAmountAsync(int amount)
+        {
+            return await context.Concerts
+                .Where(e => e.DatePosted != null)
+                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .OrderByDescending(e => e.DatePosted)
+                .Take(amount)
+                .Select(e => new ConcertHeaderDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    ImageUrl = e.Application.Artist.ImageUrl,
+                    StartDate = e.Application.Listing.StartDate,
+                    EndDate = e.Application.Listing.EndDate,
+                    County = e.Application.Listing.Venue.User.County,
+                    Town = e.Application.Listing.Venue.User.Town,
+                    Latitude = e.Application.Listing.Venue.User.Location.Y,
+                    Longitude = e.Application.Listing.Venue.User.Location.X,
+                    DatePosted = e.DatePosted
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ConcertHeaderDto>> GetPopularHeadersAsync()
+        {
+            return await context.Concerts
+                .Where(e => e.DatePosted != null)
+                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .OrderByDescending(e => e.TotalTickets - e.AvailableTickets)
+                .Take(10)
+                .Select(e => new ConcertHeaderDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    ImageUrl = e.Application.Artist.ImageUrl,
+                    StartDate = e.Application.Listing.StartDate,
+                    EndDate = e.Application.Listing.EndDate,
+                    County = e.Application.Listing.Venue.User.County,
+                    Town = e.Application.Listing.Venue.User.Town,
+                    Latitude = e.Application.Listing.Venue.User.Location.Y,
+                    Longitude = e.Application.Listing.Venue.User.Location.X,
+                    DatePosted = e.DatePosted
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ConcertHeaderDto>> GetFreeHeadersAsync()
+        {
+            return await context.Concerts
+                .Where(e => e.DatePosted != null)
+                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .Where(e => e.Price == 0)
+                .OrderByDescending(e => e.DatePosted)
+                .Take(10)
+                .Select(e => new ConcertHeaderDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    ImageUrl = e.Application.Artist.ImageUrl,
+                    StartDate = e.Application.Listing.StartDate,
+                    EndDate = e.Application.Listing.EndDate,
+                    County = e.Application.Listing.Venue.User.County,
+                    Town = e.Application.Listing.Venue.User.Town,
+                    Latitude = e.Application.Listing.Venue.User.Location.Y,
+                    Longitude = e.Application.Listing.Venue.User.Location.X,
+                    DatePosted = e.DatePosted
+                })
+                .ToListAsync();
         }
     }
 }

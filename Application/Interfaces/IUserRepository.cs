@@ -1,4 +1,4 @@
-﻿using Core.Entities.Identity;
+using Core.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +10,8 @@ namespace Application.Interfaces
     public interface IUserRepository : IBaseRepository<ApplicationUser>
     {
         Task<int> GetIdByApplicationIdAsync(int applicationId);
-        Task<int> GetIdByEventIdAsync(int eventId);
+        Task<int> GetIdByConcertIdAsync(int concertId);
         Task<ApplicationUser> GetByApplicationIdAsync(int applicationId);
-        Task<ApplicationUser> GetByEventIdAsync(int eventId);
+        Task<ApplicationUser> GetByConcertIdAsync(int concertId);
     }
 }
