@@ -30,7 +30,7 @@ export class EventToastService extends ToastService {
     );
 
     toast.onTap.subscribe(() => {
-      this.router.navigate(['/find/event', eventId]);
+      this.router.navigate(['/find/concert', eventId]);
       this.toastr.clear();
     });
   }

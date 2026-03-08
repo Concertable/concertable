@@ -16,7 +16,7 @@ export abstract class FindDirective<T> extends PaginationHandler<T> {
   @Input() headerType?: HeaderType;
 
   searchParams: Partial<SearchParams> = {
-    headerType: 'event'
+    headerType: 'concert'
   };
 
   constructor(

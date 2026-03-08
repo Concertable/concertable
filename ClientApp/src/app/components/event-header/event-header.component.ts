@@ -12,5 +12,5 @@ import { NavItem } from '../../models/nav-item';
   styleUrl: './event-header.component.scss'
 })
 export class EventHeaderComponent extends HeaderComponent<EventHeader> {
-  override headerType: HeaderType = 'event';
+  override headerType: HeaderType = 'concert';
 }

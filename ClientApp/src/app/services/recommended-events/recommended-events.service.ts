@@ -28,7 +28,7 @@ export class RecommendedEventsService {
       headers.forEach(header => this.headersSubject.next(header));
     });
 
-    this.signalRService.eventPosted$.subscribe(header => {
+    this.signalRService.concertPosted$.subscribe(header => {
       if (header) {
         this.toastService.showRecommended(header.id);
         this.headersSubject.next(header);

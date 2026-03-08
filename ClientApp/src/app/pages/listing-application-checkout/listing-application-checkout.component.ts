@@ -54,7 +54,7 @@ export class ListingApplicationCheckoutComponent extends CheckoutDirective<Listi
       this.signalRService.eventCreated$.subscribe(response => {
         if (response.success) {
           const event = response.event;
-          this.router.navigateByUrl(`venue/my/events/event/${event.id}`);
+          this.router.navigateByUrl(`venue/my/concerts/concert/${event.id}`);
         } else {
           this.stripeToastService.showError(response.message);
         }

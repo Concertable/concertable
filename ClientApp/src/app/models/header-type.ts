@@ -1,1 +1,1 @@
-export type HeaderType = 'venue' | 'artist' | 'event'
+export type HeaderType = 'venue' | 'artist' | 'concert'

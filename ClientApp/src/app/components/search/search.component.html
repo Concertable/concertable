@@ -28,8 +28,8 @@
         [placeholder]="searchLabel">
     </mat-form-field>
 
-    <!-- Date Picker Component for 'event' headerType -->
-    <app-date-picker *ngIf="searchParams.headerType === 'event'" 
+    <!-- Date Picker Component for 'concert' headerType -->
+    <app-date-picker *ngIf="searchParams.headerType === 'concert'" 
                      (dateChange)="onDateChange($event)" 
                      class="date-picker">
     </app-date-picker>

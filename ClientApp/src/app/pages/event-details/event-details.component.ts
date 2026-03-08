@@ -80,7 +80,7 @@ export class EventDetailsComponent extends ExtendedDetailsDirective<Event> {
   }
 
   onBuy() {
-    this.router.navigate(['event/checkout', this.event?.id])
+    this.router.navigate(['concert/checkout', this.event?.id])
   }
 
   get isStartDateBeforeNow(): boolean {

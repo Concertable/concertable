@@ -3,13 +3,13 @@
     
     <!-- Event Date -->
     <div class="date-container">
-      <p class="date">{{ ticket.event.startDate | date:'d' }}</p>
-      <p class="month">{{ ticket.event.startDate | date:'MMM' }}</p>
+      <p class="date">{{ ticket.concert.startDate | date:'d' }}</p>
+      <p class="month">{{ ticket.concert.startDate | date:'MMM' }}</p>
     </div>
 
     <!-- Event Info -->
     <div class="info">
-      <h3 class="name">{{ ticket.event.name }}</h3>
+      <h3 class="name">{{ ticket.concert.name }}</h3>
 
       <div class="nested-info">
         <p class="icon-text">
@@ -19,7 +19,7 @@
 
         <p class="icon-text">
           <mat-icon>access_time</mat-icon>
-          {{ ticket.event.startDate | date:'h:mm a' }} - {{ ticket.event.endDate | date:'h:mm a' }}
+          {{ ticket.concert.startDate | date:'h:mm a' }} - {{ ticket.concert.endDate | date:'h:mm a' }}
         </p>
       </div>
     </div>

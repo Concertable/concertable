@@ -29,10 +29,10 @@ export class ItemEventsComponent implements OnChanges {
   }
 
   onViewDetails(event: Event) {
-    this.roleNavigationService.navigateToResource(event, 'event');
+    this.roleNavigationService.navigateToResource(event, 'concert');
   }
 
   onPurchase(event: Event) {
-    this.router.navigate(['event/checkout', event.id])
+    this.router.navigate(['concert/checkout', event.id])
   }
 }

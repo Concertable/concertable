@@ -1,10 +1,10 @@
-import { Event } from "./event";
+import { Concert } from "./concert";
 import { User } from "./user";
 
 export interface Ticket {
     id: number;
-    purchaseDate: Date; 
+    purchaseDate: Date;
     qrCode?: string;
-    event: Event;
+    concert: Concert;
     user: User;
   }

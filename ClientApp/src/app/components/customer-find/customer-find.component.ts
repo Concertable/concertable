@@ -10,5 +10,5 @@ import { SearchParams } from '../../models/search-params';
   styleUrl: './customer-find.component.scss'
 })
 export class CustomerFindComponent {
-  headerType: HeaderType = 'event';
+  headerType: HeaderType = 'concert';
 }

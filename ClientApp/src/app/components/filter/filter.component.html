@@ -14,7 +14,7 @@
         </mat-form-field>
       </div>
   
-      <app-selector *ngIf="searchParams.headerType === 'artist' || searchParams.headerType === 'event'"
+      <app-selector *ngIf="searchParams.headerType === 'artist' || searchParams.headerType === 'concert'"
         [options]="genres"
         [selectedItems]="selectedGenres"
         [label]="'Select Genre'"
@@ -50,7 +50,7 @@
           </mat-select>
         </mat-form-field>
       </div>     
-    <div *ngIf="searchParams.headerType === 'event'">
+    <div *ngIf="searchParams.headerType === 'concert'">
       <mat-checkbox [(ngModel)]="searchParams.showHistory">
         Show History
       </mat-checkbox>

@@ -23,7 +23,7 @@ export class ReviewService {
   }
 
   getSummaryByEventId(id: number): Observable<ReviewSummary> {
-    return this.http.get<ReviewSummary>(`${this.apiUrl}/event/summary/${id}`);
+    return this.http.get<ReviewSummary>(`${this.apiUrl}/concert/summary/${id}`);
   }
 
   getSummaryByVenueId(id: number): Observable<ReviewSummary> {
@@ -42,11 +42,11 @@ export class ReviewService {
 
   getByEventId(id: number, pageParams: PaginationParams): Observable<Pagination<Review>> {
     const params = this.httpParamsService.serialize(pageParams);
-    return this.http.get<Pagination<Review>>(`${this.apiUrl}/event/${id}`, { params });
+    return this.http.get<Pagination<Review>>(`${this.apiUrl}/concert/${id}`, { params });
   }
 
   canUserReviewEvent(id: number) : Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/event/can-review/${id}`,
+    return this.http.get<boolean>(`${this.apiUrl}/concert/can-review/${id}`,
       { context: new HttpContext().set(SKIP_ERROR_HANDLER, true) }
     );
   }

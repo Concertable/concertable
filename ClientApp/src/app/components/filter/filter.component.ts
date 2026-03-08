@@ -20,7 +20,7 @@ export class FilterComponent implements OnInit {
   @Output() search = new EventEmitter<void>();
 
   icon: string = 'tune';
-  headerTypes: HeaderType[] = ['venue', 'artist', 'event'];
+  headerTypes: HeaderType[] = ['venue', 'artist', 'concert'];
   genres: Genre[] = [];
   selectedGenre?: Genre;
   selectedGenres: Genre[] = [];
@@ -30,7 +30,7 @@ export class FilterComponent implements OnInit {
 
   get orderByOptions() {
     const options = ['Name']; 
-    if (this.searchParams.headerType === 'event') 
+    if (this.searchParams.headerType === 'concert') 
       options.push('Date'); 
     return options;
   }

@@ -69,15 +69,15 @@ const routes: Routes = [
         path: 'find',
         data: { breadcrumb: 'Find' },
         children: [
-          { path: '', component: FindComponent, data: { breadcrumb: 'Search', headerType: 'event', context: 'customer' } },
+          { path: '', component: FindComponent, data: { breadcrumb: 'Search', headerType: 'concert', context: 'customer' } },
           { path: 'venue/:id', component: VenueDetailsComponent, resolve: { venue: VenueDetailsResolver }, data: { breadcrumb: 'Venue Details' } },
           { path: 'artist/:id', component: ArtistDetailsComponent, resolve: { artist: ArtistDetailsResolver }, data: { breadcrumb: 'Artist Details' } },
-          { path: 'event/:id', component: EventDetailsComponent, resolve: { event: EventDetailsResolver }, data: { breadcrumb: 'Event Details' } }
+          { path: 'concert/:id', component: EventDetailsComponent, resolve: { event: EventDetailsResolver }, data: { breadcrumb: 'Concert Details' } }
         ]
       },
       {
-        path: 'event',
-        data: { breadcrumb: 'Event' },
+        path: 'concert',
+        data: { breadcrumb: 'Concert' },
         children: [
           {
             path: 'checkout/:id',
@@ -161,7 +161,7 @@ const routes: Routes = [
 
         data: { breadcrumb: 'My' },
         children: [
-          { path: 'events/event/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } },
+          { path: 'concerts/concert/:id', component: MyEventComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Concert Details' } },
           { path: 'applications/:id', component: ListingApplicationsComponent, resolve: { applications: ListingApplicationsResolver }, canActivate: [listingApplicationsGuard], data: { breadcrumb: 'Applications' } }
         ]
       }
@@ -188,7 +188,7 @@ const routes: Routes = [
         path: 'my',
         data: { breadcrumb: 'My' },
         children: [
-          { path: 'events/event/:id', component: EventDetailsComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Event Details' } }
+          { path: 'concerts/concert/:id', component: EventDetailsComponent, resolve: { event: MyEventResolver }, data: { breadcrumb: 'Concert Details' } }
         ]
       }
     ]

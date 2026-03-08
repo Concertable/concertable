@@ -8,4 +8,4 @@ export interface Message {
     action?: Action;
 }
 
-export type MessageAction = 'application' | 'event'
+export type MessageAction = 'application' | 'concert'

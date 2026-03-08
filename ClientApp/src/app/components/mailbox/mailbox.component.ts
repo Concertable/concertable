@@ -55,8 +55,8 @@ export class MailboxComponent extends PaginationHandler<Message> implements OnIn
   handleAction(action: Action) {
     if(action.name === "application") 
       this.router.navigateByUrl(`venue/my/applications/${action.id}`);
-    if(action.name === "event")
-      this.router.navigateByUrl(`artist/my/events/event/${action.id}`);
+    if(action.name === "concert")
+      this.router.navigateByUrl(`artist/my/concerts/concert/${action.id}`);
   }
 
   markReadMessages() {

@@ -35,7 +35,7 @@ export class CustomerTicketsComponent implements OnInit {
     }
 
   onViewEvent(ticket: Ticket) {
-    this.router.navigate([`/find/event/${ticket.event.id}`]);
+    this.router.navigate([`/find/concert/${ticket.concert.id}`]);
   }
 
   onShowQr(ticket: Ticket): void {

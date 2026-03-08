@@ -11,5 +11,5 @@ import { HeaderType } from '../../models/header-type';
   styleUrl: './event-headers.component.scss'
 })
 export class EventHeadersComponent extends HeadersComponent<EventHeader> {
-  headerType: HeaderType = 'event';
+  headerType: HeaderType = 'concert';
 }

@@ -12,17 +12,17 @@ import { TicketPurchase } from '../../models/ticket-purchase';
 })
 export class SignalRService {
   private paymentHubUrl = environment.paymentHubUrl;
-  private eventHubUrl = environment.eventHubUrl; // Add event hub URL
+  private eventHubUrl = environment.eventHubUrl;
 
   private paymentHubConnection?: signalR.HubConnection;
   private eventHubConnection?: signalR.HubConnection;
 
   private eventCreatedSubject = new Subject<ListingApplicationPurchase>();
-  private eventPostedSubject = new Subject<EventHeader>();
+  private concertPostedSubject = new Subject<EventHeader>();
   private ticketPurchasedSubject = new Subject<TicketPurchase>();
 
   eventCreated$ = this.eventCreatedSubject.asObservable();
-  eventPosted$ = this.eventPostedSubject.asObservable();
+  concertPosted$ = this.concertPostedSubject.asObservable();
   ticketPurchased$ = this.ticketPurchasedSubject.asObservable();
 
   createHubConnections() {
@@ -43,11 +43,11 @@ export class SignalRService {
 
     this.paymentHubConnection.start().catch(error => console.log('PaymentHub Connection Error:', error));
 
-    this.paymentHubConnection.on('EventCreated', (response: ListingApplicationPurchase) => 
+    this.paymentHubConnection.on('EventCreated', (response: ListingApplicationPurchase) =>
       this.eventCreatedSubject.next(response)
     );
 
-    this.paymentHubConnection.on('TicketPurchased', (response: TicketPurchase) => 
+    this.paymentHubConnection.on('TicketPurchased', (response: TicketPurchase) =>
       this.ticketPurchasedSubject.next(response)
     );
   }
@@ -60,8 +60,8 @@ export class SignalRService {
 
     this.eventHubConnection.start().catch(error => console.log('EventHub Connection Error:', error));
 
-    this.eventHubConnection.on('EventPosted', (event: EventHeader) => {
-      this.eventPostedSubject.next(event);
+    this.eventHubConnection.on('ConcertPosted', (event: EventHeader) => {
+      this.concertPostedSubject.next(event);
     });
   }
 

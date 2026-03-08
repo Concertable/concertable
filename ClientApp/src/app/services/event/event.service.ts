@@ -12,7 +12,7 @@ import { DateService } from '../date.service';
   providedIn: 'root'
 })
 export class EventService {
-  private apiUrl = `${environment.apiUrl}/event`;
+  private apiUrl = `${environment.apiUrl}/concert`;
 
   constructor(
     private http: HttpClient,
