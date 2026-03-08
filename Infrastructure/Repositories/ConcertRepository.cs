@@ -23,6 +23,8 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     public async Task<IEnumerable<ConcertHeaderDto>> GetHeaders(int userId, ConcertParams concertParams)
     {
         var query = context.Concerts
+            .Include(e => e.Application).ThenInclude(a => a.Artist)
+            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
             .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
             .AsQueryable();

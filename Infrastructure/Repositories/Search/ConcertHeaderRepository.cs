@@ -32,6 +32,8 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     public async Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount)
     {
         var concerts = await context.Concerts
+            .Include(e => e.Application).ThenInclude(a => a.Artist)
+            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
             .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
             .OrderByDescending(e => e.DatePosted)
@@ -44,6 +46,8 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     public async Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync()
     {
         var concerts = await context.Concerts
+            .Include(e => e.Application).ThenInclude(a => a.Artist)
+            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
             .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
             .OrderByDescending(e => e.TotalTickets - e.AvailableTickets)
@@ -56,6 +60,8 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     public async Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync()
     {
         var concerts = await context.Concerts
+            .Include(e => e.Application).ThenInclude(a => a.Artist)
+            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
             .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
             .Where(e => e.Price == 0)
