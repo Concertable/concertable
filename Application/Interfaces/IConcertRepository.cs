@@ -19,8 +19,5 @@ namespace Application.Interfaces
         Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date);
         Task<bool> ListingHasConcertAsync(int listingId);
         Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date);
-        Task<IEnumerable<ConcertHeaderDto>> GetHeadersByAmountAsync(int amount);
-        Task<IEnumerable<ConcertHeaderDto>> GetPopularHeadersAsync();
-        Task<IEnumerable<ConcertHeaderDto>> GetFreeHeadersAsync();
     }
 }

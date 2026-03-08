@@ -1,4 +1,3 @@
-using Application.DTOs;
 using Core.Entities;
 using Core.Interfaces;
 
@@ -9,6 +8,5 @@ namespace Application.Interfaces
         Task<int?> GetIdByUserIdAsync(int id);
         Task<Artist?> GetByUserIdAsync(int id);
         new Task<Artist?> GetByIdAsync(int id);
-        Task<IEnumerable<ArtistHeaderDto>> GetHeadersByAmountAsync(int amount);
     }
 }

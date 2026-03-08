@@ -1,24 +1,28 @@
 import { Component, Input } from '@angular/core';
-import { EventHeader } from '../../models/event-header';
+import { ConcertHeader } from '../../models/concert-header';
 import { HeaderCarouselDirective } from '../../directives/header-carousel.directive';
-import { EventService } from '../../services/event/event.service';
+import { HeaderService, HEADER_TYPE } from '../../services/header/header.service';
 import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-event-header-carousel',
   standalone: false,
   templateUrl: './event-header-carousel.component.html',
-  styleUrl: './event-header-carousel.component.scss'
+  styleUrl: './event-header-carousel.component.scss',
+  providers: [
+    HeaderService,
+    { provide: HEADER_TYPE, useValue: 'concert' }
+  ]
 })
-export class EventHeaderCarouselComponent extends HeaderCarouselDirective<EventHeader> {
+export class EventHeaderCarouselComponent extends HeaderCarouselDirective<ConcertHeader> {
   @Input() title: string = '';
-  @Input() declare headers: EventHeader[];
+  @Input() declare headers: ConcertHeader[];
 
-  constructor(private venueService: EventService) {
+  constructor(private headerService: HeaderService) {
     super();
   }
 
-  getByAmount(amount: number): Observable<EventHeader[]> {
-    return this.venueService.getHeadersByAmount(amount);
+  getByAmount(amount: number): Observable<ConcertHeader[]> {
+    return this.headerService.getByAmount(amount);
   }
 }

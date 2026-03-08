@@ -3,16 +3,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Factories
 {
-    public class SearchServiceFactory : ISearchServiceFactory
+    public class HeaderServiceFactory : IHeaderServiceFactory
     {
         private readonly IServiceProvider serviceProvider;
 
-        public SearchServiceFactory(IServiceProvider serviceProvider)
+        public HeaderServiceFactory(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider;
         }
 
-        public ISearchService? Create(string type)
-            => serviceProvider.GetKeyedService<ISearchService>(type.ToLower());
+        public IHeaderService? Create(string type)
+            => serviceProvider.GetKeyedService<IHeaderService>(type.ToLower());
     }
 }

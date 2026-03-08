@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { HeaderService } from '../../services/header/header.service';
+import { HeaderService, HEADER_TYPE } from '../../services/header/header.service';
 import { Header } from '../../models/header';
 import { Pagination } from '../../models/pagination';
 import { HeaderType } from '../../models/header-type';
@@ -14,7 +14,11 @@ import { EventService } from '../../services/event/event.service';
   selector: 'app-find',
   templateUrl: './find.component.html',
   standalone: false,
-  styleUrl: './find.component.scss'
+  styleUrl: './find.component.scss',
+  providers: [
+    HeaderService,
+    { provide: HEADER_TYPE, useValue: '' }
+  ]
 })
 export class FindComponent extends FindDirective<Header> implements OnInit {
   
@@ -69,7 +73,7 @@ export class FindComponent extends FindDirective<Header> implements OnInit {
 
   override loadPage(): void {
     // Fetch search results based on current parameters
-    this.headerService.get(this.searchParams).subscribe((p) => {
+    this.headerService.get<Header>(this.searchParams).subscribe((p) => {
       this.paginatedData = p;
       this.headers = p.data;
     });

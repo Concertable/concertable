@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { HeaderService } from '../../services/header/header.service';
 import { Header } from '../../models/header';
 import { Observable } from 'rxjs';
 import { ArtistHeader } from '../../models/artist-header';

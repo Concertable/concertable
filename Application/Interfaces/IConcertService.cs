@@ -19,8 +19,5 @@ namespace Application.Interfaces
         Task<IEnumerable<ConcertDto>> GetHistoryByVenueIdAsync(int id);
         Task<IEnumerable<ConcertDto>> GetUnpostedByArtistIdAsync(int id);
         Task<IEnumerable<ConcertDto>> GetUnpostedByVenueIdAsync(int id);
-        Task<IEnumerable<ConcertHeaderDto>> GetHeadersByAmountAsync(int amount);
-        Task<IEnumerable<ConcertHeaderDto>> GetPopularHeadersAsync();
-        Task<IEnumerable<ConcertHeaderDto>> GetFreeHeadersAsync();
     }
 }

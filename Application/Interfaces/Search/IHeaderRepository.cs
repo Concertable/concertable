@@ -3,7 +3,7 @@ using Core.Parameters;
 
 namespace Application.Interfaces.Search
 {
-    public interface ISearchRepository<TEntity>
+    public interface IHeaderRepository<TEntity>
     {
         Task<Pagination<TEntity>> SearchAsync(SearchParams searchParams);
     }

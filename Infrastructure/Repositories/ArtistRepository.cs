@@ -1,4 +1,3 @@
-using Application.DTOs;
 using Application.Interfaces;
 using Core.Entities;
 using Infrastructure.Data.Identity;
@@ -40,23 +39,5 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<ArtistHeaderDto>> GetHeadersByAmountAsync(int amount)
-        {
-            return await context.Artists
-                .Include(a => a.User)
-                .OrderBy(a => a.Id)
-                .Take(amount)
-                .Select(a => new ArtistHeaderDto
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    ImageUrl = a.ImageUrl,
-                    County = a.User.County,
-                    Town = a.User.Town,
-                    Latitude = a.User.Location != null ? a.User.Location.Y : (double?)null,
-                    Longitude = a.User.Location != null ? a.User.Location.X : (double?)null
-                })
-                .ToListAsync();
-        }
     }
 }

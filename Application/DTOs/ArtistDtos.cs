@@ -18,7 +18,7 @@ namespace Application.DTOs
         }
     }
 
-    public record ArtistHeaderDto : ISearchHeader, IAddressHeader
+    public record ArtistHeaderDto : IHeader, IAddressHeader
     {
         public int Id { get; set; }
         public string Name { get; set; }

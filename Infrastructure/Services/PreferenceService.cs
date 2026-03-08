@@ -38,13 +38,13 @@ namespace Infrastructure.Services
             return preferences.ToDtos();
         }
 
-        public async Task<PreferenceDto> GetByUserIdAsync(int userId)
+        public async Task<PreferenceDto?> GetByUserIdAsync(int userId)
         {
             var preference = await preferenceRepository.GetByUserIdAsync(userId);
-            return preference.ToDto();
+            return preference?.ToDto();
         }
 
-        public async Task<PreferenceDto> GetByUserAsync()
+        public async Task<PreferenceDto?> GetByUserAsync()
         {
             var user = await currentUserService.GetAsync();
             return await GetByUserIdAsync(user.Id);

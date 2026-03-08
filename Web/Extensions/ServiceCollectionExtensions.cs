@@ -156,15 +156,15 @@ namespace Web.Extensions
             services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();
             services.AddScoped<IConcertSearchSpecification, ConcertSearchSpecification>();
 
-            services.AddScoped<IArtistSearchRepository, ArtistSearchRepository>();
-            services.AddScoped<IVenueSearchRepository, VenueSearchRepository>();
-            services.AddScoped<IConcertSearchRepository, ConcertSearchRepository>();
+            services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
+            services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();
+            services.AddScoped<IConcertHeaderRepository, ConcertHeaderRepository>();
 
-            services.AddKeyedScoped<ISearchService, ArtistSearchService>("artist");
-            services.AddKeyedScoped<ISearchService, VenueSearchService>("venue");
-            services.AddKeyedScoped<ISearchService, ConcertSearchService>("concert");
+            services.AddKeyedScoped<IHeaderService, ArtistHeaderService>("artist");
+            services.AddKeyedScoped<IHeaderService, VenueHeaderService>("venue");
+            services.AddKeyedScoped<IHeaderService, ConcertHeaderService>("concert");
 
-            services.AddScoped<ISearchServiceFactory, SearchServiceFactory>();
+            services.AddScoped<IHeaderServiceFactory, HeaderServiceFactory>();
 
             return services;
         }

@@ -20,7 +20,7 @@ namespace Application.DTOs
         }
     }
 
-    public record ConcertHeaderDto : ISearchHeader, IAddressHeader
+    public record ConcertHeaderDto : IHeader, IAddressHeader
     {
         public int Id { get; set; }
         public string Name { get; set; }

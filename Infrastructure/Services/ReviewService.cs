@@ -46,7 +46,7 @@ namespace Infrastructure.Services
         private async Task AddAverageRatingsAsync<THeader>(
             IEnumerable<THeader> headers,
             Func<IEnumerable<int>, Task<IDictionary<int, double>>> getRatingsAsync)
-            where THeader : ISearchHeader
+            where THeader : IHeader
         {
             var ids = headers.Select(h => h.Id).ToList();
             var ratings = await getRatingsAsync(ids);

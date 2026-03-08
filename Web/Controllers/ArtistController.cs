@@ -57,10 +57,5 @@ namespace Web.Controllers
             return Ok(await artistService.UpdateAsync(request.Artist, request.Image));
         }
 
-        [HttpGet("headers/amount/{amount}")]
-        public async Task<ActionResult<IEnumerable<ArtistHeaderDto>>> GetHeadersByAmount(int amount)
-        {
-            return Ok(await artistService.GetHeadersByAmountAsync(amount));
-        }
     }
 }

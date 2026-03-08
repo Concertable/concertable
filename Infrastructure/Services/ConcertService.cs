@@ -323,25 +323,5 @@ namespace Infrastructure.Services
             return concerts.ToDtos();
         }
 
-        public async Task<IEnumerable<ConcertHeaderDto>> GetHeadersByAmountAsync(int amount)
-        {
-            var headers = await concertRepository.GetHeadersByAmountAsync(amount);
-            await reviewService.AddAverageRatingsAsync(headers);
-            return headers;
-        }
-
-        public async Task<IEnumerable<ConcertHeaderDto>> GetPopularHeadersAsync()
-        {
-            var headers = await concertRepository.GetPopularHeadersAsync();
-            await reviewService.AddAverageRatingsAsync(headers);
-            return headers;
-        }
-
-        public async Task<IEnumerable<ConcertHeaderDto>> GetFreeHeadersAsync()
-        {
-            var headers = await concertRepository.GetFreeHeadersAsync();
-            await reviewService.AddAverageRatingsAsync(headers);
-            return headers;
-        }
     }
 }

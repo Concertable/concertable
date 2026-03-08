@@ -87,24 +87,6 @@ namespace Web.Controllers
             return Ok(await concertService.GetRecommendedHeadersAsync());
         }
 
-        [HttpGet("headers/amount/{amount}")]
-        public async Task<ActionResult<IEnumerable<ConcertHeaderDto>>> GetHeadersByAmount(int amount)
-        {
-            return Ok(await concertService.GetHeadersByAmountAsync(amount));
-        }
-
-        [HttpGet("headers/popular")]
-        public async Task<ActionResult<IEnumerable<ConcertHeaderDto>>> GetPopularHeaders()
-        {
-            return Ok(await concertService.GetPopularHeadersAsync());
-        }
-
-        [HttpGet("headers/free")]
-        public async Task<ActionResult<IEnumerable<ConcertHeaderDto>>> GetFreeHeaders()
-        {
-            return Ok(await concertService.GetFreeHeadersAsync());
-        }
-
         [Authorize(Roles = "VenueManager")]
         [HttpPut("{id}")]
         public async Task<ActionResult<IEnumerable<ConcertDto>>> Update([FromBody]ConcertDto concertDto)
