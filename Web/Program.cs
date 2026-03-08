@@ -10,7 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 Console.WriteLine("Stripe__SecretKey: " + Environment.GetEnvironmentVariable("Stripe__SecretKey")?.Substring(0, 8) ?? "NULL");
 
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddControllers(opts =>
+    opts.ModelBinderProviders.Insert(0, new Core.ModelBinders.CommaDelimitedIntArrayBinderProvider()))
+.AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.IncludeFields = true;
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;

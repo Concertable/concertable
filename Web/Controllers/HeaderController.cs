@@ -1,6 +1,5 @@
 using Application.Interfaces.Search;
 using Core.Enums;
-using Core.ModelBinders;
 using Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +19,7 @@ public class HeaderController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Search(
-        [ModelBinder(BinderType = typeof(SearchParamsModelBinder))][FromQuery] SearchParams searchParams)
+    public async Task<IActionResult> Search([FromQuery] SearchParams searchParams)
     {
         if (searchParams.HeaderType is null)
             return BadRequest("Search type is required.");
