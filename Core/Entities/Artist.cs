@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Artist : BaseEntity, ILocation
+    public class Artist : BaseEntity, IHasName, IHasLocation
     {
         public int UserId { get; set; }
         public string Name { get; set; }

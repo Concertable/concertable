@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 namespace Infrastructure.Specifications
 {
     public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
-        where TEntity : class, ILocation
+        where TEntity : class, IHasLocation
     {
         private readonly IGeometryProvider geometryProvider;
         private readonly Func<Point, double, Expression<Func<TEntity, bool>>> locationFilter;

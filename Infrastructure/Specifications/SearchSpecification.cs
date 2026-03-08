@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Specifications
 {
     public class SearchSpecification<TEntity> : ISearchSpecification<TEntity>
-        where TEntity : class, ILocation
+        where TEntity : class, IHasName, IHasLocation
     {
         private readonly IGeometrySpecification<TEntity> geometrySpecification;
 
@@ -18,7 +18,7 @@ namespace Infrastructure.Specifications
         public IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams)
         {
             if (!string.IsNullOrWhiteSpace(searchParams.SearchTerm))
-                query = query.Where(e => EF.Property<string>(e, "Name").Contains(searchParams.SearchTerm));
+                query = query.Where(e => e.Name.Contains(searchParams.SearchTerm));
 
             query = geometrySpecification.Apply(query, searchParams);
 

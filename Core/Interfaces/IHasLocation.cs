@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces
 {
-    public interface ILocation
+    public interface IHasLocation
     {
         Point? Location { get; }
     }

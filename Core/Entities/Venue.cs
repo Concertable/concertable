@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Venue : BaseEntity, ILocation
+    public class Venue : BaseEntity, IHasName, IHasLocation
     {
         public int UserId { get; set; }
         public string Name { get; set; }

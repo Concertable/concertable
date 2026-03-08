@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities
 {
-    public class Concert : BaseEntity, ILocation
+    public class Concert : BaseEntity, IHasName, IHasLocation
     {
         public int ApplicationId { get; set; }
         public string Name { get; set; }
