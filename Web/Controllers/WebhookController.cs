@@ -27,6 +27,7 @@ namespace Web.Controllers
         private readonly ITicketService ticketService;
         private readonly IConcertService concertService;
         private readonly ITransactionService purchaseService;
+        private readonly TimeProvider timeProvider;
         private readonly ILogger<WebhookController> logger;
 
         private readonly string webhookSecret;
@@ -40,6 +41,7 @@ namespace Web.Controllers
             IConcertService concertService,
             ITransactionService purchaseService,
             IConfiguration configuration,
+            TimeProvider timeProvider,
             ILogger<WebhookController> logger)
         {
             this.hubContext = hubContext;
@@ -50,6 +52,7 @@ namespace Web.Controllers
             this.concertService = concertService;
             this.purchaseService = purchaseService;
             webhookSecret = configuration["Stripe:WebhookSecret"];
+            this.timeProvider = timeProvider;
             this.logger = logger;
         }
 
@@ -98,7 +101,7 @@ namespace Web.Controllers
                 await stripeEventRepository.AddEventAsync(new StripeEvent
                 {
                     EventId = stripeEvent.Id,
-                    EventProcessedAt = DateTime.UtcNow
+                    EventProcessedAt = timeProvider.GetUtcNow().DateTime
                 });
 
                 if (intent.Status == "succeeded")
@@ -116,7 +119,7 @@ namespace Web.Controllers
                         Amount = intent.AmountReceived,
                         Type = type,
                         Status = intent.Status,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = timeProvider.GetUtcNow().DateTime
                     };
 
                     await purchaseService.LogAsync(purchaseDto);

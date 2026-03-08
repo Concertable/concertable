@@ -13,7 +13,12 @@ namespace Infrastructure.Repositories
 {
     public class ListingApplicationRepository : Repository<ListingApplication>, IListingApplicationRepository
     {
-        public ListingApplicationRepository(ApplicationDbContext context) : base(context) { }
+        private readonly TimeProvider timeProvider;
+
+        public ListingApplicationRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context) 
+        {
+            this.timeProvider = timeProvider;
+        }
 
         public async Task<IEnumerable<ListingApplication>> GetByListingIdAsync(int id)
         {
@@ -36,7 +41,7 @@ namespace Infrastructure.Repositories
             .Where(a =>
                 a.ArtistId == artistId &&
                 !context.Concerts.Any(e => e.ApplicationId == a.Id) &&
-                a.Listing.StartDate > DateTime.UtcNow);
+                a.Listing.StartDate > timeProvider.GetUtcNow());
 
             return await query.ToListAsync();
         }

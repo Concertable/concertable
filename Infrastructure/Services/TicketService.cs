@@ -16,6 +16,7 @@ public class TicketService : ITicketService
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUserService currentUserService;
     private readonly IManagerService managerService;
+    private readonly TimeProvider timeProvider;
 
     public TicketService(
         ITicketRepository ticketRepository,
@@ -25,7 +26,8 @@ public class TicketService : ITicketService
         IEmailService emailService,
         IQrCodeService qrCodeService,
         ICurrentUserService currentUserService,
-        IManagerService managerService)
+        IManagerService managerService,
+        TimeProvider timeProvider)
     {
         this.ticketRepository = ticketRepository;
         this.ticketValidationService = ticketValidationService;
@@ -35,6 +37,7 @@ public class TicketService : ITicketService
         this.qrCodeService = qrCodeService;
         this.currentUserService = currentUserService;
         this.managerService = managerService;
+        this.timeProvider = timeProvider;
     }
 
     public async Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams)
@@ -83,7 +86,7 @@ public class TicketService : ITicketService
                 {
                     UserId = purchaseCompleteDto.FromUserId,
                     ConcertId = purchaseCompleteDto.EntityId,
-                    PurchaseDate = DateTime.UtcNow
+                    PurchaseDate = timeProvider.GetUtcNow().DateTime
                 };
 
                 var ticketResponse = await ticketRepository.AddAsync(ticket);

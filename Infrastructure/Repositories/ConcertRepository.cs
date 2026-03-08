@@ -11,17 +11,19 @@ namespace Infrastructure.Repositories
     public class ConcertRepository : Repository<Concert>, IConcertRepository
     {
         private readonly IGeometryProvider geometryService;
+        private readonly TimeProvider timeProvider;
 
-        public ConcertRepository(ApplicationDbContext context, IGeometryProvider geometryService) : base(context)
+        public ConcertRepository(ApplicationDbContext context, IGeometryProvider geometryService, TimeProvider timeProvider) : base(context)
         {
             this.geometryService = geometryService;
+            this.timeProvider = timeProvider;
         }
 
         public async Task<IEnumerable<ConcertHeaderDto>> GetHeaders(int userId, ConcertParams concertParams)
         {
             var query = context.Concerts
                 .Where(e => e.DatePosted != null)
-                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
                 .AsQueryable();
 
             if (concertParams.GenreIds.Any())
@@ -82,7 +84,7 @@ namespace Infrastructure.Repositories
         {
             return await context.Concerts
                 .Where(e => e.Application.Listing.VenueId == id
-                            && e.Application.Listing.StartDate >= DateTime.UtcNow
+                            && e.Application.Listing.StartDate >= timeProvider.GetUtcNow()
                             && e.DatePosted != null)
                 .Include(e => e.Application)
                     .ThenInclude(a => a.Listing)
@@ -97,7 +99,7 @@ namespace Infrastructure.Repositories
         {
             return await context.Concerts
                 .Where(e => e.Application.ArtistId == id
-                            && e.Application.Listing.StartDate >= DateTime.UtcNow
+                            && e.Application.Listing.StartDate >= timeProvider.GetUtcNow()
                             && e.DatePosted != null)
                 .Include(e => e.Application)
                     .ThenInclude(a => a.Listing)
@@ -119,7 +121,7 @@ namespace Infrastructure.Repositories
         {
             return await context.Concerts
                 .Where(e => e.Application.ArtistId == id
-                            && e.Application.Listing.StartDate < DateTime.UtcNow
+                            && e.Application.Listing.StartDate < timeProvider.GetUtcNow()
                             && e.DatePosted != null)
                 .Include(e => e.Application)
                     .ThenInclude(a => a.Listing)
@@ -134,7 +136,7 @@ namespace Infrastructure.Repositories
         {
             return await context.Concerts
                 .Where(e => e.Application.Listing.VenueId == id
-                            && e.Application.Listing.StartDate < DateTime.UtcNow
+                            && e.Application.Listing.StartDate < timeProvider.GetUtcNow()
                             && e.DatePosted != null)
                 .Include(e => e.Application)
                     .ThenInclude(a => a.Listing)

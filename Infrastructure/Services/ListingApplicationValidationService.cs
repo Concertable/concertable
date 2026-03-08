@@ -10,18 +10,20 @@ namespace Infrastructure.Services
         private readonly IListingRepository listingRepository;
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly ICurrentUserService currentUserService;
+        private readonly TimeProvider timeProvider;
 
         public ListingApplicationValidationService(
             IConcertRepository concertRepository, 
             IListingRepository listingRepository, 
             IListingApplicationRepository listingApplicationRepository,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            TimeProvider timeProvider)
         {
             this.concertRepository = concertRepository;
             this.listingRepository = listingRepository;
             this.listingApplicationRepository = listingApplicationRepository;
             this.currentUserService = currentUserService;
-            
+            this.timeProvider = timeProvider;
         }
 
         public async Task<ValidationResponse> CanAcceptListingApplicationAsync(int applicationId, int userId)
@@ -38,7 +40,7 @@ namespace Infrastructure.Services
             if (listing.Venue.UserId != userId)
                 return ValidationResponse.Failure("You do not own this Listing");
 
-            if (listing.StartDate < DateTime.UtcNow)
+            if (listing.StartDate < timeProvider.GetUtcNow())
                 return ValidationResponse.Failure("You can't accept this application because the listing has already passed");
 
             if (await ListingHasConcertAsync(listing.Id))
@@ -61,7 +63,7 @@ namespace Infrastructure.Services
             if (listing is null)
                 return ValidationResponse.Failure("Listing does not exist.");
 
-            if (listing.StartDate < DateTime.UtcNow)
+            if (listing.StartDate < timeProvider.GetUtcNow())
                 return ValidationResponse.Failure("This listing has already passed.");
 
             if (await ListingHasConcertAsync(listingId))

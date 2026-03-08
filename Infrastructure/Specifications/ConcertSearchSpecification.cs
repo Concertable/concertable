@@ -8,10 +8,12 @@ namespace Infrastructure.Specifications
     public class ConcertSearchSpecification : IConcertSearchSpecification
     {
         private readonly ISearchSpecification<Concert> searchSpecification;
+        private readonly TimeProvider timeProvider;
 
-        public ConcertSearchSpecification(ISearchSpecification<Concert> searchSpecification)
+        public ConcertSearchSpecification(ISearchSpecification<Concert> searchSpecification, TimeProvider timeProvider)
         {
             this.searchSpecification = searchSpecification;
+            this.timeProvider = timeProvider;
         }
 
         public IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams)
@@ -20,7 +22,7 @@ namespace Infrastructure.Specifications
                 .Include(e => e.Application).ThenInclude(a => a.Artist)
                 .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
                 .Where(e => e.DatePosted != null)
-                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow);
+                .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow());
 
             if (searchParams.Date != null)
                 query = query.Where(e => e.Application.Listing.StartDate >= searchParams.Date);
@@ -29,7 +31,7 @@ namespace Infrastructure.Specifications
                 query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
 
             if (searchParams.ShowHistory != true)
-                query = query.Where(e => e.Application.Listing.StartDate >= DateTime.UtcNow);
+                query = query.Where(e => e.Application.Listing.StartDate >= timeProvider.GetUtcNow());
 
             if (searchParams.ShowSold != true)
                 query = query.Where(e => e.AvailableTickets > 0);

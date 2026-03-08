@@ -13,7 +13,12 @@ namespace Infrastructure.Repositories
 {
     public class TicketRepository : Repository<Ticket>, ITicketRepository
     {
-        public TicketRepository(ApplicationDbContext context) : base(context) { }
+        private readonly TimeProvider timeProvider;
+
+        public TicketRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context) 
+        { 
+            this.timeProvider = timeProvider;
+        }
 
         public Task<byte[]> GetQrCodeByIdAsync(int id)
         {
@@ -27,7 +32,7 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id)
         {
             var query = context.Tickets
-                .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate < DateTime.UtcNow)
+                .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate < timeProvider.GetUtcNow())
                 .Include(t => t.Concert);
 
             return await query.ToListAsync();
@@ -36,7 +41,7 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id)
         {
             var query = context.Tickets
-                 .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate >= DateTime.UtcNow)
+                 .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate >= timeProvider.GetUtcNow())
                  .Include(t => t.Concert);
 
             return await query.ToListAsync();

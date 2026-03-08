@@ -14,12 +14,17 @@ namespace Infrastructure.Repositories
 {
     public class ListingRepository : Repository<Listing>, IListingRepository
     {
-        public ListingRepository(ApplicationDbContext context) : base(context) { }
+        private readonly TimeProvider timeProvider;
+
+        public ListingRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context) 
+        {
+            this.timeProvider = timeProvider;
+        }
 
         public async Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id)
         {
             var query = context.Listings
-                .Where(l => l.VenueId == id && l.StartDate >= DateTime.UtcNow)
+                .Where(l => l.VenueId == id && l.StartDate >= timeProvider.GetUtcNow())
                 .Where(l => !context.Concerts.Any(e => e.ApplicationId == // doesnt have any events associated with it
                     context.ListingApplications // by checking the applications
                         .Where(la => la.ListingId == l.Id) // that have the same listing

@@ -19,7 +19,12 @@ namespace Infrastructure.Repositories
 {
     public class ReviewRepository : Repository<Review>, IReviewRepository
     {
-        public ReviewRepository(ApplicationDbContext context) : base(context) { }
+        private readonly TimeProvider timeProvider;
+
+        public ReviewRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context) 
+        { 
+            this.timeProvider = timeProvider;
+        }
 
         public Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id)
         {
@@ -161,7 +166,7 @@ namespace Infrastructure.Repositories
         public Task<bool> CanUserIdReviewConcertIdAsync(int userId, int concertId)
         {
             return GetUnreviewedTicketsByUser(userId)
-                .AnyAsync(t => t.ConcertId == concertId && t.Concert.Application.Listing.StartDate <= DateTime.UtcNow);
+                .AnyAsync(t => t.ConcertId == concertId && t.Concert.Application.Listing.StartDate <= timeProvider.GetUtcNow());
         }
 
 

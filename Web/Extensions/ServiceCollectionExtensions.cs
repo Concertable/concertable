@@ -72,6 +72,8 @@ namespace Web.Extensions
 
             services.AddSignalR();
 
+            services.AddSingleton(TimeProvider.System);
+
             return services;
         }
 

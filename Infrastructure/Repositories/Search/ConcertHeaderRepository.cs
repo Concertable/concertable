@@ -14,11 +14,13 @@ namespace Infrastructure.Repositories.Search
     {
         private readonly ApplicationDbContext context;
         private readonly IConcertSearchSpecification specification;
+        private readonly TimeProvider timeProvider;
 
-        public ConcertHeaderRepository(ApplicationDbContext context, IConcertSearchSpecification specification)
+        public ConcertHeaderRepository(ApplicationDbContext context, IConcertSearchSpecification specification, TimeProvider timeProvider)
         {
             this.context = context;
             this.specification = specification;
+            this.timeProvider = timeProvider;
         }
 
         public async Task<Pagination<Concert>> SearchAsync(SearchParams searchParams)
@@ -31,7 +33,7 @@ namespace Infrastructure.Repositories.Search
         {
             var concerts = await context.Concerts
                 .Where(e => e.DatePosted != null)
-                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
                 .OrderByDescending(e => e.DatePosted)
                 .Take(amount)
                 .ToListAsync();
@@ -43,7 +45,7 @@ namespace Infrastructure.Repositories.Search
         {
             var concerts = await context.Concerts
                 .Where(e => e.DatePosted != null)
-                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
                 .OrderByDescending(e => e.TotalTickets - e.AvailableTickets)
                 .Take(10)
                 .ToListAsync();
@@ -55,7 +57,7 @@ namespace Infrastructure.Repositories.Search
         {
             var concerts = await context.Concerts
                 .Where(e => e.DatePosted != null)
-                .Where(e => e.Application.Listing.EndDate > DateTime.UtcNow)
+                .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
                 .Where(e => e.Price == 0)
                 .OrderByDescending(e => e.DatePosted)
                 .Take(10)

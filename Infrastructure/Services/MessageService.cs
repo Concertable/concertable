@@ -13,15 +13,19 @@ namespace Infrastructure.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IMessageRepository messageRepository;
         private readonly ICurrentUserService currentUserService;
+        private readonly TimeProvider timeProvider;
 
         public MessageService(
             IUnitOfWork unitOfWork,
             IMessageRepository messageRepository,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            TimeProvider timeProvider)
         {
             this.unitOfWork = unitOfWork;
             this.messageRepository = messageRepository;
             this.currentUserService = currentUserService;
+            this.timeProvider = timeProvider;
+
         }
 
         public async Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content)
@@ -35,7 +39,7 @@ namespace Infrastructure.Services
                 ToUserId = toUserId,
                 Action = action,
                 ActionId = actionId,
-                SentDate = DateTime.UtcNow,
+                SentDate = timeProvider.GetUtcNow().DateTime,
                 Read = false
             };
 
@@ -53,7 +57,7 @@ namespace Infrastructure.Services
                 ToUserId = toUserId,
                 Action = action,
                 ActionId = actionId,
-                SentDate = DateTime.UtcNow,
+                SentDate = timeProvider.GetUtcNow().DateTime,
                 Read = false
             };
 

@@ -23,6 +23,7 @@ namespace Infrastructure.Services
         private readonly ILocationService locationService;
         private readonly IListingApplicationRepository listingApplicationRepository;
         private readonly IGenreRepository genreRepository;
+        private readonly TimeProvider timeProvider;
 
         public ConcertService(
             IConcertRepository concertRepository,
@@ -37,7 +38,8 @@ namespace Infrastructure.Services
             ILocationService locationService,
             IListingRepository listingRepository,
             IListingApplicationRepository listingApplicationRepository,
-            IGenreRepository genreRepository)
+            IGenreRepository genreRepository,
+            TimeProvider timeProvider)
         {
             this.concertRepository = concertRepository;
             this.concertValidationService = concertValidationService;
@@ -52,6 +54,7 @@ namespace Infrastructure.Services
             this.listingRepository = listingRepository;
             this.locationService = locationService;
             this.genreRepository = genreRepository;
+            this.timeProvider = timeProvider;
         }
 
         public async Task<IEnumerable<ConcertDto>> GetUpcomingByVenueIdAsync(int id)
@@ -234,7 +237,7 @@ namespace Infrastructure.Services
             concertEntity.About = concertDto.About;
             concertEntity.Price = concertDto.Price;
             concertEntity.TotalTickets = concertDto.TotalTickets;
-            concertEntity.DatePosted = DateTime.UtcNow;
+            concertEntity.DatePosted = timeProvider.GetUtcNow().DateTime;
             concertEntity.AvailableTickets = concertDto.TotalTickets;
 
             concertRepository.Update(concertEntity);
