@@ -51,7 +51,7 @@ namespace Web.Controllers
             this.ticketService = ticketService;
             this.concertService = concertService;
             this.purchaseService = purchaseService;
-            webhookSecret = configuration["Stripe:WebhookSecret"];
+            webhookSecret = configuration["Stripe:WebhookSecret"]!;
             this.timeProvider = timeProvider;
             this.logger = logger;
         }
@@ -66,7 +66,7 @@ namespace Web.Controllers
             {
                 stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
             }
-            catch (StripeException ex)
+            catch (StripeException)
             {
                 return Problem("Webhook validation failed");
             }

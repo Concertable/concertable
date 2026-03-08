@@ -23,7 +23,7 @@ namespace Infrastructure.Data.Identity
         public DbSet<Review> Reviews { get; set; }
         public DbSet<SocialMedia> SocialMedias { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
-        public DbSet<ApplicationUser> Users { get; set; }
+        public new DbSet<ApplicationUser> Users { get; set; } = null!;
         public DbSet<Message> Messages { get; set; }
         public DbSet<Venue> Venues { get; set; }
         public DbSet<VenueImage> VenueImages { get; set; }

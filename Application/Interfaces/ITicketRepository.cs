@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface ITicketRepository : IRepository<Ticket>
     {
-        Task<byte[]> GetQrCodeByIdAsync(int id);
+        Task<byte[]?> GetQrCodeByIdAsync(int id);
         Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id);
         Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id);
         Task<Ticket?> GetByUserIdAndConcertIdAsync(int userId, int concertId);

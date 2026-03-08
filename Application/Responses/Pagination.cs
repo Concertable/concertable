@@ -2,7 +2,7 @@ namespace Application.Responses
 {
     public class Pagination<T>
     {
-        public IEnumerable<T> Data { get; set; }
+        public IEnumerable<T> Data { get; set; } = null!;
         public int TotalCount { get; set; }
         public int PageNumber { get; set; }
         public int PageSize { get; set; }

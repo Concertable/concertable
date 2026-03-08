@@ -5,14 +5,10 @@ namespace Application.DTOs
     public record MessageDto
     {
         public int Id { get; set; }
-        public UserDto FromUser { get; set; }
+        public required UserDto FromUser { get; set; }
         public ActionDto? Action { get; set; }
-        public string Content { get; set; }
+        public required string Content { get; set; }
     }
 
-    public record MessageSummaryDto
-    {
-        public Pagination<MessageDto> Messages { get; set; }
-        public int UnreadCount { get; set; }
-    }
+    public record MessageSummaryDto(Pagination<MessageDto> Messages, int UnreadCount);
 }

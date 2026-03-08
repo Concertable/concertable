@@ -20,8 +20,6 @@ namespace Infrastructure.Services
         private Lazy<IConcertService> concertService;
         private IListingApplicationService listingApplicationService;
         private ICurrentUserService currentUserService;
-        private IVenueService venueService;
-
         public UserPaymentService(
             IPaymentService paymentService, 
             IUserService userService,

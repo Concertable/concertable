@@ -9,11 +9,11 @@ namespace Core.Entities
     public class Venue : BaseEntity, IHasName, IHasLocation
     {
         public int UserId { get; set; }
-        public string Name { get; set; }
-        public string About { get; set; }
-        public string ImageUrl { get; set; }
+        public required string Name { get; set; }
+        public required string About { get; set; }
+        public required string ImageUrl { get; set; }
         public bool Approved { get; set; }
-        public VenueManager User { get; set; }
+        public VenueManager User { get; set; } = null!;
         public Point? Location => User.Location;
         public ICollection<Listing> Listings { get; set; } = new List<Listing>();
     }

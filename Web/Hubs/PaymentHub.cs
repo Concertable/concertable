@@ -9,7 +9,7 @@ namespace Web.Hubs
     {
         public override async Task OnConnectedAsync()
         {
-            string userId = Context.User?.GetId();
+            string? userId = Context.User?.GetId();
 
             if(!string.IsNullOrEmpty(userId)) 
                 await Groups.AddToGroupAsync(Context.ConnectionId, userId);
@@ -17,9 +17,9 @@ namespace Web.Hubs
             await base.OnConnectedAsync();
         }
 
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            string userId = Context.User?.GetId();
+            string? userId = Context.User?.GetId();
 
             if (!string.IsNullOrEmpty(userId)) 
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);

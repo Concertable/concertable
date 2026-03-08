@@ -9,14 +9,14 @@ namespace Core.Entities
 {
     public class Transaction : BaseEntity
     {
-        public int FromUserId { get; set; }  
-        public ApplicationUser FromUser { get; set; }
+        public int FromUserId { get; set; }
+        public ApplicationUser FromUser { get; set; } = null!;
         public int ToUserId { get; set; }
-        public ApplicationUser ToUser { get; set; }
-        public string TransactionId { get; set; }
+        public ApplicationUser ToUser { get; set; } = null!;
+        public required string TransactionId { get; set; }
         public long Amount { get; set; }
-        public string Type { get; set; }
-        public string Status { get; set; }
+        public required string Type { get; set; }
+        public required string Status { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

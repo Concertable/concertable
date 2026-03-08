@@ -148,7 +148,7 @@ namespace Web.Extensions
             services.AddScoped<IGeometrySpecification<Concert>>(sp =>
                 new GeometrySpecification<Concert>(
                     sp.GetRequiredService<IGeometryProvider>(),
-                    (center, radius) => e => e.Application.Listing.Venue.User.Location != null && e.Application.Listing.Venue.User.Location.Distance(center) <= radius * 1000));
+                    (center, radius) => e => e.Application.Listing.Venue.User.Location != null && e.Application.Listing.Venue.User.Location!.Distance(center) <= radius * 1000));
 
             services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
             services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();

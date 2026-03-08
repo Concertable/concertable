@@ -50,7 +50,7 @@ namespace Infrastructure.Tests.Services
         {
             // Arrange
             var venueId = 1;
-            var venue = new Venue { Id = venueId, Name = "Venue 1" };
+            var venue = new Venue { Id = venueId, Name = "Venue 1", About = "About", ImageUrl = "" };
 
             venueRepositoryMock.Setup(x => x.GetByIdAsync(venueId)).ReturnsAsync(venue);
             reviewServiceMock.Setup(x => x.SetAverageRatingAsync(It.IsAny<VenueDto>())).Returns(Task.CompletedTask);
@@ -59,8 +59,8 @@ namespace Infrastructure.Tests.Services
             var result = await venueService.GetDetailsByIdAsync(venueId);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(venueId, result.Id);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo(venueId));
         }
 
         [Test]
@@ -68,8 +68,8 @@ namespace Infrastructure.Tests.Services
         {
             // Arrange
             var user = new ApplicationUser { Id = 1 };
-            var createVenueRequest = new CreateVenueRequest { Name = "New Venue", Latitude = 1.0, Longitude = 2.0 };
-            var createdVenue = new Venue { Id = 1, Name = "New Venue", UserId = user.Id };
+            var createVenueRequest = new CreateVenueRequest("New Venue", "About the venue", 1.0, 2.0);
+            var createdVenue = new Venue { Id = 1, Name = "New Venue", About = "About the venue", ImageUrl = "", UserId = user.Id };
             var imageMock = new Mock<IFormFile>();
 
             var venueRepoMock = new Mock<IRepository<Venue>>();
@@ -82,7 +82,7 @@ namespace Infrastructure.Tests.Services
             imageServiceMock.Setup(x => x.UploadAsync(imageMock.Object)).ReturnsAsync("image_url");
             venueRepoMock.Setup(r => r.AddAsync(It.IsAny<Venue>())).ReturnsAsync(createdVenue);
             geocodingServiceMock.Setup(x => x.GetLocationAsync(1.0, 2.0))
-                .ReturnsAsync(new LocationDto { County = "County", Town = "Town" });
+                .ReturnsAsync(new LocationDto("County", "Town"));
             geometryServiceMock.Setup(x => x.CreatePoint(1.0, 2.0)).Returns(new NetTopologySuite.Geometries.Point(2.0, 1.0));
             unitOfWorkMock.Setup(u => u.SaveChangesAsync()).Returns(Task.CompletedTask);
 
@@ -90,8 +90,8 @@ namespace Infrastructure.Tests.Services
             var result = await venueService.CreateAsync(createVenueRequest, imageMock.Object);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual("New Venue", result.Name);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Name, Is.EqualTo("New Venue"));
         }
     }
 }

@@ -21,22 +21,22 @@ namespace Infrastructure.Services
         public GeocodingService(HttpClient httpClient, IConfiguration configuration) 
         {
             this.httpClient = httpClient;
-            apiKey = configuration["GoogleApiKey"];
+            apiKey = configuration["GoogleApiKey"]!;
         }
 
         public async Task<LocationDto> GetLocationAsync(double latitude, double longitude)
         {
             var latLng = $"{latitude},{longitude}";
             var query = $"latlng={Uri.EscapeDataString(latLng)}&key={Uri.EscapeDataString(apiKey)}"; //Adds latlong to url safely
-            Uri requestUri = new Uri(httpClient.BaseAddress, $"json?{query}");
+            Uri requestUri = new Uri(httpClient.BaseAddress!, $"json?{query}");
 
             // Send to api
             var response = await httpClient.GetStringAsync(requestUri);
             // Deserialize response
             var result = JsonConvert.DeserializeObject<GoogleGeocodeResponse>(response);
 
-            string county = null;
-            string town = null;
+            string? county = null;
+            string? town = null;
 
             if (result?.Results == null || result.Results.Count == 0)
                 throw new BadRequestException("No geocoding results found for the provided coordinates.");
@@ -64,11 +64,7 @@ namespace Infrastructure.Services
 
             if (county == null || town == null) throw new BadRequestException("County or Town not found");
 
-            return new LocationDto
-            {
-                County = county,
-                Town = town
-            };
+            return new LocationDto(county!, town!);
         }
     }
 }

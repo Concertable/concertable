@@ -65,7 +65,7 @@ namespace Infrastructure.Services
             await messageRepository.SaveChangesAsync();
         }
 
-        public async Task<Pagination<MessageDto>> GetForUserAsync(IPageParams? pageParams)
+        public async Task<Pagination<MessageDto>> GetForUserAsync(IPageParams pageParams)
         {
             var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
@@ -79,22 +79,19 @@ namespace Infrastructure.Services
 
         public async Task<MessageSummaryDto> GetSummaryForUser()
         {
-            var pageParams = new ReviewParams { PageNumber = 1, PageSize = 5 };
+            var pageParams = new PageParams { PageNumber = 1, PageSize = 5 };
 
             var user = await currentUserService.GetAsync();
             var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
             var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
 
-            return new MessageSummaryDto
-            {
-                Messages = new Pagination<MessageDto>(
-                    messages.Data.Select(m => m.ToDto()),
-                    messages.TotalCount,
-                    messages.PageNumber,
-                    messages.PageSize
-                ),
-                UnreadCount = unreadCount
-            };
+            var pagination = new Pagination<MessageDto>(
+                messages.Data.Select(m => m.ToDto()),
+                messages.TotalCount,
+                messages.PageNumber,
+                messages.PageSize
+            );
+            return new MessageSummaryDto(pagination, unreadCount);
         }
 
         public async Task<int> GetUnreadCountForUserAsync()

@@ -61,8 +61,10 @@ namespace Infrastructure.Services
 
         public async Task<string> GetFirstRoleAsync()
         {
-            var principal = httpContextAccessor.HttpContext?.User;
-            var user = await userManager.GetUserAsync(principal);
+            var principal = httpContextAccessor.HttpContext?.User
+                ?? throw new UnauthorizedException("User not authenticated");
+            var user = await userManager.GetUserAsync(principal)
+                ?? throw new UnauthorizedException("User not authenticated");
             var roles = await userManager.GetRolesAsync(user);
 
             if (!roles.Any())
@@ -83,7 +85,8 @@ namespace Infrastructure.Services
 
         public async Task<ApplicationUser> GetEntityAsync()
         {
-            var principal = httpContextAccessor.HttpContext?.User;
+            var principal = httpContextAccessor.HttpContext?.User
+                ?? throw new UnauthorizedException("User not authenticated");
             var user = await userManager.GetUserAsync(principal);
             if (user is null) throw new UnauthorizedException("User not authenticated");
 

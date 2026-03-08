@@ -9,7 +9,7 @@ namespace Application.Mappers
         public static UserDto ToDto(this ApplicationUser user) => new()
         {
             Id = user.Id,
-            Email = user.Email,
+            Email = user.Email ?? string.Empty,
             Latitude = LocationHelper.GetLatitude(user.Location),
             Longitude = LocationHelper.GetLongitude(user.Location),
             County = user.County,

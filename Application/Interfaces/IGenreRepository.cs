@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface IGenreRepository: IRepository<Genre>
     {
-        Task<IEnumerable<Genre>> GetAllAsync();
+        new Task<IEnumerable<Genre>> GetAllAsync();
         Task<IEnumerable<Genre>> GetByIdsAsync(IEnumerable<int> ids);
     }
 }

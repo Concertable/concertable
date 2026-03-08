@@ -5,11 +5,7 @@ namespace Application.Mappers
 {
     public static class GenreMappers
     {
-        public static GenreDto ToDto(this Genre genre) => new()
-        {
-            Id = genre.Id,
-            Name = genre.Name
-        };
+        public static GenreDto ToDto(this Genre genre) => new(genre.Id, genre.Name);
 
         public static Genre ToEntity(this GenreDto dto) => new()
         {

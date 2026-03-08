@@ -64,7 +64,7 @@ namespace Infrastructure.Services
             if (reasons.Any())
                 throw new BadRequestException(reasons);
 
-            var result = await userManager.CreateAsync(user, request.Password);
+            var result = await userManager.CreateAsync(user!, request.Password);
 
             if (!result.Succeeded)
             {
@@ -72,20 +72,20 @@ namespace Infrastructure.Services
                 throw new BadRequestException(reasons);
             }
 
-            await userManager.AddToRoleAsync(user, request.Role);
-            await stripeAccountService.CreateStripeAccountAsync(user);
+            await userManager.AddToRoleAsync(user!, request.Role);
+            await stripeAccountService.CreateStripeAccountAsync(user!);
 
             var createPreferenceRequest = new CreatePreferenceRequest
             {
                 RadiusKm = 10,
                 Genres = Enumerable.Empty<GenreDto>()
             };
-            await preferenceService.CreateAsync(createPreferenceRequest, user.Id);
+            await preferenceService.CreateAsync(createPreferenceRequest, user!.Id);
 
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var uri = uriService.GetEmailConfirmationUri(user.Id, token);
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user!);
+            var uri = uriService.GetEmailConfirmationUri(user!.Id, token);
 
-            await emailService.SendEmailAsync(user.Email, "Confirm Your Email",
+            await emailService.SendEmailAsync(user!.Email!, "Confirm Your Email",
                 $"Please confirm your email by clicking <a href='{uri}'>here</a>");
         }
 
@@ -148,7 +148,7 @@ namespace Infrastructure.Services
                 var token = await userManager.GeneratePasswordResetTokenAsync(user);
                 var resetLink = uriService.GetPasswordResetUri(user.Id, token);
 
-                await emailService.SendEmailAsync(user.Email, "Reset your password",
+                await emailService.SendEmailAsync(user.Email!, "Reset your password",
                     $"Please reset your password by clicking <a href='{resetLink}'>here</a>");
             }
             return new ForgotPasswordResponse { Message = "If this email is associated with an account, a password reset link has been sent" };
@@ -156,7 +156,8 @@ namespace Infrastructure.Services
 
         public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await userManager.FindByIdAsync(request.UserId.ToString());
+            var user = await userManager.FindByIdAsync(request.UserId.ToString())
+                ?? throw new NotFoundException("User not found");
             var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
 
             if (!result.Succeeded)
@@ -175,7 +176,7 @@ namespace Infrastructure.Services
             var token = await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
             var uri = uriService.GetEmailChangeConfirmationUri(user.Id, token, newEmail);
 
-            await emailService.SendEmailAsync(user.Email, "Confirm your new email",
+            await emailService.SendEmailAsync(user.Email!, "Confirm your new email",
                 $"Please confirm your email change by clicking <a href='{uri}'>here</a>");
         }
 

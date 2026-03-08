@@ -3,6 +3,7 @@ using Application.Requests;
 using Application.Interfaces;
 using Application.Mappers;
 using Core.Entities;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
@@ -52,7 +53,8 @@ namespace Infrastructure.Services
 
         public async Task<PreferenceDto> UpdateAsync(PreferenceDto preferenceDto)
         {
-            var preference = await preferenceRepository.GetByIdAsync(preferenceDto.Id);
+            var preference = await preferenceRepository.GetByIdAsync(preferenceDto.Id)
+                ?? throw new NotFoundException("Preference not found");
             var userId = (await currentUserService.GetAsync()).Id;
 
             if (userId != preference.User.Id)
@@ -74,7 +76,7 @@ namespace Infrastructure.Services
             await preferenceRepository.SaveChangesAsync();
 
             var updatedPreference = await preferenceRepository.GetByIdAsync(preference.Id);
-            return updatedPreference.ToDto();
+            return updatedPreference!.ToDto();
         }
     }
 }

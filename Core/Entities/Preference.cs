@@ -11,7 +11,7 @@ namespace Core.Entities
     {
         public int UserId { get; set; }
         public double RadiusKm  { get; set; }
-        public Customer User { get; set; }
+        public Customer User { get; set; } = null!;
         public ICollection<GenrePreference> GenrePreferences { get; set; } = new List<GenrePreference>();
     }
 }

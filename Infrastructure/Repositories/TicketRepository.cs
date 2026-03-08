@@ -20,13 +20,13 @@ namespace Infrastructure.Repositories
             this.timeProvider = timeProvider;
         }
 
-        public Task<byte[]> GetQrCodeByIdAsync(int id)
+        public Task<byte[]?> GetQrCodeByIdAsync(int id)
         {
             var query = context.Tickets
                 .Where(t => t.Id == id)
                 .Select(t => t.QrCode);
 
-            return query.FirstAsync();
+            return query.FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id)

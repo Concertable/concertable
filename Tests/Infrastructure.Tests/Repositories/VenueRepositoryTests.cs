@@ -1,13 +1,8 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Tests.Repositories
 {
@@ -25,42 +20,41 @@ namespace Infrastructure.Tests.Repositories
                 .Options;
 
             context = new ApplicationDbContext(options);
-            //venueRepository = new VenueRepository(context);
+            venueRepository = new VenueRepository(context);
         }
 
         [Test]
         public async Task GetHeadersAsync_ShouldReturnHeaders()
-        { 
+        {
             // Arrange
-            var venueParams = new SearchParams { Sort = "Name" };
+            var venueParams = new SearchParams { Sort = "Name", HeaderType = "venue" };
 
             var venueHeaders = new List<Venue> {
-                new Venue { Id = 1, Name = "Test Venue 1", UserId = 1 }, 
-                new Venue { Id = 2, Name = "Test Venue 2", UserId = 2 } 
+                new Venue { Id = 1, Name = "Test Venue 1", About = "About 1", ImageUrl = "", UserId = 1 },
+                new Venue { Id = 2, Name = "Test Venue 2", About = "About 2", ImageUrl = "", UserId = 2 }
             };
 
             // Populate database
             context.Venues.AddRange(venueHeaders);
 
             // Act
-            //var result = await venueRepository.GetHeadersAsync(venueParams); 
+            //var result = await venueRepository.GetHeadersAsync(venueParams);
             // Assert
-            //Assert.NotNull(result); 
-            //Assert.AreEqual(venueHeaders.Count(), result.Count()); 
-            //Assert.AreEqual(venueHeaders, result);
+            //Assert.That(result, Is.Not.Null);
+            //Assert.That(result.Count(), Is.EqualTo(venueHeaders.Count()));
         }
 
         [Test]
         public async Task GetByUserIdAsync_ShouldReturnVenue()
-        { 
+        {
             // Arrange
-            int userId = 1; 
+            int userId = 1;
             // Act
-            var result = await venueRepository.GetByUserIdAsync(userId); 
+            var result = await venueRepository.GetByUserIdAsync(userId);
             // Assert
-            Assert.NotNull(result); 
-            Assert.AreEqual(userId, result.UserId); 
-            Assert.AreEqual("Test Venue 1", result.Name);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.UserId, Is.EqualTo(userId));
+            Assert.That(result.Name, Is.EqualTo("Test Venue 1"));
         }
 
         public void Dispose()

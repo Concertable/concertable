@@ -13,11 +13,11 @@ namespace Application.Mappers
             About = venue.About,
             ImageUrl = venue.ImageUrl,
             Approved = venue.Approved,
-            County = venue.User?.County,
-            Town = venue.User?.Town,
-            Email = venue.User?.Email,
-            Latitude = venue.User?.Location?.Y ?? 0,
-            Longitude = venue.User?.Location?.X ?? 0
+            County = venue.User.County ?? string.Empty,
+            Town = venue.User.Town ?? string.Empty,
+            Email = venue.User.Email ?? string.Empty,
+            Latitude = venue.User.Location?.Y ?? 0,
+            Longitude = venue.User.Location?.X ?? 0
         };
 
         public static VenueHeaderDto ToHeaderDto(this Venue venue) => new()
@@ -25,10 +25,10 @@ namespace Application.Mappers
             Id = venue.Id,
             Name = venue.Name,
             ImageUrl = venue.ImageUrl,
-            County = venue.User?.County,
-            Town = venue.User?.Town,
-            Latitude = venue.User?.Location?.Y,
-            Longitude = venue.User?.Location?.X
+            County = venue.User.County ?? string.Empty,
+            Town = venue.User.Town ?? string.Empty,
+            Latitude = venue.User.Location?.Y,
+            Longitude = venue.User.Location?.X
         };
 
         public static VenueHeaderDto ToHeaderDto(this VenueDto venueDto) => new()
@@ -45,10 +45,11 @@ namespace Application.Mappers
         public static Venue ToEntity(this CreateVenueRequest request) => new()
         {
             Name = request.Name,
-            About = request.About
+            About = request.About,
+            ImageUrl = string.Empty
         };
 
-public static IEnumerable<VenueDto> ToDtos(this IEnumerable<Venue> venues) =>
+        public static IEnumerable<VenueDto> ToDtos(this IEnumerable<Venue> venues) =>
             venues.Select(v => v.ToDto());
 
         public static IEnumerable<VenueHeaderDto> ToHeaderDtos(this IEnumerable<Venue> venues) =>

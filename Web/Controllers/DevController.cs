@@ -131,11 +131,11 @@ namespace Web.Controllers
 
         [HttpPost("create-stripe-id-for-user")]
         public async Task<IActionResult> CreateStripeIdForUser(
-    [FromQuery] string userId,
-    [FromServices] UserManager<ApplicationUser> userManager,
-    [FromServices] IStripeAccountService stripeAccountService,
-    [FromServices] SignInManager<ApplicationUser> signInManager,
-    [FromServices] IHttpContextAccessor httpContextAccessor)
+            [FromQuery] string userId,
+            [FromServices] UserManager<ApplicationUser> userManager,
+            [FromServices] IStripeAccountService stripeAccountService,
+            [FromServices] SignInManager<ApplicationUser> signInManager,
+            [FromServices] IHttpContextAccessor httpContextAccessor)
         {
             if (string.IsNullOrWhiteSpace(userId))
                 return BadRequest("Missing user ID");
@@ -144,7 +144,7 @@ namespace Web.Controllers
             if (user == null)
                 return NotFound($"User with ID '{userId}' not found");
 
-            var currentUser = await userManager.GetUserAsync(httpContextAccessor.HttpContext.User);
+            var currentUser = await userManager.GetUserAsync(httpContextAccessor.HttpContext!.User);
 
             if (!string.IsNullOrWhiteSpace(user.StripeId))
             {

@@ -11,7 +11,7 @@ namespace Application.Mappers
             Content = message.Content,
             FromUser = message.FromUser.ToDto(),
             Action = !string.IsNullOrEmpty(message.Action) && message.ActionId.HasValue
-                ? new ActionDto { Name = message.Action, Id = message.ActionId.Value }
+                ? new ActionDto(message.Action, message.ActionId.Value)
                 : null
         };
 

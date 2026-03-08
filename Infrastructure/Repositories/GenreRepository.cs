@@ -14,7 +14,7 @@ namespace Infrastructure.Repositories
     {
         public GenreRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<Genre>> GetAllAsync()
+        public new async Task<IEnumerable<Genre>> GetAllAsync()
         {
             return await base.GetAllAsync();
         }

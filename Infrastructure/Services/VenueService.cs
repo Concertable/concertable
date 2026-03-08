@@ -39,7 +39,8 @@ namespace Infrastructure.Services
 
         public async Task<VenueDto> GetDetailsByIdAsync(int id)
         {
-            var venue = await venueRepository.GetByIdAsync(id);
+            var venue = await venueRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Venue not found");
             var venueDto = venue.ToDto();
             await reviewService.SetAverageRatingAsync(venueDto);
             return venueDto;

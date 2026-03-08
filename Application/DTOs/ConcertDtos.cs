@@ -10,8 +10,8 @@ namespace Application.DTOs
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public DateTime? DatePosted { get; set; }
-        public VenueDto Venue { get; set; }
-        public ArtistDto Artist { get; set; }
+        public required VenueDto Venue { get; set; }
+        public required ArtistDto Artist { get; set; }
         public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
 
         public ConcertDto()
@@ -23,11 +23,11 @@ namespace Application.DTOs
     public record ConcertHeaderDto : IHeader, IAddressHeader
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string ImageUrl { get; set; }
+        public required string Name { get; set; }
+        public required string ImageUrl { get; set; }
         public double? Rating { get; set; }
-        public string County { get; set; }
-        public string Town { get; set; }
+        public required string County { get; set; }
+        public required string Town { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public DateTime StartDate { get; set; }

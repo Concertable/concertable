@@ -37,11 +37,11 @@ namespace Infrastructure.Repositories
 
             if (GeoHelper.HasValidCoordinates(concertParams))
             {
-                var center = geometryService.CreatePoint(concertParams.Latitude!.Value, concertParams.Longitude!.Value);
+                var center = geometryService.CreatePoint(concertParams.Latitude!.Value, concertParams.Longitude!.Value)!;
                 var radiusKm = concertParams.RadiusKm ?? 10;
                 query = query.Where(e =>
                     e.Application.Listing.Venue.User.Location != null &&
-                    e.Application.Listing.Venue.User.Location.Distance(center) <= radiusKm * 1000);
+                    e.Application.Listing.Venue.User.Location!.Distance(center) <= radiusKm * 1000);
             }
 
             var concerts = await query
@@ -51,7 +51,7 @@ namespace Infrastructure.Repositories
             return concerts.ToHeaderDtos();
         }
 
-        public async Task<Concert> GetByIdAsync(int id)
+        public new async Task<Concert?> GetByIdAsync(int id)
         {
             return await context.Concerts
                 .Where(e => e.Id == id)
@@ -67,7 +67,7 @@ namespace Infrastructure.Repositories
                         .ThenInclude(v => v.User)
                 .Include(e => e.ConcertGenres)
                     .ThenInclude(eg => eg.Genre)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Concert>> GetUpcomingByVenueIdAsync(int id)

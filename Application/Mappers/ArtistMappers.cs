@@ -13,11 +13,11 @@ namespace Application.Mappers
             About = artist.About,
             ImageUrl = artist.ImageUrl,
             Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
-            County = artist.User?.County,
-            Town = artist.User?.Town,
-            Email = artist.User?.Email,
-            Latitude = artist.User?.Location?.Y,
-            Longitude = artist.User?.Location?.X
+            County = artist.User.County ?? string.Empty,
+            Town = artist.User.Town ?? string.Empty,
+            Email = artist.User.Email ?? string.Empty,
+            Latitude = artist.User.Location?.Y,
+            Longitude = artist.User.Location?.X
         };
 
         public static ArtistHeaderDto ToHeaderDto(this Artist artist) => new()
@@ -25,10 +25,10 @@ namespace Application.Mappers
             Id = artist.Id,
             Name = artist.Name,
             ImageUrl = artist.ImageUrl,
-            County = artist.User?.County,
-            Town = artist.User?.Town,
-            Latitude = artist.User?.Location?.Y,
-            Longitude = artist.User?.Location?.X
+            County = artist.User.County ?? string.Empty,
+            Town = artist.User.Town ?? string.Empty,
+            Latitude = artist.User.Location?.Y,
+            Longitude = artist.User.Location?.X
         };
 
         public static ArtistHeaderDto ToHeaderDto(this ArtistDto artistDto) => new()
@@ -46,6 +46,7 @@ namespace Application.Mappers
         {
             Name = request.Name,
             About = request.About,
+            ImageUrl = string.Empty, // Set by caller after image upload
             ArtistGenres = request.Genres.Select(g => new ArtistGenre { GenreId = g.Id }).ToList()
         };
 

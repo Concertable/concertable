@@ -11,7 +11,7 @@ namespace Application.Mappers
             Id = review.Id,
             Stars = review.Stars,
             Details = review.Details,
-            Email = review.Ticket?.User?.Email
+            Email = review.Ticket.User.Email ?? string.Empty
         };
 
         public static Review ToEntity(this CreateReviewRequest request) => new()

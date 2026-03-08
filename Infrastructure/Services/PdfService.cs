@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.Exceptions;
 
 namespace Infrastructure.Services
 {
@@ -24,7 +25,8 @@ namespace Infrastructure.Services
 
         public async Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId)
         {
-            byte[] qrCode = await ticketService.Value.GetQrCodeByIdAsync(ticketId);
+            byte[] qrCode = await ticketService.Value.GetQrCodeByIdAsync(ticketId)
+                ?? throw new NotFoundException("QR Code not found");
 
             return Document.Create(container =>
             {

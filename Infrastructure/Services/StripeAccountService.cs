@@ -22,7 +22,7 @@ namespace Infrastructure.Services
             this.stripeSettings = stripeSettings.Value;
             StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
             this.userRepository = userRepository;
-            this.baseUri = configuration["BaseUri:http"];
+            this.baseUri = configuration["BaseUri:http"]!;
         }
 
         public async Task<string> CreateStripeAccountAsync(ApplicationUser user)

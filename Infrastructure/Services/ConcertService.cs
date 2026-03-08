@@ -83,7 +83,8 @@ namespace Infrastructure.Services
 
         public async Task<ConcertDto> GetDetailsByIdAsync(int id)
         {
-            var concertEntity = await concertRepository.GetByIdAsync(id);
+            var concertEntity = await concertRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Concert not found");
             return concertEntity.ToDto();
         }
 
@@ -129,7 +130,7 @@ namespace Infrastructure.Services
                     concertDto.Id,
                     "Your Application has been accepted! View your concert here");
 
-                await emailService.SendEmailAsync(artist.User.Email, "Concert Creation", "Your Application was chosen! A Concert has been scheduled for you!");
+                await emailService.SendEmailAsync(artist.User.Email!, "Concert Creation", "Your Application was chosen! A Concert has been scheduled for you!");
 
                 return new ListingApplicationPurchaseResponse
                 {

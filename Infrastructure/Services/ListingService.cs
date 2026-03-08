@@ -27,7 +27,8 @@ namespace Infrastructure.Services
         {
             await stripeValidationService.ValidateUserAsync();
 
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+                ?? throw new NotFoundException("Venue not found for current user");
             var listing = listingDto.ToEntity();
             listing.VenueId = venueDto.Id;
 
@@ -39,7 +40,8 @@ namespace Infrastructure.Services
         {
             await stripeValidationService.ValidateUserAsync();
 
-            var venueDto = await venueService.GetDetailsForCurrentUserAsync();
+            var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+                ?? throw new NotFoundException("Venue not found for current user");
 
             var listings = listingsDto.Select(dto =>
             {
@@ -60,7 +62,7 @@ namespace Infrastructure.Services
 
         public async Task<Listing> GetByIdAsync(int id)
         {
-            return await listingRepository.GetByIdAsync(id);
+            return (await listingRepository.GetByIdAsync(id))!;
         }
 
         public async Task<VenueManager> GetOwnerByIdAsync(int id)

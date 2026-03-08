@@ -13,8 +13,8 @@ namespace Core.Entities
     {
         public int ListingId { get; set; }
         public int ArtistId { get; set; }
-        public Listing Listing { get; set; }
-        public Artist Artist { get; set; }
+        public Listing Listing { get; set; } = null!;
+        public Artist Artist { get; set; } = null!;
         public Concert? Concert { get; set; }
     }
 }

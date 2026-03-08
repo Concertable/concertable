@@ -26,7 +26,7 @@ namespace Infrastructure.Repositories
                 .Where(m => m.ToUserId == id)
                 .OrderByDescending(m => m.SentDate);
 
-            return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
+            return await query.ToPaginationAsync(pageParams);
         }
 
         public async Task<int> GetUnreadCountByUserIdAsync(int id)

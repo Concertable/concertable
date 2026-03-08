@@ -126,11 +126,10 @@ namespace Infrastructure.Repositories
             var averageRating = await query.AverageAsync(r => (double?)r.Stars);
             var totalReviews = await query.CountAsync();
 
-            return new ReviewSummaryDto
-            {
-                AverageRating = averageRating is double avg ? Math.Round(avg, 1) : null,
-                TotalReviews = totalReviews
-            };
+            return new ReviewSummaryDto(
+                totalReviews,
+                averageRating is double avg ? Math.Round(avg, 1) : null
+            );
         }
 
         private async Task<Pagination<Review>> GetAsync(

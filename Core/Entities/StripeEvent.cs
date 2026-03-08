@@ -8,7 +8,7 @@ namespace Core.Entities
 {
     public class StripeEvent
     {
-        public string EventId { get; set; }
+        public required string EventId { get; set; }
         public DateTime EventProcessedAt { get; set; }
     }
 }

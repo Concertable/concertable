@@ -8,7 +8,7 @@ namespace Infrastructure.ApiModels
 {
     public class GoogleAddressComponent
     {
-        public string Long_Name { get; set; }
-        public List<string> Types { get; set; }
+        public string Long_Name { get; set; } = string.Empty;
+        public List<string> Types { get; set; } = [];
     }
 }

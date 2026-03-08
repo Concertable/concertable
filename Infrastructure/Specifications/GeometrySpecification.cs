@@ -30,7 +30,7 @@ namespace Infrastructure.Specifications
             var center = geometryProvider.CreatePoint(searchParams.Latitude!.Value, searchParams.Longitude!.Value);
             var radiusKm = searchParams.RadiusKm ?? 10;
 
-            return query.Where(locationFilter(center, radiusKm));
+            return query.Where(locationFilter(center!, radiusKm));
         }
     }
 }

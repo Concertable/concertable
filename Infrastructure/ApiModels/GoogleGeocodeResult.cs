@@ -8,6 +8,6 @@ namespace Infrastructure.ApiModels
 {
     public class GoogleGeocodeResult
     {
-        public List<GoogleAddressComponent> Address_Components { get; set; }
+        public List<GoogleAddressComponent> Address_Components { get; set; } = [];
     }
 }

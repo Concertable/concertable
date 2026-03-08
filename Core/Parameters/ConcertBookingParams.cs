@@ -8,7 +8,7 @@ namespace Core.Parameters
 {
     public class ConcertBookingParams
     {
-        public string PaymentMethodId { get; set; }
+        public required string PaymentMethodId { get; set; }
         public int ApplicationId { get; set; }
     }
 }

@@ -13,14 +13,11 @@ namespace Infrastructure.Services
 {
     public class UriService : IUriService
     {
-        private readonly string baseUri;
         private IHttpContextAccessor httpContextAccessor;
-        private readonly IConfiguration configuration;
         private readonly LinkGenerator linkGenerator;
 
         public UriService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
         {
-            this.baseUri = configuration["BaseUri:http"];
             this.httpContextAccessor = httpContextAccessor;
             this.linkGenerator = linkGenerator;
         }

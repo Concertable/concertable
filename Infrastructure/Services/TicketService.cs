@@ -71,7 +71,8 @@ public class TicketService : ITicketService
         var ticketRepository = unitOfWork.GetRepository<Ticket>();
         var concertRepository = unitOfWork.GetRepository<Concert>();
 
-        var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId);
+        var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId)
+            ?? throw new NotFoundException("Concert not found");
 
         using var transaction = await unitOfWork.BeginTransactionAsync();
 
@@ -134,7 +135,7 @@ public class TicketService : ITicketService
         };
     }
 
-    public Task<byte[]> GetQrCodeByIdAsync(int id)
+    public Task<byte[]?> GetQrCodeByIdAsync(int id)
     {
         return ticketRepository.GetQrCodeByIdAsync(id);
     }

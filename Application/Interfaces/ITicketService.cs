@@ -15,6 +15,6 @@ namespace Application.Interfaces
         Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
         Task<IEnumerable<TicketDto>> GetUserUpcomingAsync();
         Task<IEnumerable<TicketDto>> GetUserHistoryAsync();
-        Task<byte[]> GetQrCodeByIdAsync(int id);
+        Task<byte[]?> GetQrCodeByIdAsync(int id);
     }
 }

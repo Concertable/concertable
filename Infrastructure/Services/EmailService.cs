@@ -54,7 +54,7 @@ namespace Infrastructure.Services
 
             await smtp.ConnectAsync(
                 configuration["Email:SmtpServer"],
-                int.Parse(configuration["Email:SmtpPort"]),
+                int.Parse(configuration["Email:SmtpPort"]!),
                 SecureSocketOptions.StartTls
             );
 

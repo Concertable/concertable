@@ -11,12 +11,12 @@ namespace Infrastructure.Repositories
         {
         }
 
-        public async Task<Venue> GetByIdAsync(int id)
+        public new async Task<Venue?> GetByIdAsync(int id)
         {
             return await context.Venues
                 .Where(v => v.Id == id)
                 .Include(v => v.User)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
         }
 
         public async Task<Venue?> GetByUserIdAsync(int id)

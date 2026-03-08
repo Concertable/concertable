@@ -7,6 +7,6 @@ namespace Core.Entities
         public int TicketId { get; set; }
         public int Stars { get; set; }
         public string? Details { get; set; }
-        public Ticket Ticket { get; set; }
+        public Ticket Ticket { get; set; } = null!;
     }
 }

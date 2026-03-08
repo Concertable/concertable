@@ -22,11 +22,10 @@ namespace Application.Mappers
             ListingGenres = dto.Genres.Select(g => new ListingGenre { GenreId = g.Id }).ToList()
         };
 
-        public static ListingWithVenueDto ToWithVenueDto(this Listing listing) => new()
-        {
-            Listing = listing.ToDto(),
-            Venue = listing.Venue.ToDto()
-        };
+        public static ListingWithVenueDto ToWithVenueDto(this Listing listing) => new(
+            listing.ToDto(),
+            listing.Venue.ToDto()
+        );
 
         public static IEnumerable<ListingDto> ToDtos(this IEnumerable<Listing> listings) =>
             listings.Select(l => l.ToDto());

@@ -39,7 +39,8 @@ namespace Infrastructure.Services
 
         public async Task<ArtistDto> GetDetailsByIdAsync(int id)
         {
-            var artist = await artistRepository.GetByIdAsync(id);
+            var artist = await artistRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Artist not found");
             return artist.ToDto();
         }
 

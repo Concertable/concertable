@@ -19,29 +19,13 @@ namespace Application.DTOs
         public DateTime StartDate { get; set; }
         [JsonConverter(typeof(TimeOnlyJsonConverter))]
         public TimeOnly EndTime { get; set; }
-        public IEnumerable<GenreDto> Genres { get; set; }
+        public IEnumerable<GenreDto> Genres { get; set; } = [];
         public double Pay { get; set; }
     }
 
-    public record ListingWithVenueDto
-    {
-        public ListingDto Listing { get; set; }
-        public VenueDto Venue { get; set; }
-    }
+    public record ListingWithVenueDto(ListingDto Listing, VenueDto Venue);
 
-    public record ListingApplicationDto
-    {
-        public int Id { get; set; }
-        public ArtistDto Artist { get; set; }
-        public ListingDto Listing { get; set; }
-        public ApplicationStatus Status { get; set; }
-    }
+    public record ListingApplicationDto(int Id, ArtistDto Artist, ListingDto Listing, ApplicationStatus Status);
 
-    public record ArtistListingApplicationDto
-    {
-        public int Id { get; set; }
-        public ArtistDto Artist { get; set; }
-        public ListingWithVenueDto ListingWithVenue { get; set; }
-        public ApplicationStatus Status { get; set; }
-    }
+    public record ArtistListingApplicationDto(int Id, ArtistDto Artist, ListingWithVenueDto ListingWithVenue, ApplicationStatus Status);
 }

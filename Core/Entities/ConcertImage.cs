@@ -6,8 +6,8 @@ namespace Core.Entities
     {
         public int ConcertId { get; set; }
         public int Type { get; set; }
-        public string Url { get; set; }
-        public Concert Concert { get; set; }
+        public required string Url { get; set; }
+        public Concert? Concert { get; set; }
 
 
     }

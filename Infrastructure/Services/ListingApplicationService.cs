@@ -136,7 +136,8 @@ namespace Infrastructure.Services
 
         public async Task<ListingApplicationDto> GetByIdAsync(int id)
         {
-            var application = await listingApplicationRepository.GetByIdAsync(id);
+            var application = await listingApplicationRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Application not found");
             return application.ToDto();
         }
     }

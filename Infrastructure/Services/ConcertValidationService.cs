@@ -34,12 +34,12 @@ namespace Infrastructure.Services
             return ValidationResponse.Success();
         }
 
-        public async Task<ValidationResponse> CanPostAsync(ConcertDto concertDto)
+        public Task<ValidationResponse> CanPostAsync(ConcertDto concertDto)
         {
             if (concertDto.DatePosted is not null)
-                return ValidationResponse.Failure("You have already posted this concert");
+                return Task.FromResult(ValidationResponse.Failure("You have already posted this concert"));
 
-            return ValidationResponse.Success();
+            return Task.FromResult(ValidationResponse.Success());
         }
     }
 }
