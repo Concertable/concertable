@@ -1,5 +1,4 @@
 using Core.Entities;
-using Core.Entities.Identity;
 using Application.Interfaces;
 using Application.DTOs;
 using Application.Mappers;
@@ -49,7 +48,7 @@ public class VenueService : IVenueService
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request, IFormFile image)
     {
         var venueRepository = unitOfWork.GetRepository<Venue>();
-        var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
+        var userRepository = unitOfWork.GetBaseRepository<User>();
 
         var venue = request.ToEntity();
         var user = currentUser.GetEntity();
@@ -69,7 +68,7 @@ public class VenueService : IVenueService
     public async Task<VenueDto> UpdateAsync(VenueDto venueDto, IFormFile? image)
     {
         var venueRepository = unitOfWork.GetRepository<Venue>();
-        var userRepository = unitOfWork.GetBaseRepository<ApplicationUser>();
+        var userRepository = unitOfWork.GetBaseRepository<User>();
 
         var averageRating = venueDto.Rating;
         var venue = await venueRepository.GetByIdAsync(venueDto.Id);
@@ -120,7 +119,7 @@ public class VenueService : IVenueService
     }
 
 
-    private async Task UpdateUserLocationAsync(ApplicationUser user, double latitude, double longitude)
+    private async Task UpdateUserLocationAsync(User user, double latitude, double longitude)
     {
         var location = await geocodingService.GetLocationAsync(latitude, longitude);
         user.County = location.County;

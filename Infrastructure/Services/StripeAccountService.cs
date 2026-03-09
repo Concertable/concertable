@@ -1,6 +1,5 @@
-﻿using Application.Interfaces;
-using Core.Entities.Identity;
-using Application.Responses;
+using Application.Interfaces;
+using Core.Entities;
 using Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -25,7 +24,7 @@ public class StripeAccountService : IStripeAccountService
         this.baseUri = configuration["BaseUri:http"]!;
     }
 
-    public async Task<string> CreateStripeAccountAsync(ApplicationUser user)
+    public async Task<string> CreateStripeAccountAsync(User user)
     {
         var accountService = new AccountService();
         var accountOptions = new AccountCreateOptions

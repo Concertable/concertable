@@ -17,18 +17,18 @@ public class CurrentUserMiddleware
     {
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            var user = await userManager.GetUserAsync(context.User);
-            if (user is not null)
+            var identityUser = await userManager.GetUserAsync(context.User);
+            if (identityUser is not null)
             {
-                var roles = await userManager.GetRolesAsync(user);
+                var roles = await userManager.GetRolesAsync(identityUser);
                 var role = roles.FirstOrDefault() ?? string.Empty;
 
-                var userDto = user.ToDto();
+                var userDto = identityUser.ToDto();
                 userDto.Role = role;
                 userDto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(role, out var baseUrl) ? baseUrl : "/";
 
                 var currentUser = context.RequestServices.GetRequiredService<CurrentUser>();
-                currentUser.Set(userDto, user);
+                currentUser.Set(userDto, identityUser);
             }
         }
 

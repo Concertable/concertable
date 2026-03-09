@@ -1,6 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
-using Core.Entities.Identity;
+using Core.Entities;
 using Core.Exceptions;
 
 namespace Infrastructure.Services;
@@ -8,7 +8,7 @@ namespace Infrastructure.Services;
 public class CurrentUser : ICurrentUser
 {
     private UserDto? _dto;
-    private ApplicationUser? _entity;
+    private User? _entity;
 
     public int? Id => _dto?.Id;
 
@@ -19,16 +19,14 @@ public class CurrentUser : ICurrentUser
 
     public UserDto? GetOrDefault() => _dto;
 
-    public ApplicationUser GetEntity() =>
+    public User GetEntity() =>
         _entity ?? throw new UnauthorizedException("User not authenticated");
 
     public string GetFirstRole() =>
         Get().Role ?? throw new BadRequestException("User has no roles assigned.");
 
-    /// <summary>
-    /// Called by middleware to populate the current user. Do not call from application code.
-    /// </summary>
-    public void Set(UserDto dto, ApplicationUser entity)
+    /// <summary>Called by middleware. Do not call from application code.</summary>
+    public void Set(UserDto dto, User? entity = null)
     {
         _dto = dto;
         _entity = entity;

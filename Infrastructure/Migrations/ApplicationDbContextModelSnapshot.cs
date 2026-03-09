@@ -69,7 +69,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("ArtistGenres");
                 });
 
-            modelBuilder.Entity("Core.Entities.Event", b =>
+            modelBuilder.Entity("Core.Entities.Concert", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,25 +105,25 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ApplicationId")
                         .IsUnique();
 
-                    b.ToTable("Events");
+                    b.ToTable("Concerts");
                 });
 
-            modelBuilder.Entity("Core.Entities.EventGenre", b =>
+            modelBuilder.Entity("Core.Entities.ConcertGenre", b =>
                 {
-                    b.Property<int>("EventId")
+                    b.Property<int>("ConcertId")
                         .HasColumnType("int");
 
                     b.Property<int>("GenreId")
                         .HasColumnType("int");
 
-                    b.HasKey("EventId", "GenreId");
+                    b.HasKey("ConcertId", "GenreId");
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("EventGenres");
+                    b.ToTable("ConcertGenres");
                 });
 
-            modelBuilder.Entity("Core.Entities.EventImage", b =>
+            modelBuilder.Entity("Core.Entities.ConcertImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -131,7 +131,7 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("EventId")
+                    b.Property<int>("ConcertId")
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
@@ -143,9 +143,9 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("ConcertId");
 
-                    b.ToTable("EventImages");
+                    b.ToTable("ConcertImages");
                 });
 
             modelBuilder.Entity("Core.Entities.Genre", b =>
@@ -530,7 +530,7 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("EventId")
+                    b.Property<int>("ConcertId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("PurchaseDate")
@@ -544,7 +544,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("ConcertId");
 
                     b.HasIndex("UserId");
 
@@ -590,6 +590,46 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ToUserId");
 
                     b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("Core.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("County")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Point>("Location")
+                        .HasColumnType("geography");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Town")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entities.Venue", b =>
@@ -824,45 +864,45 @@ namespace Infrastructure.Migrations
                     b.Navigation("Genre");
                 });
 
-            modelBuilder.Entity("Core.Entities.Event", b =>
+            modelBuilder.Entity("Core.Entities.Concert", b =>
                 {
                     b.HasOne("Core.Entities.ListingApplication", "Application")
                         .WithOne()
-                        .HasForeignKey("Core.Entities.Event", "ApplicationId")
+                        .HasForeignKey("Core.Entities.Concert", "ApplicationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Application");
                 });
 
-            modelBuilder.Entity("Core.Entities.EventGenre", b =>
+            modelBuilder.Entity("Core.Entities.ConcertGenre", b =>
                 {
-                    b.HasOne("Core.Entities.Event", "Event")
-                        .WithMany("EventGenres")
-                        .HasForeignKey("EventId")
+                    b.HasOne("Core.Entities.Concert", "Concert")
+                        .WithMany("ConcertGenres")
+                        .HasForeignKey("ConcertId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Core.Entities.Genre", "Genre")
-                        .WithMany("EventGenres")
+                        .WithMany("ConcertGenres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Event");
+                    b.Navigation("Concert");
 
                     b.Navigation("Genre");
                 });
 
-            modelBuilder.Entity("Core.Entities.EventImage", b =>
+            modelBuilder.Entity("Core.Entities.ConcertImage", b =>
                 {
-                    b.HasOne("Core.Entities.Event", "Event")
+                    b.HasOne("Core.Entities.Concert", "Concert")
                         .WithMany("Images")
-                        .HasForeignKey("EventId")
+                        .HasForeignKey("ConcertId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Event");
+                    b.Navigation("Concert");
                 });
 
             modelBuilder.Entity("Core.Entities.GenrePreference", b =>
@@ -987,9 +1027,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Ticket", b =>
                 {
-                    b.HasOne("Core.Entities.Event", "Event")
+                    b.HasOne("Core.Entities.Concert", "Concert")
                         .WithMany("Tickets")
-                        .HasForeignKey("EventId")
+                        .HasForeignKey("ConcertId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -999,7 +1039,7 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Event");
+                    b.Navigation("Concert");
 
                     b.Navigation("User");
                 });
@@ -1037,7 +1077,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entities.VenueImage", b =>
                 {
                     b.HasOne("Core.Entities.Venue", "Venue")
-                        .WithMany("Images")
+                        .WithMany()
                         .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1118,9 +1158,9 @@ namespace Infrastructure.Migrations
                     b.Navigation("Videos");
                 });
 
-            modelBuilder.Entity("Core.Entities.Event", b =>
+            modelBuilder.Entity("Core.Entities.Concert", b =>
                 {
-                    b.Navigation("EventGenres");
+                    b.Navigation("ConcertGenres");
 
                     b.Navigation("Images");
 
@@ -1131,7 +1171,7 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("ArtistGenres");
 
-                    b.Navigation("EventGenres");
+                    b.Navigation("ConcertGenres");
 
                     b.Navigation("ListingGenres");
                 });
@@ -1162,8 +1202,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Venue", b =>
                 {
-                    b.Navigation("Images");
-
                     b.Navigation("Listings");
                 });
 

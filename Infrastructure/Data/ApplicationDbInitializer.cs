@@ -1,91 +1,130 @@
+using Application.Interfaces;
 using Core.Entities;
-using Core.Entities.Identity;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Data.SeedData;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
-using Org.BouncyCastle.Bcpg;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Data;
 
 public class ApplicationDbInitializer
 {
+    private const string SeedPassword = "Password11!";
 
-    public static async Task InitializeAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public static async Task InitializeAsync(ApplicationDbContext context, IPasswordHasher passwordHasher)
     {
         await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
-        // Users
         if (!context.Users.Any())
         {
             var locations = LocationList.GetLocations();
 
-            var admin = new Admin
+            context.Users.Add(new User
             {
-                UserName = "admin1@test.com",
                 Email = "admin1@test.com",
+                PasswordHash = passwordHasher.Hash(SeedPassword),
+                Role = "Admin",
                 County = "Leicestershire",
                 Town = "Loughborough",
-                EmailConfirmed = true,
                 Location = new Point(-0.5, 51.0) { SRID = 4326 }
-            };
-            await userManager.CreateAsync(admin, "Password11!");
-            await userManager.AddToRoleAsync(admin, "Admin");
+            });
 
-            var firstCustomer = CustomerFaker.GetFaker(1, locations[0]).Generate();
-            firstCustomer.StripeId = "acct_1R71vrGWdDleGW3a";
-            await userManager.CreateAsync(firstCustomer, "Password11!");
-            await userManager.AddToRoleAsync(firstCustomer, "Customer");
+            context.Users.Add(new User
+            {
+                Email = "customer1@test.com",
+                PasswordHash = passwordHasher.Hash(SeedPassword),
+                Role = "Customer",
+                County = locations[0].County,
+                Town = locations[0].Town,
+                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                StripeId = "acct_1R71vrGWdDleGW3a"
+            });
 
             for (int i = 2; i <= 6; i++)
             {
-                var location = locations[i % locations.Count];
-                var customer = CustomerFaker.GetFaker(i, location).Generate();
-                await userManager.CreateAsync(customer, "Password11!");
-                await userManager.AddToRoleAsync(customer, "Customer");
+                var loc = locations[i % locations.Count];
+                context.Users.Add(new User
+                {
+                    Email = $"customer{i}@test.com",
+                    PasswordHash = passwordHasher.Hash(SeedPassword),
+                    Role = "Customer",
+                    County = loc.County,
+                    Town = loc.Town,
+                    Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
+                });
             }
 
-            var firstArtistManager = ArtistManagerFaker.GetFaker(1, locations[0]).Generate();
-            firstArtistManager.StripeId = "acct_1R71yoLnJh1ZDYF4";
-            await userManager.CreateAsync(firstArtistManager, "Password11!");
-            await userManager.AddToRoleAsync(firstArtistManager, "ArtistManager");
-
-            var secondArtistManager = ArtistManagerFaker.GetFaker(2, locations[0]).Generate();
-            secondArtistManager.StripeId = "acct_1R71z6IBXwkKnqix";
-            await userManager.CreateAsync(secondArtistManager, "Password11!");
-            await userManager.AddToRoleAsync(secondArtistManager, "ArtistManager");
-
+            context.Users.Add(new User
+            {
+                Email = "artistmanager1@test.com",
+                PasswordHash = passwordHasher.Hash(SeedPassword),
+                Role = "ArtistManager",
+                County = locations[0].County,
+                Town = locations[0].Town,
+                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                StripeId = "acct_1R71yoLnJh1ZDYF4"
+            });
+            context.Users.Add(new User
+            {
+                Email = "artistmanager2@test.com",
+                PasswordHash = passwordHasher.Hash(SeedPassword),
+                Role = "ArtistManager",
+                County = locations[0].County,
+                Town = locations[0].Town,
+                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                StripeId = "acct_1R71z6IBXwkKnqix"
+            });
             for (int i = 3; i <= 35; i++)
             {
-                var location = locations[i % locations.Count];
-                var artistManager = ArtistManagerFaker.GetFaker(i, location).Generate();
-                await userManager.CreateAsync(artistManager, "Password11!");
-                await userManager.AddToRoleAsync(artistManager, "ArtistManager");
+                var loc = locations[i % locations.Count];
+                context.Users.Add(new User
+                {
+                    Email = $"artistmanager{i}@test.com",
+                    PasswordHash = passwordHasher.Hash(SeedPassword),
+                    Role = "ArtistManager",
+                    County = loc.County,
+                    Town = loc.Town,
+                    Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
+                });
             }
 
-            var firstVenueManager = VenueManagerFaker.GetFaker(1, locations[0]).Generate();
-            firstVenueManager.StripeId = "acct_1R71zKBsonWwC9oM";
-            await userManager.CreateAsync(firstVenueManager, "Password11!");
-            await userManager.AddToRoleAsync(firstVenueManager, "VenueManager");
-
-            var secondVenueManager = VenueManagerFaker.GetFaker(2, locations[0]).Generate();
-            secondVenueManager.StripeId = "acct_1R71zvLnLloN6AmB";
-            await userManager.CreateAsync(secondVenueManager, "Password11!");
-            await userManager.AddToRoleAsync(secondVenueManager, "VenueManager");
-
+            context.Users.Add(new User
+            {
+                Email = "venuemanager1@test.com",
+                PasswordHash = passwordHasher.Hash(SeedPassword),
+                Role = "VenueManager",
+                County = locations[0].County,
+                Town = locations[0].Town,
+                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                StripeId = "acct_1R71zKBsonWwC9oM"
+            });
+            context.Users.Add(new User
+            {
+                Email = "venuemanager2@test.com",
+                PasswordHash = passwordHasher.Hash(SeedPassword),
+                Role = "VenueManager",
+                County = locations[0].County,
+                Town = locations[0].Town,
+                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                StripeId = "acct_1R71zvLnLloN6AmB"
+            });
             for (int i = 3; i <= 35; i++)
             {
-                var location = locations[i % locations.Count];
-                var venueManager = VenueManagerFaker.GetFaker(i, location).Generate();
-                await userManager.CreateAsync(venueManager, "Password11!");
-                await userManager.AddToRoleAsync(venueManager, "VenueManager");
+                var loc = locations[i % locations.Count];
+                context.Users.Add(new User
+                {
+                    Email = $"venuemanager{i}@test.com",
+                    PasswordHash = passwordHasher.Hash(SeedPassword),
+                    Role = "VenueManager",
+                    County = loc.County,
+                    Town = loc.Town,
+                    Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
+                });
             }
+
+            await context.SaveChangesAsync();
         }
 
         //Preferences

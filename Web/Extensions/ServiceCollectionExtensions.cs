@@ -17,9 +17,12 @@ using Infrastructure.Services.Search;
 using Infrastructure.Settings;
 using Infrastructure.Factories;
 using Infrastructure.Specifications;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
@@ -38,8 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
-                opt => opt.UseNetTopologySuite()
-            ));
+                sqlOpt => sqlOpt.UseNetTopologySuite()));
 
         services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
         {
@@ -81,6 +83,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IAppAuthService, AppAuthService>();
+        services.AddSingleton<IAppTokenService, JwtAppTokenService>();
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertService, ConcertService>();
@@ -104,6 +108,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUriService, UriService>();
         services.AddScoped<CurrentUser>();
         services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<CurrentUser>());
+        services.AddScoped<CurrentAppUser>();
+        services.AddScoped<ICurrentAppUser>(sp => sp.GetRequiredService<CurrentAppUser>());
         services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
         services.AddScoped<ITicketValidationService, TicketValidationService>();
         services.AddScoped<IGeometryProvider, GeometryProvider>();
@@ -111,6 +117,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
         services.AddScoped<IConcertValidationService, ConcertValidationService>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 
         return services;
     }
@@ -181,9 +188,29 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAuth(this IServiceCollection services)
+    public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddAuthentication();
+        services.Configure<AppAuthSettings>(configuration.GetSection("AppAuth"));
+
+        var signingKeyBase64 = configuration["AppAuth:JwtSigningKeyBase64"];
+        var keyBytes = !string.IsNullOrEmpty(signingKeyBase64)
+            ? Convert.FromBase64String(signingKeyBase64)
+            : Encoding.UTF8.GetBytes("ConcertableDevSigningKeyAtLeast32Chars!");
+        var signingKey = new SymmetricSecurityKey(keyBytes);
+
+        services.AddAuthentication()
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+                    ValidIssuer = configuration["AppAuth:Issuer"] ?? "Concertable",
+                    ValidAudience = configuration["AppAuth:Audience"] ?? "Concertable",
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
         services.ConfigureApplicationCookie(config =>
         {
             config.Cookie.Name = "Identity.Cookie";

@@ -48,7 +48,7 @@ services.AddInfrastructure(builder.Configuration);
 services.AddServices();
 services.AddRepositories();
 services.AddSearch();
-services.AddAuth();
+services.AddAuth(builder.Configuration);
 services.AddValidation();
 
 builder.Services.AddExceptionHandler<Infrastructure.GlobalExceptionHandler>();
@@ -60,6 +60,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<CurrentUserMiddleware>();
+app.UseMiddleware<CurrentAppUserMiddleware>();
 
 app.MapControllers();
 app.MapGroup("/api").MapIdentityApi<ApplicationUser>();

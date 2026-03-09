@@ -1,16 +1,19 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Requests;
+using Application.Responses;
+using Core.Entities;
 
 namespace Application.Interfaces;
 
 public interface IAuthService
 {
-    public Task Register(RegisterRequest request);
-    public Task<UserDto> Login(LoginRequest request);
-    public Task Logout();
-    Task<bool> ConfirmEmailAsync(string userId, string token);
-    Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request);
-    Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request);
-    Task RequestEmailChangeAsync(string newEmail);
-    Task<bool> ConfirmEmailChangeAsync(string token, string newEmail);
+    Task Register(RegisterRequest request);
+    Task<LoginResponse> Login(LoginRequest request);
+    Task Logout();
+
+    /// <summary>Gets user DTO by id (e.g. for current-request resolution). Returns null if not found.</summary>
+    Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Gets user entity by id (e.g. for services that need StripeId, etc). Returns null if not found.</summary>
+    Task<User?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default);
 }

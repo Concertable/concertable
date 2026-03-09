@@ -2,7 +2,7 @@ using Application.DTOs;
 using Application.Interfaces;
 using Application.Mappers;
 using Common.Helpers;
-using Core.Entities.Identity;
+using Core.Entities;
 
 namespace Infrastructure.Services;
 
@@ -27,7 +27,7 @@ public class UserService : IUserService
         return await userRepsitory.GetIdByApplicationIdAsync(applicationId);
     }
 
-    public async Task<ApplicationUser> GetByApplicationIdAsync(int applicationId)
+    public async Task<User> GetByApplicationIdAsync(int applicationId)
     {
         return await userRepsitory.GetByApplicationIdAsync(applicationId);
     }
@@ -37,7 +37,7 @@ public class UserService : IUserService
         return await userRepsitory.GetIdByConcertIdAsync(concertId);
     }
 
-    public async Task<ApplicationUser> GetByConcertIdAsync(int concertId)
+    public async Task<User> GetByConcertIdAsync(int concertId)
     {
         return await userRepsitory.GetByConcertIdAsync(concertId);
     }

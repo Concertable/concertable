@@ -1,5 +1,3 @@
-using Core.Entities.Identity;
-
 namespace Core.Entities;
 
 public class Message : BaseEntity
@@ -11,6 +9,6 @@ public class Message : BaseEntity
     public int? ActionId { get; set; }
     public DateTime SentDate { get; set; }
     public bool Read { get; set; }
-    public ApplicationUser FromUser { get; set; } = null!;
-    public ApplicationUser ToUser { get; set; } = null!;
+    public User FromUser { get; set; } = null!;
+    public User ToUser { get; set; } = null!;
 }

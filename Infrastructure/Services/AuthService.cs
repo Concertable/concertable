@@ -1,194 +1,105 @@
-using Infrastructure.Repositories;
-using Core.Exceptions;
-using Infrastructure.Data.Identity;
-using Microsoft.AspNetCore.Identity;
-using Application.Interfaces;
-using Core.Entities.Identity;
 using Application.DTOs;
+using Application.Interfaces;
 using Application.Mappers;
 using Application.Requests;
 using Application.Responses;
+using Core.Entities;
+using Core.Exceptions;
 using Infrastructure.Constants;
-using static QRCoder.PayloadGenerator;
+using Infrastructure.Data.Identity;
+using Infrastructure.Settings;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly IStripeAccountService stripeAccountService;
-    private readonly IEmailService emailService;
-    private readonly IUriService uriService;
-    private readonly IPreferenceService preferenceService;
-    private readonly ICurrentUser currentUser;
-    private readonly UserManager<ApplicationUser> userManager;
-    private readonly SignInManager<ApplicationUser> signInManager;
+    private readonly ApplicationDbContext _context;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly ITokenService _tokenService;
+    private readonly AuthSettings _authSettings;
 
     public AuthService(
-        IStripeAccountService stripeAccountService,
-        IEmailService emailService,
-        IUriService uriService,
-        IPreferenceService preferenceService,
-        ICurrentUser currentUser,
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        ApplicationDbContext context,
+        IPasswordHasher passwordHasher,
+        ITokenService tokenService,
+        IOptions<AuthSettings> authSettings)
     {
-        this.stripeAccountService = stripeAccountService;
-        this.emailService = emailService;
-        this.uriService = uriService;
-        this.preferenceService = preferenceService;
-        this.currentUser = currentUser;
-        this.userManager = userManager;
-        this.signInManager = signInManager;
+        _context = context;
+        _passwordHasher = passwordHasher;
+        _tokenService = tokenService;
+        _authSettings = authSettings.Value;
     }
 
     public async Task Register(RegisterRequest request)
     {
         var reasons = new List<string>();
 
-        if (await CheckEmailExistsAsync(request.Email))
-            reasons.Add("Email already exists");
-        if (request.Role.Equals("Admin"))
+        if (request.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
             reasons.Add("You cannot make yourself an admin");
 
-        ApplicationUser? user = request.Role switch
-        {
-            "Customer" => new Customer { UserName = request.Email, Email = request.Email },
-            "VenueManager" => new VenueManager { UserName = request.Email, Email = request.Email },
-            "ArtistManager" => new ArtistManager { UserName = request.Email, Email = request.Email },
-            _ => null
-        };
-
-        if (user is null)
+        var validRoles = new[] { "Customer", "VenueManager", "ArtistManager" };
+        if (!validRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
             reasons.Add("Invalid role specified");
 
-        if (reasons.Any())
+        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            reasons.Add("Email already exists");
+
+        if (reasons.Count != 0)
             throw new BadRequestException(reasons);
 
-        var result = await userManager.CreateAsync(user!, request.Password);
-
-        if (!result.Succeeded)
+        var user = new User
         {
-            reasons.AddRange(result.Errors.Select(e => e.Description));
-            throw new BadRequestException(reasons);
-        }
-
-        await userManager.AddToRoleAsync(user!, request.Role);
-        await stripeAccountService.CreateStripeAccountAsync(user!);
-
-        var createPreferenceRequest = new CreatePreferenceRequest
-        {
-            RadiusKm = 10,
-            Genres = Enumerable.Empty<GenreDto>()
+            Email = request.Email,
+            PasswordHash = _passwordHasher.Hash(request.Password),
+            Role = request.Role
         };
-        await preferenceService.CreateAsync(createPreferenceRequest, user!.Id);
 
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(user!);
-        var uri = uriService.GetEmailConfirmationUri(user!.Id, token);
-
-        await emailService.SendEmailAsync(user!.Email!, "Confirm Your Email",
-            $"Please confirm your email by clicking <a href='{uri}'>here</a>");
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task Logout()
+    public async Task<LoginResponse> Login(LoginRequest request)
     {
-        await signInManager.SignOutAsync();
-    }
-
-    public async Task<bool> CheckEmailExistsAsync(string email)
-    {
-        return await userManager.FindByEmailAsync(email) != null;
-    }
-
-    public async Task<UserDto> Login(LoginRequest request)
-    {
-        var user = await userManager.FindByEmailAsync(request.Email);
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == request.Email);
         if (user is null)
             throw new BadRequestException("Invalid email or password.");
 
-        if (!await userManager.IsEmailConfirmedAsync(user))
-            throw new BadRequestException("Please confirm your email before logging in.");
+        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
+            throw new BadRequestException("Invalid email or password.");
 
-        var result = await signInManager.PasswordSignInAsync(
-            request.Email,
-            request.Password,
-            request.RememberMe,
-            true);
+        var dto = user.ToDto();
+        dto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var baseUrl) ? baseUrl : "/";
 
-        if (!result.Succeeded)
-            throw new BadRequestException("Invalid email or password");
+        var accessToken = _tokenService.CreateToken(user.Id, user.Email, user.Role);
+        var expiresInSeconds = _authSettings.AccessTokenExpirationMinutes * 60;
 
-        var role = (await userManager.GetRolesAsync(user)).FirstOrDefault();
-
-        if (role is null)
-            throw new BadRequestException("User has no role");
-
-        var userDto = user.ToDto();
-        userDto.Role = role;
-        userDto.BaseUrl = RoleRoutes.BaseUrls[role];
-
-        return userDto;
+        return new LoginResponse(dto, accessToken, expiresInSeconds);
     }
 
-    public async Task<bool> ConfirmEmailAsync(string userId, string token)
+    public Task Logout()
     {
-        var user = await userManager.FindByIdAsync(userId);
+        return Task.CompletedTask;
+    }
+
+    public async Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         if (user is null)
-            throw new NotFoundException("User not found");
-
-        var result = await userManager.ConfirmEmailAsync(user, token);
-        return result.Succeeded;
+            return null;
+        var dto = user.ToDto();
+        dto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var baseUrl) ? baseUrl : "/";
+        return dto;
     }
 
-    public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request)
+    public async Task<User?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default)
     {
-        var user = await userManager.FindByEmailAsync(request.Email);
-
-        if (user is not null)
-        {
-            var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = uriService.GetPasswordResetUri(user.Id, token);
-
-            await emailService.SendEmailAsync(user.Email!, "Reset your password",
-                $"Please reset your password by clicking <a href='{resetLink}'>here</a>");
-        }
-        return new ForgotPasswordResponse { Message = "If this email is associated with an account, a password reset link has been sent" };
-    }
-
-    public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request)
-    {
-        var user = await userManager.FindByIdAsync(request.UserId.ToString())
-            ?? throw new NotFoundException("User not found");
-        var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
-
-        if (!result.Succeeded)
-            throw new BadRequestException("Password reset failed.");
-
-        return new ResetPasswordResponse { Message = "Password has been reset successfully." };
-    }
-
-    public async Task RequestEmailChangeAsync(string newEmail)
-    {
-        var user = currentUser.GetEntity();
-
-        if (await userManager.FindByEmailAsync(newEmail) is not null)
-            throw new BadRequestException("Email already in use");
-
-        var token = await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
-        var uri = uriService.GetEmailChangeConfirmationUri(user.Id, token, newEmail);
-
-        await emailService.SendEmailAsync(user.Email!, "Confirm your new email",
-            $"Please confirm your email change by clicking <a href='{uri}'>here</a>");
-    }
-
-    public async Task<bool> ConfirmEmailChangeAsync(string token, string newEmail)
-    {
-        var user = currentUser.GetEntity();
-        var result = await userManager.ChangeEmailAsync(user, newEmail, token);
-
-        if (!result.Succeeded)
-            throw new BadRequestException("Failed to change email");
-
-        await userManager.SetUserNameAsync(user, newEmail);
-        return true;
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     }
 }
