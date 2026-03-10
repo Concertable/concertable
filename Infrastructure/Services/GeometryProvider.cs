@@ -23,4 +23,9 @@ public class GeometryProvider : IGeometryProvider
             ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
             : null;
     }
+
+    public Point CreatePoint(double latitude, double longitude)
+    {
+        return geometryFactory.CreatePoint(new Coordinate(longitude, latitude));
+    }
 }

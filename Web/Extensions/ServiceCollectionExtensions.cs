@@ -95,7 +95,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<IReviewService, ReviewService>();
-        services.AddScoped<ILocationService, LocationService>();
+        services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfService, PdfService>();
         services.AddScoped<IQrCodeService, QrCodeService>();
@@ -107,7 +107,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<CurrentUser>());
         services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
         services.AddScoped<ITicketValidationService, TicketValidationService>();
-        services.AddScoped<IGeometryProvider, GeometryProvider>();
+        services.AddSingleton<IGeometryProvider, GeometryProvider>();
         services.AddScoped<IStripeValidationService, StripeValidationService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();

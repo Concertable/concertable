@@ -4,7 +4,7 @@ using Application.DTOs;
 using Application.Mappers;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
-using Infrastructure.Helpers;
+using Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
@@ -37,9 +37,9 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
         else
             query = query.OrderBy(e => e.Application.Listing.StartDate);
 
-        if (GeoHelper.HasValidCoordinates(concertParams))
+        if (concertParams.HasValidCoordinates())
         {
-            var center = geometryService.CreatePoint(concertParams.Latitude!.Value, concertParams.Longitude!.Value)!;
+            var center = geometryService.CreatePoint(concertParams.Latitude!.Value, concertParams.Longitude!.Value);
             var radiusKm = concertParams.RadiusKm ?? 10;
             query = query.Where(e =>
                 e.Application.Listing.Venue.User.Location != null &&

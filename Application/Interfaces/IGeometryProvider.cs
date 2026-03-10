@@ -10,4 +10,5 @@ namespace Application.Interfaces;
 public interface IGeometryProvider
 {
     Point? CreatePoint(double? latitude, double? longitude);
+    Point CreatePoint(double latitude, double longitude);
 }

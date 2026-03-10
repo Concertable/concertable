@@ -20,7 +20,7 @@ public class ConcertService : IConcertService
     private readonly IReviewService reviewService;
     private readonly IPreferenceService preferenceService;
     private readonly IListingRepository listingRepository;
-    private readonly ILocationService locationService;
+    private readonly IGeometryCalculator geometryCalculator;
     private readonly IListingApplicationRepository listingApplicationRepository;
     private readonly IGenreRepository genreRepository;
     private readonly TimeProvider timeProvider;
@@ -35,7 +35,7 @@ public class ConcertService : IConcertService
         IEmailService emailService,
         IReviewService reviewService,
         IPreferenceService preferenceService,
-        ILocationService locationService,
+        IGeometryCalculator geometryCalculator,
         IListingRepository listingRepository,
         IListingApplicationRepository listingApplicationRepository,
         IGenreRepository genreRepository,
@@ -52,7 +52,7 @@ public class ConcertService : IConcertService
         this.listingApplicationRepository = listingApplicationRepository;
         this.preferenceService = preferenceService;
         this.listingRepository = listingRepository;
-        this.locationService = locationService;
+        this.geometryCalculator = geometryCalculator;
         this.genreRepository = genreRepository;
         this.timeProvider = timeProvider;
     }
@@ -265,9 +265,12 @@ public class ConcertService : IConcertService
         var userIdsToNotify = preferences
             .Where(preference =>
             {
-                var inRange = locationService.IsWithinRadius(
-                    preference.User.Latitude,
-                    preference.User.Longitude,
+                if (preference.User.Latitude is null || preference.User.Longitude is null)
+                    return false;
+
+                var inRange = geometryCalculator.IsWithinRadius(
+                    preference.User.Latitude.Value,
+                    preference.User.Longitude.Value,
                     location.Y,
                     location.X,
                     preference.RadiusKm);

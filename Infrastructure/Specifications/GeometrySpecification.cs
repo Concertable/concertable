@@ -1,8 +1,8 @@
 using Application.Interfaces;
 using Application.Interfaces.Search;
+using Core.Extensions;
 using Core.Interfaces;
 using Core.Parameters;
-using Infrastructure.Helpers;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
@@ -24,12 +24,12 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
 
     public IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams)
     {
-        if (!GeoHelper.HasValidCoordinates(searchParams))
+        if (!searchParams.HasValidCoordinates())
             return query;
 
         var center = geometryProvider.CreatePoint(searchParams.Latitude!.Value, searchParams.Longitude!.Value);
         var radiusKm = searchParams.RadiusKm ?? 10;
 
-        return query.Where(locationFilter(center!, radiusKm));
+        return query.Where(locationFilter(center, radiusKm));
     }
 }
