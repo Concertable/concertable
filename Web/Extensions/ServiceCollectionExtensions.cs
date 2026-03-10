@@ -66,10 +66,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddHostedService<QueueHostedService>();
 
-        services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
+        services.AddHttpClient("Geocoding", client =>
         {
             client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
         });
+        services.AddScoped<IGeocodingService, GeocodingService>();
 
         services.AddSignalR();
 

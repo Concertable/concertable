@@ -15,17 +15,18 @@ namespace Infrastructure.Services;
 
 public class GeocodingService : IGeocodingService
 {
-    private readonly HttpClient httpClient;
+    private readonly IHttpClientFactory httpClientFactory;
     private readonly string apiKey;
 
-    public GeocodingService(HttpClient httpClient, IConfiguration configuration)
+    public GeocodingService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
-        this.httpClient = httpClient;
+        this.httpClientFactory = httpClientFactory;
         apiKey = configuration["GoogleApiKey"]!;
     }
 
     public async Task<LocationDto> GetLocationAsync(double latitude, double longitude)
     {
+        var httpClient = httpClientFactory.CreateClient("Geocoding");
         var latLng = $"{latitude},{longitude}";
         var query = $"latlng={Uri.EscapeDataString(latLng)}&key={Uri.EscapeDataString(apiKey)}"; //Adds latlong to url safely
         Uri requestUri = new Uri(httpClient.BaseAddress!, $"json?{query}");
@@ -64,6 +65,6 @@ public class GeocodingService : IGeocodingService
 
         if (county == null || town == null) throw new BadRequestException("County or Town not found");
 
-        return new LocationDto(county!, town!);
+        return new LocationDto(county, town);
     }
 }
