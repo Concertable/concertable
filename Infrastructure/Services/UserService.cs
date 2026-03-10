@@ -1,7 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Mappers;
-using Common.Helpers;
 using Core.Entities.Identity;
 
 namespace Infrastructure.Services;
@@ -11,15 +10,18 @@ public class UserService : IUserService
     private readonly IUserRepository userRepsitory;
     private readonly ICurrentUser currentUser;
     private readonly IGeocodingService geocodingService;
+    private readonly IGeometryProvider geometryProvider;
 
     public UserService(
         IUserRepository userRepsitory,
         ICurrentUser currentUser,
-        IGeocodingService geocodingService)
+        IGeocodingService geocodingService,
+        IGeometryProvider geometryProvider)
     {
         this.userRepsitory = userRepsitory;
         this.currentUser = currentUser;
         this.geocodingService = geocodingService;
+        this.geometryProvider = geometryProvider;
     }
 
     public async Task<int> GetIdByApplicationIdAsync(int applicationId)
@@ -46,7 +48,7 @@ public class UserService : IUserService
     {
         var user = currentUser.GetEntity();
 
-        user.Location = LocationHelper.CreatePoint(latitude, longitude);
+        user.Location = geometryProvider.CreatePoint(latitude, longitude);
 
         var locationDto = await geocodingService.GetLocationAsync(latitude, longitude);
 
