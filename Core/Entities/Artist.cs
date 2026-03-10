@@ -10,7 +10,7 @@ public class Artist : BaseEntity, IHasName, IHasLocation
     public required string Name { get; set; }
     public required string About { get; set; }
     public required string ImageUrl { get; set; }
-    public User User { get; set; } = null!;
+    public ArtistManager User { get; set; } = null!;
     public Point? Location => User.Location;
     public ICollection<ArtistGenre> ArtistGenres { get; set; } = new List<ArtistGenre>();
     public ICollection<SocialMedia> SocialMedias { get; } = new List<SocialMedia>();

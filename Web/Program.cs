@@ -1,8 +1,6 @@
-using Core.Entities.Identity;
+using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Data.Identity;
-using Infrastructure.Services;
-using Microsoft.AspNetCore.Identity;
 using Web.Extensions;
 using Web.Hubs;
 using Web.Middleware;
@@ -60,10 +58,8 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<CurrentUserMiddleware>();
-app.UseMiddleware<CurrentAppUserMiddleware>();
 
 app.MapControllers();
-app.MapGroup("/api").MapIdentityApi<ApplicationUser>();
 app.MapHub<PaymentHub>("/hub/payments");
 app.MapHub<ConcertHub>("/hub/concerts");
 
@@ -92,8 +88,8 @@ try
     using var scope = app.Services.CreateScope();
     var serviceProvider = scope.ServiceProvider;
     var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    await ApplicationDbInitializer.InitializeAsync(context, userManager);
+    var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
+    await ApplicationDbInitializer.InitializeAsync(context, passwordHasher);
 }
 catch (Exception)
 {

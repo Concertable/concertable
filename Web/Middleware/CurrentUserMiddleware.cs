@@ -1,9 +1,5 @@
-using Application.DTOs;
-using Application.Mappers;
-using Core.Entities.Identity;
-using Infrastructure.Constants;
+using Application.Interfaces;
 using Infrastructure.Services;
-using Microsoft.AspNetCore.Identity;
 
 namespace Web.Middleware;
 
@@ -13,22 +9,17 @@ public class CurrentUserMiddleware
 
     public CurrentUserMiddleware(RequestDelegate next) => _next = next;
 
-    public async Task InvokeAsync(HttpContext context, UserManager<ApplicationUser> userManager)
+    public async Task InvokeAsync(HttpContext context, IAccountService accountService, CurrentUser currentUser)
     {
-        if (context.User.Identity?.IsAuthenticated == true)
+        if (context.User.Identity?.IsAuthenticated == true &&
+            context.User.FindFirst("sub") is { } subClaim &&
+            int.TryParse(subClaim.Value, out var userId))
         {
-            var identityUser = await userManager.GetUserAsync(context.User);
-            if (identityUser is not null)
+            var dto = await accountService.GetUserByIdAsync(userId, context.RequestAborted);
+            if (dto is not null)
             {
-                var roles = await userManager.GetRolesAsync(identityUser);
-                var role = roles.FirstOrDefault() ?? string.Empty;
-
-                var userDto = identityUser.ToDto();
-                userDto.Role = role;
-                userDto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(role, out var baseUrl) ? baseUrl : "/";
-
-                var currentUser = context.RequestServices.GetRequiredService<CurrentUser>();
-                currentUser.Set(userDto, identityUser);
+                var entity = await accountService.GetUserEntityByIdAsync(userId, context.RequestAborted);
+                currentUser.Set(dto, entity);
             }
         }
 

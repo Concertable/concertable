@@ -6,7 +6,6 @@ using FluentValidation.AspNetCore;
 using Application.Interfaces.Search;
 using Application.Serializers;
 using Core.Entities;
-using Core.Entities.Identity;
 using Infrastructure;
 using Infrastructure.Background;
 using Infrastructure.Data.Identity;
@@ -18,15 +17,12 @@ using Infrastructure.Settings;
 using Infrastructure.Factories;
 using Infrastructure.Specifications;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
-using System.Text.Json.Serialization;
 using Web.Authorization;
 using Application.DTOs;
 
@@ -42,14 +38,6 @@ public static class ServiceCollectionExtensions
             opt.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
                 sqlOpt => sqlOpt.UseNetTopologySuite()));
-
-        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true;
-            options.SignIn.RequireConfirmedEmail = true;
-        })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddApiEndpoints();
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
@@ -82,9 +70,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IAppAuthService, AppAuthService>();
-        services.AddSingleton<IAppTokenService, JwtAppTokenService>();
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertService, ConcertService>();
@@ -106,10 +91,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeAccountService, StripeAccountService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddScoped<IUriService, UriService>();
-        services.AddScoped<CurrentUser>();
-        services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<CurrentUser>());
-        services.AddScoped<CurrentAppUser>();
-        services.AddScoped<ICurrentAppUser>(sp => sp.GetRequiredService<CurrentAppUser>());
         services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
         services.AddScoped<ITicketValidationService, TicketValidationService>();
         services.AddScoped<IGeometryProvider, GeometryProvider>();
@@ -117,7 +98,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
         services.AddScoped<IConcertValidationService, ConcertValidationService>();
-        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 
         return services;
     }
@@ -190,9 +170,18 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<AppAuthSettings>(configuration.GetSection("AppAuth"));
+        // Settings
+        services.Configure<AuthSettings>(configuration.GetSection("Auth"));
 
-        var signingKeyBase64 = configuration["AppAuth:JwtSigningKeyBase64"];
+        // Services
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddSingleton<ITokenService, JwtTokenService>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddScoped<CurrentUser>();
+        services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<CurrentUser>());
+
+        // JWT Bearer
+        var signingKeyBase64 = configuration["Auth:JwtSigningKeyBase64"];
         var keyBytes = !string.IsNullOrEmpty(signingKeyBase64)
             ? Convert.FromBase64String(signingKeyBase64)
             : Encoding.UTF8.GetBytes("ConcertableDevSigningKeyAtLeast32Chars!");
@@ -205,29 +194,12 @@ public static class ServiceCollectionExtensions
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = signingKey,
-                    ValidIssuer = configuration["AppAuth:Issuer"] ?? "Concertable",
-                    ValidAudience = configuration["AppAuth:Audience"] ?? "Concertable",
+                    ValidIssuer = configuration["Auth:Issuer"] ?? "Concertable",
+                    ValidAudience = configuration["Auth:Audience"] ?? "Concertable",
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
             });
-        services.ConfigureApplicationCookie(config =>
-        {
-            config.Cookie.Name = "Identity.Cookie";
-            config.Cookie.SameSite = SameSiteMode.None;
-            config.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            config.ExpireTimeSpan = TimeSpan.FromDays(7);
-            config.Events.OnRedirectToAccessDenied = context =>
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                return Task.CompletedTask;
-            };
-            config.Events.OnRedirectToLogin = context =>
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return Task.CompletedTask;
-            };
-        });
 
         services.AddAuthorization()
             .AddSingleton<IAuthorizationHandler, AdminAuthorizeHandler>();

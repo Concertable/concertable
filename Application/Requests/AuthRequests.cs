@@ -31,3 +31,8 @@ public record ChangeEmailRequest
 {
     public required string NewEmail { get; set; }
 }
+
+public record RefreshTokenRequest
+{
+    public required string RefreshToken { get; set; }
+}

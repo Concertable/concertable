@@ -28,6 +28,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Preference> Preferences { get; set; }
     public DbSet<GenrePreference> GenrePreferences { get; set; }
     public DbSet<StripeEvent> StripeEvents { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +37,11 @@ public class ApplicationDbContext : DbContext
             e.ToTable("Users");
             e.Property(u => u.Location).HasColumnType("geography");
             e.HasIndex(u => u.Email).IsUnique();
+            e.HasDiscriminator(u => u.Role)
+                .HasValue<User>("Admin")
+                .HasValue<VenueManager>("VenueManager")
+                .HasValue<ArtistManager>("ArtistManager")
+                .HasValue<Customer>("Customer");
         });
 
         modelBuilder.Entity<StripeEvent>()
@@ -131,16 +137,22 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey<Preference>(p => p.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<Artist>()
-            .HasOne(a => a.User)
-            .WithOne(u => u.Artist)
+        modelBuilder.Entity<ArtistManager>()
+            .HasOne(am => am.Artist)
+            .WithOne(a => a.User)
             .HasForeignKey<Artist>(a => a.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<Venue>()
-            .HasOne(v => v.User)
-            .WithOne(u => u.Venue)
+        modelBuilder.Entity<VenueManager>()
+            .HasOne(vm => vm.Venue)
+            .WithOne(v => v.User)
             .HasForeignKey<Venue>(v => v.UserId)
             .IsRequired();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -5,9 +5,6 @@ using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-using Core.Entities.Identity;
-
 
 namespace Infrastructure.Services;
 

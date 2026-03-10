@@ -18,8 +18,21 @@ public class User : BaseEntity
 
     public ICollection<Message> SentMessages { get; set; } = new List<Message>();
     public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
-    public Artist? Artist { get; set; }
-    public Venue? Venue { get; set; }
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     public Preference? Preference { get; set; }
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
+}
+
+public class VenueManager : User
+{
+    public Venue? Venue { get; set; }
+}
+
+public class ArtistManager : User
+{
+    public Artist? Artist { get; set; }
+}
+
+public class Customer : User
+{
 }

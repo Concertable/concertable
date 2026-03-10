@@ -2,5 +2,6 @@ namespace Application.Interfaces;
 
 public interface ITokenService
 {
-    string CreateToken(int userId, string email, string role);
+    string CreateAccessToken(int userId, string email, string role);
+    string CreateRefreshToken();
 }

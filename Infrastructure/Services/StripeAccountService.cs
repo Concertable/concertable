@@ -26,7 +26,7 @@ public class StripeAccountService : IStripeAccountService
 
     public async Task<string> CreateStripeAccountAsync(User user)
     {
-        var accountService = new AccountService();
+        var accountService = new Stripe.AccountService();
         var accountOptions = new AccountCreateOptions
         {
             Type = "express", // Simplest form of account creation, where delegate the KYC to stripe entirely
@@ -66,7 +66,7 @@ public class StripeAccountService : IStripeAccountService
 
     public async Task<bool> IsUserVerifiedAsync(string stripeId)
     {
-        var service = new AccountService();
+        var service = new Stripe.AccountService();
         var account = await service.GetAsync(stripeId);
         return account.PayoutsEnabled && account.ChargesEnabled;
     }
