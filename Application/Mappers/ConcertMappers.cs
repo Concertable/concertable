@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Core.Entities;
+using Core.Exceptions;
 
 namespace Application.Mappers;
 
@@ -30,8 +31,8 @@ public static class ConcertMappers
         EndDate = concert.Application.Listing.EndDate,
         County = concert.Application.Listing.Venue.User.County ?? string.Empty,
         Town = concert.Application.Listing.Venue.User.Town ?? string.Empty,
-        Latitude = concert.Application.Listing.Venue.User.Location?.Y,
-        Longitude = concert.Application.Listing.Venue.User.Location?.X,
+        Latitude = concert.Application.Listing.Venue.User.Location?.Y ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
+        Longitude = concert.Application.Listing.Venue.User.Location?.X ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
         DatePosted = concert.DatePosted
     };
 

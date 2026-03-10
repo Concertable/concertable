@@ -20,7 +20,7 @@ public record ConcertDto : IDetails
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
 
-public record ConcertHeaderDto : IHeader, IAddressHeader
+public record ConcertHeaderDto : IHeader, IAddress, ILatLong
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -28,8 +28,8 @@ public record ConcertHeaderDto : IHeader, IAddressHeader
     public double? Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
-    public double? Latitude { get; set; }
-    public double? Longitude { get; set; }
+    public required double Latitude { get; set; }
+    public required double Longitude { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime? DatePosted { get; set; }

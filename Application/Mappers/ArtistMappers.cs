@@ -1,6 +1,7 @@
 using Application.DTOs;
 using Application.Requests;
 using Core.Entities;
+using Core.Exceptions;
 
 namespace Application.Mappers;
 
@@ -16,8 +17,8 @@ public static class ArtistMappers
         County = artist.User.County ?? string.Empty,
         Town = artist.User.Town ?? string.Empty,
         Email = artist.User.Email ?? string.Empty,
-        Latitude = artist.User.Location?.Y,
-        Longitude = artist.User.Location?.X
+        Latitude = artist.User.Location?.Y ?? throw new InternalServerException($"Artist {artist.Id} user has no location set."),
+        Longitude = artist.User.Location?.X ?? throw new InternalServerException($"Artist {artist.Id} user has no location set.")
     };
 
     public static ArtistHeaderDto ToHeaderDto(this Artist artist) => new()
@@ -27,8 +28,8 @@ public static class ArtistMappers
         ImageUrl = artist.ImageUrl,
         County = artist.User.County ?? string.Empty,
         Town = artist.User.Town ?? string.Empty,
-        Latitude = artist.User.Location?.Y,
-        Longitude = artist.User.Location?.X
+        Latitude = artist.User.Location?.Y ?? throw new InternalServerException($"Artist {artist.Id} user has no location set."),
+        Longitude = artist.User.Location?.X ?? throw new InternalServerException($"Artist {artist.Id} user has no location set.")
     };
 
     public static ArtistHeaderDto ToHeaderDto(this ArtistDto artistDto) => new()
