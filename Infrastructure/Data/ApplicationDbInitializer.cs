@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Core.Entities;
+using Core.Enums;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Data.SeedData;
@@ -25,7 +26,7 @@ public class ApplicationDbInitializer
             {
                 Email = "admin1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
-                Role = "Admin",
+                Role = Role.Admin,
                 County = "Leicestershire",
                 Town = "Loughborough",
                 Location = new Point(-0.5, 51.0) { SRID = 4326 }
@@ -35,7 +36,7 @@ public class ApplicationDbInitializer
             {
                 Email = "customer1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
-                Role = "Customer",
+                Role = Role.Customer,
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
@@ -49,7 +50,7 @@ public class ApplicationDbInitializer
                 {
                     Email = $"customer{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
-                    Role = "Customer",
+                    Role = Role.Customer,
                     County = loc.County,
                     Town = loc.Town,
                     Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
@@ -60,7 +61,7 @@ public class ApplicationDbInitializer
             {
                 Email = "artistmanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
-                Role = "ArtistManager",
+                Role = Role.ArtistManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
@@ -70,7 +71,7 @@ public class ApplicationDbInitializer
             {
                 Email = "artistmanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
-                Role = "ArtistManager",
+                Role = Role.ArtistManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
@@ -83,7 +84,7 @@ public class ApplicationDbInitializer
                 {
                     Email = $"artistmanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
-                    Role = "ArtistManager",
+                    Role = Role.ArtistManager,
                     County = loc.County,
                     Town = loc.Town,
                     Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
@@ -94,7 +95,7 @@ public class ApplicationDbInitializer
             {
                 Email = "venuemanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
-                Role = "VenueManager",
+                Role = Role.VenueManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
@@ -104,7 +105,7 @@ public class ApplicationDbInitializer
             {
                 Email = "venuemanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
-                Role = "VenueManager",
+                Role = Role.VenueManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
@@ -117,7 +118,7 @@ public class ApplicationDbInitializer
                 {
                     Email = $"venuemanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
-                    Role = "VenueManager",
+                    Role = Role.VenueManager,
                     County = loc.County,
                     Town = loc.Town,
                     Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }

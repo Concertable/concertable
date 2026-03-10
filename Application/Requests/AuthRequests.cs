@@ -1,3 +1,5 @@
+using Core.Enums;
+
 namespace Application.Requests;
 
 public record LoginRequest
@@ -11,7 +13,7 @@ public record RegisterRequest
 {
     public required string Email { get; set; }
     public required string Password { get; set; }
-    public required string Role { get; set; }
+    public required Role Role { get; set; }
 }
 
 public record ForgotPasswordRequest

@@ -2,6 +2,7 @@ using Application.DTOs;
 using Application.Interfaces;
 using Application.Mappers;
 using Core.Entities;
+using Core.Enums;
 using Core.Exceptions;
 using Application.Responses;
 using Core.Parameters;
@@ -43,9 +44,8 @@ public class TicketService : ITicketService
     public async Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
         var user = currentUser.Get();
-        var role = currentUser.GetFirstRole();
 
-        if (role != "Customer")
+        if (user.Role != Role.Customer)
             throw new ForbiddenException("Only Customers can buy tickets");
 
         var response = await ticketValidationService.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);

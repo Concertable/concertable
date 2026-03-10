@@ -1,4 +1,5 @@
 using Core.Entities;
+using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data.Identity;
@@ -38,10 +39,10 @@ public class ApplicationDbContext : DbContext
             e.Property(u => u.Location).HasColumnType("geography");
             e.HasIndex(u => u.Email).IsUnique();
             e.HasDiscriminator(u => u.Role)
-                .HasValue<User>("Admin")
-                .HasValue<VenueManager>("VenueManager")
-                .HasValue<ArtistManager>("ArtistManager")
-                .HasValue<Customer>("Customer");
+                .HasValue<User>(Role.Admin)
+                .HasValue<VenueManager>(Role.VenueManager)
+                .HasValue<ArtistManager>(Role.ArtistManager)
+                .HasValue<Customer>(Role.Customer);
         });
 
         modelBuilder.Entity<StripeEvent>()

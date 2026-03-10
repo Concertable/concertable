@@ -4,6 +4,7 @@ using Application.Mappers;
 using Application.Requests;
 using Application.Responses;
 using Core.Entities;
+using Core.Enums;
 using Core.Exceptions;
 using Infrastructure.Constants;
 using Infrastructure.Data.Identity;
@@ -36,12 +37,8 @@ public class AccountService : IAccountService
     {
         var reasons = new List<string>();
 
-        if (request.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+        if (request.Role == Role.Admin)
             reasons.Add("You cannot make yourself an admin");
-
-        var validRoles = new[] { "Customer", "VenueManager", "ArtistManager" };
-        if (!validRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
-            reasons.Add("Invalid role specified");
 
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
             reasons.Add("Email already exists");
@@ -51,10 +48,10 @@ public class AccountService : IAccountService
 
         var passwordHash = _passwordHasher.Hash(request.Password);
 
-        User user = request.Role.ToLower() switch
+        User user = request.Role switch
         {
-            "venuemanager" => new VenueManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
-            "artistmanager" => new ArtistManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
+            Role.VenueManager => new VenueManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
+            Role.ArtistManager => new ArtistManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
             _ => new Customer { Email = request.Email, Role = request.Role, PasswordHash = passwordHash }
         };
 

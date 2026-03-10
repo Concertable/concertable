@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Application.Interfaces;
+using Core.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Infrastructure.Settings;
@@ -18,7 +19,7 @@ public class JwtTokenService : ITokenService
         _settings = settings.Value;
     }
 
-    public string CreateAccessToken(int userId, string email, string role)
+    public string CreateAccessToken(int userId, string email, Role role)
     {
         var key = _settings.JwtSigningKeyBase64 != null
             ? new SymmetricSecurityKey(Convert.FromBase64String(_settings.JwtSigningKeyBase64))
@@ -30,7 +31,7 @@ public class JwtTokenService : ITokenService
             new Claim("sub", userId.ToString()),
             new Claim(ClaimTypes.Email, email),
             new Claim("email", email),
-            new Claim("role", role)
+            new Claim("role", role.ToString())
         };
 
         var token = new JwtSecurityToken(

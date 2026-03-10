@@ -9,7 +9,7 @@ public class CurrentUserMiddleware
 
     public CurrentUserMiddleware(RequestDelegate next) => _next = next;
 
-    public async Task InvokeAsync(HttpContext context, IAccountService accountService, CurrentUser currentUser)
+    public async Task InvokeAsync(HttpContext context, IAccountService accountService)
     {
         if (context.User.Identity?.IsAuthenticated == true &&
             context.User.FindFirst("sub") is { } subClaim &&
@@ -19,7 +19,7 @@ public class CurrentUserMiddleware
             if (dto is not null)
             {
                 var entity = await accountService.GetUserEntityByIdAsync(userId, context.RequestAborted);
-                currentUser.Set(dto, entity);
+                context.Items[nameof(CurrentUser)] = new CurrentUser(dto, entity);
             }
         }
 
