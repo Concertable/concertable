@@ -10,8 +10,8 @@ public static class UserMappers
     {
         Id = user.Id,
         Email = user.Email ?? string.Empty,
-        Latitude = LocationHelper.GetLatitude(user.Location),
-        Longitude = LocationHelper.GetLongitude(user.Location),
+        Latitude = user.Location.ToLatitude(),
+        Longitude = user.Location.ToLongitude(),
         County = user.County,
         Town = user.Town
     };
