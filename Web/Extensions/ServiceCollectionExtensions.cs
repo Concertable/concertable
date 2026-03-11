@@ -168,6 +168,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IHeaderService, ArtistHeaderService>(HeaderType.Artist);
         services.AddKeyedScoped<IHeaderService, VenueHeaderService>(HeaderType.Venue);
         services.AddKeyedScoped<IHeaderService, ConcertHeaderService>(HeaderType.Concert);
+        services.AddScoped<IConcertHeaderService, ConcertHeaderService>();
 
         services.AddScoped<IHeaderServiceFactory, HeaderServiceFactory>();
 

@@ -22,13 +22,13 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
         this.locationFilter = locationFilter;
     }
 
-    public IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams)
+    public IQueryable<TEntity> Apply(IQueryable<TEntity> query, IGeoParams geoParams)
     {
-        if (!searchParams.HasValidCoordinates())
+        if (!geoParams.HasValidCoordinates())
             return query;
 
-        var center = geometryProvider.CreatePoint(searchParams.Latitude!.Value, searchParams.Longitude!.Value);
-        var radiusKm = searchParams.RadiusKm ?? 10;
+        var center = geometryProvider.CreatePoint(geoParams.Latitude!.Value, geoParams.Longitude!.Value);
+        var radiusKm = geoParams.RadiusKm ?? 10;
 
         return query.Where(locationFilter(center, radiusKm));
     }

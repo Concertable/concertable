@@ -1,5 +1,6 @@
 using Core.Entities;
 using Application.Interfaces;
+using Application.Interfaces.Search;
 using Core.Parameters;
 using Application.DTOs;
 using Application.Mappers;
@@ -11,6 +12,7 @@ namespace Infrastructure.Services;
 public class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
+    private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidationService concertValidationService;
     private readonly ICurrentUser currentUser;
     private readonly IUserPaymentService userPaymentService;
@@ -27,6 +29,7 @@ public class ConcertService : IConcertService
 
     public ConcertService(
         IConcertRepository concertRepository,
+        IConcertHeaderService concertHeaderService,
         IConcertValidationService concertValidationService,
         ICurrentUser currentUser,
         IUserPaymentService userPaymentService,
@@ -42,6 +45,7 @@ public class ConcertService : IConcertService
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
+        this.concertHeaderService = concertHeaderService;
         this.concertValidationService = concertValidationService;
         this.currentUser = currentUser;
         this.userPaymentService = userPaymentService;
@@ -313,9 +317,7 @@ public class ConcertService : IConcertService
             Take = 10
         };
 
-        var result = await concertRepository.GetHeaders(user.Id, concertParams);
-        await reviewService.AddAverageRatingsAsync(result);
-        return result.Take(concertParams.Take);
+        return await concertHeaderService.GetRecommendedAsync(concertParams);
     }
 
     public async Task<IEnumerable<ConcertDto>> GetUnpostedByArtistIdAsync(int id)

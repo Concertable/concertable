@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Search;
 using Application.Responses;
@@ -6,7 +7,7 @@ using Application.Mappers;
 
 namespace Infrastructure.Services.Search;
 
-public class ConcertHeaderService : IHeaderService
+public class ConcertHeaderService : IConcertHeaderService
 {
     private readonly IConcertHeaderRepository concertHeaderRepository;
     private readonly IReviewService reviewService;
@@ -32,16 +33,23 @@ public class ConcertHeaderService : IHeaderService
         return headers;
     }
 
-    public async Task<IEnumerable<IHeader>> GetPopularAsync()
+    public async Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync()
     {
         var headers = await concertHeaderRepository.GetPopularAsync();
         await reviewService.AddAverageRatingsAsync(headers);
         return headers;
     }
 
-    public async Task<IEnumerable<IHeader>> GetFreeAsync()
+    public async Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync()
     {
         var headers = await concertHeaderRepository.GetFreeAsync();
+        await reviewService.AddAverageRatingsAsync(headers);
+        return headers;
+    }
+
+    public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedAsync(ConcertParams concertParams)
+    {
+        var headers = await concertHeaderRepository.GetRecommendedAsync(concertParams);
         await reviewService.AddAverageRatingsAsync(headers);
         return headers;
     }
