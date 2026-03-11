@@ -141,17 +141,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGeometrySpecification<Artist>>(sp =>
             new GeometrySpecification<Artist>(
                 sp.GetRequiredService<IGeometryProvider>(),
-                (center, radius) => a => a.User.Location != null && a.User.Location.Distance(center) <= radius * 1000));
+                a => a.User.Location));
 
         services.AddScoped<IGeometrySpecification<Venue>>(sp =>
             new GeometrySpecification<Venue>(
                 sp.GetRequiredService<IGeometryProvider>(),
-                (center, radius) => v => v.User.Location != null && v.User.Location.Distance(center) <= radius * 1000));
+                v => v.User.Location));
 
         services.AddScoped<IGeometrySpecification<Concert>>(sp =>
             new GeometrySpecification<Concert>(
                 sp.GetRequiredService<IGeometryProvider>(),
-                (center, radius) => e => e.Application.Listing.Venue.User.Location != null && e.Application.Listing.Venue.User.Location!.Distance(center) <= radius * 1000));
+                e => e.Application.Listing.Venue.User.Location));
 
         services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
         services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();
