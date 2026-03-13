@@ -61,11 +61,13 @@ public class ListingService : IListingService
 
     public async Task<Listing> GetByIdAsync(int id)
     {
-        return (await listingRepository.GetByIdAsync(id))!;
+        return await listingRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Listing not found");
     }
 
     public async Task<User> GetOwnerByIdAsync(int id)
     {
-        return await listingRepository.GetOwnerByIdAsync(id);
+        return await listingRepository.GetOwnerByIdAsync(id)
+            ?? throw new NotFoundException("Listing owner not found");
     }
 }

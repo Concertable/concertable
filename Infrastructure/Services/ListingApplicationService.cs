@@ -125,13 +125,15 @@ public class ListingApplicationService : IListingApplicationService
 
     public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
     {
-        var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(id);
+        var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(id)
+            ?? throw new NotFoundException("Listing application not found");
         return (artist.ToDto(), venue.ToDto());
     }
 
     public async Task<decimal> GetListingPayByIdAsync(int id)
     {
-        return await listingApplicationRepository.GetListingPayByIdAsync(id);
+        return await listingApplicationRepository.GetListingPayByIdAsync(id)
+            ?? throw new NotFoundException("Listing application not found");
     }
 
     public async Task<ListingApplicationDto> GetByIdAsync(int id)

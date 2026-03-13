@@ -30,12 +30,12 @@ public class ListingRepository : Repository<Listing>, IListingRepository
         return await query.ToListAsync();
     }
 
-    public async Task<User> GetOwnerByIdAsync(int listingId)
+    public async Task<User?> GetOwnerByIdAsync(int listingId)
     {
         return await context.Users
             .OfType<VenueManager>()
             .Where(vm => vm.Venue != null && vm.Venue.Listings.Any(l => l.Id == listingId))
-            .FirstAsync();
+            .FirstOrDefaultAsync();
     }
 
     public async new Task<Listing?> GetByIdAsync(int id)

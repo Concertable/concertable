@@ -46,32 +46,33 @@ public class ListingApplicationRepository : Repository<ListingApplication>, ILis
         return await query.ToListAsync();
     }
 
-    public async Task<(Artist, Venue)> GetArtistAndVenueByIdAsync(int id)
+    public async Task<(Artist, Venue)?> GetArtistAndVenueByIdAsync(int id)
     {
         var query = await context.ListingApplications
             .Where(la => la.Id == id)
-            .Include(la => la.Artist)              // Ensure the Artist is loaded
-                .ThenInclude(a => a.User)          // Ensure the Artist's User is loaded
-            .Include(la => la.Artist)              // Ensure the Artist is loaded
+            .Include(la => la.Artist)
+                .ThenInclude(a => a.User)
+            .Include(la => la.Artist)
                 .ThenInclude(a => a.ArtistGenres)
-            .Include(la => la.Listing)             // Ensure the Listing is loaded (to access Venue)
-                .ThenInclude(l => l.Venue)         // Ensure the Venue is loaded
-                    .ThenInclude(v => v.User)      // Ensure the Venue's User is loaded
+            .Include(la => la.Listing)
+                .ThenInclude(l => l.Venue)
+                    .ThenInclude(v => v.User)
             .Include(la => la.Listing.ListingGenres)
-            .FirstAsync();
+            .FirstOrDefaultAsync();
 
+        if (query is null) return null;
         return (query.Artist, query.Listing.Venue);
     }
 
 
 
-    public async Task<decimal> GetListingPayByIdAsync(int id)
+    public async Task<decimal?> GetListingPayByIdAsync(int id)
     {
         var query = context.ListingApplications
             .Where(la => la.Id == id)
-            .Select(la => la.Listing.Pay);
+            .Select(la => (decimal?)la.Listing.Pay);
 
-        return await query.FirstAsync();
+        return await query.FirstOrDefaultAsync();
     }
 
     public async new Task<ListingApplication?> GetByIdAsync(int id)

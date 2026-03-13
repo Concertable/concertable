@@ -9,5 +9,5 @@ public interface IListingRepository : IRepository<Listing>
     Task<IEnumerable<Listing>> GetActiveByVenueIdAsync(int id);
     Task<Listing?> GetWithVenueByIdAsync(int id);
     Task<Listing?> GetByApplicationIdAsync(int id);
-    Task<User> GetOwnerByIdAsync(int id);
+    Task<User?> GetOwnerByIdAsync(int id);
 }
