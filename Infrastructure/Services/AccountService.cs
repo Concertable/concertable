@@ -16,10 +16,10 @@ namespace Infrastructure.Services;
 
 public class AccountService : IAccountService
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IPasswordHasher _passwordHasher;
-    private readonly ITokenService _tokenService;
-    private readonly AuthSettings _authSettings;
+    private readonly ApplicationDbContext context;
+    private readonly IPasswordHasher passwordHasher;
+    private readonly ITokenService tokenService;
+    private readonly AuthSettings authSettings;
     private readonly IUserValidator userValidator;
 
     public AccountService(
@@ -29,10 +29,10 @@ public class AccountService : IAccountService
         IOptions<AuthSettings> authSettings,
         IUserValidator userValidator)
     {
-        _context = context;
-        _passwordHasher = passwordHasher;
-        _tokenService = tokenService;
-        _authSettings = authSettings.Value;
+        this.context = context;
+        this.passwordHasher = passwordHasher;
+        this.tokenService = tokenService;
+        this.authSettings = authSettings.Value;
         this.userValidator = userValidator;
     }
 
@@ -43,7 +43,7 @@ public class AccountService : IAccountService
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
-        var passwordHash = _passwordHasher.Hash(request.Password);
+        var passwordHash = passwordHasher.Hash(request.Password);
 
         User user = request.Role switch
         {
@@ -52,16 +52,16 @@ public class AccountService : IAccountService
             _ => new Customer { Email = request.Email, Role = request.Role, PasswordHash = passwordHash }
         };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
     }
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
-        var user = await _context.Users
+        var user = await context.Users
             .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-        if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new BadRequestException("Invalid email or password.");
 
         return await IssueTokensAsync(user);
@@ -69,35 +69,34 @@ public class AccountService : IAccountService
 
     public async Task LogoutAsync(string refreshToken)
     {
-        var token = await _context.RefreshTokens
+        var token = await context.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
 
         if (token is not null)
         {
             token.IsRevoked = true;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
     }
 
     public async Task<LoginResponse> RefreshTokenAsync(string refreshToken)
     {
-        var token = await _context.RefreshTokens
+        var token = await context.RefreshTokens
             .Include(rt => rt.User)
             .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
 
         if (token is null || !token.IsActive)
             throw new UnauthorizedException("Invalid or expired refresh token.");
 
-        // Rotate: revoke old, issue new
         token.IsRevoked = true;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         return await IssueTokensAsync(token.User);
     }
 
     public async Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users
+        var user = await context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
@@ -110,7 +109,7 @@ public class AccountService : IAccountService
 
     public async Task<User?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Users
+        return await context.Users
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     }
 
@@ -119,19 +118,19 @@ public class AccountService : IAccountService
         var dto = user.ToDto();
         dto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var baseUrl) ? baseUrl : "/";
 
-        var accessToken = _tokenService.CreateAccessToken(user.Id, user.Email, user.Role);
-        var refreshTokenValue = _tokenService.CreateRefreshToken();
+        var accessToken = tokenService.CreateAccessToken(user.Id, user.Email, user.Role);
+        var refreshTokenValue = tokenService.CreateRefreshToken();
 
-        _context.RefreshTokens.Add(new RefreshToken
+        context.RefreshTokens.Add(new RefreshToken
         {
             UserId = user.Id,
             Token = refreshTokenValue,
-            Expires = DateTime.UtcNow.AddDays(_authSettings.RefreshTokenExpirationDays)
+            Expires = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays)
         });
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
-        var expiresInSeconds = _authSettings.AccessTokenExpirationMinutes * 60;
+        var expiresInSeconds = authSettings.AccessTokenExpirationMinutes * 60;
         return new LoginResponse(dto, accessToken, refreshTokenValue, expiresInSeconds);
     }
 }

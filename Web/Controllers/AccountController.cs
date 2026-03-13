@@ -11,46 +11,46 @@ namespace Web.Controllers;
 [Route("api/[controller]")]
 public class AccountController : ControllerBase
 {
-    private readonly IAccountService _accountService;
-    private readonly ICurrentUser _currentUser;
+    private readonly IAccountService accountService;
+    private readonly ICurrentUser currentUser;
 
     public AccountController(IAccountService accountService, ICurrentUser currentUser)
     {
-        _accountService = accountService;
-        _currentUser = currentUser;
+        this.accountService = accountService;
+        this.currentUser = currentUser;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        await _accountService.RegisterAsync(request);
+        await accountService.RegisterAsync(request);
         return NoContent();
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        return Ok(await _accountService.LoginAsync(request));
+        return Ok(await accountService.LoginAsync(request));
     }
 
     [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
     {
-        await _accountService.LogoutAsync(request.RefreshToken);
+        await accountService.LogoutAsync(request.RefreshToken);
         return NoContent();
     }
 
     [HttpPost("refresh")]
     public async Task<ActionResult<LoginResponse>> Refresh([FromBody] RefreshTokenRequest request)
     {
-        return Ok(await _accountService.RefreshTokenAsync(request.RefreshToken));
+        return Ok(await accountService.RefreshTokenAsync(request.RefreshToken));
     }
 
     [Authorize]
     [HttpGet("me")]
     public ActionResult<UserDto> Me()
     {
-        return Ok(_currentUser.Get());
+        return Ok(currentUser.Get());
     }
 }

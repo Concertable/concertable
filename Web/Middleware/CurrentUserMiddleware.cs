@@ -6,13 +6,13 @@ namespace Web.Middleware;
 
 public class CurrentUserMiddleware
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<CurrentUserMiddleware> _logger;
+    private readonly RequestDelegate next;
+    private readonly ILogger<CurrentUserMiddleware> logger;
 
     public CurrentUserMiddleware(RequestDelegate next, ILogger<CurrentUserMiddleware> logger)
     {
-        _next = next;
-        _logger = logger;
+        this.next = next;
+        this.logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context, IAccountService accountService)
@@ -28,7 +28,7 @@ public class CurrentUserMiddleware
                 context.Items[nameof(CurrentUser)] = new CurrentUser(dto, entity);
             }
             else
-                _logger.LogWarning(
+                logger.LogWarning(
                     "Authenticated user with id {UserId} from claim 'sub' was not found in the database. Path: {Path}, TraceId: {TraceId}",
                     userId,
                     context.Request.Path,
@@ -36,6 +36,6 @@ public class CurrentUserMiddleware
                 );
         }
 
-        await _next(context);
+        await next(context);
     }
 }
