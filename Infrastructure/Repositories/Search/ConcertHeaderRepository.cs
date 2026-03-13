@@ -14,12 +14,14 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IConcertSearchSpecification specification;
+    private readonly IGeometrySpecification<Concert> geometrySpecification;
     private readonly TimeProvider timeProvider;
 
-    public ConcertHeaderRepository(ApplicationDbContext context, IConcertSearchSpecification specification, TimeProvider timeProvider)
+    public ConcertHeaderRepository(ApplicationDbContext context, IConcertSearchSpecification specification, IGeometrySpecification<Concert> geometrySpecification, TimeProvider timeProvider)
     {
         this.context = context;
         this.specification = specification;
+        this.geometrySpecification = geometrySpecification;
         this.timeProvider = timeProvider;
     }
 
@@ -69,6 +71,29 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
             .Take(10)
             .ToListAsync();
 
+        return concerts.ToHeaderDtos();
+    }
+
+    public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedAsync(ConcertParams concertParams)
+    {
+        var query = context.Concerts
+            .Include(e => e.Application).ThenInclude(a => a.Artist)
+            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
+            .Where(e => e.DatePosted != null)
+            .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
+            .AsQueryable();
+
+        if (concertParams.GenreIds.Any())
+            query = query.Where(e => e.ConcertGenres.Any(eg => concertParams.GenreIds.Contains(eg.GenreId)));
+
+        if (concertParams.OrderByRecent)
+            query = query.OrderByDescending(e => e.DatePosted);
+        else
+            query = query.OrderBy(e => e.Application.Listing.StartDate);
+
+        query = geometrySpecification.Apply(query, concertParams);
+
+        var concerts = await query.Take(10).ToListAsync();
         return concerts.ToHeaderDtos();
     }
 }

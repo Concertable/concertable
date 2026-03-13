@@ -1,6 +1,7 @@
 using Application.DTOs;
 using Application.Requests;
 using Core.Entities;
+using Core.Exceptions;
 
 namespace Application.Mappers;
 
@@ -16,8 +17,8 @@ public static class VenueMappers
         County = venue.User.County ?? string.Empty,
         Town = venue.User.Town ?? string.Empty,
         Email = venue.User.Email ?? string.Empty,
-        Latitude = venue.User.Location?.Y ?? 0,
-        Longitude = venue.User.Location?.X ?? 0
+        Latitude = venue.User.Location?.Y ?? throw new InternalServerException($"Venue {venue.Id} user has no location set."),
+        Longitude = venue.User.Location?.X ?? throw new InternalServerException($"Venue {venue.Id} user has no location set.")
     };
 
     public static VenueHeaderDto ToHeaderDto(this Venue venue) => new()
@@ -27,8 +28,8 @@ public static class VenueMappers
         ImageUrl = venue.ImageUrl,
         County = venue.User.County ?? string.Empty,
         Town = venue.User.Town ?? string.Empty,
-        Latitude = venue.User.Location?.Y,
-        Longitude = venue.User.Location?.X
+        Latitude = venue.User.Location?.Y ?? throw new InternalServerException($"Venue {venue.Id} user has no location set."),
+        Longitude = venue.User.Location?.X ?? throw new InternalServerException($"Venue {venue.Id} user has no location set.")
     };
 
     public static VenueHeaderDto ToHeaderDto(this VenueDto venueDto) => new()

@@ -1,13 +1,10 @@
-using Application.DTOs;
 using Core.Entities;
 using Core.Interfaces;
-using Core.Parameters;
 
 namespace Application.Interfaces;
 
 public interface IConcertRepository : IRepository<Concert>
 {
-    Task<IEnumerable<ConcertHeaderDto>> GetHeaders(int userId, ConcertParams concertParams);
     new Task<Concert?> GetByIdAsync(int id);
     Task<Concert?> GetByApplicationIdAsync(int applicationId);
     Task<IEnumerable<Concert>> GetUpcomingByVenueIdAsync(int id);

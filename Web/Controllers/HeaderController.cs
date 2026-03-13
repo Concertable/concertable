@@ -46,31 +46,4 @@ public class HeaderController : ControllerBase
         return Ok(await service.GetByAmountAsync(amount));
     }
 
-    [HttpGet("popular")]
-    public async Task<IActionResult> GetPopular([FromQuery] HeaderType? headerType)
-    {
-        if (headerType is null)
-            return BadRequest("Header type is required.");
-
-        var service = headerServiceFactory.Create(headerType.Value);
-
-        if (service is null)
-            return BadRequest($"Invalid header type '{headerType}'.");
-
-        return Ok(await service.GetPopularAsync());
-    }
-
-    [HttpGet("free")]
-    public async Task<IActionResult> GetFree([FromQuery] HeaderType? headerType)
-    {
-        if (headerType is null)
-            return BadRequest("Header type is required.");
-
-        var service = headerServiceFactory.Create(headerType.Value);
-
-        if (service is null)
-            return BadRequest($"Invalid header type '{headerType}'.");
-
-        return Ok(await service.GetFreeAsync());
-    }
 }

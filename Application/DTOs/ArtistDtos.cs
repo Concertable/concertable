@@ -1,24 +1,24 @@
+using Application.Interfaces;
 using Application.Interfaces.Search;
 
 namespace Application.DTOs;
 
-public record ArtistDto : ItemDto
+public record ArtistDto : IDetails, IAddress, ILatLong
 {
-    public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string About { get; set; }
+    public double Rating { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
     public required string ImageUrl { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
-    public double? Latitude { get; set; }
-    public double? Longitude { get; set; }
+    public required double Latitude { get; set; }
+    public required double Longitude { get; set; }
     public required string Email { get; set; }
-
-    public ArtistDto()
-    {
-        Type = "artist";
-    }
 }
 
-public record ArtistHeaderDto : IHeader, IAddressHeader
+public record ArtistHeaderDto : IHeader, IAddress, ILatLong
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -26,6 +26,6 @@ public record ArtistHeaderDto : IHeader, IAddressHeader
     public double? Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
-    public double? Latitude { get; set; }
-    public double? Longitude { get; set; }
+    public required double Latitude { get; set; }
+    public required double Longitude { get; set; }
 }

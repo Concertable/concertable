@@ -1,56 +1,19 @@
 using Core.Entities;
 using Application.Interfaces;
-using Application.DTOs;
 using Application.Mappers;
-using Core.Parameters;
 using Infrastructure.Data.Identity;
-using Infrastructure.Helpers;
+using Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
 public class ConcertRepository : Repository<Concert>, IConcertRepository
 {
-    private readonly IGeometryProvider geometryService;
     private readonly TimeProvider timeProvider;
 
-    public ConcertRepository(ApplicationDbContext context, IGeometryProvider geometryService, TimeProvider timeProvider) : base(context)
+    public ConcertRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context)
     {
-        this.geometryService = geometryService;
         this.timeProvider = timeProvider;
-    }
-
-    public async Task<IEnumerable<ConcertHeaderDto>> GetHeaders(int userId, ConcertParams concertParams)
-    {
-        var query = context.Concerts
-            .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
-            .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
-            .AsQueryable();
-
-        if (concertParams.GenreIds.Any())
-            query = query.Where(e => e.ConcertGenres.Any(eg => concertParams.GenreIds.Contains(eg.GenreId)));
-
-        if (concertParams.OrderByRecent)
-            query = query.OrderByDescending(e => e.DatePosted);
-        else
-            query = query.OrderBy(e => e.Application.Listing.StartDate);
-
-        if (GeoHelper.HasValidCoordinates(concertParams))
-        {
-            var center = geometryService.CreatePoint(concertParams.Latitude!.Value, concertParams.Longitude!.Value)!;
-            var radiusKm = concertParams.RadiusKm ?? 10;
-            query = query.Where(e =>
-                e.Application.Listing.Venue.User.Location != null &&
-                e.Application.Listing.Venue.User.Location!.Distance(center) <= radiusKm * 1000);
-        }
-
-        var concerts = await query
-            .Take(10)
-            .ToListAsync();
-
-        return concerts.ToHeaderDtos();
     }
 
     public new async Task<Concert?> GetByIdAsync(int id)

@@ -17,10 +17,15 @@ public class GeometryProvider : IGeometryProvider
         this.geometryFactory = geometryFactory;
     }
 
+    public Point CreatePoint(double latitude, double longitude)
+    {
+        return geometryFactory.CreatePoint(new Coordinate(longitude, latitude));
+    }
+
     public Point? CreatePoint(double? latitude, double? longitude)
     {
         return (latitude.HasValue && longitude.HasValue)
-            ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
+            ? CreatePoint(latitude, longitude)
             : null;
     }
 }

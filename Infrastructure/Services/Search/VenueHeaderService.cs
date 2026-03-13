@@ -32,7 +32,4 @@ public class VenueHeaderService : IHeaderService
         return headers;
     }
 
-    public Task<IEnumerable<IHeader>> GetPopularAsync() => Task.FromResult(Enumerable.Empty<IHeader>());
-
-    public Task<IEnumerable<IHeader>> GetFreeAsync() => Task.FromResult(Enumerable.Empty<IHeader>());
 }

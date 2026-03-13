@@ -1,6 +1,7 @@
 using Core.Entities;
 using Core.Enums;
 using Application.Interfaces;
+using Application.Interfaces.Search;
 using Core.Parameters;
 using Application.DTOs;
 using Application.Mappers;
@@ -12,6 +13,7 @@ namespace Infrastructure.Services;
 public class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
+    private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidationService concertValidationService;
     private readonly ICurrentUser currentUser;
     private readonly IUserPaymentService userPaymentService;
@@ -21,13 +23,14 @@ public class ConcertService : IConcertService
     private readonly IReviewService reviewService;
     private readonly IPreferenceService preferenceService;
     private readonly IListingRepository listingRepository;
-    private readonly ILocationService locationService;
+    private readonly IGeometryCalculator geometryCalculator;
     private readonly IListingApplicationRepository listingApplicationRepository;
     private readonly IGenreRepository genreRepository;
     private readonly TimeProvider timeProvider;
 
     public ConcertService(
         IConcertRepository concertRepository,
+        IConcertHeaderService concertHeaderService,
         IConcertValidationService concertValidationService,
         ICurrentUser currentUser,
         IUserPaymentService userPaymentService,
@@ -36,13 +39,14 @@ public class ConcertService : IConcertService
         IEmailService emailService,
         IReviewService reviewService,
         IPreferenceService preferenceService,
-        ILocationService locationService,
+        IGeometryCalculator geometryCalculator,
         IListingRepository listingRepository,
         IListingApplicationRepository listingApplicationRepository,
         IGenreRepository genreRepository,
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
+        this.concertHeaderService = concertHeaderService;
         this.concertValidationService = concertValidationService;
         this.currentUser = currentUser;
         this.userPaymentService = userPaymentService;
@@ -53,7 +57,7 @@ public class ConcertService : IConcertService
         this.listingApplicationRepository = listingApplicationRepository;
         this.preferenceService = preferenceService;
         this.listingRepository = listingRepository;
-        this.locationService = locationService;
+        this.geometryCalculator = geometryCalculator;
         this.genreRepository = genreRepository;
         this.timeProvider = timeProvider;
     }
@@ -265,9 +269,12 @@ public class ConcertService : IConcertService
         var userIdsToNotify = preferences
             .Where(preference =>
             {
-                var inRange = locationService.IsWithinRadius(
-                    preference.User.Latitude,
-                    preference.User.Longitude,
+                if (preference.User.Latitude is null || preference.User.Longitude is null)
+                    return false;
+
+                var inRange = geometryCalculator.IsWithinRadius(
+                    preference.User.Latitude.Value,
+                    preference.User.Longitude.Value,
                     location.Y,
                     location.X,
                     preference.RadiusKm);
@@ -310,9 +317,7 @@ public class ConcertService : IConcertService
             Take = 10
         };
 
-        var result = await concertRepository.GetHeaders(user.Id, concertParams);
-        await reviewService.AddAverageRatingsAsync(result);
-        return result.Take(concertParams.Take);
+        return await concertHeaderService.GetRecommendedAsync(concertParams);
     }
 
     public async Task<IEnumerable<ConcertDto>> GetUnpostedByArtistIdAsync(int id)

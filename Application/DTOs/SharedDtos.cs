@@ -1,16 +1,6 @@
-using Common.Helpers;
 using Core.Enums;
 
 namespace Application.DTOs;
-
-public record ItemDto
-{
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public required string About { get; set; }
-    public string Type { get; set; } = string.Empty;
-    public double Rating { get; set; }
-}
 
 public record UserDto
 {

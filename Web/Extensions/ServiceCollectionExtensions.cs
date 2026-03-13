@@ -58,10 +58,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddHostedService<QueueHostedService>();
 
-        services.AddHttpClient<IGeocodingService, GeocodingService>(client =>
+        services.AddHttpClient("Geocoding", client =>
         {
             client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
         });
+        services.AddScoped<IGeocodingService, GeocodingService>();
 
         services.AddSignalR();
 
@@ -85,7 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<IReviewService, ReviewService>();
-        services.AddScoped<ILocationService, LocationService>();
+        services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfService, PdfService>();
         services.AddScoped<IQrCodeService, QrCodeService>();
@@ -95,7 +96,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUriService, UriService>();
         services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
         services.AddScoped<ITicketValidationService, TicketValidationService>();
-        services.AddScoped<IGeometryProvider, GeometryProvider>();
+        services.AddSingleton<IGeometryProvider, GeometryProvider>();
         services.AddScoped<IStripeValidationService, StripeValidationService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
@@ -129,17 +130,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGeometrySpecification<Artist>>(sp =>
             new GeometrySpecification<Artist>(
                 sp.GetRequiredService<IGeometryProvider>(),
-                (center, radius) => a => a.User.Location != null && a.User.Location.Distance(center) <= radius * 1000));
+                a => a.User.Location));
 
         services.AddScoped<IGeometrySpecification<Venue>>(sp =>
             new GeometrySpecification<Venue>(
                 sp.GetRequiredService<IGeometryProvider>(),
-                (center, radius) => v => v.User.Location != null && v.User.Location.Distance(center) <= radius * 1000));
+                v => v.User.Location));
 
         services.AddScoped<IGeometrySpecification<Concert>>(sp =>
             new GeometrySpecification<Concert>(
                 sp.GetRequiredService<IGeometryProvider>(),
-                (center, radius) => e => e.Application.Listing.Venue.User.Location != null && e.Application.Listing.Venue.User.Location!.Distance(center) <= radius * 1000));
+                e => e.Application.Listing.Venue.User.Location));
 
         services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
         services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();
@@ -156,6 +157,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IHeaderService, ArtistHeaderService>(HeaderType.Artist);
         services.AddKeyedScoped<IHeaderService, VenueHeaderService>(HeaderType.Venue);
         services.AddKeyedScoped<IHeaderService, ConcertHeaderService>(HeaderType.Concert);
+        services.AddScoped<IConcertHeaderService, ConcertHeaderService>();
 
         services.AddScoped<IHeaderServiceFactory, HeaderServiceFactory>();
 

@@ -1,24 +1,24 @@
+using Application.Interfaces;
 using Application.Interfaces.Search;
 
 namespace Application.DTOs;
 
-public record VenueDto : ItemDto
+public record VenueDto : IDetails, IAddress, ILatLong
 {
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string About { get; set; }
+    public double Rating { get; set; }
+    public required double Latitude { get; set; }
+    public required double Longitude { get; set; }
     public required string ImageUrl { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
     public bool Approved { get; set; } = false;
     public required string Email { get; set; }
-
-    public VenueDto()
-    {
-        Type = "venue";
-    }
 }
 
-public record VenueHeaderDto : IHeader, IAddressHeader
+public record VenueHeaderDto : IHeader, IAddress, ILatLong
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -26,6 +26,6 @@ public record VenueHeaderDto : IHeader, IAddressHeader
     public double? Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
-    public double? Latitude { get; set; }
-    public double? Longitude { get; set; }
+    public required double Latitude { get; set; }
+    public required double Longitude { get; set; }
 }
