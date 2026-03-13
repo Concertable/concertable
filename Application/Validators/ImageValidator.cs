@@ -1,39 +1,29 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentValidation;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Validators;
 
-public static class ImageValidator
+public class IFormFileValidator : AbstractValidator<IFormFile>
 {
-    private static readonly string[] mimeTypes = new[]
-    {
+    private static readonly string[] AllowedMimeTypes =
+    [
         "image/jpeg",
         "image/png",
         "image/gif",
         "image/bmp",
         "image/webp"
-    };
+    ];
 
-    public static bool Validate(IFormFile file, out string? error)
+    private const long MaxFileSize = 5 * 1024 * 1024;
+
+    public IFormFileValidator()
     {
-        error = null;
-        if (!mimeTypes.Contains(file.ContentType))
-        {
-            error = "Unsupported image format";
-            return false;
-        }
+        RuleFor(x => x.ContentType)
+            .Must(ct => AllowedMimeTypes.Contains(ct))
+            .WithMessage("Image must be a valid format (JPEG, PNG, GIF, BMP, WEBP).");
 
-        const long maxFileSize = 5 * 1024 * 1024;
-        if (file.Length > maxFileSize)
-        {
-            error = "Image file exceeds the maximum size of 5MB";
-            return false;
-        }
-
-        return true;
+        RuleFor(x => x.Length)
+            .LessThanOrEqualTo(MaxFileSize)
+            .WithMessage("Image file exceeds the maximum size of 5MB.");
     }
 }

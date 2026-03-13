@@ -1,12 +1,9 @@
-using Core.Entities;
 using Application.Interfaces;
 using Core.Parameters;
-using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.Design;
 using Application.DTOs;
-using Core.ModelBinders;
+using Application.Requests;
 using Application.Responses;
 using Microsoft.AspNetCore.SignalR;
 using Web.Hubs;
@@ -89,16 +86,16 @@ public class ConcertController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPut("{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertDto>>> Update([FromBody] ConcertDto concertDto)
+    public async Task<ActionResult<ConcertDto>> Update(int id, [FromBody] UpdateConcertRequest request)
     {
-        return Ok(await concertService.UpdateAsync(concertDto));
+        return Ok(await concertService.UpdateAsync(id, request));
     }
 
     [Authorize(Roles = "VenueManager")]
     [HttpPut("post/{id}")]
-    public async Task<ActionResult<ConcertDto>> Post([FromBody] ConcertDto concertDto)
+    public async Task<ActionResult<ConcertDto>> Post(int id, [FromBody] UpdateConcertRequest request)
     {
-        var concertResponse = await concertService.PostAsync(concertDto);
+        var concertResponse = await concertService.PostAsync(id, request);
 
         foreach (var userId in concertResponse.UserIds)
         {

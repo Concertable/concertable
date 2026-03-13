@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Requests;
 using Application.Responses;
 using Core.Parameters;
 
@@ -12,8 +13,8 @@ public interface IConcertService
     Task<IEnumerable<ConcertDto>> GetUpcomingByArtistIdAsync(int id);
     Task<ListingApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams);
     Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
-    Task<ConcertDto> UpdateAsync(ConcertDto concertDto);
-    Task<ConcertPostResponse> PostAsync(ConcertDto concertDto);
+    Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request);
+    Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request);
     Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync();
     Task<IEnumerable<ConcertDto>> GetHistoryByArtistIdAsync(int id);
     Task<IEnumerable<ConcertDto>> GetHistoryByVenueIdAsync(int id);

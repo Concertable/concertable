@@ -1,15 +1,10 @@
-using Application.DTOs;
 using Application.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.Entities;
 
 namespace Application.Interfaces;
 
 public interface IConcertValidationService
 {
-    Task<ValidationResponse> CanUpdateAsync(ConcertDto concertDto);
-    Task<ValidationResponse> CanPostAsync(ConcertDto concertDto);
+    Task<ValidationResponse> CanUpdateAsync(Concert concert, int newTotalTickets);
+    Task<ValidationResponse> CanPostAsync(Concert concert);
 }

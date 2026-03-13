@@ -5,6 +5,7 @@ using Application.Interfaces.Search;
 using Core.Parameters;
 using Application.DTOs;
 using Application.Mappers;
+using Application.Requests;
 using Application.Responses;
 using Core.Exceptions;
 
@@ -199,57 +200,48 @@ public class ConcertService : IConcertService
         return concertEntity.ToDto();
     }
 
-    public async Task<ConcertDto> UpdateAsync(ConcertDto concertDto)
+    public async Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request)
     {
-        var response = await concertValidationService.CanUpdateAsync(concertDto);
+        var concertEntity = await concertRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Concert not found");
+
+        var response = await concertValidationService.CanUpdateAsync(concertEntity, request.TotalTickets);
         if (!response.IsValid)
             throw new BadRequestException(response.Reason!);
 
-        var concertEntity = await concertRepository.GetByIdAsync(concertDto.Id);
-        if (concertEntity is null)
-            throw new NotFoundException("Concert not found");
-
-        concertEntity.Name = concertDto.Name;
-        concertEntity.About = concertDto.About;
-        concertEntity.Price = concertDto.Price;
-        concertEntity.TotalTickets = concertDto.TotalTickets;
-        concertEntity.AvailableTickets = concertDto.AvailableTickets;
+        concertEntity.Name = request.Name;
+        concertEntity.About = request.About;
+        concertEntity.Price = request.Price;
+        concertEntity.TotalTickets = request.TotalTickets;
 
         int ticketsSold = concertEntity.TotalTickets - concertEntity.AvailableTickets;
-        concertEntity.AvailableTickets = concertEntity.TotalTickets - ticketsSold;
+        concertEntity.AvailableTickets = request.TotalTickets - ticketsSold;
 
-        concertRepository.Update(concertEntity);
         await concertRepository.SaveChangesAsync();
 
         return concertEntity.ToDto();
     }
 
-    public async Task<ConcertPostResponse> PostAsync(ConcertDto concertDto)
+    public async Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request)
     {
-        var response = await concertValidationService.CanPostAsync(concertDto);
+        var concertEntity = await concertRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Concert not found");
+
+        var response = await concertValidationService.CanPostAsync(concertEntity);
         if (!response.IsValid)
             throw new BadRequestException(response.Reason!);
 
-        var concertEntity = await concertRepository.GetByIdAsync(concertDto.Id);
-
-        if (concertEntity is null)
-            throw new NotFoundException("Concert not found");
-
-        if (concertEntity.DatePosted.HasValue)
-            throw new BadRequestException("Concert has already been posted");
-
-        concertEntity.Name = concertDto.Name;
-        concertEntity.About = concertDto.About;
-        concertEntity.Price = concertDto.Price;
-        concertEntity.TotalTickets = concertDto.TotalTickets;
+        concertEntity.Name = request.Name;
+        concertEntity.About = request.About;
+        concertEntity.Price = request.Price;
+        concertEntity.TotalTickets = request.TotalTickets;
         concertEntity.DatePosted = timeProvider.GetUtcNow().DateTime;
-        concertEntity.AvailableTickets = concertDto.TotalTickets;
+        concertEntity.AvailableTickets = request.TotalTickets;
 
-        concertRepository.Update(concertEntity);
         await concertRepository.SaveChangesAsync();
 
-        var concertHeaderDto = concertDto.ToHeaderDto();
-        var averageRating = (await reviewService.GetSummaryByConcertIdAsync(concertDto.Id)).AverageRating;
+        var concertHeaderDto = concertEntity.ToDto().ToHeaderDto();
+        var averageRating = (await reviewService.GetSummaryByConcertIdAsync(id)).AverageRating;
         concertHeaderDto.Rating = averageRating;
 
         var location = concertEntity.Application.Listing.Venue.User.Location;
@@ -258,13 +250,14 @@ public class ConcertService : IConcertService
         {
             return new ConcertPostResponse
             {
-                Concert = concertDto,
+                Concert = concertEntity.ToDto(),
                 ConcertHeader = concertHeaderDto,
                 UserIds = Enumerable.Empty<int>()
             };
         }
 
         var preferences = await preferenceService.GetAsync();
+        var concertDto = concertEntity.ToDto();
 
         var userIdsToNotify = preferences
             .Where(preference =>

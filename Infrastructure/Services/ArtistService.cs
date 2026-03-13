@@ -44,34 +44,33 @@ public class ArtistService : IArtistService
         return artist.ToDto();
     }
 
-    public async Task<ArtistDto> CreateAsync(CreateArtistRequest request, IFormFile image)
+    public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
     {
         var artist = request.ToEntity();
         var user = currentUser.Get();
         artist.UserId = user.Id;
-        artist.ImageUrl = await imageService.UploadAsync(image);
+        artist.ImageUrl = await imageService.UploadAsync(request.Image);
 
         var createdArtist = await artistRepository.AddAsync(artist);
         await artistRepository.SaveChangesAsync();
         return createdArtist.ToDto();
     }
 
-    public async Task<ArtistDto> UpdateAsync(ArtistDto artistDto, IFormFile? image)
+    public async Task<ArtistDto> UpdateAsync(int id, UpdateArtistRequest request)
     {
-        var artist = await artistRepository.GetByIdAsync(artistDto.Id);
-        if (artist is null)
-            throw new NotFoundException("Artist not found");
+        var artist = await artistRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Artist not found");
 
         var user = currentUser.GetEntity();
         if (artist.UserId != user.Id)
             throw new ForbiddenException("You do not own this Artist");
 
-        artist.Name = artistDto.Name;
-        artist.About = artistDto.About;
-        artist.ImageUrl = artistDto.ImageUrl;
+        artist.Name = request.Name;
+        artist.About = request.About;
+        artist.ImageUrl = request.ImageUrl;
 
         var existingGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId).ToList();
-        var newGenreIds = artistDto.Genres.Select(g => g.Id).ToList();
+        var newGenreIds = request.Genres.Select(g => g.Id).ToList();
 
         foreach (var genreId in existingGenreIds.Except(newGenreIds).ToList())
         {
@@ -81,19 +80,14 @@ public class ArtistService : IArtistService
         }
 
         foreach (var genreId in newGenreIds.Except(existingGenreIds).ToList())
-        {
             artist.ArtistGenres.Add(new ArtistGenre { ArtistId = artist.Id, GenreId = genreId });
-        }
 
-        if (image is not null)
-            artist.ImageUrl = await imageService.ReplaceAsync(image, artist.ImageUrl);
+        if (request.Image is not null)
+            artist.ImageUrl = await imageService.ReplaceAsync(request.Image, artist.ImageUrl);
 
-        artistRepository.Update(artist);
         await artistRepository.SaveChangesAsync();
 
-        var result = artist.ToDto();
-        result.Genres = artistDto.Genres;
-        return result;
+        return artist.ToDto();
     }
 
     public async Task<int> GetIdForCurrentUserAsync()

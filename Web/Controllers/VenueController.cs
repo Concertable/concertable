@@ -1,12 +1,7 @@
-﻿using Core.Entities;
 using Application.Interfaces;
-using Core.Parameters;
-using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
-using Application.Responses;
-using Core.ModelBinders;
 using Application.Requests;
 
 namespace Web.Controllers;
@@ -39,31 +34,22 @@ public class VenueController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPost]
-    public async Task<IActionResult> Create([FromForm] VenueCreateRequest venueCreate)
+    public async Task<IActionResult> Create([FromForm] CreateVenueRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        //TODO: Talk about security benefits of passing user seperate instead of through the client side
-        var venueDto = await venueService.CreateAsync(venueCreate.Venue, venueCreate.Image);
+        var venueDto = await venueService.CreateAsync(request);
         return CreatedAtAction(nameof(GetDetailsById), new { Id = venueDto.Id }, venueDto);
     }
 
     [Authorize(Roles = "VenueManager")]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromForm] VenueUpdateRequest venueUpdate)
+    public async Task<IActionResult> Update(int id, [FromForm] UpdateVenueRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var venueDto = await venueService.UpdateAsync(venueUpdate.Venue, venueUpdate.Image);
-        return Ok(venueDto);
+        return Ok(await venueService.UpdateAsync(id, request));
     }
 
-    [HttpGet("is-owner/{Id}")]
+    [HttpGet("is-owner/{id}")]
     public async Task<ActionResult<bool>> IsOwner(int id)
     {
         return Ok(await ownershipService.OwnsVenueAsync(id));
     }
-
 }

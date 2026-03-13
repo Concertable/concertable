@@ -45,7 +45,7 @@ public class VenueService : IVenueService
         return venueDto;
     }
 
-    public async Task<VenueDto> CreateAsync(CreateVenueRequest request, IFormFile image)
+    public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
         var venueRepository = unitOfWork.GetRepository<Venue>();
         var userRepository = unitOfWork.GetBaseRepository<User>();
@@ -54,7 +54,7 @@ public class VenueService : IVenueService
         var user = currentUser.GetEntity();
 
         venue.UserId = user.Id;
-        venue.ImageUrl = await imageService.UploadAsync(image);
+        venue.ImageUrl = await imageService.UploadAsync(request.Image);
 
         await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
@@ -65,35 +65,32 @@ public class VenueService : IVenueService
         return createdVenue.ToDto();
     }
 
-    public async Task<VenueDto> UpdateAsync(VenueDto venueDto, IFormFile? image)
+    public async Task<VenueDto> UpdateAsync(int id, UpdateVenueRequest request)
     {
         var venueRepository = unitOfWork.GetRepository<Venue>();
         var userRepository = unitOfWork.GetBaseRepository<User>();
 
-        var averageRating = venueDto.Rating;
-        var venue = await venueRepository.GetByIdAsync(venueDto.Id);
+        var venue = await venueRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Venue not found");
         var user = currentUser.GetEntity();
 
-        if (venue?.UserId != user.Id)
+        if (venue.UserId != user.Id)
             throw new ForbiddenException("You do not own this venue");
 
-        venue.Name = venueDto.Name;
-        venue.About = venueDto.About;
-        venue.Approved = venueDto.Approved;
-        venue.ImageUrl = venueDto.ImageUrl;
+        venue.Name = request.Name;
+        venue.About = request.About;
+        venue.Approved = request.Approved;
+        venue.ImageUrl = request.ImageUrl;
 
-        await UpdateUserLocationAsync(user, venueDto.Latitude, venueDto.Longitude);
+        await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
-        if (image is not null)
-            venue.ImageUrl = await imageService.ReplaceAsync(image);
+        if (request.Image is not null)
+            venue.ImageUrl = await imageService.ReplaceAsync(request.Image);
 
-        venueRepository.Update(venue);
         userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
 
-        var result = venue.ToDto();
-        result.Rating = averageRating;
-        return result;
+        return venue.ToDto();
     }
 
     public async Task<VenueDto?> GetDetailsForCurrentUserAsync()
@@ -117,7 +114,6 @@ public class VenueService : IVenueService
 
         return id.Value;
     }
-
 
     private async Task UpdateUserLocationAsync(User user, double latitude, double longitude)
     {

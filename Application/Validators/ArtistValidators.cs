@@ -1,4 +1,3 @@
-using Application.DTOs;
 using Application.Requests;
 using FluentValidation;
 
@@ -8,44 +7,36 @@ public class CreateArtistRequestValidator : AbstractValidator<CreateArtistReques
 {
     public CreateArtistRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.About).MaximumLength(1000);
-    }
-}
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .MaximumLength(100);
 
-public class ArtistCreateRequestValidator : AbstractValidator<ArtistCreateRequest>
-{
-    public ArtistCreateRequestValidator()
-    {
-        RuleFor(x => x.Artist).NotNull();
+        RuleFor(x => x.About)
+            .MaximumLength(1000);
+
         RuleFor(x => x.Image)
             .NotNull()
-            .Custom((image, context) =>
-            {
-                if (image != null && !ImageValidator.Validate(image, out var error))
-                    context.AddFailure(error!);
-            });
+            .SetValidator(new IFormFileValidator());
     }
 }
 
-public class ArtistUpdateRequestValidator : AbstractValidator<ArtistUpdateRequest>
+public class UpdateArtistRequestValidator : AbstractValidator<UpdateArtistRequest>
 {
-    public ArtistUpdateRequestValidator()
+    public UpdateArtistRequestValidator()
     {
-        RuleFor(x => x.Image)
-            .Custom((image, context) =>
-            {
-                if (image != null && !ImageValidator.Validate(image, out var error))
-                    context.AddFailure(error!);
-            });
-    }
-}
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .MaximumLength(100);
 
-public class ArtistDtoValidator : AbstractValidator<ArtistDto>
-{
-    public ArtistDtoValidator()
-    {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.About).MaximumLength(1000);
+        RuleFor(x => x.About)
+            .MaximumLength(1000);
+
+        RuleFor(x => x.ImageUrl).NotEmpty();
+
+        When(x => x.Image != null, () =>
+        {
+            RuleFor(x => x.Image!)
+                .SetValidator(new IFormFileValidator());
+        });
     }
 }

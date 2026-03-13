@@ -5,15 +5,17 @@ namespace Application.Requests;
 
 public record CreateArtistRequest
 {
-    public required string Name { get; set; }
-    public required string About { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public required string Name { get; init; }
+    public required string About { get; init; }
+    public IEnumerable<GenreDto> Genres { get; init; } = [];
+    public required IFormFile Image { get; init; }
 }
 
-public record ArtistCreateRequest(CreateArtistRequest Artist, IFormFile Image);
-
-public record ArtistUpdateRequest
+public record UpdateArtistRequest
 {
-    public required ArtistDto Artist { get; set; }
-    public IFormFile? Image { get; set; }
+    public required string Name { get; init; }
+    public required string About { get; init; }
+    public required string ImageUrl { get; init; }
+    public IEnumerable<GenreDto> Genres { get; init; } = [];
+    public IFormFile? Image { get; init; }
 }
