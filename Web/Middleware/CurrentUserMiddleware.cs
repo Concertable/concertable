@@ -1,35 +1,39 @@
-using Application.DTOs;
-using Application.Mappers;
-using Core.Entities.Identity;
-using Infrastructure.Constants;
+using Application.Interfaces;
 using Infrastructure.Services;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace Web.Middleware;
 
 public class CurrentUserMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<CurrentUserMiddleware> _logger;
 
-    public CurrentUserMiddleware(RequestDelegate next) => _next = next;
-
-    public async Task InvokeAsync(HttpContext context, UserManager<ApplicationUser> userManager)
+    public CurrentUserMiddleware(RequestDelegate next, ILogger<CurrentUserMiddleware> logger)
     {
-        if (context.User.Identity?.IsAuthenticated == true)
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context, IAccountService accountService)
+    {
+        if (context.User.Identity?.IsAuthenticated == true &&
+            context.User.FindFirst("sub") is { } subClaim &&
+            int.TryParse(subClaim.Value, out var userId))
         {
-            var user = await userManager.GetUserAsync(context.User);
-            if (user is not null)
+            var dto = await accountService.GetUserByIdAsync(userId, context.RequestAborted);
+            if (dto is not null)
             {
-                var roles = await userManager.GetRolesAsync(user);
-                var role = roles.FirstOrDefault() ?? string.Empty;
-
-                var userDto = user.ToDto();
-                userDto.Role = role;
-                userDto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(role, out var baseUrl) ? baseUrl : "/";
-
-                var currentUser = context.RequestServices.GetRequiredService<CurrentUser>();
-                currentUser.Set(userDto, user);
+                var entity = await accountService.GetUserEntityByIdAsync(userId, context.RequestAborted);
+                context.Items[nameof(CurrentUser)] = new CurrentUser(dto, entity);
             }
+            else
+                _logger.LogWarning(
+                    "Authenticated user with id {UserId} from claim 'sub' was not found in the database. Path: {Path}, TraceId: {TraceId}",
+                    userId,
+                    context.Request.Path,
+                    context.TraceIdentifier
+                );
         }
 
         await _next(context);

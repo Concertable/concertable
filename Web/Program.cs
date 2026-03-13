@@ -1,8 +1,6 @@
-using Core.Entities.Identity;
+using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Data.Identity;
-using Infrastructure.Services;
-using Microsoft.AspNetCore.Identity;
 using Web.Extensions;
 using Web.Hubs;
 using Web.Middleware;
@@ -29,6 +27,25 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.CustomSchemaIds(type => type.FullName);
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            []
+        }
+    });
 });
 
 builder.Services.AddCors(options =>
@@ -48,7 +65,7 @@ services.AddInfrastructure(builder.Configuration);
 services.AddServices();
 services.AddRepositories();
 services.AddSearch();
-services.AddAuth();
+services.AddAuth(builder.Configuration);
 services.AddValidation();
 
 builder.Services.AddExceptionHandler<Infrastructure.GlobalExceptionHandler>();
@@ -56,18 +73,17 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<CurrentUserMiddleware>();
-
-app.MapControllers();
-app.MapGroup("/api").MapIdentityApi<ApplicationUser>();
-app.MapHub<PaymentHub>("/hub/payments");
-app.MapHub<ConcertHub>("/hub/concerts");
-
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.MapControllers();
+app.MapHub<PaymentHub>("/hub/payments");
+app.MapHub<ConcertHub>("/hub/concerts");
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api"))
@@ -77,8 +93,6 @@ app.MapFallback(async context =>
     }
     await context.Response.SendFileAsync("wwwroot/index.html");
 });
-
-app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
@@ -91,8 +105,8 @@ try
     using var scope = app.Services.CreateScope();
     var serviceProvider = scope.ServiceProvider;
     var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    await ApplicationDbInitializer.InitializeAsync(context, userManager);
+    var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
+    await ApplicationDbInitializer.InitializeAsync(context, passwordHasher);
 }
 catch (Exception)
 {

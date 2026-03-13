@@ -1,9 +1,6 @@
-﻿
 using Core.Entities;
-using Core.Entities.Identity;
 using Core.Interfaces;
 using NetTopologySuite.Geometries;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Entities;
 

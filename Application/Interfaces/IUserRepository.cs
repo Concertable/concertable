@@ -1,16 +1,11 @@
-using Core.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.Entities;
 
 namespace Application.Interfaces;
 
-public interface IUserRepository : IBaseRepository<ApplicationUser>
+public interface IUserRepository : IBaseRepository<User>
 {
     Task<int> GetIdByApplicationIdAsync(int applicationId);
     Task<int> GetIdByConcertIdAsync(int concertId);
-    Task<ApplicationUser> GetByApplicationIdAsync(int applicationId);
-    Task<ApplicationUser> GetByConcertIdAsync(int concertId);
+    Task<User> GetByApplicationIdAsync(int applicationId);
+    Task<User> GetByConcertIdAsync(int concertId);
 }

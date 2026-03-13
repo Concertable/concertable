@@ -6,7 +6,6 @@ using FluentValidation.AspNetCore;
 using Application.Interfaces.Search;
 using Application.Serializers;
 using Core.Entities;
-using Core.Entities.Identity;
 using Infrastructure;
 using Infrastructure.Background;
 using Infrastructure.Data.Identity;
@@ -17,13 +16,15 @@ using Infrastructure.Services.Search;
 using Infrastructure.Settings;
 using Infrastructure.Factories;
 using Infrastructure.Specifications;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
-using System.Text.Json.Serialization;
 using Web.Authorization;
 using Application.DTOs;
 
@@ -38,16 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
-                opt => opt.UseNetTopologySuite()
-            ));
-
-        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true;
-            options.SignIn.RequireConfirmedEmail = true;
-        })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddApiEndpoints();
+                sqlOpt => sqlOpt.UseNetTopologySuite()));
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
@@ -81,7 +73,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
-        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertService, ConcertService>();
@@ -103,8 +94,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeAccountService, StripeAccountService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddScoped<IUriService, UriService>();
-        services.AddScoped<CurrentUser>();
-        services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<CurrentUser>());
         services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
         services.AddScoped<ITicketValidationService, TicketValidationService>();
         services.AddSingleton<IGeometryProvider, GeometryProvider>();
@@ -183,26 +172,42 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAuth(this IServiceCollection services)
+    public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddAuthentication();
-        services.ConfigureApplicationCookie(config =>
+        // Settings
+        var authSettings = configuration.GetSection("Auth").Get<AuthSettings>()!;
+        services.Configure<AuthSettings>(configuration.GetSection("Auth"));
+
+        // Services
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddSingleton<ITokenService, JwtTokenService>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser>(sp =>
         {
-            config.Cookie.Name = "Identity.Cookie";
-            config.Cookie.SameSite = SameSiteMode.None;
-            config.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            config.ExpireTimeSpan = TimeSpan.FromDays(7);
-            config.Events.OnRedirectToAccessDenied = context =>
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                return Task.CompletedTask;
-            };
-            config.Events.OnRedirectToLogin = context =>
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return Task.CompletedTask;
-            };
+            var http = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
+            return http?.Items[nameof(CurrentUser)] as CurrentUser ?? CurrentUser.Unauthenticated;
         });
+
+        // JWT Bearer
+        var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);
+        var signingKey = new SymmetricSecurityKey(keyBytes);
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.MapInboundClaims = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+                    ValidIssuer = authSettings.Issuer,
+                    ValidAudience = authSettings.Audience,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
+                    RoleClaimType = "role"
+                };
+            });
 
         services.AddAuthorization()
             .AddSingleton<IAuthorizationHandler, AdminAuthorizeHandler>();

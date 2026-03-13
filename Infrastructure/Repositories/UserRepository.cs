@@ -1,20 +1,15 @@
 using Application.Interfaces;
-using Core.Entities.Identity;
+using Core.Entities;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories;
 
-public class UserRepository : BaseRepository<ApplicationUser>, IUserRepository
+public class UserRepository : BaseRepository<User>, IUserRepository
 {
     public UserRepository(ApplicationDbContext context) : base(context) { }
 
-    public async Task<ApplicationUser> GetByApplicationIdAsync(int applicationId)
+    public async Task<User> GetByApplicationIdAsync(int applicationId)
     {
         var query = context.ListingApplications
             .Where(a => a.Id == applicationId)
@@ -23,7 +18,7 @@ public class UserRepository : BaseRepository<ApplicationUser>, IUserRepository
         return await query.FirstAsync();
     }
 
-    public async Task<ApplicationUser> GetByConcertIdAsync(int concertId)
+    public async Task<User> GetByConcertIdAsync(int concertId)
     {
         var query = context.Concerts
              .Where(e => e.Id == concertId)

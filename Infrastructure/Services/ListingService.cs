@@ -2,7 +2,6 @@ using Core.Entities;
 using Application.Interfaces;
 using Application.DTOs;
 using Application.Mappers;
-using Core.Entities.Identity;
 using Core.Exceptions;
 
 namespace Infrastructure.Services;
@@ -65,7 +64,7 @@ public class ListingService : IListingService
         return (await listingRepository.GetByIdAsync(id))!;
     }
 
-    public async Task<VenueManager> GetOwnerByIdAsync(int id)
+    public async Task<User> GetOwnerByIdAsync(int id)
     {
         return await listingRepository.GetOwnerByIdAsync(id);
     }

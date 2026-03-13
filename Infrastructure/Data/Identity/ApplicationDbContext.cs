@@ -1,16 +1,13 @@
 using Core.Entities;
-using Core.Entities.Identity;
-using Infrastructure.Configurations;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Core.Enums;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Reflection.Metadata;
 
 namespace Infrastructure.Data.Identity;
 
-public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<ApplicationUser, ApplicationRole, int>(options)
+public class ApplicationDbContext : DbContext
 {
+    public ApplicationDbContext(DbContextOptions options) : base(options) { }
+
     public DbSet<Artist> Artists { get; set; }
     public DbSet<ArtistGenre> ArtistGenres { get; set; }
     public DbSet<Concert> Concerts { get; set; }
@@ -23,7 +20,7 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
     public DbSet<Review> Reviews { get; set; }
     public DbSet<SocialMedia> SocialMedias { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
-    public new DbSet<ApplicationUser> Users { get; set; } = null!;
+    public DbSet<User> Users { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<Venue> Venues { get; set; }
     public DbSet<VenueImage> VenueImages { get; set; }
@@ -32,19 +29,25 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
     public DbSet<Preference> Preferences { get; set; }
     public DbSet<GenrePreference> GenrePreferences { get; set; }
     public DbSet<StripeEvent> StripeEvents { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<ApplicationUser>()
-            .Property(u => u.Location)
-            .HasColumnType("geography");
+        modelBuilder.Entity<User>(e =>
+        {
+            e.ToTable("Users");
+            e.Property(u => u.Location).HasColumnType("geography");
+            e.HasIndex(u => u.Email).IsUnique();
+            e.HasDiscriminator(u => u.Role)
+                .HasValue<User>(Role.Admin)
+                .HasValue<VenueManager>(Role.VenueManager)
+                .HasValue<ArtistManager>(Role.ArtistManager)
+                .HasValue<Customer>(Role.Customer);
+        });
 
         modelBuilder.Entity<StripeEvent>()
             .HasKey(e => e.EventId);
 
-        /* Ensure an artist can only register for each listing once */
         modelBuilder.Entity<ListingApplication>()
             .HasIndex(la => new { la.ListingId, la.ArtistId })
             .IsUnique();
@@ -123,7 +126,34 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.ApplyConfiguration(new RoleConfiguration());
-    }
+        modelBuilder.Entity<Ticket>()
+            .HasOne(t => t.User)
+            .WithMany(u => u.Tickets)
+            .HasForeignKey(t => t.UserId)
+            .IsRequired();
 
+        modelBuilder.Entity<Preference>()
+            .HasOne(p => p.User)
+            .WithOne(u => u.Preference)
+            .HasForeignKey<Preference>(p => p.UserId)
+            .IsRequired();
+
+        modelBuilder.Entity<ArtistManager>()
+            .HasOne(am => am.Artist)
+            .WithOne(a => a.User)
+            .HasForeignKey<Artist>(a => a.UserId)
+            .IsRequired();
+
+        modelBuilder.Entity<VenueManager>()
+            .HasOne(vm => vm.Venue)
+            .WithOne(v => v.User)
+            .HasForeignKey<Venue>(v => v.UserId)
+            .IsRequired();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
 }

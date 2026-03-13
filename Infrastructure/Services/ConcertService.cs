@@ -1,4 +1,5 @@
 using Core.Entities;
+using Core.Enums;
 using Application.Interfaces;
 using Application.Interfaces.Search;
 using Core.Parameters;
@@ -95,9 +96,8 @@ public class ConcertService : IConcertService
     public async Task<ListingApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams)
     {
         var user = currentUser.Get();
-        var role = currentUser.GetFirstRole();
 
-        if (role != "VenueManager")
+        if (user.Role != Role.VenueManager)
             throw new ForbiddenException("Only VenueManagers can book concerts");
 
         var response = await applicationValidationService.CanAcceptListingApplicationAsync(bookingParams.ApplicationId, user.Id);

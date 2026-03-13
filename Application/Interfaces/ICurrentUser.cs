@@ -1,5 +1,6 @@
 using Application.DTOs;
-using Core.Entities.Identity;
+using Core.Entities;
+using Core.Enums;
 
 namespace Application.Interfaces;
 
@@ -9,6 +10,6 @@ public interface ICurrentUser
     int GetId();
     UserDto Get();
     UserDto? GetOrDefault();
-    ApplicationUser GetEntity();
-    string GetFirstRole();
+    User GetEntity();
+    Role GetRole();
 }
