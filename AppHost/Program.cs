@@ -1,5 +1,10 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Projects.Web>("api");
+var sql = builder.AddSqlServer("sql")
+                 .AddDatabase("DefaultConnection");
+
+builder.AddProject<Projects.Web>("api")
+       .WithReference(sql)
+       .WaitFor(sql);
 
 builder.Build().Run();
