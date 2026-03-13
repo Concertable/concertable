@@ -12,22 +12,16 @@ public class ArtistService : IArtistService
 {
     private readonly IArtistRepository artistRepository;
     private readonly IImageService imageService;
-    private readonly IReviewService reviewService;
     private readonly ICurrentUser currentUser;
-    private readonly IUnitOfWork unitOfWork;
 
     public ArtistService(
         IArtistRepository artistRepository,
         IImageService imageService,
-        ICurrentUser currentUser,
-        IReviewService reviewService,
-        IUnitOfWork unitOfWork)
+        ICurrentUser currentUser)
     {
         this.artistRepository = artistRepository;
         this.imageService = imageService;
-        this.reviewService = reviewService;
         this.currentUser = currentUser;
-        this.unitOfWork = unitOfWork;
     }
 
     public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
