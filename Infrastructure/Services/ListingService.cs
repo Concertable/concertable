@@ -9,22 +9,24 @@ namespace Infrastructure.Services;
 public class ListingService : IListingService
 {
     private readonly IListingRepository listingRepository;
-    private readonly IStripeValidationService stripeValidationService;
+    private readonly IStripeValidator stripeValidator;
     private readonly IVenueService venueService;
 
     public ListingService(
         IListingRepository listingRepository,
-        IStripeValidationService stripeValidationService,
+        IStripeValidator stripeValidator,
         IVenueService venueService)
     {
         this.listingRepository = listingRepository;
-        this.stripeValidationService = stripeValidationService;
+        this.stripeValidator = stripeValidator;
         this.venueService = venueService;
     }
 
     public async Task CreateAsync(ListingDto listingDto)
     {
-        await stripeValidationService.ValidateUserAsync();
+        var stripeResult = await stripeValidator.ValidateUserAsync();
+        if (!stripeResult.IsValid)
+            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");
@@ -37,7 +39,9 @@ public class ListingService : IListingService
 
     public async Task CreateMultipleAsync(IEnumerable<ListingDto> listingsDto)
     {
-        await stripeValidationService.ValidateUserAsync();
+        var stripeResult = await stripeValidator.ValidateUserAsync();
+        if (!stripeResult.IsValid)
+            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");

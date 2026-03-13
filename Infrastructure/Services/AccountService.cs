@@ -20,31 +20,28 @@ public class AccountService : IAccountService
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly AuthSettings _authSettings;
+    private readonly IUserValidator userValidator;
 
     public AccountService(
         ApplicationDbContext context,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
-        IOptions<AuthSettings> authSettings)
+        IOptions<AuthSettings> authSettings,
+        IUserValidator userValidator)
     {
         _context = context;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
         _authSettings = authSettings.Value;
+        this.userValidator = userValidator;
     }
 
     public async Task RegisterAsync(RegisterRequest request)
     {
-        var reasons = new List<string>();
+        var result = await userValidator.CanRegisterAsync(request);
 
-        if (request.Role == Role.Admin)
-            reasons.Add("You cannot make yourself an admin");
-
-        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-            reasons.Add("Email already exists");
-
-        if (reasons.Count != 0)
-            throw new BadRequestException(reasons);
+        if (!result.IsValid)
+            throw new BadRequestException(result.Errors);
 
         var passwordHash = _passwordHasher.Hash(request.Password);
 

@@ -13,8 +13,8 @@ public class ListingApplicationService : IListingApplicationService
     private readonly IListingApplicationRepository listingApplicationRepository;
     private readonly IUnitOfWork unitOfWork;
     private readonly ICurrentUser currentUser;
-    private readonly IListingApplicationValidationService applicationValidationService;
-    private readonly IStripeValidationService stripeValidationService;
+    private readonly IListingApplicationValidator applicationValidator;
+    private readonly IStripeValidator stripeValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
     private readonly IListingService listingService;
@@ -25,8 +25,8 @@ public class ListingApplicationService : IListingApplicationService
         IListingApplicationRepository listingApplicationRepository,
         IUnitOfWork unitOfWork,
         ICurrentUser currentUser,
-        IListingApplicationValidationService applicationValidationService,
-        IStripeValidationService stripeValidationService,
+        IListingApplicationValidator applicationValidator,
+        IStripeValidator stripeValidator,
         IMessageService messageService,
         IEmailService emailService,
         IListingService listingService,
@@ -36,8 +36,8 @@ public class ListingApplicationService : IListingApplicationService
         this.listingApplicationRepository = listingApplicationRepository;
         this.unitOfWork = unitOfWork;
         this.currentUser = currentUser;
-        this.applicationValidationService = applicationValidationService;
-        this.stripeValidationService = stripeValidationService;
+        this.applicationValidator = applicationValidator;
+        this.stripeValidator = stripeValidator;
         this.messageService = messageService;
         this.emailService = emailService;
         this.listingService = listingService;
@@ -73,7 +73,9 @@ public class ListingApplicationService : IListingApplicationService
 
     public async Task ApplyForListingAsync(int listingId)
     {
-        await stripeValidationService.ValidateUserAsync();
+        var stripeResult = await stripeValidator.ValidateUserAsync();
+        if (!stripeResult.IsValid)
+            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
 
         var artistDto = await artistService.GetDetailsForCurrentUserAsync();
 
@@ -90,10 +92,10 @@ public class ListingApplicationService : IListingApplicationService
         var listingOwner = await listingService.GetOwnerByIdAsync(listingId);
         var listing = await listingService.GetByIdAsync(listingId);
 
-        var response = await applicationValidationService.CanApplyForListingAsync(listingId, artistDto.Id);
+        var result = await applicationValidator.CanApplyForListingAsync(listingId, artistDto.Id);
 
-        if (!response.IsValid)
-            throw new BadRequestException(response.Reason!);
+        if (!result.IsValid)
+            throw new BadRequestException(result.Errors);
 
         var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
         var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId).ToHashSet();

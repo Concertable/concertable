@@ -15,10 +15,10 @@ public class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
     private readonly IConcertHeaderService concertHeaderService;
-    private readonly IConcertValidationService concertValidationService;
+    private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IUserPaymentService userPaymentService;
-    private readonly IListingApplicationValidationService applicationValidationService;
+    private readonly IListingApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
     private readonly IReviewService reviewService;
@@ -32,10 +32,10 @@ public class ConcertService : IConcertService
     public ConcertService(
         IConcertRepository concertRepository,
         IConcertHeaderService concertHeaderService,
-        IConcertValidationService concertValidationService,
+        IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IUserPaymentService userPaymentService,
-        IListingApplicationValidationService applicationValidationService,
+        IListingApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
         IReviewService reviewService,
@@ -48,10 +48,10 @@ public class ConcertService : IConcertService
     {
         this.concertRepository = concertRepository;
         this.concertHeaderService = concertHeaderService;
-        this.concertValidationService = concertValidationService;
+        this.concertValidator = concertValidator;
         this.currentUser = currentUser;
         this.userPaymentService = userPaymentService;
-        this.applicationValidationService = applicationValidationService;
+        this.applicationValidator = applicationValidator;
         this.messageService = messageService;
         this.emailService = emailService;
         this.reviewService = reviewService;
@@ -101,10 +101,10 @@ public class ConcertService : IConcertService
         if (user.Role != Role.VenueManager)
             throw new ForbiddenException("Only VenueManagers can book concerts");
 
-        var response = await applicationValidationService.CanAcceptListingApplicationAsync(bookingParams.ApplicationId, user.Id);
+        var result = await applicationValidator.CanAcceptListingApplicationAsync(bookingParams.ApplicationId);
 
-        if (!response.IsValid)
-            throw new BadRequestException(response.Reason!);
+        if (!result.IsValid)
+            throw new BadRequestException(result.Errors);
 
         var paymentResponse = await userPaymentService.PayArtistManagerByApplicationIdAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
 
@@ -124,7 +124,8 @@ public class ConcertService : IConcertService
     {
         try
         {
-            var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId);
+            var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId)
+                ?? throw new NotFoundException("Listing application not found");
             var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
             var concertDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
 
@@ -205,9 +206,9 @@ public class ConcertService : IConcertService
         var concertEntity = await concertRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
-        var response = await concertValidationService.CanUpdateAsync(concertEntity, request.TotalTickets);
-        if (!response.IsValid)
-            throw new BadRequestException(response.Reason!);
+        var result = await concertValidator.CanUpdateAsync(concertEntity, request.TotalTickets);
+        if (!result.IsValid)
+            throw new BadRequestException(result.Errors);
 
         concertEntity.Name = request.Name;
         concertEntity.About = request.About;
@@ -227,9 +228,9 @@ public class ConcertService : IConcertService
         var concertEntity = await concertRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
-        var response = await concertValidationService.CanPostAsync(concertEntity);
-        if (!response.IsValid)
-            throw new BadRequestException(response.Reason!);
+        var result = await concertValidator.CanPostAsync(concertEntity);
+        if (!result.IsValid)
+            throw new BadRequestException(result.Errors);
 
         concertEntity.Name = request.Name;
         concertEntity.About = request.About;

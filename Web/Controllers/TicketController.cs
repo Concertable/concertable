@@ -14,12 +14,12 @@ namespace Web.Controllers;
 public class TicketController : ControllerBase
 {
     private readonly ITicketService ticketService;
-    private readonly ITicketValidationService ticketValidationService;
+    private readonly ITicketValidator ticketValidator;
 
-    public TicketController(ITicketService ticketService, ITicketValidationService ticketValidationService)
+    public TicketController(ITicketService ticketService, ITicketValidator ticketValidator)
     {
         this.ticketService = ticketService;
-        this.ticketValidationService = ticketValidationService;
+        this.ticketValidator = ticketValidator;
     }
 
     [HttpPost("purchase")]
@@ -43,10 +43,10 @@ public class TicketController : ControllerBase
     [HttpGet("can-purchase/{eventId}")]
     public async Task<ActionResult<bool>> CanPurchaseAsync(int eventId)
     {
-        var result = await ticketValidationService.CanPurchaseTicketAsync(eventId);
+        var result = await ticketValidator.CanPurchaseTicketAsync(eventId);
 
         if (!result.IsValid)
-            return BadRequest(result.Reason);
+            return BadRequest(result.Errors);
 
         return Ok(true);
     }

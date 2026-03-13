@@ -1,28 +1,28 @@
-﻿using Core.Enums;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Core.Enums;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Exceptions;
 
 public class BadRequestException : HttpException
 {
-    public IEnumerable<string> Reasons { get; } = new List<string>();
+    public IDictionary<string, string[]>? ValidationErrors { get; }
 
-    public BadRequestException(IEnumerable<string> reasons)
-        : base("Bad Request", HttpStatusCode.BadRequest)
+    public BadRequestException(IDictionary<string, string[]> validationErrors)
+        : base("One or more validation errors occurred.", HttpStatusCode.BadRequest)
     {
-        this.Reasons = reasons;
+        Title = "Bad Request";
+        ValidationErrors = validationErrors;
     }
 
-    public BadRequestException(string message)
-        : base(message)
+    public BadRequestException(string detail)
+        : base(detail, HttpStatusCode.BadRequest)
     {
+        Title = "Bad Request";
     }
 
-    public BadRequestException(string message, ErrorType errorType) : base(message, errorType, HttpStatusCode.BadRequest) { }
+    public BadRequestException(string detail, ErrorType errorType)
+        : base(detail, errorType, HttpStatusCode.BadRequest)
+    {
+        Title = "Bad Request";
+    }
 }

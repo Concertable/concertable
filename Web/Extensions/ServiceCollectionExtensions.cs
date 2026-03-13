@@ -12,6 +12,7 @@ using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Search;
 using Infrastructure.Services;
+using Infrastructure.Validators;
 using Infrastructure.Services.Search;
 using Infrastructure.Settings;
 using Infrastructure.Factories;
@@ -27,6 +28,9 @@ using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
 using Web.Authorization;
 using Application.DTOs;
+using Application.Requests;
+using Core.Parameters;
+using Microsoft.AspNetCore.Http;
 
 namespace Web.Extensions;
 
@@ -94,13 +98,21 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeAccountService, StripeAccountService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddScoped<IUriService, UriService>();
-        services.AddScoped<IListingApplicationValidationService, ListingApplicationValidationService>();
-        services.AddScoped<ITicketValidationService, TicketValidationService>();
         services.AddSingleton<IGeometryProvider, GeometryProvider>();
-        services.AddScoped<IStripeValidationService, StripeValidationService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
-        services.AddScoped<IConcertValidationService, ConcertValidationService>();
+        services.AddValidators();
+
+        return services;
+    }
+
+    public static IServiceCollection AddValidators(this IServiceCollection services)
+    {
+        services.AddSingleton<IConcertValidator, ConcertValidator>();
+        services.AddScoped<ITicketValidator, TicketValidator>();
+        services.AddScoped<IListingApplicationValidator, ListingApplicationValidator>();
+        services.AddScoped<IStripeValidator, StripeValidator>();
+        services.AddScoped<IUserValidator, UserValidator>();
 
         return services;
     }
@@ -167,7 +179,24 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddValidation(this IServiceCollection services)
     {
         services.AddFluentValidationAutoValidation();
-        services.AddValidatorsFromAssemblyContaining<UserDto>();
+
+        services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
+        services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
+        services.AddScoped<IValidator<ForgotPasswordRequest>, ForgotPasswordRequestValidator>();
+        services.AddScoped<IValidator<ResetPasswordRequest>, ResetPasswordRequestValidator>();
+        services.AddScoped<IValidator<ChangeEmailRequest>, ChangeEmailRequestValidator>();
+        services.AddScoped<IValidator<ListingDto>, ListingDtoValidator>();
+        services.AddScoped<IValidator<MarkMessagesReadRequest>, MarkMessagesReadRequestValidator>();
+        services.AddScoped<IValidator<CreatePreferenceRequest>, CreatePreferenceRequestValidator>();
+        services.AddScoped<IValidator<CreateReviewRequest>, CreateReviewRequestValidator>();
+        services.AddScoped<IValidator<TicketPurchaseParams>, TicketPurchaseParamsValidator>();
+        services.AddScoped<IValidator<UpdateLocationRequest>, UpdateLocationRequestValidator>();
+        services.AddScoped<IValidator<CreateArtistRequest>, CreateArtistRequestValidator>();
+        services.AddScoped<IValidator<UpdateArtistRequest>, UpdateArtistRequestValidator>();
+        services.AddScoped<IValidator<UpdateConcertRequest>, UpdateConcertRequestValidator>();
+        services.AddScoped<IValidator<IFormFile>, IFormFileValidator>();
+        services.AddScoped<IValidator<CreateVenueRequest>, CreateVenueRequestValidator>();
+        services.AddScoped<IValidator<UpdateVenueRequest>, UpdateVenueRequestValidator>();
 
         return services;
     }

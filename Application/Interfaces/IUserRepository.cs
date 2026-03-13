@@ -8,4 +8,5 @@ public interface IUserRepository : IBaseRepository<User>
     Task<int> GetIdByConcertIdAsync(int concertId);
     Task<User> GetByApplicationIdAsync(int applicationId);
     Task<User> GetByConcertIdAsync(int concertId);
+    Task<bool> ExistsByEmailAsync(string email);
 }

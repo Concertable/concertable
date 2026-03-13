@@ -34,13 +34,17 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             httpContext.Response.StatusCode = (int)httpEx.StatusCode;
             problemDetails.Status = httpContext.Response.StatusCode;
-            problemDetails.Title = httpEx.Message;
+            problemDetails.Title = httpEx.Title;
+            problemDetails.Detail = httpEx.Detail;
 
-            if (exception is BadRequestException badRequestEx && badRequestEx.Reasons.Any())
+            if (exception is BadRequestException badRequestEx && badRequestEx.ValidationErrors is not null)
             {
-                problemDetails.Title = "Validation Error";
-                problemDetails.Detail = "One or more validation errors occurred.";
-                problemDetails.Extensions["errors"] = badRequestEx.Reasons;
+                await httpContext.Response.WriteAsJsonAsync(new ValidationProblemDetails(badRequestEx.ValidationErrors)
+                {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Instance = httpContext.Request.Path
+                }, cancellationToken).ConfigureAwait(false);
+                return true;
             }
             else
             {
@@ -51,7 +55,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             problemDetails.Status = httpContext.Response.StatusCode;
-            problemDetails.Title = "An unexpected error occurred.";
+            problemDetails.Title = "Internal Server Error";
             problemDetails.Detail = exception.Message;
 
             problemDetails.Extensions["stackTrace"] = exception.ToString();

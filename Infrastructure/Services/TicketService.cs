@@ -10,7 +10,7 @@ using Core.Parameters;
 public class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
-    private readonly ITicketValidationService ticketValidationService;
+    private readonly ITicketValidator ticketValidator;
     private readonly IUnitOfWork unitOfWork;
     private readonly IUserPaymentService userPaymentService;
     private readonly IEmailService emailService;
@@ -21,7 +21,7 @@ public class TicketService : ITicketService
 
     public TicketService(
         ITicketRepository ticketRepository,
-        ITicketValidationService ticketValidationService,
+        ITicketValidator ticketValidator,
         IUnitOfWork unitOfWork,
         IUserPaymentService userPaymentService,
         IEmailService emailService,
@@ -31,7 +31,7 @@ public class TicketService : ITicketService
         TimeProvider timeProvider)
     {
         this.ticketRepository = ticketRepository;
-        this.ticketValidationService = ticketValidationService;
+        this.ticketValidator = ticketValidator;
         this.unitOfWork = unitOfWork;
         this.userPaymentService = userPaymentService;
         this.emailService = emailService;
@@ -48,10 +48,10 @@ public class TicketService : ITicketService
         if (user.Role != Role.Customer)
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var response = await ticketValidationService.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
+        var result = await ticketValidator.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
 
-        if (!response.IsValid)
-            throw new BadRequestException(response.Reasons);
+        if (!result.IsValid)
+            throw new BadRequestException(result.Errors);
 
         var paymentResponse = await userPaymentService.PayVenueManagerByConcertIdAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId);
 

@@ -12,20 +12,20 @@ namespace Web.Controllers;
 public class ListingApplicationController : ControllerBase
 {
     private readonly IListingApplicationService listingApplicationService;
-    private readonly IListingApplicationValidationService applicationValidationService;
+    private readonly IListingApplicationValidator applicationValidator;
     private readonly IArtistService artistService;
     private readonly IOwnershipService ownershipService;
     private readonly ICurrentUser currentUser;
 
     public ListingApplicationController(
         IListingApplicationService listingApplicationService,
-        IListingApplicationValidationService applicationValidationService,
+        IListingApplicationValidator applicationValidator,
         IArtistService artistService,
         IOwnershipService ownershipService,
         ICurrentUser currentUser)
     {
         this.listingApplicationService = listingApplicationService;
-        this.applicationValidationService = applicationValidationService;
+        this.applicationValidator = applicationValidator;
         this.artistService = artistService;
         this.ownershipService = ownershipService;
         this.currentUser = currentUser;
@@ -75,10 +75,10 @@ public class ListingApplicationController : ControllerBase
         if (artist is null)
             return NotFound("Artist not found");
 
-        var response = await applicationValidationService.CanApplyForListingAsync(listingId, artist.Id);
+        var result = await applicationValidator.CanApplyForListingAsync(listingId, artist.Id);
 
-        if (!response.IsValid)
-            return BadRequest(response.Reason);
+        if (!result.IsValid)
+            return BadRequest(result.Errors);
 
         return Ok(true);
     }
@@ -87,11 +87,10 @@ public class ListingApplicationController : ControllerBase
     [HttpGet("can-accept/{applicationId}")]
     public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
     {
-        var userId = currentUser.GetId();
-        var result = await applicationValidationService.CanAcceptListingApplicationAsync(applicationId, userId);
+        var result = await applicationValidator.CanAcceptListingApplicationAsync(applicationId);
 
         if (!result.IsValid)
-            return BadRequest(result.Reason);
+            return BadRequest(result.Errors);
 
         return Ok(true);
     }

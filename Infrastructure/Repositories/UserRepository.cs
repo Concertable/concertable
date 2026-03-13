@@ -44,4 +44,9 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
         return await query.FirstAsync();
     }
+
+    public Task<bool> ExistsByEmailAsync(string email)
+    {
+        return context.Users.AnyAsync(u => u.Email == email);
+    }
 }

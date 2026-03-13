@@ -16,10 +16,11 @@ namespace Infrastructure.Services;
 public class UserPaymentService : IUserPaymentService
 {
     private readonly IPaymentService paymentService;
-    private IUserService userService;
-    private Lazy<IConcertService> concertService;
-    private IListingApplicationService listingApplicationService;
-    private ICurrentUser currentUser;
+    private readonly IUserService userService;
+    private readonly Lazy<IConcertService> concertService;
+    private readonly IListingApplicationService listingApplicationService;
+    private readonly ICurrentUser currentUser;
+
     public UserPaymentService(
         IPaymentService paymentService,
         IUserService userService,
