@@ -5,7 +5,7 @@ namespace Application.Interfaces;
 
 public interface IConcertRepository : IRepository<Concert>
 {
-    new Task<Concert?> GetByIdAsync(int id);
+    Task<Concert?> GetDetailsByIdAsync(int id);
     Task<Concert?> GetByApplicationIdAsync(int applicationId);
     Task<IEnumerable<Concert>> GetUpcomingByVenueIdAsync(int id);
     Task<IEnumerable<Concert>> GetUpcomingByArtistIdAsync(int id);
@@ -16,4 +16,5 @@ public interface IConcertRepository : IRepository<Concert>
     Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date);
     Task<bool> ListingHasConcertAsync(int listingId);
     Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date);
+    Task<decimal?> GetPriceByIdAsync(int id);
 }

@@ -9,4 +9,5 @@ namespace Application.Interfaces;
 public interface IQrCodeService
 {
     byte[] GenerateFromTicketId(int id);
+    Task<byte[]> GetByTicketIdAsync(int ticketId);
 }

@@ -21,7 +21,7 @@ public class ArtistRepository : Repository<Artist>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public new async Task<Artist?> GetByIdAsync(int id)
+    public async Task<Artist?> GetDetailsByIdAsync(int id)
     {
         return await context.Artists
             .Where(v => v.Id == id)

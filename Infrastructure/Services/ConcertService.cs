@@ -89,7 +89,7 @@ public class ConcertService : IConcertService
 
     public async Task<ConcertDto> GetDetailsByIdAsync(int id)
     {
-        var concertEntity = await concertRepository.GetByIdAsync(id)
+        var concertEntity = await concertRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
         return concertEntity.ToDto();
     }
@@ -225,7 +225,7 @@ public class ConcertService : IConcertService
 
     public async Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request)
     {
-        var concertEntity = await concertRepository.GetByIdAsync(id)
+        var concertEntity = await concertRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
         var result = await concertValidator.CanPostAsync(concertEntity);

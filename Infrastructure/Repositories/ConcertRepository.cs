@@ -16,7 +16,7 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
         this.timeProvider = timeProvider;
     }
 
-    public new async Task<Concert?> GetByIdAsync(int id)
+    public async Task<Concert?> GetDetailsByIdAsync(int id)
     {
         return await context.Concerts
             .Where(e => e.Id == id)
@@ -144,5 +144,14 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
             .Where(e => e.Application.Listing.VenueId == venueId)
             .AnyAsync(e => e.Application.Listing.StartDate.Date == date.Date);
     }
+
+    public async Task<decimal?> GetPriceByIdAsync(int id)
+    {
+        return await context.Concerts
+            .Where(e => e.Id == id)
+            .Select(e => e.Price)
+            .FirstOrDefaultAsync();
+    }
+
 
 }

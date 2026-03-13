@@ -16,7 +16,7 @@ public class TicketService : ITicketService
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUser currentUser;
-    private readonly IManagerService managerService;
+    private readonly IConcertRepository concertRepository;
     private readonly TimeProvider timeProvider;
 
     public TicketService(
@@ -27,7 +27,7 @@ public class TicketService : ITicketService
         IEmailService emailService,
         IQrCodeService qrCodeService,
         ICurrentUser currentUser,
-        IManagerService managerService,
+        IConcertRepository concertRepository,
         TimeProvider timeProvider)
     {
         this.ticketRepository = ticketRepository;
@@ -37,7 +37,7 @@ public class TicketService : ITicketService
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
         this.currentUser = currentUser;
-        this.managerService = managerService;
+        this.concertRepository = concertRepository;
         this.timeProvider = timeProvider;
     }
 
@@ -53,7 +53,9 @@ public class TicketService : ITicketService
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
-        var paymentResponse = await userPaymentService.PayVenueManagerByConcertIdAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId);
+        var price = await concertRepository.GetPriceByIdAsync(purchaseParams.ConcertId)
+            ?? throw new NotFoundException("Concert not found");
+        var paymentResponse = await userPaymentService.PayVenueManagerByConcertIdAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, price);
 
         return new TicketPurchaseResponse
         {
@@ -135,12 +137,7 @@ public class TicketService : ITicketService
         };
     }
 
-    public Task<byte[]?> GetQrCodeByIdAsync(int id)
-    {
-        return ticketRepository.GetQrCodeByIdAsync(id);
-    }
-
-    public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
+public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
         var user = currentUser.Get();
         var tickets = await ticketRepository.GetUpcomingByUserIdAsync(user.Id);

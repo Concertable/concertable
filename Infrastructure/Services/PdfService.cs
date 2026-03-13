@@ -1,39 +1,29 @@
-﻿using Application.Interfaces;
-using Core.Entities;
+using Application.Interfaces;
 using QuestPDF.Infrastructure;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Core.Exceptions;
 
 namespace Infrastructure.Services;
 
 public class PdfService : IPdfService
 {
     private readonly IQrCodeService qrCodeService;
-    private readonly Lazy<ITicketService> ticketService;
 
-    public PdfService(IQrCodeService qrCodeService, Lazy<ITicketService> ticketService)
+    public PdfService(IQrCodeService qrCodeService)
     {
         this.qrCodeService = qrCodeService;
-        this.ticketService = ticketService;
     }
 
     public async Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId)
     {
-        byte[] qrCode = await ticketService.Value.GetQrCodeByIdAsync(ticketId)
-            ?? throw new NotFoundException("QR Code not found");
+        byte[] qrCode = await qrCodeService.GetByTicketIdAsync(ticketId);
 
         return Document.Create(container =>
         {
             container.Page(page =>
             {
                 page.Margin(20);
-                page.Size(PageSizes.A5); // Use a small ticket format
+                page.Size(PageSizes.A5);
 
                 page.Header()
                     .Text($"Ticket")
@@ -49,9 +39,7 @@ public class PdfService : IPdfService
                         column.Item().Text($"TicketId: {ticketId}").FontSize(14);
 
                         if (qrCode != null)
-                        {
                             column.Item().Image(qrCode);
-                        }
 
                         column.Item().Text("Show this QR code at entrance").Italic();
                     });

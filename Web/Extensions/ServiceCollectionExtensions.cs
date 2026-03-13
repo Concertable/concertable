@@ -31,6 +31,7 @@ using Application.DTOs;
 using Application.Requests;
 using Core.Parameters;
 using Microsoft.AspNetCore.Http;
+using QRCoder;
 
 namespace Web.Extensions;
 
@@ -56,8 +57,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<GeometryFactory>(
             NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
 
-        services.AddScoped(provider => new Lazy<IConcertService>(() => provider.GetRequiredService<IConcertService>()));
-        services.AddScoped(provider => new Lazy<ITicketService>(() => provider.GetRequiredService<ITicketService>()));
 
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddHostedService<QueueHostedService>();
@@ -86,13 +85,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ITransactionService, TransactionService>();
-        services.AddScoped<IManagerService, ManagerService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<IReviewService, ReviewService>();
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfService, PdfService>();
+        services.AddSingleton<QRCodeGenerator>();
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IUserPaymentService, UserPaymentService>();
         services.AddScoped<IStripeAccountService, StripeAccountService>();
