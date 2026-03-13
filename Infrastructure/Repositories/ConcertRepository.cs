@@ -21,14 +21,14 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
         return await context.Concerts
             .Where(e => e.Id == id)
             .Include(e => e.Application)
-                .ThenInclude(la => la.Artist)
+                .ThenInclude(ca => ca.Artist)
                     .ThenInclude(a => a.User)
             .Include(e => e.Application)
-                .ThenInclude(la => la.Artist)
+                .ThenInclude(ca => ca.Artist)
                     .ThenInclude(a => a.ArtistGenres)
                         .ThenInclude(ag => ag.Genre)
-            .Include(e => e.Application.Listing)
-                .ThenInclude(l => l.Venue)
+            .Include(e => e.Application.Opportunity)
+                .ThenInclude(o => o.Venue)
                     .ThenInclude(v => v.User)
             .Include(e => e.ConcertGenres)
                 .ThenInclude(eg => eg.Genre)
@@ -38,12 +38,12 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     public async Task<IEnumerable<Concert>> GetUpcomingByVenueIdAsync(int id)
     {
         return await context.Concerts
-            .Where(e => e.Application.Listing.VenueId == id
-                        && e.Application.Listing.StartDate >= timeProvider.GetUtcNow()
+            .Where(e => e.Application.Opportunity.VenueId == id
+                        && e.Application.Opportunity.StartDate >= timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .Include(e => e.Application)
-                .ThenInclude(a => a.Listing)
-            .Include(e => e.Application.Listing.Venue)
+                .ThenInclude(a => a.Opportunity)
+            .Include(e => e.Application.Opportunity.Venue)
                 .ThenInclude(v => v.User)
             .Include(e => e.Application.Artist)
                 .ThenInclude(a => a.User)
@@ -54,11 +54,11 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     {
         return await context.Concerts
             .Where(e => e.Application.ArtistId == id
-                        && e.Application.Listing.StartDate >= timeProvider.GetUtcNow()
+                        && e.Application.Opportunity.StartDate >= timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .Include(e => e.Application)
-                .ThenInclude(a => a.Listing)
-            .Include(e => e.Application.Listing.Venue)
+                .ThenInclude(a => a.Opportunity)
+            .Include(e => e.Application.Opportunity.Venue)
                 .ThenInclude(v => v.User)
             .Include(e => e.Application.Artist)
                 .ThenInclude(a => a.User)
@@ -76,11 +76,11 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     {
         return await context.Concerts
             .Where(e => e.Application.ArtistId == id
-                        && e.Application.Listing.StartDate < timeProvider.GetUtcNow()
+                        && e.Application.Opportunity.StartDate < timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .Include(e => e.Application)
-                .ThenInclude(a => a.Listing)
-            .Include(e => e.Application.Listing.Venue)
+                .ThenInclude(a => a.Opportunity)
+            .Include(e => e.Application.Opportunity.Venue)
                 .ThenInclude(v => v.User)
             .Include(e => e.Application.Artist)
                 .ThenInclude(a => a.User)
@@ -90,12 +90,12 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     public async Task<IEnumerable<Concert>> GetHistoryByVenueIdAsync(int id)
     {
         return await context.Concerts
-            .Where(e => e.Application.Listing.VenueId == id
-                        && e.Application.Listing.StartDate < timeProvider.GetUtcNow()
+            .Where(e => e.Application.Opportunity.VenueId == id
+                        && e.Application.Opportunity.StartDate < timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .Include(e => e.Application)
-                .ThenInclude(a => a.Listing)
-            .Include(e => e.Application.Listing.Venue)
+                .ThenInclude(a => a.Opportunity)
+            .Include(e => e.Application.Opportunity.Venue)
                 .ThenInclude(v => v.User)
             .Include(e => e.Application.Artist)
                 .ThenInclude(a => a.User)
@@ -106,8 +106,8 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     {
         return await context.Concerts
             .Where(e => e.Application.ArtistId == id && e.DatePosted == null)
-            .Include(e => e.Application.Listing)
-            .Include(e => e.Application.Listing.Venue)
+            .Include(e => e.Application.Opportunity)
+            .Include(e => e.Application.Opportunity.Venue)
                 .ThenInclude(v => v.User)
             .Include(e => e.Application.Artist)
                 .ThenInclude(a => a.User)
@@ -117,9 +117,9 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     public async Task<IEnumerable<Concert>> GetUnpostedByVenueIdAsync(int id)
     {
         return await context.Concerts
-            .Where(e => e.Application.Listing.VenueId == id && e.DatePosted == null)
-            .Include(e => e.Application.Listing)
-            .Include(e => e.Application.Listing.Venue)
+            .Where(e => e.Application.Opportunity.VenueId == id && e.DatePosted == null)
+            .Include(e => e.Application.Opportunity)
+            .Include(e => e.Application.Opportunity.Venue)
                 .ThenInclude(v => v.User)
             .Include(e => e.Application.Artist)
                 .ThenInclude(a => a.User)
@@ -130,19 +130,19 @@ public class ConcertRepository : Repository<Concert>, IConcertRepository
     {
         return await context.Concerts
             .Where(e => e.Application.ArtistId == artistId)
-            .AnyAsync(e => e.Application.Listing.StartDate.Date == date.Date);
+            .AnyAsync(e => e.Application.Opportunity.StartDate.Date == date.Date);
     }
 
-    public Task<bool> ListingHasConcertAsync(int listingId)
+    public Task<bool> OpportunityHasConcertAsync(int opportunityId)
     {
-        return context.Concerts.AnyAsync(e => e.Application.ListingId == listingId);
+        return context.Concerts.AnyAsync(e => e.Application.OpportunityId == opportunityId);
     }
 
     public async Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date)
     {
         return await context.Concerts
-            .Where(e => e.Application.Listing.VenueId == venueId)
-            .AnyAsync(e => e.Application.Listing.StartDate.Date == date.Date);
+            .Where(e => e.Application.Opportunity.VenueId == venueId)
+            .AnyAsync(e => e.Application.Opportunity.StartDate.Date == date.Date);
     }
 
     public async Task<decimal?> GetPriceByIdAsync(int id)

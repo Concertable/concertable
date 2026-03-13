@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Core.Entities;
 
-public class ListingApplication : BaseEntity
+public class ConcertApplication : BaseEntity
 {
-    public int ListingId { get; set; }
+    public int OpportunityId { get; set; }
     public int ArtistId { get; set; }
-    public Listing Listing { get; set; } = null!;
+    public ConcertOpportunity Opportunity { get; set; } = null!;
     public Artist Artist { get; set; } = null!;
     public Concert? Concert { get; set; }
 }

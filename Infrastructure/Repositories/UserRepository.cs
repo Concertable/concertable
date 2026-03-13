@@ -11,7 +11,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public async Task<User> GetByApplicationIdAsync(int applicationId)
     {
-        var query = context.ListingApplications
+        var query = context.ConcertApplications
             .Where(a => a.Id == applicationId)
             .Select(a => a.Artist.User);
 
@@ -29,7 +29,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public async Task<int> GetIdByApplicationIdAsync(int applicationId)
     {
-        var query = context.ListingApplications
+        var query = context.ConcertApplications
             .Where(a => a.Id == applicationId)
             .Select(a => a.Artist.UserId);
 

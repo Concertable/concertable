@@ -14,9 +14,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ConcertGenre> ConcertGenres { get; set; }
     public DbSet<ConcertImage> ConcertImages { get; set; }
     public DbSet<Genre> Genres { get; set; }
-    public DbSet<Listing> Listings { get; set; }
-    public DbSet<ListingGenre> ListingGenres { get; set; }
-    public DbSet<ListingApplication> ListingApplications { get; set; }
+    public DbSet<ConcertOpportunity> ConcertOpportunities { get; set; }
+    public DbSet<OpportunityGenre> OpportunityGenres { get; set; }
+    public DbSet<ConcertApplication> ConcertApplications { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<SocialMedia> SocialMedias { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
@@ -48,12 +48,12 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<StripeEvent>()
             .HasKey(e => e.EventId);
 
-        modelBuilder.Entity<ListingApplication>()
-            .HasIndex(la => new { la.ListingId, la.ArtistId })
+        modelBuilder.Entity<ConcertApplication>()
+            .HasIndex(ca => new { ca.OpportunityId, ca.ArtistId })
             .IsUnique();
 
-        modelBuilder.Entity<ListingApplication>()
-            .Ignore(l => l.Concert);
+        modelBuilder.Entity<ConcertApplication>()
+            .Ignore(ca => ca.Concert);
 
         modelBuilder.Entity<Message>()
             .HasOne(m => m.FromUser)
@@ -106,17 +106,17 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
-        modelBuilder.Entity<ListingApplication>()
-            .HasOne(r => r.Listing)
-            .WithMany(l => l.Applications)
-            .HasForeignKey(r => r.ListingId)
+        modelBuilder.Entity<ConcertApplication>()
+            .HasOne(ca => ca.Opportunity)
+            .WithMany(o => o.Applications)
+            .HasForeignKey(ca => ca.OpportunityId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<ListingApplication>()
-            .HasOne(r => r.Artist)
+        modelBuilder.Entity<ConcertApplication>()
+            .HasOne(ca => ca.Artist)
             .WithMany(a => a.Applications)
-            .HasForeignKey(r => r.ArtistId)
+            .HasForeignKey(ca => ca.ArtistId)
             .IsRequired();
 
         modelBuilder.Entity<Ticket>()

@@ -356,200 +356,200 @@ public class ApplicationDbInitializer
             await context.SaveChangesAsync();
         }
 
-        // Listings
-        if (!context.Listings.Any())
+        // Concert Opportunities
+        if (!context.ConcertOpportunities.Any())
         {
-            var listings = new Listing[]
+            var opportunities = new ConcertOpportunity[]
             {
-            new Listing { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Pay = 150 }, //1
-            new Listing { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Pay = 200 }, //2
-            new Listing { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Pay = 180 }, //3
-            new Listing { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Pay = 175 }, //4
-            new Listing { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Pay = 160 }, //5
-            new Listing { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Pay = 220 }, //6
-            new Listing { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Pay = 210 }, //7
-            new Listing { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Pay = 230 }, //8
-            new Listing { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Pay = 240 }, //9
-            new Listing { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Pay = 250 }, //10
-            new Listing { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Pay = 160 }, //11
-            new Listing { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Pay = 300 }, //12
-            new Listing { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Pay = 280 }, //13
-            new Listing { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Pay = 270 }, //14
-            new Listing { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 265 }, //15
-            new Listing { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Pay = 260 }, //16
-            new Listing { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Pay = 255 }, //17
-            new Listing { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Pay = 250 }, //18
-            new Listing { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Pay = 245 }, //19
-            new Listing { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Pay = 240 }, //20
-            new Listing { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Pay = 235 }, //21
-            new Listing { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Pay = 230 }, //22
-            new Listing { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Pay = 225 }, //23
-            new Listing { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Pay = 220 }, //24
-            new Listing { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Pay = 215 }, //25
-            new Listing { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Pay = 210 }, //26
-            new Listing { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Pay = 205 }, //27
-            new Listing { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 }, //28
-            new Listing { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 }, //29
-            new Listing { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //30
-            new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //31
-            new Listing { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Pay = 190 }, //32
-            new Listing { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Pay = 150 }, //33
-            new Listing { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Pay = 175 }, //34
-            new Listing { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Pay = 200 }, //35
-            new Listing { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Pay = 150 }, //36
-            new Listing { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 175 }, //37
-            new Listing { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Pay = 200 }, //38
-            new Listing { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Pay = 150 }, //39
-            new Listing { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Pay = 175 }, //40
-            new Listing { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Pay = 200 } //41
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Pay = 150 }, //1
+            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Pay = 200 }, //2
+            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Pay = 180 }, //3
+            new ConcertOpportunity { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Pay = 175 }, //4
+            new ConcertOpportunity { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Pay = 160 }, //5
+            new ConcertOpportunity { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Pay = 220 }, //6
+            new ConcertOpportunity { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Pay = 210 }, //7
+            new ConcertOpportunity { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Pay = 230 }, //8
+            new ConcertOpportunity { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Pay = 240 }, //9
+            new ConcertOpportunity { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Pay = 250 }, //10
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Pay = 160 }, //11
+            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Pay = 300 }, //12
+            new ConcertOpportunity { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Pay = 280 }, //13
+            new ConcertOpportunity { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Pay = 270 }, //14
+            new ConcertOpportunity { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 265 }, //15
+            new ConcertOpportunity { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Pay = 260 }, //16
+            new ConcertOpportunity { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Pay = 255 }, //17
+            new ConcertOpportunity { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Pay = 250 }, //18
+            new ConcertOpportunity { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Pay = 245 }, //19
+            new ConcertOpportunity { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Pay = 240 }, //20
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Pay = 235 }, //21
+            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Pay = 230 }, //22
+            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Pay = 225 }, //23
+            new ConcertOpportunity { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Pay = 220 }, //24
+            new ConcertOpportunity { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Pay = 215 }, //25
+            new ConcertOpportunity { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Pay = 210 }, //26
+            new ConcertOpportunity { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Pay = 205 }, //27
+            new ConcertOpportunity { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 }, //28
+            new ConcertOpportunity { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 }, //29
+            new ConcertOpportunity { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //30
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //31
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Pay = 190 }, //32
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Pay = 150 }, //33
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Pay = 175 }, //34
+            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Pay = 200 }, //35
+            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Pay = 150 }, //36
+            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 175 }, //37
+            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Pay = 200 }, //38
+            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Pay = 150 }, //39
+            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Pay = 175 }, //40
+            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Pay = 200 } //41
 
             };
-            context.Listings.AddRange(listings);
+            context.ConcertOpportunities.AddRange(opportunities);
             await context.SaveChangesAsync();
         }
 
-        // ListingGenres
-        if (!context.ListingGenres.Any())
+        // OpportunityGenres
+        if (!context.OpportunityGenres.Any())
         {
-            var listingGenres = new ListingGenre[]
+            var opportunityGenres = new OpportunityGenre[]
             {
-                new ListingGenre { ListingId = 1, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 1, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 2, GenreId = 5 }, // Electronic
-                new ListingGenre { ListingId = 3, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 4, GenreId = 4 }, // Hip-Hop
-                new ListingGenre { ListingId = 5, GenreId = 6 }, // Indie
-                new ListingGenre { ListingId = 5, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 6, GenreId = 6 }, // Indie
-                new ListingGenre { ListingId = 6, GenreId = 4 }, // Hip-Hop
-                new ListingGenre { ListingId = 7, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 8, GenreId = 4 }, // Hip-Hop
-                new ListingGenre { ListingId = 8, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 9, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 9, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 9, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 10, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 11, GenreId = 5 }, // Electronic
-                new ListingGenre { ListingId = 11, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 12, GenreId = 6 }, // Indie
-                new ListingGenre { ListingId = 13, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 14, GenreId = 7 }, // DnB
-                new ListingGenre { ListingId = 15, GenreId = 8 }, // House
-                new ListingGenre { ListingId = 16, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 16, GenreId = 7 }, // DnB
-                new ListingGenre { ListingId = 17, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 18, GenreId = 6 }, // Indie
-                new ListingGenre { ListingId = 19, GenreId = 4 }, // Hip-Hop
-                new ListingGenre { ListingId = 20, GenreId = 7 }, // DnB
-                new ListingGenre { ListingId = 21, GenreId = 8 }, // House
-                new ListingGenre { ListingId = 22, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 22, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 23, GenreId = 5 }, // Electronic
-                new ListingGenre { ListingId = 24, GenreId = 6 }, // Indie
-                new ListingGenre { ListingId = 25, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 26, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 26, GenreId = 5 }, // Electronic
-                new ListingGenre { ListingId = 27, GenreId = 8 }, // House
-                new ListingGenre { ListingId = 28, GenreId = 5 }, // Electronic
-                new ListingGenre { ListingId = 29, GenreId = 7 }, // DnB
-                new ListingGenre { ListingId = 30, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 30, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 31, GenreId = 6 }, // Indie
-                new ListingGenre { ListingId = 32, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 33, GenreId = 4 }, // Hip-Hop
-                new ListingGenre { ListingId = 34, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 34, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 35, GenreId = 8 }, // House
-                new ListingGenre { ListingId = 36, GenreId = 6 }, // Indie
-                new ListingGenre { ListingId = 37, GenreId = 7 }, // DnB
-                new ListingGenre { ListingId = 38, GenreId = 3 }, // Jazz
-                new ListingGenre { ListingId = 39, GenreId = 1 }, // Rock
-                new ListingGenre { ListingId = 40, GenreId = 2 }, // Pop
-                new ListingGenre { ListingId = 41, GenreId = 4 }, // Hip-Hop
-                new ListingGenre { ListingId = 41, GenreId = 8 }  // House
+                new OpportunityGenre { OpportunityId = 1, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 1, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 2, GenreId = 5 }, // Electronic
+                new OpportunityGenre { OpportunityId = 3, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 4, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenre { OpportunityId = 5, GenreId = 6 }, // Indie
+                new OpportunityGenre { OpportunityId = 5, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 6, GenreId = 6 }, // Indie
+                new OpportunityGenre { OpportunityId = 6, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenre { OpportunityId = 7, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 8, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenre { OpportunityId = 8, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 9, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 9, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 9, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 10, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 11, GenreId = 5 }, // Electronic
+                new OpportunityGenre { OpportunityId = 11, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 12, GenreId = 6 }, // Indie
+                new OpportunityGenre { OpportunityId = 13, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 14, GenreId = 7 }, // DnB
+                new OpportunityGenre { OpportunityId = 15, GenreId = 8 }, // House
+                new OpportunityGenre { OpportunityId = 16, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 16, GenreId = 7 }, // DnB
+                new OpportunityGenre { OpportunityId = 17, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 18, GenreId = 6 }, // Indie
+                new OpportunityGenre { OpportunityId = 19, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenre { OpportunityId = 20, GenreId = 7 }, // DnB
+                new OpportunityGenre { OpportunityId = 21, GenreId = 8 }, // House
+                new OpportunityGenre { OpportunityId = 22, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 22, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 23, GenreId = 5 }, // Electronic
+                new OpportunityGenre { OpportunityId = 24, GenreId = 6 }, // Indie
+                new OpportunityGenre { OpportunityId = 25, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 26, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 26, GenreId = 5 }, // Electronic
+                new OpportunityGenre { OpportunityId = 27, GenreId = 8 }, // House
+                new OpportunityGenre { OpportunityId = 28, GenreId = 5 }, // Electronic
+                new OpportunityGenre { OpportunityId = 29, GenreId = 7 }, // DnB
+                new OpportunityGenre { OpportunityId = 30, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 30, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 31, GenreId = 6 }, // Indie
+                new OpportunityGenre { OpportunityId = 32, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 33, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenre { OpportunityId = 34, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 34, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 35, GenreId = 8 }, // House
+                new OpportunityGenre { OpportunityId = 36, GenreId = 6 }, // Indie
+                new OpportunityGenre { OpportunityId = 37, GenreId = 7 }, // DnB
+                new OpportunityGenre { OpportunityId = 38, GenreId = 3 }, // Jazz
+                new OpportunityGenre { OpportunityId = 39, GenreId = 1 }, // Rock
+                new OpportunityGenre { OpportunityId = 40, GenreId = 2 }, // Pop
+                new OpportunityGenre { OpportunityId = 41, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenre { OpportunityId = 41, GenreId = 8 }  // House
 };
-            context.ListingGenres.AddRange(listingGenres);
+            context.OpportunityGenres.AddRange(opportunityGenres);
             await context.SaveChangesAsync();
         }
 
-        // Listing Applications
-        if (!context.ListingApplications.Any())
+        // Concert Applications
+        if (!context.ConcertApplications.Any())
         {
-            var applications = new ListingApplication[]
+            var applications = new ConcertApplication[]
             {
-                new ListingApplication { ArtistId = 1, ListingId = 1 }, //1
-                new ListingApplication { ArtistId = 2, ListingId = 1 }, //2
-                new ListingApplication { ArtistId = 3, ListingId = 1 }, //3
-                new ListingApplication { ArtistId = 4, ListingId = 1 }, //4
+                new ConcertApplication { ArtistId = 1, OpportunityId = 1 }, //1
+                new ConcertApplication { ArtistId = 2, OpportunityId = 1 }, //2
+                new ConcertApplication { ArtistId = 3, OpportunityId = 1 }, //3
+                new ConcertApplication { ArtistId = 4, OpportunityId = 1 }, //4
 
-                new ListingApplication { ArtistId = 1, ListingId = 2 }, //5
-                new ListingApplication { ArtistId = 2, ListingId = 2 }, //6
-                new ListingApplication { ArtistId = 5, ListingId = 2 }, //7
-                new ListingApplication { ArtistId = 6, ListingId = 2 }, //8
+                new ConcertApplication { ArtistId = 1, OpportunityId = 2 }, //5
+                new ConcertApplication { ArtistId = 2, OpportunityId = 2 }, //6
+                new ConcertApplication { ArtistId = 5, OpportunityId = 2 }, //7
+                new ConcertApplication { ArtistId = 6, OpportunityId = 2 }, //8
 
-                new ListingApplication { ArtistId = 1, ListingId = 3 }, //9
-                new ListingApplication { ArtistId = 2, ListingId = 3 }, //10
-                new ListingApplication { ArtistId = 7, ListingId = 3 }, //11
-                new ListingApplication { ArtistId = 8, ListingId = 3 }, //12
+                new ConcertApplication { ArtistId = 1, OpportunityId = 3 }, //9
+                new ConcertApplication { ArtistId = 2, OpportunityId = 3 }, //10
+                new ConcertApplication { ArtistId = 7, OpportunityId = 3 }, //11
+                new ConcertApplication { ArtistId = 8, OpportunityId = 3 }, //12
 
-                new ListingApplication { ArtistId = 1, ListingId = 4 }, //13
-                new ListingApplication { ArtistId = 2, ListingId = 4 }, //14
-                new ListingApplication { ArtistId = 9, ListingId = 4 }, //15
-                new ListingApplication { ArtistId = 10, ListingId = 4 }, //16
+                new ConcertApplication { ArtistId = 1, OpportunityId = 4 }, //13
+                new ConcertApplication { ArtistId = 2, OpportunityId = 4 }, //14
+                new ConcertApplication { ArtistId = 9, OpportunityId = 4 }, //15
+                new ConcertApplication { ArtistId = 10, OpportunityId = 4 }, //16
 
-                new ListingApplication { ArtistId = 1, ListingId = 5 }, //17
-                new ListingApplication { ArtistId = 2, ListingId = 5 }, //18
-                new ListingApplication { ArtistId = 11, ListingId = 5 }, //19
-                new ListingApplication { ArtistId = 12, ListingId = 5 }, //20
+                new ConcertApplication { ArtistId = 1, OpportunityId = 5 }, //17
+                new ConcertApplication { ArtistId = 2, OpportunityId = 5 }, //18
+                new ConcertApplication { ArtistId = 11, OpportunityId = 5 }, //19
+                new ConcertApplication { ArtistId = 12, OpportunityId = 5 }, //20
 
-                new ListingApplication { ArtistId = 1, ListingId = 6 }, //21
-                new ListingApplication { ArtistId = 2, ListingId = 6 }, //22
-                new ListingApplication { ArtistId = 13, ListingId = 6 }, //23
-                new ListingApplication { ArtistId = 14, ListingId = 6 }, //24
+                new ConcertApplication { ArtistId = 1, OpportunityId = 6 }, //21
+                new ConcertApplication { ArtistId = 2, OpportunityId = 6 }, //22
+                new ConcertApplication { ArtistId = 13, OpportunityId = 6 }, //23
+                new ConcertApplication { ArtistId = 14, OpportunityId = 6 }, //24
 
-                new ListingApplication { ArtistId = 1, ListingId = 7 }, //25
-                new ListingApplication { ArtistId = 2, ListingId = 7 }, //26
-                new ListingApplication { ArtistId = 15, ListingId = 7 }, //27
-                new ListingApplication { ArtistId = 16, ListingId = 7 }, //28
+                new ConcertApplication { ArtistId = 1, OpportunityId = 7 }, //25
+                new ConcertApplication { ArtistId = 2, OpportunityId = 7 }, //26
+                new ConcertApplication { ArtistId = 15, OpportunityId = 7 }, //27
+                new ConcertApplication { ArtistId = 16, OpportunityId = 7 }, //28
 
-                new ListingApplication { ArtistId = 1, ListingId = 8 }, //29
-                new ListingApplication { ArtistId = 2, ListingId = 8 }, //30
-                new ListingApplication { ArtistId = 17, ListingId = 8 }, //31
-                new ListingApplication { ArtistId = 18, ListingId = 8 }, //32
-                new ListingApplication { ArtistId = 17, ListingId = 40 }, //31
-                new ListingApplication { ArtistId = 18, ListingId = 41 }, //32
+                new ConcertApplication { ArtistId = 1, OpportunityId = 8 }, //29
+                new ConcertApplication { ArtistId = 2, OpportunityId = 8 }, //30
+                new ConcertApplication { ArtistId = 17, OpportunityId = 8 }, //31
+                new ConcertApplication { ArtistId = 18, OpportunityId = 8 }, //32
+                new ConcertApplication { ArtistId = 17, OpportunityId = 40 }, //31
+                new ConcertApplication { ArtistId = 18, OpportunityId = 41 }, //32
 
-                new ListingApplication { ArtistId = 1, ListingId = 14 }, //33
-                new ListingApplication { ArtistId = 2, ListingId = 14 }, //34
-                new ListingApplication { ArtistId = 3, ListingId = 14 }, //35
-                new ListingApplication { ArtistId = 4, ListingId = 14 }, //36
+                new ConcertApplication { ArtistId = 1, OpportunityId = 14 }, //33
+                new ConcertApplication { ArtistId = 2, OpportunityId = 14 }, //34
+                new ConcertApplication { ArtistId = 3, OpportunityId = 14 }, //35
+                new ConcertApplication { ArtistId = 4, OpportunityId = 14 }, //36
 
-                new ListingApplication { ArtistId = 5, ListingId = 15 }, //37
-                new ListingApplication { ArtistId = 6, ListingId = 15 }, //38
-                new ListingApplication { ArtistId = 7, ListingId = 15 }, //39
-                new ListingApplication { ArtistId = 8, ListingId = 15 }, //40
+                new ConcertApplication { ArtistId = 5, OpportunityId = 15 }, //37
+                new ConcertApplication { ArtistId = 6, OpportunityId = 15 }, //38
+                new ConcertApplication { ArtistId = 7, OpportunityId = 15 }, //39
+                new ConcertApplication { ArtistId = 8, OpportunityId = 15 }, //40
 
-                new ListingApplication { ArtistId = 9, ListingId = 16 }, //41
-                new ListingApplication { ArtistId = 10, ListingId = 16 }, //42
-                new ListingApplication { ArtistId = 11, ListingId = 16 }, //43
-                new ListingApplication { ArtistId = 12, ListingId = 16 }, //44
+                new ConcertApplication { ArtistId = 9, OpportunityId = 16 }, //41
+                new ConcertApplication { ArtistId = 10, OpportunityId = 16 }, //42
+                new ConcertApplication { ArtistId = 11, OpportunityId = 16 }, //43
+                new ConcertApplication { ArtistId = 12, OpportunityId = 16 }, //44
 
-                new ListingApplication { ArtistId = 13, ListingId = 17 }, //45
-                new ListingApplication { ArtistId = 14, ListingId = 17 }, //46
-                new ListingApplication { ArtistId = 15, ListingId = 17 }, //47
-                new ListingApplication { ArtistId = 16, ListingId = 17 }, //48
+                new ConcertApplication { ArtistId = 13, OpportunityId = 17 }, //45
+                new ConcertApplication { ArtistId = 14, OpportunityId = 17 }, //46
+                new ConcertApplication { ArtistId = 15, OpportunityId = 17 }, //47
+                new ConcertApplication { ArtistId = 16, OpportunityId = 17 }, //48
 
-                new ListingApplication { ArtistId = 1, ListingId = 34 }, //49
-                new ListingApplication { ArtistId = 2, ListingId = 34 }, //50
-                new ListingApplication { ArtistId = 19, ListingId = 34 }, //51
-                new ListingApplication { ArtistId = 20, ListingId = 34 }, //52
+                new ConcertApplication { ArtistId = 1, OpportunityId = 34 }, //49
+                new ConcertApplication { ArtistId = 2, OpportunityId = 34 }, //50
+                new ConcertApplication { ArtistId = 19, OpportunityId = 34 }, //51
+                new ConcertApplication { ArtistId = 20, OpportunityId = 34 }, //52
 
-                new ListingApplication { ArtistId = 1, ListingId = 38 }, //53
-                new ListingApplication { ArtistId = 2, ListingId = 38 }, //54
-                new ListingApplication { ArtistId = 12, ListingId = 38 }, //55
-                new ListingApplication { ArtistId = 4, ListingId = 38 }, //56
+                new ConcertApplication { ArtistId = 1, OpportunityId = 38 }, //53
+                new ConcertApplication { ArtistId = 2, OpportunityId = 38 }, //54
+                new ConcertApplication { ArtistId = 12, OpportunityId = 38 }, //55
+                new ConcertApplication { ArtistId = 4, OpportunityId = 38 }, //56
             };
-            context.ListingApplications.AddRange(applications);
+            context.ConcertApplications.AddRange(applications);
             await context.SaveChangesAsync();
         }
 

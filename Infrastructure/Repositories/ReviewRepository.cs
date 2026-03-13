@@ -38,7 +38,7 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
 
     public Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
     {
-        return GetSummaryAsync(r => r.Ticket.Concert.Application.Listing.VenueId == id);
+        return GetSummaryAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == id);
     }
 
 
@@ -54,7 +54,7 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
 
     public Task<double> GetAverageRatingByVenueIdAsync(int id)
     {
-        return GetAverageRatingAsync(r => r.Ticket.Concert.Application.Listing.VenueId == id);
+        return GetAverageRatingAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == id);
     }
 
     private async Task<double> GetAverageRatingAsync(Expression<Func<Review, bool>> filter)
@@ -113,8 +113,8 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     {
         return GetAverageRatingsAsync(
             ids,
-            r => r.Ticket.Concert.Application.Listing.VenueId,
-            r => ids.Contains(r.Ticket.Concert.Application.Listing.VenueId));
+            r => r.Ticket.Concert.Application.Opportunity.VenueId,
+            r => ids.Contains(r.Ticket.Concert.Application.Opportunity.VenueId));
     }
 
 
@@ -152,7 +152,7 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
         GetAsync(r => r.Ticket.Concert.Application.ArtistId == artistId, pageParams);
 
     public Task<Pagination<Review>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
-        GetAsync(r => r.Ticket.Concert.Application.Listing.VenueId == venueId, pageParams);
+        GetAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == venueId, pageParams);
 
 
     private IQueryable<Ticket> GetUnreviewedTicketsByUser(int userId)
@@ -165,7 +165,7 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     public Task<bool> CanUserIdReviewConcertIdAsync(int userId, int concertId)
     {
         return GetUnreviewedTicketsByUser(userId)
-            .AnyAsync(t => t.ConcertId == concertId && t.Concert.Application.Listing.StartDate <= timeProvider.GetUtcNow());
+            .AnyAsync(t => t.ConcertId == concertId && t.Concert.Application.Opportunity.StartDate <= timeProvider.GetUtcNow());
     }
 
 
@@ -179,7 +179,7 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     public Task<bool> CanUserIdReviewVenueIdAsync(int userId, int venueId)
     {
         return GetUnreviewedTicketsByUser(userId)
-            .AnyAsync(t => t.Concert.Application.Listing.Venue.Id == venueId);
+            .AnyAsync(t => t.Concert.Application.Opportunity.Venue.Id == venueId);
     }
 
 }

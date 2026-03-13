@@ -18,14 +18,14 @@ public class ConcertService : IConcertService
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IUserPaymentService userPaymentService;
-    private readonly IListingApplicationValidator applicationValidator;
+    private readonly IConcertApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
     private readonly IReviewService reviewService;
     private readonly IPreferenceService preferenceService;
-    private readonly IListingRepository listingRepository;
+    private readonly IConcertOpportunityRepository opportunityRepository;
     private readonly IGeometryCalculator geometryCalculator;
-    private readonly IListingApplicationRepository listingApplicationRepository;
+    private readonly IConcertApplicationRepository applicationRepository;
     private readonly IGenreRepository genreRepository;
     private readonly TimeProvider timeProvider;
 
@@ -35,14 +35,14 @@ public class ConcertService : IConcertService
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IUserPaymentService userPaymentService,
-        IListingApplicationValidator applicationValidator,
+        IConcertApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
         IReviewService reviewService,
         IPreferenceService preferenceService,
         IGeometryCalculator geometryCalculator,
-        IListingRepository listingRepository,
-        IListingApplicationRepository listingApplicationRepository,
+        IConcertOpportunityRepository opportunityRepository,
+        IConcertApplicationRepository applicationRepository,
         IGenreRepository genreRepository,
         TimeProvider timeProvider)
     {
@@ -55,9 +55,9 @@ public class ConcertService : IConcertService
         this.messageService = messageService;
         this.emailService = emailService;
         this.reviewService = reviewService;
-        this.listingApplicationRepository = listingApplicationRepository;
+        this.applicationRepository = applicationRepository;
         this.preferenceService = preferenceService;
-        this.listingRepository = listingRepository;
+        this.opportunityRepository = opportunityRepository;
         this.geometryCalculator = geometryCalculator;
         this.genreRepository = genreRepository;
         this.timeProvider = timeProvider;
@@ -94,21 +94,21 @@ public class ConcertService : IConcertService
         return concertEntity.ToDto();
     }
 
-    public async Task<ListingApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams)
+    public async Task<ConcertApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams)
     {
         var user = currentUser.Get();
 
         if (user.Role != Role.VenueManager)
             throw new ForbiddenException("Only VenueManagers can book concerts");
 
-        var result = await applicationValidator.CanAcceptListingApplicationAsync(bookingParams.ApplicationId);
+        var result = await applicationValidator.CanAcceptConcertApplicationAsync(bookingParams.ApplicationId);
 
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
         var paymentResponse = await userPaymentService.PayArtistManagerByApplicationIdAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
 
-        return new ListingApplicationPurchaseResponse
+        return new ConcertApplicationPurchaseResponse
         {
             Success = paymentResponse.Success,
             RequiresAction = paymentResponse.RequiresAction,
@@ -120,14 +120,14 @@ public class ConcertService : IConcertService
         };
     }
 
-    public async Task<ListingApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
+    public async Task<ConcertApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
     {
         try
         {
-            var (artist, venue) = await listingApplicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId)
-                ?? throw new NotFoundException("Listing application not found");
-            var listing = await listingRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
-            var concertDto = await CreateDefaultAsync(purchaseCompleteDto, artist, listing!);
+            var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId)
+                ?? throw new NotFoundException("Concert application not found");
+            var opportunity = await opportunityRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
+            var concertDto = await CreateDefaultAsync(purchaseCompleteDto, artist, opportunity!);
 
             await messageService.SendAndSaveAsync(
                 purchaseCompleteDto.FromUserId,
@@ -138,7 +138,7 @@ public class ConcertService : IConcertService
 
             await emailService.SendEmailAsync(artist.User.Email!, "Concert Creation", "Your Application was chosen! A Concert has been scheduled for you!");
 
-            return new ListingApplicationPurchaseResponse
+            return new ConcertApplicationPurchaseResponse
             {
                 Success = true,
                 Message = "Concert successfully booked!",
@@ -148,7 +148,7 @@ public class ConcertService : IConcertService
         }
         catch (Exception)
         {
-            return new ListingApplicationPurchaseResponse
+            return new ConcertApplicationPurchaseResponse
             {
                 Success = false,
                 Message = "An error occurred while completing your booking. Please contact support.",
@@ -157,25 +157,25 @@ public class ConcertService : IConcertService
         }
     }
 
-    public async Task<ConcertDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, Artist artist, Listing listing)
+    public async Task<ConcertDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, Artist artist, ConcertOpportunity opportunity)
     {
         var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
-        var listingGenreIds = listing.ListingGenres.Select(lg => lg.GenreId);
+        var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId);
 
-        var matchingGenreIds = listingGenreIds.Any()
-            ? artistGenreIds.Intersect(listingGenreIds)
+        var matchingGenreIds = opportunityGenreIds.Any()
+            ? artistGenreIds.Intersect(opportunityGenreIds)
             : artistGenreIds;
 
         if (!matchingGenreIds.Any())
-            throw new BadRequestException("The artist does not match any genres required by the listing");
+            throw new BadRequestException("The artist does not match any genres required by the concert opportunity");
 
         var matchingGenres = await genreRepository.GetByIdsAsync(matchingGenreIds);
 
         var concertEntity = new Concert
         {
             ApplicationId = purchaseCompleteDto.EntityId,
-            Name = $"{artist.Name} performing at {listing.Venue.Name}",
-            About = listing.Venue.About,
+            Name = $"{artist.Name} performing at {opportunity.Venue.Name}",
+            About = opportunity.Venue.About,
             Price = 0,
             TotalTickets = 0,
             AvailableTickets = 0,
@@ -245,7 +245,7 @@ public class ConcertService : IConcertService
         var averageRating = (await reviewService.GetSummaryByConcertIdAsync(id)).AverageRating;
         concertHeaderDto.Rating = averageRating;
 
-        var location = concertEntity.Application.Listing.Venue.User.Location;
+        var location = concertEntity.Application.Opportunity.Venue.User.Location;
 
         if (location == null || location?.Y == null || location?.X == null)
         {

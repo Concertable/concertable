@@ -3,13 +3,13 @@ using FluentValidation;
 
 namespace Application.Validators;
 
-public class ListingDtoValidator : AbstractValidator<ListingDto>
+public class ConcertOpportunityDtoValidator : AbstractValidator<ConcertOpportunityDto>
 {
-    public ListingDtoValidator()
+    public ConcertOpportunityDtoValidator()
     {
         RuleFor(x => x.StartDate)
             .GreaterThan(DateTime.UtcNow)
-            .WithMessage("You cannot create a Listing in the past.");
+            .WithMessage("You cannot create a Concert Opportunity in the past.");
 
         RuleFor(x => x.EndDate)
             .GreaterThan(x => x.StartDate)

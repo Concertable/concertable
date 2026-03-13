@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Application.Models;
 
-public class ListingApplicationWithStatus
+public class ConcertApplicationWithStatus
 {
-    public required ListingApplication Application { get; set; }
+    public required ConcertApplication Application { get; set; }
     public bool HasConcert { get; set; }
 }
 

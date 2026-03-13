@@ -8,6 +8,6 @@ public class Genre : BaseEntity
 {
     public required string Name { get; set; }
     public ICollection<ConcertGenre> ConcertGenres { get; } = [];
-    public ICollection<ListingGenre> ListingGenres { get; set; } = [];
+    public ICollection<OpportunityGenre> OpportunityGenres { get; set; } = [];
     public ICollection<ArtistGenre> ArtistGenres { get; set; } = [];
 }

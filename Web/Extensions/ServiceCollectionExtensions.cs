@@ -79,9 +79,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertService, ConcertService>();
-        services.AddScoped<IListingApplicationService, ListingApplicationService>();
+        services.AddScoped<IConcertApplicationService, ConcertApplicationService>();
         services.AddScoped<IMessageService, MessageService>();
-        services.AddScoped<IListingService, ListingService>();
+        services.AddScoped<IConcertOpportunityService, ConcertOpportunityService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ITransactionService, TransactionService>();
@@ -109,7 +109,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
-        services.AddScoped<IListingApplicationValidator, ListingApplicationValidator>();
+        services.AddScoped<IConcertApplicationValidator, ConcertApplicationValidator>();
         services.AddScoped<IStripeValidator, StripeValidator>();
         services.AddScoped<IUserValidator, UserValidator>();
 
@@ -121,9 +121,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IArtistRepository, ArtistRepository>();
         services.AddScoped<IConcertRepository, ConcertRepository>();
-        services.AddScoped<IListingApplicationRepository, ListingApplicationRepository>();
+        services.AddScoped<IConcertApplicationRepository, ConcertApplicationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
-        services.AddScoped<IListingRepository, ListingRepository>();
+        services.AddScoped<IConcertOpportunityRepository, ConcertOpportunityRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
@@ -151,7 +151,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGeometrySpecification<Concert>>(sp =>
             new GeometrySpecification<Concert>(
                 sp.GetRequiredService<IGeometryProvider>(),
-                e => e.Application.Listing.Venue.User.Location));
+                e => e.Application.Opportunity.Venue.User.Location));
 
         services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
         services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();
@@ -184,7 +184,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IValidator<ForgotPasswordRequest>, ForgotPasswordRequestValidator>();
         services.AddScoped<IValidator<ResetPasswordRequest>, ResetPasswordRequestValidator>();
         services.AddScoped<IValidator<ChangeEmailRequest>, ChangeEmailRequestValidator>();
-        services.AddScoped<IValidator<ListingDto>, ListingDtoValidator>();
+        services.AddScoped<IValidator<ConcertOpportunityDto>, ConcertOpportunityDtoValidator>();
         services.AddScoped<IValidator<MarkMessagesReadRequest>, MarkMessagesReadRequestValidator>();
         services.AddScoped<IValidator<CreatePreferenceRequest>, CreatePreferenceRequestValidator>();
         services.AddScoped<IValidator<CreateReviewRequest>, CreateReviewRequestValidator>();

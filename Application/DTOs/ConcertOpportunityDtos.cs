@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Application.DTOs;
 
-public record ListingDto
+public record ConcertOpportunityDto
 {
     public int? Id { get; set; }
     public DateTime StartDate { get; set; }
@@ -13,7 +13,7 @@ public record ListingDto
     public decimal Pay { get; set; }
 }
 
-public record ListingResponse
+public record OpportunityResponse
 {
     public int? Id { get; set; }
     public DateTime StartDate { get; set; }
@@ -23,8 +23,8 @@ public record ListingResponse
     public double Pay { get; set; }
 }
 
-public record ListingWithVenueDto(ListingDto Listing, VenueDto Venue);
+public record OpportunityWithVenueDto(ConcertOpportunityDto Opportunity, VenueDto Venue);
 
-public record ListingApplicationDto(int Id, ArtistDto Artist, ListingDto Listing, ApplicationStatus Status);
+public record ConcertApplicationDto(int Id, ArtistDto Artist, ConcertOpportunityDto Opportunity, ApplicationStatus Status);
 
-public record ArtistListingApplicationDto(int Id, ArtistDto Artist, ListingWithVenueDto ListingWithVenue, ApplicationStatus Status);
+public record ArtistConcertApplicationDto(int Id, ArtistDto Artist, OpportunityWithVenueDto OpportunityWithVenue, ApplicationStatus Status);

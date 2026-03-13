@@ -14,18 +14,18 @@ public class OwnershipService : IOwnershipService
     private readonly ICurrentUser currentUser;
     private readonly IVenueService venueService;
     private readonly IArtistService artistService;
-    private readonly IListingRepository listingRepository;
+    private readonly IConcertOpportunityRepository opportunityRepository;
 
     public OwnershipService(
         ICurrentUser currentUser,
         IVenueService venueService,
         IArtistService artistService,
-        IListingRepository listingRepository)
+        IConcertOpportunityRepository opportunityRepository)
     {
         this.currentUser = currentUser;
         this.venueService = venueService;
         this.artistService = artistService;
-        this.listingRepository = listingRepository;
+        this.opportunityRepository = opportunityRepository;
     }
 
     public async Task<bool> OwnsVenueAsync(int venueId)
@@ -35,18 +35,18 @@ public class OwnershipService : IOwnershipService
         return id == venueId;
     }
 
-    public async Task<bool> OwnsListingAsync(int listingId)
+    public async Task<bool> OwnsOpportunityAsync(int opportunityId)
     {
         var user = currentUser.Get();
-        var listing = await listingRepository.GetWithVenueByIdAsync(listingId);
-        return listing != null && listing.Venue?.UserId == user.Id;
+        var opportunity = await opportunityRepository.GetWithVenueByIdAsync(opportunityId);
+        return opportunity != null && opportunity.Venue?.UserId == user.Id;
     }
 
-    public async Task<bool> OwnsListingByApplicationId(int applicationId)
+    public async Task<bool> OwnsOpportunityByApplicationId(int applicationId)
     {
         var user = currentUser.Get();
-        var listing = await listingRepository.GetByApplicationIdAsync(applicationId);
-        return listing != null && listing.Venue?.UserId == user.Id;
+        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId);
+        return opportunity != null && opportunity.Venue?.UserId == user.Id;
     }
 
     public async Task<bool> OwnsArtistAsync(int artistId)

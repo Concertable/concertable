@@ -9,22 +9,22 @@ namespace Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ListingApplicationController : ControllerBase
+public class ConcertApplicationController : ControllerBase
 {
-    private readonly IListingApplicationService listingApplicationService;
-    private readonly IListingApplicationValidator applicationValidator;
+    private readonly IConcertApplicationService applicationService;
+    private readonly IConcertApplicationValidator applicationValidator;
     private readonly IArtistService artistService;
     private readonly IOwnershipService ownershipService;
     private readonly ICurrentUser currentUser;
 
-    public ListingApplicationController(
-        IListingApplicationService listingApplicationService,
-        IListingApplicationValidator applicationValidator,
+    public ConcertApplicationController(
+        IConcertApplicationService applicationService,
+        IConcertApplicationValidator applicationValidator,
         IArtistService artistService,
         IOwnershipService ownershipService,
         ICurrentUser currentUser)
     {
-        this.listingApplicationService = listingApplicationService;
+        this.applicationService = applicationService;
         this.applicationValidator = applicationValidator;
         this.artistService = artistService;
         this.ownershipService = ownershipService;
@@ -33,49 +33,49 @@ public class ListingApplicationController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpGet("all/{id}")]
-    public async Task<ActionResult<IEnumerable<ListingApplicationDto>>> GetAllForListingId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertApplicationDto>>> GetAllForOpportunityId(int id)
     {
-        return Ok(await listingApplicationService.GetForListingIdAsync(id));
+        return Ok(await applicationService.GetForOpportunityIdAsync(id));
     }
 
     [Authorize(Roles = "ArtistManager")]
-    [HttpPost("{listingId}")]
-    public async Task<IActionResult> ApplyForListing(int listingId)
+    [HttpPost("{opportunityId}")]
+    public async Task<IActionResult> ApplyForOpportunity(int opportunityId)
     {
-        await listingApplicationService.ApplyForListingAsync(listingId);
+        await applicationService.ApplyForOpportunityAsync(opportunityId);
         return NoContent();
     }
 
     [HttpGet("artist/pending")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<ArtistListingApplicationDto>>> GetPendingForArtist()
+    public async Task<ActionResult<IEnumerable<ArtistConcertApplicationDto>>> GetPendingForArtist()
     {
-        return Ok(await listingApplicationService.GetPendingForArtistAsync());
+        return Ok(await applicationService.GetPendingForArtistAsync());
     }
 
     [HttpGet("artist/recently-denied")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<ArtistListingApplicationDto>>> GetRecentDeniedForArtist()
+    public async Task<ActionResult<IEnumerable<ArtistConcertApplicationDto>>> GetRecentDeniedForArtist()
     {
-        return Ok(await listingApplicationService.GetRecentDeniedForArtistAsync());
+        return Ok(await applicationService.GetRecentDeniedForArtistAsync());
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ListingApplication>> GetById(int id)
+    public async Task<ActionResult<ConcertApplication>> GetById(int id)
     {
-        return Ok(await listingApplicationService.GetByIdAsync(id));
+        return Ok(await applicationService.GetByIdAsync(id));
     }
 
     [Authorize(Roles = "ArtistManager")]
-    [HttpGet("can-apply/{listingId}")]
-    public async Task<ActionResult<bool>> CanApplyForListing(int listingId)
+    [HttpGet("can-apply/{opportunityId}")]
+    public async Task<ActionResult<bool>> CanApplyForOpportunity(int opportunityId)
     {
         var artist = await artistService.GetDetailsForCurrentUserAsync();
 
         if (artist is null)
             return NotFound("Artist not found");
 
-        var result = await applicationValidator.CanApplyForListingAsync(listingId, artist.Id);
+        var result = await applicationValidator.CanApplyForOpportunityAsync(opportunityId, artist.Id);
 
         if (!result.IsValid)
             return BadRequest(result.Errors);
@@ -87,7 +87,7 @@ public class ListingApplicationController : ControllerBase
     [HttpGet("can-accept/{applicationId}")]
     public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
     {
-        var result = await applicationValidator.CanAcceptListingApplicationAsync(applicationId);
+        var result = await applicationValidator.CanAcceptConcertApplicationAsync(applicationId);
 
         if (!result.IsValid)
             return BadRequest(result.Errors);
@@ -98,7 +98,7 @@ public class ListingApplicationController : ControllerBase
     [HttpGet("is-owner/{id}")]
     public async Task<ActionResult<bool>> IsOwner(int id)
     {
-        return Ok(await ownershipService.OwnsListingByApplicationId(id));
+        return Ok(await ownershipService.OwnsOpportunityByApplicationId(id));
     }
 
 }

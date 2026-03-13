@@ -14,7 +14,7 @@ public interface IConcertRepository : IRepository<Concert>
     Task<IEnumerable<Concert>> GetUnpostedByArtistIdAsync(int id);
     Task<IEnumerable<Concert>> GetUnpostedByVenueIdAsync(int id);
     Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date);
-    Task<bool> ListingHasConcertAsync(int listingId);
+    Task<bool> OpportunityHasConcertAsync(int opportunityId);
     Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date);
     Task<decimal?> GetPriceByIdAsync(int id);
 }

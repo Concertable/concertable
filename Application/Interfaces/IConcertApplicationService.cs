@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces;
 
-public interface IListingApplicationService
+public interface IConcertApplicationService
 {
-    Task<ListingApplicationDto> GetByIdAsync(int id);
-    Task<IEnumerable<ListingApplicationDto>> GetForListingIdAsync(int id);
+    Task<ConcertApplicationDto> GetByIdAsync(int id);
+    Task<IEnumerable<ConcertApplicationDto>> GetForOpportunityIdAsync(int id);
     /// <summary>
     /// Gets the list of Applications that havent expired, and dont yet have
     /// an event created
     /// </summary>
-    Task<IEnumerable<ArtistListingApplicationDto>> GetPendingForArtistAsync();
+    Task<IEnumerable<ArtistConcertApplicationDto>> GetPendingForArtistAsync();
     /// <summary>
     /// Gets the list of Applications where another application was accepted
     /// over these ones
     /// </summary>
-    Task<IEnumerable<ArtistListingApplicationDto>> GetRecentDeniedForArtistAsync();
-    Task ApplyForListingAsync(int listingId);
+    Task<IEnumerable<ArtistConcertApplicationDto>> GetRecentDeniedForArtistAsync();
+    Task ApplyForOpportunityAsync(int opportunityId);
     Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);
-    Task<decimal> GetListingPayByIdAsync(int id);
+    Task<decimal> GetOpportunityPayByIdAsync(int id);
 }

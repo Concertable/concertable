@@ -10,18 +10,18 @@ public class UserPaymentService : IUserPaymentService
 {
     private readonly IPaymentService paymentService;
     private readonly IUserService userService;
-    private readonly IListingApplicationService listingApplicationService;
+    private readonly IConcertApplicationService applicationService;
     private readonly ICurrentUser currentUser;
 
     public UserPaymentService(
         IPaymentService paymentService,
         IUserService userService,
-        IListingApplicationService listingApplicationService,
+        IConcertApplicationService applicationService,
         ICurrentUser currentUser)
     {
         this.paymentService = paymentService;
         this.userService = userService;
-        this.listingApplicationService = listingApplicationService;
+        this.applicationService = applicationService;
         this.currentUser = currentUser;
     }
 
@@ -54,7 +54,7 @@ public class UserPaymentService : IUserPaymentService
     {
         var user = currentUser.Get();
         var toUser = await userService.GetByApplicationIdAsync(applicationId);
-        var pay = await listingApplicationService.GetListingPayByIdAsync(applicationId);
+        var pay = await applicationService.GetOpportunityPayByIdAsync(applicationId);
 
         var transactionRequestDto = new TransactionRequest
         {

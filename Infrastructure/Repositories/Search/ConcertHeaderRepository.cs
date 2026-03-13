@@ -35,9 +35,9 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     {
         var concerts = await context.Concerts
             .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
+            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
+            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
             .OrderByDescending(e => e.DatePosted)
             .Take(amount)
             .ToListAsync();
@@ -49,9 +49,9 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     {
         var concerts = await context.Concerts
             .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
+            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
+            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
             .OrderByDescending(e => e.TotalTickets - e.AvailableTickets)
             .Take(10)
             .ToListAsync();
@@ -63,9 +63,9 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     {
         var concerts = await context.Concerts
             .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
+            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
+            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
             .Where(e => e.Price == 0)
             .OrderByDescending(e => e.DatePosted)
             .Take(10)
@@ -78,9 +78,9 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     {
         var query = context.Concerts
             .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
+            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow())
+            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
             .AsQueryable();
 
         if (concertParams.GenreIds.Any())
@@ -89,7 +89,7 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
         if (concertParams.OrderByRecent)
             query = query.OrderByDescending(e => e.DatePosted);
         else
-            query = query.OrderBy(e => e.Application.Listing.StartDate);
+            query = query.OrderBy(e => e.Application.Opportunity.StartDate);
 
         query = geometrySpecification.Apply(query, concertParams);
 

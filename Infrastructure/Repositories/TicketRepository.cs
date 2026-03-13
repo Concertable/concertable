@@ -32,7 +32,7 @@ public class TicketRepository : Repository<Ticket>, ITicketRepository
     public async Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id)
     {
         var query = context.Tickets
-            .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate < timeProvider.GetUtcNow())
+            .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
             .Include(t => t.Concert);
 
         return await query.ToListAsync();
@@ -41,7 +41,7 @@ public class TicketRepository : Repository<Ticket>, ITicketRepository
     public async Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id)
     {
         var query = context.Tickets
-             .Where(t => t.UserId == id && t.Concert.Application.Listing.StartDate >= timeProvider.GetUtcNow())
+             .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate >= timeProvider.GetUtcNow())
              .Include(t => t.Concert);
 
         return await query.ToListAsync();

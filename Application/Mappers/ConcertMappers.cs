@@ -15,9 +15,9 @@ public static class ConcertMappers
         TotalTickets = concert.TotalTickets,
         AvailableTickets = concert.AvailableTickets,
         DatePosted = concert.DatePosted,
-        StartDate = concert.Application.Listing.StartDate,
-        EndDate = concert.Application.Listing.EndDate,
-        Venue = concert.Application.Listing.Venue.ToDto(),
+        StartDate = concert.Application.Opportunity.StartDate,
+        EndDate = concert.Application.Opportunity.EndDate,
+        Venue = concert.Application.Opportunity.Venue.ToDto(),
         Artist = concert.Application.Artist.ToDto(),
         Genres = concert.ConcertGenres.Select(eg => eg.Genre.ToDto())
     };
@@ -27,12 +27,12 @@ public static class ConcertMappers
         Id = concert.Id,
         Name = concert.Name,
         ImageUrl = concert.Application.Artist.ImageUrl,
-        StartDate = concert.Application.Listing.StartDate,
-        EndDate = concert.Application.Listing.EndDate,
-        County = concert.Application.Listing.Venue.User.County ?? string.Empty,
-        Town = concert.Application.Listing.Venue.User.Town ?? string.Empty,
-        Latitude = concert.Application.Listing.Venue.User.Location?.Y ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
-        Longitude = concert.Application.Listing.Venue.User.Location?.X ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
+        StartDate = concert.Application.Opportunity.StartDate,
+        EndDate = concert.Application.Opportunity.EndDate,
+        County = concert.Application.Opportunity.Venue.User.County ?? string.Empty,
+        Town = concert.Application.Opportunity.Venue.User.Town ?? string.Empty,
+        Latitude = concert.Application.Opportunity.Venue.User.Location?.Y ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
+        Longitude = concert.Application.Opportunity.Venue.User.Location?.X ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
         DatePosted = concert.DatePosted
     };
 

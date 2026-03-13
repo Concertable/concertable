@@ -20,18 +20,18 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
     {
         query = query
             .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Listing).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
+            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Listing.EndDate > timeProvider.GetUtcNow());
+            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow());
 
         if (searchParams.Date != null)
-            query = query.Where(e => e.Application.Listing.StartDate >= searchParams.Date);
+            query = query.Where(e => e.Application.Opportunity.StartDate >= searchParams.Date);
 
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
 
         if (searchParams.ShowHistory != true)
-            query = query.Where(e => e.Application.Listing.StartDate >= timeProvider.GetUtcNow());
+            query = query.Where(e => e.Application.Opportunity.StartDate >= timeProvider.GetUtcNow());
 
         if (searchParams.ShowSold != true)
             query = query.Where(e => e.AvailableTickets > 0);
@@ -42,9 +42,9 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
         {
             "name_asc" => query.OrderBy(e => e.Name),
             "name_desc" => query.OrderByDescending(e => e.Name),
-            "date_asc" => query.OrderBy(e => e.Application.Listing.StartDate),
-            "date_desc" => query.OrderByDescending(e => e.Application.Listing.StartDate),
-            _ => query.OrderBy(e => e.Application.Listing.StartDate)
+            "date_asc" => query.OrderBy(e => e.Application.Opportunity.StartDate),
+            "date_desc" => query.OrderByDescending(e => e.Application.Opportunity.StartDate),
+            _ => query.OrderBy(e => e.Application.Opportunity.StartDate)
         };
     }
 }

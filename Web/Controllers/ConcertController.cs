@@ -73,7 +73,7 @@ public class ConcertController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPost("book")]
-    public async Task<ActionResult<ListingApplicationPurchaseResponse>> Book(ConcertBookingParams bookingParams)
+    public async Task<ActionResult<ConcertApplicationPurchaseResponse>> Book(ConcertBookingParams bookingParams)
     {
         return Ok(await concertService.BookAsync(bookingParams));
     }

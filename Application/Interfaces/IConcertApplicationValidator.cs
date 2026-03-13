@@ -8,15 +8,15 @@ namespace Application.Interfaces;
 /// checking if artists are available on specific dates, and enforcing
 /// scheduling constraints across the system.
 /// </summary>
-public interface IListingApplicationValidator
+public interface IConcertApplicationValidator
 {
     /// <summary>
-    /// Checks whether an artist can apply for a given listing, based on conflicts and constraints.
+    /// Checks whether an artist can apply for a given opportunity, based on conflicts and constraints.
     /// </summary>
-    Task<ValidationResult> CanApplyForListingAsync(int listingId, int artistId);
+    Task<ValidationResult> CanApplyForOpportunityAsync(int opportunityId, int artistId);
 
     /// <summary>
-    /// Checks whether a venue manager can accept a listing application, based on availability.
+    /// Checks whether a venue manager can accept a concert application, based on availability.
     /// </summary>
-    Task<ValidationResult> CanAcceptListingApplicationAsync(int applicationId);
+    Task<ValidationResult> CanAcceptConcertApplicationAsync(int applicationId);
 }

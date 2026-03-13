@@ -5,7 +5,14 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet-ef database:*)",
       "Bash(~/.dotnet/tools/dotnet-ef database:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(grep -rn \"IListingService\\\\|IListingRepository\\\\|IListingApplicationService\\\\|IListingApplicationRepository\\\\|IListingApplicationValidator\\\\|ListingApplication\\\\b\\\\|ListingGenre\\\\b\\\\|\\\\bListing\\\\b\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\" | head -60)",
+      "Bash(grep -rn \"Listing\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\" | head -60)",
+      "Bash(grep -rn \"listingService\\\\|listingApplicationService\\\\|listingRepository\\\\|listingApplicationRepository\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\")",
+      "Bash(grep -rn \"ListingDto\\\\|ListingWithVenueDto\\\\|ArtistListingApplicationDto\\\\|ListingApplicationDto\\\\|ListingApplicationWithStatus\\\\|ListingApplicationPurchaseResponse\\\\|ListingDtoValidator\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\")",
+      "Bash(grep -rn \"OpportunityId\\\\|ConcertOpportunity\\\\|ConcertApplication\\\\|OpportunityGenre\\\\|IConcertOpportunity\\\\|IConcertApplication\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\" | wc -l)",
+      "Bash(grep -rn \"\\\\.Listing\\\\b\\\\|IListing\\\\b\\\\|new Listing\\\\b\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\")",
+      "Bash(grep -rn \"GetListingPayByIdAsync\\\\|GetForListingIdAsync\\\\|ApplyForListingAsync\\\\|OwnsListingAsync\\\\|OwnsListingByApplicationId\\\\|GetByListingIdAsync\\\\|ListingHasConcertAsync\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\")"
     ]
   }
 }

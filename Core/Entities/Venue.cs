@@ -13,5 +13,5 @@ public class Venue : BaseEntity, IHasName, IHasLocation
     public bool Approved { get; set; }
     public VenueManager User { get; set; } = null!;
     public Point? Location => User.Location;
-    public ICollection<Listing> Listings { get; set; } = new List<Listing>();
+    public ICollection<ConcertOpportunity> Opportunities { get; set; } = [];
 }

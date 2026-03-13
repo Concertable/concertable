@@ -9,7 +9,7 @@ namespace Application.Interfaces;
 public interface IOwnershipService
 {
     Task<bool> OwnsVenueAsync(int venueId);
-    Task<bool> OwnsListingAsync(int listingId);
+    Task<bool> OwnsOpportunityAsync(int opportunityId);
     Task<bool> OwnsArtistAsync(int applicationId);
-    Task<bool> OwnsListingByApplicationId(int applicationId);
+    Task<bool> OwnsOpportunityByApplicationId(int applicationId);
 }
