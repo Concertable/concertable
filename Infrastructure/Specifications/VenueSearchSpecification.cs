@@ -1,7 +1,6 @@
 using Application.Interfaces.Search;
 using Core.Entities;
 using Core.Parameters;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Specifications;
 
@@ -16,8 +15,6 @@ public class VenueSearchSpecification : IVenueSearchSpecification
 
     public IQueryable<Venue> Apply(IQueryable<Venue> query, SearchParams searchParams)
     {
-        query = query.Include(v => v.User);
-
         query = searchSpecification.Apply(query, searchParams);
 
         return searchParams.Sort?.ToLower() switch

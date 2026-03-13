@@ -1,7 +1,6 @@
 using Application.Interfaces.Search;
 using Core.Entities;
 using Core.Parameters;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Specifications;
 
@@ -19,8 +18,6 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
     public IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams)
     {
         query = query
-            .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
             .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow());
 

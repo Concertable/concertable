@@ -12,11 +12,11 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
     where TEntity : class, IHasLocation
 {
     private readonly IGeometryProvider geometryProvider;
-    private readonly Expression<Func<TEntity, Point?>> locationSelector;
+    private readonly ILocationSelector<TEntity> locationSelector;
 
     public GeometrySpecification(
         IGeometryProvider geometryProvider,
-        Expression<Func<TEntity, Point?>> locationSelector)
+        ILocationSelector<TEntity> locationSelector)
     {
         this.geometryProvider = geometryProvider;
         this.locationSelector = locationSelector;
@@ -30,8 +30,8 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
         var center = geometryProvider.CreatePoint(geoParams.Latitude!.Value, geoParams.Longitude!.Value);
         var radiusKm = geoParams.RadiusKm ?? 10;
 
-        var entityParam = locationSelector.Parameters[0];
-        var locationExpr = locationSelector.Body;
+        var entityParam = locationSelector.LocationSelector.Parameters[0];
+        var locationExpr = locationSelector.LocationSelector.Body;
 
         /* e => e.[LocationPath] != null
                && e.[LocationPath].Distance(center) <= radiusKm * 1000 */

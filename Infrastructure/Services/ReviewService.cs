@@ -1,11 +1,9 @@
 using Application.DTOs;
 using Application.Interfaces;
-using Application.Interfaces.Search;
 using Application.Mappers;
 using Application.Requests;
 using Core.Entities;
 using Core.Exceptions;
-using Core.Interfaces;
 using Core.Parameters;
 using Application.Responses;
 using Infrastructure.Helpers;
@@ -26,33 +24,6 @@ public class ReviewService : IReviewService
         this.reviewRepository = reviewRepository;
         this.ticketRepository = ticketRepository;
         this.currentUser = currentUser;
-    }
-
-    public Task AddAverageRatingsAsync(IEnumerable<ArtistHeaderDto> headers)
-    {
-        return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByArtistIdsAsync);
-    }
-
-    public Task AddAverageRatingsAsync(IEnumerable<ConcertHeaderDto> headers)
-    {
-        return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByConcertIdsAsync);
-    }
-
-    public Task AddAverageRatingsAsync(IEnumerable<VenueHeaderDto> headers)
-    {
-        return AddAverageRatingsAsync(headers, reviewRepository.GetAverageRatingsByVenueIdsAsync);
-    }
-
-    private async Task AddAverageRatingsAsync<THeader>(
-        IEnumerable<THeader> headers,
-        Func<IEnumerable<int>, Task<IDictionary<int, double>>> getRatingsAsync)
-        where THeader : IHeader
-    {
-        var ids = headers.Select(h => h.Id).ToList();
-        var ratings = await getRatingsAsync(ids);
-
-        foreach (var h in headers)
-            h.Rating = ratings.TryGetValue(h.Id, out var rating) ? rating : 0.0;
     }
 
     public async Task SetAverageRatingAsync(VenueDto venue)
