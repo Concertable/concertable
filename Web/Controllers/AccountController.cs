@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Requests;
 using Application.Responses;
@@ -48,7 +49,7 @@ public class AccountController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<Application.DTOs.UserDto> Me()
+    public ActionResult<UserDto> Me()
     {
         return Ok(_currentUser.Get());
     }

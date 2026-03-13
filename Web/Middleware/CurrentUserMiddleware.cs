@@ -1,13 +1,19 @@
 using Application.Interfaces;
 using Infrastructure.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Web.Middleware;
 
 public class CurrentUserMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<CurrentUserMiddleware> _logger;
 
-    public CurrentUserMiddleware(RequestDelegate next) => _next = next;
+    public CurrentUserMiddleware(RequestDelegate next, ILogger<CurrentUserMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
 
     public async Task InvokeAsync(HttpContext context, IAccountService accountService)
     {
@@ -21,6 +27,13 @@ public class CurrentUserMiddleware
                 var entity = await accountService.GetUserEntityByIdAsync(userId, context.RequestAborted);
                 context.Items[nameof(CurrentUser)] = new CurrentUser(dto, entity);
             }
+            else
+                _logger.LogWarning(
+                    "Authenticated user with id {UserId} from claim 'sub' was not found in the database. Path: {Path}, TraceId: {TraceId}",
+                    userId,
+                    context.Request.Path,
+                    context.TraceIdentifier
+                );
         }
 
         await _next(context);

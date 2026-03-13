@@ -21,15 +21,12 @@ public class JwtTokenService : ITokenService
 
     public string CreateAccessToken(int userId, string email, Role role)
     {
-        var key = _settings.JwtSigningKeyBase64 != null
-            ? new SymmetricSecurityKey(Convert.FromBase64String(_settings.JwtSigningKeyBase64))
-            : new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ConcertableDevSigningKeyAtLeast32Chars!"));
+        var key = new SymmetricSecurityKey(Convert.FromBase64String(_settings.JwtSigningKeyBase64));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var claims = new[]
         {
             new Claim("sub", userId.ToString()),
-            new Claim(ClaimTypes.Email, email),
             new Claim("email", email),
             new Claim("role", role.ToString())
         };

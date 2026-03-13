@@ -17,6 +17,8 @@ using Infrastructure.Settings;
 using Infrastructure.Factories;
 using Infrastructure.Specifications;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -171,6 +173,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
         // Settings
+        var authSettings = configuration.GetSection("Auth").Get<AuthSettings>()!;
         services.Configure<AuthSettings>(configuration.GetSection("Auth"));
 
         // Services
@@ -185,23 +188,22 @@ public static class ServiceCollectionExtensions
         });
 
         // JWT Bearer
-        var signingKeyBase64 = configuration["Auth:JwtSigningKeyBase64"];
-        var keyBytes = !string.IsNullOrEmpty(signingKeyBase64)
-            ? Convert.FromBase64String(signingKeyBase64)
-            : Encoding.UTF8.GetBytes("ConcertableDevSigningKeyAtLeast32Chars!");
+        var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);
         var signingKey = new SymmetricSecurityKey(keyBytes);
 
-        services.AddAuthentication()
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer("Bearer", options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = signingKey,
-                    ValidIssuer = configuration["Auth:Issuer"] ?? "Concertable",
-                    ValidAudience = configuration["Auth:Audience"] ?? "Concertable",
+                    ValidIssuer = authSettings.Issuer,
+                    ValidAudience = authSettings.Audience,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero,
+                    RoleClaimType = "role"
                 };
             });
 
