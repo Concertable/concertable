@@ -36,6 +36,7 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     public async Task<Pagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams)
     {
         var query = searchSpecification.Apply(context.Concerts.AsQueryable(), searchParams);
+        query = geometrySpecification.Apply(query, searchParams);
         return await query
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .ToPaginationAsync(searchParams);

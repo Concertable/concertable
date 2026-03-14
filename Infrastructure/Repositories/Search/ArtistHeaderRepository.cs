@@ -15,20 +15,24 @@ public class ArtistHeaderRepository : IArtistHeaderRepository
     private readonly ApplicationDbContext context;
     private readonly IArtistSearchSpecification searchSpecification;
     private readonly IRatingSpecification<Artist> ratingSpecification;
+    private readonly IGeometrySpecification<Artist> geometrySpecification;
 
     public ArtistHeaderRepository(
         ApplicationDbContext context,
         IArtistSearchSpecification searchSpecification,
-        IRatingSpecification<Artist> ratingSpecification)
+        IRatingSpecification<Artist> ratingSpecification,
+        IGeometrySpecification<Artist> geometrySpecification)
     {
         this.context = context;
         this.searchSpecification = searchSpecification;
         this.ratingSpecification = ratingSpecification;
+        this.geometrySpecification = geometrySpecification;
     }
 
     public async Task<Pagination<ArtistHeaderDto>> SearchAsync(SearchParams searchParams)
     {
         var query = searchSpecification.Apply(context.Artists.AsQueryable(), searchParams);
+        query = geometrySpecification.Apply(query, searchParams);
         return await query
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .ToPaginationAsync(searchParams);

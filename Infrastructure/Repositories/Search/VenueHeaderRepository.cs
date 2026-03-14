@@ -15,20 +15,24 @@ public class VenueHeaderRepository : IVenueHeaderRepository
     private readonly ApplicationDbContext context;
     private readonly IVenueSearchSpecification searchSpecification;
     private readonly IRatingSpecification<Venue> ratingSpecification;
+    private readonly IGeometrySpecification<Venue> geometrySpecification;
 
     public VenueHeaderRepository(
         ApplicationDbContext context,
         IVenueSearchSpecification searchSpecification,
-        IRatingSpecification<Venue> ratingSpecification)
+        IRatingSpecification<Venue> ratingSpecification,
+        IGeometrySpecification<Venue> geometrySpecification)
     {
         this.context = context;
         this.searchSpecification = searchSpecification;
         this.ratingSpecification = ratingSpecification;
+        this.geometrySpecification = geometrySpecification;
     }
 
     public async Task<Pagination<VenueHeaderDto>> SearchAsync(SearchParams searchParams)
     {
         var query = searchSpecification.Apply(context.Venues.AsQueryable(), searchParams);
+        query = geometrySpecification.Apply(query, searchParams);
         return await query
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .ToPaginationAsync(searchParams);
