@@ -1,7 +1,6 @@
 using Application.Interfaces.Search;
 using Core.Entities;
 using Core.Parameters;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Specifications;
 
@@ -10,7 +9,9 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
     private readonly ISearchSpecification<Concert> searchSpecification;
     private readonly TimeProvider timeProvider;
 
-    public ConcertSearchSpecification(ISearchSpecification<Concert> searchSpecification, TimeProvider timeProvider)
+    public ConcertSearchSpecification(
+        ISearchSpecification<Concert> searchSpecification,
+        TimeProvider timeProvider)
     {
         this.searchSpecification = searchSpecification;
         this.timeProvider = timeProvider;
@@ -19,8 +20,6 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
     public IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams)
     {
         query = query
-            .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
             .Where(e => e.DatePosted != null)
             .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow());
 
@@ -30,18 +29,16 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
 
-        if (searchParams.ShowHistory != true)
+        if (searchParams.ShowHistory == false)
             query = query.Where(e => e.Application.Opportunity.StartDate >= timeProvider.GetUtcNow());
 
-        if (searchParams.ShowSold != true)
+        if (searchParams.ShowSold == false)
             query = query.Where(e => e.AvailableTickets > 0);
 
         query = searchSpecification.Apply(query, searchParams);
 
         return searchParams.Sort?.ToLower() switch
         {
-            "name_asc" => query.OrderBy(e => e.Name),
-            "name_desc" => query.OrderByDescending(e => e.Name),
             "date_asc" => query.OrderBy(e => e.Application.Opportunity.StartDate),
             "date_desc" => query.OrderByDescending(e => e.Application.Opportunity.StartDate),
             _ => query.OrderBy(e => e.Application.Opportunity.StartDate)

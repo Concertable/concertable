@@ -14,10 +14,12 @@ namespace Web.Controllers;
 public class ReviewController : ControllerBase
 {
     private readonly IReviewService reviewService;
+    private readonly IReviewValidator reviewValidator;
 
-    public ReviewController(IReviewService reviewService)
+    public ReviewController(IReviewService reviewService, IReviewValidator reviewValidator)
     {
         this.reviewService = reviewService;
+        this.reviewValidator = reviewValidator;
     }
 
     [HttpPost]
@@ -64,21 +66,15 @@ public class ReviewController : ControllerBase
     }
 
     [HttpGet("concert/can-review/{concertId}")]
-    public async Task<ActionResult<bool>> CanUserReviewConcertId(int concertId)
-    {
-        return Ok(await reviewService.CanUserReviewConcertIdAsync(concertId));
-    }
+    public async Task<ActionResult<bool>> CanUserReviewConcertId(int concertId) =>
+        Ok(await reviewValidator.CanUserReviewConcertAsync(concertId));
 
     [HttpGet("artist/can-review/{artistId}")]
-    public async Task<ActionResult<bool>> CanUserReviewArtistId([FromQuery] int artistId)
-    {
-        return Ok(await reviewService.CanUserReviewArtistIdAsync(artistId));
-    }
+    public async Task<ActionResult<bool>> CanUserReviewArtistId([FromQuery] int artistId) =>
+        Ok(await reviewValidator.CanUserReviewArtistAsync(artistId));
 
     [HttpGet("venue/can-review/{venueId}")]
-    public async Task<ActionResult<bool>> CanUserReviewVenueId([FromQuery] int venueId)
-    {
-        return Ok(await reviewService.CanUserReviewVenueIdAsync(venueId));
-    }
+    public async Task<ActionResult<bool>> CanUserReviewVenueId([FromQuery] int venueId) =>
+        Ok(await reviewValidator.CanUserReviewVenueAsync(venueId));
 
 }
