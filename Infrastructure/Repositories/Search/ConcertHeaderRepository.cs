@@ -1,11 +1,12 @@
 using Application.DTOs;
 using Application.Interfaces.Search;
-using Application.Mappers;
 using Application.Responses;
 using Core.Entities;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
+using Infrastructure.Extensions;
 using Infrastructure.Helpers;
+using Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Search;
@@ -13,88 +14,72 @@ namespace Infrastructure.Repositories.Search;
 public class ConcertHeaderRepository : IConcertHeaderRepository
 {
     private readonly ApplicationDbContext context;
-    private readonly IConcertSearchSpecification specification;
+    private readonly IConcertSearchSpecification searchSpecification;
+    private readonly IRatingSpecification<Concert> ratingSpecification;
     private readonly IGeometrySpecification<Concert> geometrySpecification;
     private readonly TimeProvider timeProvider;
 
-    public ConcertHeaderRepository(ApplicationDbContext context, IConcertSearchSpecification specification, IGeometrySpecification<Concert> geometrySpecification, TimeProvider timeProvider)
+    public ConcertHeaderRepository(
+        ApplicationDbContext context,
+        IConcertSearchSpecification searchSpecification,
+        IRatingSpecification<Concert> ratingSpecification,
+        IGeometrySpecification<Concert> geometrySpecification,
+        TimeProvider timeProvider)
     {
         this.context = context;
-        this.specification = specification;
+        this.searchSpecification = searchSpecification;
+        this.ratingSpecification = ratingSpecification;
         this.geometrySpecification = geometrySpecification;
         this.timeProvider = timeProvider;
     }
 
-    public async Task<Pagination<Concert>> SearchAsync(SearchParams searchParams)
+    public async Task<Pagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams)
     {
-        var query = specification.Apply(context.Concerts.AsQueryable(), searchParams);
+        var query = searchSpecification.Apply(context.Concerts.AsQueryable(), searchParams);
         query = geometrySpecification.Apply(query, searchParams);
-        return await query.ToPaginationAsync(searchParams);
+        return await query
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
+            .ToPaginationAsync(searchParams);
     }
 
-    public async Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount)
-    {
-        var concerts = await context.Concerts
-            .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
-            .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
-            .OrderByDescending(e => e.DatePosted)
+    public async Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount) =>
+        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
+            .OrderByDescending(c => c.DatePosted)
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(amount)
             .ToListAsync();
 
-        return concerts.ToHeaderDtos();
-    }
-
-    public async Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync()
-    {
-        var concerts = await context.Concerts
-            .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
-            .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
-            .OrderByDescending(e => e.TotalTickets - e.AvailableTickets)
+    public async Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync() =>
+        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
+            .OrderByDescending(c => c.TotalTickets - c.AvailableTickets)
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(10)
             .ToListAsync();
 
-        return concerts.ToHeaderDtos();
-    }
-
-    public async Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync()
-    {
-        var concerts = await context.Concerts
-            .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
-            .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
-            .Where(e => e.Price == 0)
-            .OrderByDescending(e => e.DatePosted)
+    public async Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync() =>
+        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
+            .Where(c => c.Price == 0)
+            .OrderByDescending(c => c.DatePosted)
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(10)
             .ToListAsync();
-
-        return concerts.ToHeaderDtos();
-    }
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedAsync(ConcertParams concertParams)
     {
-        var query = context.Concerts
-            .Include(e => e.Application).ThenInclude(a => a.Artist)
-            .Include(e => e.Application).ThenInclude(a => a.Opportunity).ThenInclude(l => l.Venue).ThenInclude(v => v.User)
-            .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow())
-            .AsQueryable();
+        var query = context.Concerts.Active(timeProvider.GetUtcNow().DateTime);
 
         if (concertParams.GenreIds.Any())
-            query = query.Where(e => e.ConcertGenres.Any(eg => concertParams.GenreIds.Contains(eg.GenreId)));
-
-        if (concertParams.OrderByRecent)
-            query = query.OrderByDescending(e => e.DatePosted);
-        else
-            query = query.OrderBy(e => e.Application.Opportunity.StartDate);
+            query = query.Where(c => c.ConcertGenres.Any(eg => concertParams.GenreIds.Contains(eg.GenreId)));
 
         query = geometrySpecification.Apply(query, concertParams);
 
-        var concerts = await query.Take(10).ToListAsync();
-        return concerts.ToHeaderDtos();
+        query = concertParams.OrderByRecent
+            ? query.OrderByDescending(c => c.DatePosted)
+            : query.OrderBy(c => c.Application.Opportunity.StartDate);
+
+        return await query
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
+            .Take(10)
+            .ToListAsync();
     }
 }

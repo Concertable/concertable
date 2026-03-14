@@ -1,11 +1,12 @@
 using Application.DTOs;
-using Core.Entities;
+using Application.Responses;
 using Core.Parameters;
 
 namespace Application.Interfaces.Search;
 
-public interface IConcertHeaderRepository : IHeaderRepository<Concert>
+public interface IConcertHeaderRepository
 {
+    Task<Pagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams);
     Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount);
     Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync();
     Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync();

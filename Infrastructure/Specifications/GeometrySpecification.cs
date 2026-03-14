@@ -16,10 +16,10 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
 
     public GeometrySpecification(
         IGeometryProvider geometryProvider,
-        Expression<Func<TEntity, Point?>> locationSelector)
+        ILocationSelector<TEntity> locationSelector)
     {
         this.geometryProvider = geometryProvider;
-        this.locationSelector = locationSelector;
+        this.locationSelector = locationSelector.LocationSelector;
     }
 
     public IQueryable<TEntity> Apply(IQueryable<TEntity> query, IGeoParams geoParams)
@@ -33,14 +33,16 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
         var entityParam = locationSelector.Parameters[0];
         var locationExpr = locationSelector.Body;
 
+        var distanceMethod = typeof(Geometry).GetMethod(nameof(Geometry.Distance), [typeof(Geometry)])!;
+
         /* e => e.[LocationPath] != null
                && e.[LocationPath].Distance(center) <= radiusKm * 1000 */
         var filter = Expression.Lambda<Func<TEntity, bool>>(
             Expression.AndAlso(
                 Expression.NotEqual(locationExpr, Expression.Constant(null, typeof(Point))),
                 Expression.LessThanOrEqual(
-                    Expression.Call(locationExpr, nameof(Geometry.Distance), null, Expression.Constant(center)),
-                    Expression.Constant(radiusKm * 1000))),
+                    Expression.Call(locationExpr, distanceMethod, Expression.Constant(center)),
+                    Expression.Constant((double)(radiusKm * 1000)))),
             entityParam);
 
         return query.Where(filter);

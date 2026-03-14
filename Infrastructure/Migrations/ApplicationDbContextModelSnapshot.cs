@@ -108,6 +108,30 @@ namespace Infrastructure.Migrations
                     b.ToTable("Concerts");
                 });
 
+            modelBuilder.Entity("Core.Entities.ConcertApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArtistId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OpportunityId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.HasIndex("OpportunityId", "ArtistId")
+                        .IsUnique();
+
+                    b.ToTable("ConcertApplications");
+                });
+
             modelBuilder.Entity("Core.Entities.ConcertGenre", b =>
                 {
                     b.Property<int>("ConcertId")
@@ -146,6 +170,33 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ConcertId");
 
                     b.ToTable("ConcertImages");
+                });
+
+            modelBuilder.Entity("Core.Entities.ConcertOpportunity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Pay")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VenueId");
+
+                    b.ToTable("ConcertOpportunities");
                 });
 
             modelBuilder.Entity("Core.Entities.Genre", b =>
@@ -188,217 +239,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("GenrePreferences");
                 });
 
-            modelBuilder.Entity("Core.Entities.Identity.ApplicationRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Customer",
-                            NormalizedName = "CUSTOMER"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "ArtistManager",
-                            NormalizedName = "ARTISTMANAGER"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "VenueManager",
-                            NormalizedName = "VENUEMANAGER"
-                        });
-                });
-
-            modelBuilder.Entity("Core.Entities.Identity.ApplicationUser", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("County")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<Point>("Location")
-                        .HasColumnType("geography");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StripeId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Town")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasDiscriminator().HasValue("ApplicationUser");
-
-                    b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("Core.Entities.Listing", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Pay")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("VenueId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VenueId");
-
-                    b.ToTable("Listings");
-                });
-
-            modelBuilder.Entity("Core.Entities.ListingApplication", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArtistId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ListingId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArtistId");
-
-                    b.HasIndex("ListingId", "ArtistId")
-                        .IsUnique();
-
-                    b.ToTable("ListingApplications");
-                });
-
-            modelBuilder.Entity("Core.Entities.ListingGenre", b =>
-                {
-                    b.Property<int>("ListingId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GenreId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ListingId", "GenreId");
-
-                    b.HasIndex("GenreId");
-
-                    b.ToTable("ListingGenres");
-                });
-
             modelBuilder.Entity("Core.Entities.Message", b =>
                 {
                     b.Property<int>("Id")
@@ -438,6 +278,21 @@ namespace Infrastructure.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("Core.Entities.OpportunityGenre", b =>
+                {
+                    b.Property<int>("OpportunityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OpportunityId", "GenreId");
+
+                    b.HasIndex("GenreId");
+
+                    b.ToTable("OpportunityGenres");
+                });
+
             modelBuilder.Entity("Core.Entities.Preference", b =>
                 {
                     b.Property<int>("Id")
@@ -454,9 +309,38 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Preferences");
+                });
+
+            modelBuilder.Entity("Core.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Core.Entities.Review", b =>
@@ -614,9 +498,8 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.Property<string>("StripeId")
                         .HasColumnType("nvarchar(max)");
@@ -630,6 +513,10 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Users", (string)null);
+
+                    b.HasDiscriminator<int>("Role").HasValue(3);
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Core.Entities.Venue", b =>
@@ -710,133 +597,30 @@ namespace Infrastructure.Migrations
                     b.ToTable("Videos");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("Core.Entities.ArtistManager", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.HasBaseType("Core.Entities.User");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.HasDiscriminator().HasValue(2);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+            modelBuilder.Entity("Core.Entities.Customer", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.HasBaseType("Core.Entities.User");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.HasDiscriminator().HasValue(0);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+            modelBuilder.Entity("Core.Entities.VenueManager", b =>
                 {
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                    b.HasBaseType("Core.Entities.User");
 
-                    b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("LoginProvider", "ProviderKey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Core.Entities.Identity.ArtistManager", b =>
-                {
-                    b.HasBaseType("Core.Entities.Identity.ApplicationUser");
-
-                    b.HasDiscriminator().HasValue("ArtistManager");
-                });
-
-            modelBuilder.Entity("Core.Entities.Identity.Customer", b =>
-                {
-                    b.HasBaseType("Core.Entities.Identity.ApplicationUser");
-
-                    b.HasDiscriminator().HasValue("Customer");
-                });
-
-            modelBuilder.Entity("Core.Entities.Identity.VenueManager", b =>
-                {
-                    b.HasBaseType("Core.Entities.Identity.ApplicationUser");
-
-                    b.HasDiscriminator().HasValue("VenueManager");
+                    b.HasDiscriminator().HasValue(1);
                 });
 
             modelBuilder.Entity("Core.Entities.Artist", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.ArtistManager", "User")
+                    b.HasOne("Core.Entities.ArtistManager", "User")
                         .WithOne("Artist")
                         .HasForeignKey("Core.Entities.Artist", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -866,13 +650,32 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Concert", b =>
                 {
-                    b.HasOne("Core.Entities.ListingApplication", "Application")
+                    b.HasOne("Core.Entities.ConcertApplication", "Application")
                         .WithOne()
                         .HasForeignKey("Core.Entities.Concert", "ApplicationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Application");
+                });
+
+            modelBuilder.Entity("Core.Entities.ConcertApplication", b =>
+                {
+                    b.HasOne("Core.Entities.Artist", "Artist")
+                        .WithMany("Applications")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.ConcertOpportunity", "Opportunity")
+                        .WithMany("Applications")
+                        .HasForeignKey("OpportunityId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+
+                    b.Navigation("Opportunity");
                 });
 
             modelBuilder.Entity("Core.Entities.ConcertGenre", b =>
@@ -905,6 +708,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("Concert");
                 });
 
+            modelBuilder.Entity("Core.Entities.ConcertOpportunity", b =>
+                {
+                    b.HasOne("Core.Entities.Venue", "Venue")
+                        .WithMany("Opportunities")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Venue");
+                });
+
             modelBuilder.Entity("Core.Entities.GenrePreference", b =>
                 {
                     b.HasOne("Core.Entities.Genre", "Genre")
@@ -924,64 +738,15 @@ namespace Infrastructure.Migrations
                     b.Navigation("Preference");
                 });
 
-            modelBuilder.Entity("Core.Entities.Listing", b =>
-                {
-                    b.HasOne("Core.Entities.Venue", "Venue")
-                        .WithMany("Listings")
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Venue");
-                });
-
-            modelBuilder.Entity("Core.Entities.ListingApplication", b =>
-                {
-                    b.HasOne("Core.Entities.Artist", "Artist")
-                        .WithMany("Applications")
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.Listing", "Listing")
-                        .WithMany("Applications")
-                        .HasForeignKey("ListingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Artist");
-
-                    b.Navigation("Listing");
-                });
-
-            modelBuilder.Entity("Core.Entities.ListingGenre", b =>
-                {
-                    b.HasOne("Core.Entities.Genre", "Genre")
-                        .WithMany("ListingGenres")
-                        .HasForeignKey("GenreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.Listing", "Listing")
-                        .WithMany("ListingGenres")
-                        .HasForeignKey("ListingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Genre");
-
-                    b.Navigation("Listing");
-                });
-
             modelBuilder.Entity("Core.Entities.Message", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "FromUser")
+                    b.HasOne("Core.Entities.User", "FromUser")
                         .WithMany("SentMessages")
                         .HasForeignKey("FromUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "ToUser")
+                    b.HasOne("Core.Entities.User", "ToUser")
                         .WithMany("ReceivedMessages")
                         .HasForeignKey("ToUserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -992,10 +757,40 @@ namespace Infrastructure.Migrations
                     b.Navigation("ToUser");
                 });
 
+            modelBuilder.Entity("Core.Entities.OpportunityGenre", b =>
+                {
+                    b.HasOne("Core.Entities.Genre", "Genre")
+                        .WithMany("OpportunityGenres")
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.ConcertOpportunity", "Opportunity")
+                        .WithMany("OpportunityGenres")
+                        .HasForeignKey("OpportunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Genre");
+
+                    b.Navigation("Opportunity");
+                });
+
             modelBuilder.Entity("Core.Entities.Preference", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.Customer", "User")
-                        .WithMany()
+                    b.HasOne("Core.Entities.User", "User")
+                        .WithOne("Preference")
+                        .HasForeignKey("Core.Entities.Preference", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Core.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Core.Entities.User", "User")
+                        .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1033,7 +828,7 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Identity.Customer", "User")
+                    b.HasOne("Core.Entities.Customer", "User")
                         .WithMany("Tickets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1046,13 +841,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Transaction", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "FromUser")
+                    b.HasOne("Core.Entities.User", "FromUser")
                         .WithMany()
                         .HasForeignKey("FromUserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", "ToUser")
+                    b.HasOne("Core.Entities.User", "ToUser")
                         .WithMany()
                         .HasForeignKey("ToUserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1065,7 +860,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Venue", b =>
                 {
-                    b.HasOne("Core.Entities.Identity.VenueManager", "User")
+                    b.HasOne("Core.Entities.VenueManager", "User")
                         .WithOne("Venue")
                         .HasForeignKey("Core.Entities.Venue", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1096,57 +891,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Artist");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
-                {
-                    b.HasOne("Core.Entities.Identity.ApplicationRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
-                {
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
-                {
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
-                {
-                    b.HasOne("Core.Entities.Identity.ApplicationRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
-                {
-                    b.HasOne("Core.Entities.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Core.Entities.Artist", b =>
                 {
                     b.Navigation("Applications");
@@ -1167,27 +911,20 @@ namespace Infrastructure.Migrations
                     b.Navigation("Tickets");
                 });
 
+            modelBuilder.Entity("Core.Entities.ConcertOpportunity", b =>
+                {
+                    b.Navigation("Applications");
+
+                    b.Navigation("OpportunityGenres");
+                });
+
             modelBuilder.Entity("Core.Entities.Genre", b =>
                 {
                     b.Navigation("ArtistGenres");
 
                     b.Navigation("ConcertGenres");
 
-                    b.Navigation("ListingGenres");
-                });
-
-            modelBuilder.Entity("Core.Entities.Identity.ApplicationUser", b =>
-                {
-                    b.Navigation("ReceivedMessages");
-
-                    b.Navigation("SentMessages");
-                });
-
-            modelBuilder.Entity("Core.Entities.Listing", b =>
-                {
-                    b.Navigation("Applications");
-
-                    b.Navigation("ListingGenres");
+                    b.Navigation("OpportunityGenres");
                 });
 
             modelBuilder.Entity("Core.Entities.Preference", b =>
@@ -1200,22 +937,33 @@ namespace Infrastructure.Migrations
                     b.Navigation("Review");
                 });
 
-            modelBuilder.Entity("Core.Entities.Venue", b =>
+            modelBuilder.Entity("Core.Entities.User", b =>
                 {
-                    b.Navigation("Listings");
+                    b.Navigation("Preference");
+
+                    b.Navigation("ReceivedMessages");
+
+                    b.Navigation("RefreshTokens");
+
+                    b.Navigation("SentMessages");
                 });
 
-            modelBuilder.Entity("Core.Entities.Identity.ArtistManager", b =>
+            modelBuilder.Entity("Core.Entities.Venue", b =>
+                {
+                    b.Navigation("Opportunities");
+                });
+
+            modelBuilder.Entity("Core.Entities.ArtistManager", b =>
                 {
                     b.Navigation("Artist");
                 });
 
-            modelBuilder.Entity("Core.Entities.Identity.Customer", b =>
+            modelBuilder.Entity("Core.Entities.Customer", b =>
                 {
                     b.Navigation("Tickets");
                 });
 
-            modelBuilder.Entity("Core.Entities.Identity.VenueManager", b =>
+            modelBuilder.Entity("Core.Entities.VenueManager", b =>
                 {
                     b.Navigation("Venue");
                 });

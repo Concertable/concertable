@@ -1,9 +1,11 @@
 using Application.DTOs;
-using Core.Entities;
+using Application.Responses;
+using Core.Parameters;
 
 namespace Application.Interfaces.Search;
 
-public interface IVenueHeaderRepository : IHeaderRepository<Venue>
+public interface IVenueHeaderRepository
 {
+    Task<Pagination<VenueHeaderDto>> SearchAsync(SearchParams searchParams);
     Task<IEnumerable<VenueHeaderDto>> GetByAmountAsync(int amount);
 }
