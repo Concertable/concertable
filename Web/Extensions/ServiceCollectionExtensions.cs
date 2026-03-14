@@ -112,6 +112,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertApplicationValidator, ConcertApplicationValidator>();
         services.AddScoped<IStripeValidator, StripeValidator>();
         services.AddScoped<IUserValidator, UserValidator>();
+        services.AddScoped<IReviewValidator, ReviewValidator>();
 
         return services;
     }
@@ -129,6 +130,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddRatingRepositories();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -136,22 +138,32 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    private static IServiceCollection AddRatingRepositories(this IServiceCollection services)
+    {
+        services.AddKeyedScoped<IRatingRepository, ArtistRatingRepository>(HeaderType.Artist);
+        services.AddKeyedScoped<IRatingRepository, ConcertRatingRepository>(HeaderType.Concert);
+        services.AddKeyedScoped<IRatingRepository, VenueRatingRepository>(HeaderType.Venue);
+
+        return services;
+    }
+
     public static IServiceCollection AddSearch(this IServiceCollection services)
     {
-        services.AddScoped<IGeometrySpecification<Artist>>(sp =>
-            new GeometrySpecification<Artist>(
-                sp.GetRequiredService<IGeometryProvider>(),
-                a => a.User.Location));
+        services.AddSingleton<ILocationSelector<Artist>, ArtistLocationSelector>();
+        services.AddSingleton<ILocationSelector<Venue>, VenueLocationSelector>();
+        services.AddSingleton<ILocationSelector<Concert>, ConcertLocationSelector>();
 
-        services.AddScoped<IGeometrySpecification<Venue>>(sp =>
-            new GeometrySpecification<Venue>(
-                sp.GetRequiredService<IGeometryProvider>(),
-                v => v.User.Location));
+        services.AddScoped<IGeometrySpecification<Artist>, GeometrySpecification<Artist>>();
+        services.AddScoped<IGeometrySpecification<Venue>, GeometrySpecification<Venue>>();
+        services.AddScoped<IGeometrySpecification<Concert>, GeometrySpecification<Concert>>();
 
-        services.AddScoped<IGeometrySpecification<Concert>>(sp =>
-            new GeometrySpecification<Concert>(
-                sp.GetRequiredService<IGeometryProvider>(),
-                e => e.Application.Opportunity.Venue.User.Location));
+        services.AddSingleton<IReviewKeySelector<Artist>, ArtistReviewKeySelector>();
+        services.AddSingleton<IReviewKeySelector<Venue>, VenueReviewKeySelector>();
+        services.AddSingleton<IReviewKeySelector<Concert>, ConcertReviewKeySelector>();
+
+        services.AddScoped<IRatingSpecification<Artist>, RatingSpecification<Artist>>();
+        services.AddScoped<IRatingSpecification<Venue>, RatingSpecification<Venue>>();
+        services.AddScoped<IRatingSpecification<Concert>, RatingSpecification<Concert>>();
 
         services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
         services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();
@@ -160,6 +172,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistSearchSpecification, ArtistSearchSpecification>();
         services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();
         services.AddScoped<IConcertSearchSpecification, ConcertSearchSpecification>();
+
 
         services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();
