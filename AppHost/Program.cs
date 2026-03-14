@@ -1,15 +1,9 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var sql = builder.AddSqlServer("sql")
-                 .WithDataVolume("concertable-sql-data")
-                 .AddDatabase("DefaultConnection");
+var sql = builder.AddSqlServer();
 
-var api = builder.AddProject<Projects.Web>("api")
-       .WithReference(sql)
-       .WaitFor(sql);
+var api = builder.AddApi(sql);
 
-builder.AddNpmApp("frontend", "../ClientApp", "start")
-       .WithReference(api)
-       .WaitFor(api);
+builder.AddFrontend(api);
 
 builder.Build().Run();
