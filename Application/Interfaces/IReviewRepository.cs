@@ -12,8 +12,6 @@ public interface IReviewRepository : IRepository<Review>
     Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id);
     Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
 
-    Task<double> GetAverageRatingByVenueIdAsync(int id);
-
     Task<Pagination<Review>> GetByConcertIdAsync(int concertId, IPageParams pageParams);
     Task<Pagination<Review>> GetByArtistIdAsync(int artistId, IPageParams pageParams);
     Task<Pagination<Review>> GetByVenueIdAsync(int venueId, IPageParams pageParams);

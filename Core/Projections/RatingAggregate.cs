@@ -1,6 +1,6 @@
-namespace Application.Responses;
+namespace Core.Projections;
 
-public record RatingResult
+public record RatingAggregate
 {
     public int EntityId { get; init; }
     public double AverageRating { get; init; }

@@ -112,6 +112,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertApplicationValidator, ConcertApplicationValidator>();
         services.AddScoped<IStripeValidator, StripeValidator>();
         services.AddScoped<IUserValidator, UserValidator>();
+        services.AddScoped<IReviewValidator, ReviewValidator>();
 
         return services;
     }
@@ -172,13 +173,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();
         services.AddScoped<IConcertSearchSpecification, ConcertSearchSpecification>();
 
-        services.AddScoped<ISearchRatingSpecification<Artist>, SearchRatingSpecification<Artist>>();
-        services.AddScoped<ISearchRatingSpecification<Venue>, SearchRatingSpecification<Venue>>();
-        services.AddScoped<ISearchRatingSpecification<Concert>, SearchRatingSpecification<Concert>>();
-
-        services.AddScoped<IArtistHeaderSpecification, ArtistHeaderSpecification>();
-        services.AddScoped<IVenueHeaderSpecification, VenueHeaderSpecification>();
-        services.AddScoped<IConcertHeaderSpecification, ConcertHeaderSpecification>();
 
         services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();

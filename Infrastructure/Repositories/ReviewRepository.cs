@@ -7,6 +7,7 @@ using Infrastructure.Data.Identity;
 using Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Core.Interfaces;
 
 namespace Infrastructure.Repositories;
 
@@ -32,16 +33,6 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     public Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
     {
         return GetSummaryAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == id);
-    }
-
-
-    public async Task<double> GetAverageRatingByVenueIdAsync(int id)
-    {
-        var avg = await context.Reviews
-            .Where(r => r.Ticket.Concert.Application.Opportunity.VenueId == id)
-            .AverageAsync(r => (double?)r.Stars);
-
-        return Math.Round(avg ?? 0.0, 1);
     }
 
 

@@ -13,15 +13,6 @@ public class VenueSearchSpecification : IVenueSearchSpecification
         this.searchSpecification = searchSpecification;
     }
 
-    public IQueryable<Venue> Apply(IQueryable<Venue> query, SearchParams searchParams)
-    {
-        query = searchSpecification.Apply(query, searchParams);
-
-        return searchParams.Sort?.ToLower() switch
-        {
-            "name_asc" => query.OrderBy(v => v.Name),
-            "name_desc" => query.OrderByDescending(v => v.Name),
-            _ => query.OrderBy(v => v.Id)
-        };
-    }
+    public IQueryable<Venue> Apply(IQueryable<Venue> query, SearchParams searchParams) =>
+        searchSpecification.Apply(query, searchParams);
 }

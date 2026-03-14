@@ -3,8 +3,10 @@ using Application.Interfaces;
 using Application.DTOs;
 using Application.Mappers;
 using Application.Requests;
+using Core.Enums;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Services;
 
@@ -12,7 +14,7 @@ public class VenueService : IVenueService
 {
     private readonly IVenueRepository venueRepository;
     private readonly IImageService imageService;
-    private readonly IReviewService reviewService;
+    private readonly IRatingRepository ratingRepository;
     private readonly ICurrentUser currentUser;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryService;
@@ -21,7 +23,7 @@ public class VenueService : IVenueService
     public VenueService(
         IVenueRepository venueRepository,
         IImageService imageService,
-        IReviewService reviewService,
+        [FromKeyedServices(HeaderType.Venue)] IRatingRepository ratingRepository,
         ICurrentUser currentUser,
         IGeocodingService geocodingService,
         IUnitOfWork unitOfWork,
@@ -29,7 +31,7 @@ public class VenueService : IVenueService
     {
         this.venueRepository = venueRepository;
         this.imageService = imageService;
-        this.reviewService = reviewService;
+        this.ratingRepository = ratingRepository;
         this.currentUser = currentUser;
         this.geocodingService = geocodingService;
         this.unitOfWork = unitOfWork;
@@ -41,7 +43,7 @@ public class VenueService : IVenueService
         var venue = await venueRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
         var venueDto = venue.ToDto();
-        await reviewService.SetAverageRatingAsync(venueDto);
+        venueDto.Rating = await ratingRepository.GetRatingAsync(venueDto.Id);
         return venueDto;
     }
 
@@ -100,7 +102,7 @@ public class VenueService : IVenueService
         if (venue is null)
             return null;
         var venueDto = venue.ToDto();
-        await reviewService.SetAverageRatingAsync(venueDto);
+        venueDto.Rating = await ratingRepository.GetRatingAsync(venueDto.Id);
         return venueDto;
     }
 
