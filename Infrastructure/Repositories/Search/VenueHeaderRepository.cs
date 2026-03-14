@@ -14,16 +14,19 @@ public class VenueHeaderRepository : IVenueHeaderRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IVenueSearchSpecification specification;
+    private readonly IGeometrySpecification<Venue> geometrySpecification;
 
-    public VenueHeaderRepository(ApplicationDbContext context, IVenueSearchSpecification specification)
+    public VenueHeaderRepository(ApplicationDbContext context, IVenueSearchSpecification specification, IGeometrySpecification<Venue> geometrySpecification)
     {
         this.context = context;
         this.specification = specification;
+        this.geometrySpecification = geometrySpecification;
     }
 
     public async Task<Pagination<Venue>> SearchAsync(SearchParams searchParams)
     {
         var query = specification.Apply(context.Venues.AsQueryable(), searchParams);
+        query = geometrySpecification.Apply(query, searchParams);
         return await query.ToPaginationAsync(searchParams);
     }
 

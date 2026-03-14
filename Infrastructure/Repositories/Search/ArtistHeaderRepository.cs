@@ -14,16 +14,19 @@ public class ArtistHeaderRepository : IArtistHeaderRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IArtistSearchSpecification specification;
+    private readonly IGeometrySpecification<Artist> geometrySpecification;
 
-    public ArtistHeaderRepository(ApplicationDbContext context, IArtistSearchSpecification specification)
+    public ArtistHeaderRepository(ApplicationDbContext context, IArtistSearchSpecification specification, IGeometrySpecification<Artist> geometrySpecification)
     {
         this.context = context;
         this.specification = specification;
+        this.geometrySpecification = geometrySpecification;
     }
 
     public async Task<Pagination<Artist>> SearchAsync(SearchParams searchParams)
     {
         var query = specification.Apply(context.Artists.AsQueryable(), searchParams);
+        query = geometrySpecification.Apply(query, searchParams);
         return await query.ToPaginationAsync(searchParams);
     }
 

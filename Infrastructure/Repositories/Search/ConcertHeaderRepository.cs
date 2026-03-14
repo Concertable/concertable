@@ -28,6 +28,7 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     public async Task<Pagination<Concert>> SearchAsync(SearchParams searchParams)
     {
         var query = specification.Apply(context.Concerts.AsQueryable(), searchParams);
+        query = geometrySpecification.Apply(query, searchParams);
         return await query.ToPaginationAsync(searchParams);
     }
 
