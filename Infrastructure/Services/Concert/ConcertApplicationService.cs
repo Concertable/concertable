@@ -46,7 +46,7 @@ public class ConcertApplicationService : IConcertApplicationService
         this.ownershipService = ownershipService;
     }
 
-    public async Task<IEnumerable<ConcertApplicationDto>> GetForOpportunityIdAsync(int id)
+    public async Task<IEnumerable<ConcertApplicationDto>> GetByOpportunityIdAsync(int id)
     {
         var response = await ownershipService.OwnsOpportunityAsync(id);
 
@@ -72,7 +72,7 @@ public class ConcertApplicationService : IConcertApplicationService
         return applications.ToArtistConcertApplicationDtos();
     }
 
-    public async Task ApplyForOpportunityAsync(int opportunityId)
+    public async Task ApplyAsync(int opportunityId)
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
@@ -91,7 +91,7 @@ public class ConcertApplicationService : IConcertApplicationService
         var opportunityOwner = await opportunityService.GetOwnerByIdAsync(opportunityId);
         var opportunity = await opportunityService.GetByIdAsync(opportunityId);
 
-        var result = await applicationValidator.CanApplyForOpportunityAsync(opportunityId, artistDto.Id);
+        var result = await applicationValidator.CanApplyAsync(opportunityId, artistDto.Id);
 
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);

@@ -11,7 +11,7 @@ namespace Application.Interfaces.Concert;
 public interface IConcertApplicationService
 {
     Task<ConcertApplicationDto> GetByIdAsync(int id);
-    Task<IEnumerable<ConcertApplicationDto>> GetForOpportunityIdAsync(int id);
+    Task<IEnumerable<ConcertApplicationDto>> GetByOpportunityIdAsync(int id);
     /// <summary>
     /// Gets the list of Applications that havent expired, and dont yet have
     /// an event created
@@ -22,7 +22,7 @@ public interface IConcertApplicationService
     /// over these ones
     /// </summary>
     Task<IEnumerable<ArtistConcertApplicationDto>> GetRecentDeniedForArtistAsync();
-    Task ApplyForOpportunityAsync(int opportunityId);
+    Task ApplyAsync(int opportunityId);
     Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);
     Task<decimal> GetOpportunityPayByIdAsync(int id);
 }

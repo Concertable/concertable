@@ -57,7 +57,7 @@ public class ConcertApplicationValidator : IConcertApplicationValidator
         return result;
     }
 
-    public async Task<ValidationResult> CanApplyForOpportunityAsync(int opportunityId, int artistId)
+    public async Task<ValidationResult> CanApplyAsync(int opportunityId, int artistId)
     {
         var result = new ValidationResult();
         var opportunity = await opportunityRepository.GetByIdAsync(opportunityId);

@@ -13,7 +13,7 @@ public interface IConcertApplicationValidator
     /// <summary>
     /// Checks whether an artist can apply for a given opportunity, based on conflicts and constraints.
     /// </summary>
-    Task<ValidationResult> CanApplyForOpportunityAsync(int opportunityId, int artistId);
+    Task<ValidationResult> CanApplyAsync(int opportunityId, int artistId);
 
     /// <summary>
     /// Checks whether a venue manager can accept a concert application, based on availability.

@@ -34,16 +34,16 @@ public class ConcertApplicationController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpGet("all/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertApplicationDto>>> GetAllForOpportunityId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertApplicationDto>>> GetAllByOpportunityId(int id)
     {
-        return Ok(await applicationService.GetForOpportunityIdAsync(id));
+        return Ok(await applicationService.GetByOpportunityIdAsync(id));
     }
 
     [Authorize(Roles = "ArtistManager")]
     [HttpPost("{opportunityId}")]
-    public async Task<IActionResult> ApplyForOpportunity(int opportunityId)
+    public async Task<IActionResult> Apply(int opportunityId)
     {
-        await applicationService.ApplyForOpportunityAsync(opportunityId);
+        await applicationService.ApplyAsync(opportunityId);
         return NoContent();
     }
 
@@ -69,14 +69,14 @@ public class ConcertApplicationController : ControllerBase
 
     [Authorize(Roles = "ArtistManager")]
     [HttpGet("can-apply/{opportunityId}")]
-    public async Task<ActionResult<bool>> CanApplyForOpportunity(int opportunityId)
+    public async Task<ActionResult<bool>> CanApply(int opportunityId)
     {
         var artist = await artistService.GetDetailsForCurrentUserAsync();
 
         if (artist is null)
             return NotFound("Artist not found");
 
-        var result = await applicationValidator.CanApplyForOpportunityAsync(opportunityId, artist.Id);
+        var result = await applicationValidator.CanApplyAsync(opportunityId, artist.Id);
 
         if (!result.IsValid)
             return BadRequest(result.Errors);
