@@ -104,7 +104,7 @@ public class ConcertService : IConcertService
         if (user.Role != Role.VenueManager)
             throw new ForbiddenException("Only VenueManagers can book concerts");
 
-        var result = await applicationValidator.CanAcceptConcertApplicationAsync(bookingParams.ApplicationId);
+        var result = await applicationValidator.CanAcceptAsync(bookingParams.ApplicationId);
 
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);

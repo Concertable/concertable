@@ -18,5 +18,5 @@ public interface IConcertApplicationValidator
     /// <summary>
     /// Checks whether a venue manager can accept a concert application, based on availability.
     /// </summary>
-    Task<ValidationResult> CanAcceptConcertApplicationAsync(int applicationId);
+    Task<ValidationResult> CanAcceptAsync(int applicationId);
 }

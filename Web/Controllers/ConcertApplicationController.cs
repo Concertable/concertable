@@ -88,7 +88,7 @@ public class ConcertApplicationController : ControllerBase
     [HttpGet("can-accept/{applicationId}")]
     public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
     {
-        var result = await applicationValidator.CanAcceptConcertApplicationAsync(applicationId);
+        var result = await applicationValidator.CanAcceptAsync(applicationId);
 
         if (!result.IsValid)
             return BadRequest(result.Errors);

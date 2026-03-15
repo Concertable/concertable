@@ -26,7 +26,7 @@ public class ConcertApplicationValidator : IConcertApplicationValidator
         this.timeProvider = timeProvider;
     }
 
-    public async Task<ValidationResult> CanAcceptConcertApplicationAsync(int applicationId)
+    public async Task<ValidationResult> CanAcceptAsync(int applicationId)
     {
         var result = new ValidationResult();
         var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId);
