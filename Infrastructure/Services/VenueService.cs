@@ -15,6 +15,7 @@ namespace Infrastructure.Services;
 public class VenueService : IVenueService
 {
     private readonly IVenueRepository venueRepository;
+    private readonly IUserRepository userRepository;
     private readonly IImageService imageService;
     private readonly IRatingRepository ratingRepository;
     private readonly ICurrentUser currentUser;
@@ -24,6 +25,7 @@ public class VenueService : IVenueService
 
     public VenueService(
         IVenueRepository venueRepository,
+        IUserRepository userRepository,
         IImageService imageService,
         [FromKeyedServices(HeaderType.Venue)] IRatingRepository ratingRepository,
         ICurrentUser currentUser,
@@ -32,6 +34,7 @@ public class VenueService : IVenueService
         IGeometryProvider geometryService)
     {
         this.venueRepository = venueRepository;
+        this.userRepository = userRepository;
         this.imageService = imageService;
         this.ratingRepository = ratingRepository;
         this.currentUser = currentUser;
@@ -51,9 +54,6 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
-        var venueRepository = unitOfWork.GetRepository<VenueEntity>();
-        var userRepository = unitOfWork.GetBaseRepository<UserEntity>();
-
         var venue = request.ToEntity();
         var user = currentUser.GetEntity();
 
@@ -71,9 +71,6 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> UpdateAsync(int id, UpdateVenueRequest request)
     {
-        var venueRepository = unitOfWork.GetRepository<VenueEntity>();
-        var userRepository = unitOfWork.GetBaseRepository<UserEntity>();
-
         var venue = await venueRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
         var user = currentUser.GetEntity();

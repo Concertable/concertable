@@ -1,52 +1,20 @@
-﻿using Application.Interfaces;
-using Core.Entities;
+using Application.Interfaces;
 using Core.Enums;
 using Core.Exceptions;
 using Infrastructure.Data.Identity;
-using Infrastructure.Helpers;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext context;
-    private readonly Dictionary<Type, object> repositories;
 
     public UnitOfWork(ApplicationDbContext context)
     {
         this.context = context;
-        this.repositories = new Dictionary<Type, object>();
-    }
-
-    public IRepository<TEntity> GetRepository<TEntity>() where TEntity : BaseEntity
-    {
-        if (repositories.ContainsKey(typeof(TEntity)))
-        {
-            return (IRepository<TEntity>)repositories[typeof(TEntity)];
-        }
-
-        var repository = new Repository<TEntity>(context);
-        repositories.Add(typeof(TEntity), repository);
-        return repository;
-    }
-
-    public IBaseRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class
-    {
-        if (repositories.ContainsKey(typeof(TEntity)))
-        {
-            return (IBaseRepository<TEntity>)repositories[typeof(TEntity)];
-        }
-
-        var repository = new BaseRepository<TEntity>(context);
-        repositories.Add(typeof(TEntity), repository);
-        return repository;
     }
 
     public async Task SaveChangesAsync()
@@ -60,19 +28,19 @@ public class UnitOfWork : IUnitOfWork
         {
             await SaveChangesAsync();
         }
-        catch (DbUpdateException ex) when (SqlExceptionHelper.IsDuplicateKey(ex))
+        catch (DbUpdateException ex) when (ex.IsDuplicateKey())
         {
             throw new BadRequestException("A record with this Key already exists", ErrorType.DuplicateKey);
         }
     }
 
-    public void Dispose()
-    {
-        context.Dispose();
-    }
-
     public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
         return await context.Database.BeginTransactionAsync();
+    }
+
+    public void Dispose()
+    {
+        context.Dispose();
     }
 }

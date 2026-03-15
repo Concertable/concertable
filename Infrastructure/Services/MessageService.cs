@@ -10,28 +10,22 @@ namespace Infrastructure.Services;
 
 public class MessageService : IMessageService
 {
-    private readonly IUnitOfWork unitOfWork;
     private readonly IMessageRepository messageRepository;
     private readonly ICurrentUser currentUser;
     private readonly TimeProvider timeProvider;
 
     public MessageService(
-        IUnitOfWork unitOfWork,
         IMessageRepository messageRepository,
         ICurrentUser currentUser,
         TimeProvider timeProvider)
     {
-        this.unitOfWork = unitOfWork;
         this.messageRepository = messageRepository;
         this.currentUser = currentUser;
         this.timeProvider = timeProvider;
-
     }
 
     public async Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content)
     {
-        var messageRepository = unitOfWork.GetRepository<MessageEntity>();
-
         var message = new MessageEntity
         {
             Content = content,
@@ -48,8 +42,6 @@ public class MessageService : IMessageService
 
     public async Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content)
     {
-        var messageRepository = unitOfWork.GetRepository<MessageEntity>();
-
         var message = new MessageEntity
         {
             Content = content,

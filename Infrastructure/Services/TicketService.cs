@@ -72,9 +72,6 @@ public class TicketService : ITicketService
 
     public async Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
     {
-        var ticketRepository = unitOfWork.GetRepository<TicketEntity>();
-        var concertRepository = unitOfWork.GetRepository<ConcertEntity>();
-
         var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId)
             ?? throw new NotFoundException("Concert not found");
 

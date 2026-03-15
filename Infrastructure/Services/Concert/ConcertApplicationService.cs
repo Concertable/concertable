@@ -102,8 +102,7 @@ public class ConcertApplicationService : IConcertApplicationService
         if (opportunityGenreIds.Count > 0 && !artistGenreIds.Overlaps(opportunityGenreIds))
             throw new BadRequestException("You need to have the same genres as the Concert Opportunity to be able to apply to it");
 
-        var appRepository = unitOfWork.GetRepository<ConcertApplicationEntity>();
-        await appRepository.AddAsync(application);
+        await applicationRepository.AddAsync(application);
 
         await messageService.SendAsync(
             fromUserId: user.Id,
