@@ -16,5 +16,5 @@ public interface IAccountService
     Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken cancellationToken = default);
 
     /// <summary>Gets user entity by id. Returns null if not found.</summary>
-    Task<User?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default);
+    Task<UserEntity?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default);
 }

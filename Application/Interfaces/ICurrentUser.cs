@@ -10,6 +10,6 @@ public interface ICurrentUser
     int GetId();
     UserDto Get();
     UserDto? GetOrDefault();
-    User GetEntity();
+    UserEntity GetEntity();
     Role GetRole();
 }

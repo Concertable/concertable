@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class UserRepository : BaseRepository<User>, IUserRepository
+public class UserRepository : BaseRepository<UserEntity>, IUserRepository
 {
     public UserRepository(ApplicationDbContext context) : base(context) { }
 
-    public async Task<User> GetByApplicationIdAsync(int applicationId)
+    public async Task<UserEntity> GetByApplicationIdAsync(int applicationId)
     {
         var query = context.ConcertApplications
             .Where(a => a.Id == applicationId)
@@ -18,7 +18,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         return await query.FirstAsync();
     }
 
-    public async Task<User> GetByConcertIdAsync(int concertId)
+    public async Task<UserEntity> GetByConcertIdAsync(int concertId)
     {
         var query = context.Concerts
              .Where(e => e.Id == concertId)

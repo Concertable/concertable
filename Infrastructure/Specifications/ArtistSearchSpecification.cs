@@ -6,14 +6,14 @@ namespace Infrastructure.Specifications;
 
 public class ArtistSearchSpecification : IArtistSearchSpecification
 {
-    private readonly ISearchSpecification<Artist> searchSpecification;
+    private readonly ISearchSpecification<ArtistEntity> searchSpecification;
 
-    public ArtistSearchSpecification(ISearchSpecification<Artist> searchSpecification)
+    public ArtistSearchSpecification(ISearchSpecification<ArtistEntity> searchSpecification)
     {
         this.searchSpecification = searchSpecification;
     }
 
-    public IQueryable<Artist> Apply(IQueryable<Artist> query, SearchParams searchParams)
+    public IQueryable<ArtistEntity> Apply(IQueryable<ArtistEntity> query, SearchParams searchParams)
     {
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(a => a.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));

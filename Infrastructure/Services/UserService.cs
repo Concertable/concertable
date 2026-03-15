@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Geometry;
 using Application.Mappers;
 using Core.Entities;
 
@@ -29,7 +30,7 @@ public class UserService : IUserService
         return await userRepsitory.GetIdByApplicationIdAsync(applicationId);
     }
 
-    public async Task<User> GetByApplicationIdAsync(int applicationId)
+    public async Task<UserEntity> GetByApplicationIdAsync(int applicationId)
     {
         return await userRepsitory.GetByApplicationIdAsync(applicationId);
     }
@@ -39,7 +40,7 @@ public class UserService : IUserService
         return await userRepsitory.GetIdByConcertIdAsync(concertId);
     }
 
-    public async Task<User> GetByConcertIdAsync(int concertId)
+    public async Task<UserEntity> GetByConcertIdAsync(int concertId)
     {
         return await userRepsitory.GetByConcertIdAsync(concertId);
     }

@@ -1,4 +1,10 @@
 using Application.Interfaces;
+using Application.Interfaces.Auth;
+using Application.Interfaces.Blob;
+using Application.Interfaces.Concert;
+using Application.Interfaces.Geometry;
+using Application.Interfaces.Payment;
+using Application.Interfaces.Rating;
 using Core.Enums;
 using Application.Validators;
 using FluentValidation;
@@ -10,8 +16,16 @@ using Infrastructure;
 using Infrastructure.Background;
 using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.Concert;
+using Infrastructure.Repositories.Rating;
 using Infrastructure.Repositories.Search;
 using Infrastructure.Services;
+using Infrastructure.Services.Auth;
+using Infrastructure.Services.Blob;
+using Infrastructure.Services.Concert;
+using Infrastructure.Services.Geometry;
+using Infrastructure.Services.Payment;
+using Infrastructure.Services.Rating;
 using Infrastructure.Validators;
 using Infrastructure.Services.Search;
 using Infrastructure.Settings;
@@ -149,25 +163,25 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddSearch(this IServiceCollection services)
     {
-        services.AddSingleton<ILocationSelector<Artist>, ArtistLocationSelector>();
-        services.AddSingleton<ILocationSelector<Venue>, VenueLocationSelector>();
-        services.AddSingleton<ILocationSelector<Concert>, ConcertLocationSelector>();
+        services.AddSingleton<ILocationSelector<ArtistEntity>, ArtistLocationSelector>();
+        services.AddSingleton<ILocationSelector<VenueEntity>, VenueLocationSelector>();
+        services.AddSingleton<ILocationSelector<ConcertEntity>, ConcertLocationSelector>();
 
-        services.AddScoped<IGeometrySpecification<Artist>, GeometrySpecification<Artist>>();
-        services.AddScoped<IGeometrySpecification<Venue>, GeometrySpecification<Venue>>();
-        services.AddScoped<IGeometrySpecification<Concert>, GeometrySpecification<Concert>>();
+        services.AddScoped<IGeometrySpecification<ArtistEntity>, GeometrySpecification<ArtistEntity>>();
+        services.AddScoped<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
+        services.AddScoped<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
 
-        services.AddSingleton<IReviewKeySelector<Artist>, ArtistReviewKeySelector>();
-        services.AddSingleton<IReviewKeySelector<Venue>, VenueReviewKeySelector>();
-        services.AddSingleton<IReviewKeySelector<Concert>, ConcertReviewKeySelector>();
+        services.AddSingleton<IReviewKeySelector<ArtistEntity>, ArtistReviewKeySelector>();
+        services.AddSingleton<IReviewKeySelector<VenueEntity>, VenueReviewKeySelector>();
+        services.AddSingleton<IReviewKeySelector<ConcertEntity>, ConcertReviewKeySelector>();
 
-        services.AddScoped<IRatingSpecification<Artist>, RatingSpecification<Artist>>();
-        services.AddScoped<IRatingSpecification<Venue>, RatingSpecification<Venue>>();
-        services.AddScoped<IRatingSpecification<Concert>, RatingSpecification<Concert>>();
+        services.AddScoped<IRatingSpecification<ArtistEntity>, RatingSpecification<ArtistEntity>>();
+        services.AddScoped<IRatingSpecification<VenueEntity>, RatingSpecification<VenueEntity>>();
+        services.AddScoped<IRatingSpecification<ConcertEntity>, RatingSpecification<ConcertEntity>>();
 
-        services.AddScoped<ISearchSpecification<Artist>, SearchSpecification<Artist>>();
-        services.AddScoped<ISearchSpecification<Venue>, SearchSpecification<Venue>>();
-        services.AddScoped<ISearchSpecification<Concert>, SearchSpecification<Concert>>();
+        services.AddScoped<ISearchSpecification<ArtistEntity>, SearchSpecification<ArtistEntity>>();
+        services.AddScoped<ISearchSpecification<VenueEntity>, SearchSpecification<VenueEntity>>();
+        services.AddScoped<ISearchSpecification<ConcertEntity>, SearchSpecification<ConcertEntity>>();
 
         services.AddScoped<IArtistSearchSpecification, ArtistSearchSpecification>();
         services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();

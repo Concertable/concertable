@@ -8,149 +8,149 @@ public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions options) : base(options) { }
 
-    public DbSet<Artist> Artists { get; set; }
-    public DbSet<ArtistGenre> ArtistGenres { get; set; }
-    public DbSet<Concert> Concerts { get; set; }
-    public DbSet<ConcertGenre> ConcertGenres { get; set; }
-    public DbSet<ConcertImage> ConcertImages { get; set; }
-    public DbSet<Genre> Genres { get; set; }
-    public DbSet<ConcertOpportunity> ConcertOpportunities { get; set; }
-    public DbSet<OpportunityGenre> OpportunityGenres { get; set; }
-    public DbSet<ConcertApplication> ConcertApplications { get; set; }
-    public DbSet<Review> Reviews { get; set; }
-    public DbSet<SocialMedia> SocialMedias { get; set; }
-    public DbSet<Ticket> Tickets { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Message> Messages { get; set; }
-    public DbSet<Venue> Venues { get; set; }
-    public DbSet<VenueImage> VenueImages { get; set; }
-    public DbSet<Video> Videos { get; set; }
-    public DbSet<Transaction> Transactions { get; set; }
-    public DbSet<Preference> Preferences { get; set; }
-    public DbSet<GenrePreference> GenrePreferences { get; set; }
-    public DbSet<StripeEvent> StripeEvents { get; set; }
-    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<ArtistEntity> Artists { get; set; }
+    public DbSet<ArtistGenreEntity> ArtistGenres { get; set; }
+    public DbSet<ConcertEntity> Concerts { get; set; }
+    public DbSet<ConcertGenreEntity> ConcertGenres { get; set; }
+    public DbSet<ConcertImageEntity> ConcertImages { get; set; }
+    public DbSet<GenreEntity> Genres { get; set; }
+    public DbSet<ConcertOpportunityEntity> ConcertOpportunities { get; set; }
+    public DbSet<OpportunityGenreEntity> OpportunityGenres { get; set; }
+    public DbSet<ConcertApplicationEntity> ConcertApplications { get; set; }
+    public DbSet<ReviewEntity> Reviews { get; set; }
+    public DbSet<SocialMediaEntity> SocialMedias { get; set; }
+    public DbSet<TicketEntity> Tickets { get; set; }
+    public DbSet<UserEntity> Users { get; set; }
+    public DbSet<MessageEntity> Messages { get; set; }
+    public DbSet<VenueEntity> Venues { get; set; }
+    public DbSet<VenueImageEntity> VenueImages { get; set; }
+    public DbSet<VideoEntity> Videos { get; set; }
+    public DbSet<TransactionEntity> Transactions { get; set; }
+    public DbSet<PreferenceEntity> Preferences { get; set; }
+    public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
+    public DbSet<StripeEventEntity> StripeEvents { get; set; }
+    public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>(e =>
+        modelBuilder.Entity<UserEntity>(e =>
         {
             e.ToTable("Users");
             e.Property(u => u.Location).HasColumnType("geography");
             e.HasIndex(u => u.Email).IsUnique();
             e.HasDiscriminator(u => u.Role)
-                .HasValue<User>(Role.Admin)
+                .HasValue<UserEntity>(Role.Admin)
                 .HasValue<VenueManager>(Role.VenueManager)
                 .HasValue<ArtistManager>(Role.ArtistManager)
                 .HasValue<Customer>(Role.Customer);
         });
 
-        modelBuilder.Entity<StripeEvent>()
+        modelBuilder.Entity<StripeEventEntity>()
             .HasKey(e => e.EventId);
 
-        modelBuilder.Entity<ConcertApplication>()
+        modelBuilder.Entity<ConcertApplicationEntity>()
             .HasIndex(ca => new { ca.OpportunityId, ca.ArtistId })
             .IsUnique();
 
-        modelBuilder.Entity<ConcertApplication>()
+        modelBuilder.Entity<ConcertApplicationEntity>()
             .Ignore(ca => ca.Concert);
 
-        modelBuilder.Entity<Message>()
+        modelBuilder.Entity<MessageEntity>()
             .HasOne(m => m.FromUser)
             .WithMany(u => u.SentMessages)
             .HasForeignKey(m => m.FromUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Message>()
+        modelBuilder.Entity<MessageEntity>()
             .HasOne(m => m.ToUser)
             .WithMany(u => u.ReceivedMessages)
             .HasForeignKey(m => m.ToUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Transaction>()
+        modelBuilder.Entity<TransactionEntity>()
             .HasOne(p => p.FromUser)
             .WithMany()
             .HasForeignKey(p => p.FromUserId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<Transaction>()
+        modelBuilder.Entity<TransactionEntity>()
             .HasOne(p => p.ToUser)
             .WithMany()
             .HasForeignKey(p => p.ToUserId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<Concert>()
+        modelBuilder.Entity<ConcertEntity>()
             .HasOne(e => e.Application)
             .WithOne()
-            .HasForeignKey<Concert>(e => e.ApplicationId)
+            .HasForeignKey<ConcertEntity>(e => e.ApplicationId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<ConcertGenre>()
+        modelBuilder.Entity<ConcertGenreEntity>()
             .HasOne(cg => cg.Concert)
             .WithMany(c => c.ConcertGenres)
             .HasForeignKey(cg => cg.ConcertId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
-        modelBuilder.Entity<ConcertGenre>()
+        modelBuilder.Entity<ConcertGenreEntity>()
             .HasOne(cg => cg.Genre)
             .WithMany(g => g.ConcertGenres)
             .HasForeignKey(cg => cg.GenreId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
-        modelBuilder.Entity<ConcertImage>()
+        modelBuilder.Entity<ConcertImageEntity>()
             .HasOne(ci => ci.Concert)
             .WithMany(c => c.Images)
             .HasForeignKey(ci => ci.ConcertId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
-        modelBuilder.Entity<ConcertApplication>()
+        modelBuilder.Entity<ConcertApplicationEntity>()
             .HasOne(ca => ca.Opportunity)
             .WithMany(o => o.Applications)
             .HasForeignKey(ca => ca.OpportunityId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<ConcertApplication>()
+        modelBuilder.Entity<ConcertApplicationEntity>()
             .HasOne(ca => ca.Artist)
             .WithMany(a => a.Applications)
             .HasForeignKey(ca => ca.ArtistId)
             .IsRequired();
 
-        modelBuilder.Entity<Ticket>()
+        modelBuilder.Entity<TicketEntity>()
             .HasOne(t => t.Concert)
             .WithMany(e => e.Tickets)
             .HasForeignKey(t => t.ConcertId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<Ticket>()
+        modelBuilder.Entity<TicketEntity>()
             .HasOne(t => t.User)
             .WithMany(u => u.Tickets)
             .HasForeignKey(t => t.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<Preference>()
+        modelBuilder.Entity<PreferenceEntity>()
             .HasOne(p => p.User)
             .WithOne(u => u.Preference)
-            .HasForeignKey<Preference>(p => p.UserId)
+            .HasForeignKey<PreferenceEntity>(p => p.UserId)
             .IsRequired();
 
         modelBuilder.Entity<ArtistManager>()
             .HasOne(am => am.Artist)
             .WithOne(a => a.User)
-            .HasForeignKey<Artist>(a => a.UserId)
+            .HasForeignKey<ArtistEntity>(a => a.UserId)
             .IsRequired();
 
         modelBuilder.Entity<VenueManager>()
             .HasOne(vm => vm.Venue)
             .WithOne(v => v.User)
-            .HasForeignKey<Venue>(v => v.UserId)
+            .HasForeignKey<VenueEntity>(v => v.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<RefreshToken>()
+        modelBuilder.Entity<RefreshTokenEntity>()
             .HasOne(rt => rt.User)
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId)

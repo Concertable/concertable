@@ -15,11 +15,11 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Repositories;
 
-public class MessageRepository : Repository<Message>, IMessageRepository
+public class MessageRepository : Repository<MessageEntity>, IMessageRepository
 {
     public MessageRepository(ApplicationDbContext context) : base(context) { }
 
-    public async Task<Pagination<Message>> GetByUserIdAsync(int id, IPageParams pageParams)
+    public async Task<Pagination<MessageEntity>> GetByUserIdAsync(int id, IPageParams pageParams)
     {
         var query = context.Messages
             .Include(m => m.FromUser)

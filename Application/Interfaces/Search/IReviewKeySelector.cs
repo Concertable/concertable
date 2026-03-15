@@ -5,5 +5,5 @@ namespace Application.Interfaces.Search;
 
 public interface IReviewKeySelector<TEntity>
 {
-    Expression<Func<Review, int>> KeySelector { get; }
+    Expression<Func<ReviewEntity, int>> KeySelector { get; }
 }

@@ -7,7 +7,7 @@ namespace Application.Mappers;
 
 public static class VenueMappers
 {
-    public static VenueDto ToDto(this Venue venue) => new()
+    public static VenueDto ToDto(this VenueEntity venue) => new()
     {
         Id = venue.Id,
         Name = venue.Name,
@@ -21,7 +21,7 @@ public static class VenueMappers
         Longitude = venue.User.Location?.X ?? throw new InternalServerException($"Venue {venue.Id} user has no location set.")
     };
 
-    public static VenueHeaderDto ToHeaderDto(this Venue venue) => new()
+    public static VenueHeaderDto ToHeaderDto(this VenueEntity venue) => new()
     {
         Id = venue.Id,
         Name = venue.Name,
@@ -43,16 +43,16 @@ public static class VenueMappers
         Longitude = venueDto.Longitude
     };
 
-    public static Venue ToEntity(this CreateVenueRequest request) => new()
+    public static VenueEntity ToEntity(this CreateVenueRequest request) => new()
     {
         Name = request.Name,
         About = request.About,
         ImageUrl = string.Empty
     };
 
-    public static IEnumerable<VenueDto> ToDtos(this IEnumerable<Venue> venues) =>
+    public static IEnumerable<VenueDto> ToDtos(this IEnumerable<VenueEntity> venues) =>
         venues.Select(v => v.ToDto());
 
-    public static IEnumerable<VenueHeaderDto> ToHeaderDtos(this IEnumerable<Venue> venues) =>
+    public static IEnumerable<VenueHeaderDto> ToHeaderDtos(this IEnumerable<VenueEntity> venues) =>
         venues.Select(v => v.ToHeaderDto());
 }

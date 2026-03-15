@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Requests;
 using Core.Entities;
@@ -32,7 +32,7 @@ public class PreferenceController : ControllerBase
     }
 
     [HttpGet("user")]
-    public async Task<ActionResult<Preference>> GetByUser()
+    public async Task<ActionResult<PreferenceEntity>> GetByUser()
     {
         return Ok(await preferenceService.GetByUserAsync());
     }

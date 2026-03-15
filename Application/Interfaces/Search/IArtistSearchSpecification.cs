@@ -5,5 +5,5 @@ namespace Application.Interfaces.Search;
 
 public interface IArtistSearchSpecification
 {
-    IQueryable<Artist> Apply(IQueryable<Artist> query, SearchParams searchParams);
+    IQueryable<ArtistEntity> Apply(IQueryable<ArtistEntity> query, SearchParams searchParams);
 }

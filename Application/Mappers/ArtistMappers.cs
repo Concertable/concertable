@@ -7,7 +7,7 @@ namespace Application.Mappers;
 
 public static class ArtistMappers
 {
-    public static ArtistDto ToDto(this Artist artist) => new()
+    public static ArtistDto ToDto(this ArtistEntity artist) => new()
     {
         Id = artist.Id,
         Name = artist.Name,
@@ -21,7 +21,7 @@ public static class ArtistMappers
         Longitude = artist.User.Location?.X ?? throw new InternalServerException($"Artist {artist.Id} user has no location set.")
     };
 
-    public static ArtistHeaderDto ToHeaderDto(this Artist artist) => new()
+    public static ArtistHeaderDto ToHeaderDto(this ArtistEntity artist) => new()
     {
         Id = artist.Id,
         Name = artist.Name,
@@ -43,26 +43,26 @@ public static class ArtistMappers
         Longitude = artistDto.Longitude
     };
 
-    public static Artist ToEntity(this CreateArtistRequest request) => new()
+    public static ArtistEntity ToEntity(this CreateArtistRequest request) => new()
     {
         Name = request.Name,
         About = request.About,
         ImageUrl = string.Empty, // Set by caller after image upload
-        ArtistGenres = request.Genres.Select(g => new ArtistGenre { GenreId = g.Id }).ToList()
+        ArtistGenres = request.Genres.Select(g => new ArtistGenreEntity { GenreId = g.Id }).ToList()
     };
 
-    public static Artist ToEntity(this ArtistDto dto) => new()
+    public static ArtistEntity ToEntity(this ArtistDto dto) => new()
     {
         Id = dto.Id,
         Name = dto.Name,
         About = dto.About,
         ImageUrl = dto.ImageUrl,
-        ArtistGenres = dto.Genres.Select(g => new ArtistGenre { GenreId = g.Id }).ToList()
+        ArtistGenres = dto.Genres.Select(g => new ArtistGenreEntity { GenreId = g.Id }).ToList()
     };
 
-    public static IEnumerable<ArtistDto> ToDtos(this IEnumerable<Artist> artists) =>
+    public static IEnumerable<ArtistDto> ToDtos(this IEnumerable<ArtistEntity> artists) =>
         artists.Select(a => a.ToDto());
 
-    public static IEnumerable<ArtistHeaderDto> ToHeaderDtos(this IEnumerable<Artist> artists) =>
+    public static IEnumerable<ArtistHeaderDto> ToHeaderDtos(this IEnumerable<ArtistEntity> artists) =>
         artists.Select(a => a.ToHeaderDto());
 }

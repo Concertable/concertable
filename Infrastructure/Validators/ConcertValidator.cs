@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Interfaces.Concert;
 using Application.Responses;
 using Core.Entities;
 
@@ -6,7 +7,7 @@ namespace Infrastructure.Validators;
 
 public class ConcertValidator : IConcertValidator
 {
-    public Task<ValidationResult> CanUpdateAsync(Concert concert, int newTotalTickets)
+    public Task<ValidationResult> CanUpdateAsync(ConcertEntity concert, int newTotalTickets)
     {
         var result = new ValidationResult();
         int ticketsSold = concert.TotalTickets - concert.AvailableTickets;
@@ -17,7 +18,7 @@ public class ConcertValidator : IConcertValidator
         return Task.FromResult(result);
     }
 
-    public Task<ValidationResult> CanPostAsync(Concert concert)
+    public Task<ValidationResult> CanPostAsync(ConcertEntity concert)
     {
         var result = new ValidationResult();
 

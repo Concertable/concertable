@@ -1,5 +1,6 @@
 using Core.Entities;
 using Application.Interfaces;
+using Application.Interfaces.Concert;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
@@ -61,7 +62,7 @@ public class ConcertApplicationController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ConcertApplication>> GetById(int id)
+    public async Task<ActionResult<ConcertApplicationEntity>> GetById(int id)
     {
         return Ok(await applicationService.GetByIdAsync(id));
     }

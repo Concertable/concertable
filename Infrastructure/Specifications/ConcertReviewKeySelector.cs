@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Infrastructure.Specifications;
 
-public class ConcertReviewKeySelector : IReviewKeySelector<Concert>
+public class ConcertReviewKeySelector : IReviewKeySelector<ConcertEntity>
 {
-    public Expression<Func<Review, int>> KeySelector => r => r.Ticket.ConcertId;
+    public Expression<Func<ReviewEntity, int>> KeySelector => r => r.Ticket.ConcertId;
 }

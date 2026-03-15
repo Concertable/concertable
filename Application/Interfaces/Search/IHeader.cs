@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Interfaces.Rating;
 using System.Text.Json.Serialization;
 
 namespace Application.Interfaces.Search;

@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Auth;
 using Application.Mappers;
 using Application.Requests;
 using Application.Responses;
@@ -45,7 +46,7 @@ public class AccountService : IAccountService
 
         var passwordHash = passwordHasher.Hash(request.Password);
 
-        User user = request.Role switch
+        UserEntity user = request.Role switch
         {
             Role.VenueManager => new VenueManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
             Role.ArtistManager => new ArtistManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
@@ -107,13 +108,13 @@ public class AccountService : IAccountService
         return dto;
     }
 
-    public async Task<User?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<UserEntity?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default)
     {
         return await context.Users
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     }
 
-    private async Task<LoginResponse> IssueTokensAsync(User user)
+    private async Task<LoginResponse> IssueTokensAsync(UserEntity user)
     {
         var dto = user.ToDto();
         dto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var baseUrl) ? baseUrl : "/";
@@ -121,7 +122,7 @@ public class AccountService : IAccountService
         var accessToken = tokenService.CreateAccessToken(user.Id, user.Email, user.Role);
         var refreshTokenValue = tokenService.CreateRefreshToken();
 
-        context.RefreshTokens.Add(new RefreshToken
+        context.RefreshTokens.Add(new RefreshTokenEntity
         {
             UserId = user.Id,
             Token = refreshTokenValue,

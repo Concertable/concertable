@@ -3,8 +3,8 @@ using Core.Interfaces;
 
 namespace Application.Interfaces;
 
-public interface IVenueRepository : IRepository<Venue>
+public interface IVenueRepository : IRepository<VenueEntity>
 {
-    Task<Venue?> GetByUserIdAsync(int id);
+    Task<VenueEntity?> GetByUserIdAsync(int id);
     Task<int?> GetIdByUserIdAsync(int userId);
 }

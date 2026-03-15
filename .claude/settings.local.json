@@ -15,7 +15,15 @@
       "Bash(grep -rn \"GetListingPayByIdAsync\\\\|GetForListingIdAsync\\\\|ApplyForListingAsync\\\\|OwnsListingAsync\\\\|OwnsListingByApplicationId\\\\|GetByListingIdAsync\\\\|ListingHasConcertAsync\" \\\\\n  /c/Users/TommySeery/source/repos/Concertable \\\\\n  --include=\"*.cs\" \\\\\n  --exclude-dir=Migrations \\\\\n  --exclude-dir=obj \\\\\n  2>/dev/null | grep -v \"\\\\.git\")",
       "Bash(dotnet workload:*)",
       "Bash(dotnet package:*)",
-      "Bash(powershell -Command \"Get-ChildItem -Path 'C:\\\\Users\\\\tommy\\\\source\\\\repos\\\\Concertable' -Filter '*.csproj' -Recurse | ForEach-Object { \\(Get-Content $_.FullName\\) -replace 'net8\\\\.0', 'net10.0' | Set-Content $_.FullName }\")"
+      "Bash(powershell -Command \"Get-ChildItem -Path 'C:\\\\Users\\\\tommy\\\\source\\\\repos\\\\Concertable' -Filter '*.csproj' -Recurse | ForEach-Object { \\(Get-Content $_.FullName\\) -replace 'net8\\\\.0', 'net10.0' | Set-Content $_.FullName }\")",
+      "Bash(git mv:*)",
+      "Bash(git ls-files:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(while read:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/tommy/source/repos/Concertable/**)",
+      "Bash(done)"
     ]
   }
 }

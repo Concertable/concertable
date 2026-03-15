@@ -74,7 +74,7 @@ public class ArtistService : IArtistService
         }
 
         foreach (var genreId in newGenreIds.Except(existingGenreIds).ToList())
-            artist.ArtistGenres.Add(new ArtistGenre { ArtistId = artist.Id, GenreId = genreId });
+            artist.ArtistGenres.Add(new ArtistGenreEntity { ArtistId = artist.Id, GenreId = genreId });
 
         if (request.Image is not null)
             artist.ImageUrl = await imageService.ReplaceAsync(request.Image, artist.ImageUrl);

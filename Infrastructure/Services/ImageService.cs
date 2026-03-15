@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Application.Interfaces.Blob;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;

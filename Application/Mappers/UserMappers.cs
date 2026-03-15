@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class UserMappers
 {
-    public static UserDto ToDto(this User user) => new()
+    public static UserDto ToDto(this UserEntity user) => new()
     {
         Id = user.Id,
         Email = user.Email ?? string.Empty,

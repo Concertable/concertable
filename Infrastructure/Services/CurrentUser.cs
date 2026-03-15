@@ -11,11 +11,11 @@ public class CurrentUser : ICurrentUser
     public static readonly CurrentUser Unauthenticated = new();
 
     private readonly UserDto? dto;
-    private readonly User? entity;
+    private readonly UserEntity? entity;
 
     private CurrentUser() { }
 
-    public CurrentUser(UserDto dto, User? entity = null)
+    public CurrentUser(UserDto dto, UserEntity? entity = null)
     {
         this.dto = dto;
         this.entity = entity;
@@ -30,7 +30,7 @@ public class CurrentUser : ICurrentUser
 
     public UserDto? GetOrDefault() => dto;
 
-    public User GetEntity() =>
+    public UserEntity GetEntity() =>
         entity ?? throw new UnauthorizedException("User not authenticated");
 
     public Role GetRole() =>

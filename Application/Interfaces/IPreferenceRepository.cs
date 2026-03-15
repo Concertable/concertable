@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces;
 
-public interface IPreferenceRepository : IRepository<Preference>
+public interface IPreferenceRepository : IRepository<PreferenceEntity>
 {
-    new Task<IEnumerable<Preference>> GetAllAsync();
+    new Task<IEnumerable<PreferenceEntity>> GetAllAsync();
 
-    new Task<Preference?> GetByIdAsync(int id);
+    new Task<PreferenceEntity?> GetByIdAsync(int id);
 
-    Task<Preference?> GetByUserIdAsync(int id);
+    Task<PreferenceEntity?> GetByUserIdAsync(int id);
 }

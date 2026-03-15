@@ -5,5 +5,5 @@ namespace Application.Interfaces.Search;
 
 public interface IConcertSearchSpecification
 {
-    IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams);
+    IQueryable<ConcertEntity> Apply(IQueryable<ConcertEntity> query, SearchParams searchParams);
 }

@@ -6,7 +6,7 @@ namespace Application.Mappers;
 
 public static class ConcertMappers
 {
-    public static ConcertDto ToDto(this Concert concert) => new()
+    public static ConcertDto ToDto(this ConcertEntity concert) => new()
     {
         Id = concert.Id,
         Name = concert.Name,
@@ -22,7 +22,7 @@ public static class ConcertMappers
         Genres = concert.ConcertGenres.Select(eg => eg.Genre.ToDto())
     };
 
-    public static ConcertHeaderDto ToHeaderDto(this Concert concert) => new()
+    public static ConcertHeaderDto ToHeaderDto(this ConcertEntity concert) => new()
     {
         Id = concert.Id,
         Name = concert.Name,
@@ -50,9 +50,9 @@ public static class ConcertMappers
         DatePosted = concertDto.DatePosted
     };
 
-    public static IEnumerable<ConcertDto> ToDtos(this IEnumerable<Concert> concerts) =>
+    public static IEnumerable<ConcertDto> ToDtos(this IEnumerable<ConcertEntity> concerts) =>
         concerts.Select(e => e.ToDto());
 
-    public static IEnumerable<ConcertHeaderDto> ToHeaderDtos(this IEnumerable<Concert> concerts) =>
+    public static IEnumerable<ConcertHeaderDto> ToHeaderDtos(this IEnumerable<ConcertEntity> concerts) =>
         concerts.Select(e => e.ToHeaderDto());
 }

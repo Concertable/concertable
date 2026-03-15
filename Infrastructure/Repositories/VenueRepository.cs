@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class VenueRepository : Repository<Venue>, IVenueRepository
+public class VenueRepository : Repository<VenueEntity>, IVenueRepository
 {
     public VenueRepository(ApplicationDbContext context) : base(context)
     {
     }
 
-    public new async Task<Venue?> GetByIdAsync(int id)
+    public new async Task<VenueEntity?> GetByIdAsync(int id)
     {
         return await context.Venues
             .Where(v => v.Id == id)
@@ -19,7 +19,7 @@ public class VenueRepository : Repository<Venue>, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<Venue?> GetByUserIdAsync(int id)
+    public async Task<VenueEntity?> GetByUserIdAsync(int id)
     {
         return await context.Venues
             .Where(v => v.UserId == id)

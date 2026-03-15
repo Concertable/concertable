@@ -9,7 +9,7 @@ namespace Application.Models;
 
 public class ConcertApplicationWithStatus
 {
-    public required ConcertApplication Application { get; set; }
+    public required ConcertApplicationEntity Application { get; set; }
     public bool HasConcert { get; set; }
 }
 

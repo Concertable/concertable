@@ -1,5 +1,6 @@
 using Core.Entities;
 using Application.Interfaces;
+using Application.Interfaces.Concert;
 using Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -7,7 +7,7 @@ namespace Infrastructure.Mappers;
 public static class QueryableConcertMappers
 {
     public static IQueryable<ConcertHeaderDto> ToHeaderDtos(
-        this IQueryable<Concert> query,
+        this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> ratings) =>
         from c in query
         join r in ratings on c.Id equals r.EntityId into rg

@@ -7,14 +7,14 @@ namespace Infrastructure.Specifications;
 
 public class RatingSpecification<TEntity> : IRatingSpecification<TEntity>
 {
-    private readonly Expression<Func<Review, int>> keySelector;
+    private readonly Expression<Func<ReviewEntity, int>> keySelector;
 
     public RatingSpecification(IReviewKeySelector<TEntity> keySelector)
     {
         this.keySelector = keySelector.KeySelector;
     }
 
-    public IQueryable<RatingAggregate> ApplyAggregate(IQueryable<Review> reviews) =>
+    public IQueryable<RatingAggregate> ApplyAggregate(IQueryable<ReviewEntity> reviews) =>
         reviews
             .GroupBy(keySelector)
             .Select(g => new RatingAggregate
@@ -23,10 +23,10 @@ public class RatingSpecification<TEntity> : IRatingSpecification<TEntity>
                 AverageRating = Math.Round(g.Average(r => (double?)r.Stars) ?? 0.0, 1)
             });
 
-    public IQueryable<double> ApplyAverage(IQueryable<Review> reviews, int id)
+    public IQueryable<double> ApplyAverage(IQueryable<ReviewEntity> reviews, int id)
     {
         var param = keySelector.Parameters[0];
-        var filter = Expression.Lambda<Func<Review, bool>>(
+        var filter = Expression.Lambda<Func<ReviewEntity, bool>>(
             Expression.Equal(keySelector.Body, Expression.Constant(id)),
             param);
 

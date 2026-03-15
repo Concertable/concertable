@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Interfaces.Auth;
 using Core.Entities;
 using Core.Enums;
 using Core.Parameters;
@@ -22,7 +23,7 @@ public class ApplicationDbInitializer
         {
             var locations = LocationList.GetLocations();
 
-            context.Users.Add(new User
+            context.Users.Add(new UserEntity
             {
                 Email = "admin1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -32,7 +33,7 @@ public class ApplicationDbInitializer
                 Location = new Point(-0.5, 51.0) { SRID = 4326 }
             });
 
-            context.Users.Add(new User
+            context.Users.Add(new UserEntity
             {
                 Email = "customer1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -46,7 +47,7 @@ public class ApplicationDbInitializer
             for (int i = 2; i <= 6; i++)
             {
                 var loc = locations[i % locations.Count];
-                context.Users.Add(new User
+                context.Users.Add(new UserEntity
                 {
                     Email = $"customer{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -57,7 +58,7 @@ public class ApplicationDbInitializer
                 });
             }
 
-            context.Users.Add(new User
+            context.Users.Add(new UserEntity
             {
                 Email = "artistmanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -67,7 +68,7 @@ public class ApplicationDbInitializer
                 Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
                 StripeId = "acct_1R71yoLnJh1ZDYF4"
             });
-            context.Users.Add(new User
+            context.Users.Add(new UserEntity
             {
                 Email = "artistmanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -80,7 +81,7 @@ public class ApplicationDbInitializer
             for (int i = 3; i <= 35; i++)
             {
                 var loc = locations[i % locations.Count];
-                context.Users.Add(new User
+                context.Users.Add(new UserEntity
                 {
                     Email = $"artistmanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -91,7 +92,7 @@ public class ApplicationDbInitializer
                 });
             }
 
-            context.Users.Add(new User
+            context.Users.Add(new UserEntity
             {
                 Email = "venuemanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -101,7 +102,7 @@ public class ApplicationDbInitializer
                 Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
                 StripeId = "acct_1R71zKBsonWwC9oM"
             });
-            context.Users.Add(new User
+            context.Users.Add(new UserEntity
             {
                 Email = "venuemanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -114,7 +115,7 @@ public class ApplicationDbInitializer
             for (int i = 3; i <= 35; i++)
             {
                 var loc = locations[i % locations.Count];
-                context.Users.Add(new User
+                context.Users.Add(new UserEntity
                 {
                     Email = $"venuemanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -131,9 +132,9 @@ public class ApplicationDbInitializer
         //Preferences
         if (!context.Preferences.Any())
         {
-            var preferences = new Preference[]
+            var preferences = new PreferenceEntity[]
             {
-            new Preference
+            new PreferenceEntity
             {
                 UserId = 2,
                 RadiusKm = 10
@@ -146,16 +147,16 @@ public class ApplicationDbInitializer
         // Genres
         if (!context.Genres.Any())
         {
-            var genres = new Genre[]
+            var genres = new GenreEntity[]
             {
-                new Genre { Name = "Rock" },
-                new Genre { Name = "Pop" },
-                new Genre { Name = "Jazz" },
-                new Genre { Name = "Hip-Hop" },
-                new Genre { Name = "Electronic" },
-                new Genre { Name = "Indie" },
-                new Genre { Name = "DnB" },
-                new Genre { Name = "House" }
+                new GenreEntity { Name = "Rock" },
+                new GenreEntity { Name = "Pop" },
+                new GenreEntity { Name = "Jazz" },
+                new GenreEntity { Name = "Hip-Hop" },
+                new GenreEntity { Name = "Electronic" },
+                new GenreEntity { Name = "Indie" },
+                new GenreEntity { Name = "DnB" },
+                new GenreEntity { Name = "House" }
             };
             context.Genres.AddRange(genres);
             await context.SaveChangesAsync();
@@ -164,9 +165,9 @@ public class ApplicationDbInitializer
         //PreferenceGenres
         if (context.GenrePreferences.Any())
         {
-            var genrePreferences = new GenrePreference[]
+            var genrePreferences = new GenrePreferenceEntity[]
             {
-                    new GenrePreference
+                    new GenrePreferenceEntity
                     {
                         PreferenceId = 1,
                         GenreId = 1
@@ -178,7 +179,7 @@ public class ApplicationDbInitializer
         // Artists
         if (!context.Artists.Any())
         {
-            var artists = new Artist[]
+            var artists = new ArtistEntity[]
             {
                 ArtistFaker.GetFaker(8, "The Rockers", "rockers.jpg").Generate(),
                 ArtistFaker.GetFaker(9, "Indie Vibes", "indievibes.jpg").Generate(),
@@ -220,92 +221,92 @@ public class ApplicationDbInitializer
             await context.SaveChangesAsync();
         }
 
-        // Artist Genres
+        // ArtistEntity Genres
         if (!context.ArtistGenres.Any())
         {
-            var artistGenres = new ArtistGenre[]
+            var artistGenres = new ArtistGenreEntity[]
             {
-                new ArtistGenre { ArtistId = 1, GenreId = 1 },
-                new ArtistGenre { ArtistId = 1, GenreId = 2 },
-                new ArtistGenre { ArtistId = 1, GenreId = 3 },
+                new ArtistGenreEntity { ArtistId = 1, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 1, GenreId = 2 },
+                new ArtistGenreEntity { ArtistId = 1, GenreId = 3 },
 
-                new ArtistGenre { ArtistId = 2, GenreId = 1 },
-                new ArtistGenre { ArtistId = 2, GenreId = 5 },
-                new ArtistGenre { ArtistId = 2, GenreId = 4 },
+                new ArtistGenreEntity { ArtistId = 2, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 2, GenreId = 5 },
+                new ArtistGenreEntity { ArtistId = 2, GenreId = 4 },
 
-                new ArtistGenre { ArtistId = 3, GenreId = 5 },
-                new ArtistGenre { ArtistId = 3, GenreId = 3 },
+                new ArtistGenreEntity { ArtistId = 3, GenreId = 5 },
+                new ArtistGenreEntity { ArtistId = 3, GenreId = 3 },
 
-                new ArtistGenre { ArtistId = 4, GenreId = 4 },
+                new ArtistGenreEntity { ArtistId = 4, GenreId = 4 },
 
-                new ArtistGenre { ArtistId = 5, GenreId = 6 },
-                new ArtistGenre { ArtistId = 5, GenreId = 3 },
+                new ArtistGenreEntity { ArtistId = 5, GenreId = 6 },
+                new ArtistGenreEntity { ArtistId = 5, GenreId = 3 },
 
-                new ArtistGenre { ArtistId = 6, GenreId = 1 },
-                new ArtistGenre { ArtistId = 6, GenreId = 6 },
+                new ArtistGenreEntity { ArtistId = 6, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 6, GenreId = 6 },
 
-                new ArtistGenre { ArtistId = 7, GenreId = 2 },
+                new ArtistGenreEntity { ArtistId = 7, GenreId = 2 },
 
-                new ArtistGenre { ArtistId = 8, GenreId = 4 },
-                new ArtistGenre { ArtistId = 8, GenreId = 2 },
+                new ArtistGenreEntity { ArtistId = 8, GenreId = 4 },
+                new ArtistGenreEntity { ArtistId = 8, GenreId = 2 },
 
-                new ArtistGenre { ArtistId = 9, GenreId = 5 },
-                new ArtistGenre { ArtistId = 9, GenreId = 3 },
+                new ArtistGenreEntity { ArtistId = 9, GenreId = 5 },
+                new ArtistGenreEntity { ArtistId = 9, GenreId = 3 },
 
-                new ArtistGenre { ArtistId = 10, GenreId = 1 },
-                new ArtistGenre { ArtistId = 10, GenreId = 7 },
+                new ArtistGenreEntity { ArtistId = 10, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 10, GenreId = 7 },
 
-                new ArtistGenre { ArtistId = 11, GenreId = 6 },
-                new ArtistGenre { ArtistId = 11, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 11, GenreId = 6 },
+                new ArtistGenreEntity { ArtistId = 11, GenreId = 1 },
 
-                new ArtistGenre { ArtistId = 12, GenreId = 2 },
+                new ArtistGenreEntity { ArtistId = 12, GenreId = 2 },
 
-                new ArtistGenre { ArtistId = 13, GenreId = 6 },
-                new ArtistGenre { ArtistId = 13, GenreId = 5 },
+                new ArtistGenreEntity { ArtistId = 13, GenreId = 6 },
+                new ArtistGenreEntity { ArtistId = 13, GenreId = 5 },
 
-                new ArtistGenre { ArtistId = 14, GenreId = 4 },
+                new ArtistGenreEntity { ArtistId = 14, GenreId = 4 },
 
-                new ArtistGenre { ArtistId = 15, GenreId = 7 },
+                new ArtistGenreEntity { ArtistId = 15, GenreId = 7 },
 
-                new ArtistGenre { ArtistId = 16, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 16, GenreId = 1 },
 
-                new ArtistGenre { ArtistId = 17, GenreId = 3 },
+                new ArtistGenreEntity { ArtistId = 17, GenreId = 3 },
 
-                new ArtistGenre { ArtistId = 18, GenreId = 6 },
+                new ArtistGenreEntity { ArtistId = 18, GenreId = 6 },
 
-                new ArtistGenre { ArtistId = 19, GenreId = 4 },
+                new ArtistGenreEntity { ArtistId = 19, GenreId = 4 },
 
-                new ArtistGenre { ArtistId = 20, GenreId = 7 },
+                new ArtistGenreEntity { ArtistId = 20, GenreId = 7 },
 
-                new ArtistGenre { ArtistId = 21, GenreId = 8 },
+                new ArtistGenreEntity { ArtistId = 21, GenreId = 8 },
 
-                new ArtistGenre { ArtistId = 22, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 22, GenreId = 1 },
 
-                new ArtistGenre { ArtistId = 23, GenreId = 5 },
+                new ArtistGenreEntity { ArtistId = 23, GenreId = 5 },
 
-                new ArtistGenre { ArtistId = 24, GenreId = 6 },
+                new ArtistGenreEntity { ArtistId = 24, GenreId = 6 },
 
-                new ArtistGenre { ArtistId = 25, GenreId = 2 },
+                new ArtistGenreEntity { ArtistId = 25, GenreId = 2 },
 
-                new ArtistGenre { ArtistId = 26, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 26, GenreId = 1 },
 
-                new ArtistGenre { ArtistId = 27, GenreId = 8 },
+                new ArtistGenreEntity { ArtistId = 27, GenreId = 8 },
 
-                new ArtistGenre { ArtistId = 28, GenreId = 5 },
+                new ArtistGenreEntity { ArtistId = 28, GenreId = 5 },
 
-                new ArtistGenre { ArtistId = 29, GenreId = 7 },
+                new ArtistGenreEntity { ArtistId = 29, GenreId = 7 },
 
-                new ArtistGenre { ArtistId = 30, GenreId = 3 },
+                new ArtistGenreEntity { ArtistId = 30, GenreId = 3 },
 
-                new ArtistGenre { ArtistId = 31, GenreId = 6 },
+                new ArtistGenreEntity { ArtistId = 31, GenreId = 6 },
 
-                new ArtistGenre { ArtistId = 32, GenreId = 1 },
+                new ArtistGenreEntity { ArtistId = 32, GenreId = 1 },
 
-                new ArtistGenre { ArtistId = 33, GenreId = 4 },
+                new ArtistGenreEntity { ArtistId = 33, GenreId = 4 },
 
-                new ArtistGenre { ArtistId = 34, GenreId = 2 },
+                new ArtistGenreEntity { ArtistId = 34, GenreId = 2 },
 
-                new ArtistGenre { ArtistId = 35, GenreId = 8 },
+                new ArtistGenreEntity { ArtistId = 35, GenreId = 8 },
             };
             context.ArtistGenres.AddRange(artistGenres);
             await context.SaveChangesAsync();
@@ -314,7 +315,7 @@ public class ApplicationDbInitializer
         // Venues
         if (!context.Venues.Any())
         {
-            var venues = new Venue[]
+            var venues = new VenueEntity[]
             {
                 VenueFaker.GetFaker(43, "The Grand Venue", "grandvenue.jpg").Generate(), //1
                 VenueFaker.GetFaker(44, "Redhill Hall", "redhillhall.jpg").Generate(), //2
@@ -356,52 +357,52 @@ public class ApplicationDbInitializer
             await context.SaveChangesAsync();
         }
 
-        // Concert Opportunities
+        // ConcertEntity Opportunities
         if (!context.ConcertOpportunities.Any())
         {
-            var opportunities = new ConcertOpportunity[]
+            var opportunities = new ConcertOpportunityEntity[]
             {
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Pay = 150 }, //1
-            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Pay = 200 }, //2
-            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Pay = 180 }, //3
-            new ConcertOpportunity { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Pay = 175 }, //4
-            new ConcertOpportunity { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Pay = 160 }, //5
-            new ConcertOpportunity { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Pay = 220 }, //6
-            new ConcertOpportunity { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Pay = 210 }, //7
-            new ConcertOpportunity { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Pay = 230 }, //8
-            new ConcertOpportunity { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Pay = 240 }, //9
-            new ConcertOpportunity { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Pay = 250 }, //10
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Pay = 160 }, //11
-            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Pay = 300 }, //12
-            new ConcertOpportunity { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Pay = 280 }, //13
-            new ConcertOpportunity { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Pay = 270 }, //14
-            new ConcertOpportunity { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 265 }, //15
-            new ConcertOpportunity { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Pay = 260 }, //16
-            new ConcertOpportunity { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Pay = 255 }, //17
-            new ConcertOpportunity { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Pay = 250 }, //18
-            new ConcertOpportunity { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Pay = 245 }, //19
-            new ConcertOpportunity { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Pay = 240 }, //20
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Pay = 235 }, //21
-            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Pay = 230 }, //22
-            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Pay = 225 }, //23
-            new ConcertOpportunity { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Pay = 220 }, //24
-            new ConcertOpportunity { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Pay = 215 }, //25
-            new ConcertOpportunity { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Pay = 210 }, //26
-            new ConcertOpportunity { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Pay = 205 }, //27
-            new ConcertOpportunity { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 }, //28
-            new ConcertOpportunity { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 }, //29
-            new ConcertOpportunity { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //30
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //31
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Pay = 190 }, //32
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Pay = 150 }, //33
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Pay = 175 }, //34
-            new ConcertOpportunity { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Pay = 200 }, //35
-            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Pay = 150 }, //36
-            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 175 }, //37
-            new ConcertOpportunity { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Pay = 200 }, //38
-            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Pay = 150 }, //39
-            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Pay = 175 }, //40
-            new ConcertOpportunity { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Pay = 200 } //41
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Pay = 150 }, //1
+            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Pay = 200 }, //2
+            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Pay = 180 }, //3
+            new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Pay = 175 }, //4
+            new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Pay = 160 }, //5
+            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Pay = 220 }, //6
+            new ConcertOpportunityEntity { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Pay = 210 }, //7
+            new ConcertOpportunityEntity { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Pay = 230 }, //8
+            new ConcertOpportunityEntity { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Pay = 240 }, //9
+            new ConcertOpportunityEntity { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Pay = 250 }, //10
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Pay = 160 }, //11
+            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Pay = 300 }, //12
+            new ConcertOpportunityEntity { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Pay = 280 }, //13
+            new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Pay = 270 }, //14
+            new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 265 }, //15
+            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Pay = 260 }, //16
+            new ConcertOpportunityEntity { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Pay = 255 }, //17
+            new ConcertOpportunityEntity { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Pay = 250 }, //18
+            new ConcertOpportunityEntity { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Pay = 245 }, //19
+            new ConcertOpportunityEntity { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Pay = 240 }, //20
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Pay = 235 }, //21
+            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Pay = 230 }, //22
+            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Pay = 225 }, //23
+            new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Pay = 220 }, //24
+            new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Pay = 215 }, //25
+            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Pay = 210 }, //26
+            new ConcertOpportunityEntity { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Pay = 205 }, //27
+            new ConcertOpportunityEntity { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Pay = 200 }, //28
+            new ConcertOpportunityEntity { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Pay = 195 }, //29
+            new ConcertOpportunityEntity { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //30
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Pay = 190 }, //31
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Pay = 190 }, //32
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Pay = 150 }, //33
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Pay = 175 }, //34
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Pay = 200 }, //35
+            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Pay = 150 }, //36
+            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Pay = 175 }, //37
+            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Pay = 200 }, //38
+            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Pay = 150 }, //39
+            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Pay = 175 }, //40
+            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Pay = 200 } //41
 
             };
             context.ConcertOpportunities.AddRange(opportunities);
@@ -411,143 +412,143 @@ public class ApplicationDbInitializer
         // OpportunityGenres
         if (!context.OpportunityGenres.Any())
         {
-            var opportunityGenres = new OpportunityGenre[]
+            var opportunityGenres = new OpportunityGenreEntity[]
             {
-                new OpportunityGenre { OpportunityId = 1, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 1, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 2, GenreId = 5 }, // Electronic
-                new OpportunityGenre { OpportunityId = 3, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 4, GenreId = 4 }, // Hip-Hop
-                new OpportunityGenre { OpportunityId = 5, GenreId = 6 }, // Indie
-                new OpportunityGenre { OpportunityId = 5, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 6, GenreId = 6 }, // Indie
-                new OpportunityGenre { OpportunityId = 6, GenreId = 4 }, // Hip-Hop
-                new OpportunityGenre { OpportunityId = 7, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 8, GenreId = 4 }, // Hip-Hop
-                new OpportunityGenre { OpportunityId = 8, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 9, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 9, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 9, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 10, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 11, GenreId = 5 }, // Electronic
-                new OpportunityGenre { OpportunityId = 11, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 12, GenreId = 6 }, // Indie
-                new OpportunityGenre { OpportunityId = 13, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 14, GenreId = 7 }, // DnB
-                new OpportunityGenre { OpportunityId = 15, GenreId = 8 }, // House
-                new OpportunityGenre { OpportunityId = 16, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 16, GenreId = 7 }, // DnB
-                new OpportunityGenre { OpportunityId = 17, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 18, GenreId = 6 }, // Indie
-                new OpportunityGenre { OpportunityId = 19, GenreId = 4 }, // Hip-Hop
-                new OpportunityGenre { OpportunityId = 20, GenreId = 7 }, // DnB
-                new OpportunityGenre { OpportunityId = 21, GenreId = 8 }, // House
-                new OpportunityGenre { OpportunityId = 22, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 22, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 23, GenreId = 5 }, // Electronic
-                new OpportunityGenre { OpportunityId = 24, GenreId = 6 }, // Indie
-                new OpportunityGenre { OpportunityId = 25, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 26, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 26, GenreId = 5 }, // Electronic
-                new OpportunityGenre { OpportunityId = 27, GenreId = 8 }, // House
-                new OpportunityGenre { OpportunityId = 28, GenreId = 5 }, // Electronic
-                new OpportunityGenre { OpportunityId = 29, GenreId = 7 }, // DnB
-                new OpportunityGenre { OpportunityId = 30, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 30, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 31, GenreId = 6 }, // Indie
-                new OpportunityGenre { OpportunityId = 32, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 33, GenreId = 4 }, // Hip-Hop
-                new OpportunityGenre { OpportunityId = 34, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 34, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 35, GenreId = 8 }, // House
-                new OpportunityGenre { OpportunityId = 36, GenreId = 6 }, // Indie
-                new OpportunityGenre { OpportunityId = 37, GenreId = 7 }, // DnB
-                new OpportunityGenre { OpportunityId = 38, GenreId = 3 }, // Jazz
-                new OpportunityGenre { OpportunityId = 39, GenreId = 1 }, // Rock
-                new OpportunityGenre { OpportunityId = 40, GenreId = 2 }, // Pop
-                new OpportunityGenre { OpportunityId = 41, GenreId = 4 }, // Hip-Hop
-                new OpportunityGenre { OpportunityId = 41, GenreId = 8 }  // House
+                new OpportunityGenreEntity { OpportunityId = 1, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 1, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 2, GenreId = 5 }, // Electronic
+                new OpportunityGenreEntity { OpportunityId = 3, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 4, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenreEntity { OpportunityId = 5, GenreId = 6 }, // Indie
+                new OpportunityGenreEntity { OpportunityId = 5, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 6, GenreId = 6 }, // Indie
+                new OpportunityGenreEntity { OpportunityId = 6, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenreEntity { OpportunityId = 7, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 8, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenreEntity { OpportunityId = 8, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 9, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 9, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 9, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 10, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 11, GenreId = 5 }, // Electronic
+                new OpportunityGenreEntity { OpportunityId = 11, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 12, GenreId = 6 }, // Indie
+                new OpportunityGenreEntity { OpportunityId = 13, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 14, GenreId = 7 }, // DnB
+                new OpportunityGenreEntity { OpportunityId = 15, GenreId = 8 }, // House
+                new OpportunityGenreEntity { OpportunityId = 16, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 16, GenreId = 7 }, // DnB
+                new OpportunityGenreEntity { OpportunityId = 17, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 18, GenreId = 6 }, // Indie
+                new OpportunityGenreEntity { OpportunityId = 19, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenreEntity { OpportunityId = 20, GenreId = 7 }, // DnB
+                new OpportunityGenreEntity { OpportunityId = 21, GenreId = 8 }, // House
+                new OpportunityGenreEntity { OpportunityId = 22, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 22, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 23, GenreId = 5 }, // Electronic
+                new OpportunityGenreEntity { OpportunityId = 24, GenreId = 6 }, // Indie
+                new OpportunityGenreEntity { OpportunityId = 25, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 26, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 26, GenreId = 5 }, // Electronic
+                new OpportunityGenreEntity { OpportunityId = 27, GenreId = 8 }, // House
+                new OpportunityGenreEntity { OpportunityId = 28, GenreId = 5 }, // Electronic
+                new OpportunityGenreEntity { OpportunityId = 29, GenreId = 7 }, // DnB
+                new OpportunityGenreEntity { OpportunityId = 30, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 30, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 31, GenreId = 6 }, // Indie
+                new OpportunityGenreEntity { OpportunityId = 32, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 33, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenreEntity { OpportunityId = 34, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 34, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 35, GenreId = 8 }, // House
+                new OpportunityGenreEntity { OpportunityId = 36, GenreId = 6 }, // Indie
+                new OpportunityGenreEntity { OpportunityId = 37, GenreId = 7 }, // DnB
+                new OpportunityGenreEntity { OpportunityId = 38, GenreId = 3 }, // Jazz
+                new OpportunityGenreEntity { OpportunityId = 39, GenreId = 1 }, // Rock
+                new OpportunityGenreEntity { OpportunityId = 40, GenreId = 2 }, // Pop
+                new OpportunityGenreEntity { OpportunityId = 41, GenreId = 4 }, // Hip-Hop
+                new OpportunityGenreEntity { OpportunityId = 41, GenreId = 8 }  // House
 };
             context.OpportunityGenres.AddRange(opportunityGenres);
             await context.SaveChangesAsync();
         }
 
-        // Concert Applications
+        // ConcertEntity Applications
         if (!context.ConcertApplications.Any())
         {
-            var applications = new ConcertApplication[]
+            var applications = new ConcertApplicationEntity[]
             {
-                new ConcertApplication { ArtistId = 1, OpportunityId = 1 }, //1
-                new ConcertApplication { ArtistId = 2, OpportunityId = 1 }, //2
-                new ConcertApplication { ArtistId = 3, OpportunityId = 1 }, //3
-                new ConcertApplication { ArtistId = 4, OpportunityId = 1 }, //4
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 1 }, //1
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 1 }, //2
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 1 }, //3
+                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 1 }, //4
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 2 }, //5
-                new ConcertApplication { ArtistId = 2, OpportunityId = 2 }, //6
-                new ConcertApplication { ArtistId = 5, OpportunityId = 2 }, //7
-                new ConcertApplication { ArtistId = 6, OpportunityId = 2 }, //8
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 2 }, //5
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 2 }, //6
+                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 2 }, //7
+                new ConcertApplicationEntity { ArtistId = 6, OpportunityId = 2 }, //8
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 3 }, //9
-                new ConcertApplication { ArtistId = 2, OpportunityId = 3 }, //10
-                new ConcertApplication { ArtistId = 7, OpportunityId = 3 }, //11
-                new ConcertApplication { ArtistId = 8, OpportunityId = 3 }, //12
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 3 }, //9
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 3 }, //10
+                new ConcertApplicationEntity { ArtistId = 7, OpportunityId = 3 }, //11
+                new ConcertApplicationEntity { ArtistId = 8, OpportunityId = 3 }, //12
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 4 }, //13
-                new ConcertApplication { ArtistId = 2, OpportunityId = 4 }, //14
-                new ConcertApplication { ArtistId = 9, OpportunityId = 4 }, //15
-                new ConcertApplication { ArtistId = 10, OpportunityId = 4 }, //16
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 4 }, //13
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 4 }, //14
+                new ConcertApplicationEntity { ArtistId = 9, OpportunityId = 4 }, //15
+                new ConcertApplicationEntity { ArtistId = 10, OpportunityId = 4 }, //16
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 5 }, //17
-                new ConcertApplication { ArtistId = 2, OpportunityId = 5 }, //18
-                new ConcertApplication { ArtistId = 11, OpportunityId = 5 }, //19
-                new ConcertApplication { ArtistId = 12, OpportunityId = 5 }, //20
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 5 }, //17
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 5 }, //18
+                new ConcertApplicationEntity { ArtistId = 11, OpportunityId = 5 }, //19
+                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 5 }, //20
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 6 }, //21
-                new ConcertApplication { ArtistId = 2, OpportunityId = 6 }, //22
-                new ConcertApplication { ArtistId = 13, OpportunityId = 6 }, //23
-                new ConcertApplication { ArtistId = 14, OpportunityId = 6 }, //24
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 6 }, //21
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 6 }, //22
+                new ConcertApplicationEntity { ArtistId = 13, OpportunityId = 6 }, //23
+                new ConcertApplicationEntity { ArtistId = 14, OpportunityId = 6 }, //24
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 7 }, //25
-                new ConcertApplication { ArtistId = 2, OpportunityId = 7 }, //26
-                new ConcertApplication { ArtistId = 15, OpportunityId = 7 }, //27
-                new ConcertApplication { ArtistId = 16, OpportunityId = 7 }, //28
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 7 }, //25
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 7 }, //26
+                new ConcertApplicationEntity { ArtistId = 15, OpportunityId = 7 }, //27
+                new ConcertApplicationEntity { ArtistId = 16, OpportunityId = 7 }, //28
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 8 }, //29
-                new ConcertApplication { ArtistId = 2, OpportunityId = 8 }, //30
-                new ConcertApplication { ArtistId = 17, OpportunityId = 8 }, //31
-                new ConcertApplication { ArtistId = 18, OpportunityId = 8 }, //32
-                new ConcertApplication { ArtistId = 17, OpportunityId = 40 }, //31
-                new ConcertApplication { ArtistId = 18, OpportunityId = 41 }, //32
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 8 }, //29
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 8 }, //30
+                new ConcertApplicationEntity { ArtistId = 17, OpportunityId = 8 }, //31
+                new ConcertApplicationEntity { ArtistId = 18, OpportunityId = 8 }, //32
+                new ConcertApplicationEntity { ArtistId = 17, OpportunityId = 40 }, //31
+                new ConcertApplicationEntity { ArtistId = 18, OpportunityId = 41 }, //32
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 14 }, //33
-                new ConcertApplication { ArtistId = 2, OpportunityId = 14 }, //34
-                new ConcertApplication { ArtistId = 3, OpportunityId = 14 }, //35
-                new ConcertApplication { ArtistId = 4, OpportunityId = 14 }, //36
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 14 }, //33
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 14 }, //34
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 14 }, //35
+                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 14 }, //36
 
-                new ConcertApplication { ArtistId = 5, OpportunityId = 15 }, //37
-                new ConcertApplication { ArtistId = 6, OpportunityId = 15 }, //38
-                new ConcertApplication { ArtistId = 7, OpportunityId = 15 }, //39
-                new ConcertApplication { ArtistId = 8, OpportunityId = 15 }, //40
+                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 15 }, //37
+                new ConcertApplicationEntity { ArtistId = 6, OpportunityId = 15 }, //38
+                new ConcertApplicationEntity { ArtistId = 7, OpportunityId = 15 }, //39
+                new ConcertApplicationEntity { ArtistId = 8, OpportunityId = 15 }, //40
 
-                new ConcertApplication { ArtistId = 9, OpportunityId = 16 }, //41
-                new ConcertApplication { ArtistId = 10, OpportunityId = 16 }, //42
-                new ConcertApplication { ArtistId = 11, OpportunityId = 16 }, //43
-                new ConcertApplication { ArtistId = 12, OpportunityId = 16 }, //44
+                new ConcertApplicationEntity { ArtistId = 9, OpportunityId = 16 }, //41
+                new ConcertApplicationEntity { ArtistId = 10, OpportunityId = 16 }, //42
+                new ConcertApplicationEntity { ArtistId = 11, OpportunityId = 16 }, //43
+                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 16 }, //44
 
-                new ConcertApplication { ArtistId = 13, OpportunityId = 17 }, //45
-                new ConcertApplication { ArtistId = 14, OpportunityId = 17 }, //46
-                new ConcertApplication { ArtistId = 15, OpportunityId = 17 }, //47
-                new ConcertApplication { ArtistId = 16, OpportunityId = 17 }, //48
+                new ConcertApplicationEntity { ArtistId = 13, OpportunityId = 17 }, //45
+                new ConcertApplicationEntity { ArtistId = 14, OpportunityId = 17 }, //46
+                new ConcertApplicationEntity { ArtistId = 15, OpportunityId = 17 }, //47
+                new ConcertApplicationEntity { ArtistId = 16, OpportunityId = 17 }, //48
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 34 }, //49
-                new ConcertApplication { ArtistId = 2, OpportunityId = 34 }, //50
-                new ConcertApplication { ArtistId = 19, OpportunityId = 34 }, //51
-                new ConcertApplication { ArtistId = 20, OpportunityId = 34 }, //52
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 34 }, //49
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 34 }, //50
+                new ConcertApplicationEntity { ArtistId = 19, OpportunityId = 34 }, //51
+                new ConcertApplicationEntity { ArtistId = 20, OpportunityId = 34 }, //52
 
-                new ConcertApplication { ArtistId = 1, OpportunityId = 38 }, //53
-                new ConcertApplication { ArtistId = 2, OpportunityId = 38 }, //54
-                new ConcertApplication { ArtistId = 12, OpportunityId = 38 }, //55
-                new ConcertApplication { ArtistId = 4, OpportunityId = 38 }, //56
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 38 }, //53
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 38 }, //54
+                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //55
+                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //56
             };
             context.ConcertApplications.AddRange(applications);
             await context.SaveChangesAsync();
@@ -555,7 +556,7 @@ public class ApplicationDbInitializer
 
         if (!context.Concerts.Any())
         {
-            var concerts = new Concert[]
+            var concerts = new ConcertEntity[]
             {
                     ConcertFaker.GetFaker(1, "Rockin' all Night", 15m, 120, 80, now.AddDays(-58)).Generate(), //1
                     ConcertFaker.GetFaker(2, "Non Stop Party", 12m, 110, 70, now.AddDays(-55)).Generate(), //2
@@ -598,100 +599,100 @@ public class ApplicationDbInitializer
         // ConcertGenres
         if (!context.ConcertGenres.Any())
         {
-            var concertGenres = new List<ConcertGenre>
+            var concertGenres = new List<ConcertGenreEntity>
             {
-                new ConcertGenre { ConcertId = 1, GenreId = 1 },
-                new ConcertGenre { ConcertId = 1, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 1, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 1, GenreId = 2 },
 
-                new ConcertGenre { ConcertId = 2, GenreId = 2 },
-                new ConcertGenre { ConcertId = 2, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 2, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 2, GenreId = 5 },
 
-                new ConcertGenre { ConcertId = 3, GenreId = 5 },
-                new ConcertGenre { ConcertId = 3, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 3, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 3, GenreId = 3 },
 
-                new ConcertGenre { ConcertId = 4, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 4, GenreId = 4 },
 
-                new ConcertGenre { ConcertId = 5, GenreId = 3 },
-                new ConcertGenre { ConcertId = 5, GenreId = 6 },
-                new ConcertGenre { ConcertId = 5, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 5, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 5, GenreId = 6 },
+                new ConcertGenreEntity { ConcertId = 5, GenreId = 1 },
 
-                new ConcertGenre { ConcertId = 6, GenreId = 6 },
-                new ConcertGenre { ConcertId = 6, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 6, GenreId = 6 },
+                new ConcertGenreEntity { ConcertId = 6, GenreId = 4 },
 
-                new ConcertGenre { ConcertId = 7, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 7, GenreId = 2 },
 
-                new ConcertGenre { ConcertId = 8, GenreId = 4 },
-                new ConcertGenre { ConcertId = 8, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 8, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 8, GenreId = 1 },
 
-                new ConcertGenre { ConcertId = 9, GenreId = 2 },
-                new ConcertGenre { ConcertId = 9, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 9, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 9, GenreId = 1 },
 
-                new ConcertGenre { ConcertId = 10, GenreId = 6 },
+                new ConcertGenreEntity { ConcertId = 10, GenreId = 6 },
 
-                new ConcertGenre { ConcertId = 11, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 11, GenreId = 1 },
 
-                new ConcertGenre { ConcertId = 12, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 12, GenreId = 5 },
 
-                new ConcertGenre { ConcertId = 13, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 13, GenreId = 4 },
 
-                new ConcertGenre { ConcertId = 14, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 14, GenreId = 5 },
 
-                new ConcertGenre { ConcertId = 15, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 15, GenreId = 5 },
 
-                new ConcertGenre { ConcertId = 16, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 16, GenreId = 5 },
 
-                new ConcertGenre { ConcertId = 17, GenreId = 3 },
-                new ConcertGenre { ConcertId = 17, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 17, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 17, GenreId = 4 },
 
-                new ConcertGenre { ConcertId = 18, GenreId = 3 },
-                new ConcertGenre { ConcertId = 18, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 18, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 18, GenreId = 4 },
 
-                new ConcertGenre { ConcertId = 19, GenreId = 4 },
-                new ConcertGenre { ConcertId = 19, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 19, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 19, GenreId = 3 },
 
-                new ConcertGenre { ConcertId = 20, GenreId = 6 },
+                new ConcertGenreEntity { ConcertId = 20, GenreId = 6 },
 
-                new ConcertGenre { ConcertId = 21, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 21, GenreId = 3 },
 
-                new ConcertGenre { ConcertId = 21, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 21, GenreId = 4 },
 
-                new ConcertGenre { ConcertId = 22, GenreId = 7 },
+                new ConcertGenreEntity { ConcertId = 22, GenreId = 7 },
 
-                new ConcertGenre { ConcertId = 23, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 23, GenreId = 5 },
 
-                new ConcertGenre { ConcertId = 24, GenreId = 7 },
+                new ConcertGenreEntity { ConcertId = 24, GenreId = 7 },
 
-                new ConcertGenre { ConcertId = 25, GenreId = 8 },
+                new ConcertGenreEntity { ConcertId = 25, GenreId = 8 },
 
-                new ConcertGenre { ConcertId = 26, GenreId = 7 },
-                new ConcertGenre { ConcertId = 26, GenreId = 1 },
-                new ConcertGenre { ConcertId = 26, GenreId = 2 },
-                new ConcertGenre { ConcertId = 26, GenreId = 6 },
+                new ConcertGenreEntity { ConcertId = 26, GenreId = 7 },
+                new ConcertGenreEntity { ConcertId = 26, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 26, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 26, GenreId = 6 },
 
-                new ConcertGenre { ConcertId = 27, GenreId = 3 },
-                new ConcertGenre { ConcertId = 27, GenreId = 2 },
-                new ConcertGenre { ConcertId = 27, GenreId = 5 },
-                new ConcertGenre { ConcertId = 27, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 27, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 27, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 27, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 27, GenreId = 1 },
 
-                new ConcertGenre { ConcertId = 28, GenreId = 6 },
-                new ConcertGenre { ConcertId = 28, GenreId = 2 },
-                new ConcertGenre { ConcertId = 28, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 28, GenreId = 6 },
+                new ConcertGenreEntity { ConcertId = 28, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 28, GenreId = 4 },
 
-                new ConcertGenre { ConcertId = 29, GenreId = 2 },
-                new ConcertGenre { ConcertId = 29, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 29, GenreId = 2 },
+                new ConcertGenreEntity { ConcertId = 29, GenreId = 1 },
 
-                new ConcertGenre { ConcertId = 30, GenreId = 8 },
-                new ConcertGenre { ConcertId = 30, GenreId = 1 },
-                new ConcertGenre { ConcertId = 30, GenreId = 4 },
-                new ConcertGenre { ConcertId = 30, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 30, GenreId = 8 },
+                new ConcertGenreEntity { ConcertId = 30, GenreId = 1 },
+                new ConcertGenreEntity { ConcertId = 30, GenreId = 4 },
+                new ConcertGenreEntity { ConcertId = 30, GenreId = 5 },
 
-                new ConcertGenre { ConcertId = 31, GenreId = 3 },
-                new ConcertGenre { ConcertId = 31, GenreId = 5 },
-                new ConcertGenre { ConcertId = 31, GenreId = 7 },
+                new ConcertGenreEntity { ConcertId = 31, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 31, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 31, GenreId = 7 },
 
-                new ConcertGenre { ConcertId = 32, GenreId = 3 },
-                new ConcertGenre { ConcertId = 32, GenreId = 5 },
-                new ConcertGenre { ConcertId = 32, GenreId = 7 },
+                new ConcertGenreEntity { ConcertId = 32, GenreId = 3 },
+                new ConcertGenreEntity { ConcertId = 32, GenreId = 5 },
+                new ConcertGenreEntity { ConcertId = 32, GenreId = 7 },
             };
 
             context.ConcertGenres.AddRange(concertGenres);
@@ -702,133 +703,133 @@ public class ApplicationDbInitializer
         // Tickets
         if (!context.Tickets.Any())
         {
-            var tickets = new Ticket[]
+            var tickets = new TicketEntity[]
             {
-            new Ticket { UserId = 2, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
-            new Ticket { UserId = 3, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
-            new Ticket { UserId = 4, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
-            new Ticket { UserId = 5, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
-            new Ticket { UserId = 6, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
-            new Ticket { UserId = 7, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
-            new Ticket { UserId = 8, ConcertId = 1, PurchaseDate = now.AddDays(-56) },
+            new TicketEntity { UserId = 2, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+            new TicketEntity { UserId = 3, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+            new TicketEntity { UserId = 4, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+            new TicketEntity { UserId = 5, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+            new TicketEntity { UserId = 6, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+            new TicketEntity { UserId = 7, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+            new TicketEntity { UserId = 8, ConcertId = 1, PurchaseDate = now.AddDays(-56) },
 
-            new Ticket { UserId = 3, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
-            new Ticket { UserId = 4, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
-            new Ticket { UserId = 5, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
-            new Ticket { UserId = 6, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
-            new Ticket { UserId = 7, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
-            new Ticket { UserId = 8, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
-            new Ticket { UserId = 9, ConcertId = 2, PurchaseDate = now.AddDays(-53) },
+            new TicketEntity { UserId = 3, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+            new TicketEntity { UserId = 4, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+            new TicketEntity { UserId = 5, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+            new TicketEntity { UserId = 6, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+            new TicketEntity { UserId = 7, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+            new TicketEntity { UserId = 8, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+            new TicketEntity { UserId = 9, ConcertId = 2, PurchaseDate = now.AddDays(-53) },
 
-            new Ticket { UserId = 4, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
-            new Ticket { UserId = 5, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
-            new Ticket { UserId = 6, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
-            new Ticket { UserId = 7, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
-            new Ticket { UserId = 8, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
-            new Ticket { UserId = 9, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
-            new Ticket { UserId = 10, ConcertId = 3, PurchaseDate = now.AddDays(-50) },
+            new TicketEntity { UserId = 4, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+            new TicketEntity { UserId = 5, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+            new TicketEntity { UserId = 6, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+            new TicketEntity { UserId = 7, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+            new TicketEntity { UserId = 8, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+            new TicketEntity { UserId = 9, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+            new TicketEntity { UserId = 10, ConcertId = 3, PurchaseDate = now.AddDays(-50) },
 
-            new Ticket { UserId = 2, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
-            new Ticket { UserId = 3, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
-            new Ticket { UserId = 4, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
-            new Ticket { UserId = 5, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
-            new Ticket { UserId = 6, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
-            new Ticket { UserId = 7, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
-            new Ticket { UserId = 8, ConcertId = 4, PurchaseDate = now.AddDays(-47) },
+            new TicketEntity { UserId = 2, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+            new TicketEntity { UserId = 3, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+            new TicketEntity { UserId = 4, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+            new TicketEntity { UserId = 5, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+            new TicketEntity { UserId = 6, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+            new TicketEntity { UserId = 7, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+            new TicketEntity { UserId = 8, ConcertId = 4, PurchaseDate = now.AddDays(-47) },
 
-            new Ticket { UserId = 9, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
-            new Ticket { UserId = 10, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
-            new Ticket { UserId = 2, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
-            new Ticket { UserId = 3, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
-            new Ticket { UserId = 4, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
-            new Ticket { UserId = 5, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
-            new Ticket { UserId = 6, ConcertId = 5, PurchaseDate = now.AddDays(-44) },
+            new TicketEntity { UserId = 9, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+            new TicketEntity { UserId = 10, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+            new TicketEntity { UserId = 2, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+            new TicketEntity { UserId = 3, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+            new TicketEntity { UserId = 4, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+            new TicketEntity { UserId = 5, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+            new TicketEntity { UserId = 6, ConcertId = 5, PurchaseDate = now.AddDays(-44) },
 
-            new Ticket { UserId = 2, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
-            new Ticket { UserId = 3, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
-            new Ticket { UserId = 5, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
-            new Ticket { UserId = 6, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
-            new Ticket { UserId = 8, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+            new TicketEntity { UserId = 2, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
+            new TicketEntity { UserId = 3, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
+            new TicketEntity { UserId = 5, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+            new TicketEntity { UserId = 6, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+            new TicketEntity { UserId = 8, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
 
-            new Ticket { UserId = 2, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
-            new Ticket { UserId = 3, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
-            new Ticket { UserId = 9, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+            new TicketEntity { UserId = 2, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+            new TicketEntity { UserId = 3, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+            new TicketEntity { UserId = 9, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
 
-            new Ticket { UserId = 2, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
-            new Ticket { UserId = 3, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
-            new Ticket { UserId = 6, ConcertId = 8, PurchaseDate = now.AddDays(-37) },
+            new TicketEntity { UserId = 2, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
+            new TicketEntity { UserId = 3, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
+            new TicketEntity { UserId = 6, ConcertId = 8, PurchaseDate = now.AddDays(-37) },
 
-            new Ticket { UserId = 2, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
-            new Ticket { UserId = 3, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
-            new Ticket { UserId = 8, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+            new TicketEntity { UserId = 2, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+            new TicketEntity { UserId = 3, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+            new TicketEntity { UserId = 8, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
 
-            new Ticket { UserId = 2, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
-            new Ticket { UserId = 3, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
-            new Ticket { UserId = 9, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+            new TicketEntity { UserId = 2, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+            new TicketEntity { UserId = 3, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+            new TicketEntity { UserId = 9, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
 
-            new Ticket { UserId = 2, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
-            new Ticket { UserId = 3, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
-            new Ticket { UserId = 6, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+            new TicketEntity { UserId = 2, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+            new TicketEntity { UserId = 3, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+            new TicketEntity { UserId = 6, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
 
-            new Ticket { UserId = 2, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
-            new Ticket { UserId = 3, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
-            new Ticket { UserId = 7, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+            new TicketEntity { UserId = 2, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+            new TicketEntity { UserId = 3, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+            new TicketEntity { UserId = 7, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
 
-            new Ticket { UserId = 2, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
-            new Ticket { UserId = 3, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
-            new Ticket { UserId = 8, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+            new TicketEntity { UserId = 2, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+            new TicketEntity { UserId = 3, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+            new TicketEntity { UserId = 8, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
 
-            new Ticket { UserId = 2, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
-            new Ticket { UserId = 3, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
-            new Ticket { UserId = 6, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+            new TicketEntity { UserId = 2, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+            new TicketEntity { UserId = 3, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+            new TicketEntity { UserId = 6, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
 
-            new Ticket { UserId = 2, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
-            new Ticket { UserId = 3, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
-            new Ticket { UserId = 5, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+            new TicketEntity { UserId = 2, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+            new TicketEntity { UserId = 3, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+            new TicketEntity { UserId = 5, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
 
-            new Ticket { UserId = 2, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
-            new Ticket { UserId = 3, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
-            new Ticket { UserId = 9, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+            new TicketEntity { UserId = 2, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+            new TicketEntity { UserId = 3, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+            new TicketEntity { UserId = 9, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
 
-            new Ticket { UserId = 2, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
-            new Ticket { UserId = 3, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
-            new Ticket { UserId = 7, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+            new TicketEntity { UserId = 2, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+            new TicketEntity { UserId = 3, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+            new TicketEntity { UserId = 7, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
 
-            new Ticket { UserId = 2, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
-            new Ticket { UserId = 3, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
-            new Ticket { UserId = 8, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+            new TicketEntity { UserId = 2, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+            new TicketEntity { UserId = 3, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+            new TicketEntity { UserId = 8, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
 
-            new Ticket { UserId = 2, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
-            new Ticket { UserId = 3, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
-            new Ticket { UserId = 6, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+            new TicketEntity { UserId = 2, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+            new TicketEntity { UserId = 3, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+            new TicketEntity { UserId = 6, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
 
-            new Ticket { UserId = 2, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
-            new Ticket { UserId = 3, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
-            new Ticket { UserId = 9, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+            new TicketEntity { UserId = 2, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+            new TicketEntity { UserId = 3, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+            new TicketEntity { UserId = 9, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
 
-            new Ticket { UserId = 2, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
-            new Ticket { UserId = 3, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
-            new Ticket { UserId = 5, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+            new TicketEntity { UserId = 2, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+            new TicketEntity { UserId = 3, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+            new TicketEntity { UserId = 5, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
 
-            new Ticket { UserId = 2, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
-            new Ticket { UserId = 3, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
-            new Ticket { UserId = 8, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+            new TicketEntity { UserId = 2, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+            new TicketEntity { UserId = 3, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+            new TicketEntity { UserId = 8, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
 
-            new Ticket { UserId = 2, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
-            new Ticket { UserId = 3, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
-            new Ticket { UserId = 6, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+            new TicketEntity { UserId = 2, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+            new TicketEntity { UserId = 3, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+            new TicketEntity { UserId = 6, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
 
-            new Ticket { UserId = 2, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
-            new Ticket { UserId = 3, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
-            new Ticket { UserId = 5, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+            new TicketEntity { UserId = 2, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+            new TicketEntity { UserId = 3, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+            new TicketEntity { UserId = 5, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
 
-            new Ticket { UserId = 2, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
-            new Ticket { UserId = 3, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
-            new Ticket { UserId = 9, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+            new TicketEntity { UserId = 2, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+            new TicketEntity { UserId = 3, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+            new TicketEntity { UserId = 9, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
 
-            new Ticket { UserId = 2, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
-            new Ticket { UserId = 3, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
-            new Ticket { UserId = 6, ConcertId = 26, PurchaseDate = now.AddDays(-2) }
+            new TicketEntity { UserId = 2, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
+            new TicketEntity { UserId = 3, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
+            new TicketEntity { UserId = 6, ConcertId = 26, PurchaseDate = now.AddDays(-2) }
             };
 
             context.Tickets.AddRange(tickets);
@@ -838,45 +839,45 @@ public class ApplicationDbInitializer
         // Reviews
         if (!context.Reviews.Any())
         {
-            var reviews = new Review[]
+            var reviews = new ReviewEntity[]
             {
-            new Review { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
-            new Review { TicketId = 2, Stars = 5, Details = "Loved every moment!" },
-            new Review { TicketId = 3, Stars = 5, Details = "Unforgettable night!" },
-            new Review { TicketId = 4, Stars = 4, Details = "Great energy from the crowd." },
-            new Review { TicketId = 5, Stars = 3, Details = "Good, but the sound was a bit off." },
-            new Review { TicketId = 6, Stars = 5, Details = "Perfect setlist and vibes!" },
-            new Review { TicketId = 7, Stars = 4, Details = "Would attend again!" },
+            new ReviewEntity { TicketId = 1, Stars = 4, Details = "Amazing performance!" },
+            new ReviewEntity { TicketId = 2, Stars = 5, Details = "Loved every moment!" },
+            new ReviewEntity { TicketId = 3, Stars = 5, Details = "Unforgettable night!" },
+            new ReviewEntity { TicketId = 4, Stars = 4, Details = "Great energy from the crowd." },
+            new ReviewEntity { TicketId = 5, Stars = 3, Details = "Good, but the sound was a bit off." },
+            new ReviewEntity { TicketId = 6, Stars = 5, Details = "Perfect setlist and vibes!" },
+            new ReviewEntity { TicketId = 7, Stars = 4, Details = "Would attend again!" },
 
-            new Review { TicketId = 8, Stars = 5, Details = "Fantastic indie atmosphere." },
-            new Review { TicketId = 9, Stars = 4, Details = "Loved the venue!" },
-            new Review { TicketId = 10, Stars = 4, Details = "Solid performance." },
-            new Review { TicketId = 11, Stars = 5, Details = "Caught my new favorite artist!" },
-            new Review { TicketId = 12, Stars = 3, Details = "Good music, but crowded." },
-            new Review { TicketId = 13, Stars = 5, Details = "Indie dream come true." },
-            new Review { TicketId = 14, Stars = 4, Details = "Chill night out." },
+            new ReviewEntity { TicketId = 8, Stars = 5, Details = "Fantastic indie atmosphere." },
+            new ReviewEntity { TicketId = 9, Stars = 4, Details = "Loved the venue!" },
+            new ReviewEntity { TicketId = 10, Stars = 4, Details = "Solid performance." },
+            new ReviewEntity { TicketId = 11, Stars = 5, Details = "Caught my new favorite artist!" },
+            new ReviewEntity { TicketId = 12, Stars = 3, Details = "Good music, but crowded." },
+            new ReviewEntity { TicketId = 13, Stars = 5, Details = "Indie dream come true." },
+            new ReviewEntity { TicketId = 14, Stars = 4, Details = "Chill night out." },
 
-            new Review { TicketId = 15, Stars = 5, Details = "Incredible stage presence!" },
-            new Review { TicketId = 16, Stars = 4, Details = "Would love to see them again." },
-            new Review { TicketId = 17, Stars = 5, Details = "Next-level visuals." },
-            new Review { TicketId = 18, Stars = 4, Details = "Very unique sound." },
-            new Review { TicketId = 19, Stars = 4, Details = "Great crowd energy." },
-            new Review { TicketId = 20, Stars = 5, Details = "Absolute fire show." },
-            new Review { TicketId = 21, Stars = 5, Details = "Perfect DnB experience." },
+            new ReviewEntity { TicketId = 15, Stars = 5, Details = "Incredible stage presence!" },
+            new ReviewEntity { TicketId = 16, Stars = 4, Details = "Would love to see them again." },
+            new ReviewEntity { TicketId = 17, Stars = 5, Details = "Next-level visuals." },
+            new ReviewEntity { TicketId = 18, Stars = 4, Details = "Very unique sound." },
+            new ReviewEntity { TicketId = 19, Stars = 4, Details = "Great crowd energy." },
+            new ReviewEntity { TicketId = 20, Stars = 5, Details = "Absolute fire show." },
+            new ReviewEntity { TicketId = 21, Stars = 5, Details = "Perfect DnB experience." },
 
-            new Review { TicketId = 22, Stars = 4, Details = "Smooth lyrical vibes." },
-            new Review { TicketId = 23, Stars = 5, Details = "Top-tier show!" },
-            new Review { TicketId = 24, Stars = 4, Details = "Nice intimate gig." },
-            new Review { TicketId = 25, Stars = 3, Details = "A bit too loud but still fun." },
-            new Review { TicketId = 26, Stars = 4, Details = "Well organized event." },
-            new Review { TicketId = 27, Stars = 5, Details = "Really enjoyed it." },
-            new Review { TicketId = 28, Stars = 5, Details = "Brought my friends, all loved it." },
+            new ReviewEntity { TicketId = 22, Stars = 4, Details = "Smooth lyrical vibes." },
+            new ReviewEntity { TicketId = 23, Stars = 5, Details = "Top-tier show!" },
+            new ReviewEntity { TicketId = 24, Stars = 4, Details = "Nice intimate gig." },
+            new ReviewEntity { TicketId = 25, Stars = 3, Details = "A bit too loud but still fun." },
+            new ReviewEntity { TicketId = 26, Stars = 4, Details = "Well organized event." },
+            new ReviewEntity { TicketId = 27, Stars = 5, Details = "Really enjoyed it." },
+            new ReviewEntity { TicketId = 28, Stars = 5, Details = "Brought my friends, all loved it." },
 
-            new Review { TicketId = 29, Stars = 3, Details = "Solid but expected more." },
-            new Review { TicketId = 30, Stars = 4, Details = "The lighting was amazing!" },
-            new Review { TicketId = 31, Stars = 5, Details = "Instant classic." },
-            new Review { TicketId = 32, Stars = 4, Details = "Had a great time." },
-            new Review { TicketId = 33, Stars = 4, Details = "Venue was packed with energy." }
+            new ReviewEntity { TicketId = 29, Stars = 3, Details = "Solid but expected more." },
+            new ReviewEntity { TicketId = 30, Stars = 4, Details = "The lighting was amazing!" },
+            new ReviewEntity { TicketId = 31, Stars = 5, Details = "Instant classic." },
+            new ReviewEntity { TicketId = 32, Stars = 4, Details = "Had a great time." },
+            new ReviewEntity { TicketId = 33, Stars = 4, Details = "Venue was packed with energy." }
             };
             context.Reviews.AddRange(reviews);
             await context.SaveChangesAsync();
@@ -884,35 +885,35 @@ public class ApplicationDbInitializer
 
         if (!context.Transactions.Any())
         {
-            var transactions = new List<Transaction>
+            var transactions = new List<TransactionEntity>
             {
-                new Transaction { FromUserId = 43, ToUserId = 8, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-58) },
-                new Transaction { FromUserId = 44, ToUserId = 9, TransactionId = Guid.NewGuid().ToString(), Amount = 200, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-55) },
-                new Transaction { FromUserId = 45, ToUserId = 10, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-52) },
-                new Transaction { FromUserId = 46, ToUserId = 11, TransactionId = Guid.NewGuid().ToString(), Amount = 175, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-49) },
-                new Transaction { FromUserId = 47, ToUserId = 12, TransactionId = Guid.NewGuid().ToString(), Amount = 160, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-46) },
+                new TransactionEntity { FromUserId = 43, ToUserId = 8, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-58) },
+                new TransactionEntity { FromUserId = 44, ToUserId = 9, TransactionId = Guid.NewGuid().ToString(), Amount = 200, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-55) },
+                new TransactionEntity { FromUserId = 45, ToUserId = 10, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-52) },
+                new TransactionEntity { FromUserId = 46, ToUserId = 11, TransactionId = Guid.NewGuid().ToString(), Amount = 175, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-49) },
+                new TransactionEntity { FromUserId = 47, ToUserId = 12, TransactionId = Guid.NewGuid().ToString(), Amount = 160, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-46) },
 
-                new Transaction { FromUserId = 2, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                new Transaction { FromUserId = 3, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                new Transaction { FromUserId = 4, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                new Transaction { FromUserId = 5, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                new Transaction { FromUserId = 6, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                new Transaction { FromUserId = 7, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                new Transaction { FromUserId = 8, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-55) },
-                new Transaction { FromUserId = 3, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                new Transaction { FromUserId = 4, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                new Transaction { FromUserId = 5, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                new Transaction { FromUserId = 6, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                new Transaction { FromUserId = 7, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                new Transaction { FromUserId = 8, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                new Transaction { FromUserId = 9, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-52) },
-                new Transaction { FromUserId = 4, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                new Transaction { FromUserId = 5, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                new Transaction { FromUserId = 6, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                new Transaction { FromUserId = 7, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                new Transaction { FromUserId = 8, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                new Transaction { FromUserId = 9, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                new Transaction { FromUserId = 10, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-49) },
+                new TransactionEntity { FromUserId = 2, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                new TransactionEntity { FromUserId = 3, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                new TransactionEntity { FromUserId = 4, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
+                new TransactionEntity { FromUserId = 5, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                new TransactionEntity { FromUserId = 6, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                new TransactionEntity { FromUserId = 7, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
+                new TransactionEntity { FromUserId = 8, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-55) },
+                new TransactionEntity { FromUserId = 3, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                new TransactionEntity { FromUserId = 4, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                new TransactionEntity { FromUserId = 5, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
+                new TransactionEntity { FromUserId = 6, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                new TransactionEntity { FromUserId = 7, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                new TransactionEntity { FromUserId = 8, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
+                new TransactionEntity { FromUserId = 9, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-52) },
+                new TransactionEntity { FromUserId = 4, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                new TransactionEntity { FromUserId = 5, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                new TransactionEntity { FromUserId = 6, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
+                new TransactionEntity { FromUserId = 7, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                new TransactionEntity { FromUserId = 8, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                new TransactionEntity { FromUserId = 9, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
+                new TransactionEntity { FromUserId = 10, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-49) },
             };
 
             context.Transactions.AddRange(transactions);

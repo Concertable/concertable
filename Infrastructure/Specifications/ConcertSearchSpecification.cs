@@ -6,18 +6,18 @@ namespace Infrastructure.Specifications;
 
 public class ConcertSearchSpecification : IConcertSearchSpecification
 {
-    private readonly ISearchSpecification<Concert> searchSpecification;
+    private readonly ISearchSpecification<ConcertEntity> searchSpecification;
     private readonly TimeProvider timeProvider;
 
     public ConcertSearchSpecification(
-        ISearchSpecification<Concert> searchSpecification,
+        ISearchSpecification<ConcertEntity> searchSpecification,
         TimeProvider timeProvider)
     {
         this.searchSpecification = searchSpecification;
         this.timeProvider = timeProvider;
     }
 
-    public IQueryable<Concert> Apply(IQueryable<Concert> query, SearchParams searchParams)
+    public IQueryable<ConcertEntity> Apply(IQueryable<ConcertEntity> query, SearchParams searchParams)
     {
         query = query
             .Where(e => e.DatePosted != null)

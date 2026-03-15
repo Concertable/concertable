@@ -11,7 +11,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Repositories;
 
-public class TicketRepository : Repository<Ticket>, ITicketRepository
+public class TicketRepository : Repository<TicketEntity>, ITicketRepository
 {
     private readonly TimeProvider timeProvider;
 
@@ -29,7 +29,7 @@ public class TicketRepository : Repository<Ticket>, ITicketRepository
         return query.FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id)
+    public async Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(int id)
     {
         var query = context.Tickets
             .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
@@ -38,7 +38,7 @@ public class TicketRepository : Repository<Ticket>, ITicketRepository
         return await query.ToListAsync();
     }
 
-    public async Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id)
+    public async Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(int id)
     {
         var query = context.Tickets
              .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate >= timeProvider.GetUtcNow())
@@ -47,7 +47,7 @@ public class TicketRepository : Repository<Ticket>, ITicketRepository
         return await query.ToListAsync();
     }
 
-    public async Task<Ticket?> GetByUserIdAndConcertIdAsync(int userId, int concertId)
+    public async Task<TicketEntity?> GetByUserIdAndConcertIdAsync(int userId, int concertId)
     {
         return await context.Tickets
             .Include(t => t.Concert)

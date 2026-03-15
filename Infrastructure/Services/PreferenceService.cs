@@ -63,7 +63,7 @@ public class PreferenceService : IPreferenceService
         preference.GenrePreferences.Clear();
         foreach (var genreDto in preferenceDto.Genres)
         {
-            preference.GenrePreferences.Add(new GenrePreference
+            preference.GenrePreferences.Add(new GenrePreferenceEntity
             {
                 PreferenceId = preference.Id,
                 GenreId = genreDto.Id

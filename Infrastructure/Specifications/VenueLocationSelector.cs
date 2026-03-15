@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Infrastructure.Specifications;
 
-public class VenueLocationSelector : ILocationSelector<Venue>
+public class VenueLocationSelector : ILocationSelector<VenueEntity>
 {
-    public Expression<Func<Venue, Point?>> LocationSelector => v => v.User.Location;
+    public Expression<Func<VenueEntity, Point?>> LocationSelector => v => v.User.Location;
 }

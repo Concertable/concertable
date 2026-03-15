@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace Application.Interfaces;
 
 public interface IStripeEventRepository
 {
-    Task<StripeEvent?> GetEventByIdAsync(string eventId);
-    Task AddEventAsync(StripeEvent stripeEvent);
+    Task<StripeEventEntity?> GetEventByIdAsync(string eventId);
+    Task AddEventAsync(StripeEventEntity stripeEvent);
     Task<bool> EventExistsAsync(string eventId);
 }

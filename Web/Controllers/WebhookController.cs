@@ -1,5 +1,7 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Concert;
+using Application.Interfaces.Payment;
 using Application.Responses;
 using Azure;
 using Core.Entities;
@@ -98,7 +100,7 @@ public class WebhookController : ControllerBase
             if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
                 return;
 
-            await stripeEventRepository.AddEventAsync(new StripeEvent
+            await stripeEventRepository.AddEventAsync(new StripeEventEntity
             {
                 EventId = stripeEvent.Id,
                 EventProcessedAt = timeProvider.GetUtcNow().DateTime

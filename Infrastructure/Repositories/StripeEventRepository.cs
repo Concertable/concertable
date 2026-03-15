@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Core.Entities;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,13 +19,13 @@ public class StripeEventRepository : IStripeEventRepository
         this.context = context;
     }
 
-    public async Task<StripeEvent?> GetEventByIdAsync(string eventId)
+    public async Task<StripeEventEntity?> GetEventByIdAsync(string eventId)
     {
         return await context.StripeEvents
             .FirstOrDefaultAsync(e => e.EventId == eventId);
     }
 
-    public async Task AddEventAsync(StripeEvent stripeEvent)
+    public async Task AddEventAsync(StripeEventEntity stripeEvent)
     {
         await context.StripeEvents.AddAsync(stripeEvent);
         await context.SaveChangesAsync();

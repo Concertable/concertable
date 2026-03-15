@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces;
 
-public interface IMessageRepository : IRepository<Message>
+public interface IMessageRepository : IRepository<MessageEntity>
 {
-    Task<Pagination<Message>> GetByUserIdAsync(int id, IPageParams pageParams);
+    Task<Pagination<MessageEntity>> GetByUserIdAsync(int id, IPageParams pageParams);
     Task<int> GetUnreadCountByUserIdAsync(int id);
     Task MarkAsReadAsync(List<int> ids);
 }

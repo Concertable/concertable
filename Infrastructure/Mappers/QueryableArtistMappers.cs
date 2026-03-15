@@ -7,7 +7,7 @@ namespace Infrastructure.Mappers;
 public static class QueryableArtistMappers
 {
     public static IQueryable<ArtistHeaderDto> ToHeaderDtos(
-        this IQueryable<Artist> query,
+        this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>
         from a in query
         join r in ratings on a.Id equals r.EntityId into rg

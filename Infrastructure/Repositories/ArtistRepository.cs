@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class ArtistRepository : Repository<Artist>, IArtistRepository
+public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
 {
     public ArtistRepository(ApplicationDbContext context) : base(context)
     {
     }
 
-    public async Task<Artist?> GetByUserIdAsync(int id)
+    public async Task<ArtistEntity?> GetByUserIdAsync(int id)
     {
         return await context.Artists
             .Where(v => v.UserId == id)
@@ -21,7 +21,7 @@ public class ArtistRepository : Repository<Artist>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<Artist?> GetDetailsByIdAsync(int id)
+    public async Task<ArtistEntity?> GetDetailsByIdAsync(int id)
     {
         return await context.Artists
             .Where(v => v.Id == id)

@@ -6,13 +6,13 @@ namespace Application.Mappers;
 
 public static class PreferenceMappers
 {
-    public static Preference ToEntity(this CreatePreferenceRequest request) => new()
+    public static PreferenceEntity ToEntity(this CreatePreferenceRequest request) => new()
     {
         RadiusKm = request.RadiusKm,
-        GenrePreferences = request.Genres.Select(g => new GenrePreference { GenreId = g.Id }).ToList()
+        GenrePreferences = request.Genres.Select(g => new GenrePreferenceEntity { GenreId = g.Id }).ToList()
     };
 
-    public static PreferenceDto ToDto(this Preference preference) => new()
+    public static PreferenceDto ToDto(this PreferenceEntity preference) => new()
     {
         Id = preference.Id,
         RadiusKm = (int)preference.RadiusKm,
@@ -20,6 +20,6 @@ public static class PreferenceMappers
         Genres = preference.GenrePreferences.Select(gp => gp.Genre.ToDto())
     };
 
-    public static IEnumerable<PreferenceDto> ToDtos(this IEnumerable<Preference> preferences) =>
+    public static IEnumerable<PreferenceDto> ToDtos(this IEnumerable<PreferenceEntity> preferences) =>
                 preferences.Select(p => p.ToDto());
 }

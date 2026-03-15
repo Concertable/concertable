@@ -1,5 +1,7 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Concert;
+using Application.Interfaces.Payment;
 using Application.Mappers;
 using Core.Entities;
 using Core.Enums;
@@ -70,8 +72,8 @@ public class TicketService : ITicketService
 
     public async Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
     {
-        var ticketRepository = unitOfWork.GetRepository<Ticket>();
-        var concertRepository = unitOfWork.GetRepository<Concert>();
+        var ticketRepository = unitOfWork.GetRepository<TicketEntity>();
+        var concertRepository = unitOfWork.GetRepository<ConcertEntity>();
 
         var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId)
             ?? throw new NotFoundException("Concert not found");
@@ -79,13 +81,13 @@ public class TicketService : ITicketService
         using var transaction = await unitOfWork.BeginTransactionAsync();
 
         int quantity = purchaseCompleteDto.Quantity ?? 1;
-        var tickets = new List<Ticket>();
+        var tickets = new List<TicketEntity>();
 
         try
         {
             for (int i = 0; i < quantity; i++)
             {
-                var ticket = new Ticket
+                var ticket = new TicketEntity
                 {
                     UserId = purchaseCompleteDto.FromUserId,
                     ConcertId = purchaseCompleteDto.EntityId,

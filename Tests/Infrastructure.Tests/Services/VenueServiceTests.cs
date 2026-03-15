@@ -49,7 +49,7 @@
 //    {
 //        // Arrange
 //        var venueId = 1;
-//        var venue = new Venue { Id = venueId, Name = "Venue 1", About = "About", ImageUrl = "" };
+//        var venue = new VenueEntity { Id = venueId, Name = "Venue 1", About = "About", ImageUrl = "" };
 
 //        venueRepositoryMock.Setup(x => x.GetByIdAsync(venueId)).ReturnsAsync(venue);
 //        reviewServiceMock.Setup(x => x.SetAverageRatingAsync(It.IsAny<VenueDto>())).Returns(Task.CompletedTask);
@@ -68,18 +68,18 @@
 //        // Arrange
 //        var user = new ApplicationUser { Id = 1 };
 //        var createVenueRequest = new CreateVenueRequest("New Venue", "About the venue", 1.0, 2.0);
-//        var createdVenue = new Venue { Id = 1, Name = "New Venue", About = "About the venue", ImageUrl = "", UserId = user.Id };
+//        var createdVenue = new VenueEntity { Id = 1, Name = "New Venue", About = "About the venue", ImageUrl = "", UserId = user.Id };
 //        var imageMock = new Mock<IFormFile>();
 
-//        var venueRepoMock = new Mock<IRepository<Venue>>();
+//        var venueRepoMock = new Mock<IRepository<VenueEntity>>();
 //        var userRepoMock = new Mock<IBaseRepository<ApplicationUser>>();
 
-//        unitOfWorkMock.Setup(u => u.GetRepository<Venue>()).Returns(venueRepoMock.Object);
+//        unitOfWorkMock.Setup(u => u.GetRepository<VenueEntity>()).Returns(venueRepoMock.Object);
 //        unitOfWorkMock.Setup(u => u.GetBaseRepository<ApplicationUser>()).Returns(userRepoMock.Object);
 
 //        currentUserMock.Setup(x => x.GetEntity()).Returns(user);
 //        imageServiceMock.Setup(x => x.UploadAsync(imageMock.Object)).ReturnsAsync("image_url");
-//        venueRepoMock.Setup(r => r.AddAsync(It.IsAny<Venue>())).ReturnsAsync(createdVenue);
+//        venueRepoMock.Setup(r => r.AddAsync(It.IsAny<VenueEntity>())).ReturnsAsync(createdVenue);
 //        geocodingServiceMock.Setup(x => x.GetLocationAsync(1.0, 2.0))
 //            .ReturnsAsync(new LocationDto("County", "Town"));
 //        geometryServiceMock.Setup(x => x.CreatePoint(1.0, 2.0)).Returns(new NetTopologySuite.Geometries.Point(2.0, 1.0));

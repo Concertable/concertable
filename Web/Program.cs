@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Interfaces.Auth;
 using Infrastructure.Data;
 using Infrastructure.Data.Identity;
 using Web.Extensions;

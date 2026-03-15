@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class TransactionMappers
 {
-    public static TransactionDto ToDto(this Transaction transaction) => new()
+    public static TransactionDto ToDto(this TransactionEntity transaction) => new()
     {
         FromUserId = transaction.FromUserId,
         ToUserId = transaction.ToUserId,
@@ -16,7 +16,7 @@ public static class TransactionMappers
         CreatedAt = transaction.CreatedAt
     };
 
-    public static Transaction ToEntity(this TransactionDto dto) => new()
+    public static TransactionEntity ToEntity(this TransactionDto dto) => new()
     {
         FromUserId = dto.FromUserId,
         ToUserId = dto.ToUserId,
@@ -27,6 +27,6 @@ public static class TransactionMappers
         CreatedAt = dto.CreatedAt
     };
 
-    public static IEnumerable<TransactionDto> ToDtos(this IEnumerable<Transaction> transactions) =>
+    public static IEnumerable<TransactionDto> ToDtos(this IEnumerable<TransactionEntity> transactions) =>
         transactions.Select(t => t.ToDto());
 }

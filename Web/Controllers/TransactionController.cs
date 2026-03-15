@@ -1,6 +1,7 @@
 using Core.Interfaces;
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Payment;
 using Application.Responses;
 using Core.Parameters;
 using Microsoft.AspNetCore.Mvc;

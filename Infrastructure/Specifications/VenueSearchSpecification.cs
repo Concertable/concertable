@@ -6,13 +6,13 @@ namespace Infrastructure.Specifications;
 
 public class VenueSearchSpecification : IVenueSearchSpecification
 {
-    private readonly ISearchSpecification<Venue> searchSpecification;
+    private readonly ISearchSpecification<VenueEntity> searchSpecification;
 
-    public VenueSearchSpecification(ISearchSpecification<Venue> searchSpecification)
+    public VenueSearchSpecification(ISearchSpecification<VenueEntity> searchSpecification)
     {
         this.searchSpecification = searchSpecification;
     }
 
-    public IQueryable<Venue> Apply(IQueryable<Venue> query, SearchParams searchParams) =>
+    public IQueryable<VenueEntity> Apply(IQueryable<VenueEntity> query, SearchParams searchParams) =>
         searchSpecification.Apply(query, searchParams);
 }

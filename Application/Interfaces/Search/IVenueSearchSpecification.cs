@@ -5,5 +5,5 @@ namespace Application.Interfaces.Search;
 
 public interface IVenueSearchSpecification
 {
-    IQueryable<Venue> Apply(IQueryable<Venue> query, SearchParams searchParams);
+    IQueryable<VenueEntity> Apply(IQueryable<VenueEntity> query, SearchParams searchParams);
 }

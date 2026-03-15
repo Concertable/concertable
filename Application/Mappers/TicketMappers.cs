@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class TicketMappers
 {
-    public static TicketDto ToDto(this Ticket ticket) => new()
+    public static TicketDto ToDto(this TicketEntity ticket) => new()
     {
         Id = ticket.Id,
         PurchaseDate = ticket.PurchaseDate,
@@ -14,6 +14,6 @@ public static class TicketMappers
         User = ticket.User.ToDto()
     };
 
-    public static IEnumerable<TicketDto> ToDtos(this IEnumerable<Ticket> tickets) =>
+    public static IEnumerable<TicketDto> ToDtos(this IEnumerable<TicketEntity> tickets) =>
         tickets.Select(t => t.ToDto());
 }

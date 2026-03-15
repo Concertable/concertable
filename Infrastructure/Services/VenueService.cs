@@ -1,5 +1,7 @@
 using Core.Entities;
 using Application.Interfaces;
+using Application.Interfaces.Geometry;
+using Application.Interfaces.Rating;
 using Application.DTOs;
 using Application.Mappers;
 using Application.Requests;
@@ -49,8 +51,8 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
-        var venueRepository = unitOfWork.GetRepository<Venue>();
-        var userRepository = unitOfWork.GetBaseRepository<User>();
+        var venueRepository = unitOfWork.GetRepository<VenueEntity>();
+        var userRepository = unitOfWork.GetBaseRepository<UserEntity>();
 
         var venue = request.ToEntity();
         var user = currentUser.GetEntity();
@@ -69,8 +71,8 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> UpdateAsync(int id, UpdateVenueRequest request)
     {
-        var venueRepository = unitOfWork.GetRepository<Venue>();
-        var userRepository = unitOfWork.GetBaseRepository<User>();
+        var venueRepository = unitOfWork.GetRepository<VenueEntity>();
+        var userRepository = unitOfWork.GetBaseRepository<UserEntity>();
 
         var venue = await venueRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
@@ -117,7 +119,7 @@ public class VenueService : IVenueService
         return id.Value;
     }
 
-    private async Task UpdateUserLocationAsync(User user, double latitude, double longitude)
+    private async Task UpdateUserLocationAsync(UserEntity user, double latitude, double longitude)
     {
         var location = await geocodingService.GetLocationAsync(latitude, longitude);
         user.County = location.County;

@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class MessageMappers
 {
-    public static MessageDto ToDto(this Message message) => new()
+    public static MessageDto ToDto(this MessageEntity message) => new()
     {
         Id = message.Id,
         Content = message.Content,
@@ -15,6 +15,6 @@ public static class MessageMappers
             : null
     };
 
-    public static IEnumerable<MessageDto> ToDtos(this IEnumerable<Message> messages) =>
+    public static IEnumerable<MessageDto> ToDtos(this IEnumerable<MessageEntity> messages) =>
         messages.Select(m => m.ToDto());
 }

@@ -15,15 +15,15 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IConcertSearchSpecification searchSpecification;
-    private readonly IRatingSpecification<Concert> ratingSpecification;
-    private readonly IGeometrySpecification<Concert> geometrySpecification;
+    private readonly IRatingSpecification<ConcertEntity> ratingSpecification;
+    private readonly IGeometrySpecification<ConcertEntity> geometrySpecification;
     private readonly TimeProvider timeProvider;
 
     public ConcertHeaderRepository(
         ApplicationDbContext context,
         IConcertSearchSpecification searchSpecification,
-        IRatingSpecification<Concert> ratingSpecification,
-        IGeometrySpecification<Concert> geometrySpecification,
+        IRatingSpecification<ConcertEntity> ratingSpecification,
+        IGeometrySpecification<ConcertEntity> geometrySpecification,
         TimeProvider timeProvider)
     {
         this.context = context;

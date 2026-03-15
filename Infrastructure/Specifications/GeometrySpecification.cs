@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Interfaces.Geometry;
 using Application.Interfaces.Search;
 using Core.Extensions;
 using Core.Interfaces;

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces;
 
-public interface ITicketRepository : IRepository<Ticket>
+public interface ITicketRepository : IRepository<TicketEntity>
 {
     Task<byte[]?> GetQrCodeByIdAsync(int id);
-    Task<IEnumerable<Ticket>> GetUpcomingByUserIdAsync(int id);
-    Task<IEnumerable<Ticket>> GetHistoryByUserIdAsync(int id);
-    Task<Ticket?> GetByUserIdAndConcertIdAsync(int userId, int concertId);
+    Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(int id);
+    Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(int id);
+    Task<TicketEntity?> GetByUserIdAndConcertIdAsync(int userId, int concertId);
 }

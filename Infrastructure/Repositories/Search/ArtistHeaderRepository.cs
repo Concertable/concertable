@@ -14,14 +14,14 @@ public class ArtistHeaderRepository : IArtistHeaderRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IArtistSearchSpecification searchSpecification;
-    private readonly IRatingSpecification<Artist> ratingSpecification;
-    private readonly IGeometrySpecification<Artist> geometrySpecification;
+    private readonly IRatingSpecification<ArtistEntity> ratingSpecification;
+    private readonly IGeometrySpecification<ArtistEntity> geometrySpecification;
 
     public ArtistHeaderRepository(
         ApplicationDbContext context,
         IArtistSearchSpecification searchSpecification,
-        IRatingSpecification<Artist> ratingSpecification,
-        IGeometrySpecification<Artist> geometrySpecification)
+        IRatingSpecification<ArtistEntity> ratingSpecification,
+        IGeometrySpecification<ArtistEntity> geometrySpecification)
     {
         this.context = context;
         this.searchSpecification = searchSpecification;

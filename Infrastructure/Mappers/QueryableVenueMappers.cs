@@ -7,7 +7,7 @@ namespace Infrastructure.Mappers;
 public static class QueryableVenueMappers
 {
     public static IQueryable<VenueHeaderDto> ToHeaderDtos(
-        this IQueryable<Venue> query,
+        this IQueryable<VenueEntity> query,
         IQueryable<RatingAggregate> ratings) =>
         from v in query
         join r in ratings on v.Id equals r.EntityId into rg

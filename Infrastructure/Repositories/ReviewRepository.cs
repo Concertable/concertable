@@ -11,7 +11,7 @@ using Core.Interfaces;
 
 namespace Infrastructure.Repositories;
 
-public class ReviewRepository : Repository<Review>, IReviewRepository
+public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
 {
     private readonly TimeProvider timeProvider;
 
@@ -36,7 +36,7 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     }
 
 
-    private async Task<ReviewSummaryDto> GetSummaryAsync(Expression<Func<Review, bool>> filter)
+    private async Task<ReviewSummaryDto> GetSummaryAsync(Expression<Func<ReviewEntity, bool>> filter)
     {
         var query = context.Reviews.Where(filter);
 
@@ -49,8 +49,8 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
         );
     }
 
-    private async Task<Pagination<Review>> GetAsync(
-        Expression<Func<Review, bool>> predicate,
+    private async Task<Pagination<ReviewEntity>> GetAsync(
+        Expression<Func<ReviewEntity, bool>> predicate,
         IPageParams pageParams)
     {
         var query = context.Reviews
@@ -62,17 +62,17 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
         return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
     }
 
-    public Task<Pagination<Review>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>
+    public Task<Pagination<ReviewEntity>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>
         GetAsync(r => r.Ticket.ConcertId == concertId, pageParams);
 
-    public Task<Pagination<Review>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
+    public Task<Pagination<ReviewEntity>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
         GetAsync(r => r.Ticket.Concert.Application.ArtistId == artistId, pageParams);
 
-    public Task<Pagination<Review>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
+    public Task<Pagination<ReviewEntity>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
         GetAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == venueId, pageParams);
 
 
-    private IQueryable<Ticket> GetUnreviewedTicketsByUser(int userId)
+    private IQueryable<TicketEntity> GetUnreviewedTicketsByUser(int userId)
     {
         return context.Tickets
             .Where(t => t.UserId == userId && t.Review == null);

@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Core.Entities;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories;
 
-public class PreferenceRepository : Repository<Preference>, IPreferenceRepository
+public class PreferenceRepository : Repository<PreferenceEntity>, IPreferenceRepository
 {
     public PreferenceRepository(ApplicationDbContext context) : base(context) { }
 
-    public async new Task<IEnumerable<Preference>> GetAllAsync()
+    public async new Task<IEnumerable<PreferenceEntity>> GetAllAsync()
     {
         var query = context.Preferences
             .Include(p => p.User)
@@ -24,7 +24,7 @@ public class PreferenceRepository : Repository<Preference>, IPreferenceRepositor
         return await query.ToListAsync();
     }
 
-    public async new Task<Preference?> GetByIdAsync(int id)
+    public async new Task<PreferenceEntity?> GetByIdAsync(int id)
     {
         var query = context.Preferences
             .Include(p => p.User)
@@ -35,7 +35,7 @@ public class PreferenceRepository : Repository<Preference>, IPreferenceRepositor
         return await query.FirstOrDefaultAsync();
     }
 
-    public async Task<Preference?> GetByUserIdAsync(int id)
+    public async Task<PreferenceEntity?> GetByUserIdAsync(int id)
     {
         var query = context.Preferences
             .Include(p => p.User)

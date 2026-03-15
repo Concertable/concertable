@@ -28,7 +28,7 @@ public class MessageController : ControllerBase
     }
 
     [HttpGet("user")]
-    public async Task<ActionResult<Pagination<Message>>> GetForUser([FromQuery] PageParams pageParams)
+    public async Task<ActionResult<Pagination<MessageEntity>>> GetForUser([FromQuery] PageParams pageParams)
     {
         return Ok(await messageService.GetForUserAsync(pageParams));
     }

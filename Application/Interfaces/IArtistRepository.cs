@@ -3,9 +3,9 @@ using Core.Interfaces;
 
 namespace Application.Interfaces;
 
-public interface IArtistRepository : IRepository<Artist>
+public interface IArtistRepository : IRepository<ArtistEntity>
 {
     Task<int?> GetIdByUserIdAsync(int id);
-    Task<Artist?> GetByUserIdAsync(int id);
-    Task<Artist?> GetDetailsByIdAsync(int id);
+    Task<ArtistEntity?> GetByUserIdAsync(int id);
+    Task<ArtistEntity?> GetDetailsByIdAsync(int id);
 }

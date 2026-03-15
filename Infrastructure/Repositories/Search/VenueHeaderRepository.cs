@@ -14,14 +14,14 @@ public class VenueHeaderRepository : IVenueHeaderRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IVenueSearchSpecification searchSpecification;
-    private readonly IRatingSpecification<Venue> ratingSpecification;
-    private readonly IGeometrySpecification<Venue> geometrySpecification;
+    private readonly IRatingSpecification<VenueEntity> ratingSpecification;
+    private readonly IGeometrySpecification<VenueEntity> geometrySpecification;
 
     public VenueHeaderRepository(
         ApplicationDbContext context,
         IVenueSearchSpecification searchSpecification,
-        IRatingSpecification<Venue> ratingSpecification,
-        IGeometrySpecification<Venue> geometrySpecification)
+        IRatingSpecification<VenueEntity> ratingSpecification,
+        IGeometrySpecification<VenueEntity> geometrySpecification)
     {
         this.context = context;
         this.searchSpecification = searchSpecification;

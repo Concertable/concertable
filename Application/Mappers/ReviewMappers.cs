@@ -6,7 +6,7 @@ namespace Application.Mappers;
 
 public static class ReviewMappers
 {
-    public static ReviewDto ToDto(this Review review) => new()
+    public static ReviewDto ToDto(this ReviewEntity review) => new()
     {
         Id = review.Id,
         Stars = review.Stars,
@@ -14,12 +14,12 @@ public static class ReviewMappers
         Email = review.Ticket.User.Email ?? string.Empty
     };
 
-    public static Review ToEntity(this CreateReviewRequest request) => new()
+    public static ReviewEntity ToEntity(this CreateReviewRequest request) => new()
     {
         Stars = request.Stars,
         Details = request.Details
     };
 
-    public static IEnumerable<ReviewDto> ToDtos(this IEnumerable<Review> reviews) =>
+    public static IEnumerable<ReviewDto> ToDtos(this IEnumerable<ReviewEntity> reviews) =>
         reviews.Select(r => r.ToDto());
 }

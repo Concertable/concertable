@@ -30,9 +30,9 @@ public class MessageService : IMessageService
 
     public async Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content)
     {
-        var messageRepository = unitOfWork.GetRepository<Message>();
+        var messageRepository = unitOfWork.GetRepository<MessageEntity>();
 
-        var message = new Message
+        var message = new MessageEntity
         {
             Content = content,
             FromUserId = fromUserId,
@@ -48,9 +48,9 @@ public class MessageService : IMessageService
 
     public async Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content)
     {
-        var messageRepository = unitOfWork.GetRepository<Message>();
+        var messageRepository = unitOfWork.GetRepository<MessageEntity>();
 
-        var message = new Message
+        var message = new MessageEntity
         {
             Content = content,
             FromUserId = fromUserId,

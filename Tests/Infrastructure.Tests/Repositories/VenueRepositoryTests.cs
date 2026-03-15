@@ -30,9 +30,9 @@ public class VenueRepositoryTests : IDisposable
         // Arrange
         var venueParams = new SearchParams { Sort = "Name", HeaderType = HeaderType.Venue };
 
-        var venueHeaders = new List<Venue> {
-            new Venue { Id = 1, Name = "Test Venue 1", About = "About 1", ImageUrl = "", UserId = 1 },
-            new Venue { Id = 2, Name = "Test Venue 2", About = "About 2", ImageUrl = "", UserId = 2 }
+        var venueHeaders = new List<VenueEntity> {
+            new VenueEntity { Id = 1, Name = "Test Venue 1", About = "About 1", ImageUrl = "", UserId = 1 },
+            new VenueEntity { Id = 2, Name = "Test Venue 2", About = "About 2", ImageUrl = "", UserId = 2 }
         };
 
         // Populate database

@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class ConcertOpportunityMappers
 {
-    public static ConcertOpportunityDto ToDto(this ConcertOpportunity opportunity) => new()
+    public static ConcertOpportunityDto ToDto(this ConcertOpportunityEntity opportunity) => new()
     {
         Id = opportunity.Id,
         StartDate = opportunity.StartDate,
@@ -14,19 +14,19 @@ public static class ConcertOpportunityMappers
         Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto())
     };
 
-    public static ConcertOpportunity ToEntity(this ConcertOpportunityDto dto) => new()
+    public static ConcertOpportunityEntity ToEntity(this ConcertOpportunityDto dto) => new()
     {
         StartDate = dto.StartDate,
         EndDate = dto.EndDate,
         Pay = dto.Pay,
-        OpportunityGenres = dto.Genres.Select(g => new OpportunityGenre { GenreId = g.Id }).ToList()
+        OpportunityGenres = dto.Genres.Select(g => new OpportunityGenreEntity { GenreId = g.Id }).ToList()
     };
 
-    public static OpportunityWithVenueDto ToWithVenueDto(this ConcertOpportunity opportunity) => new(
+    public static OpportunityWithVenueDto ToWithVenueDto(this ConcertOpportunityEntity opportunity) => new(
         opportunity.ToDto(),
         opportunity.Venue.ToDto()
     );
 
-    public static IEnumerable<ConcertOpportunityDto> ToDtos(this IEnumerable<ConcertOpportunity> opportunities) =>
+    public static IEnumerable<ConcertOpportunityDto> ToDtos(this IEnumerable<ConcertOpportunityEntity> opportunities) =>
         opportunities.Select(o => o.ToDto());
 }

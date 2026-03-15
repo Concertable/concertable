@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Interfaces.Payment;
 using Application.Responses;
 
 namespace Infrastructure.Validators;
