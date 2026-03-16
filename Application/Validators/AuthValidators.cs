@@ -48,3 +48,11 @@ public class ChangeEmailRequestValidator : AbstractValidator<ChangeEmailRequest>
         RuleFor(x => x.NewEmail).NotEmpty().EmailAddress();
     }
 }
+
+public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
+{
+    public RefreshTokenRequestValidator()
+    {
+        RuleFor(x => x.RefreshToken).NotEmpty();
+    }
+}
