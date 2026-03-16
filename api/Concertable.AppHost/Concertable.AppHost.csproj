@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Web\Web.csproj" />
+    <ProjectReference Include="..\Concertable.Web\Concertable.Web.csproj" />
   </ItemGroup>
 
 </Project>

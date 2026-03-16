@@ -9,14 +9,14 @@ internal static class DistributedApplicationBuilderExtensions
 
     public static IResourceBuilder<ProjectResource> AddApi(this IDistributedApplicationBuilder builder, IResourceBuilder<SqlServerDatabaseResource> sql)
     {
-        return builder.AddProject<Projects.Web>("api")
+        return builder.AddProject<Projects.Concertable_Web>("api")
                       .WithReference(sql)
                       .WaitFor(sql);
     }
 
     public static IResourceBuilder<NodeAppResource> AddFrontend(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api)
     {
-        return builder.AddNpmApp("frontend", "../ClientApp", "start")
+        return builder.AddNpmApp("frontend", "../../ClientApp", "start")
                       .WithHttpEndpoint(port: 4200, isProxied: false)
                       .WithReference(api)
                       .WaitFor(api);

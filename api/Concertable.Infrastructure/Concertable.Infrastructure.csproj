@@ -31,9 +31,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Core\Core.csproj" />
-		<ProjectReference Include="..\Application\Application.csproj" />
-		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Concertable.Core\Concertable.Core.csproj" />
+		<ProjectReference Include="..\Concertable.Application\Concertable.Application.csproj" />
+		<ProjectReference Include="..\Concertable.Common\Concertable.Common.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
