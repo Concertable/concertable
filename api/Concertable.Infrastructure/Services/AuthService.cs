@@ -1,4 +1,3 @@
-using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Auth;
 using Application.Mappers;
@@ -15,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Services;
 
-public class AccountService : IAccountService
+public class AuthService : IAuthService
 {
     private readonly ApplicationDbContext context;
     private readonly IPasswordHasher passwordHasher;
@@ -23,7 +22,7 @@ public class AccountService : IAccountService
     private readonly AuthSettings authSettings;
     private readonly IUserValidator userValidator;
 
-    public AccountService(
+    public AuthService(
         ApplicationDbContext context,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
@@ -93,25 +92,6 @@ public class AccountService : IAccountService
         await context.SaveChangesAsync();
 
         return await IssueTokensAsync(token.User);
-    }
-
-    public async Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken cancellationToken = default)
-    {
-        var user = await context.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-
-        if (user is null) return null;
-
-        var dto = user.ToDto();
-        dto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var baseUrl) ? baseUrl : "/";
-        return dto;
-    }
-
-    public async Task<UserEntity?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default)
-    {
-        return await context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     }
 
     private async Task<LoginResponse> IssueTokensAsync(UserEntity user)

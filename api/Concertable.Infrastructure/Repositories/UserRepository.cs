@@ -49,4 +49,9 @@ public class UserRepository : BaseRepository<UserEntity>, IUserRepository
     {
         return context.Users.AnyAsync(u => u.Email == email);
     }
+
+    public Task<UserEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    }
 }

@@ -234,7 +234,7 @@ public static class ServiceCollectionExtensions
         services.Configure<AuthSettings>(configuration.GetSection("Auth"));
 
         // Services
-        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddHttpContextAccessor();

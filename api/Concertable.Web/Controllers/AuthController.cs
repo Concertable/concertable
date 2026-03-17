@@ -9,42 +9,42 @@ namespace Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AccountController : ControllerBase
+public class AuthController : ControllerBase
 {
-    private readonly IAccountService accountService;
+    private readonly IAuthService authService;
     private readonly ICurrentUser currentUser;
 
-    public AccountController(IAccountService accountService, ICurrentUser currentUser)
+    public AuthController(IAuthService authService, ICurrentUser currentUser)
     {
-        this.accountService = accountService;
+        this.authService = authService;
         this.currentUser = currentUser;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        await accountService.RegisterAsync(request);
+        await authService.RegisterAsync(request);
         return NoContent();
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        return Ok(await accountService.LoginAsync(request));
+        return Ok(await authService.LoginAsync(request));
     }
 
     [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
     {
-        await accountService.LogoutAsync(request.RefreshToken);
+        await authService.LogoutAsync(request.RefreshToken);
         return NoContent();
     }
 
     [HttpPost("refresh")]
     public async Task<ActionResult<LoginResponse>> Refresh([FromBody] RefreshTokenRequest request)
     {
-        return Ok(await accountService.RefreshTokenAsync(request.RefreshToken));
+        return Ok(await authService.RefreshTokenAsync(request.RefreshToken));
     }
 
     [Authorize]

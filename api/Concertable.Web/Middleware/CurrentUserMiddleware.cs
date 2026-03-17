@@ -15,16 +15,16 @@ public class CurrentUserMiddleware
         this.logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context, IAccountService accountService)
+    public async Task InvokeAsync(HttpContext context, IUserService userService)
     {
         if (context.User.Identity?.IsAuthenticated == true &&
             context.User.FindFirst("sub") is { } subClaim &&
             int.TryParse(subClaim.Value, out var userId))
         {
-            var dto = await accountService.GetUserByIdAsync(userId, context.RequestAborted);
+            var dto = await userService.GetUserByIdAsync(userId, context.RequestAborted);
             if (dto is not null)
             {
-                var entity = await accountService.GetUserEntityByIdAsync(userId, context.RequestAborted);
+                var entity = await userService.GetUserEntityByIdAsync(userId, context.RequestAborted);
                 context.Items[nameof(CurrentUser)] = new CurrentUser(dto, entity);
             }
             else

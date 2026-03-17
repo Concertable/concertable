@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Application.Interfaces.Geometry;
 using Application.Mappers;
 using Core.Entities;
+using Infrastructure.Constants;
 
 namespace Infrastructure.Services;
 
@@ -60,5 +61,20 @@ public class UserService : IUserService
         await userRepsitory.SaveChangesAsync();
 
         return user.ToDto();
+    }
+
+    public async Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var user = await userRepsitory.GetByIdAsync(userId, cancellationToken);
+        if (user is null) return null;
+
+        var dto = user.ToDto();
+        dto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var baseUrl) ? baseUrl : "/";
+        return dto;
+    }
+
+    public async Task<UserEntity?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        return await userRepsitory.GetByIdAsync(userId, cancellationToken);
     }
 }
