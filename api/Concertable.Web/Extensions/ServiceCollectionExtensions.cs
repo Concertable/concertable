@@ -205,24 +205,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddValidation(this IServiceCollection services)
     {
         services.AddFluentValidationAutoValidation();
-
-        services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
-        services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
-        services.AddScoped<IValidator<ForgotPasswordRequest>, ForgotPasswordRequestValidator>();
-        services.AddScoped<IValidator<ResetPasswordRequest>, ResetPasswordRequestValidator>();
-        services.AddScoped<IValidator<ChangeEmailRequest>, ChangeEmailRequestValidator>();
-        services.AddScoped<IValidator<ConcertOpportunityDto>, ConcertOpportunityDtoValidator>();
-        services.AddScoped<IValidator<MarkMessagesReadRequest>, MarkMessagesReadRequestValidator>();
-        services.AddScoped<IValidator<CreatePreferenceRequest>, CreatePreferenceRequestValidator>();
-        services.AddScoped<IValidator<CreateReviewRequest>, CreateReviewRequestValidator>();
-        services.AddScoped<IValidator<TicketPurchaseParams>, TicketPurchaseParamsValidator>();
-        services.AddScoped<IValidator<UpdateLocationRequest>, UpdateLocationRequestValidator>();
-        services.AddScoped<IValidator<CreateArtistRequest>, CreateArtistRequestValidator>();
-        services.AddScoped<IValidator<UpdateArtistRequest>, UpdateArtistRequestValidator>();
-        services.AddScoped<IValidator<UpdateConcertRequest>, UpdateConcertRequestValidator>();
-        services.AddScoped<IValidator<IFormFile>, IFormFileValidator>();
-        services.AddScoped<IValidator<CreateVenueRequest>, CreateVenueRequestValidator>();
-        services.AddScoped<IValidator<UpdateVenueRequest>, UpdateVenueRequestValidator>();
+        services.AddValidatorsFromAssemblyContaining<LoginRequest>();
 
         return services;
     }
