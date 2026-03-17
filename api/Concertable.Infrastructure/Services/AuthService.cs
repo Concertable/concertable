@@ -97,7 +97,7 @@ public class AuthService : IAuthService
     private async Task<LoginResponse> IssueTokensAsync(UserEntity user)
     {
         var dto = user.ToDto();
-        dto.BaseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var baseUrl) ? baseUrl : "/";
+        var baseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var url) ? url : "/";
 
         var accessToken = tokenService.CreateAccessToken(user.Id, user.Email, user.Role);
         var refreshTokenValue = tokenService.CreateRefreshToken();
@@ -112,6 +112,6 @@ public class AuthService : IAuthService
         await context.SaveChangesAsync();
 
         var expiresInSeconds = authSettings.AccessTokenExpirationMinutes * 60;
-        return new LoginResponse(dto, accessToken, refreshTokenValue, expiresInSeconds);
+        return new LoginResponse(dto, accessToken, refreshTokenValue, expiresInSeconds, baseUrl);
     }
 }

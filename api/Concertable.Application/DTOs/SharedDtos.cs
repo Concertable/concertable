@@ -11,7 +11,6 @@ public record UserDto
     public double? Longitude { get; set; }
     public string? County { get; set; }
     public string? Town { get; set; }
-    public string BaseUrl { get; set; } = "/";
 }
 
 public record GenreDto(int Id, string Name);

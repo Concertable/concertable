@@ -8,7 +8,6 @@ export interface User {
   longitude?: number;
   county?: string;
   town?: string;
-  baseUrl: string;
 }
 
 export interface LoginRequest {
@@ -27,6 +26,7 @@ export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   expiresInSeconds: number;
+  baseUrl: string;
 }
 
 export interface ResetPasswordRequest {
