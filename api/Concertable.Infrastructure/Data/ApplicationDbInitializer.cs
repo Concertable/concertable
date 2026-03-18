@@ -1,6 +1,6 @@
 using Application.Interfaces;
 using Application.Interfaces.Auth;
-using Concertable.Core.Entities.BookingContracts;
+using Concertable.Core.Entities.Contracts;
 using Core.Entities;
 using Core.Enums;
 using Core.Parameters;

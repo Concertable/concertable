@@ -142,7 +142,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertApplicationRepository, ConcertApplicationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IConcertOpportunityRepository, ConcertOpportunityRepository>();
-        services.AddScoped<IBookingContractRepository, BookingContractRepository>();
+        services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
@@ -167,7 +167,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddContracts(this IServiceCollection services)
     {
-        services.AddScoped<IBookingContractService, BookingContractService>();
+        services.AddScoped<IContractService, ContractService>();
 
         services.AddSingleton<IContractMapper, FlatFeeContractMapper>();
         services.AddSingleton<IContractMapper, DoorSplitContractMapper>();

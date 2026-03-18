@@ -1,6 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces.Concert;
-using Concertable.Core.Entities.BookingContracts;
+using Concertable.Core.Entities.Contracts;
 using Core.Enums;
 
 namespace Application.Mappers;
@@ -9,7 +9,7 @@ public class DoorSplitContractMapper : IContractMapper
 {
     public ContractType ContractType => ContractType.DoorSplit;
 
-    public BookingContractEntity ToEntity(IBookingContract dto)
+    public ContractEntity ToEntity(IContract dto)
     {
         var d = (DoorSplitContractDto)dto;
         return new DoorSplitContractEntity
@@ -20,7 +20,7 @@ public class DoorSplitContractMapper : IContractMapper
         };
     }
 
-    public IBookingContract ToDto(BookingContractEntity entity)
+    public IContract ToDto(ContractEntity entity)
     {
         var e = (DoorSplitContractEntity)entity;
         return new DoorSplitContractDto

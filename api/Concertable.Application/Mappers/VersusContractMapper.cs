@@ -1,6 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces.Concert;
-using Concertable.Core.Entities.BookingContracts;
+using Concertable.Core.Entities.Contracts;
 using Core.Enums;
 
 namespace Application.Mappers;
@@ -9,7 +9,7 @@ public class VersusContractMapper : IContractMapper
 {
     public ContractType ContractType => ContractType.Versus;
 
-    public BookingContractEntity ToEntity(IBookingContract dto)
+    public ContractEntity ToEntity(IContract dto)
     {
         var d = (VersusContractDto)dto;
         return new VersusContractEntity
@@ -21,7 +21,7 @@ public class VersusContractMapper : IContractMapper
         };
     }
 
-    public IBookingContract ToDto(BookingContractEntity entity)
+    public IContract ToDto(ContractEntity entity)
     {
         var e = (VersusContractEntity)entity;
         return new VersusContractDto

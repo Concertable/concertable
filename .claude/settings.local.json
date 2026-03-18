@@ -27,7 +27,8 @@
       "Bash(cd:*)",
       "Bash(dotnet ef:*)",
       "Bash(dotnet list:*)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(xargs sed:*)"
     ]
   }
 }

@@ -8,7 +8,7 @@ namespace Application.Interfaces.Concert;
 [JsonDerivedType(typeof(DoorSplitContractDto), "doorSplit")]
 [JsonDerivedType(typeof(VersusContractDto), "versus")]
 [JsonDerivedType(typeof(VenueHireContractDto), "venueHire")]
-public interface IBookingContract
+public interface IContract
 {
     int Id { get; set; }
     int OpportunityId { get; set; }

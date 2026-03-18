@@ -1,8 +1,8 @@
 using Core.Enums;
 
-namespace Concertable.Core.Entities.BookingContracts;
+namespace Concertable.Core.Entities.Contracts;
 
-public class FlatFeeContractEntity : BookingContractEntity
+public class FlatFeeContractEntity : ContractEntity
 {
     public override ContractType ContractType => ContractType.FlatFee;
     public decimal Fee { get; set; }

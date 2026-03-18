@@ -1,9 +1,9 @@
 using Core.Entities;
 using Core.Enums;
 
-namespace Concertable.Core.Entities.BookingContracts;
+namespace Concertable.Core.Entities.Contracts;
 
-public abstract class BookingContractEntity : BaseEntity
+public abstract class ContractEntity : BaseEntity
 {
     public int OpportunityId { get; set; }
     public PaymentMethod PaymentMethod { get; set; }

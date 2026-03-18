@@ -1,4 +1,4 @@
-using Concertable.Core.Entities.BookingContracts;
+using Concertable.Core.Entities.Contracts;
 using Core.Entities;
 using Core.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +31,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
     public DbSet<StripeEventEntity> StripeEvents { get; set; }
     public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
-    public DbSet<BookingContractEntity> BookingContracts { get; set; }
+    public DbSet<ContractEntity> Contracts { get; set; }
     public DbSet<FlatFeeContractEntity> FlatFeeContracts { get; set; }
     public DbSet<DoorSplitContractEntity> DoorSplitContracts { get; set; }
     public DbSet<VersusContractEntity> VersusContracts { get; set; }
@@ -162,11 +162,11 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(rt => rt.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<BookingContractEntity>()
+        modelBuilder.Entity<ContractEntity>()
             .UseTptMappingStrategy()
             .HasOne(c => c.Opportunity)
             .WithOne(o => o.Contract)
-            .HasForeignKey<BookingContractEntity>(c => c.OpportunityId)
+            .HasForeignKey<ContractEntity>(c => c.OpportunityId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

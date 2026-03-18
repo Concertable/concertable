@@ -6,11 +6,11 @@ namespace Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BookingContractController : ControllerBase
+public class ContractController : ControllerBase
 {
-    private readonly IBookingContractService contractService;
+    private readonly IContractService contractService;
 
-    public BookingContractController(IBookingContractService contractService)
+    public ContractController(IContractService contractService)
     {
         this.contractService = contractService;
     }
@@ -23,7 +23,7 @@ public class BookingContractController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] IBookingContract contract)
+    public async Task<IActionResult> Create([FromBody] IContract contract)
     {
         await contractService.CreateAsync(contract);
         return Created();

@@ -3,7 +3,7 @@ using Core.Enums;
 
 namespace Application.DTOs;
 
-public record FlatFeeContractDto : IBookingContract
+public record FlatFeeContractDto : IContract
 {
     public int Id { get; set; }
     public int OpportunityId { get; set; }
@@ -12,7 +12,7 @@ public record FlatFeeContractDto : IBookingContract
     public decimal Fee { get; set; }
 }
 
-public record DoorSplitContractDto : IBookingContract
+public record DoorSplitContractDto : IContract
 {
     public int Id { get; set; }
     public int OpportunityId { get; set; }
@@ -21,7 +21,7 @@ public record DoorSplitContractDto : IBookingContract
     public decimal ArtistDoorPercent { get; set; }
 }
 
-public record VersusContractDto : IBookingContract
+public record VersusContractDto : IContract
 {
     public int Id { get; set; }
     public int OpportunityId { get; set; }
@@ -31,7 +31,7 @@ public record VersusContractDto : IBookingContract
     public decimal ArtistDoorPercent { get; set; }
 }
 
-public record VenueHireContractDto : IBookingContract
+public record VenueHireContractDto : IContract
 {
     public int Id { get; set; }
     public int OpportunityId { get; set; }

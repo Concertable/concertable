@@ -3,20 +3,20 @@ using Core.Exceptions;
 
 namespace Infrastructure.Services.Concert;
 
-public class BookingContractService : IBookingContractService
+public class ContractService : IContractService
 {
-    private readonly IBookingContractRepository contractRepository;
+    private readonly IContractRepository contractRepository;
     private readonly IContractMapperFactory mapperFactory;
 
-    public BookingContractService(
-        IBookingContractRepository contractRepository,
+    public ContractService(
+        IContractRepository contractRepository,
         IContractMapperFactory mapperFactory)
     {
         this.contractRepository = contractRepository;
         this.mapperFactory = mapperFactory;
     }
 
-    public async Task<IBookingContract> GetByOpportunityIdAsync(int opportunityId)
+    public async Task<IContract> GetByOpportunityIdAsync(int opportunityId)
     {
         var entity = await contractRepository.GetByOpportunityIdAsync(opportunityId)
             ?? throw new NotFoundException("Contract not found for this opportunity");
@@ -25,7 +25,7 @@ public class BookingContractService : IBookingContractService
         return mapper.ToDto(entity);
     }
 
-    public async Task CreateAsync(IBookingContract contract)
+    public async Task CreateAsync(IContract contract)
     {
         var mapper = mapperFactory.Create(contract.ContractType);
         var entity = mapper.ToEntity(contract);
