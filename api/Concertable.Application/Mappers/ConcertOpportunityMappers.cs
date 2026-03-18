@@ -10,7 +10,6 @@ public static class ConcertOpportunityMappers
         Id = opportunity.Id,
         StartDate = opportunity.StartDate,
         EndDate = opportunity.EndDate,
-        Pay = opportunity.Pay,
         Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto())
     };
 
@@ -18,7 +17,6 @@ public static class ConcertOpportunityMappers
     {
         StartDate = dto.StartDate,
         EndDate = dto.EndDate,
-        Pay = dto.Pay,
         OpportunityGenres = dto.Genres.Select(g => new OpportunityGenreEntity { GenreId = g.Id }).ToList()
     };
 

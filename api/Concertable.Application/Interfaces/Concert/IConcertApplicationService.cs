@@ -24,5 +24,4 @@ public interface IConcertApplicationService
     Task<IEnumerable<ArtistConcertApplicationDto>> GetRecentDeniedForArtistAsync();
     Task ApplyAsync(int opportunityId);
     Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);
-    Task<decimal> GetOpportunityPayByIdAsync(int id);
 }

@@ -65,15 +65,6 @@ public class ConcertApplicationRepository : Repository<ConcertApplicationEntity>
         return (query.Artist, query.Opportunity.Venue);
     }
 
-    public async Task<decimal?> GetOpportunityPayByIdAsync(int id)
-    {
-        var query = context.ConcertApplications
-            .Where(ca => ca.Id == id)
-            .Select(ca => (decimal?)ca.Opportunity.Pay);
-
-        return await query.FirstOrDefaultAsync();
-    }
-
     public async new Task<ConcertApplicationEntity?> GetByIdAsync(int id)
     {
         var query = context.ConcertApplications

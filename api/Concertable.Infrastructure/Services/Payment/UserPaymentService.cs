@@ -52,28 +52,9 @@ public class UserPaymentService : IUserPaymentService
         return await paymentService.ProcessAsync(transactionRequestDto);
     }
 
-    public async Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId)
+    public Task<PaymentResponse> PayArtistManagerByApplicationIdAsync(int applicationId, string paymentMethodId)
     {
-        var user = currentUser.Get();
-        var toUser = await userService.GetByApplicationIdAsync(applicationId);
-        var pay = await applicationService.GetOpportunityPayByIdAsync(applicationId);
-
-        var transactionRequestDto = new TransactionRequest
-        {
-            PaymentMethodId = paymentMethodId,
-            FromUserEmail = user.Email,
-            Amount = pay,
-            DestinationStripeId = toUser.StripeId,
-            Metadata = new Dictionary<string, string>
-            {
-                { "fromUserId", user.Id.ToString() },
-                { "fromUserEmail", user.Email },
-                { "toUserId", toUser.Id.ToString() },
-                { "type", "application" },
-                { "applicationId", applicationId.ToString() }
-            }
-        };
-
-        return await paymentService.ProcessAsync(transactionRequestDto);
+        // TODO: replace with contract-aware payment routing (FlatFee, DoorSplit, Versus, VenueHire)
+        throw new NotImplementedException("Contract-aware payment routing not yet implemented");
     }
 }

@@ -130,12 +130,6 @@ public class ConcertApplicationService : IConcertApplicationService
         return (artist.ToDto(), venue.ToDto());
     }
 
-    public async Task<decimal> GetOpportunityPayByIdAsync(int id)
-    {
-        return await applicationRepository.GetOpportunityPayByIdAsync(id)
-            ?? throw new NotFoundException("Concert application not found");
-    }
-
     public async Task<ConcertApplicationDto> GetByIdAsync(int id)
     {
         var application = await applicationRepository.GetByIdAsync(id)

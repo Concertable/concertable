@@ -4,7 +4,7 @@ using NetTopologySuite.Geometries;
 
 #nullable disable
 
-namespace Infrastructure.Migrations
+namespace Concertable.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -302,8 +302,7 @@ namespace Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     VenueId = table.Column<int>(type: "int", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Pay = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -332,6 +331,26 @@ namespace Infrastructure.Migrations
                         name: "FK_VenueImages_Venues_VenueId",
                         column: x => x.VenueId,
                         principalTable: "Venues",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BookingContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OpportunityId = table.Column<int>(type: "int", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookingContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BookingContracts_ConcertOpportunities_OpportunityId",
+                        column: x => x.OpportunityId,
+                        principalTable: "ConcertOpportunities",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -381,6 +400,79 @@ namespace Infrastructure.Migrations
                         name: "FK_OpportunityGenres_Genres_GenreId",
                         column: x => x.GenreId,
                         principalTable: "Genres",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DoorSplitContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    ArtistDoorPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DoorSplitContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DoorSplitContracts_BookingContracts_Id",
+                        column: x => x.Id,
+                        principalTable: "BookingContracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FlatFeeContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Fee = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FlatFeeContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FlatFeeContracts_BookingContracts_Id",
+                        column: x => x.Id,
+                        principalTable: "BookingContracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VenueHireContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    HireFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VenueHireContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VenueHireContracts_BookingContracts_Id",
+                        column: x => x.Id,
+                        principalTable: "BookingContracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VersusContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Guarantee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ArtistDoorPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VersusContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VersusContracts_BookingContracts_Id",
+                        column: x => x.Id,
+                        principalTable: "BookingContracts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -511,6 +603,12 @@ namespace Infrastructure.Migrations
                 name: "IX_Artists_UserId",
                 table: "Artists",
                 column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookingContracts_OpportunityId",
+                table: "BookingContracts",
+                column: "OpportunityId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -648,6 +746,12 @@ namespace Infrastructure.Migrations
                 name: "ConcertImages");
 
             migrationBuilder.DropTable(
+                name: "DoorSplitContracts");
+
+            migrationBuilder.DropTable(
+                name: "FlatFeeContracts");
+
+            migrationBuilder.DropTable(
                 name: "GenrePreferences");
 
             migrationBuilder.DropTable(
@@ -672,7 +776,13 @@ namespace Infrastructure.Migrations
                 name: "Transactions");
 
             migrationBuilder.DropTable(
+                name: "VenueHireContracts");
+
+            migrationBuilder.DropTable(
                 name: "VenueImages");
+
+            migrationBuilder.DropTable(
+                name: "VersusContracts");
 
             migrationBuilder.DropTable(
                 name: "Videos");
@@ -685,6 +795,9 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Tickets");
+
+            migrationBuilder.DropTable(
+                name: "BookingContracts");
 
             migrationBuilder.DropTable(
                 name: "Concerts");

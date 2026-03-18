@@ -15,5 +15,4 @@ public interface IConcertApplicationRepository : IRepository<ConcertApplicationE
     Task<IEnumerable<ConcertApplicationEntity>> GetPendingByArtistIdAsync(int id);
     Task<IEnumerable<ConcertApplicationEntity>> GetRecentDeniedByArtistIdAsync(int id);
     Task<(ArtistEntity, VenueEntity)?> GetArtistAndVenueByIdAsync(int id);
-    Task<decimal?> GetOpportunityPayByIdAsync(int id);
 }

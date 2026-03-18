@@ -24,7 +24,10 @@
       "Bash(do echo:*)",
       "Read(//c/Users/tommy/source/repos/Concertable/**)",
       "Bash(done)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(dotnet ef:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dotnet add:*)"
     ]
   }
 }
