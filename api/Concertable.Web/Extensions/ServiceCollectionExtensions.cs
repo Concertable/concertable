@@ -114,6 +114,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGeometryProvider, GeometryProvider>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
+        services.AddContracts();
         services.AddValidators();
 
         return services;
@@ -139,6 +140,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertApplicationRepository, ConcertApplicationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IConcertOpportunityRepository, ConcertOpportunityRepository>();
+        services.AddScoped<IBookingContractRepository, BookingContractRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
@@ -157,6 +159,13 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IRatingRepository, ArtistRatingRepository>(HeaderType.Artist);
         services.AddKeyedScoped<IRatingRepository, ConcertRatingRepository>(HeaderType.Concert);
         services.AddKeyedScoped<IRatingRepository, VenueRatingRepository>(HeaderType.Venue);
+
+        return services;
+    }
+
+    private static IServiceCollection AddContracts(this IServiceCollection services)
+    {
+        services.AddScoped<IBookingContractService, BookingContractService>();
 
         return services;
     }

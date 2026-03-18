@@ -10,13 +10,15 @@ public static class ConcertOpportunityMappers
         Id = opportunity.Id,
         StartDate = opportunity.StartDate,
         EndDate = opportunity.EndDate,
-        Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto())
+        Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto()),
+        Contract = opportunity.Contract.ToDto()
     };
 
     public static ConcertOpportunityEntity ToEntity(this ConcertOpportunityDto dto) => new()
     {
         StartDate = dto.StartDate,
         EndDate = dto.EndDate,
+        Contract = dto.Contract.ToEntity(),
         OpportunityGenres = dto.Genres.Select(g => new OpportunityGenreEntity { GenreId = g.Id }).ToList()
     };
 

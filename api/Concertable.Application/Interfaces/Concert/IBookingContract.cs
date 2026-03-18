@@ -1,0 +1,16 @@
+using Application.DTOs;
+using Core.Enums;
+using System.Text.Json.Serialization;
+
+namespace Application.Interfaces.Concert;
+
+[JsonDerivedType(typeof(FlatFeeContractDto), "flatFee")]
+[JsonDerivedType(typeof(DoorSplitContractDto), "doorSplit")]
+[JsonDerivedType(typeof(VersusContractDto), "versus")]
+[JsonDerivedType(typeof(VenueHireContractDto), "venueHire")]
+public interface IBookingContract
+{
+    int Id { get; set; }
+    int OpportunityId { get; set; }
+    PaymentMethod PaymentMethod { get; set; }
+}
