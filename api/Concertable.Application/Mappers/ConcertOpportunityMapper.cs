@@ -19,7 +19,9 @@ public class ConcertOpportunityMapper : IConcertOpportunityMapper
         StartDate = opportunity.StartDate,
         EndDate = opportunity.EndDate,
         Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto()),
-        Contract = contractMapperFactory.Create(opportunity.Contract.ContractType).ToDto(opportunity.Contract)
+        Contract = opportunity.Contract != null
+            ? contractMapperFactory.Create(opportunity.Contract.ContractType).ToDto(opportunity.Contract)
+            : null
     };
 
     public OpportunityWithVenueDto ToWithVenueDto(ConcertOpportunityEntity opportunity) => new(
@@ -34,7 +36,9 @@ public class ConcertOpportunityMapper : IConcertOpportunityMapper
     {
         StartDate = dto.StartDate,
         EndDate = dto.EndDate,
-        Contract = contractMapperFactory.Create(dto.Contract.ContractType).ToEntity(dto.Contract),
+        Contract = dto.Contract != null
+            ? contractMapperFactory.Create(dto.Contract.ContractType).ToEntity(dto.Contract)
+            : null!,
         OpportunityGenres = dto.Genres.Select(g => new OpportunityGenreEntity { GenreId = g.Id }).ToList()
     };
 }

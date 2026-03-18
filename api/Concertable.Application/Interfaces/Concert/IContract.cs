@@ -11,7 +11,6 @@ namespace Application.Interfaces.Concert;
 public interface IContract
 {
     int Id { get; set; }
-    int OpportunityId { get; set; }
     PaymentMethod PaymentMethod { get; set; }
     ContractType ContractType { get; }
 }

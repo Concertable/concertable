@@ -336,26 +336,6 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BookingContracts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    OpportunityId = table.Column<int>(type: "int", nullable: false),
-                    PaymentMethod = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BookingContracts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_BookingContracts_ConcertOpportunities_OpportunityId",
-                        column: x => x.OpportunityId,
-                        principalTable: "ConcertOpportunities",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ConcertApplications",
                 columns: table => new
                 {
@@ -378,6 +358,24 @@ namespace Concertable.Infrastructure.Migrations
                         column: x => x.OpportunityId,
                         principalTable: "ConcertOpportunities",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Contracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Contracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Contracts_ConcertOpportunities_Id",
+                        column: x => x.Id,
+                        principalTable: "ConcertOpportunities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -405,79 +403,6 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DoorSplitContracts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    ArtistDoorPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DoorSplitContracts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DoorSplitContracts_BookingContracts_Id",
-                        column: x => x.Id,
-                        principalTable: "BookingContracts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "FlatFeeContracts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    Fee = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FlatFeeContracts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_FlatFeeContracts_BookingContracts_Id",
-                        column: x => x.Id,
-                        principalTable: "BookingContracts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "VenueHireContracts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    HireFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VenueHireContracts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VenueHireContracts_BookingContracts_Id",
-                        column: x => x.Id,
-                        principalTable: "BookingContracts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "VersusContracts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    Guarantee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ArtistDoorPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VersusContracts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VersusContracts_BookingContracts_Id",
-                        column: x => x.Id,
-                        principalTable: "BookingContracts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Concerts",
                 columns: table => new
                 {
@@ -499,6 +424,79 @@ namespace Concertable.Infrastructure.Migrations
                         column: x => x.ApplicationId,
                         principalTable: "ConcertApplications",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DoorSplitContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    ArtistDoorPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DoorSplitContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DoorSplitContracts_Contracts_Id",
+                        column: x => x.Id,
+                        principalTable: "Contracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FlatFeeContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Fee = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FlatFeeContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FlatFeeContracts_Contracts_Id",
+                        column: x => x.Id,
+                        principalTable: "Contracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VenueHireContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    HireFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VenueHireContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VenueHireContracts_Contracts_Id",
+                        column: x => x.Id,
+                        principalTable: "Contracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VersusContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Guarantee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ArtistDoorPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VersusContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VersusContracts_Contracts_Id",
+                        column: x => x.Id,
+                        principalTable: "Contracts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -603,12 +601,6 @@ namespace Concertable.Infrastructure.Migrations
                 name: "IX_Artists_UserId",
                 table: "Artists",
                 column: "UserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BookingContracts_OpportunityId",
-                table: "BookingContracts",
-                column: "OpportunityId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -797,7 +789,7 @@ namespace Concertable.Infrastructure.Migrations
                 name: "Tickets");
 
             migrationBuilder.DropTable(
-                name: "BookingContracts");
+                name: "Contracts");
 
             migrationBuilder.DropTable(
                 name: "Concerts");

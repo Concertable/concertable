@@ -14,7 +14,7 @@ public class FlatFeeContractMapper : IContractMapper
         var d = (FlatFeeContractDto)dto;
         return new FlatFeeContractEntity
         {
-            OpportunityId = d.OpportunityId,
+            Id = d.Id,
             PaymentMethod = d.PaymentMethod,
             Fee = d.Fee
         };
@@ -26,7 +26,7 @@ public class FlatFeeContractMapper : IContractMapper
         return new FlatFeeContractDto
         {
             Id = e.Id,
-            OpportunityId = e.OpportunityId,
+
             PaymentMethod = e.PaymentMethod,
             Fee = e.Fee
         };

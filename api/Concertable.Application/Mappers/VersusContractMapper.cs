@@ -14,7 +14,7 @@ public class VersusContractMapper : IContractMapper
         var d = (VersusContractDto)dto;
         return new VersusContractEntity
         {
-            OpportunityId = d.OpportunityId,
+            Id = d.Id,
             PaymentMethod = d.PaymentMethod,
             Guarantee = d.Guarantee,
             ArtistDoorPercent = d.ArtistDoorPercent
@@ -27,7 +27,7 @@ public class VersusContractMapper : IContractMapper
         return new VersusContractDto
         {
             Id = e.Id,
-            OpportunityId = e.OpportunityId,
+
             PaymentMethod = e.PaymentMethod,
             Guarantee = e.Guarantee,
             ArtistDoorPercent = e.ArtistDoorPercent

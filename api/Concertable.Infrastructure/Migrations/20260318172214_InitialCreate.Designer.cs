@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260318165603_InitialCreate")]
+    [Migration("20260318172214_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -26,15 +26,9 @@ namespace Concertable.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.BookingContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.ContractEntity", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("OpportunityId")
                         .HasColumnType("int");
 
                     b.Property<int>("PaymentMethod")
@@ -42,10 +36,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OpportunityId")
-                        .IsUnique();
-
-                    b.ToTable("BookingContracts");
+                    b.ToTable("Contracts");
 
                     b.UseTptMappingStrategy();
                 });
@@ -621,9 +612,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("Videos");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.DoorSplitContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Core.Entities.BookingContracts.BookingContractEntity");
+                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
 
                     b.Property<decimal>("ArtistDoorPercent")
                         .HasColumnType("decimal(18,2)");
@@ -631,9 +622,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("DoorSplitContracts");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.FlatFeeContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.FlatFeeContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Core.Entities.BookingContracts.BookingContractEntity");
+                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
 
                     b.Property<decimal>("Fee")
                         .HasColumnType("decimal(18,2)");
@@ -641,9 +632,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("FlatFeeContracts");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.VenueHireContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VenueHireContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Core.Entities.BookingContracts.BookingContractEntity");
+                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
 
                     b.Property<decimal>("HireFee")
                         .HasColumnType("decimal(18,2)");
@@ -651,9 +642,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("VenueHireContracts");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.VersusContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VersusContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Core.Entities.BookingContracts.BookingContractEntity");
+                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
 
                     b.Property<decimal>("ArtistDoorPercent")
                         .HasColumnType("decimal(18,2)");
@@ -685,11 +676,11 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasDiscriminator().HasValue(1);
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.BookingContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.ContractEntity", b =>
                 {
                     b.HasOne("Core.Entities.ConcertOpportunityEntity", "Opportunity")
                         .WithOne("Contract")
-                        .HasForeignKey("Concertable.Core.Entities.BookingContracts.BookingContractEntity", "OpportunityId")
+                        .HasForeignKey("Concertable.Core.Entities.Contracts.ContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -969,38 +960,38 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Artist");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.DoorSplitContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.BookingContracts.BookingContractEntity", null)
+                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.BookingContracts.DoorSplitContractEntity", "Id")
+                        .HasForeignKey("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.FlatFeeContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.FlatFeeContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.BookingContracts.BookingContractEntity", null)
+                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.BookingContracts.FlatFeeContractEntity", "Id")
+                        .HasForeignKey("Concertable.Core.Entities.Contracts.FlatFeeContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.VenueHireContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VenueHireContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.BookingContracts.BookingContractEntity", null)
+                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.BookingContracts.VenueHireContractEntity", "Id")
+                        .HasForeignKey("Concertable.Core.Entities.Contracts.VenueHireContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.BookingContracts.VersusContractEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VersusContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.BookingContracts.BookingContractEntity", null)
+                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.BookingContracts.VersusContractEntity", "Id")
+                        .HasForeignKey("Concertable.Core.Entities.Contracts.VersusContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

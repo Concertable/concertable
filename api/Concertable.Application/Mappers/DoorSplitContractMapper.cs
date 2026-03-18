@@ -14,7 +14,7 @@ public class DoorSplitContractMapper : IContractMapper
         var d = (DoorSplitContractDto)dto;
         return new DoorSplitContractEntity
         {
-            OpportunityId = d.OpportunityId,
+            Id = d.Id,
             PaymentMethod = d.PaymentMethod,
             ArtistDoorPercent = d.ArtistDoorPercent
         };
@@ -26,7 +26,7 @@ public class DoorSplitContractMapper : IContractMapper
         return new DoorSplitContractDto
         {
             Id = e.Id,
-            OpportunityId = e.OpportunityId,
+
             PaymentMethod = e.PaymentMethod,
             ArtistDoorPercent = e.ArtistDoorPercent
         };

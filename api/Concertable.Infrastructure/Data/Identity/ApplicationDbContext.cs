@@ -166,7 +166,7 @@ public class ApplicationDbContext : DbContext
             .UseTptMappingStrategy()
             .HasOne(c => c.Opportunity)
             .WithOne(o => o.Contract)
-            .HasForeignKey<ContractEntity>(c => c.OpportunityId)
+            .HasForeignKey<ContractEntity>(c => c.Id)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

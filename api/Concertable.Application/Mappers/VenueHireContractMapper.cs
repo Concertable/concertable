@@ -14,7 +14,7 @@ public class VenueHireContractMapper : IContractMapper
         var d = (VenueHireContractDto)dto;
         return new VenueHireContractEntity
         {
-            OpportunityId = d.OpportunityId,
+            Id = d.Id,
             PaymentMethod = d.PaymentMethod,
             HireFee = d.HireFee
         };
@@ -26,7 +26,7 @@ public class VenueHireContractMapper : IContractMapper
         return new VenueHireContractDto
         {
             Id = e.Id,
-            OpportunityId = e.OpportunityId,
+
             PaymentMethod = e.PaymentMethod,
             HireFee = e.HireFee
         };
