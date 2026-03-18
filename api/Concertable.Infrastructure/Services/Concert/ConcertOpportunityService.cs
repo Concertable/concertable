@@ -3,7 +3,6 @@ using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Interfaces.Payment;
 using Application.DTOs;
-using Application.Mappers;
 using Core.Exceptions;
 
 namespace Infrastructure.Services.Concert;
@@ -13,15 +12,18 @@ public class ConcertOpportunityService : IConcertOpportunityService
     private readonly IConcertOpportunityRepository opportunityRepository;
     private readonly IStripeValidator stripeValidator;
     private readonly IVenueService venueService;
+    private readonly IConcertOpportunityMapper opportunityMapper;
 
     public ConcertOpportunityService(
         IConcertOpportunityRepository opportunityRepository,
         IStripeValidator stripeValidator,
-        IVenueService venueService)
+        IVenueService venueService,
+        IConcertOpportunityMapper opportunityMapper)
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidator = stripeValidator;
         this.venueService = venueService;
+        this.opportunityMapper = opportunityMapper;
     }
 
     public async Task CreateAsync(ConcertOpportunityDto opportunityDto)
@@ -32,7 +34,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");
-        var opportunity = opportunityDto.ToEntity();
+        var opportunity = opportunityMapper.ToEntity(opportunityDto);
         opportunity.VenueId = venueDto.Id;
 
         await opportunityRepository.AddAsync(opportunity);
@@ -50,7 +52,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
 
         var opportunities = opportunitiesDto.Select(dto =>
         {
-            var opportunity = dto.ToEntity();
+            var opportunity = opportunityMapper.ToEntity(dto);
             opportunity.VenueId = venueDto.Id;
             return opportunity;
         }).ToList();
@@ -62,7 +64,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
     public async Task<IEnumerable<ConcertOpportunityDto>> GetActiveByVenueIdAsync(int id)
     {
         var opportunities = await opportunityRepository.GetActiveByVenueIdAsync(id);
-        return opportunities.ToDtos();
+        return opportunityMapper.ToDtos(opportunities);
     }
 
     public async Task<ConcertOpportunityEntity> GetByIdAsync(int id)

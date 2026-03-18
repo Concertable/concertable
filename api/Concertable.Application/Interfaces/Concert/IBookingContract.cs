@@ -13,4 +13,5 @@ public interface IBookingContract
     int Id { get; set; }
     int OpportunityId { get; set; }
     PaymentMethod PaymentMethod { get; set; }
+    ContractType ContractType { get; }
 }

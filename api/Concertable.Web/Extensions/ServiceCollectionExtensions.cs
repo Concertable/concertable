@@ -29,6 +29,8 @@ using Infrastructure.Services.Rating;
 using Infrastructure.Validators;
 using Infrastructure.Services.Search;
 using Infrastructure.Settings;
+using Application.Interfaces.Concert;
+using Application.Mappers;
 using Infrastructure.Factories;
 using Infrastructure.Specifications;
 using System.Text;
@@ -166,6 +168,14 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddContracts(this IServiceCollection services)
     {
         services.AddScoped<IBookingContractService, BookingContractService>();
+
+        services.AddSingleton<IContractMapper, FlatFeeContractMapper>();
+        services.AddSingleton<IContractMapper, DoorSplitContractMapper>();
+        services.AddSingleton<IContractMapper, VersusContractMapper>();
+        services.AddSingleton<IContractMapper, VenueHireContractMapper>();
+        services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
+        services.AddSingleton<IConcertOpportunityMapper, ConcertOpportunityMapper>();
+        services.AddSingleton<IConcertApplicationMapper, ConcertApplicationMapper>();
 
         return services;
     }
