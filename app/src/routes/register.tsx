@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import RegisterPage from "@/pages/auth/RegisterPage";
 
 export const Route = createFileRoute("/register")({
-  component: () => <div>Register</div>,
+  component: RegisterPage,
 });
