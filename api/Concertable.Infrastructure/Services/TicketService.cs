@@ -14,7 +14,7 @@ public class TicketService : ITicketService
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;
     private readonly IUnitOfWork unitOfWork;
-    private readonly IUserPaymentService userPaymentService;
+    private readonly ITicketPaymentService ticketPaymentService;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUser currentUser;
