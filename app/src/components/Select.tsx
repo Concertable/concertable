@@ -32,7 +32,7 @@ export function Select<TOption>({
 
   return (
     <ShadSelect value={currentValue} onValueChange={handleChange}>
-      <SelectTrigger>
+      <SelectTrigger className="w-auto min-w-24">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
