@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Core.Entities;
+using Core.Enums;
 
 namespace Application.Interfaces.Concert;
 
@@ -16,5 +17,5 @@ public interface IConcertRepository : IRepository<Core.Entities.ConcertEntity>
     Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date);
     Task<bool> OpportunityHasConcertAsync(int opportunityId);
     Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date);
-    Task<decimal?> GetPriceByIdAsync(int id);
+    Task<ContractType?> GetTypeByIdAsync(int id);
 }

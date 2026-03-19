@@ -148,6 +148,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IVenueManagerRepository, VenueManagerRepository>();
+        services.AddScoped<IArtistManagerRepository, ArtistManagerRepository>();
         services.AddRatingRepositories();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
@@ -168,7 +170,6 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddContracts(this IServiceCollection services)
     {
         services.AddScoped<IContractService, ContractService>();
-
         services.AddSingleton<IContractMapper, FlatFeeContractMapper>();
         services.AddSingleton<IContractMapper, DoorSplitContractMapper>();
         services.AddSingleton<IContractMapper, VersusContractMapper>();
@@ -176,6 +177,19 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
         services.AddSingleton<IConcertOpportunityMapper, ConcertOpportunityMapper>();
         services.AddSingleton<IConcertApplicationMapper, ConcertApplicationMapper>();
+        services.AddScoped<ITicketPaymentService, TicketPaymentService>();
+        services.AddScoped<IPaymentRecipientResolverFactory, PaymentRecipientResolverFactory>();
+        services.AddTicketPaymentResolvers();
+
+        return services;
+    }
+
+    private static IServiceCollection AddTicketPaymentResolvers(this IServiceCollection services)
+    {
+        services.AddKeyedScoped<IPaymentRecipientResolver, VenuePaymentRecipientResolver>(ContractType.FlatFee);
+        services.AddKeyedScoped<IPaymentRecipientResolver, VenuePaymentRecipientResolver>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IPaymentRecipientResolver, VenuePaymentRecipientResolver>(ContractType.Versus);
+        services.AddKeyedScoped<IPaymentRecipientResolver, ArtistPaymentRecipientResolver>(ContractType.VenueHire);
 
         return services;
     }

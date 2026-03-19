@@ -47,9 +47,9 @@ public class AuthService : IAuthService
 
         UserEntity user = request.Role switch
         {
-            Role.VenueManager => new VenueManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
-            Role.ArtistManager => new ArtistManager { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
-            _ => new Customer { Email = request.Email, Role = request.Role, PasswordHash = passwordHash }
+            Role.VenueManager => new VenueManagerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
+            Role.ArtistManager => new ArtistManagerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
+            _ => new CustomerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash }
         };
 
         context.Users.Add(user);

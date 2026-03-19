@@ -46,9 +46,9 @@ public class ApplicationDbContext : DbContext
             e.HasIndex(u => u.Email).IsUnique();
             e.HasDiscriminator(u => u.Role)
                 .HasValue<UserEntity>(Role.Admin)
-                .HasValue<VenueManager>(Role.VenueManager)
-                .HasValue<ArtistManager>(Role.ArtistManager)
-                .HasValue<Customer>(Role.Customer);
+                .HasValue<VenueManagerEntity>(Role.VenueManager)
+                .HasValue<ArtistManagerEntity>(Role.ArtistManager)
+                .HasValue<CustomerEntity>(Role.Customer);
         });
 
         modelBuilder.Entity<StripeEventEntity>()
@@ -144,13 +144,13 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey<PreferenceEntity>(p => p.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<ArtistManager>()
+        modelBuilder.Entity<ArtistManagerEntity>()
             .HasOne(am => am.Artist)
             .WithOne(a => a.User)
             .HasForeignKey<ArtistEntity>(a => a.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<VenueManager>()
+        modelBuilder.Entity<VenueManagerEntity>()
             .HasOne(vm => vm.Venue)
             .WithOne(v => v.User)
             .HasForeignKey<VenueEntity>(v => v.UserId)

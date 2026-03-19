@@ -1,7 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
-using Application.Interfaces.Payment;
 using Application.Mappers;
 using Core.Entities;
 using Core.Enums;
@@ -25,7 +24,7 @@ public class TicketService : ITicketService
         ITicketRepository ticketRepository,
         ITicketValidator ticketValidator,
         IUnitOfWork unitOfWork,
-        IUserPaymentService userPaymentService,
+        ITicketPaymentService ticketPaymentService,
         IEmailService emailService,
         IQrCodeService qrCodeService,
         ICurrentUser currentUser,
@@ -35,7 +34,7 @@ public class TicketService : ITicketService
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
         this.unitOfWork = unitOfWork;
-        this.userPaymentService = userPaymentService;
+        this.ticketPaymentService = ticketPaymentService;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
         this.currentUser = currentUser;
@@ -55,9 +54,11 @@ public class TicketService : ITicketService
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
-        var price = await concertRepository.GetPriceByIdAsync(purchaseParams.ConcertId)
+        var concert = await concertRepository.GetByIdAsync(purchaseParams.ConcertId)
             ?? throw new NotFoundException("Concert not found");
-        var paymentResponse = await userPaymentService.PayVenueManagerByConcertIdAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, price);
+        var contractType = await concertRepository.GetTypeByIdAsync(purchaseParams.ConcertId)
+            ?? throw new NotFoundException("Concert contract not found");
+        var paymentResponse = await ticketPaymentService.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price, contractType);
 
         return new TicketPurchaseResponse
         {

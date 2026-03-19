@@ -22,17 +22,17 @@ public class UserEntity : BaseEntity
     public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = [];
 }
 
-public class VenueManager : UserEntity
+public class VenueManagerEntity : UserEntity
 {
     public VenueEntity? Venue { get; set; }
 }
 
-public class ArtistManager : UserEntity
+public class ArtistManagerEntity : UserEntity
 {
     public ArtistEntity? Artist { get; set; }
 }
 
-public class Customer : UserEntity
+public class CustomerEntity : UserEntity
 {
     public ICollection<TicketEntity> Tickets { get; set; } = [];
 }

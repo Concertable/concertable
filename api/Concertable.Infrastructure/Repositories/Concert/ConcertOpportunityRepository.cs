@@ -35,7 +35,7 @@ public class ConcertOpportunityRepository : Repository<ConcertOpportunityEntity>
     public async Task<UserEntity?> GetOwnerByIdAsync(int opportunityId)
     {
         return await context.Users
-            .OfType<VenueManager>()
+            .OfType<VenueManagerEntity>()
             .Where(vm => vm.Venue != null && vm.Venue.Opportunities.Any(o => o.Id == opportunityId))
             .FirstOrDefaultAsync();
     }

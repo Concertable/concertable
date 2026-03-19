@@ -4,6 +4,7 @@ using Application.Interfaces.Concert;
 using Application.Mappers;
 using Infrastructure.Data.Identity;
 using Core.Extensions;
+using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Concert;
@@ -146,12 +147,14 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
             .AnyAsync(e => e.Application.Opportunity.StartDate.Date == date.Date);
     }
 
-    public async Task<decimal?> GetPriceByIdAsync(int id)
+    public async Task<ContractType?> GetTypeByIdAsync(int id)
     {
-        return await context.Concerts
-            .Where(e => e.Id == id)
-            .Select(e => e.Price)
+        var contract = await context.Concerts
+            .Where(c => c.Id == id)
+            .Select(c => c.Application.Opportunity.Contract)
             .FirstOrDefaultAsync();
+
+        return contract?.ContractType;
     }
 
 
