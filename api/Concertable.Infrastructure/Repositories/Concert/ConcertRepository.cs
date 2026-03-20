@@ -157,5 +157,12 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
         return contract?.ContractType;
     }
 
-
+    public async Task<IEnumerable<int>> GetEndedConfirmedIdsAsync()
+    {
+        return await context.Concerts
+            .Where(c => c.Application.Status == ApplicationStatus.Confirmed
+                     && c.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
+            .Select(c => c.Id)
+            .ToListAsync();
+    }
 }
