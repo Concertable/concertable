@@ -78,6 +78,14 @@ public class ConcertApplicationRepository : Repository<ConcertApplicationEntity>
         return await query.FirstOrDefaultAsync();
     }
 
+    public async Task<ConcertApplicationEntity?> GetByConcertIdAsync(int concertId)
+    {
+        return await context.Concerts
+            .Where(c => c.Id == concertId)
+            .Select(c => c.Application)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<IEnumerable<ConcertApplicationEntity>> GetRecentDeniedByArtistIdAsync(int artistId)
     {
         var query = context.ConcertApplications

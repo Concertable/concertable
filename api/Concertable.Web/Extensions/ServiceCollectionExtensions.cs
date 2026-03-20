@@ -25,6 +25,7 @@ using Infrastructure.Services.Blob;
 using Infrastructure.Services.Concert;
 using Infrastructure.Services.Geometry;
 using Infrastructure.Services.Accept;
+using Infrastructure.Services.Complete;
 using Infrastructure.Services.Payment;
 using Infrastructure.Services.Settlement;
 using Infrastructure.Services.Rating;
@@ -184,6 +185,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();
         services.AddScoped<ISettlementProcessor, SettlementProcessor>();
+        services.AddScoped<ICompleteProcessor, CompleteProcessor>();
+
+        services.AddKeyedScoped<ICompleteStrategy, FlatFeeCompleteService>(ContractType.FlatFee);
+        services.AddKeyedScoped<ICompleteStrategy, DoorSplitCompleteService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<ICompleteStrategy, VersusCompleteService>(ContractType.Versus);
+        services.AddKeyedScoped<ICompleteStrategy, VenueHireCompleteService>(ContractType.VenueHire);
 
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
