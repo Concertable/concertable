@@ -1,9 +1,8 @@
 using Application.Responses;
-using Core.Enums;
 
 namespace Application.Interfaces.Concert;
 
-public interface ITicketPaymentService
+public interface ITicketPaymentService : IContractWorkflow
 {
-    Task<PaymentResponse> PayAsync(int concertId, int quantity, string paymentMethodId, decimal price, ContractType contractType);
+    Task<PaymentResponse> PayAsync(int concertId, int quantity, string paymentMethodId, decimal price);
 }

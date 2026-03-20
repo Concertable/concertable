@@ -3,31 +3,31 @@ using Application.Interfaces.Concert;
 using Application.Interfaces.Payment;
 using Application.Requests;
 using Application.Responses;
-using Core.Enums;
+using Core.Exceptions;
 
 namespace Infrastructure.Services.Payment;
 
-public class TicketPaymentService : ITicketPaymentService
+public class ArtistTicketPaymentService : ITicketPaymentService
 {
     private readonly IPaymentService paymentService;
     private readonly ICurrentUser currentUser;
-    private readonly IPaymentRecipientResolverFactory resolverFactory;
+    private readonly IArtistManagerRepository artistManagerRepository;
 
-    public TicketPaymentService(
+    public ArtistTicketPaymentService(
         IPaymentService paymentService,
         ICurrentUser currentUser,
-        IPaymentRecipientResolverFactory resolverFactory)
+        IArtistManagerRepository artistManagerRepository)
     {
         this.paymentService = paymentService;
         this.currentUser = currentUser;
-        this.resolverFactory = resolverFactory;
+        this.artistManagerRepository = artistManagerRepository;
     }
 
-    public async Task<PaymentResponse> PayAsync(int concertId, int quantity, string paymentMethodId, decimal price, ContractType contractType)
+    public async Task<PaymentResponse> PayAsync(int concertId, int quantity, string paymentMethodId, decimal price)
     {
         var user = currentUser.Get();
-        var recipientResolver = resolverFactory.Create(contractType);
-        var recipient = await recipientResolver.ResolveAsync(concertId);
+        var recipient = await artistManagerRepository.GetByConcertIdAsync(concertId)
+            ?? throw new NotFoundException("Artist manager not found for this concert");
 
         return await paymentService.ProcessAsync(new TransactionRequest
         {

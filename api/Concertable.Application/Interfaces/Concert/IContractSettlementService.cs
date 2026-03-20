@@ -1,9 +1,6 @@
-using Core.Enums;
-
 namespace Application.Interfaces.Concert;
 
-public interface IContractSettlementService
+public interface IContractSettlementService : IContractWorkflow
 {
-    ContractType ContractType { get; }
     Task SettleAsync(int concertId);
 }

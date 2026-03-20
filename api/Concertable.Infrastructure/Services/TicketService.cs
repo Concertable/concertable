@@ -13,7 +13,7 @@ public class TicketService : ITicketService
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;
     private readonly IUnitOfWork unitOfWork;
-    private readonly ITicketPaymentService ticketPaymentService;
+    private readonly IContractServiceFactory<ITicketPaymentService> paymentServiceFactory;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUser currentUser;
@@ -24,7 +24,7 @@ public class TicketService : ITicketService
         ITicketRepository ticketRepository,
         ITicketValidator ticketValidator,
         IUnitOfWork unitOfWork,
-        ITicketPaymentService ticketPaymentService,
+        IContractServiceFactory<ITicketPaymentService> paymentServiceFactory,
         IEmailService emailService,
         IQrCodeService qrCodeService,
         ICurrentUser currentUser,
@@ -34,7 +34,7 @@ public class TicketService : ITicketService
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
         this.unitOfWork = unitOfWork;
-        this.ticketPaymentService = ticketPaymentService;
+        this.paymentServiceFactory = paymentServiceFactory;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
         this.currentUser = currentUser;
@@ -58,7 +58,8 @@ public class TicketService : ITicketService
             ?? throw new NotFoundException("Concert not found");
         var contractType = await concertRepository.GetTypeByIdAsync(purchaseParams.ConcertId)
             ?? throw new NotFoundException("Concert contract not found");
-        var paymentResponse = await ticketPaymentService.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price, contractType);
+        var paymentService = paymentServiceFactory.Create(contractType);
+        var paymentResponse = await paymentService.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price);
 
         return new TicketPurchaseResponse
         {

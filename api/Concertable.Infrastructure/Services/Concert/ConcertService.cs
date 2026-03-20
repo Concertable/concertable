@@ -3,7 +3,6 @@ using Core.Enums;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Interfaces.Geometry;
-using Application.Interfaces.Payment;
 using Application.Interfaces.Search;
 using Core.Parameters;
 using Application.DTOs;
@@ -20,7 +19,6 @@ public class ConcertService : IConcertService
     private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
-    private readonly IUserPaymentService userPaymentService;
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
@@ -37,7 +35,6 @@ public class ConcertService : IConcertService
         IConcertHeaderService concertHeaderService,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
-        IUserPaymentService userPaymentService,
         IConcertApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
@@ -53,7 +50,6 @@ public class ConcertService : IConcertService
         this.concertHeaderService = concertHeaderService;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
-        this.userPaymentService = userPaymentService;
         this.applicationValidator = applicationValidator;
         this.messageService = messageService;
         this.emailService = emailService;
@@ -109,18 +105,7 @@ public class ConcertService : IConcertService
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
-        var paymentResponse = await userPaymentService.PayArtistManagerByApplicationIdAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
-
-        return new ConcertApplicationPurchaseResponse
-        {
-            Success = paymentResponse.Success,
-            RequiresAction = paymentResponse.RequiresAction,
-            Message = paymentResponse.Message ?? (paymentResponse.Success ? "Payment successful" : "Payment failed"),
-            ApplicationId = bookingParams.ApplicationId,
-            TransactionId = paymentResponse.TransactionId,
-            UserEmail = user.Email,
-            ClientSecret = paymentResponse.ClientSecret
-        };
+        throw new NotImplementedException("Contract-aware booking payment not yet implemented");
     }
 
     public async Task<ConcertApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
