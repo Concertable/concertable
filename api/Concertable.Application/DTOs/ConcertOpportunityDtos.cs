@@ -24,6 +24,3 @@ public record OpportunityResponse
 
 public record OpportunityWithVenueDto(ConcertOpportunityDto Opportunity, VenueDto Venue);
 
-public record ConcertApplicationDto(int Id, ArtistDto Artist, ConcertOpportunityDto Opportunity, ApplicationStatus Status);
-
-public record ArtistConcertApplicationDto(int Id, ArtistDto Artist, OpportunityWithVenueDto OpportunityWithVenue, ApplicationStatus Status);

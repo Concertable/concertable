@@ -34,7 +34,7 @@ public class ConcertApplicationController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpGet("all/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertApplicationDto>>> GetAllByOpportunityId(int id)
+    public async Task<ActionResult<IEnumerable<IConcertApplication>>> GetAllByOpportunityId(int id)
     {
         return Ok(await applicationService.GetByOpportunityIdAsync(id));
     }
@@ -49,14 +49,14 @@ public class ConcertApplicationController : ControllerBase
 
     [HttpGet("artist/pending")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<ArtistConcertApplicationDto>>> GetPendingForArtist()
+    public async Task<ActionResult<IEnumerable<IConcertApplication>>> GetPendingForArtist()
     {
         return Ok(await applicationService.GetPendingForArtistAsync());
     }
 
     [HttpGet("artist/recently-denied")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<ArtistConcertApplicationDto>>> GetRecentDeniedForArtist()
+    public async Task<ActionResult<IEnumerable<IConcertApplication>>> GetRecentDeniedForArtist()
     {
         return Ok(await applicationService.GetRecentDeniedForArtistAsync());
     }

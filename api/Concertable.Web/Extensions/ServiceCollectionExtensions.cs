@@ -32,6 +32,7 @@ using Infrastructure.Settings;
 using Application.Interfaces.Concert;
 using Application.Mappers;
 using Infrastructure.Factories;
+using Infrastructure.Mappers;
 using Infrastructure.Specifications;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -190,6 +191,11 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IBookingPaymentStrategy, VenueHireBookingPaymentService>(ContractType.VenueHire);
 
         services.AddSingleton<IConcertOpportunityMapper, ConcertOpportunityMapper>();
+
+        services.AddKeyedSingleton<IApplicationMapper, FlatFeeApplicationMapper>(ContractType.FlatFee);
+        services.AddKeyedSingleton<IApplicationMapper, DoorSplitApplicationMapper>(ContractType.DoorSplit);
+        services.AddKeyedSingleton<IApplicationMapper, VersusApplicationMapper>(ContractType.Versus);
+        services.AddKeyedSingleton<IApplicationMapper, VenueHireApplicationMapper>(ContractType.VenueHire);
         services.AddSingleton<IConcertApplicationMapper, ConcertApplicationMapper>();
 
         return services;

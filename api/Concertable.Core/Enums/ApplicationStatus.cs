@@ -8,7 +8,15 @@ namespace Core.Enums;
 
 public enum ApplicationStatus
 {
-    Accepted,
     Pending,
+    Confirmed,
+    Denied
+}
+
+public enum VenueHireApplicationStatus
+{
+    Pending,
+    Accepted,
+    Confirmed,
     Denied
 }

@@ -1,4 +1,4 @@
-using Application.DTOs;
+using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Core.Entities;
 using Core.Enums;
@@ -7,30 +7,29 @@ namespace Application.Mappers;
 
 public class ConcertApplicationMapper : IConcertApplicationMapper
 {
-    private readonly IConcertOpportunityMapper opportunityMapper;
+    private readonly IContractStrategyFactory<IApplicationMapper> factory;
 
-    public ConcertApplicationMapper(IConcertOpportunityMapper opportunityMapper)
+    public ConcertApplicationMapper(IContractStrategyFactory<IApplicationMapper> factory)
+        => this.factory = factory;
+
+    private ContractType GetContractType(ConcertApplicationEntity application) => application switch
     {
-        this.opportunityMapper = opportunityMapper;
-    }
+        FlatFeeApplicationEntity => ContractType.FlatFee,
+        DoorSplitApplicationEntity => ContractType.DoorSplit,
+        VersusApplicationEntity => ContractType.Versus,
+        VenueHireApplicationEntity => ContractType.VenueHire,
+        _ => throw new InvalidOperationException($"Unknown application type: {application.GetType().Name}")
+    };
 
-    public ConcertApplicationDto ToDto(ConcertApplicationEntity application) => new(
-        application.Id,
-        application.Artist.ToDto(),
-        opportunityMapper.ToDto(application.Opportunity),
-        application.Concert != null ? ApplicationStatus.Accepted : ApplicationStatus.Pending
-    );
+    public IConcertApplication ToDto(ConcertApplicationEntity application) =>
+        factory.Create(GetContractType(application)).ToDto(application);
 
-    public ArtistConcertApplicationDto ToArtistDto(ConcertApplicationEntity application) => new(
-        application.Id,
-        application.Artist.ToDto(),
-        opportunityMapper.ToWithVenueDto(application.Opportunity),
-        application.Concert != null ? ApplicationStatus.Accepted : ApplicationStatus.Pending
-    );
+    public IConcertApplication ToArtistDto(ConcertApplicationEntity application) =>
+        factory.Create(GetContractType(application)).ToArtistDto(application);
 
-    public IEnumerable<ConcertApplicationDto> ToDtos(IEnumerable<ConcertApplicationEntity> applications) =>
+    public IEnumerable<IConcertApplication> ToDtos(IEnumerable<ConcertApplicationEntity> applications) =>
         applications.Select(ToDto);
 
-    public IEnumerable<ArtistConcertApplicationDto> ToArtistDtos(IEnumerable<ConcertApplicationEntity> applications) =>
+    public IEnumerable<IConcertApplication> ToArtistDtos(IEnumerable<ConcertApplicationEntity> applications) =>
         applications.Select(ToArtistDto);
 }
