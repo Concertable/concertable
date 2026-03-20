@@ -19,6 +19,7 @@ public class ConcertService : IConcertService
     private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
+    private readonly IContractStrategyResolver<IBookingPaymentStrategy> bookingStrategyResolver;
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
@@ -35,6 +36,7 @@ public class ConcertService : IConcertService
         IConcertHeaderService concertHeaderService,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
+        IContractStrategyResolver<IBookingPaymentStrategy> bookingStrategyResolver,
         IConcertApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
@@ -50,6 +52,7 @@ public class ConcertService : IConcertService
         this.concertHeaderService = concertHeaderService;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
+        this.bookingStrategyResolver = bookingStrategyResolver;
         this.applicationValidator = applicationValidator;
         this.messageService = messageService;
         this.emailService = emailService;
@@ -105,7 +108,19 @@ public class ConcertService : IConcertService
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
-        throw new NotImplementedException("Contract-aware booking payment not yet implemented");
+        var paymentService = await bookingStrategyResolver.ResolveForApplicationAsync(bookingParams.ApplicationId);
+        var paymentResponse = await paymentService.PayAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
+
+        return new ConcertApplicationPurchaseResponse
+        {
+            Success = paymentResponse.Success,
+            RequiresAction = paymentResponse.RequiresAction,
+            Message = paymentResponse.Message ?? (paymentResponse.Success ? "Payment successful" : "Payment failed"),
+            ApplicationId = bookingParams.ApplicationId,
+            TransactionId = paymentResponse.TransactionId,
+            UserEmail = user.Email,
+            ClientSecret = paymentResponse.ClientSecret
+        };
     }
 
     public async Task<ConcertApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)

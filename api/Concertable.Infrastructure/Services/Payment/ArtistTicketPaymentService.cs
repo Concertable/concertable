@@ -7,7 +7,7 @@ using Core.Exceptions;
 
 namespace Infrastructure.Services.Payment;
 
-public class ArtistTicketPaymentService : ITicketPaymentService
+public class ArtistTicketPaymentService : ITicketPaymentStrategy
 {
     private readonly IPaymentService paymentService;
     private readonly ICurrentUser currentUser;

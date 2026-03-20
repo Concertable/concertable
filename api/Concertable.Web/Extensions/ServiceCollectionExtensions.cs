@@ -168,7 +168,8 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddContracts(this IServiceCollection services)
     {
-        services.AddScoped(typeof(IContractServiceFactory<>), typeof(ContractServiceFactory<>));
+        services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
+        services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
 
         services.AddScoped<IContractService, ContractService>();
 
@@ -178,10 +179,15 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
         services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
 
-        services.AddKeyedScoped<ITicketPaymentService, VenueTicketPaymentService>(ContractType.FlatFee);
-        services.AddKeyedScoped<ITicketPaymentService, VenueTicketPaymentService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<ITicketPaymentService, VenueTicketPaymentService>(ContractType.Versus);
-        services.AddKeyedScoped<ITicketPaymentService, ArtistTicketPaymentService>(ContractType.VenueHire);
+        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
+        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
+        services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
+
+        services.AddKeyedScoped<IBookingPaymentStrategy, FlatFeeBookingPaymentService>(ContractType.FlatFee);
+        services.AddKeyedScoped<IBookingPaymentStrategy, DoorSplitBookingPaymentService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IBookingPaymentStrategy, VersusBookingPaymentService>(ContractType.Versus);
+        services.AddKeyedScoped<IBookingPaymentStrategy, VenueHireBookingPaymentService>(ContractType.VenueHire);
 
         services.AddSingleton<IConcertOpportunityMapper, ConcertOpportunityMapper>();
         services.AddSingleton<IConcertApplicationMapper, ConcertApplicationMapper>();

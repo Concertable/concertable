@@ -3,7 +3,7 @@ using Core.Enums;
 
 namespace Application.Interfaces.Concert;
 
-public interface IContractMapper : IContractWorkflow
+public interface IContractMapper : IContractStrategy
 {
     ContractType ContractType { get; }
     ContractEntity ToEntity(IContract dto);

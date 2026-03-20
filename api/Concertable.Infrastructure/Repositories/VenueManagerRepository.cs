@@ -21,4 +21,15 @@ public class VenueManagerRepository : Repository<VenueManagerEntity>, IVenueMana
                 .First())
             .FirstOrDefaultAsync();
     }
+
+    public async Task<VenueManagerEntity?> GetByApplicationIdAsync(int applicationId)
+    {
+        return await context.Users
+            .OfType<VenueManagerEntity>()
+            .Where(u => u.Id == context.ConcertApplications
+                .Where(a => a.Id == applicationId)
+                .Select(a => a.Opportunity.Venue.UserId)
+                .First())
+            .FirstOrDefaultAsync();
+    }
 }

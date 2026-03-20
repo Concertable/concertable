@@ -6,9 +6,9 @@ namespace Infrastructure.Factories;
 
 public class ContractMapperFactory : IContractMapperFactory
 {
-    private readonly IContractServiceFactory<IContractMapper> factory;
+    private readonly IContractStrategyFactory<IContractMapper> factory;
 
-    public ContractMapperFactory(IContractServiceFactory<IContractMapper> factory)
+    public ContractMapperFactory(IContractStrategyFactory<IContractMapper> factory)
     {
         this.factory = factory;
     }

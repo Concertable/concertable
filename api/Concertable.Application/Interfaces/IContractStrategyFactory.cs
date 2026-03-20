@@ -3,7 +3,7 @@ using Core.Enums;
 
 namespace Application.Interfaces;
 
-public interface IContractServiceFactory<T> where T : class, IContractWorkflow
+public interface IContractStrategyFactory<T> where T : IContractStrategy
 {
     T Create(ContractType contractType);
 }

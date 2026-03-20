@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Factories;
 
-public class ContractServiceFactory<T> : IContractServiceFactory<T> where T : class, IContractWorkflow
+public class ContractStrategyFactory<T> : IContractStrategyFactory<T> where T : IContractStrategy
 {
     private readonly IServiceProvider serviceProvider;
 
-    public ContractServiceFactory(IServiceProvider serviceProvider)
+    public ContractStrategyFactory(IServiceProvider serviceProvider)
         => this.serviceProvider = serviceProvider;
 
     public T Create(ContractType contractType)

@@ -21,4 +21,15 @@ public class ArtistManagerRepository : Repository<ArtistManagerEntity>, IArtistM
                 .First())
             .FirstOrDefaultAsync();
     }
+
+    public async Task<ArtistManagerEntity?> GetByApplicationIdAsync(int applicationId)
+    {
+        return await context.Users
+            .OfType<ArtistManagerEntity>()
+            .Where(u => u.Id == context.ConcertApplications
+                .Where(a => a.Id == applicationId)
+                .Select(a => a.Artist.UserId)
+                .First())
+            .FirstOrDefaultAsync();
+    }
 }

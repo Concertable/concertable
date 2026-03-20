@@ -25,4 +25,12 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
             .Select(c => c.Application.Opportunity.Contract)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<ContractEntity?> GetByApplicationIdAsync(int applicationId)
+    {
+        return await context.ConcertApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => a.Opportunity.Contract)
+            .FirstOrDefaultAsync();
+    }
 }

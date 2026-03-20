@@ -7,4 +7,5 @@ public interface IContractRepository : IRepository<ContractEntity>
 {
     Task<ContractEntity?> GetByOpportunityIdAsync(int opportunityId);
     Task<ContractEntity?> GetByConcertIdAsync(int concertId);
+    Task<ContractEntity?> GetByApplicationIdAsync(int applicationId);
 }
