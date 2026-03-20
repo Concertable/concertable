@@ -95,12 +95,23 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("ArtistId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ContractType")
+                        .HasColumnType("int");
+
                     b.Property<int>("OpportunityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ArtistId");
+
+                    b.HasIndex("ConcertId");
 
                     b.HasIndex("OpportunityId", "ArtistId")
                         .IsUnique();
@@ -652,21 +663,21 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("VersusContracts");
                 });
 
-            modelBuilder.Entity("Core.Entities.ArtistManager", b =>
+            modelBuilder.Entity("Core.Entities.ArtistManagerEntity", b =>
                 {
                     b.HasBaseType("Core.Entities.UserEntity");
 
                     b.HasDiscriminator().HasValue(2);
                 });
 
-            modelBuilder.Entity("Core.Entities.Customer", b =>
+            modelBuilder.Entity("Core.Entities.CustomerEntity", b =>
                 {
                     b.HasBaseType("Core.Entities.UserEntity");
 
                     b.HasDiscriminator().HasValue(0);
                 });
 
-            modelBuilder.Entity("Core.Entities.VenueManager", b =>
+            modelBuilder.Entity("Core.Entities.VenueManagerEntity", b =>
                 {
                     b.HasBaseType("Core.Entities.UserEntity");
 
@@ -686,7 +697,7 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.ArtistEntity", b =>
                 {
-                    b.HasOne("Core.Entities.ArtistManager", "User")
+                    b.HasOne("Core.Entities.ArtistManagerEntity", "User")
                         .WithOne("Artist")
                         .HasForeignKey("Core.Entities.ArtistEntity", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -722,6 +733,10 @@ namespace Concertable.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Entities.ConcertEntity", "Concert")
+                        .WithMany()
+                        .HasForeignKey("ConcertId");
+
                     b.HasOne("Core.Entities.ConcertOpportunityEntity", "Opportunity")
                         .WithMany("Applications")
                         .HasForeignKey("OpportunityId")
@@ -729,6 +744,8 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Artist");
+
+                    b.Navigation("Concert");
 
                     b.Navigation("Opportunity");
                 });
@@ -894,7 +911,7 @@ namespace Concertable.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Customer", "User")
+                    b.HasOne("Core.Entities.CustomerEntity", "User")
                         .WithMany("Tickets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -926,7 +943,7 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.VenueEntity", b =>
                 {
-                    b.HasOne("Core.Entities.VenueManager", "User")
+                    b.HasOne("Core.Entities.VenueManagerEntity", "User")
                         .WithOne("Venue")
                         .HasForeignKey("Core.Entities.VenueEntity", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1058,17 +1075,17 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Opportunities");
                 });
 
-            modelBuilder.Entity("Core.Entities.ArtistManager", b =>
+            modelBuilder.Entity("Core.Entities.ArtistManagerEntity", b =>
                 {
                     b.Navigation("Artist");
                 });
 
-            modelBuilder.Entity("Core.Entities.Customer", b =>
+            modelBuilder.Entity("Core.Entities.CustomerEntity", b =>
                 {
                     b.Navigation("Tickets");
                 });
 
-            modelBuilder.Entity("Core.Entities.VenueManager", b =>
+            modelBuilder.Entity("Core.Entities.VenueManagerEntity", b =>
                 {
                     b.Navigation("Venue");
                 });

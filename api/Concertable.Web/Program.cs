@@ -83,7 +83,6 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapControllers();
-app.MapHub<PaymentHub>("/hub/payments");
 app.MapHub<ConcertHub>("/hub/concerts");
 app.MapFallback(async context =>
 {

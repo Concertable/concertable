@@ -1,18 +1,18 @@
-using Application.Interfaces;
 using Application.Interfaces.Concert;
+using Application.Mappers;
 using Core.Enums;
 
 namespace Infrastructure.Factories;
 
 public class ContractMapperFactory : IContractMapperFactory
 {
-    private readonly IContractStrategyFactory<IContractMapper> factory;
-
-    public ContractMapperFactory(IContractStrategyFactory<IContractMapper> factory)
+    private readonly IDictionary<ContractType, IContractMapper> mappers = new Dictionary<ContractType, IContractMapper>
     {
-        this.factory = factory;
-    }
+        { ContractType.FlatFee, new FlatFeeContractMapper() },
+        { ContractType.DoorSplit, new DoorSplitContractMapper() },
+        { ContractType.Versus, new VersusContractMapper() },
+        { ContractType.VenueHire, new VenueHireContractMapper() }
+    };
 
-    public IContractMapper Create(ContractType type) =>
-        factory.Create(type);
+    public IContractMapper Create(ContractType type) => mappers[type];
 }

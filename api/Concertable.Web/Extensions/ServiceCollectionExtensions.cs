@@ -46,6 +46,7 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
 using Web.Authorization;
+using Web.Services;
 using Application.DTOs;
 using Application.Requests;
 using Core.Parameters;
@@ -103,6 +104,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
+        services.AddScoped<INotificationService, SignalRNotificationService>();
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertService, ConcertService>();
@@ -186,7 +188,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IContractMapper, DoorSplitContractMapper>(ContractType.DoorSplit);
         services.AddKeyedSingleton<IContractMapper, VersusContractMapper>(ContractType.Versus);
         services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
-        services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
+        services.AddScoped<IContractMapperFactory, ContractMapperFactory>();
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();

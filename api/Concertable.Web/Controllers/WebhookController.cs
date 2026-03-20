@@ -22,7 +22,7 @@ namespace Web.Controllers;
 [Route("api/[controller]")]
 public class WebhookController : ControllerBase
 {
-    private readonly IHubContext<PaymentHub> hubContext;
+    private readonly IHubContext<ConcertHub> hubContext;
     private readonly IBackgroundTaskQueue taskQueue;
     private readonly IServiceScopeFactory scopeFactory;
     private readonly IStripeEventRepository stripeEventRepository;
@@ -38,7 +38,7 @@ public class WebhookController : ControllerBase
         IStripeEventRepository stripeEventRepository,
         IBackgroundTaskQueue taskQueue,
         IServiceScopeFactory scopeFactory,
-        IHubContext<PaymentHub> hubContext,
+        IHubContext<ConcertHub> hubContext,
         ITicketService ticketService,
         IConcertService concertService,
         ITransactionService purchaseService,
@@ -90,7 +90,7 @@ public class WebhookController : ControllerBase
         var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
         var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
         var concertService = scope.ServiceProvider.GetRequiredService<IConcertService>();
-        var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PaymentHub>>();
+        var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<ConcertHub>>();
 
         try
         {
