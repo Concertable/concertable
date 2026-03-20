@@ -229,7 +229,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();
         services.AddScoped<IConcertSearchSpecification, ConcertSearchSpecification>();
 
-
         services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();
         services.AddScoped<IConcertHeaderRepository, ConcertHeaderRepository>();
