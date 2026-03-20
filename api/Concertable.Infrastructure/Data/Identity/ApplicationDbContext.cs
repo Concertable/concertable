@@ -18,10 +18,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<ConcertOpportunityEntity> ConcertOpportunities { get; set; }
     public DbSet<OpportunityGenreEntity> OpportunityGenres { get; set; }
     public DbSet<ConcertApplicationEntity> ConcertApplications { get; set; }
-    public DbSet<FlatFeeApplicationEntity> FlatFeeApplications { get; set; }
-    public DbSet<DoorSplitApplicationEntity> DoorSplitApplications { get; set; }
-    public DbSet<VersusApplicationEntity> VersusApplications { get; set; }
-    public DbSet<VenueHireApplicationEntity> VenueHireApplications { get; set; }
     public DbSet<ReviewEntity> Reviews { get; set; }
     public DbSet<SocialMediaEntity> SocialMedias { get; set; }
     public DbSet<TicketEntity> Tickets { get; set; }
@@ -61,11 +57,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ConcertApplicationEntity>(e =>
         {
             e.HasIndex(ca => new { ca.OpportunityId, ca.ArtistId }).IsUnique();
-            e.HasDiscriminator<ContractType>("ContractType")
-                .HasValue<FlatFeeApplicationEntity>(ContractType.FlatFee)
-                .HasValue<DoorSplitApplicationEntity>(ContractType.DoorSplit)
-                .HasValue<VersusApplicationEntity>(ContractType.Versus)
-                .HasValue<VenueHireApplicationEntity>(ContractType.VenueHire);
         });
 
         modelBuilder.Entity<MessageEntity>()

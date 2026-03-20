@@ -1,6 +1,7 @@
 using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
+using Application.Mappers;
 using Application.Interfaces.Payment;
 using Application.DTOs;
 using Application.Requests;
@@ -13,7 +14,6 @@ public class ConcertOpportunityService : IConcertOpportunityService
     private readonly IConcertOpportunityRepository opportunityRepository;
     private readonly IStripeValidator stripeValidator;
     private readonly IVenueService venueService;
-    private readonly IConcertOpportunityMapper opportunityMapper;
     private readonly IContractService contractService;
     private readonly IUnitOfWork unitOfWork;
 
@@ -21,14 +21,12 @@ public class ConcertOpportunityService : IConcertOpportunityService
         IConcertOpportunityRepository opportunityRepository,
         IStripeValidator stripeValidator,
         IVenueService venueService,
-        IConcertOpportunityMapper opportunityMapper,
         IContractService contractService,
         IUnitOfWork unitOfWork)
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidator = stripeValidator;
         this.venueService = venueService;
-        this.opportunityMapper = opportunityMapper;
         this.contractService = contractService;
         this.unitOfWork = unitOfWork;
     }
@@ -46,12 +44,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
 
         try
         {
-            var opportunity = opportunityMapper.ToEntity(new ConcertOpportunityDto
-            {
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                Genres = request.Genres
-            });
+            var opportunity = request.ToEntity();
             opportunity.VenueId = venueDto.Id;
 
             await opportunityRepository.AddAsync(opportunity);
@@ -82,12 +75,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
         {
             foreach (var request in requests)
             {
-                var opportunity = opportunityMapper.ToEntity(new ConcertOpportunityDto
-                {
-                    StartDate = request.StartDate,
-                    EndDate = request.EndDate,
-                    Genres = request.Genres
-                });
+                var opportunity = request.ToEntity();
                 opportunity.VenueId = venueDto.Id;
 
                 await opportunityRepository.AddAsync(opportunity);
@@ -107,7 +95,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
     public async Task<IEnumerable<ConcertOpportunityDto>> GetActiveByVenueIdAsync(int id)
     {
         var opportunities = await opportunityRepository.GetActiveByVenueIdAsync(id);
-        return opportunityMapper.ToDtos(opportunities);
+        return opportunities.ToDtos();
     }
 
     public async Task<ConcertOpportunityEntity> GetByIdAsync(int id)

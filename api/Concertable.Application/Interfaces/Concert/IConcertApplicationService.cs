@@ -1,14 +1,13 @@
 using Application.DTOs;
-using Core.Entities;
 
 namespace Application.Interfaces.Concert;
 
 public interface IConcertApplicationService
 {
-    Task<IConcertApplication> GetByIdAsync(int id);
-    Task<IEnumerable<IConcertApplication>> GetByOpportunityIdAsync(int id);
-    Task<IEnumerable<IConcertApplication>> GetPendingForArtistAsync();
-    Task<IEnumerable<IConcertApplication>> GetRecentDeniedForArtistAsync();
+    Task<ConcertApplicationDto> GetByIdAsync(int id);
+    Task<IEnumerable<ConcertApplicationDto>> GetByOpportunityIdAsync(int id);
+    Task<IEnumerable<ConcertApplicationDto>> GetPendingForArtistAsync();
+    Task<IEnumerable<ConcertApplicationDto>> GetRecentDeniedForArtistAsync();
     Task ApplyAsync(int opportunityId);
     Task AcceptAsync(int applicationId);
     Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);

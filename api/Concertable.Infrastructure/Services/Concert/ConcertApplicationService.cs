@@ -21,7 +21,6 @@ public class ConcertApplicationService : IConcertApplicationService
     private readonly IConcertOpportunityService opportunityService;
     private readonly IArtistService artistService;
     private readonly IOwnershipService ownershipService;
-    private readonly IConcertApplicationMapper applicationMapper;
 
     public ConcertApplicationService(
         IConcertApplicationRepository applicationRepository,
@@ -33,8 +32,7 @@ public class ConcertApplicationService : IConcertApplicationService
         IEmailService emailService,
         IConcertOpportunityService opportunityService,
         IOwnershipService ownershipService,
-        IArtistService artistService,
-        IConcertApplicationMapper applicationMapper)
+        IArtistService artistService)
     {
         this.applicationRepository = applicationRepository;
         this.unitOfWork = unitOfWork;
@@ -46,10 +44,9 @@ public class ConcertApplicationService : IConcertApplicationService
         this.opportunityService = opportunityService;
         this.artistService = artistService;
         this.ownershipService = ownershipService;
-        this.applicationMapper = applicationMapper;
     }
 
-    public async Task<IEnumerable<IConcertApplication>> GetByOpportunityIdAsync(int id)
+    public async Task<IEnumerable<ConcertApplicationDto>> GetByOpportunityIdAsync(int id)
     {
         var response = await ownershipService.OwnsOpportunityAsync(id);
 
@@ -58,21 +55,21 @@ public class ConcertApplicationService : IConcertApplicationService
 
         var applications = await applicationRepository.GetByOpportunityIdAsync(id);
 
-        return applicationMapper.ToDtos(applications);
+        return applications.ToDtos();
     }
 
-    public async Task<IEnumerable<IConcertApplication>> GetPendingForArtistAsync()
+    public async Task<IEnumerable<ConcertApplicationDto>> GetPendingForArtistAsync()
     {
         var artistId = await artistService.GetIdForCurrentUserAsync();
         var applications = await applicationRepository.GetPendingByArtistIdAsync(artistId);
-        return applicationMapper.ToArtistDtos(applications);
+        return applications.ToDtos();
     }
 
-    public async Task<IEnumerable<IConcertApplication>> GetRecentDeniedForArtistAsync()
+    public async Task<IEnumerable<ConcertApplicationDto>> GetRecentDeniedForArtistAsync()
     {
         var artistId = await artistService.GetIdForCurrentUserAsync();
         var applications = await applicationRepository.GetRecentDeniedByArtistIdAsync(artistId);
-        return applicationMapper.ToArtistDtos(applications);
+        return applications.ToDtos();
     }
 
     public async Task ApplyAsync(int opportunityId)
@@ -138,10 +135,10 @@ public class ConcertApplicationService : IConcertApplicationService
         return (artist.ToDto(), venue.ToDto());
     }
 
-    public async Task<IConcertApplication> GetByIdAsync(int id)
+    public async Task<ConcertApplicationDto> GetByIdAsync(int id)
     {
         var application = await applicationRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Application not found");
-        return applicationMapper.ToDto(application);
+        return application.ToDto();
     }
 }
