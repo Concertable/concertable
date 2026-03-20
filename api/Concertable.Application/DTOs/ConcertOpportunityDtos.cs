@@ -11,7 +11,6 @@ public record ConcertOpportunityDto
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
-    public IContract? Contract { get; set; }
 }
 
 public record OpportunityResponse

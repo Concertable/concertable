@@ -22,10 +22,10 @@ public class ContractController : ControllerBase
     }
 
     [Authorize(Roles = "VenueManager")]
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] IContract contract)
+    [HttpPost("{opportunityId}")]
+    public async Task<IActionResult> Create(int opportunityId, [FromBody] IContract contract)
     {
-        await contractService.CreateAsync(contract);
+        await contractService.CreateAsync(contract, opportunityId);
         return Created();
     }
 }

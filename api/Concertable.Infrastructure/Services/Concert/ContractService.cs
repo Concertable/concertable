@@ -25,11 +25,17 @@ public class ContractService : IContractService
         return mapper.ToDto(entity);
     }
 
-    public async Task CreateAsync(IContract contract)
+    public async Task AddAsync(IContract contract, int opportunityId)
     {
         var mapper = mapperFactory.Create(contract.ContractType);
         var entity = mapper.ToEntity(contract);
+        entity.Id = opportunityId;
         await contractRepository.AddAsync(entity);
+    }
+
+    public async Task CreateAsync(IContract contract, int opportunityId)
+    {
+        await AddAsync(contract, opportunityId);
         await contractRepository.SaveChangesAsync();
     }
 }

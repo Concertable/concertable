@@ -24,7 +24,6 @@ public class ConcertOpportunityRepository : Repository<ConcertOpportunityEntity>
                     .Where(ca => ca.OpportunityId == o.Id)
                     .Select(ca => ca.Id)
                     .FirstOrDefault()))
-            .Include(o => o.Contract)
             .Include(o => o.OpportunityGenres)
             .ThenInclude(og => og.Genre)
             .OrderBy(o => o.StartDate);
