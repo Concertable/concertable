@@ -1,6 +1,6 @@
 namespace Application.Interfaces.Concert;
 
-public interface IContractSettlementStrategy : IContractStrategy
+public interface ISettlementStrategy : IContractStrategy
 {
     Task SettleAsync(int concertId);
 }

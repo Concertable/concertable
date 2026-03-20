@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Interfaces.Payment;
 using Core.Entities;
+using Core.Exceptions;
 using Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -70,5 +71,20 @@ public class StripeAccountService : IStripeAccountService
         var service = new Stripe.AccountService();
         var account = await service.GetAsync(stripeId);
         return account.PayoutsEnabled && account.ChargesEnabled;
+    }
+
+    public async Task<string> GetPaymentMethodAsync(string stripeId)
+    {
+        var service = new PaymentMethodService();
+        var paymentMethods = await service.ListAsync(new PaymentMethodListOptions
+        {
+            Customer = stripeId,
+            Type = "card"
+        });
+
+        var paymentMethod = paymentMethods.FirstOrDefault()
+            ?? throw new NotFoundException($"No payment method found for Stripe account {stripeId}");
+
+        return paymentMethod.Id;
     }
 }

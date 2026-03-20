@@ -5,9 +5,9 @@ namespace Infrastructure.Services.Settlement;
 
 public class SettlementProcessor : ISettlementProcessor
 {
-    private readonly IContractStrategyResolver<IContractSettlementStrategy> resolver;
+    private readonly IContractStrategyResolver<ISettlementStrategy> resolver;
 
-    public SettlementProcessor(IContractStrategyResolver<IContractSettlementStrategy> resolver)
+    public SettlementProcessor(IContractStrategyResolver<ISettlementStrategy> resolver)
     {
         this.resolver = resolver;
     }

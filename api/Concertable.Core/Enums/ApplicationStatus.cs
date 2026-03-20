@@ -7,5 +7,6 @@ public enum ApplicationStatus
     Withdrawn,
     AwaitingPayment,
     Confirmed,
-    Complete
+    Complete,
+    Settled
 }

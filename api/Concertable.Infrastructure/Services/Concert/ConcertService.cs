@@ -19,7 +19,6 @@ public class ConcertService : IConcertService
     private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
-    private readonly IBookingPaymentProcessor bookingPaymentProcessor;
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
@@ -36,7 +35,6 @@ public class ConcertService : IConcertService
         IConcertHeaderService concertHeaderService,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
-        IBookingPaymentProcessor bookingPaymentProcessor,
         IConcertApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
@@ -52,7 +50,6 @@ public class ConcertService : IConcertService
         this.concertHeaderService = concertHeaderService;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
-        this.bookingPaymentProcessor = bookingPaymentProcessor;
         this.applicationValidator = applicationValidator;
         this.messageService = messageService;
         this.emailService = emailService;
@@ -94,32 +91,6 @@ public class ConcertService : IConcertService
         var concertEntity = await concertRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
         return concertEntity.ToDto();
-    }
-
-    public async Task<ConcertApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams)
-    {
-        var user = currentUser.Get();
-
-        if (user.Role != Role.VenueManager)
-            throw new ForbiddenException("Only VenueManagers can book concerts");
-
-        var result = await applicationValidator.CanAcceptAsync(bookingParams.ApplicationId);
-
-        if (!result.IsValid)
-            throw new BadRequestException(result.Errors);
-
-        var paymentResponse = await bookingPaymentProcessor.PayAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
-
-        return new ConcertApplicationPurchaseResponse
-        {
-            Success = paymentResponse.Success,
-            RequiresAction = paymentResponse.RequiresAction,
-            Message = paymentResponse.Message ?? (paymentResponse.Success ? "Payment successful" : "Payment failed"),
-            ApplicationId = bookingParams.ApplicationId,
-            TransactionId = paymentResponse.TransactionId,
-            UserEmail = user.Email,
-            ClientSecret = paymentResponse.ClientSecret
-        };
     }
 
     public async Task<ConcertApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)

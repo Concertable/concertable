@@ -2,7 +2,7 @@ using Application.Interfaces.Concert;
 
 namespace Infrastructure.Services.Settlement;
 
-public class DoorSplitSettlementService : IContractSettlementStrategy
+public class DoorSplitSettlementService : ISettlementStrategy
 {
     public Task SettleAsync(int concertId)
     {

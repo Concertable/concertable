@@ -72,13 +72,6 @@ public class ConcertController : ControllerBase
         return Ok(await concertService.GetUnpostedByArtistIdAsync(id));
     }
 
-    [Authorize(Roles = "VenueManager")]
-    [HttpPost("book")]
-    public async Task<ActionResult<ConcertApplicationPurchaseResponse>> Book(ConcertBookingParams bookingParams)
-    {
-        return Ok(await concertService.BookAsync(bookingParams));
-    }
-
     [HttpGet("headers/recommended")]
     public async Task<ActionResult<IEnumerable<ConcertHeaderDto>>> GetRecommendedHeaders()
     {

@@ -182,7 +182,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
-        services.AddScoped<IBookingPaymentProcessor, BookingPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();
         services.AddScoped<ISettlementProcessor, SettlementProcessor>();
 
@@ -191,19 +190,15 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
         services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
 
-        services.AddKeyedScoped<IBookingPaymentStrategy, FlatFeeBookingPaymentService>(ContractType.FlatFee);
-        services.AddKeyedScoped<IBookingPaymentStrategy, DoorSplitBookingPaymentService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IBookingPaymentStrategy, VersusBookingPaymentService>(ContractType.Versus);
-        services.AddKeyedScoped<IBookingPaymentStrategy, VenueHireBookingPaymentService>(ContractType.VenueHire);
-
         services.AddKeyedScoped<IAcceptStrategy, FlatFeeAcceptService>(ContractType.FlatFee);
         services.AddKeyedScoped<IAcceptStrategy, DoorSplitAcceptService>(ContractType.DoorSplit);
         services.AddKeyedScoped<IAcceptStrategy, VersusAcceptService>(ContractType.Versus);
         services.AddKeyedScoped<IAcceptStrategy, VenueHireAcceptService>(ContractType.VenueHire);
 
-        services.AddKeyedScoped<IContractSettlementStrategy, DoorSplitSettlementService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IContractSettlementStrategy, VersusSettlementService>(ContractType.Versus);
-        services.AddKeyedScoped<IContractSettlementStrategy, VenueHireSettlementService>(ContractType.VenueHire);
+        services.AddKeyedScoped<ISettlementStrategy, FlatFeeSettlementService>(ContractType.FlatFee);
+        services.AddKeyedScoped<ISettlementStrategy, DoorSplitSettlementService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<ISettlementStrategy, VersusSettlementService>(ContractType.Versus);
+        services.AddKeyedScoped<ISettlementStrategy, VenueHireSettlementService>(ContractType.VenueHire);
 
         return services;
     }

@@ -2,7 +2,7 @@ using Application.Interfaces.Concert;
 
 namespace Infrastructure.Services.Settlement;
 
-public class VersusSettlementService : IContractSettlementStrategy
+public class VersusSettlementService : ISettlementStrategy
 {
     public Task SettleAsync(int concertId)
     {

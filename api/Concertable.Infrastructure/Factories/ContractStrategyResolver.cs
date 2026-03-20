@@ -19,15 +19,15 @@ public class ContractStrategyResolver<T> : IContractStrategyResolver<T> where T 
 
     public async Task<T> ResolveForConcertAsync(int concertId)
     {
-        var contract = await contractRepository.GetByConcertIdAsync(concertId)
+        var contractType = await contractRepository.GetTypeByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Contract not found for this concert");
-        return factory.Create(contract.ContractType);
+        return factory.Create(contractType);
     }
 
     public async Task<T> ResolveForApplicationAsync(int applicationId)
     {
-        var contract = await contractRepository.GetByApplicationIdAsync(applicationId)
+        var contractType = await contractRepository.GetTypeByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Contract not found for this application");
-        return factory.Create(contract.ContractType);
+        return factory.Create(contractType);
     }
 }

@@ -1,11 +1,14 @@
 using Application.Interfaces;
 using Concertable.Core.Entities.Contracts;
+using Core.Enums;
 
 namespace Application.Interfaces.Concert;
 
 public interface IContractRepository : IRepository<ContractEntity>
 {
-    Task<ContractEntity?> GetByOpportunityIdAsync(int opportunityId);
-    Task<ContractEntity?> GetByConcertIdAsync(int concertId);
-    Task<ContractEntity?> GetByApplicationIdAsync(int applicationId);
+    Task<T?> GetByOpportunityIdAsync<T>(int opportunityId) where T : ContractEntity;
+    Task<T?> GetByConcertIdAsync<T>(int concertId) where T : ContractEntity;
+    Task<T?> GetByApplicationIdAsync<T>(int applicationId) where T : ContractEntity;
+    Task<ContractType?> GetTypeByConcertIdAsync(int concertId);
+    Task<ContractType?> GetTypeByApplicationIdAsync(int applicationId);
 }
