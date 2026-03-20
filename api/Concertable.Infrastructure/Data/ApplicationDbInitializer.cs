@@ -553,6 +553,7 @@ public class ApplicationDbInitializer
                 new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 38 }, //54
                 new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //55
                 new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //56
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 1, Status = ApplicationStatus.Confirmed }, //57
             };
             context.ConcertApplications.AddRange(applications);
             await context.SaveChangesAsync();
@@ -593,7 +594,8 @@ public class ApplicationDbInitializer
                     ConcertFaker.GetFaker(42, "Bass in the Air", 30m, 140, 120, now.AddDays(18)).Generate(), //29
                     ConcertFaker.GetFaker(45, "Jumpin and thumpin", 15m, 100, 80, now.AddDays(22)).Generate(), //30
                     ConcertFaker.GetFaker(49, "Funk it up", 20m, 150, 130, now.AddDays(25)).Generate(), //31
-                    ConcertFaker.GetFaker(54, "Boogie it up!", 20m, 150, 130, now.AddDays(25)).Generate() //32
+                    ConcertFaker.GetFaker(54, "Boogie it up!", 20m, 150, 130, now.AddDays(25)).Generate(), //32
+                    ConcertFaker.GetFaker(57, "Dev FlatFee Test Concert", 10m, 50, 50, now.AddDays(-1)).Generate() //33
             };
 
             context.Concerts.AddRange(concerts);

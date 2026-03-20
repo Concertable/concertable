@@ -68,10 +68,18 @@ public static class ServiceCollectionExtensions
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
 
-        if (!string.IsNullOrEmpty(configuration.GetSection("BlobStorage")["ConnectionString"]))
-            services.AddScoped<IBlobStorageService, BlobStorageService>();
-        else
+        if (configuration.GetValue<bool>("UseFakeExternalServices"))
+        {
             services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
+            services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
+            services.AddScoped<IPaymentService, FakePaymentService>();
+        }
+        else
+        {
+            services.AddScoped<IBlobStorageService, BlobStorageService>();
+            services.AddScoped<IStripeAccountService, StripeAccountService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+        }
 
         services.AddSingleton<GeometryFactory>(
             NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
@@ -102,7 +110,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IConcertOpportunityService, ConcertOpportunityService>();
         services.AddScoped<ITicketService, TicketService>();
-        services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
@@ -112,7 +119,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPdfService, PdfService>();
         services.AddSingleton<QRCodeGenerator>();
         services.AddScoped<IQrCodeService, QrCodeService>();
-        services.AddScoped<IStripeAccountService, StripeAccountService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddScoped<IUriService, UriService>();
         services.AddSingleton<IGeometryProvider, GeometryProvider>();
