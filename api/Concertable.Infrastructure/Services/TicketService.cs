@@ -2,10 +2,10 @@ using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Mappers;
+using Application.Responses;
 using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;
-using Application.Responses;
 using Core.Parameters;
 
 public class TicketService : ITicketService
@@ -13,7 +13,7 @@ public class TicketService : ITicketService
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;
     private readonly IUnitOfWork unitOfWork;
-    private readonly IContractStrategyResolver<ITicketPaymentStrategy> strategyResolver;
+    private readonly ITicketPaymentProcessor ticketPaymentProcessor;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUser currentUser;
@@ -24,7 +24,7 @@ public class TicketService : ITicketService
         ITicketRepository ticketRepository,
         ITicketValidator ticketValidator,
         IUnitOfWork unitOfWork,
-        IContractStrategyResolver<ITicketPaymentStrategy> strategyResolver,
+        ITicketPaymentProcessor ticketPaymentProcessor,
         IEmailService emailService,
         IQrCodeService qrCodeService,
         ICurrentUser currentUser,
@@ -34,7 +34,7 @@ public class TicketService : ITicketService
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
         this.unitOfWork = unitOfWork;
-        this.strategyResolver = strategyResolver;
+        this.ticketPaymentProcessor = ticketPaymentProcessor;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
         this.currentUser = currentUser;
@@ -56,8 +56,7 @@ public class TicketService : ITicketService
 
         var concert = await concertRepository.GetByIdAsync(purchaseParams.ConcertId)
             ?? throw new NotFoundException("Concert not found");
-        var paymentService = await strategyResolver.ResolveForConcertAsync(purchaseParams.ConcertId);
-        var paymentResponse = await paymentService.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price);
+        var paymentResponse = await ticketPaymentProcessor.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price);
 
         return new TicketPurchaseResponse
         {

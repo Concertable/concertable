@@ -19,7 +19,7 @@ public class ConcertService : IConcertService
     private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
-    private readonly IContractStrategyResolver<IBookingPaymentStrategy> bookingStrategyResolver;
+    private readonly IBookingPaymentProcessor bookingPaymentProcessor;
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
@@ -36,7 +36,7 @@ public class ConcertService : IConcertService
         IConcertHeaderService concertHeaderService,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
-        IContractStrategyResolver<IBookingPaymentStrategy> bookingStrategyResolver,
+        IBookingPaymentProcessor bookingPaymentProcessor,
         IConcertApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
@@ -52,7 +52,7 @@ public class ConcertService : IConcertService
         this.concertHeaderService = concertHeaderService;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
-        this.bookingStrategyResolver = bookingStrategyResolver;
+        this.bookingPaymentProcessor = bookingPaymentProcessor;
         this.applicationValidator = applicationValidator;
         this.messageService = messageService;
         this.emailService = emailService;
@@ -108,8 +108,7 @@ public class ConcertService : IConcertService
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
-        var paymentService = await bookingStrategyResolver.ResolveForApplicationAsync(bookingParams.ApplicationId);
-        var paymentResponse = await paymentService.PayAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
+        var paymentResponse = await bookingPaymentProcessor.PayAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
 
         return new ConcertApplicationPurchaseResponse
         {

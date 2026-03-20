@@ -29,7 +29,6 @@ using Infrastructure.Services.Rating;
 using Infrastructure.Validators;
 using Infrastructure.Services.Search;
 using Infrastructure.Settings;
-using Application.Interfaces.Concert;
 using Application.Mappers;
 using Infrastructure.Factories;
 using Infrastructure.Mappers;
@@ -179,6 +178,9 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IContractMapper, VersusContractMapper>(ContractType.Versus);
         services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
         services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
+
+        services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
+        services.AddScoped<IBookingPaymentProcessor, BookingPaymentProcessor>();
 
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
