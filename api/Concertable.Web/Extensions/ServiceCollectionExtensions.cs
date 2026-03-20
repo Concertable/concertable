@@ -24,7 +24,9 @@ using Infrastructure.Services.Auth;
 using Infrastructure.Services.Blob;
 using Infrastructure.Services.Concert;
 using Infrastructure.Services.Geometry;
+using Infrastructure.Services.Accept;
 using Infrastructure.Services.Payment;
+using Infrastructure.Services.Settlement;
 using Infrastructure.Services.Rating;
 using Infrastructure.Validators;
 using Infrastructure.Services.Search;
@@ -181,6 +183,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IBookingPaymentProcessor, BookingPaymentProcessor>();
+        services.AddScoped<IAcceptProcessor, AcceptProcessor>();
+        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
 
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
@@ -192,6 +196,14 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IBookingPaymentStrategy, VersusBookingPaymentService>(ContractType.Versus);
         services.AddKeyedScoped<IBookingPaymentStrategy, VenueHireBookingPaymentService>(ContractType.VenueHire);
 
+        services.AddKeyedScoped<IAcceptStrategy, FlatFeeAcceptService>(ContractType.FlatFee);
+        services.AddKeyedScoped<IAcceptStrategy, DoorSplitAcceptService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IAcceptStrategy, VersusAcceptService>(ContractType.Versus);
+        services.AddKeyedScoped<IAcceptStrategy, VenueHireAcceptService>(ContractType.VenueHire);
+
+        services.AddKeyedScoped<IContractSettlementStrategy, DoorSplitSettlementService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IContractSettlementStrategy, VersusSettlementService>(ContractType.Versus);
+        services.AddKeyedScoped<IContractSettlementStrategy, VenueHireSettlementService>(ContractType.VenueHire);
 
         return services;
     }

@@ -21,6 +21,7 @@ public class ConcertApplicationService : IConcertApplicationService
     private readonly IConcertOpportunityService opportunityService;
     private readonly IArtistService artistService;
     private readonly IOwnershipService ownershipService;
+    private readonly IAcceptProcessor acceptProcessor;
 
     public ConcertApplicationService(
         IConcertApplicationRepository applicationRepository,
@@ -32,7 +33,8 @@ public class ConcertApplicationService : IConcertApplicationService
         IEmailService emailService,
         IConcertOpportunityService opportunityService,
         IOwnershipService ownershipService,
-        IArtistService artistService)
+        IArtistService artistService,
+        IAcceptProcessor acceptProcessor)
     {
         this.applicationRepository = applicationRepository;
         this.unitOfWork = unitOfWork;
@@ -44,6 +46,7 @@ public class ConcertApplicationService : IConcertApplicationService
         this.opportunityService = opportunityService;
         this.artistService = artistService;
         this.ownershipService = ownershipService;
+        this.acceptProcessor = acceptProcessor;
     }
 
     public async Task<IEnumerable<ConcertApplicationDto>> GetByOpportunityIdAsync(int id)
@@ -123,9 +126,9 @@ public class ConcertApplicationService : IConcertApplicationService
         }
     }
 
-    public Task AcceptAsync(int applicationId)
+    public async Task AcceptAsync(int applicationId)
     {
-        throw new NotImplementedException();
+        await acceptProcessor.AcceptAsync(applicationId);
     }
 
     public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
