@@ -10,5 +10,6 @@ public interface IConcertApplicationService
     Task<IEnumerable<IConcertApplication>> GetPendingForArtistAsync();
     Task<IEnumerable<IConcertApplication>> GetRecentDeniedForArtistAsync();
     Task ApplyAsync(int opportunityId);
+    Task AcceptAsync(int applicationId);
     Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);
 }

@@ -126,6 +126,11 @@ public class ConcertApplicationService : IConcertApplicationService
         }
     }
 
+    public Task AcceptAsync(int applicationId)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
     {
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(id)
