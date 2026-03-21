@@ -58,11 +58,10 @@ internal static class ServiceCollectionExtensions
         services.AddKeyedScoped<ICompleteStrategy, VersusCompleteService>(ContractType.Versus);
         services.AddKeyedScoped<ICompleteStrategy, VenueHireCompleteService>(ContractType.VenueHire);
 
-        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
-        services.AddKeyedScoped<ISettlementStrategy, FlatFeeSettlementService>(ContractType.FlatFee);
-        services.AddKeyedScoped<ISettlementStrategy, DoorSplitSettlementService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<ISettlementStrategy, VersusSettlementService>(ContractType.Versus);
-        services.AddKeyedScoped<ISettlementStrategy, VenueHireSettlementService>(ContractType.VenueHire);
+        services.AddScoped<ILaterSettlementProcessor, LaterSettlementProcessor>();
+        services.AddKeyedScoped<IPayLater, DoorSplitSettlementService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IPayLater, VersusSettlementService>(ContractType.Versus);
+
 
         return services;
     }

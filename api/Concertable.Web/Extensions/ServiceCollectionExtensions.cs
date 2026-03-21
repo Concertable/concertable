@@ -192,7 +192,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();
-        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
+        services.AddScoped<IImmediateSettlementProcessor, ImmediateSettlementProcessor>();
+        services.AddScoped<ILaterSettlementProcessor, LaterSettlementProcessor>();
         services.AddScoped<ICompleteProcessor, CompleteProcessor>();
 
         services.AddKeyedScoped<ICompleteStrategy, FlatFeeCompleteService>(ContractType.FlatFee);
@@ -210,10 +211,10 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IAcceptStrategy, VersusAcceptService>(ContractType.Versus);
         services.AddKeyedScoped<IAcceptStrategy, VenueHireAcceptService>(ContractType.VenueHire);
 
-        services.AddKeyedScoped<ISettlementStrategy, FlatFeeSettlementService>(ContractType.FlatFee);
-        services.AddKeyedScoped<ISettlementStrategy, DoorSplitSettlementService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<ISettlementStrategy, VersusSettlementService>(ContractType.Versus);
-        services.AddKeyedScoped<ISettlementStrategy, VenueHireSettlementService>(ContractType.VenueHire);
+        services.AddKeyedScoped<IPayImmediately, FlatFeeSettlementService>(ContractType.FlatFee);
+        services.AddKeyedScoped<IPayImmediately, VenueHireSettlementService>(ContractType.VenueHire);
+        services.AddKeyedScoped<IPayLater, DoorSplitSettlementService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IPayLater, VersusSettlementService>(ContractType.Versus);
 
         return services;
     }

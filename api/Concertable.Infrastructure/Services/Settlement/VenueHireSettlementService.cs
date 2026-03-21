@@ -8,7 +8,7 @@ using Core.Exceptions;
 
 namespace Infrastructure.Services.Settlement;
 
-public class VenueHireSettlementService : ISettlementStrategy
+public class VenueHireSettlementService : IPayImmediately
 {
     private readonly IContractRepository contractRepository;
     private readonly IVenueManagerRepository venueManagerRepository;

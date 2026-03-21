@@ -94,7 +94,7 @@ public class DevController : ControllerBase
     [HttpPost("settle")]
     public async Task<IActionResult> Settle(
         [FromQuery] int concertId,
-        [FromServices] ISettlementProcessor settlementProcessor)
+        [FromServices] IImmediateSettlementProcessor settlementProcessor)
     {
         await settlementProcessor.SettleAsync(concertId);
         return Ok();

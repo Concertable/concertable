@@ -3,11 +3,11 @@ using Application.Interfaces.Concert;
 
 namespace Infrastructure.Services.Settlement;
 
-public class SettlementProcessor : ISettlementProcessor
+public class ImmediateSettlementProcessor : IImmediateSettlementProcessor
 {
-    private readonly IContractStrategyResolver<ISettlementStrategy> resolver;
+    private readonly IContractStrategyResolver<IPayImmediately> resolver;
 
-    public SettlementProcessor(IContractStrategyResolver<ISettlementStrategy> resolver)
+    public ImmediateSettlementProcessor(IContractStrategyResolver<IPayImmediately> resolver)
     {
         this.resolver = resolver;
     }

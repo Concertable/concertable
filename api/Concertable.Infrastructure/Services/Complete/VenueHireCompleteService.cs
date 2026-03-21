@@ -7,14 +7,10 @@ namespace Infrastructure.Services.Complete;
 public class VenueHireCompleteService : ICompleteStrategy
 {
     private readonly IConcertApplicationRepository applicationRepository;
-    private readonly ISettlementProcessor settlementProcessor;
 
-    public VenueHireCompleteService(
-        IConcertApplicationRepository applicationRepository,
-        ISettlementProcessor settlementProcessor)
+    public VenueHireCompleteService(IConcertApplicationRepository applicationRepository)
     {
         this.applicationRepository = applicationRepository;
-        this.settlementProcessor = settlementProcessor;
     }
 
     public async Task CompleteAsync(int concertId)
@@ -24,7 +20,5 @@ public class VenueHireCompleteService : ICompleteStrategy
 
         application.Status = ApplicationStatus.Complete;
         await applicationRepository.SaveChangesAsync();
-
-        await settlementProcessor.SettleAsync(concertId);
     }
 }

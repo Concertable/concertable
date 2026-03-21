@@ -7,11 +7,11 @@ namespace Infrastructure.Services.Complete;
 public class VersusCompleteService : ICompleteStrategy
 {
     private readonly IConcertApplicationRepository applicationRepository;
-    private readonly ISettlementProcessor settlementProcessor;
+    private readonly ILaterSettlementProcessor settlementProcessor;
 
     public VersusCompleteService(
         IConcertApplicationRepository applicationRepository,
-        ISettlementProcessor settlementProcessor)
+        ILaterSettlementProcessor settlementProcessor)
     {
         this.applicationRepository = applicationRepository;
         this.settlementProcessor = settlementProcessor;

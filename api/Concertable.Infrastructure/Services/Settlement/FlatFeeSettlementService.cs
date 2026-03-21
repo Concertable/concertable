@@ -8,7 +8,7 @@ using Core.Exceptions;
 
 namespace Infrastructure.Services.Settlement;
 
-public class FlatFeeSettlementService : ISettlementStrategy
+public class FlatFeeSettlementService : IPayImmediately
 {
     private readonly IContractRepository contractRepository;
     private readonly IVenueManagerRepository venueManagerRepository;
