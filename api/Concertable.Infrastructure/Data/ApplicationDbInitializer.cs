@@ -406,7 +406,12 @@ public class ApplicationDbInitializer
             new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //41
             new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(22), EndDate = now.AddDays(22).AddHours(3) }, //42 - no contract
             new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(24), EndDate = now.AddDays(24).AddHours(3) }, //43 - no contract
-            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(26), EndDate = now.AddDays(26).AddHours(3) }  //44 - no contract
+            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(26), EndDate = now.AddDays(26).AddHours(3) }, //44 - no contract
+
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(30),  EndDate = now.AddDays(30).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200,      PaymentMethod = PaymentMethod.Transfer } }, //45
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(60),  EndDate = now.AddDays(60).AddHours(3),  Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //46
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(90),  EndDate = now.AddDays(90).AddHours(3),  Contract = new VersusContractEntity    { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //47
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250,  PaymentMethod = PaymentMethod.Transfer } }, //48
 
             };
             context.ConcertOpportunities.AddRange(opportunities);
@@ -554,6 +559,11 @@ public class ApplicationDbInitializer
                 new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //57
                 new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //58
                 new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 33, Status = ApplicationStatus.Confirmed }, //59 - Confirmed, for settle/complete testing
+
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 45 }, //60
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 46 }, //61
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 47 }, //62
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 48 }, //63
             };
             context.ConcertApplications.AddRange(applications);
             await context.SaveChangesAsync();
