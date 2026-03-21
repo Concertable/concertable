@@ -4,7 +4,6 @@ namespace Core.Entities;
 
 public class ConcertApplicationEntity : BaseEntity
 {
-    public ContractType ContractType { get; set; }
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
     public int OpportunityId { get; set; }
     public int ArtistId { get; set; }

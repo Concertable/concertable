@@ -40,17 +40,33 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
 
     public async Task<ContractType?> GetTypeByConcertIdAsync(int concertId)
     {
-        return await context.Concerts
+        var opportunityId = await context.Concerts
             .Where(c => c.Id == concertId)
-            .Select(c => (ContractType?)c.Application.Opportunity.Contract.ContractType)
+            .Select(c => (int?)c.Application.OpportunityId)
             .FirstOrDefaultAsync();
+
+        if (opportunityId is null) return null;
+
+        var contract = await context.Contracts
+            .Where(c => c.Id == opportunityId)
+            .FirstOrDefaultAsync();
+
+        return contract?.ContractType;
     }
 
     public async Task<ContractType?> GetTypeByApplicationIdAsync(int applicationId)
     {
-        return await context.ConcertApplications
+        var opportunityId = await context.ConcertApplications
             .Where(a => a.Id == applicationId)
-            .Select(a => (ContractType?)a.Opportunity.Contract.ContractType)
+            .Select(a => (int?)a.OpportunityId)
             .FirstOrDefaultAsync();
+
+        if (opportunityId is null) return null;
+
+        var contract = await context.Contracts
+            .Where(c => c.Id == opportunityId)
+            .FirstOrDefaultAsync();
+
+        return contract?.ContractType;
     }
 }

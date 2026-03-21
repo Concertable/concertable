@@ -521,39 +521,39 @@ public class ApplicationDbInitializer
                 new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 8 }, //30
                 new ConcertApplicationEntity { ArtistId = 17, OpportunityId = 8 }, //31
                 new ConcertApplicationEntity { ArtistId = 18, OpportunityId = 8 }, //32
-                new ConcertApplicationEntity { ArtistId = 17, OpportunityId = 40 }, //31
-                new ConcertApplicationEntity { ArtistId = 18, OpportunityId = 41 }, //32
+                new ConcertApplicationEntity { ArtistId = 17, OpportunityId = 40 }, //33
+                new ConcertApplicationEntity { ArtistId = 18, OpportunityId = 41 }, //34
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 14 }, //33
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 14 }, //34
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 14 }, //35
-                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 14 }, //36
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 14 }, //35
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 14 }, //36
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 14 }, //37
+                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 14 }, //38
 
-                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 15 }, //37
-                new ConcertApplicationEntity { ArtistId = 6, OpportunityId = 15 }, //38
-                new ConcertApplicationEntity { ArtistId = 7, OpportunityId = 15 }, //39
-                new ConcertApplicationEntity { ArtistId = 8, OpportunityId = 15 }, //40
+                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 15 }, //39
+                new ConcertApplicationEntity { ArtistId = 6, OpportunityId = 15 }, //40
+                new ConcertApplicationEntity { ArtistId = 7, OpportunityId = 15 }, //41
+                new ConcertApplicationEntity { ArtistId = 8, OpportunityId = 15 }, //42
 
-                new ConcertApplicationEntity { ArtistId = 9, OpportunityId = 16 }, //41
-                new ConcertApplicationEntity { ArtistId = 10, OpportunityId = 16 }, //42
-                new ConcertApplicationEntity { ArtistId = 11, OpportunityId = 16 }, //43
-                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 16 }, //44
+                new ConcertApplicationEntity { ArtistId = 9, OpportunityId = 16 }, //43
+                new ConcertApplicationEntity { ArtistId = 10, OpportunityId = 16 }, //44
+                new ConcertApplicationEntity { ArtistId = 11, OpportunityId = 16 }, //45
+                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 16 }, //46
 
-                new ConcertApplicationEntity { ArtistId = 13, OpportunityId = 17 }, //45
-                new ConcertApplicationEntity { ArtistId = 14, OpportunityId = 17 }, //46
-                new ConcertApplicationEntity { ArtistId = 15, OpportunityId = 17 }, //47
-                new ConcertApplicationEntity { ArtistId = 16, OpportunityId = 17 }, //48
+                new ConcertApplicationEntity { ArtistId = 13, OpportunityId = 17 }, //47
+                new ConcertApplicationEntity { ArtistId = 14, OpportunityId = 17 }, //48
+                new ConcertApplicationEntity { ArtistId = 15, OpportunityId = 17 }, //49
+                new ConcertApplicationEntity { ArtistId = 16, OpportunityId = 17 }, //50
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 34 }, //49
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 34 }, //50
-                new ConcertApplicationEntity { ArtistId = 19, OpportunityId = 34 }, //51
-                new ConcertApplicationEntity { ArtistId = 20, OpportunityId = 34 }, //52
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 34 }, //51
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 34 }, //52
+                new ConcertApplicationEntity { ArtistId = 19, OpportunityId = 34 }, //53
+                new ConcertApplicationEntity { ArtistId = 20, OpportunityId = 34 }, //54
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 38 }, //53
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 38 }, //54
-                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //55
-                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //56
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 1, Status = ApplicationStatus.Confirmed }, //57
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 38 }, //55
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 38 }, //56
+                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //57
+                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //58
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 33, Status = ApplicationStatus.Confirmed }, //59 - Confirmed, for settle/complete testing
             };
             context.ConcertApplications.AddRange(applications);
             await context.SaveChangesAsync();
@@ -595,7 +595,7 @@ public class ApplicationDbInitializer
                     ConcertFaker.GetFaker(45, "Jumpin and thumpin", 15m, 100, 80, now.AddDays(22)).Generate(), //30
                     ConcertFaker.GetFaker(49, "Funk it up", 20m, 150, 130, now.AddDays(25)).Generate(), //31
                     ConcertFaker.GetFaker(54, "Boogie it up!", 20m, 150, 130, now.AddDays(25)).Generate(), //32
-                    ConcertFaker.GetFaker(57, "Dev FlatFee Test Concert", 10m, 50, 50, now.AddDays(-1)).Generate() //33
+                    ConcertFaker.GetFaker(59, "Dev FlatFee Test Concert", 10m, 50, 50, now.AddDays(-1)).Generate() //33
             };
 
             context.Concerts.AddRange(concerts);

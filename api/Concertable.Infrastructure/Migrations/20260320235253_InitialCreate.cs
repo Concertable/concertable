@@ -336,6 +336,32 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ConcertApplications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    OpportunityId = table.Column<int>(type: "int", nullable: false),
+                    ArtistId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConcertApplications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ConcertApplications_Artists_ArtistId",
+                        column: x => x.ArtistId,
+                        principalTable: "Artists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ConcertApplications_ConcertOpportunities_OpportunityId",
+                        column: x => x.OpportunityId,
+                        principalTable: "ConcertOpportunities",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Contracts",
                 columns: table => new
                 {
@@ -375,6 +401,30 @@ namespace Concertable.Infrastructure.Migrations
                         principalTable: "Genres",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Concerts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApplicationId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    About = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalTickets = table.Column<int>(type: "int", nullable: false),
+                    AvailableTickets = table.Column<int>(type: "int", nullable: false),
+                    DatePosted = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Concerts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Concerts_ConcertApplications_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "ConcertApplications",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -448,58 +498,6 @@ namespace Concertable.Infrastructure.Migrations
                         principalTable: "Contracts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ConcertApplications",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ContractType = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    OpportunityId = table.Column<int>(type: "int", nullable: false),
-                    ArtistId = table.Column<int>(type: "int", nullable: false),
-                    ConcertId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ConcertApplications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ConcertApplications_Artists_ArtistId",
-                        column: x => x.ArtistId,
-                        principalTable: "Artists",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ConcertApplications_ConcertOpportunities_OpportunityId",
-                        column: x => x.OpportunityId,
-                        principalTable: "ConcertOpportunities",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Concerts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ApplicationId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    About = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TotalTickets = table.Column<int>(type: "int", nullable: false),
-                    AvailableTickets = table.Column<int>(type: "int", nullable: false),
-                    DatePosted = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Concerts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Concerts_ConcertApplications_ApplicationId",
-                        column: x => x.ApplicationId,
-                        principalTable: "ConcertApplications",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -610,11 +608,6 @@ namespace Concertable.Infrastructure.Migrations
                 name: "IX_ConcertApplications_ArtistId",
                 table: "ConcertApplications",
                 column: "ArtistId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ConcertApplications_ConcertId",
-                table: "ConcertApplications",
-                column: "ConcertId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ConcertApplications_OpportunityId_ArtistId",
@@ -731,34 +724,11 @@ namespace Concertable.Infrastructure.Migrations
                 name: "IX_Videos_ArtistId",
                 table: "Videos",
                 column: "ArtistId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_ConcertApplications_Concerts_ConcertId",
-                table: "ConcertApplications",
-                column: "ConcertId",
-                principalTable: "Concerts",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_ConcertApplications_Artists_ArtistId",
-                table: "ConcertApplications");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Venues_Users_UserId",
-                table: "Venues");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_ConcertApplications_ConcertOpportunities_OpportunityId",
-                table: "ConcertApplications");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_ConcertApplications_Concerts_ConcertId",
-                table: "ConcertApplications");
-
             migrationBuilder.DropTable(
                 name: "ArtistGenres");
 
@@ -823,10 +793,13 @@ namespace Concertable.Infrastructure.Migrations
                 name: "Contracts");
 
             migrationBuilder.DropTable(
-                name: "Artists");
+                name: "Concerts");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "ConcertApplications");
+
+            migrationBuilder.DropTable(
+                name: "Artists");
 
             migrationBuilder.DropTable(
                 name: "ConcertOpportunities");
@@ -835,10 +808,7 @@ namespace Concertable.Infrastructure.Migrations
                 name: "Venues");
 
             migrationBuilder.DropTable(
-                name: "Concerts");
-
-            migrationBuilder.DropTable(
-                name: "ConcertApplications");
+                name: "Users");
         }
     }
 }

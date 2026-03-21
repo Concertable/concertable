@@ -85,7 +85,7 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<ConcertEntity>()
             .HasOne(e => e.Application)
-            .WithOne()
+            .WithOne(a => a.Concert)
             .HasForeignKey<ConcertEntity>(e => e.ApplicationId)
             .OnDelete(DeleteBehavior.NoAction);
 

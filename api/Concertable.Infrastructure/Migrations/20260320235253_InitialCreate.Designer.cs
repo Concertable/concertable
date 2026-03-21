@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260320193244_InitialCreate")]
+    [Migration("20260320235253_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -98,12 +98,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("ArtistId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ConcertId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ContractType")
-                        .HasColumnType("int");
-
                     b.Property<int>("OpportunityId")
                         .HasColumnType("int");
 
@@ -113,8 +107,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ArtistId");
-
-                    b.HasIndex("ConcertId");
 
                     b.HasIndex("OpportunityId", "ArtistId")
                         .IsUnique();
@@ -736,10 +728,6 @@ namespace Concertable.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.ConcertEntity", "Concert")
-                        .WithMany()
-                        .HasForeignKey("ConcertId");
-
                     b.HasOne("Core.Entities.ConcertOpportunityEntity", "Opportunity")
                         .WithMany("Applications")
                         .HasForeignKey("OpportunityId")
@@ -748,15 +736,13 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.Navigation("Artist");
 
-                    b.Navigation("Concert");
-
                     b.Navigation("Opportunity");
                 });
 
             modelBuilder.Entity("Core.Entities.ConcertEntity", b =>
                 {
                     b.HasOne("Core.Entities.ConcertApplicationEntity", "Application")
-                        .WithOne()
+                        .WithOne("Concert")
                         .HasForeignKey("Core.Entities.ConcertEntity", "ApplicationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1022,6 +1008,11 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("SocialMedias");
 
                     b.Navigation("Videos");
+                });
+
+            modelBuilder.Entity("Core.Entities.ConcertApplicationEntity", b =>
+                {
+                    b.Navigation("Concert");
                 });
 
             modelBuilder.Entity("Core.Entities.ConcertEntity", b =>
