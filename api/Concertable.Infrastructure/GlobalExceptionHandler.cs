@@ -39,12 +39,8 @@ public class GlobalExceptionHandler : IExceptionHandler
 
             if (exception is BadRequestException badRequestEx && badRequestEx.ValidationErrors is not null)
             {
-                await httpContext.Response.WriteAsJsonAsync(new ValidationProblemDetails(badRequestEx.ValidationErrors)
-                {
-                    Status = (int)HttpStatusCode.BadRequest,
-                    Instance = httpContext.Request.Path
-                }, cancellationToken).ConfigureAwait(false);
-                return true;
+                problemDetails.Detail = httpEx.Message;
+                problemDetails.Extensions["errors"] = badRequestEx.ValidationErrors;
             }
             else
             {

@@ -25,6 +25,7 @@ using Infrastructure.Services.Blob;
 using Infrastructure.Services.Concert;
 using Infrastructure.Services.Geometry;
 using Infrastructure.Services.Accept;
+using Infrastructure.Services.Application;
 using Infrastructure.Services.Complete;
 using Infrastructure.Services.Payment;
 using Infrastructure.Services.Settlement;
@@ -192,29 +193,18 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();
-        services.AddScoped<IImmediateSettlementProcessor, ImmediateSettlementProcessor>();
-        services.AddScoped<ILaterSettlementProcessor, LaterSettlementProcessor>();
         services.AddScoped<ICompleteProcessor, CompleteProcessor>();
-
-        services.AddKeyedScoped<ICompleteStrategy, FlatFeeCompleteService>(ContractType.FlatFee);
-        services.AddKeyedScoped<ICompleteStrategy, DoorSplitCompleteService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<ICompleteStrategy, VersusCompleteService>(ContractType.Versus);
-        services.AddKeyedScoped<ICompleteStrategy, VenueHireCompleteService>(ContractType.VenueHire);
+        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
 
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
         services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
 
-        services.AddKeyedScoped<IAcceptStrategy, FlatFeeAcceptService>(ContractType.FlatFee);
-        services.AddKeyedScoped<IAcceptStrategy, DoorSplitAcceptService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IAcceptStrategy, VersusAcceptService>(ContractType.Versus);
-        services.AddKeyedScoped<IAcceptStrategy, VenueHireAcceptService>(ContractType.VenueHire);
-
-        services.AddKeyedScoped<IPayImmediately, FlatFeeSettlementService>(ContractType.FlatFee);
-        services.AddKeyedScoped<IPayImmediately, VenueHireSettlementService>(ContractType.VenueHire);
-        services.AddKeyedScoped<IPayLater, DoorSplitSettlementService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IPayLater, VersusSettlementService>(ContractType.Versus);
+        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationStrategy>(ContractType.FlatFee);
+        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationStrategy>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationStrategy>(ContractType.Versus);
+        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationStrategy>(ContractType.VenueHire);
 
         return services;
     }

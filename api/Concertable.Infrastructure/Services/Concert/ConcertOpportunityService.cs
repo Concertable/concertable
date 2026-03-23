@@ -35,7 +35,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
+            throw new ForbiddenException(stripeResult.Errors.First());
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");
@@ -64,7 +64,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
+            throw new ForbiddenException(stripeResult.Errors.First());
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");

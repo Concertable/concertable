@@ -79,7 +79,7 @@ public class ConcertApplicationService : IConcertApplicationService
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
+            throw new ForbiddenException(stripeResult.Errors.First());
 
         var artistDto = await artistService.GetDetailsForCurrentUserAsync()
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
@@ -129,6 +129,18 @@ public class ConcertApplicationService : IConcertApplicationService
     public async Task AcceptAsync(int applicationId)
     {
         await acceptProcessor.AcceptAsync(applicationId);
+
+        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
+            ?? throw new NotFoundException("Concert application not found");
+
+        await messageService.SendAndSaveAsync(
+            venue.UserId,
+            artist.UserId,
+            "application",
+            applicationId,
+            "Your application has been accepted!");
+
+        await emailService.SendEmailAsync(artist.User.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
     }
 
     public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
@@ -144,4 +156,5 @@ public class ConcertApplicationService : IConcertApplicationService
             ?? throw new NotFoundException("Application not found");
         return application.ToDto();
     }
+
 }

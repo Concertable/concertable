@@ -7,9 +7,11 @@ using Infrastructure.Data.Identity;
 using Infrastructure.Factories;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Concert;
+using Infrastructure.Services.Accept;
+using Infrastructure.Services.Application;
 using Infrastructure.Services.Complete;
-using Infrastructure.Services.Payment;
 using Infrastructure.Services.Settlement;
+using Infrastructure.Services.Payment;
 using Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -53,14 +55,11 @@ internal static class ServiceCollectionExtensions
         services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
 
         services.AddScoped<ICompleteProcessor, CompleteProcessor>();
-        services.AddKeyedScoped<ICompleteStrategy, FlatFeeCompleteService>(ContractType.FlatFee);
-        services.AddKeyedScoped<ICompleteStrategy, DoorSplitCompleteService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<ICompleteStrategy, VersusCompleteService>(ContractType.Versus);
-        services.AddKeyedScoped<ICompleteStrategy, VenueHireCompleteService>(ContractType.VenueHire);
-
-        services.AddScoped<ILaterSettlementProcessor, LaterSettlementProcessor>();
-        services.AddKeyedScoped<IPayLater, DoorSplitSettlementService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IPayLater, VersusSettlementService>(ContractType.Versus);
+        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
+        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationStrategy>(ContractType.FlatFee);
+        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationStrategy>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationStrategy>(ContractType.Versus);
+        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationStrategy>(ContractType.VenueHire);
 
 
         return services;

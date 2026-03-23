@@ -2,19 +2,12 @@ using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Interfaces.Payment;
-using Application.Responses;
-using Azure;
+using Core.Enums;
 using Core.Entities;
-using Infrastructure.Repositories;
-using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using NetTopologySuite.Index.HPRtree;
-using Newtonsoft.Json;
-using StackExchange.Redis;
 using Stripe;
-using Stripe.V2;
 using Web.Hubs;
 
 namespace Web.Controllers;
@@ -27,7 +20,6 @@ public class WebhookController : ControllerBase
     private readonly IServiceScopeFactory scopeFactory;
     private readonly IStripeEventRepository stripeEventRepository;
     private readonly ITicketService ticketService;
-    private readonly IConcertService concertService;
     private readonly ITransactionService purchaseService;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<WebhookController> logger;
@@ -40,7 +32,6 @@ public class WebhookController : ControllerBase
         IServiceScopeFactory scopeFactory,
         IHubContext<ConcertHub> hubContext,
         ITicketService ticketService,
-        IConcertService concertService,
         ITransactionService purchaseService,
         IConfiguration configuration,
         TimeProvider timeProvider,
@@ -51,7 +42,6 @@ public class WebhookController : ControllerBase
         this.scopeFactory = scopeFactory;
         this.stripeEventRepository = stripeEventRepository;
         this.ticketService = ticketService;
-        this.concertService = concertService;
         this.purchaseService = purchaseService;
         webhookSecret = configuration["Stripe:WebhookSecret"]!;
         this.timeProvider = timeProvider;
@@ -85,11 +75,9 @@ public class WebhookController : ControllerBase
     private async Task ProcessWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
-
         var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
         var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
         var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
-        var concertService = scope.ServiceProvider.GetRequiredService<IConcertService>();
         var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<ConcertHub>>();
 
         try
@@ -126,26 +114,26 @@ public class WebhookController : ControllerBase
 
                 await purchaseService.LogAsync(purchaseDto);
 
-                var purchaseCompleteDto = new PurchaseCompleteDto
-                {
-                    TransactionId = intent.Id,
-                    FromUserId = fromUserId,
-                    FromEmail = fromUserEmail,
-                    ToUserId = toUserId,
-                };
-
                 if (type == "concert")
                 {
-                    purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["concertId"]);
-                    purchaseCompleteDto.Quantity = int.Parse(intent.Metadata["quantity"]);
+                    var purchaseCompleteDto = new PurchaseCompleteDto
+                    {
+                        TransactionId = intent.Id,
+                        FromUserId = fromUserId,
+                        FromEmail = fromUserEmail,
+                        ToUserId = toUserId,
+                        EntityId = int.Parse(intent.Metadata["concertId"]),
+                        Quantity = int.Parse(intent.Metadata["quantity"])
+                    };
+
                     var response = await ticketService.CompleteAsync(purchaseCompleteDto);
                     await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("TicketPurchased", response);
                 }
-                else if (type == "application")
+                else if (type == "settlement")
                 {
-                    purchaseCompleteDto.EntityId = int.Parse(intent.Metadata["applicationId"]);
-                    var response = await concertService.CompleteAsync(purchaseCompleteDto);
-                    await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("ConcertCreated", response);
+                    var applicationId = int.Parse(intent.Metadata["applicationId"]);
+                    var settlementProcessor = scope.ServiceProvider.GetRequiredService<ISettlementProcessor>();
+                    await settlementProcessor.SettleAsync(applicationId);
                 }
             }
         }

@@ -5,9 +5,9 @@ namespace Infrastructure.Services.Accept;
 
 public class AcceptProcessor : IAcceptProcessor
 {
-    private readonly IContractStrategyResolver<IAcceptStrategy> resolver;
+    private readonly IContractStrategyResolver<IApplicationStrategy> resolver;
 
-    public AcceptProcessor(IContractStrategyResolver<IAcceptStrategy> resolver)
+    public AcceptProcessor(IContractStrategyResolver<IApplicationStrategy> resolver)
     {
         this.resolver = resolver;
     }

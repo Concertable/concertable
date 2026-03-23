@@ -49,37 +49,6 @@ public class DevController : ControllerBase
         return Ok(new { app, contractExists = contract != null, contractType = contract?.ContractType.ToString() });
     }
 
-    [HttpPost("pay")]
-    public async Task<IActionResult> Pay(
-        [FromQuery] int applicationId,
-        [FromServices] ApplicationDbContext context,
-        [FromServices] IConcertService concertService)
-    {
-        var info = await context.ConcertApplications
-            .Where(a => a.Id == applicationId)
-            .Select(a => new
-            {
-                VenueUserId = a.Opportunity.Venue.UserId,
-                VenueUserEmail = a.Opportunity.Venue.User.Email,
-                ArtistUserId = a.Artist.UserId
-            })
-            .FirstOrDefaultAsync();
-
-        if (info is null)
-            return NotFound();
-
-        await concertService.CompleteAsync(new PurchaseCompleteDto
-        {
-            EntityId = applicationId,
-            TransactionId = $"dev_{Guid.NewGuid()}",
-            FromUserId = info.VenueUserId,
-            FromEmail = info.VenueUserEmail ?? string.Empty,
-            ToUserId = info.ArtistUserId
-        });
-
-        return Ok();
-    }
-
     [Authorize]
     [HttpPost("accept")]
     public async Task<IActionResult> Accept(
@@ -87,16 +56,6 @@ public class DevController : ControllerBase
         [FromServices] IAcceptProcessor acceptProcessor)
     {
         await acceptProcessor.AcceptAsync(applicationId);
-        return Ok();
-    }
-
-    [Authorize]
-    [HttpPost("settle")]
-    public async Task<IActionResult> Settle(
-        [FromQuery] int concertId,
-        [FromServices] IImmediateSettlementProcessor settlementProcessor)
-    {
-        await settlementProcessor.SettleAsync(concertId);
         return Ok();
     }
 

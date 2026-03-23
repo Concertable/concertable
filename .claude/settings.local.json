@@ -28,7 +28,9 @@
       "Bash(dotnet ef:*)",
       "Bash(dotnet list:*)",
       "Bash(dotnet add:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(sed -i 's/IContractStrategyResolver<IAcceptStrategy>/IContractStrategyResolver<IApplicationStrategy>/g' \"C:/Users/TommySeery/source/repos/Concertable/api/Concertable.Infrastructure/Services/Accept/AcceptProcessor.cs\")",
+      "Bash(sed -i 's/IContractStrategyResolver<ICompleteStrategy>/IContractStrategyResolver<IApplicationStrategy>/g' \"C:/Users/TommySeery/source/repos/Concertable/api/Concertable.Infrastructure/Services/Complete/CompleteProcessor.cs\")"
     ]
   }
 }

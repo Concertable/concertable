@@ -1,5 +1,4 @@
 using Core.Entities;
-using Core.Enums;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Interfaces.Geometry;
@@ -93,45 +92,14 @@ public class ConcertService : IConcertService
         return concertEntity.ToDto();
     }
 
-    public async Task<ConcertApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
+    public async Task<ConcertDto> CreateDraftAsync(int applicationId)
     {
-        try
-        {
-            var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId)
-                ?? throw new NotFoundException("Concert application not found");
-            var opportunity = await opportunityRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
-            var concertDto = await CreateDefaultAsync(purchaseCompleteDto, artist, opportunity!);
+        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
+            ?? throw new NotFoundException("Concert application not found");
 
-            await messageService.SendAndSaveAsync(
-                purchaseCompleteDto.FromUserId,
-                purchaseCompleteDto.ToUserId,
-                "concert",
-                concertDto.Id,
-                "Your Application has been accepted! View your concert here");
+        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("Opportunity not found");
 
-            await emailService.SendEmailAsync(artist.User.Email!, "Concert Creation", "Your Application was chosen! A Concert has been scheduled for you!");
-
-            return new ConcertApplicationPurchaseResponse
-            {
-                Success = true,
-                Message = "Concert successfully booked!",
-                ApplicationId = purchaseCompleteDto.EntityId,
-                Concert = concertDto
-            };
-        }
-        catch (Exception)
-        {
-            return new ConcertApplicationPurchaseResponse
-            {
-                Success = false,
-                Message = "An error occurred while completing your booking. Please contact support.",
-                ApplicationId = purchaseCompleteDto.EntityId
-            };
-        }
-    }
-
-    public async Task<ConcertDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, ArtistEntity artist, ConcertOpportunityEntity opportunity)
-    {
         var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
         var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId);
 
@@ -146,9 +114,9 @@ public class ConcertService : IConcertService
 
         var concertEntity = new Core.Entities.ConcertEntity
         {
-            ApplicationId = purchaseCompleteDto.EntityId,
-            Name = $"{artist.Name} performing at {opportunity.Venue.Name}",
-            About = opportunity.Venue.About,
+            ApplicationId = applicationId,
+            Name = $"{artist.Name} performing at {venue.Name}",
+            About = venue.About,
             Price = 0,
             TotalTickets = 0,
             AvailableTickets = 0,

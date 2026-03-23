@@ -5,9 +5,9 @@ namespace Infrastructure.Services.Complete;
 
 public class CompleteProcessor : ICompleteProcessor
 {
-    private readonly IContractStrategyResolver<ICompleteStrategy> resolver;
+    private readonly IContractStrategyResolver<IApplicationStrategy> resolver;
 
-    public CompleteProcessor(IContractStrategyResolver<ICompleteStrategy> resolver)
+    public CompleteProcessor(IContractStrategyResolver<IApplicationStrategy> resolver)
     {
         this.resolver = resolver;
     }
