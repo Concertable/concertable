@@ -1,11 +1,5 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Interfaces.Payment;
-using Core.Enums;
-using Core.Entities;
+using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Stripe;
 
 namespace Web.Controllers;
@@ -13,128 +7,30 @@ namespace Web.Controllers;
 [Route("api/[controller]")]
 public class WebhookController : ControllerBase
 {
-    private readonly IBackgroundTaskQueue taskQueue;
-    private readonly IServiceScopeFactory scopeFactory;
-    private readonly IStripeEventRepository stripeEventRepository;
-    private readonly ITicketService ticketService;
-    private readonly ITransactionService purchaseService;
-    private readonly TimeProvider timeProvider;
-    private readonly ILogger<WebhookController> logger;
-
+    private readonly IWebhookQueue webhookQueue;
     private readonly string webhookSecret;
 
-    public WebhookController(
-        IStripeEventRepository stripeEventRepository,
-        IBackgroundTaskQueue taskQueue,
-        IServiceScopeFactory scopeFactory,
-        ITicketService ticketService,
-        ITransactionService purchaseService,
-        IConfiguration configuration,
-        TimeProvider timeProvider,
-        ILogger<WebhookController> logger)
+    public WebhookController(IWebhookQueue webhookQueue, IConfiguration configuration)
     {
-        this.taskQueue = taskQueue;
-        this.scopeFactory = scopeFactory;
-        this.stripeEventRepository = stripeEventRepository;
-        this.ticketService = ticketService;
-        this.purchaseService = purchaseService;
+        this.webhookQueue = webhookQueue;
         webhookSecret = configuration["Stripe:WebhookSecret"]!;
-        this.timeProvider = timeProvider;
-        this.logger = logger;
     }
 
     [HttpPost]
     public async Task<IActionResult> HandleWebhook()
     {
         var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-        Stripe.Event stripeEvent;
 
         try
         {
-            stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
+            var stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
+            await webhookQueue.EnqueueAsync(stripeEvent);
         }
         catch (StripeException)
         {
             return Problem("Webhook validation failed");
         }
 
-        await taskQueue.EnqueueAsync(async cancellationToken =>
-        {
-            using var scope = scopeFactory.CreateScope();
-            await ProcessWebhook(scope, stripeEvent, cancellationToken);
-        });
-
         return Ok();
-    }
-
-    private async Task ProcessWebhook(IServiceScope scope, Stripe.Event stripeEvent, CancellationToken cancellationToken)
-    {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebhookController>>();
-        var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
-        var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
-        var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
-        var notificationService = scope.ServiceProvider.GetRequiredService<ITicketNotificationService>();
-
-        try
-        {
-            if (stripeEvent.Data.Object is not PaymentIntent intent)
-                return;
-
-            if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
-                return;
-
-            await stripeEventRepository.AddEventAsync(new StripeEventEntity
-            {
-                EventId = stripeEvent.Id,
-                EventProcessedAt = timeProvider.GetUtcNow().DateTime
-            });
-
-            if (intent.Status == "succeeded")
-            {
-                var type = intent.Metadata["type"];
-                var fromUserId = int.Parse(intent.Metadata["fromUserId"]);
-                var toUserId = int.Parse(intent.Metadata["toUserId"]);
-                var fromUserEmail = intent.Metadata["fromUserEmail"];
-
-                var purchaseDto = new TransactionDto
-                {
-                    FromUserId = fromUserId,
-                    ToUserId = toUserId,
-                    TransactionId = intent.Id,
-                    Amount = intent.AmountReceived,
-                    Type = type,
-                    Status = intent.Status,
-                    CreatedAt = timeProvider.GetUtcNow().DateTime
-                };
-
-                await purchaseService.LogAsync(purchaseDto);
-
-                if (type == "concert")
-                {
-                    var purchaseCompleteDto = new PurchaseCompleteDto
-                    {
-                        TransactionId = intent.Id,
-                        FromUserId = fromUserId,
-                        FromEmail = fromUserEmail,
-                        ToUserId = toUserId,
-                        EntityId = int.Parse(intent.Metadata["concertId"]),
-                        Quantity = int.Parse(intent.Metadata["quantity"])
-                    };
-
-                    var response = await ticketService.CompleteAsync(purchaseCompleteDto);
-                    await notificationService.TicketPurchasedAsync(fromUserId.ToString(), response);
-                }
-                else if (type == "settlement")
-                {
-                    var applicationId = int.Parse(intent.Metadata["applicationId"]);
-                    var settlementProcessor = scope.ServiceProvider.GetRequiredService<ISettlementProcessor>();
-                    await settlementProcessor.SettleAsync(applicationId);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error processing Stripe webhook for event {EventId}", stripeEvent.Id);
-        }
     }
 }

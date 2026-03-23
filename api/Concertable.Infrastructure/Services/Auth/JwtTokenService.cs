@@ -12,18 +12,18 @@ namespace Infrastructure.Services.Auth;
 public class JwtTokenService : ITokenService
 {
     private readonly AuthSettings settings;
-    private readonly TimeProvider time;
+    private readonly TimeProvider timeProvider;
     private readonly JwtSecurityTokenHandler tokenHandler;
     private readonly RandomNumberGenerator rng;
 
     public JwtTokenService(
         IOptions<AuthSettings> settings,
-        TimeProvider time,
+        TimeProvider timeProvider,
         JwtSecurityTokenHandler tokenHandler,
         RandomNumberGenerator rng)
     {
         this.settings = settings.Value;
-        this.time = time;
+        this.timeProvider = timeProvider;
         this.tokenHandler = tokenHandler;
         this.rng = rng;
     }
@@ -40,7 +40,7 @@ public class JwtTokenService : ITokenService
             new Claim("role", role.ToString())
         };
 
-        var now = time.GetUtcNow().UtcDateTime;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
 
         var token = new JwtSecurityToken(
             issuer: settings.Issuer,

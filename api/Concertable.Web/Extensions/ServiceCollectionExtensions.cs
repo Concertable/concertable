@@ -10,6 +10,7 @@ using Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Application.Interfaces.Search;
+using Infrastructure.Interfaces;
 using Application.Serializers;
 using Core.Entities;
 using Infrastructure;
@@ -29,6 +30,7 @@ using Infrastructure.Services.Application;
 using Infrastructure.Services.Complete;
 using Infrastructure.Services.Payment;
 using Infrastructure.Services.Settlement;
+using Infrastructure.Services.Webhook;
 using Infrastructure.Services.Rating;
 using Infrastructure.Validators;
 using Infrastructure.Services.Search;
@@ -206,6 +208,12 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationStrategy>(ContractType.DoorSplit);
         services.AddKeyedScoped<IApplicationStrategy, VersusApplicationStrategy>(ContractType.Versus);
         services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationStrategy>(ContractType.VenueHire);
+
+        services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
+        services.AddScoped<IWebhookProcessor, WebhookProcessor>();
+        services.AddScoped<IWebhookQueue, WebhookQueue>();
+        services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>("concert");
+        services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>("settlement");
 
         return services;
     }
