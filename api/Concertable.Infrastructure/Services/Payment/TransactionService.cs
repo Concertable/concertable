@@ -1,6 +1,9 @@
 using Application.Interfaces;
 using Application.Interfaces.Payment;
 using Application.Responses;
+using Core.Entities;
+using Core.Enums;
+using Core.Exceptions;
 using Core.Interfaces;
 using Core.Parameters;
 
@@ -25,7 +28,15 @@ public class TransactionService : ITransactionService
     public async Task LogAsync(ITransaction dto)
     {
         var entity = mapperFactory.Create(dto.TransactionType).ToEntity(dto);
-        await purchaseRepository.AddAsync(entity);
+        await purchaseRepository.CreateAsync(entity);
+    }
+
+    public async Task CompleteAsync(string paymentIntentId)
+    {
+        var entity = await purchaseRepository.GetByPaymentIntentIdAsync(paymentIntentId)
+            ?? throw new NotFoundException($"Transaction not found for PaymentIntent {paymentIntentId}");
+
+        entity.Status = TransactionStatus.Complete;
         await purchaseRepository.SaveChangesAsync();
     }
 

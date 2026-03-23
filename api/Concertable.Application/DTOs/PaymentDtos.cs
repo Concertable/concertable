@@ -15,25 +15,27 @@ public record PaymentDto
 
 public record TicketTransactionDto : ITransaction
 {
+    public int Id { get; set; }
     public TransactionType TransactionType => TransactionType.Ticket;
     public int ConcertId { get; set; }
     public int FromUserId { get; set; }
     public int ToUserId { get; set; }
-    public required string TransactionId { get; set; }
+    public required string PaymentIntentId { get; set; }
     public long Amount { get; set; }
-    public required string Status { get; set; }
+    public TransactionStatus Status { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public record ConcertTransactionDto : ITransaction
 {
+    public int Id { get; set; }
     public TransactionType TransactionType => TransactionType.Concert;
     public int ConcertId { get; set; }
     public int FromUserId { get; set; }
     public int ToUserId { get; set; }
-    public required string TransactionId { get; set; }
+    public required string PaymentIntentId { get; set; }
     public long Amount { get; set; }
-    public required string Status { get; set; }
+    public TransactionStatus Status { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 

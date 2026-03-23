@@ -1,16 +1,12 @@
-using Core.Interfaces;
 using Application.Interfaces;
 using Application.Interfaces.Payment;
 using Application.Responses;
 using Core.Entities;
+using Core.Interfaces;
 using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
@@ -25,5 +21,14 @@ public class TransactionRepository : Repository<TransactionEntity>, ITransaction
             .OrderByDescending(t => t.CreatedAt);
 
         return PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
+    }
+
+    public Task<TransactionEntity?> GetByPaymentIntentIdAsync(string paymentIntentId) =>
+        context.Transactions.FirstOrDefaultAsync(t => t.PaymentIntentId == paymentIntentId);
+
+    public async Task CreateAsync(TransactionEntity entity)
+    {
+        await context.Transactions.AddAsync(entity);
+        await context.SaveChangesAsync();
     }
 }

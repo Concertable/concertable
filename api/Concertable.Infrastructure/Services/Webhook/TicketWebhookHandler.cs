@@ -1,6 +1,7 @@
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Payment;
+using Core.Enums;
 using Infrastructure.Interfaces;
 using Stripe;
 
@@ -36,9 +37,9 @@ public class TicketWebhookHandler : ITicketWebhookStrategy
             ConcertId = concertId,
             FromUserId = fromUserId,
             ToUserId = toUserId,
-            TransactionId = intent.Id,
+            PaymentIntentId = intent.Id,
             Amount = intent.AmountReceived,
-            Status = intent.Status,
+            Status = TransactionStatus.Complete,
             CreatedAt = timeProvider.GetUtcNow().DateTime
         });
 

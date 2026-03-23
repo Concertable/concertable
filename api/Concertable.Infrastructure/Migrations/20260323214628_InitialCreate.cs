@@ -159,9 +159,9 @@ namespace Concertable.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FromUserId = table.Column<int>(type: "int", nullable: false),
                     ToUserId = table.Column<int>(type: "int", nullable: false),
-                    TransactionId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaymentIntentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Amount = table.Column<long>(type: "bigint", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -752,6 +752,12 @@ namespace Concertable.Infrastructure.Migrations
                 name: "IX_Transactions_FromUserId",
                 table: "Transactions",
                 column: "FromUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_PaymentIntentId",
+                table: "Transactions",
+                column: "PaymentIntentId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_ToUserId",

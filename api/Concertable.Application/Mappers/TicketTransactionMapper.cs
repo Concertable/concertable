@@ -17,7 +17,7 @@ public class TicketTransactionMapper : ITransactionMapper
             ConcertId = d.ConcertId,
             FromUserId = d.FromUserId,
             ToUserId = d.ToUserId,
-            TransactionId = d.TransactionId,
+            PaymentIntentId = d.PaymentIntentId,
             Amount = d.Amount,
             Status = d.Status,
             CreatedAt = d.CreatedAt
@@ -29,10 +29,11 @@ public class TicketTransactionMapper : ITransactionMapper
         var e = (TicketTransactionEntity)entity;
         return new TicketTransactionDto
         {
+            Id = e.Id,
             ConcertId = e.ConcertId,
             FromUserId = e.FromUserId,
             ToUserId = e.ToUserId,
-            TransactionId = e.TransactionId,
+            PaymentIntentId = e.PaymentIntentId,
             Amount = e.Amount,
             Status = e.Status,
             CreatedAt = e.CreatedAt

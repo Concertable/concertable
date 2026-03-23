@@ -76,6 +76,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<TransactionEntity>(e =>
         {
             e.UseTptMappingStrategy();
+            e.HasIndex(t => t.PaymentIntentId).IsUnique();
             e.HasOne(p => p.FromUser)
                 .WithMany()
                 .HasForeignKey(p => p.FromUserId)

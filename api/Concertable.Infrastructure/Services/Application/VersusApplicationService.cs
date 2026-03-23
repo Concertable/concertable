@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Interfaces.Payment;
@@ -20,6 +21,8 @@ public class VersusApplicationService : IApplicationStrategy
     private readonly IPaymentService paymentService;
     private readonly IConcertService concertService;
     private readonly IConcertNotificationService notificationService;
+    private readonly ITransactionService transactionService;
+    private readonly TimeProvider timeProvider;
 
     public VersusApplicationService(
         IConcertApplicationValidator applicationValidator,
@@ -31,7 +34,9 @@ public class VersusApplicationService : IApplicationStrategy
         IStripeAccountService stripeAccountService,
         IPaymentService paymentService,
         IConcertService concertService,
-        IConcertNotificationService notificationService)
+        IConcertNotificationService notificationService,
+        ITransactionService transactionService,
+        TimeProvider timeProvider)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
@@ -43,6 +48,8 @@ public class VersusApplicationService : IApplicationStrategy
         this.paymentService = paymentService;
         this.concertService = concertService;
         this.notificationService = notificationService;
+        this.transactionService = transactionService;
+        this.timeProvider = timeProvider;
     }
 
     public async Task AcceptAsync(int applicationId)
@@ -100,7 +107,7 @@ public class VersusApplicationService : IApplicationStrategy
 
         var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(venueManager.StripeId);
 
-        await paymentService.ProcessAsync(new TransactionRequest
+        var response = await paymentService.ProcessAsync(new TransactionRequest
         {
             PaymentMethodId = paymentMethodId,
             FromUserEmail = venueManager.Email!,
@@ -113,6 +120,20 @@ public class VersusApplicationService : IApplicationStrategy
                 { "type", "settlement" },
                 { "applicationId", application.Id.ToString() }
             }
+        });
+
+        if (response.TransactionId is null)
+            throw new InternalServerException("Payment did not return a valid PaymentIntent ID");
+
+        await transactionService.LogAsync(new ConcertTransactionDto
+        {
+            ConcertId = concertId,
+            FromUserId = venueManager.Id,
+            ToUserId = artistManager.Id,
+            PaymentIntentId = response.TransactionId,
+            Amount = (long)(artistShare * 100),
+            Status = TransactionStatus.Pending,
+            CreatedAt = timeProvider.GetUtcNow().DateTime
         });
     }
 }

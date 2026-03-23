@@ -1,6 +1,6 @@
+using Application.DTOs;
 using Core.Enums;
 using System.Text.Json.Serialization;
-using Application.DTOs;
 
 namespace Application.Interfaces.Payment;
 
@@ -8,11 +8,12 @@ namespace Application.Interfaces.Payment;
 [JsonDerivedType(typeof(ConcertTransactionDto), "concert")]
 public interface ITransaction
 {
+    int Id { get; set; }
     TransactionType TransactionType { get; }
     int FromUserId { get; set; }
     int ToUserId { get; set; }
-    string TransactionId { get; set; }
+    string PaymentIntentId { get; set; }
     long Amount { get; set; }
-    string Status { get; set; }
+    TransactionStatus Status { get; set; }
     DateTime CreatedAt { get; set; }
 }
