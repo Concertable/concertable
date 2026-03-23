@@ -23,7 +23,10 @@ public class StripeValidator : IStripeValidator
         var user = currentUser.GetEntity();
 
         if (user.StripeId is null)
-            return result.AddError("You do not have a Stripe Id. Contact Support to get one");
+        {
+            result.AddError("You do not have a Stripe Id. Contact Support to get one");
+            return result;
+        }
 
         if (!await stripeAccountService.IsUserVerifiedAsync(user.StripeId))
             result.AddError("You must create a Stripe Account first");

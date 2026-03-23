@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Web.Extentions;
 
 namespace Web.Hubs;
 
 [Authorize]
-public class PaymentHub : Hub
+public class NotificationHub : Hub
 {
     public override async Task OnConnectedAsync()
     {
@@ -26,5 +26,4 @@ public class PaymentHub : Hub
 
         await base.OnDisconnectedAsync(exception);
     }
-
 }

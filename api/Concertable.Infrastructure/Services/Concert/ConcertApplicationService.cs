@@ -21,6 +21,7 @@ public class ConcertApplicationService : IConcertApplicationService
     private readonly IConcertOpportunityService opportunityService;
     private readonly IArtistService artistService;
     private readonly IOwnershipService ownershipService;
+    private readonly IAcceptProcessor acceptProcessor;
 
     public ConcertApplicationService(
         IConcertApplicationRepository applicationRepository,
@@ -32,7 +33,8 @@ public class ConcertApplicationService : IConcertApplicationService
         IEmailService emailService,
         IConcertOpportunityService opportunityService,
         IOwnershipService ownershipService,
-        IArtistService artistService)
+        IArtistService artistService,
+        IAcceptProcessor acceptProcessor)
     {
         this.applicationRepository = applicationRepository;
         this.unitOfWork = unitOfWork;
@@ -44,6 +46,7 @@ public class ConcertApplicationService : IConcertApplicationService
         this.opportunityService = opportunityService;
         this.artistService = artistService;
         this.ownershipService = ownershipService;
+        this.acceptProcessor = acceptProcessor;
     }
 
     public async Task<IEnumerable<ConcertApplicationDto>> GetByOpportunityIdAsync(int id)
@@ -58,25 +61,25 @@ public class ConcertApplicationService : IConcertApplicationService
         return applications.ToDtos();
     }
 
-    public async Task<IEnumerable<ArtistConcertApplicationDto>> GetPendingForArtistAsync()
+    public async Task<IEnumerable<ConcertApplicationDto>> GetPendingForArtistAsync()
     {
         var artistId = await artistService.GetIdForCurrentUserAsync();
         var applications = await applicationRepository.GetPendingByArtistIdAsync(artistId);
-        return applications.ToArtistConcertApplicationDtos();
+        return applications.ToDtos();
     }
 
-    public async Task<IEnumerable<ArtistConcertApplicationDto>> GetRecentDeniedForArtistAsync()
+    public async Task<IEnumerable<ConcertApplicationDto>> GetRecentDeniedForArtistAsync()
     {
         var artistId = await artistService.GetIdForCurrentUserAsync();
         var applications = await applicationRepository.GetRecentDeniedByArtistIdAsync(artistId);
-        return applications.ToArtistConcertApplicationDtos();
+        return applications.ToDtos();
     }
 
     public async Task ApplyAsync(int opportunityId)
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
+            throw new ForbiddenException(stripeResult.Errors.First());
 
         var artistDto = await artistService.GetDetailsForCurrentUserAsync()
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
@@ -97,7 +100,7 @@ public class ConcertApplicationService : IConcertApplicationService
             throw new BadRequestException(result.Errors);
 
         var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
-        var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId).ToHashSet();
+        var opportunityGenreIds = opportunity.Genres.Select(g => g.Id).ToHashSet();
 
         if (opportunityGenreIds.Count > 0 && !artistGenreIds.Overlaps(opportunityGenreIds))
             throw new BadRequestException("You need to have the same genres as the Concert Opportunity to be able to apply to it");
@@ -123,17 +126,28 @@ public class ConcertApplicationService : IConcertApplicationService
         }
     }
 
+    public async Task AcceptAsync(int applicationId)
+    {
+        await acceptProcessor.AcceptAsync(applicationId);
+
+        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
+            ?? throw new NotFoundException("Concert application not found");
+
+        await messageService.SendAndSaveAsync(
+            venue.UserId,
+            artist.UserId,
+            "application",
+            applicationId,
+            "Your application has been accepted!");
+
+        await emailService.SendEmailAsync(artist.User.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
+    }
+
     public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
     {
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(id)
             ?? throw new NotFoundException("Concert application not found");
         return (artist.ToDto(), venue.ToDto());
-    }
-
-    public async Task<decimal> GetOpportunityPayByIdAsync(int id)
-    {
-        return await applicationRepository.GetOpportunityPayByIdAsync(id)
-            ?? throw new NotFoundException("Concert application not found");
     }
 
     public async Task<ConcertApplicationDto> GetByIdAsync(int id)
@@ -142,4 +156,5 @@ public class ConcertApplicationService : IConcertApplicationService
             ?? throw new NotFoundException("Application not found");
         return application.ToDto();
     }
+
 }

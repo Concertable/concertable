@@ -5,13 +5,13 @@ namespace Core.Exceptions;
 
 public class BadRequestException : HttpException
 {
-    public IDictionary<string, string[]>? ValidationErrors { get; }
+    public IReadOnlyList<string>? ValidationErrors { get; }
 
-    public BadRequestException(IDictionary<string, string[]> validationErrors)
+    public BadRequestException(IReadOnlyList<string> errors)
         : base("One or more validation errors occurred.", HttpStatusCode.BadRequest)
     {
         Title = "Bad Request";
-        ValidationErrors = validationErrors;
+        ValidationErrors = errors;
     }
 
     public BadRequestException(string detail)

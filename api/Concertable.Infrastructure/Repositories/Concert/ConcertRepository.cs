@@ -4,6 +4,7 @@ using Application.Interfaces.Concert;
 using Application.Mappers;
 using Infrastructure.Data.Identity;
 using Core.Extensions;
+using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Concert;
@@ -70,6 +71,15 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
     {
         return await context.Concerts
             .Where(e => e.ApplicationId == applicationId)
+            .Include(e => e.Application)
+                .ThenInclude(a => a.Opportunity)
+                    .ThenInclude(o => o.Venue)
+                        .ThenInclude(v => v.User)
+            .Include(e => e.Application)
+                .ThenInclude(a => a.Artist)
+                    .ThenInclude(a => a.User)
+            .Include(e => e.ConcertGenres)
+                .ThenInclude(cg => cg.Genre)
             .FirstOrDefaultAsync();
     }
 
@@ -146,13 +156,30 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
             .AnyAsync(e => e.Application.Opportunity.StartDate.Date == date.Date);
     }
 
-    public async Task<decimal?> GetPriceByIdAsync(int id)
+    public async Task<ContractType?> GetTypeByIdAsync(int id)
     {
-        return await context.Concerts
-            .Where(e => e.Id == id)
-            .Select(e => e.Price)
+        var contract = await context.Concerts
+            .Where(c => c.Id == id)
+            .Select(c => c.Application.Opportunity.Contract)
             .FirstOrDefaultAsync();
+
+        return contract?.ContractType;
     }
 
+    public async Task<IEnumerable<int>> GetEndedConfirmedIdsAsync()
+    {
+        return await context.Concerts
+            .Where(c => c.Application.Status == ApplicationStatus.Confirmed
+                     && c.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
+            .Select(c => c.Id)
+            .ToListAsync();
+    }
 
+    public async Task<decimal> GetTotalRevenueByConcertIdAsync(int concertId)
+    {
+        return await context.Concerts
+            .Where(c => c.Id == concertId)
+            .Select(c => c.Price * (c.TotalTickets - c.AvailableTickets))
+            .FirstOrDefaultAsync();
+    }
 }

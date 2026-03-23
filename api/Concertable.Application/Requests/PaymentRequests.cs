@@ -8,7 +8,3 @@ public record TransactionRequest
     public decimal Amount { get; set; }
     public required Dictionary<string, string> Metadata { get; set; }
 }
-
-public record PaymentRequest
-{
-}

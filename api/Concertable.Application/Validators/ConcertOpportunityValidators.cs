@@ -20,8 +20,5 @@ public class ConcertOpportunityDtoValidator : AbstractValidator<ConcertOpportuni
             .WithMessage("EndDate can be at most 24 hours after StartDate.")
             .When(x => x.EndDate > x.StartDate);
 
-        RuleFor(x => x.Pay)
-            .GreaterThanOrEqualTo(0).WithMessage("Pay cannot be negative.")
-            .Must(pay => decimal.Round(pay, 2) == pay).WithMessage("Pay must have exactly two decimal places.");
     }
 }

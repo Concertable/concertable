@@ -13,7 +13,7 @@ public class ConcertValidator : IConcertValidator
         int ticketsSold = concert.TotalTickets - concert.AvailableTickets;
 
         if (newTotalTickets < ticketsSold)
-            result.AddError("TotalTickets", "Cannot reduce TotalTickets below the number of tickets already sold");
+            result.AddError("Cannot reduce TotalTickets below the number of tickets already sold");
 
         return Task.FromResult(result);
     }

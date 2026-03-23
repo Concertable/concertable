@@ -1,4 +1,6 @@
 using Application.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Blob;
 using Application.Interfaces.Concert;
@@ -10,6 +12,7 @@ using Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Application.Interfaces.Search;
+using Infrastructure.Interfaces;
 using Application.Serializers;
 using Core.Entities;
 using Infrastructure;
@@ -24,12 +27,19 @@ using Infrastructure.Services.Auth;
 using Infrastructure.Services.Blob;
 using Infrastructure.Services.Concert;
 using Infrastructure.Services.Geometry;
+using Infrastructure.Services.Accept;
+using Infrastructure.Services.Application;
+using Infrastructure.Services.Complete;
 using Infrastructure.Services.Payment;
+using Infrastructure.Services.Settlement;
+using Infrastructure.Services.Webhook;
 using Infrastructure.Services.Rating;
 using Infrastructure.Validators;
 using Infrastructure.Services.Search;
 using Infrastructure.Settings;
+using Application.Mappers;
 using Infrastructure.Factories;
+using Infrastructure.Mappers;
 using Infrastructure.Specifications;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -41,6 +51,7 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
 using Web.Authorization;
+using Web.Services;
 using Application.DTOs;
 using Application.Requests;
 using Core.Parameters;
@@ -63,10 +74,20 @@ public static class ServiceCollectionExtensions
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
 
-        if (!string.IsNullOrEmpty(configuration.GetSection("BlobStorage")["ConnectionString"]))
-            services.AddScoped<IBlobStorageService, BlobStorageService>();
-        else
+        if (configuration.GetValue<bool>("UseFakeExternalServices"))
+        {
             services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
+            services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
+            services.AddScoped<IPaymentService, FakePaymentService>();
+            services.AddScoped<IWebhookService, FakeWebhookService>();
+        }
+        else
+        {
+            services.AddScoped<IBlobStorageService, BlobStorageService>();
+            services.AddScoped<IStripeAccountService, StripeAccountService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IWebhookService, WebhookService>();
+        }
 
         services.AddSingleton<GeometryFactory>(
             NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
@@ -90,6 +111,8 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
+        services.AddScoped<IConcertNotificationService, SignalRNotificationService>();
+        services.AddScoped<ITicketNotificationService, SignalRNotificationService>();
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertService, ConcertService>();
@@ -97,8 +120,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IConcertOpportunityService, ConcertOpportunityService>();
         services.AddScoped<ITicketService, TicketService>();
-        services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddSingleton<ITransactionMapperFactory, TransactionMapperFactory>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<IReviewService, ReviewService>();
@@ -107,13 +130,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPdfService, PdfService>();
         services.AddSingleton<QRCodeGenerator>();
         services.AddScoped<IQrCodeService, QrCodeService>();
-        services.AddScoped<IUserPaymentService, UserPaymentService>();
-        services.AddScoped<IStripeAccountService, StripeAccountService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddScoped<IUriService, UriService>();
         services.AddSingleton<IGeometryProvider, GeometryProvider>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
+        services.AddSingleton<ICollectionDiffer, CollectionDiffer>();
+        services.AddScoped<IGenreSyncService, GenreSyncService>();
+        services.AddContracts();
         services.AddValidators();
 
         return services;
@@ -139,11 +163,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertApplicationRepository, ConcertApplicationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IConcertOpportunityRepository, ConcertOpportunityRepository>();
+        services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IVenueManagerRepository, VenueManagerRepository>();
+        services.AddScoped<IArtistManagerRepository, ArtistManagerRepository>();
         services.AddRatingRepositories();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
@@ -157,6 +184,43 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IRatingRepository, ArtistRatingRepository>(HeaderType.Artist);
         services.AddKeyedScoped<IRatingRepository, ConcertRatingRepository>(HeaderType.Concert);
         services.AddKeyedScoped<IRatingRepository, VenueRatingRepository>(HeaderType.Venue);
+
+        return services;
+    }
+
+    private static IServiceCollection AddContracts(this IServiceCollection services)
+    {
+        services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
+        services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
+
+        services.AddScoped<IContractService, ContractService>();
+
+        services.AddKeyedSingleton<IContractMapper, FlatFeeContractMapper>(ContractType.FlatFee);
+        services.AddKeyedSingleton<IContractMapper, DoorSplitContractMapper>(ContractType.DoorSplit);
+        services.AddKeyedSingleton<IContractMapper, VersusContractMapper>(ContractType.Versus);
+        services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
+        services.AddScoped<IContractMapperFactory, ContractMapperFactory>();
+
+        services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
+        services.AddScoped<IAcceptProcessor, AcceptProcessor>();
+        services.AddScoped<ICompleteProcessor, CompleteProcessor>();
+        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
+
+        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
+        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
+        services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
+
+        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationService>(ContractType.FlatFee);
+        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationService>(ContractType.Versus);
+        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationService>(ContractType.VenueHire);
+
+        services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
+        services.AddScoped<IWebhookProcessor, WebhookProcessor>();
+        services.AddScoped<IWebhookQueue, WebhookQueue>();
+        services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>("concert");
+        services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>("settlement");
 
         return services;
     }
@@ -186,7 +250,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistSearchSpecification, ArtistSearchSpecification>();
         services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();
         services.AddScoped<IConcertSearchSpecification, ConcertSearchSpecification>();
-
 
         services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();
@@ -218,14 +281,12 @@ public static class ServiceCollectionExtensions
 
         // Services
         services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<JwtSecurityTokenHandler>();
+        services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUser>(sp =>
-        {
-            var http = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            return http?.Items[nameof(CurrentUser)] as CurrentUser ?? CurrentUser.Unauthenticated;
-        });
+        services.AddScoped<ICurrentUser, CurrentUserAccessor>();
 
         // JWT Bearer
         var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);

@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Core.Enums;
 
 public enum ApplicationStatus
 {
-    Accepted,
     Pending,
-    Denied
+    Rejected,
+    Withdrawn,
+    AwaitingPayment,
+    Confirmed,
+    Complete,
+    Settled
 }

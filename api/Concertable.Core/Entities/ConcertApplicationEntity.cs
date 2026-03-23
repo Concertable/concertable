@@ -1,16 +1,10 @@
-
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.Enums;
 
 namespace Core.Entities;
 
 public class ConcertApplicationEntity : BaseEntity
 {
+    public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
     public int OpportunityId { get; set; }
     public int ArtistId { get; set; }
     public ConcertOpportunityEntity Opportunity { get; set; } = null!;

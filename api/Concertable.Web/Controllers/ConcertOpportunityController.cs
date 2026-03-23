@@ -1,10 +1,9 @@
-using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
-using Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
+using Application.Requests;
 
 namespace Web.Controllers;
 
@@ -28,18 +27,25 @@ public class ConcertOpportunityController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] ConcertOpportunityDto opportunityDto)
+    public async Task<IActionResult> Create([FromBody] ConcertOpportunityRequest request)
     {
-        await opportunityService.CreateAsync(opportunityDto);
+        await opportunityService.CreateAsync(request);
         return Created();
     }
 
     [Authorize(Roles = "VenueManager")]
     [HttpPost("bulk")]
-    public async Task<IActionResult> CreateMultiple([FromBody] IEnumerable<ConcertOpportunityDto> opportunitiesDto)
+    public async Task<IActionResult> CreateMultiple([FromBody] IEnumerable<ConcertOpportunityRequest> requests)
     {
-        await opportunityService.CreateMultipleAsync(opportunitiesDto);
+        await opportunityService.CreateMultipleAsync(requests);
         return Created();
+    }
+
+    [Authorize(Roles = "VenueManager")]
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<ConcertOpportunityDto>> Update(int id, [FromBody] ConcertOpportunityRequest request)
+    {
+        return Ok(await opportunityService.UpdateAsync(id, request));
     }
 
     [HttpGet("is-owner/{id}")]

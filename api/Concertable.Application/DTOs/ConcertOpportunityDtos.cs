@@ -1,3 +1,4 @@
+using Application.Interfaces.Concert;
 using Application.Serializers;
 using Core.Enums;
 using System.Text.Json.Serialization;
@@ -10,7 +11,6 @@ public record ConcertOpportunityDto
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
-    public decimal Pay { get; set; }
 }
 
 public record OpportunityResponse
@@ -20,11 +20,7 @@ public record OpportunityResponse
     [JsonConverter(typeof(TimeOnlyJsonConverter))]
     public TimeOnly EndTime { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = [];
-    public double Pay { get; set; }
 }
 
 public record OpportunityWithVenueDto(ConcertOpportunityDto Opportunity, VenueDto Venue);
 
-public record ConcertApplicationDto(int Id, ArtistDto Artist, ConcertOpportunityDto Opportunity, ApplicationStatus Status);
-
-public record ArtistConcertApplicationDto(int Id, ArtistDto Artist, OpportunityWithVenueDto OpportunityWithVenue, ApplicationStatus Status);

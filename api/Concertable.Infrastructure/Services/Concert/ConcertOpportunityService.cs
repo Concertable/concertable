@@ -1,9 +1,10 @@
 using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
+using Application.Mappers;
 using Application.Interfaces.Payment;
 using Application.DTOs;
-using Application.Mappers;
+using Application.Requests;
 using Core.Exceptions;
 
 namespace Infrastructure.Services.Concert;
@@ -13,50 +14,122 @@ public class ConcertOpportunityService : IConcertOpportunityService
     private readonly IConcertOpportunityRepository opportunityRepository;
     private readonly IStripeValidator stripeValidator;
     private readonly IVenueService venueService;
+    private readonly IContractService contractService;
+    private readonly IUnitOfWork unitOfWork;
+    private readonly IGenreSyncService genreSyncService;
 
     public ConcertOpportunityService(
         IConcertOpportunityRepository opportunityRepository,
         IStripeValidator stripeValidator,
-        IVenueService venueService)
+        IVenueService venueService,
+        IContractService contractService,
+        IUnitOfWork unitOfWork,
+        IGenreSyncService genreSyncService)
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidator = stripeValidator;
         this.venueService = venueService;
+        this.contractService = contractService;
+        this.unitOfWork = unitOfWork;
+        this.genreSyncService = genreSyncService;
     }
 
-    public async Task CreateAsync(ConcertOpportunityDto opportunityDto)
+    public async Task CreateAsync(ConcertOpportunityRequest request)
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
-
-        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
-            ?? throw new NotFoundException("Venue not found for current user");
-        var opportunity = opportunityDto.ToEntity();
-        opportunity.VenueId = venueDto.Id;
-
-        await opportunityRepository.AddAsync(opportunity);
-        await opportunityRepository.SaveChangesAsync();
-    }
-
-    public async Task CreateMultipleAsync(IEnumerable<ConcertOpportunityDto> opportunitiesDto)
-    {
-        var stripeResult = await stripeValidator.ValidateUserAsync();
-        if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.Values.First().First());
+            throw new ForbiddenException(stripeResult.Errors.First());
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");
 
-        var opportunities = opportunitiesDto.Select(dto =>
+        using var transaction = await unitOfWork.BeginTransactionAsync();
+
+        try
         {
-            var opportunity = dto.ToEntity();
+            var opportunity = request.ToEntity();
             opportunity.VenueId = venueDto.Id;
-            return opportunity;
-        }).ToList();
 
-        await opportunityRepository.AddRangeAsync(opportunities);
-        await opportunityRepository.SaveChangesAsync();
+            await opportunityRepository.AddAsync(opportunity);
+            await contractService.AddAsync(request.Contract, opportunity.Id);
+            await unitOfWork.TrySaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task CreateMultipleAsync(IEnumerable<ConcertOpportunityRequest> requests)
+    {
+        var stripeResult = await stripeValidator.ValidateUserAsync();
+        if (!stripeResult.IsValid)
+            throw new ForbiddenException(stripeResult.Errors.First());
+
+        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+            ?? throw new NotFoundException("Venue not found for current user");
+
+        using var transaction = await unitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            foreach (var request in requests)
+            {
+                var opportunity = request.ToEntity();
+                opportunity.VenueId = venueDto.Id;
+
+                await opportunityRepository.AddAsync(opportunity);
+                await contractService.AddAsync(request.Contract, opportunity.Id);
+            }
+
+            await unitOfWork.TrySaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task<ConcertOpportunityDto> UpdateAsync(int id, ConcertOpportunityRequest request)
+    {
+        var stripeResult = await stripeValidator.ValidateUserAsync();
+        if (!stripeResult.IsValid)
+            throw new ForbiddenException(stripeResult.Errors.First());
+
+        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+            ?? throw new NotFoundException("Venue not found for current user");
+
+        var opportunity = await opportunityRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Concert Opportunity not found");
+
+        if (opportunity.VenueId != venueDto.Id)
+            throw new ForbiddenException("You do not own this concert opportunity");
+
+        using var transaction = await unitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            opportunity.StartDate = request.StartDate;
+            opportunity.EndDate = request.EndDate;
+            genreSyncService.Sync(opportunity.OpportunityGenres, request.Genres.Select(g => g.Id));
+            await contractService.UpdateAsync(request.Contract, id);
+            await unitOfWork.TrySaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+
+        var updated = await opportunityRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Concert Opportunity not found");
+        return updated.ToDto();
     }
 
     public async Task<IEnumerable<ConcertOpportunityDto>> GetActiveByVenueIdAsync(int id)
@@ -65,10 +138,11 @@ public class ConcertOpportunityService : IConcertOpportunityService
         return opportunities.ToDtos();
     }
 
-    public async Task<ConcertOpportunityEntity> GetByIdAsync(int id)
+    public async Task<ConcertOpportunityDto> GetByIdAsync(int id)
     {
-        return await opportunityRepository.GetByIdAsync(id)
+        var opportunity = await opportunityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity not found");
+        return opportunity.ToDto();
     }
 
     public async Task<UserEntity> GetOwnerByIdAsync(int id)

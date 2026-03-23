@@ -4,7 +4,6 @@ using Application.Interfaces.Concert;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
-using Application.Responses;
 
 namespace Web.Controllers;
 
@@ -49,14 +48,14 @@ public class ConcertApplicationController : ControllerBase
 
     [HttpGet("artist/pending")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<ArtistConcertApplicationDto>>> GetPendingForArtist()
+    public async Task<ActionResult<IEnumerable<ConcertApplicationDto>>> GetPendingForArtist()
     {
         return Ok(await applicationService.GetPendingForArtistAsync());
     }
 
     [HttpGet("artist/recently-denied")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<ArtistConcertApplicationDto>>> GetRecentDeniedForArtist()
+    public async Task<ActionResult<IEnumerable<ConcertApplicationDto>>> GetRecentDeniedForArtist()
     {
         return Ok(await applicationService.GetRecentDeniedForArtistAsync());
     }

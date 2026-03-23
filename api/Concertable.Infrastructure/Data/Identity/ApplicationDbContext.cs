@@ -1,3 +1,4 @@
+using Concertable.Core.Entities.Contracts;
 using Core.Entities;
 using Core.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -26,10 +27,17 @@ public class ApplicationDbContext : DbContext
     public DbSet<VenueImageEntity> VenueImages { get; set; }
     public DbSet<VideoEntity> Videos { get; set; }
     public DbSet<TransactionEntity> Transactions { get; set; }
+    public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
+    public DbSet<SettlementTransactionEntity> SettlementTransactions { get; set; }
     public DbSet<PreferenceEntity> Preferences { get; set; }
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
     public DbSet<StripeEventEntity> StripeEvents { get; set; }
     public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
+    public DbSet<ContractEntity> Contracts { get; set; }
+    public DbSet<FlatFeeContractEntity> FlatFeeContracts { get; set; }
+    public DbSet<DoorSplitContractEntity> DoorSplitContracts { get; set; }
+    public DbSet<VersusContractEntity> VersusContracts { get; set; }
+    public DbSet<VenueHireContractEntity> VenueHireContracts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,20 +48,18 @@ public class ApplicationDbContext : DbContext
             e.HasIndex(u => u.Email).IsUnique();
             e.HasDiscriminator(u => u.Role)
                 .HasValue<UserEntity>(Role.Admin)
-                .HasValue<VenueManager>(Role.VenueManager)
-                .HasValue<ArtistManager>(Role.ArtistManager)
-                .HasValue<Customer>(Role.Customer);
+                .HasValue<VenueManagerEntity>(Role.VenueManager)
+                .HasValue<ArtistManagerEntity>(Role.ArtistManager)
+                .HasValue<CustomerEntity>(Role.Customer);
         });
 
         modelBuilder.Entity<StripeEventEntity>()
             .HasKey(e => e.EventId);
 
-        modelBuilder.Entity<ConcertApplicationEntity>()
-            .HasIndex(ca => new { ca.OpportunityId, ca.ArtistId })
-            .IsUnique();
-
-        modelBuilder.Entity<ConcertApplicationEntity>()
-            .Ignore(ca => ca.Concert);
+        modelBuilder.Entity<ConcertApplicationEntity>(e =>
+        {
+            e.HasIndex(ca => new { ca.OpportunityId, ca.ArtistId }).IsUnique();
+        });
 
         modelBuilder.Entity<MessageEntity>()
             .HasOne(m => m.FromUser)
@@ -67,21 +73,35 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(m => m.ToUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<TransactionEntity>()
-            .HasOne(p => p.FromUser)
+        modelBuilder.Entity<TransactionEntity>(e =>
+        {
+            e.UseTptMappingStrategy();
+            e.HasIndex(t => t.PaymentIntentId).IsUnique();
+            e.HasOne(p => p.FromUser)
+                .WithMany()
+                .HasForeignKey(p => p.FromUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(p => p.ToUser)
+                .WithMany()
+                .HasForeignKey(p => p.ToUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<TicketTransactionEntity>()
+            .HasOne(t => t.Concert)
             .WithMany()
-            .HasForeignKey(p => p.FromUserId)
+            .HasForeignKey(t => t.ConcertId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<TransactionEntity>()
-            .HasOne(p => p.ToUser)
+        modelBuilder.Entity<SettlementTransactionEntity>()
+            .HasOne(t => t.Application)
             .WithMany()
-            .HasForeignKey(p => p.ToUserId)
+            .HasForeignKey(t => t.ApplicationId)
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<ConcertEntity>()
             .HasOne(e => e.Application)
-            .WithOne()
+            .WithOne(a => a.Concert)
             .HasForeignKey<ConcertEntity>(e => e.ApplicationId)
             .OnDelete(DeleteBehavior.NoAction);
 
@@ -138,13 +158,13 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey<PreferenceEntity>(p => p.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<ArtistManager>()
+        modelBuilder.Entity<ArtistManagerEntity>()
             .HasOne(am => am.Artist)
             .WithOne(a => a.User)
             .HasForeignKey<ArtistEntity>(a => a.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<VenueManager>()
+        modelBuilder.Entity<VenueManagerEntity>()
             .HasOne(vm => vm.Venue)
             .WithOne(v => v.User)
             .HasForeignKey<VenueEntity>(v => v.UserId)
@@ -154,6 +174,13 @@ public class ApplicationDbContext : DbContext
             .HasOne(rt => rt.User)
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ContractEntity>()
+            .UseTptMappingStrategy()
+            .HasOne(c => c.Opportunity)
+            .WithOne(o => o.Contract)
+            .HasForeignKey<ContractEntity>(c => c.Id)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

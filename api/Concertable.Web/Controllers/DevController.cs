@@ -1,12 +1,14 @@
+using Application.DTOs;
 using Application.Interfaces;
-using Application.Interfaces.Payment;
+using Application.Interfaces.Auth;
+using Application.Interfaces.Concert;
+using Concertable.Core.Entities.Contracts;
+using Infrastructure.Data;
 using Infrastructure.Data.Identity;
-using Infrastructure.Settings;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Web.Hubs;
+using Microsoft.Extensions.Configuration;
 
 namespace Web.Controllers;
 
@@ -14,131 +16,56 @@ namespace Web.Controllers;
 [Route("api/[controller]")]
 public class DevController : ControllerBase
 {
-    private readonly StripeSettings stripeSettings;
-    private readonly IHubContext<PaymentHub> hubContext;
-    private readonly IEmailService emailService;
-    private readonly ILogger<DevController> logger;
-
-    public DevController(
-        IOptions<StripeSettings> stripeOptions,
-        IHubContext<PaymentHub> hubContext,
-        IEmailService emailService,
-        ILogger<DevController> logger)
+    [HttpPost("reset-db")]
+    public async Task<IActionResult> ResetDb(
+        [FromServices] ApplicationDbContext context,
+        [FromServices] IPasswordHasher passwordHasher,
+        [FromServices] IConfiguration configuration)
     {
-        stripeSettings = stripeOptions.Value;
-        this.hubContext = hubContext;
-        this.emailService = emailService;
-        this.logger = logger;
+        if (!configuration.GetValue<bool>("UseFakeExternalServices"))
+            return NotFound();
+
+        var dbName = context.Database.GetDbConnection().Database;
+        await context.Database.ExecuteSqlRawAsync($"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE");
+        await context.Database.EnsureDeletedAsync();
+        await ApplicationDbInitializer.InitializeAsync(context, passwordHasher);
+        return Ok("Database reset and reseeded.");
     }
 
-    [HttpGet("di-stripe-key")]
-    public IActionResult GetStripeKeyFromDI()
+    [HttpGet("debug")]
+    public async Task<IActionResult> Debug(
+        [FromQuery] int applicationId,
+        [FromServices] ApplicationDbContext context)
     {
-        return Ok(new
-        {
-            FromStripeSettings = stripeSettings.SecretKey?.Substring(0, 8) ?? "NULL"
-        });
+        var app = await context.ConcertApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => new { a.Id, a.OpportunityId, a.Status })
+            .FirstOrDefaultAsync();
+
+        ContractEntity? contract = app != null
+            ? await context.Contracts.Where(c => c.Id == app.OpportunityId).FirstOrDefaultAsync()
+            : null;
+
+        return Ok(new { app, contractExists = contract != null, contractType = contract?.ContractType.ToString() });
     }
 
-    [HttpPost("signalr-test")]
-    public async Task<IActionResult> SendTestSignalR([FromQuery] string userId, [FromBody] object testPayload)
+    [Authorize]
+    [HttpPost("accept")]
+    public async Task<IActionResult> Accept(
+        [FromQuery] int applicationId,
+        [FromServices] IAcceptProcessor acceptProcessor)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return BadRequest("Missing userId");
-
-        await hubContext.Clients.Group(userId).SendAsync("EventCreated", testPayload);
-
-        return Ok(new
-        {
-            SentToGroup = userId,
-            Payload = testPayload
-        });
+        await acceptProcessor.AcceptAsync(applicationId);
+        return Ok();
     }
 
-    [HttpPost("broadcast-test")]
-    public async Task<IActionResult> BroadcastTestEvent([FromBody] object testPayload)
+    [Authorize]
+    [HttpPost("complete")]
+    public async Task<IActionResult> Complete(
+        [FromQuery] int concertId,
+        [FromServices] ICompleteProcessor completeProcessor)
     {
-        await hubContext.Clients.All.SendAsync("EventCreated", testPayload);
-
-        return Ok(new
-        {
-            SentTo = "Everyone",
-            Payload = testPayload
-        });
-    }
-
-    [HttpPost("send-test-email")]
-    public async Task<IActionResult> SendTestEmail([FromQuery] string to)
-    {
-        if (string.IsNullOrWhiteSpace(to))
-            return BadRequest("Missing query param: ?to=someone@example.com");
-
-        try
-        {
-            await emailService.SendEmailAsync(
-                toEmail: to,
-                subject: "Test Email from Concertable DevController",
-                body: "<p>This is a <strong>test email</strong> from your API in development mode.</p>"
-            );
-
-            return Ok(new { Message = $"Test email sent to {to}" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new
-            {
-                Error = "Failed to send test email",
-                ex.Message
-            });
-        }
-    }
-
-    [HttpGet("debug-db-name")]
-    public IActionResult GetActualDatabaseName([FromServices] ApplicationDbContext dbContext)
-    {
-        var dbName = dbContext.Database.GetDbConnection().Database;
-        var dbServer = dbContext.Database.GetDbConnection().DataSource;
-
-        return Ok(new
-        {
-            Server = dbServer,
-            Database = dbName
-        });
-    }
-
-    [HttpPost("test-logging")]
-    public IActionResult TestLogging()
-    {
-        logger.LogInformation("This is an informational log.");
-        logger.LogDebug("This is a debug log with more detailed info.");
-        logger.LogWarning("This is a warning log, something might need attention.");
-        logger.LogError("This is an error log, something went wrong!");
-
-        return Ok(new { Message = "Test logging successful" });
-    }
-
-    [HttpPost("create-stripe-id-for-user")]
-    public async Task<IActionResult> CreateStripeIdForUser(
-        [FromQuery] int userId,
-        [FromServices] ApplicationDbContext dbContext,
-        [FromServices] IStripeAccountService stripeAccountService)
-    {
-        var user = await dbContext.Users.FindAsync(userId);
-        if (user == null)
-            return NotFound($"User with ID '{userId}' not found");
-
-        if (!string.IsNullOrWhiteSpace(user.StripeId))
-            return Ok(new { Message = "User already has a Stripe account", StripeAccountId = user.StripeId });
-
-        var stripeAccountId = await stripeAccountService.CreateStripeAccountAsync(user);
-        user.StripeId = stripeAccountId;
-        await dbContext.SaveChangesAsync();
-
-        return Ok(new
-        {
-            Message = "Stripe account created and linked to user",
-            UserId = user.Id,
-            StripeAccountId = stripeAccountId
-        });
+        await completeProcessor.CompleteAsync(concertId);
+        return Ok();
     }
 }

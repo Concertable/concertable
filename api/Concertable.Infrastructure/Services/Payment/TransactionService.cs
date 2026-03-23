@@ -1,10 +1,10 @@
-using Core.Interfaces;
-using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Payment;
-using Application.Mappers;
 using Application.Responses;
 using Core.Entities;
+using Core.Enums;
+using Core.Exceptions;
+using Core.Interfaces;
 using Core.Parameters;
 
 namespace Infrastructure.Services.Payment;
@@ -13,32 +13,40 @@ public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository purchaseRepository;
     private readonly ICurrentUser currentUser;
+    private readonly ITransactionMapperFactory mapperFactory;
 
     public TransactionService(
         ICurrentUser currentUser,
-        ITransactionRepository purchaseRepository)
+        ITransactionRepository purchaseRepository,
+        ITransactionMapperFactory mapperFactory)
     {
-        this.purchaseRepository = purchaseRepository;
         this.currentUser = currentUser;
+        this.purchaseRepository = purchaseRepository;
+        this.mapperFactory = mapperFactory;
     }
 
-    public async Task LogAsync(TransactionDto purchaseDto)
+    public async Task LogAsync(ITransaction dto)
     {
-        var purchase = purchaseDto.ToEntity();
+        var entity = mapperFactory.Create(dto.TransactionType).ToEntity(dto);
+        await purchaseRepository.CreateAsync(entity);
+    }
 
-        await purchaseRepository.AddAsync(purchase);
+    public async Task CompleteAsync(string paymentIntentId)
+    {
+        var entity = await purchaseRepository.GetByPaymentIntentIdAsync(paymentIntentId);
+
+        if (entity is null)
+            return;
+
+        entity.Status = TransactionStatus.Complete;
         await purchaseRepository.SaveChangesAsync();
     }
 
-    public async Task<Pagination<TransactionDto>> GetAsync(IPageParams pageParams)
+    public async Task<Pagination<ITransaction>> GetAsync(IPageParams pageParams)
     {
         var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
-
-        return new Pagination<TransactionDto>(
-            result.Data.ToDtos(),
-            result.TotalCount,
-            result.PageNumber,
-            result.PageSize);
+        var dtos = result.Data.Select(e => mapperFactory.Create(e.TransactionType).ToDto(e));
+        return new Pagination<ITransaction>(dtos, result.TotalCount, result.PageNumber, result.PageSize);
     }
 }

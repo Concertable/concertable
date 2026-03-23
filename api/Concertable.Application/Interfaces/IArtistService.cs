@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Requests;
+using Core.Entities;
 
 namespace Application.Interfaces;
 

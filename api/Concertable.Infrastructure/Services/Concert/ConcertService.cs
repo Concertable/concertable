@@ -1,9 +1,7 @@
 using Core.Entities;
-using Core.Enums;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Interfaces.Geometry;
-using Application.Interfaces.Payment;
 using Application.Interfaces.Search;
 using Core.Parameters;
 using Application.DTOs;
@@ -20,7 +18,6 @@ public class ConcertService : IConcertService
     private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
-    private readonly IUserPaymentService userPaymentService;
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
@@ -37,7 +34,6 @@ public class ConcertService : IConcertService
         IConcertHeaderService concertHeaderService,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
-        IUserPaymentService userPaymentService,
         IConcertApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
@@ -53,7 +49,6 @@ public class ConcertService : IConcertService
         this.concertHeaderService = concertHeaderService;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
-        this.userPaymentService = userPaymentService;
         this.applicationValidator = applicationValidator;
         this.messageService = messageService;
         this.emailService = emailService;
@@ -97,71 +92,14 @@ public class ConcertService : IConcertService
         return concertEntity.ToDto();
     }
 
-    public async Task<ConcertApplicationPurchaseResponse> BookAsync(ConcertBookingParams bookingParams)
+    public async Task<ConcertDto> CreateDraftAsync(int applicationId)
     {
-        var user = currentUser.Get();
+        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
+            ?? throw new NotFoundException("Concert application not found");
 
-        if (user.Role != Role.VenueManager)
-            throw new ForbiddenException("Only VenueManagers can book concerts");
+        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("Opportunity not found");
 
-        var result = await applicationValidator.CanAcceptAsync(bookingParams.ApplicationId);
-
-        if (!result.IsValid)
-            throw new BadRequestException(result.Errors);
-
-        var paymentResponse = await userPaymentService.PayArtistManagerByApplicationIdAsync(bookingParams.ApplicationId, bookingParams.PaymentMethodId);
-
-        return new ConcertApplicationPurchaseResponse
-        {
-            Success = paymentResponse.Success,
-            RequiresAction = paymentResponse.RequiresAction,
-            Message = paymentResponse.Message ?? (paymentResponse.Success ? "Payment successful" : "Payment failed"),
-            ApplicationId = bookingParams.ApplicationId,
-            TransactionId = paymentResponse.TransactionId,
-            UserEmail = user.Email,
-            ClientSecret = paymentResponse.ClientSecret
-        };
-    }
-
-    public async Task<ConcertApplicationPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
-    {
-        try
-        {
-            var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(purchaseCompleteDto.EntityId)
-                ?? throw new NotFoundException("Concert application not found");
-            var opportunity = await opportunityRepository.GetByApplicationIdAsync(purchaseCompleteDto.EntityId);
-            var concertDto = await CreateDefaultAsync(purchaseCompleteDto, artist, opportunity!);
-
-            await messageService.SendAndSaveAsync(
-                purchaseCompleteDto.FromUserId,
-                purchaseCompleteDto.ToUserId,
-                "concert",
-                concertDto.Id,
-                "Your Application has been accepted! View your concert here");
-
-            await emailService.SendEmailAsync(artist.User.Email!, "Concert Creation", "Your Application was chosen! A Concert has been scheduled for you!");
-
-            return new ConcertApplicationPurchaseResponse
-            {
-                Success = true,
-                Message = "Concert successfully booked!",
-                ApplicationId = purchaseCompleteDto.EntityId,
-                Concert = concertDto
-            };
-        }
-        catch (Exception)
-        {
-            return new ConcertApplicationPurchaseResponse
-            {
-                Success = false,
-                Message = "An error occurred while completing your booking. Please contact support.",
-                ApplicationId = purchaseCompleteDto.EntityId
-            };
-        }
-    }
-
-    public async Task<ConcertDto> CreateDefaultAsync(PurchaseCompleteDto purchaseCompleteDto, ArtistEntity artist, ConcertOpportunityEntity opportunity)
-    {
         var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
         var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId);
 
@@ -176,9 +114,9 @@ public class ConcertService : IConcertService
 
         var concertEntity = new Core.Entities.ConcertEntity
         {
-            ApplicationId = purchaseCompleteDto.EntityId,
-            Name = $"{artist.Name} performing at {opportunity.Venue.Name}",
-            About = opportunity.Venue.About,
+            ApplicationId = applicationId,
+            Name = $"{artist.Name} performing at {venue.Name}",
+            About = venue.About,
             Price = 0,
             TotalTickets = 0,
             AvailableTickets = 0,

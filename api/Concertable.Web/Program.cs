@@ -83,8 +83,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapControllers();
-app.MapHub<PaymentHub>("/hub/payments");
-app.MapHub<ConcertHub>("/hub/concerts");
+app.MapHub<NotificationHub>("/hub/concerts");
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api"))
@@ -109,9 +108,9 @@ try
     var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
     await ApplicationDbInitializer.InitializeAsync(context, passwordHasher);
 }
-catch (Exception)
+catch (Exception ex)
 {
-    Console.WriteLine("oops");
+    Console.WriteLine("DB init failed: " + ex);
 }
 
 app.Run();
