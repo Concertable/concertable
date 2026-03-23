@@ -7,13 +7,11 @@ namespace Web.Controllers;
 [Route("api/[controller]")]
 public class WebhookController : ControllerBase
 {
-    private readonly IWebhookQueue webhookQueue;
-    private readonly string webhookSecret;
+    private readonly IWebhookService webhookService;
 
-    public WebhookController(IWebhookQueue webhookQueue, IConfiguration configuration)
+    public WebhookController(IWebhookService webhookService)
     {
-        this.webhookQueue = webhookQueue;
-        webhookSecret = configuration["Stripe:WebhookSecret"]!;
+        this.webhookService = webhookService;
     }
 
     [HttpPost]
@@ -23,8 +21,7 @@ public class WebhookController : ControllerBase
 
         try
         {
-            var stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], webhookSecret);
-            await webhookQueue.EnqueueAsync(stripeEvent);
+            await webhookService.HandleAsync(json, Request.Headers["Stripe-Signature"]!);
         }
         catch (StripeException)
         {

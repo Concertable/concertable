@@ -1,4 +1,6 @@
 using Application.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Blob;
 using Application.Interfaces.Concert;
@@ -77,12 +79,14 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
             services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
             services.AddScoped<IPaymentService, FakePaymentService>();
+            services.AddScoped<IWebhookService, FakeWebhookService>();
         }
         else
         {
             services.AddScoped<IBlobStorageService, BlobStorageService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IWebhookService, WebhookService>();
         }
 
         services.AddSingleton<GeometryFactory>(
@@ -276,6 +280,8 @@ public static class ServiceCollectionExtensions
 
         // Services
         services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<JwtSecurityTokenHandler>();
+        services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddHttpContextAccessor();
