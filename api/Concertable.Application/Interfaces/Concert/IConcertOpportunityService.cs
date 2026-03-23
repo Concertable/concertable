@@ -8,7 +8,8 @@ public interface IConcertOpportunityService
 {
     Task CreateAsync(ConcertOpportunityRequest request);
     Task CreateMultipleAsync(IEnumerable<ConcertOpportunityRequest> requests);
+    Task<ConcertOpportunityDto> UpdateAsync(int id, ConcertOpportunityRequest request);
     Task<IEnumerable<ConcertOpportunityDto>> GetActiveByVenueIdAsync(int id);
+    Task<ConcertOpportunityDto> GetByIdAsync(int id);
     Task<UserEntity> GetOwnerByIdAsync(int id);
-    Task<ConcertOpportunityEntity> GetByIdAsync(int id);
 }

@@ -43,6 +43,7 @@ public class ConcertOpportunityRepository : Repository<ConcertOpportunityEntity>
     {
         return await context.ConcertOpportunities
             .Where(o => o.Id == id)
+            .Include(o => o.Contract)
             .Include(o => o.OpportunityGenres)
                 .ThenInclude(og => og.Genre)
             .FirstOrDefaultAsync();

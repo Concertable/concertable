@@ -1,7 +1,5 @@
-using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
-using Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
@@ -41,6 +39,13 @@ public class ConcertOpportunityController : ControllerBase
     {
         await opportunityService.CreateMultipleAsync(requests);
         return Created();
+    }
+
+    [Authorize(Roles = "VenueManager")]
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<ConcertOpportunityDto>> Update(int id, [FromBody] ConcertOpportunityRequest request)
+    {
+        return Ok(await opportunityService.UpdateAsync(id, request));
     }
 
     [HttpGet("is-owner/{id}")]

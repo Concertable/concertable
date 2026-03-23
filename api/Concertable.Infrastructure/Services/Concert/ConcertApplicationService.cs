@@ -100,7 +100,7 @@ public class ConcertApplicationService : IConcertApplicationService
             throw new BadRequestException(result.Errors);
 
         var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
-        var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId).ToHashSet();
+        var opportunityGenreIds = opportunity.Genres.Select(g => g.Id).ToHashSet();
 
         if (opportunityGenreIds.Count > 0 && !artistGenreIds.Overlaps(opportunityGenreIds))
             throw new BadRequestException("You need to have the same genres as the Concert Opportunity to be able to apply to it");

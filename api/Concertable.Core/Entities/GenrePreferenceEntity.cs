@@ -1,6 +1,8 @@
+using Core.Interfaces;
+
 namespace Core.Entities;
 
-public class GenrePreferenceEntity : BaseEntity
+public class GenrePreferenceEntity : BaseEntity, IGenreJoin
 {
     public int PreferenceId { get; set; }
     public int GenreId { get; set; }

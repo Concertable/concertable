@@ -130,6 +130,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGeometryProvider, GeometryProvider>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
+        services.AddSingleton<ICollectionDiffer, CollectionDiffer>();
+        services.AddScoped<IGenreSyncService, GenreSyncService>();
         services.AddContracts();
         services.AddValidators();
 

@@ -1,9 +1,10 @@
+using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Core.Entities;
 
 [PrimaryKey(nameof(OpportunityId), nameof(GenreId))]
-public class OpportunityGenreEntity
+public class OpportunityGenreEntity : IGenreJoin
 {
     public int OpportunityId { get; set; }
     public int GenreId { get; set; }
