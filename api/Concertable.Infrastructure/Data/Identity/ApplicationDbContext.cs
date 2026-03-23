@@ -28,7 +28,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<VideoEntity> Videos { get; set; }
     public DbSet<TransactionEntity> Transactions { get; set; }
     public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
-    public DbSet<ConcertTransactionEntity> ConcertTransactions { get; set; }
+    public DbSet<SettlementTransactionEntity> SettlementTransactions { get; set; }
     public DbSet<PreferenceEntity> Preferences { get; set; }
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
     public DbSet<StripeEventEntity> StripeEvents { get; set; }
@@ -93,10 +93,10 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(t => t.ConcertId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<ConcertTransactionEntity>()
-            .HasOne(t => t.Concert)
+        modelBuilder.Entity<SettlementTransactionEntity>()
+            .HasOne(t => t.Application)
             .WithMany()
-            .HasForeignKey(t => t.ConcertId)
+            .HasForeignKey(t => t.ApplicationId)
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<ConcertEntity>()

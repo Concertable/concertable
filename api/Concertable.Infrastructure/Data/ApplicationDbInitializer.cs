@@ -408,10 +408,14 @@ public class ApplicationDbInitializer
             new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(24), EndDate = now.AddDays(24).AddHours(3) }, //43 - no contract
             new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(26), EndDate = now.AddDays(26).AddHours(3) }, //44 - no contract
 
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(30),  EndDate = now.AddDays(30).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200,      PaymentMethod = PaymentMethod.Transfer } }, //45
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(60),  EndDate = now.AddDays(60).AddHours(3),  Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //46
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(90),  EndDate = now.AddDays(90).AddHours(3),  Contract = new VersusContractEntity    { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //47
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250,  PaymentMethod = PaymentMethod.Transfer } }, //48
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(30),  EndDate = now.AddDays(30).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //45
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(32),  EndDate = now.AddDays(32).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //46
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(34),  EndDate = now.AddDays(34).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //47
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(36),  EndDate = now.AddDays(36).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //48
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(38),  EndDate = now.AddDays(38).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //49
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(60),  EndDate = now.AddDays(60).AddHours(3),  Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(90),  EndDate = now.AddDays(90).AddHours(3),  Contract = new VersusContractEntity    { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250, PaymentMethod = PaymentMethod.Transfer } }, //52
 
             };
             context.ConcertOpportunities.AddRange(opportunities);
@@ -560,17 +564,24 @@ public class ApplicationDbInitializer
                 new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //58
                 new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 33, Status = ApplicationStatus.Confirmed }, //59 - Confirmed, for settle/complete testing
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 45 }, //60
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 46 }, //61
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 47 }, //62
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 48 }, //63
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 45 }, //60 - FlatFee test
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 46 }, //61 - FlatFee test
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 47 }, //62 - FlatFee test
+                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 48 }, //63 - FlatFee test
+                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 49 }, //64 - FlatFee test
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 50 }, //65 - DoorSplit test
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 50 }, //66 - DoorSplit test
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 51 }, //67 - Versus test
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 51 }, //68 - Versus test
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 52 }, //69 - VenueHire test
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 52 }, //70 - VenueHire test
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 31 }, //64
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 31 }, //65
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 31 }, //66
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 32 }, //67
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 32 }, //68
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 32 }, //69
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 31 }, //71
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 31 }, //72
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 31 }, //73
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 32 }, //74
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 32 }, //75
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 32 }, //76
             };
             context.ConcertApplications.AddRange(applications);
             await context.SaveChangesAsync();
@@ -908,13 +919,13 @@ public class ApplicationDbInitializer
 
         if (!context.Transactions.Any())
         {
-            var concertTransactions = new List<ConcertTransactionEntity>
+            var settlementTransactions = new List<SettlementTransactionEntity>
             {
-                new ConcertTransactionEntity { ConcertId = 1, FromUserId = 43, ToUserId = 8,  PaymentIntentId = Guid.NewGuid().ToString(), Amount = 15000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-58) },
-                new ConcertTransactionEntity { ConcertId = 2, FromUserId = 44, ToUserId = 9,  PaymentIntentId = Guid.NewGuid().ToString(), Amount = 20000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-55) },
-                new ConcertTransactionEntity { ConcertId = 3, FromUserId = 45, ToUserId = 10, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 18000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-52) },
-                new ConcertTransactionEntity { ConcertId = 4, FromUserId = 46, ToUserId = 11, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 17500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-49) },
-                new ConcertTransactionEntity { ConcertId = 5, FromUserId = 47, ToUserId = 12, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 16000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-46) },
+                new SettlementTransactionEntity { ApplicationId = 1, FromUserId = 43, ToUserId = 8,  PaymentIntentId = Guid.NewGuid().ToString(), Amount = 15000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-58) },
+                new SettlementTransactionEntity { ApplicationId = 2, FromUserId = 44, ToUserId = 9,  PaymentIntentId = Guid.NewGuid().ToString(), Amount = 20000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-55) },
+                new SettlementTransactionEntity { ApplicationId = 3, FromUserId = 45, ToUserId = 10, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 18000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-52) },
+                new SettlementTransactionEntity { ApplicationId = 4, FromUserId = 46, ToUserId = 11, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 17500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-49) },
+                new SettlementTransactionEntity { ApplicationId = 5, FromUserId = 47, ToUserId = 12, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 16000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-46) },
             };
 
             var ticketTransactions = new List<TicketTransactionEntity>
@@ -942,7 +953,7 @@ public class ApplicationDbInitializer
                 new TicketTransactionEntity { ConcertId = 3, FromUserId = 10, ToUserId = 45, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-49) },
             };
 
-            context.ConcertTransactions.AddRange(concertTransactions);
+            context.SettlementTransactions.AddRange(settlementTransactions);
             context.TicketTransactions.AddRange(ticketTransactions);
             await context.SaveChangesAsync();
         }

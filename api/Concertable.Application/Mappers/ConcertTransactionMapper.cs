@@ -5,16 +5,16 @@ using Core.Enums;
 
 namespace Application.Mappers;
 
-public class ConcertTransactionMapper : ITransactionMapper
+public class SettlementTransactionMapper : ITransactionMapper
 {
-    public TransactionType TransactionType => TransactionType.Concert;
+    public TransactionType TransactionType => TransactionType.Settlement;
 
     public TransactionEntity ToEntity(ITransaction dto)
     {
-        var d = (ConcertTransactionDto)dto;
-        return new ConcertTransactionEntity
+        var d = (SettlementTransactionDto)dto;
+        return new SettlementTransactionEntity
         {
-            ConcertId = d.ConcertId,
+            ApplicationId = d.ApplicationId,
             FromUserId = d.FromUserId,
             ToUserId = d.ToUserId,
             PaymentIntentId = d.PaymentIntentId,
@@ -26,11 +26,11 @@ public class ConcertTransactionMapper : ITransactionMapper
 
     public ITransaction ToDto(TransactionEntity entity)
     {
-        var e = (ConcertTransactionEntity)entity;
-        return new ConcertTransactionDto
+        var e = (SettlementTransactionEntity)entity;
+        return new SettlementTransactionDto
         {
             Id = e.Id,
-            ConcertId = e.ConcertId,
+            ApplicationId = e.ApplicationId,
             FromUserId = e.FromUserId,
             ToUserId = e.ToUserId,
             PaymentIntentId = e.PaymentIntentId,

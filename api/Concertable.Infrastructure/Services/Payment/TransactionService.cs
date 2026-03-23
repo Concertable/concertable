@@ -33,8 +33,10 @@ public class TransactionService : ITransactionService
 
     public async Task CompleteAsync(string paymentIntentId)
     {
-        var entity = await purchaseRepository.GetByPaymentIntentIdAsync(paymentIntentId)
-            ?? throw new NotFoundException($"Transaction not found for PaymentIntent {paymentIntentId}");
+        var entity = await purchaseRepository.GetByPaymentIntentIdAsync(paymentIntentId);
+
+        if (entity is null)
+            return;
 
         entity.Status = TransactionStatus.Complete;
         await purchaseRepository.SaveChangesAsync();

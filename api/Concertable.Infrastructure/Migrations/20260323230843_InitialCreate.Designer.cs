@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260323214628_InitialCreate")]
+    [Migration("20260323230843_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -658,16 +658,16 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("VersusContracts");
                 });
 
-            modelBuilder.Entity("Core.Entities.ConcertTransactionEntity", b =>
+            modelBuilder.Entity("Core.Entities.SettlementTransactionEntity", b =>
                 {
                     b.HasBaseType("Core.Entities.TransactionEntity");
 
-                    b.Property<int>("ConcertId")
+                    b.Property<int>("ApplicationId")
                         .HasColumnType("int");
 
-                    b.HasIndex("ConcertId");
+                    b.HasIndex("ApplicationId");
 
-                    b.ToTable("ConcertTransactions");
+                    b.ToTable("SettlementTransactions");
                 });
 
             modelBuilder.Entity("Core.Entities.TicketTransactionEntity", b =>
@@ -1023,21 +1023,21 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Core.Entities.ConcertTransactionEntity", b =>
+            modelBuilder.Entity("Core.Entities.SettlementTransactionEntity", b =>
                 {
-                    b.HasOne("Core.Entities.ConcertEntity", "Concert")
+                    b.HasOne("Core.Entities.ConcertApplicationEntity", "Application")
                         .WithMany()
-                        .HasForeignKey("ConcertId")
+                        .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Core.Entities.TransactionEntity", null)
                         .WithOne()
-                        .HasForeignKey("Core.Entities.ConcertTransactionEntity", "Id")
+                        .HasForeignKey("Core.Entities.SettlementTransactionEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Concert");
+                    b.Navigation("Application");
                 });
 
             modelBuilder.Entity("Core.Entities.TicketTransactionEntity", b =>

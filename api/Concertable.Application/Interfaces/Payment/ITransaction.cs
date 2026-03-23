@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Application.Interfaces.Payment;
 
 [JsonDerivedType(typeof(TicketTransactionDto), "ticket")]
-[JsonDerivedType(typeof(ConcertTransactionDto), "concert")]
+[JsonDerivedType(typeof(SettlementTransactionDto), "settlement")]
 public interface ITransaction
 {
     int Id { get; set; }

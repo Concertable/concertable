@@ -2,9 +2,9 @@ using Core.Enums;
 
 namespace Core.Entities;
 
-public class ConcertTransactionEntity : TransactionEntity
+public class SettlementTransactionEntity : TransactionEntity
 {
-    public override TransactionType TransactionType => TransactionType.Concert;
-    public int ConcertId { get; set; }
-    public ConcertEntity Concert { get; set; } = null!;
+    public override TransactionType TransactionType => TransactionType.Settlement;
+    public int ApplicationId { get; set; }
+    public ConcertApplicationEntity Application { get; set; } = null!;
 }

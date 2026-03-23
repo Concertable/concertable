@@ -71,9 +71,6 @@ public class VenueHireApplicationService : IApplicationStrategy
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
-        var concert = await concertService.CreateDraftAsync(applicationId);
-        await notificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
-
         if (artistManager.StripeId is null)
             throw new BadRequestException("Artist manager does not have a Stripe account");
 
@@ -97,9 +94,9 @@ public class VenueHireApplicationService : IApplicationStrategy
         if (response.TransactionId is null)
             throw new InternalServerException("Payment did not return a valid PaymentIntent ID");
 
-        await transactionService.LogAsync(new ConcertTransactionDto
+        await transactionService.LogAsync(new SettlementTransactionDto
         {
-            ConcertId = concert.Id,
+            ApplicationId = applicationId,
             FromUserId = artistManager.Id,
             ToUserId = venueManager.Id,
             PaymentIntentId = response.TransactionId,
@@ -114,8 +111,14 @@ public class VenueHireApplicationService : IApplicationStrategy
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
+        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("Artist manager not found");
+
         application.Status = ApplicationStatus.Settled;
         await applicationRepository.SaveChangesAsync();
+
+        var concert = await concertService.CreateDraftAsync(applicationId);
+        await notificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
     }
 
     public async Task CompleteAsync(int concertId)

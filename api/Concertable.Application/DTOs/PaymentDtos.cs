@@ -26,11 +26,11 @@ public record TicketTransactionDto : ITransaction
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
-public record ConcertTransactionDto : ITransaction
+public record SettlementTransactionDto : ITransaction
 {
     public int Id { get; set; }
-    public TransactionType TransactionType => TransactionType.Concert;
-    public int ConcertId { get; set; }
+    public TransactionType TransactionType => TransactionType.Settlement;
+    public int ApplicationId { get; set; }
     public int FromUserId { get; set; }
     public int ToUserId { get; set; }
     public required string PaymentIntentId { get; set; }

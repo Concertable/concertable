@@ -427,6 +427,29 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SettlementTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    ApplicationId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SettlementTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SettlementTransactions_ConcertApplications_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "ConcertApplications",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SettlementTransactions_Transactions_Id",
+                        column: x => x.Id,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DoorSplitContracts",
                 columns: table => new
                 {
@@ -540,29 +563,6 @@ namespace Concertable.Infrastructure.Migrations
                         name: "FK_ConcertImages_Concerts_ConcertId",
                         column: x => x.ConcertId,
                         principalTable: "Concerts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ConcertTransactions",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    ConcertId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ConcertTransactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ConcertTransactions_Concerts_ConcertId",
-                        column: x => x.ConcertId,
-                        principalTable: "Concerts",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ConcertTransactions_Transactions_Id",
-                        column: x => x.Id,
-                        principalTable: "Transactions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -682,11 +682,6 @@ namespace Concertable.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ConcertTransactions_ConcertId",
-                table: "ConcertTransactions",
-                column: "ConcertId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_GenrePreferences_GenreId",
                 table: "GenrePreferences",
                 column: "GenreId");
@@ -727,6 +722,11 @@ namespace Concertable.Infrastructure.Migrations
                 table: "Reviews",
                 column: "TicketId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SettlementTransactions_ApplicationId",
+                table: "SettlementTransactions",
+                column: "ApplicationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SocialMedias_ArtistId",
@@ -800,9 +800,6 @@ namespace Concertable.Infrastructure.Migrations
                 name: "ConcertImages");
 
             migrationBuilder.DropTable(
-                name: "ConcertTransactions");
-
-            migrationBuilder.DropTable(
                 name: "DoorSplitContracts");
 
             migrationBuilder.DropTable(
@@ -822,6 +819,9 @@ namespace Concertable.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Reviews");
+
+            migrationBuilder.DropTable(
+                name: "SettlementTransactions");
 
             migrationBuilder.DropTable(
                 name: "SocialMedias");

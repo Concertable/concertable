@@ -125,9 +125,9 @@ public class DoorSplitApplicationService : IApplicationStrategy
         if (response.TransactionId is null)
             throw new InternalServerException("Payment did not return a valid PaymentIntent ID");
 
-        await transactionService.LogAsync(new ConcertTransactionDto
+        await transactionService.LogAsync(new SettlementTransactionDto
         {
-            ConcertId = concertId,
+            ApplicationId = application.Id,
             FromUserId = venueManager.Id,
             ToUserId = artistManager.Id,
             PaymentIntentId = response.TransactionId,

@@ -9,16 +9,13 @@ public class SettlementWebhookHandler : ISettlementWebhookStrategy
 {
     private readonly ITransactionService transactionService;
     private readonly ISettlementProcessor settlementProcessor;
-    private readonly TimeProvider timeProvider;
 
     public SettlementWebhookHandler(
         ITransactionService transactionService,
-        ISettlementProcessor settlementProcessor,
-        TimeProvider timeProvider)
+        ISettlementProcessor settlementProcessor)
     {
         this.transactionService = transactionService;
         this.settlementProcessor = settlementProcessor;
-        this.timeProvider = timeProvider;
     }
 
     public async Task HandleAsync(PaymentIntent intent, CancellationToken cancellationToken)
