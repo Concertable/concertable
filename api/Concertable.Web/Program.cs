@@ -83,7 +83,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapControllers();
-app.MapHub<ConcertHub>("/hub/concerts");
+app.MapHub<NotificationHub>("/hub/concerts");
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api"))

@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Web.Extentions;
 
 namespace Web.Hubs;
 
 [Authorize]
-public class ConcertHub : Hub
+public class NotificationHub : Hub
 {
     public override async Task OnConnectedAsync()
     {

@@ -1,3 +1,4 @@
+using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Core.Enums;
 using Core.Exceptions;
@@ -8,16 +9,22 @@ public class DoorSplitApplicationStrategy : IApplicationStrategy
 {
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IConcertApplicationRepository applicationRepository;
+    private readonly IArtistManagerRepository artistManagerRepository;
     private readonly IConcertService concertService;
+    private readonly IConcertNotificationService notificationService;
 
     public DoorSplitApplicationStrategy(
         IConcertApplicationValidator applicationValidator,
         IConcertApplicationRepository applicationRepository,
-        IConcertService concertService)
+        IArtistManagerRepository artistManagerRepository,
+        IConcertService concertService,
+        IConcertNotificationService notificationService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
+        this.artistManagerRepository = artistManagerRepository;
         this.concertService = concertService;
+        this.notificationService = notificationService;
     }
 
     public async Task AcceptAsync(int applicationId)
@@ -33,7 +40,12 @@ public class DoorSplitApplicationStrategy : IApplicationStrategy
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
-        await concertService.CreateDraftAsync(applicationId);
+        var concert = await concertService.CreateDraftAsync(applicationId);
+
+        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("Artist manager not found");
+
+        await notificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
     }
 
     public async Task SettleAsync(int applicationId)

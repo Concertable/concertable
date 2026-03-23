@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Application.DTOs;
 using Application.Requests;
 using Application.Responses;
-using Microsoft.AspNetCore.SignalR;
-using Web.Hubs;
 
 namespace Web.Controllers;
 
@@ -16,12 +14,12 @@ namespace Web.Controllers;
 public class ConcertController : ControllerBase
 {
     private readonly IConcertService concertService;
-    private readonly IHubContext<ConcertHub> hubContext;
+    private readonly IConcertNotificationService notificationService;
 
-    public ConcertController(IConcertService concertService, IHubContext<ConcertHub> hubContext)
+    public ConcertController(IConcertService concertService, IConcertNotificationService notificationService)
     {
         this.concertService = concertService;
-        this.hubContext = hubContext;
+        this.notificationService = notificationService;
     }
 
     [HttpGet("{id}")]
@@ -92,10 +90,7 @@ public class ConcertController : ControllerBase
         var concertResponse = await concertService.PostAsync(id, request);
 
         foreach (var userId in concertResponse.UserIds)
-        {
-            await hubContext.Clients.User(userId.ToString())
-                .SendAsync("ConcertPosted", concertResponse.ConcertHeader);
-        }
+            await notificationService.ConcertPostedAsync(userId.ToString(), concertResponse.ConcertHeader);
 
         return Ok(concertResponse.Concert);
     }
@@ -121,8 +116,7 @@ public class ConcertController : ControllerBase
             DatePosted = DateTime.UtcNow
         };
 
-        await hubContext.Clients.User(userId.ToString())
-            .SendAsync("ConcertPosted", concertHeaderDto);
+        await notificationService.ConcertPostedAsync(userId.ToString(), concertHeaderDto);
 
         return Ok($"SignalR test message sent to User {userId}");
     }

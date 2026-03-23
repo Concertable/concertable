@@ -5,17 +5,14 @@ using Application.Interfaces.Payment;
 using Core.Enums;
 using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Stripe;
-using Web.Hubs;
 
 namespace Web.Controllers;
 
 [Route("api/[controller]")]
 public class WebhookController : ControllerBase
 {
-    private readonly IHubContext<ConcertHub> hubContext;
     private readonly IBackgroundTaskQueue taskQueue;
     private readonly IServiceScopeFactory scopeFactory;
     private readonly IStripeEventRepository stripeEventRepository;
@@ -30,14 +27,12 @@ public class WebhookController : ControllerBase
         IStripeEventRepository stripeEventRepository,
         IBackgroundTaskQueue taskQueue,
         IServiceScopeFactory scopeFactory,
-        IHubContext<ConcertHub> hubContext,
         ITicketService ticketService,
         ITransactionService purchaseService,
         IConfiguration configuration,
         TimeProvider timeProvider,
         ILogger<WebhookController> logger)
     {
-        this.hubContext = hubContext;
         this.taskQueue = taskQueue;
         this.scopeFactory = scopeFactory;
         this.stripeEventRepository = stripeEventRepository;
@@ -78,7 +73,7 @@ public class WebhookController : ControllerBase
         var stripeEventRepository = scope.ServiceProvider.GetRequiredService<IStripeEventRepository>();
         var purchaseService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
         var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
-        var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<ConcertHub>>();
+        var notificationService = scope.ServiceProvider.GetRequiredService<ITicketNotificationService>();
 
         try
         {
@@ -127,7 +122,7 @@ public class WebhookController : ControllerBase
                     };
 
                     var response = await ticketService.CompleteAsync(purchaseCompleteDto);
-                    await hubContext.Clients.Group(fromUserId.ToString()).SendAsync("TicketPurchased", response);
+                    await notificationService.TicketPurchasedAsync(fromUserId.ToString(), response);
                 }
                 else if (type == "settlement")
                 {

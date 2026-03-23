@@ -18,6 +18,7 @@ public class VenueHireApplicationStrategy : IApplicationStrategy
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPaymentService paymentService;
     private readonly IConcertService concertService;
+    private readonly IConcertNotificationService notificationService;
 
     public VenueHireApplicationStrategy(
         IConcertApplicationValidator applicationValidator,
@@ -27,7 +28,8 @@ public class VenueHireApplicationStrategy : IApplicationStrategy
         IArtistManagerRepository artistManagerRepository,
         IStripeAccountService stripeAccountService,
         IPaymentService paymentService,
-        IConcertService concertService)
+        IConcertService concertService,
+        IConcertNotificationService notificationService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
@@ -37,6 +39,7 @@ public class VenueHireApplicationStrategy : IApplicationStrategy
         this.stripeAccountService = stripeAccountService;
         this.paymentService = paymentService;
         this.concertService = concertService;
+        this.notificationService = notificationService;
     }
 
     public async Task AcceptAsync(int applicationId)
@@ -90,7 +93,12 @@ public class VenueHireApplicationStrategy : IApplicationStrategy
         application.Status = ApplicationStatus.Settled;
         await applicationRepository.SaveChangesAsync();
 
-        await concertService.CreateDraftAsync(applicationId);
+        var concert = await concertService.CreateDraftAsync(applicationId);
+
+        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("Artist manager not found");
+
+        await notificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
     }
 
     public async Task CompleteAsync(int concertId)
