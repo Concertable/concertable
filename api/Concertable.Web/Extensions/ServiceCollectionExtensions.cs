@@ -285,11 +285,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUser>(sp =>
-        {
-            var http = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            return http?.Items[nameof(CurrentUser)] as CurrentUser ?? CurrentUser.Unauthenticated;
-        });
+        services.AddScoped<ICurrentUser, CurrentUserAccessor>();
 
         // JWT Bearer
         var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);

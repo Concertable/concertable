@@ -71,6 +71,15 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
     {
         return await context.Concerts
             .Where(e => e.ApplicationId == applicationId)
+            .Include(e => e.Application)
+                .ThenInclude(a => a.Opportunity)
+                    .ThenInclude(o => o.Venue)
+                        .ThenInclude(v => v.User)
+            .Include(e => e.Application)
+                .ThenInclude(a => a.Artist)
+                    .ThenInclude(a => a.User)
+            .Include(e => e.ConcertGenres)
+                .ThenInclude(cg => cg.Genre)
             .FirstOrDefaultAsync();
     }
 

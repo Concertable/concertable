@@ -2,41 +2,38 @@ using Application.Interfaces.Payment;
 using Application.Requests;
 using Application.Responses;
 using Infrastructure.Interfaces;
-using System.Text.Json;
+using Stripe;
 
 namespace Infrastructure.Services.Payment;
 
 public class FakePaymentService : IPaymentService
 {
-    private readonly IWebhookService webhookService;
+    private readonly IWebhookQueue webhookQueue;
 
-    public FakePaymentService(IWebhookService webhookService)
+    public FakePaymentService(IWebhookQueue webhookQueue)
     {
-        this.webhookService = webhookService;
+        this.webhookQueue = webhookQueue;
     }
 
     public async Task<PaymentResponse> ProcessAsync(TransactionRequest request)
     {
         var transactionId = $"pi_fake_{Guid.NewGuid():N}";
 
-        var fakeEventJson = JsonSerializer.Serialize(new
+        await webhookQueue.EnqueueAsync(new Event
         {
-            id = $"evt_fake_{Guid.NewGuid():N}",
-            type = "payment_intent.succeeded",
-            data = new
+            Id = $"evt_fake_{Guid.NewGuid():N}",
+            Type = "payment_intent.succeeded",
+            Data = new EventData
             {
-                @object = new
+                Object = new PaymentIntent
                 {
-                    @object = "payment_intent",
-                    id = transactionId,
-                    status = "succeeded",
-                    amount_received = (long)(request.Amount * 100),
-                    metadata = request.Metadata
+                    Id = transactionId,
+                    Status = "succeeded",
+                    AmountReceived = (long)(request.Amount * 100),
+                    Metadata = request.Metadata
                 }
             }
         });
-
-        await webhookService.HandleAsync(fakeEventJson, string.Empty);
 
         return new PaymentResponse
         {

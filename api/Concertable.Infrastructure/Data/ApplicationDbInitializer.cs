@@ -564,6 +564,13 @@ public class ApplicationDbInitializer
                 new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 46 }, //61
                 new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 47 }, //62
                 new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 48 }, //63
+
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 31 }, //64
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 31 }, //65
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 31 }, //66
+                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 32 }, //67
+                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 32 }, //68
+                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 32 }, //69
             };
             context.ConcertApplications.AddRange(applications);
             await context.SaveChangesAsync();
