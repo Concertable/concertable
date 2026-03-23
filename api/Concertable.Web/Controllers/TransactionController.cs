@@ -21,7 +21,7 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Pagination<TransactionDto>>> GetPurchases([FromQuery] IPageParams pageParams)
+    public async Task<ActionResult<Pagination<ITransaction>>> GetPurchases([FromQuery] IPageParams pageParams)
     {
         var result = await purchaseService.GetAsync(pageParams);
         return Ok(result);

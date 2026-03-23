@@ -1,10 +1,7 @@
-using Core.Interfaces;
-using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Payment;
-using Application.Mappers;
 using Application.Responses;
-using Core.Entities;
+using Core.Interfaces;
 using Core.Parameters;
 
 namespace Infrastructure.Services.Payment;
@@ -13,32 +10,30 @@ public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository purchaseRepository;
     private readonly ICurrentUser currentUser;
+    private readonly ITransactionMapperFactory mapperFactory;
 
     public TransactionService(
         ICurrentUser currentUser,
-        ITransactionRepository purchaseRepository)
+        ITransactionRepository purchaseRepository,
+        ITransactionMapperFactory mapperFactory)
     {
-        this.purchaseRepository = purchaseRepository;
         this.currentUser = currentUser;
+        this.purchaseRepository = purchaseRepository;
+        this.mapperFactory = mapperFactory;
     }
 
-    public async Task LogAsync(TransactionDto purchaseDto)
+    public async Task LogAsync(ITransaction dto)
     {
-        var purchase = purchaseDto.ToEntity();
-
-        await purchaseRepository.AddAsync(purchase);
+        var entity = mapperFactory.Create(dto.TransactionType).ToEntity(dto);
+        await purchaseRepository.AddAsync(entity);
         await purchaseRepository.SaveChangesAsync();
     }
 
-    public async Task<Pagination<TransactionDto>> GetAsync(IPageParams pageParams)
+    public async Task<Pagination<ITransaction>> GetAsync(IPageParams pageParams)
     {
         var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
-
-        return new Pagination<TransactionDto>(
-            result.Data.ToDtos(),
-            result.TotalCount,
-            result.PageNumber,
-            result.PageSize);
+        var dtos = result.Data.Select(e => mapperFactory.Create(e.TransactionType).ToDto(e));
+        return new Pagination<ITransaction>(dtos, result.TotalCount, result.PageNumber, result.PageSize);
     }
 }

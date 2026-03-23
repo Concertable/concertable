@@ -1,3 +1,6 @@
+using Application.Interfaces.Payment;
+using Core.Enums;
+
 namespace Application.DTOs;
 
 public record PaymentDto
@@ -10,13 +13,26 @@ public record PaymentDto
     public int UserId { get; set; }
 }
 
-public record TransactionDto
+public record TicketTransactionDto : ITransaction
 {
+    public TransactionType TransactionType => TransactionType.Ticket;
+    public int ConcertId { get; set; }
     public int FromUserId { get; set; }
     public int ToUserId { get; set; }
     public required string TransactionId { get; set; }
     public long Amount { get; set; }
-    public required string Type { get; set; }
+    public required string Status { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public record ConcertTransactionDto : ITransaction
+{
+    public TransactionType TransactionType => TransactionType.Concert;
+    public int ConcertId { get; set; }
+    public int FromUserId { get; set; }
+    public int ToUserId { get; set; }
+    public required string TransactionId { get; set; }
+    public long Amount { get; set; }
     public required string Status { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

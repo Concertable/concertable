@@ -29,14 +29,15 @@ public class TicketWebhookHandler : ITicketWebhookStrategy
     {
         var fromUserId = int.Parse(intent.Metadata["fromUserId"]);
         var toUserId = int.Parse(intent.Metadata["toUserId"]);
+        var concertId = int.Parse(intent.Metadata["concertId"]);
 
-        await transactionService.LogAsync(new TransactionDto
+        await transactionService.LogAsync(new TicketTransactionDto
         {
+            ConcertId = concertId,
             FromUserId = fromUserId,
             ToUserId = toUserId,
             TransactionId = intent.Id,
             Amount = intent.AmountReceived,
-            Type = intent.Metadata["type"],
             Status = intent.Status,
             CreatedAt = timeProvider.GetUtcNow().DateTime
         });
@@ -47,7 +48,7 @@ public class TicketWebhookHandler : ITicketWebhookStrategy
             FromUserId = fromUserId,
             FromEmail = intent.Metadata["fromUserEmail"],
             ToUserId = toUserId,
-            EntityId = int.Parse(intent.Metadata["concertId"]),
+            EntityId = concertId,
             Quantity = int.Parse(intent.Metadata["quantity"])
         });
 

@@ -908,38 +908,42 @@ public class ApplicationDbInitializer
 
         if (!context.Transactions.Any())
         {
-            var transactions = new List<TransactionEntity>
+            var concertTransactions = new List<ConcertTransactionEntity>
             {
-                new TransactionEntity { FromUserId = 43, ToUserId = 8, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-58) },
-                new TransactionEntity { FromUserId = 44, ToUserId = 9, TransactionId = Guid.NewGuid().ToString(), Amount = 200, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-55) },
-                new TransactionEntity { FromUserId = 45, ToUserId = 10, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-52) },
-                new TransactionEntity { FromUserId = 46, ToUserId = 11, TransactionId = Guid.NewGuid().ToString(), Amount = 175, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-49) },
-                new TransactionEntity { FromUserId = 47, ToUserId = 12, TransactionId = Guid.NewGuid().ToString(), Amount = 160, Type = "event", Status = "Completed", CreatedAt = now.AddDays(-46) },
-
-                new TransactionEntity { FromUserId = 2, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                new TransactionEntity { FromUserId = 3, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                new TransactionEntity { FromUserId = 4, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-57) },
-                new TransactionEntity { FromUserId = 5, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                new TransactionEntity { FromUserId = 6, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                new TransactionEntity { FromUserId = 7, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-56) },
-                new TransactionEntity { FromUserId = 8, ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-55) },
-                new TransactionEntity { FromUserId = 3, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                new TransactionEntity { FromUserId = 4, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                new TransactionEntity { FromUserId = 5, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-54) },
-                new TransactionEntity { FromUserId = 6, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                new TransactionEntity { FromUserId = 7, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                new TransactionEntity { FromUserId = 8, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-53) },
-                new TransactionEntity { FromUserId = 9, ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-52) },
-                new TransactionEntity { FromUserId = 4, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                new TransactionEntity { FromUserId = 5, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                new TransactionEntity { FromUserId = 6, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-51) },
-                new TransactionEntity { FromUserId = 7, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                new TransactionEntity { FromUserId = 8, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                new TransactionEntity { FromUserId = 9, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-50) },
-                new TransactionEntity { FromUserId = 10, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Type = "ticket", Status = "Completed", CreatedAt = now.AddDays(-49) },
+                new ConcertTransactionEntity { ConcertId = 1, FromUserId = 43, ToUserId = 8,  TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-58) },
+                new ConcertTransactionEntity { ConcertId = 2, FromUserId = 44, ToUserId = 9,  TransactionId = Guid.NewGuid().ToString(), Amount = 200, Status = "Completed", CreatedAt = now.AddDays(-55) },
+                new ConcertTransactionEntity { ConcertId = 3, FromUserId = 45, ToUserId = 10, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-52) },
+                new ConcertTransactionEntity { ConcertId = 4, FromUserId = 46, ToUserId = 11, TransactionId = Guid.NewGuid().ToString(), Amount = 175, Status = "Completed", CreatedAt = now.AddDays(-49) },
+                new ConcertTransactionEntity { ConcertId = 5, FromUserId = 47, ToUserId = 12, TransactionId = Guid.NewGuid().ToString(), Amount = 160, Status = "Completed", CreatedAt = now.AddDays(-46) },
             };
 
-            context.Transactions.AddRange(transactions);
+            var ticketTransactions = new List<TicketTransactionEntity>
+            {
+                new TicketTransactionEntity { ConcertId = 1, FromUserId = 2,  ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-57) },
+                new TicketTransactionEntity { ConcertId = 1, FromUserId = 3,  ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-57) },
+                new TicketTransactionEntity { ConcertId = 1, FromUserId = 4,  ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-57) },
+                new TicketTransactionEntity { ConcertId = 1, FromUserId = 5,  ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-56) },
+                new TicketTransactionEntity { ConcertId = 1, FromUserId = 6,  ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-56) },
+                new TicketTransactionEntity { ConcertId = 1, FromUserId = 7,  ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-56) },
+                new TicketTransactionEntity { ConcertId = 1, FromUserId = 8,  ToUserId = 43, TransactionId = Guid.NewGuid().ToString(), Amount = 150, Status = "Completed", CreatedAt = now.AddDays(-55) },
+                new TicketTransactionEntity { ConcertId = 2, FromUserId = 3,  ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Status = "Completed", CreatedAt = now.AddDays(-54) },
+                new TicketTransactionEntity { ConcertId = 2, FromUserId = 4,  ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Status = "Completed", CreatedAt = now.AddDays(-54) },
+                new TicketTransactionEntity { ConcertId = 2, FromUserId = 5,  ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Status = "Completed", CreatedAt = now.AddDays(-54) },
+                new TicketTransactionEntity { ConcertId = 2, FromUserId = 6,  ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Status = "Completed", CreatedAt = now.AddDays(-53) },
+                new TicketTransactionEntity { ConcertId = 2, FromUserId = 7,  ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Status = "Completed", CreatedAt = now.AddDays(-53) },
+                new TicketTransactionEntity { ConcertId = 2, FromUserId = 8,  ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Status = "Completed", CreatedAt = now.AddDays(-53) },
+                new TicketTransactionEntity { ConcertId = 2, FromUserId = 9,  ToUserId = 44, TransactionId = Guid.NewGuid().ToString(), Amount = 120, Status = "Completed", CreatedAt = now.AddDays(-52) },
+                new TicketTransactionEntity { ConcertId = 3, FromUserId = 4,  ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-51) },
+                new TicketTransactionEntity { ConcertId = 3, FromUserId = 5,  ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-51) },
+                new TicketTransactionEntity { ConcertId = 3, FromUserId = 6,  ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-51) },
+                new TicketTransactionEntity { ConcertId = 3, FromUserId = 7,  ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-50) },
+                new TicketTransactionEntity { ConcertId = 3, FromUserId = 8,  ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-50) },
+                new TicketTransactionEntity { ConcertId = 3, FromUserId = 9,  ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-50) },
+                new TicketTransactionEntity { ConcertId = 3, FromUserId = 10, ToUserId = 45, TransactionId = Guid.NewGuid().ToString(), Amount = 180, Status = "Completed", CreatedAt = now.AddDays(-49) },
+            };
+
+            context.ConcertTransactions.AddRange(concertTransactions);
+            context.TicketTransactions.AddRange(ticketTransactions);
             await context.SaveChangesAsync();
         }
 

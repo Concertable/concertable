@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260320235253_InitialCreate")]
+    [Migration("20260323212344_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -481,10 +481,6 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("FromUserId");
@@ -492,6 +488,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasIndex("ToUserId");
 
                     b.ToTable("Transactions");
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Core.Entities.UserEntity", b =>
@@ -656,6 +654,30 @@ namespace Concertable.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.ToTable("VersusContracts");
+                });
+
+            modelBuilder.Entity("Core.Entities.ConcertTransactionEntity", b =>
+                {
+                    b.HasBaseType("Core.Entities.TransactionEntity");
+
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("ConcertId");
+
+                    b.ToTable("ConcertTransactions");
+                });
+
+            modelBuilder.Entity("Core.Entities.TicketTransactionEntity", b =>
+                {
+                    b.HasBaseType("Core.Entities.TransactionEntity");
+
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("ConcertId");
+
+                    b.ToTable("TicketTransactions");
                 });
 
             modelBuilder.Entity("Core.Entities.ArtistManagerEntity", b =>
@@ -997,6 +1019,40 @@ namespace Concertable.Infrastructure.Migrations
                         .HasForeignKey("Concertable.Core.Entities.Contracts.VersusContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Core.Entities.ConcertTransactionEntity", b =>
+                {
+                    b.HasOne("Core.Entities.ConcertEntity", "Concert")
+                        .WithMany()
+                        .HasForeignKey("ConcertId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.TransactionEntity", null)
+                        .WithOne()
+                        .HasForeignKey("Core.Entities.ConcertTransactionEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Concert");
+                });
+
+            modelBuilder.Entity("Core.Entities.TicketTransactionEntity", b =>
+                {
+                    b.HasOne("Core.Entities.ConcertEntity", "Concert")
+                        .WithMany()
+                        .HasForeignKey("ConcertId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.TransactionEntity", null)
+                        .WithOne()
+                        .HasForeignKey("Core.Entities.TicketTransactionEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Concert");
                 });
 
             modelBuilder.Entity("Core.Entities.ArtistEntity", b =>

@@ -27,6 +27,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<VenueImageEntity> VenueImages { get; set; }
     public DbSet<VideoEntity> Videos { get; set; }
     public DbSet<TransactionEntity> Transactions { get; set; }
+    public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
+    public DbSet<ConcertTransactionEntity> ConcertTransactions { get; set; }
     public DbSet<PreferenceEntity> Preferences { get; set; }
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
     public DbSet<StripeEventEntity> StripeEvents { get; set; }
@@ -71,16 +73,29 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(m => m.ToUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<TransactionEntity>()
-            .HasOne(p => p.FromUser)
+        modelBuilder.Entity<TransactionEntity>(e =>
+        {
+            e.UseTptMappingStrategy();
+            e.HasOne(p => p.FromUser)
+                .WithMany()
+                .HasForeignKey(p => p.FromUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(p => p.ToUser)
+                .WithMany()
+                .HasForeignKey(p => p.ToUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<TicketTransactionEntity>()
+            .HasOne(t => t.Concert)
             .WithMany()
-            .HasForeignKey(p => p.FromUserId)
+            .HasForeignKey(t => t.ConcertId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<TransactionEntity>()
-            .HasOne(p => p.ToUser)
+        modelBuilder.Entity<ConcertTransactionEntity>()
+            .HasOne(t => t.Concert)
             .WithMany()
-            .HasForeignKey(p => p.ToUserId)
+            .HasForeignKey(t => t.ConcertId)
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<ConcertEntity>()

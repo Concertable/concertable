@@ -121,6 +121,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertOpportunityService, ConcertOpportunityService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddSingleton<ITransactionMapperFactory, TransactionMapperFactory>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<IReviewService, ReviewService>();
