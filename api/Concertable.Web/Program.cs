@@ -108,9 +108,9 @@ try
     var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
     await ApplicationDbInitializer.InitializeAsync(context, passwordHasher);
 }
-catch (Exception)
+catch (Exception ex)
 {
-    Console.WriteLine("oops");
+    Console.WriteLine("DB init failed: " + ex);
 }
 
 app.Run();
