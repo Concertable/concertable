@@ -1,28 +1,46 @@
 using Application.Interfaces;
 using Application.Interfaces.Concert;
+using Application.Interfaces.Payment;
+using Application.Requests;
+using Concertable.Core.Entities.Contracts;
 using Core.Enums;
 using Core.Exceptions;
 
 namespace Infrastructure.Services.Application;
 
-public class DoorSplitApplicationStrategy : IApplicationStrategy
+public class DoorSplitApplicationService : IApplicationStrategy
 {
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IConcertApplicationRepository applicationRepository;
+    private readonly IContractRepository contractRepository;
     private readonly IArtistManagerRepository artistManagerRepository;
+    private readonly IVenueManagerRepository venueManagerRepository;
+    private readonly IConcertRepository concertRepository;
+    private readonly IStripeAccountService stripeAccountService;
+    private readonly IPaymentService paymentService;
     private readonly IConcertService concertService;
     private readonly IConcertNotificationService notificationService;
 
-    public DoorSplitApplicationStrategy(
+    public DoorSplitApplicationService(
         IConcertApplicationValidator applicationValidator,
         IConcertApplicationRepository applicationRepository,
+        IContractRepository contractRepository,
         IArtistManagerRepository artistManagerRepository,
+        IVenueManagerRepository venueManagerRepository,
+        IConcertRepository concertRepository,
+        IStripeAccountService stripeAccountService,
+        IPaymentService paymentService,
         IConcertService concertService,
         IConcertNotificationService notificationService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
+        this.contractRepository = contractRepository;
         this.artistManagerRepository = artistManagerRepository;
+        this.venueManagerRepository = venueManagerRepository;
+        this.concertRepository = concertRepository;
+        this.stripeAccountService = stripeAccountService;
+        this.paymentService = paymentService;
         this.concertService = concertService;
         this.notificationService = notificationService;
     }
@@ -62,9 +80,39 @@ public class DoorSplitApplicationStrategy : IApplicationStrategy
         var application = await applicationRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Application not found");
 
+        var contract = await contractRepository.GetByApplicationIdAsync<DoorSplitContractEntity>(application.Id)
+            ?? throw new NotFoundException("DoorSplit contract not found");
+
+        var venueManager = await venueManagerRepository.GetByApplicationIdAsync(application.Id)
+            ?? throw new NotFoundException("Venue manager not found");
+
+        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(application.Id)
+            ?? throw new NotFoundException("Artist manager not found");
+
         application.Status = ApplicationStatus.Complete;
         await applicationRepository.SaveChangesAsync();
 
-        throw new NotImplementedException("DoorSplit payout not yet implemented");
+        var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
+        var artistShare = totalRevenue * (contract.ArtistDoorPercent / 100);
+
+        if (venueManager.StripeId is null)
+            throw new BadRequestException("Venue manager does not have a Stripe account");
+
+        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(venueManager.StripeId);
+
+        await paymentService.ProcessAsync(new TransactionRequest
+        {
+            PaymentMethodId = paymentMethodId,
+            FromUserEmail = venueManager.Email!,
+            Amount = artistShare,
+            DestinationStripeId = artistManager.StripeId,
+            Metadata = new Dictionary<string, string>
+            {
+                { "fromUserId", venueManager.Id.ToString() },
+                { "toUserId", artistManager.Id.ToString() },
+                { "type", "settlement" },
+                { "applicationId", application.Id.ToString() }
+            }
+        });
     }
 }

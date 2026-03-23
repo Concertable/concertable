@@ -19,4 +19,5 @@ public interface IConcertRepository : IRepository<Core.Entities.ConcertEntity>
     Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date);
     Task<ContractType?> GetTypeByIdAsync(int id);
     Task<IEnumerable<int>> GetEndedConfirmedIdsAsync();
+    Task<decimal> GetTotalRevenueByConcertIdAsync(int concertId);
 }

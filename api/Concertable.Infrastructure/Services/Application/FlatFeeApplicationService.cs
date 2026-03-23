@@ -8,7 +8,7 @@ using Core.Exceptions;
 
 namespace Infrastructure.Services.Application;
 
-public class VenueHireApplicationStrategy : IApplicationStrategy
+public class FlatFeeApplicationService : IApplicationStrategy
 {
     private readonly IConcertApplicationValidator applicationValidator;
     private readonly IConcertApplicationRepository applicationRepository;
@@ -20,7 +20,7 @@ public class VenueHireApplicationStrategy : IApplicationStrategy
     private readonly IConcertService concertService;
     private readonly IConcertNotificationService notificationService;
 
-    public VenueHireApplicationStrategy(
+    public FlatFeeApplicationService(
         IConcertApplicationValidator applicationValidator,
         IConcertApplicationRepository applicationRepository,
         IContractRepository contractRepository,
@@ -52,33 +52,33 @@ public class VenueHireApplicationStrategy : IApplicationStrategy
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        var contract = await contractRepository.GetByApplicationIdAsync<VenueHireContractEntity>(applicationId)
-            ?? throw new NotFoundException("VenueHire contract not found");
-
-        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Artist manager not found");
+        var contract = await contractRepository.GetByApplicationIdAsync<FlatFeeContractEntity>(applicationId)
+            ?? throw new NotFoundException("FlatFee contract not found");
 
         var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Venue manager not found");
 
+        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("Artist manager not found");
+
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
-        if (artistManager.StripeId is null)
-            throw new BadRequestException("Artist manager does not have a Stripe account");
+        if (venueManager.StripeId is null)
+            throw new BadRequestException("Venue manager does not have a Stripe account");
 
-        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(artistManager.StripeId);
+        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(venueManager.StripeId);
 
         await paymentService.ProcessAsync(new TransactionRequest
         {
             PaymentMethodId = paymentMethodId,
-            FromUserEmail = artistManager.Email!,
-            Amount = contract.HireFee,
-            DestinationStripeId = venueManager.StripeId,
+            FromUserEmail = venueManager.Email!,
+            Amount = contract.Fee,
+            DestinationStripeId = artistManager.StripeId,
             Metadata = new Dictionary<string, string>
             {
-                { "fromUserId", artistManager.Id.ToString() },
-                { "toUserId", venueManager.Id.ToString() },
+                { "fromUserId", venueManager.Id.ToString() },
+                { "toUserId", artistManager.Id.ToString() },
                 { "type", "settlement" },
                 { "applicationId", applicationId.ToString() }
             }

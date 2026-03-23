@@ -165,4 +165,12 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
             .Select(c => c.Id)
             .ToListAsync();
     }
+
+    public async Task<decimal> GetTotalRevenueByConcertIdAsync(int concertId)
+    {
+        return await context.Concerts
+            .Where(c => c.Id == concertId)
+            .Select(c => c.Price * (c.TotalTickets - c.AvailableTickets))
+            .FirstOrDefaultAsync();
+    }
 }

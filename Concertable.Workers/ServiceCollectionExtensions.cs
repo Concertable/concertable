@@ -56,10 +56,10 @@ internal static class ServiceCollectionExtensions
 
         services.AddScoped<ICompleteProcessor, CompleteProcessor>();
         services.AddScoped<ISettlementProcessor, SettlementProcessor>();
-        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationStrategy>(ContractType.FlatFee);
-        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationStrategy>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationStrategy>(ContractType.Versus);
-        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationStrategy>(ContractType.VenueHire);
+        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationService>(ContractType.FlatFee);
+        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationService>(ContractType.Versus);
+        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationService>(ContractType.VenueHire);
 
 
         return services;

@@ -204,10 +204,10 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
         services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
 
-        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationStrategy>(ContractType.FlatFee);
-        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationStrategy>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationStrategy>(ContractType.Versus);
-        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationStrategy>(ContractType.VenueHire);
+        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationService>(ContractType.FlatFee);
+        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationService>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationService>(ContractType.Versus);
+        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationService>(ContractType.VenueHire);
 
         services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
