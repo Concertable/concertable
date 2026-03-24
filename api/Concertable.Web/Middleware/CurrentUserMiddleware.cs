@@ -19,7 +19,7 @@ public class CurrentUserMiddleware
     {
         if (context.User.Identity?.IsAuthenticated == true &&
             context.User.FindFirst("sub") is { } subClaim &&
-            int.TryParse(subClaim.Value, out var userId))
+            Guid.TryParse(subClaim.Value, out var userId))
         {
             var dto = await userService.GetUserByIdAsync(userId, context.RequestAborted);
             if (dto is not null)

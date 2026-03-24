@@ -5,7 +5,7 @@ namespace Application.Interfaces;
 
 public interface IArtistRepository : IRepository<ArtistEntity>
 {
-    Task<int?> GetIdByUserIdAsync(int id);
-    Task<ArtistEntity?> GetByUserIdAsync(int id);
+    Task<int?> GetIdByUserIdAsync(Guid id);
+    Task<ArtistEntity?> GetByUserIdAsync(Guid id);
     Task<ArtistEntity?> GetDetailsByIdAsync(int id);
 }

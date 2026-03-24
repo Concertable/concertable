@@ -6,8 +6,8 @@ namespace Application.Interfaces;
 
 public interface ICurrentUser
 {
-    int? Id { get; }
-    int GetId();
+    Guid? Id { get; }
+    Guid GetId();
     UserDto Get();
     UserDto? GetOrDefault();
     UserEntity GetEntity();

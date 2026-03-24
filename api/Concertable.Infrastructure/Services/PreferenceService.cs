@@ -23,7 +23,7 @@ public class PreferenceService : IPreferenceService
         this.genreSyncService = genreSyncService;
     }
 
-    public async Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, int? userId = null)
+    public async Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, Guid? userId = null)
     {
         var resolvedUserId = userId ?? currentUser.GetId();
 
@@ -42,7 +42,7 @@ public class PreferenceService : IPreferenceService
         return preferences.ToDtos();
     }
 
-    public async Task<PreferenceDto?> GetByUserIdAsync(int userId)
+    public async Task<PreferenceDto?> GetByUserIdAsync(Guid userId)
     {
         var preference = await preferenceRepository.GetByUserIdAsync(userId);
         return preference?.ToDto();

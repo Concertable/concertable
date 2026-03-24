@@ -194,7 +194,7 @@ public class ConcertService : IConcertService
             {
                 Concert = concertEntity.ToDto(),
                 ConcertHeader = concertHeaderDto,
-                UserIds = Enumerable.Empty<int>()
+                UserIds = Enumerable.Empty<Guid>()
             };
         }
 

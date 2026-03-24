@@ -8,5 +8,5 @@ namespace Application.Interfaces;
 
 public interface IUserPreferenceService
 {
-    Task<IEnumerable<int>> GetUserIdsByPreferencesAsync();
+    Task<IEnumerable<Guid>> GetUserIdsByPreferencesAsync();
 }

@@ -7,9 +7,9 @@ public abstract class TransactionEntity : IEntity, IAuditable
 {
     public int Id { get; set; }
     public abstract TransactionType TransactionType { get; }
-    public int FromUserId { get; set; }
+    public Guid FromUserId { get; set; }
     public UserEntity FromUser { get; set; } = null!;
-    public int ToUserId { get; set; }
+    public Guid ToUserId { get; set; }
     public UserEntity ToUser { get; set; } = null!;
     public required string PaymentIntentId { get; set; }
     public long Amount { get; set; }

@@ -13,5 +13,5 @@ public interface IPreferenceRepository : IRepository<PreferenceEntity>
 
     new Task<PreferenceEntity?> GetByIdAsync(int id);
 
-    Task<PreferenceEntity?> GetByUserIdAsync(int id);
+    Task<PreferenceEntity?> GetByUserIdAsync(Guid id);
 }

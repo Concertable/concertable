@@ -35,7 +35,7 @@ public class PreferenceRepository : Repository<PreferenceEntity>, IPreferenceRep
         return await query.FirstOrDefaultAsync();
     }
 
-    public async Task<PreferenceEntity?> GetByUserIdAsync(int id)
+    public async Task<PreferenceEntity?> GetByUserIdAsync(Guid id)
     {
         var query = context.Preferences
             .Include(p => p.User)

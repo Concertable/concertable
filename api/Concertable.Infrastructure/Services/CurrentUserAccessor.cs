@@ -19,8 +19,8 @@ public class CurrentUserAccessor : ICurrentUser
         httpContextAccessor.HttpContext?.Items[nameof(CurrentUser)] as CurrentUser
         ?? CurrentUser.Unauthenticated;
 
-    public int? Id => Current.Id;
-    public int GetId() => Current.GetId();
+    public Guid? Id => Current.Id;
+    public Guid GetId() => Current.GetId();
     public UserDto Get() => Current.Get();
     public UserDto? GetOrDefault() => Current.GetOrDefault();
     public UserEntity GetEntity() => Current.GetEntity();

@@ -19,7 +19,7 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<VenueEntity?> GetByUserIdAsync(int id)
+    public async Task<VenueEntity?> GetByUserIdAsync(Guid id)
     {
         return await context.Venues
             .Where(v => v.UserId == id)
@@ -27,7 +27,7 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<int?> GetIdByUserIdAsync(int userId)
+    public async Task<int?> GetIdByUserIdAsync(Guid userId)
     {
         return await context.Venues
             .Where(a => a.UserId == userId)

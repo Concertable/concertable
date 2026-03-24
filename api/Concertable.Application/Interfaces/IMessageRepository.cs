@@ -12,7 +12,7 @@ namespace Application.Interfaces;
 
 public interface IMessageRepository : IRepository<MessageEntity>
 {
-    Task<Pagination<MessageEntity>> GetByUserIdAsync(int id, IPageParams pageParams);
-    Task<int> GetUnreadCountByUserIdAsync(int id);
+    Task<Pagination<MessageEntity>> GetByUserIdAsync(Guid id, IPageParams pageParams);
+    Task<int> GetUnreadCountByUserIdAsync(Guid id);
     Task MarkAsReadAsync(List<int> ids);
 }

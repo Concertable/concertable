@@ -22,7 +22,7 @@ public class UriService : IUriService
         this.linkGenerator = linkGenerator;
     }
 
-    public Uri GetEmailConfirmationUri(int userId, string token)
+    public Uri GetEmailConfirmationUri(Guid userId, string token)
     {
         var uri = linkGenerator.GetUriByAction(
             httpContextAccessor.HttpContext!,
@@ -37,7 +37,7 @@ public class UriService : IUriService
         return new Uri(uri);
     }
 
-    public Uri GetEmailChangeConfirmationUri(int userId, string token, string newEmail)
+    public Uri GetEmailChangeConfirmationUri(Guid userId, string token, string newEmail)
     {
         var uri = linkGenerator.GetUriByAction(
             httpContextAccessor.HttpContext!,
@@ -52,7 +52,7 @@ public class UriService : IUriService
         return new Uri(uri);
     }
 
-    public Uri GetPasswordResetUri(int userId, string token)
+    public Uri GetPasswordResetUri(Guid userId, string token)
     {
         var uri = linkGenerator.GetUriByAction(
             httpContextAccessor.HttpContext!,

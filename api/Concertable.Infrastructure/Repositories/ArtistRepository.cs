@@ -11,7 +11,7 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
     {
     }
 
-    public async Task<ArtistEntity?> GetByUserIdAsync(int id)
+    public async Task<ArtistEntity?> GetByUserIdAsync(Guid id)
     {
         return await context.Artists
             .Where(v => v.UserId == id)
@@ -31,7 +31,7 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<int?> GetIdByUserIdAsync(int id)
+    public async Task<int?> GetIdByUserIdAsync(Guid id)
     {
         return await context.Artists
             .Where(a => a.UserId == id)

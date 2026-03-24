@@ -16,7 +16,7 @@ public interface IReviewRepository : IRepository<ReviewEntity>
     Task<Pagination<ReviewEntity>> GetByArtistIdAsync(int artistId, IPageParams pageParams);
     Task<Pagination<ReviewEntity>> GetByVenueIdAsync(int venueId, IPageParams pageParams);
 
-    Task<bool> CanUserIdReviewConcertIdAsync(int userId, int concertId);
-    Task<bool> CanUserIdReviewArtistIdAsync(int userId, int artistId);
-    Task<bool> CanUserIdReviewVenueIdAsync(int userId, int venueId);
+    Task<bool> CanUserIdReviewConcertIdAsync(Guid userId, int concertId);
+    Task<bool> CanUserIdReviewArtistIdAsync(Guid userId, int artistId);
+    Task<bool> CanUserIdReviewVenueIdAsync(Guid userId, int venueId);
 }

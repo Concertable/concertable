@@ -10,7 +10,7 @@ namespace Infrastructure.Data.SeedData;
 
 public static class VenueFaker
 {
-    public static Faker<VenueEntity> GetFaker(int userId, string name, string imageUrl)
+    public static Faker<VenueEntity> GetFaker(Guid userId, string name, string imageUrl)
     {
         return new Faker<VenueEntity>()
             .RuleFor(v => v.UserId, userId)

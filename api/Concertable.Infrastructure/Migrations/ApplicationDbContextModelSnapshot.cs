@@ -58,8 +58,8 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -272,8 +272,8 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("FromUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("FromUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Read")
                         .HasColumnType("bit");
@@ -281,8 +281,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<DateTime>("SentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ToUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ToUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -319,8 +319,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<double>("RadiusKm")
                         .HasColumnType("float");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -348,8 +348,8 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -438,8 +438,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<byte[]>("QrCode")
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -468,8 +468,8 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("FromUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("FromUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
@@ -484,8 +484,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("ToUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ToUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -503,11 +503,9 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.UserEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("County")
                         .HasColumnType("nvarchar(max)");
@@ -567,8 +565,8 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

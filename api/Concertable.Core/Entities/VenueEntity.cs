@@ -7,7 +7,7 @@ namespace Core.Entities;
 public class VenueEntity : IEntity, IHasName, IHasLocation
 {
     public int Id { get; set; }
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
     public required string Name { get; set; }
     public required string About { get; set; }
     public required string ImageUrl { get; set; }

@@ -8,7 +8,7 @@ namespace Application.Interfaces;
 
 public interface IUriService
 {
-    Uri GetEmailConfirmationUri(int userId, string token);
-    Uri GetEmailChangeConfirmationUri(int userId, string token, string newEmail);
-    Uri GetPasswordResetUri(int userId, string token);
+    Uri GetEmailConfirmationUri(Guid userId, string token);
+    Uri GetEmailChangeConfirmationUri(Guid userId, string token, string newEmail);
+    Uri GetPasswordResetUri(Guid userId, string token);
 }

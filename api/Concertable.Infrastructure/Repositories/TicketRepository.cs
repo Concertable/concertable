@@ -29,7 +29,7 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
         return query.FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(int id)
+    public async Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(Guid id)
     {
         var query = context.Tickets
             .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
@@ -38,7 +38,7 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
         return await query.ToListAsync();
     }
 
-    public async Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(int id)
+    public async Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(Guid id)
     {
         var query = context.Tickets
              .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate >= timeProvider.GetUtcNow())
@@ -47,7 +47,7 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
         return await query.ToListAsync();
     }
 
-    public async Task<TicketEntity?> GetByUserIdAndConcertIdAsync(int userId, int concertId)
+    public async Task<TicketEntity?> GetByUserIdAndConcertIdAsync(Guid userId, int concertId)
     {
         return await context.Tickets
             .Include(t => t.Concert)
