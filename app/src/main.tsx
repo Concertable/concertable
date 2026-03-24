@@ -4,6 +4,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { APIProvider as GoogleProvider } from "@vis.gl/react-google-maps";
 import { routeTree } from "./routeTree.gen";
 import { ThemeProvider } from "./providers/ThemeProvider";
+import { useAuthStore } from "./store/useAuthStore";
 import "./index.css";
 
 const router = createRouter({ routeTree });
@@ -14,12 +15,19 @@ declare module "@tanstack/react-router" {
   }
 }
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <GoogleProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </GoogleProvider>
-  </StrictMode>
-);
+async function init() {
+  const { refreshToken, refresh } = useAuthStore.getState();
+  if (refreshToken) await refresh().catch(() => {});
+
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <GoogleProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </GoogleProvider>
+    </StrictMode>
+  );
+}
+
+init();
