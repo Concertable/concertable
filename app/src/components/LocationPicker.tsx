@@ -36,6 +36,7 @@ export function LocationPicker({ onSelect }: Props) {
         onChange={(e) => setValue(e.target.value)}
         disabled={!ready}
         placeholder="Location"
+        className="border-none shadow-none focus-visible:ring-0 bg-transparent p-0 h-auto"
       />
       {status === "OK" && (
         <ul className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-md">

@@ -1,0 +1,60 @@
+import { useState } from "react";
+import { MapPin, Search, CalendarIcon } from "lucide-react";
+import type { DateRange } from "react-day-picker";
+import type { LatLng } from "@/types/location";
+import { LocationPicker } from "@/components/LocationPicker";
+import { DateRangePicker } from "@/components/DateRangePicker";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+
+export interface SearchFilters {
+  query: string;
+  location?: LatLng;
+  dates?: DateRange;
+}
+
+interface Props {
+  onSearch: (filters: SearchFilters) => void;
+}
+
+export function SearchBar({ onSearch }: Props) {
+  const [query, setQuery] = useState("");
+  const [location, setLocation] = useState<LatLng | undefined>();
+  const [dates, setDates] = useState<DateRange | undefined>();
+
+  function handleSearch() {
+    onSearch({ query, location, dates });
+  }
+
+  return (
+    <div className="flex items-stretch w-full bg-background rounded-full shadow-md overflow-visible border border-border">
+      <div className="flex items-center gap-2 px-4 py-3 min-w-48">
+        <MapPin className="text-muted-foreground shrink-0" size={18} />
+        <LocationPicker onSelect={setLocation} />
+      </div>
+
+      <Separator orientation="vertical" />
+
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+        placeholder="Search"
+        className="flex-1 px-4 py-3 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+      />
+
+      <Separator orientation="vertical" />
+
+      <div className="flex items-center gap-2 px-4 py-3 min-w-44">
+        <CalendarIcon className="text-muted-foreground shrink-0" size={18} />
+        <DateRangePicker onChange={setDates} />
+      </div>
+
+      <div className="pr-2">
+        <Button onClick={handleSearch} size="icon" className="rounded-full">
+          <Search size={16} />
+        </Button>
+      </div>
+    </div>
+  );
+}

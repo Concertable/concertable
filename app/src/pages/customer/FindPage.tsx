@@ -1,23 +1,14 @@
-import { Input } from "@/components/ui/input";
-import { LocationPicker } from "@/components/LocationPicker";
-import type { LatLng } from "@/types/location";
-import { DateRangePicker } from "@/components/DateRangePicker";
-import type { DateRange } from "react-day-picker";
+import { SearchBar } from "@/components/SearchBar";
+import type { SearchFilters } from "@/components/SearchBar";
 
 export default function FindPage() {
-  function handleLocationSelect(location: LatLng) {
-    console.log(location);
-  }
-
-  function handleDateChange(range: DateRange | undefined) {
-    console.log(range);
+  function handleSearch(filters: SearchFilters) {
+    console.log(filters);
   }
 
   return (
-    <div className="p-6 flex gap-2">
-      <LocationPicker onSelect={handleLocationSelect} />
-      <Input placeholder="Search" />
-      <DateRangePicker onChange={handleDateChange} />
+    <div className="p-6 w-full max-w-7xl mx-auto">
+      <SearchBar onSearch={handleSearch} />
     </div>
   );
 }
