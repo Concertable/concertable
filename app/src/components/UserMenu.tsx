@@ -1,6 +1,7 @@
 import { useRouter } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useNavSection } from "@/hooks/useNavSection";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/IconButton";
 import {
@@ -39,6 +40,9 @@ export function UserMenu() {
   }
 
   const isCustomer = user.role === "Customer";
+  const section = useNavSection();
+  const inCustomerView = section === "Customer";
+  const managerHome = user.role === "VenueManager" ? "/venue" : "/artist";
 
   return (
     <DropdownMenu>
@@ -76,6 +80,21 @@ export function UserMenu() {
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+        )}
+
+        {!isCustomer && (
+          <>
+            <DropdownMenuSeparator />
+            {inCustomerView ? (
+              <DropdownMenuItem asChild>
+                <Link to={managerHome}>Manager View</Link>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem asChild>
+                <Link to="/">Customer View</Link>
+              </DropdownMenuItem>
+            )}
+          </>
         )}
 
         <DropdownMenuSeparator />

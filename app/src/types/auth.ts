@@ -1,4 +1,5 @@
 export type Role = "Customer" | "ArtistManager" | "VenueManager" | "Admin";
+export type UserRole = Exclude<Role, "Admin">;
 
 export interface User {
   id: number;

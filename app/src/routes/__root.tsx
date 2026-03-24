@@ -3,10 +3,11 @@ import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/Navbar";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { useAuthStore } from "@/store/useAuthStore";
 import type { NavLink } from "@/components/Navbar";
+import type { UserRole } from "@/types/auth";
+import { useNavSection } from "@/hooks/useNavSection";
 
-const navLinks: Record<string, NavLink[]> = {
+const navLinks: Record<UserRole, NavLink[]> = {
   Customer: [
     { label: "Home", to: "/" },
     { label: "Find", to: "/find" },
@@ -27,9 +28,9 @@ const navLinks: Record<string, NavLink[]> = {
 const authRoutes = ["/login", "/register"];
 
 function RootLayout() {
-  const user = useAuthStore((s) => s.user);
+  const section = useNavSection();
+  const links = navLinks[section];
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const links = (user?.role ? navLinks[user.role] : null) ?? navLinks.Customer;
   const showNav = !authRoutes.includes(pathname);
 
   return (
