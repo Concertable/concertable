@@ -24,7 +24,7 @@ public class MessageService : IMessageService
         this.timeProvider = timeProvider;
     }
 
-    public async Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content)
+    public async Task SendAsync(Guid fromUserId, Guid toUserId, string action, int actionId, string content)
     {
         var message = new MessageEntity
         {
@@ -40,7 +40,7 @@ public class MessageService : IMessageService
         await messageRepository.AddAsync(message);
     }
 
-    public async Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content)
+    public async Task SendAndSaveAsync(Guid fromUserId, Guid toUserId, string action, int actionId, string content)
     {
         var message = new MessageEntity
         {

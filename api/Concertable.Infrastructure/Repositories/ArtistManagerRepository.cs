@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class ArtistManagerRepository : Repository<ArtistManagerEntity>, IArtistManagerRepository
+public class ArtistManagerRepository : GuidRepository<ArtistManagerEntity>, IArtistManagerRepository
 {
     public ArtistManagerRepository(ApplicationDbContext context) : base(context)
     {

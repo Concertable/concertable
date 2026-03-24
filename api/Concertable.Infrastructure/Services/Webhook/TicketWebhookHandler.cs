@@ -28,8 +28,8 @@ public class TicketWebhookHandler : ITicketWebhookStrategy
 
     public async Task HandleAsync(PaymentIntent intent, CancellationToken cancellationToken)
     {
-        var fromUserId = int.Parse(intent.Metadata["fromUserId"]);
-        var toUserId = int.Parse(intent.Metadata["toUserId"]);
+        var fromUserId = Guid.Parse(intent.Metadata["fromUserId"]);
+        var toUserId = Guid.Parse(intent.Metadata["toUserId"]);
         var concertId = int.Parse(intent.Metadata["concertId"]);
 
         await transactionService.LogAsync(new TicketTransactionDto

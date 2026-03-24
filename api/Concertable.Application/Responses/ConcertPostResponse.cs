@@ -6,5 +6,5 @@ public record ConcertPostResponse
 {
     public required ConcertDto Concert { get; set; }
     public required ConcertHeaderDto ConcertHeader { get; set; }
-    public IEnumerable<int> UserIds { get; set; } = [];
+    public IEnumerable<Guid> UserIds { get; set; } = [];
 }

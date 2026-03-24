@@ -30,9 +30,12 @@ public class VenueRepositoryTests : IDisposable
         // Arrange
         var venueParams = new SearchParams { Sort = "Name", HeaderType = HeaderType.Venue };
 
+        var userId1 = Guid.NewGuid();
+        var userId2 = Guid.NewGuid();
+
         var venueHeaders = new List<VenueEntity> {
-            new VenueEntity { Id = 1, Name = "Test Venue 1", About = "About 1", ImageUrl = "", UserId = 1 },
-            new VenueEntity { Id = 2, Name = "Test Venue 2", About = "About 2", ImageUrl = "", UserId = 2 }
+            new VenueEntity { Id = 1, Name = "Test Venue 1", About = "About 1", ImageUrl = "", UserId = userId1 },
+            new VenueEntity { Id = 2, Name = "Test Venue 2", About = "About 2", ImageUrl = "", UserId = userId2 }
         };
 
         // Populate database
@@ -49,7 +52,7 @@ public class VenueRepositoryTests : IDisposable
     public async Task GetByUserIdAsync_ShouldReturnVenue()
     {
         // Arrange
-        int userId = 1;
+        var userId = Guid.NewGuid();
         // Act
         var result = await venueRepository.GetByUserIdAsync(userId);
         // Assert

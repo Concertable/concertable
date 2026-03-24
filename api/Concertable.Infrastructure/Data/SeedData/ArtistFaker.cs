@@ -10,7 +10,7 @@ namespace Infrastructure.Data.SeedData;
 
 public static class ArtistFaker
 {
-    public static Faker<ArtistEntity> GetFaker(int userId, string name, string imageUrl)
+    public static Faker<ArtistEntity> GetFaker(Guid userId, string name, string imageUrl)
     {
         return new Faker<ArtistEntity>()
             .RuleFor(a => a.UserId, userId)

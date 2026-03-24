@@ -25,7 +25,7 @@ public class UserService : IUserService
         this.geometryProvider = geometryProvider;
     }
 
-    public async Task<int> GetIdByApplicationIdAsync(int applicationId)
+    public async Task<Guid> GetIdByApplicationIdAsync(int applicationId)
     {
         return await userRepsitory.GetIdByApplicationIdAsync(applicationId);
     }
@@ -35,7 +35,7 @@ public class UserService : IUserService
         return await userRepsitory.GetByApplicationIdAsync(applicationId);
     }
 
-    public async Task<int> GetIdByConcertIdAsync(int concertId)
+    public async Task<Guid> GetIdByConcertIdAsync(int concertId)
     {
         return await userRepsitory.GetIdByConcertIdAsync(concertId);
     }
@@ -62,13 +62,13 @@ public class UserService : IUserService
         return user.ToDto();
     }
 
-    public async Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<UserDto?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var user = await userRepsitory.GetByIdAsync(userId, cancellationToken);
         return user?.ToDto();
     }
 
-    public async Task<UserEntity?> GetUserEntityByIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<UserEntity?> GetUserEntityByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await userRepsitory.GetByIdAsync(userId, cancellationToken);
     }

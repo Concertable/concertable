@@ -10,7 +10,7 @@ public record PaymentDto
     public required string PaymentMethodId { get; set; }
     public required string Description { get; set; }
     public int ConcertId { get; set; }
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
 }
 
 public record TicketTransactionDto : ITransaction
@@ -18,8 +18,8 @@ public record TicketTransactionDto : ITransaction
     public int Id { get; set; }
     public TransactionType TransactionType => TransactionType.Ticket;
     public int ConcertId { get; set; }
-    public int FromUserId { get; set; }
-    public int ToUserId { get; set; }
+    public Guid FromUserId { get; set; }
+    public Guid ToUserId { get; set; }
     public required string PaymentIntentId { get; set; }
     public long Amount { get; set; }
     public TransactionStatus Status { get; set; }
@@ -31,8 +31,8 @@ public record SettlementTransactionDto : ITransaction
     public int Id { get; set; }
     public TransactionType TransactionType => TransactionType.Settlement;
     public int ApplicationId { get; set; }
-    public int FromUserId { get; set; }
-    public int ToUserId { get; set; }
+    public Guid FromUserId { get; set; }
+    public Guid ToUserId { get; set; }
     public required string PaymentIntentId { get; set; }
     public long Amount { get; set; }
     public TransactionStatus Status { get; set; }
@@ -43,8 +43,8 @@ public record PurchaseCompleteDto
 {
     public int EntityId { get; set; }
     public required string TransactionId { get; set; }
-    public int FromUserId { get; set; }
+    public Guid FromUserId { get; set; }
     public required string FromEmail { get; set; }
-    public int ToUserId { get; set; }
+    public Guid ToUserId { get; set; }
     public int? Quantity { get; set; }
 }

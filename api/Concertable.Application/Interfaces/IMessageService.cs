@@ -13,8 +13,8 @@ namespace Application.Interfaces;
 
 public interface IMessageService
 {
-    Task SendAsync(int fromUserId, int toUserId, string action, int actionId, string content);
-    Task SendAndSaveAsync(int fromUserId, int toUserId, string action, int actionId, string content);
+    Task SendAsync(Guid fromUserId, Guid toUserId, string action, int actionId, string content);
+    Task SendAndSaveAsync(Guid fromUserId, Guid toUserId, string action, int actionId, string content);
     Task<MessageSummaryDto> GetSummaryForUser();
     Task<Pagination<MessageDto>> GetForUserAsync(IPageParams pageParams);
     Task<int> GetUnreadCountForUserAsync();

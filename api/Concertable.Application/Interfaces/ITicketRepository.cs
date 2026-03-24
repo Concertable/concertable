@@ -10,7 +10,7 @@ namespace Application.Interfaces;
 public interface ITicketRepository : IRepository<TicketEntity>
 {
     Task<byte[]?> GetQrCodeByIdAsync(int id);
-    Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(int id);
-    Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(int id);
-    Task<TicketEntity?> GetByUserIdAndConcertIdAsync(int userId, int concertId);
+    Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(Guid id);
+    Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(Guid id);
+    Task<TicketEntity?> GetByUserIdAndConcertIdAsync(Guid userId, int concertId);
 }

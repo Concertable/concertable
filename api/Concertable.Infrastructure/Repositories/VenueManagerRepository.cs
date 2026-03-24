@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class VenueManagerRepository : Repository<VenueManagerEntity>, IVenueManagerRepository
+public class VenueManagerRepository : GuidRepository<VenueManagerEntity>, IVenueManagerRepository
 {
     public VenueManagerRepository(ApplicationDbContext context) : base(context)
     {

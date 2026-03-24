@@ -31,7 +31,9 @@
       "Bash(xargs sed:*)",
       "Bash(sed -i 's/IContractStrategyResolver<IAcceptStrategy>/IContractStrategyResolver<IApplicationStrategy>/g' \"C:/Users/TommySeery/source/repos/Concertable/api/Concertable.Infrastructure/Services/Accept/AcceptProcessor.cs\")",
       "Bash(sed -i 's/IContractStrategyResolver<ICompleteStrategy>/IContractStrategyResolver<IApplicationStrategy>/g' \"C:/Users/TommySeery/source/repos/Concertable/api/Concertable.Infrastructure/Services/Complete/CompleteProcessor.cs\")",
-      "Bash(find C:UserstommysourcereposConcertableapi -name *Migration* -o -name Migrations -type d)"
+      "Bash(find C:UserstommysourcereposConcertableapi -name *Migration* -o -name Migrations -type d)",
+      "Bash(find C:UserstommysourcereposConcertableapi -path */Mappers/UserMapper* -o -path */Mappers/*User*)",
+      "Bash(find C:UserstommysourcereposConcertableapi -name *Middleware* -o -name *CurrentUser*)"
     ]
   }
 }

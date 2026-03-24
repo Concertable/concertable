@@ -72,28 +72,28 @@ public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
         GetAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == venueId, pageParams);
 
 
-    private IQueryable<TicketEntity> GetUnreviewedTicketsByUser(int userId)
+    private IQueryable<TicketEntity> GetUnreviewedTicketsByUser(Guid userId)
     {
         return context.Tickets
             .Where(t => t.UserId == userId && t.Review == null);
     }
 
 
-    public Task<bool> CanUserIdReviewConcertIdAsync(int userId, int concertId)
+    public Task<bool> CanUserIdReviewConcertIdAsync(Guid userId, int concertId)
     {
         return GetUnreviewedTicketsByUser(userId)
             .AnyAsync(t => t.ConcertId == concertId && t.Concert.Application.Opportunity.StartDate <= timeProvider.GetUtcNow());
     }
 
 
-    public Task<bool> CanUserIdReviewArtistIdAsync(int userId, int artistId)
+    public Task<bool> CanUserIdReviewArtistIdAsync(Guid userId, int artistId)
     {
         return GetUnreviewedTicketsByUser(userId)
             .AnyAsync(t => t.Concert.Application.Artist.Id == artistId);
     }
 
 
-    public Task<bool> CanUserIdReviewVenueIdAsync(int userId, int venueId)
+    public Task<bool> CanUserIdReviewVenueIdAsync(Guid userId, int venueId)
     {
         return GetUnreviewedTicketsByUser(userId)
             .AnyAsync(t => t.Concert.Application.Opportunity.Venue.Id == venueId);

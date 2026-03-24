@@ -7,9 +7,9 @@ namespace Core.Entities;
 /// <summary>
 /// UserEntity for auth. Role is on the entity (Customer, VenueManager, ArtistManager, Admin).
 /// </summary>
-public class UserEntity : IEntity
+public class UserEntity : IGuidEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public required string Email { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
     public required Role Role { get; set; }

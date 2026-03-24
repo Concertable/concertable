@@ -21,9 +21,9 @@ public class CurrentUser : ICurrentUser
         this.entity = entity;
     }
 
-    public int? Id => dto?.Id;
+    public Guid? Id => dto?.Id;
 
-    public int GetId() => Id ?? throw new UnauthorizedException("User not authenticated");
+    public Guid GetId() => Id ?? throw new UnauthorizedException("User not authenticated");
 
     public UserDto Get() =>
         dto ?? throw new UnauthorizedException("User not authenticated");

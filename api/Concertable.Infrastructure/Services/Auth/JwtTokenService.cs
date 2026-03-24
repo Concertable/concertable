@@ -28,7 +28,7 @@ public class JwtTokenService : ITokenService
         this.rng = rng;
     }
 
-    public string CreateAccessToken(int userId, string email, Role role)
+    public string CreateAccessToken(Guid userId, string email, Role role)
     {
         var key = new SymmetricSecurityKey(Convert.FromBase64String(settings.JwtSigningKeyBase64));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

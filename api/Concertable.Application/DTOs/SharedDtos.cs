@@ -4,7 +4,7 @@ namespace Application.DTOs;
 
 public record UserDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public required string Email { get; set; }
     public Role? Role { get; set; }
     public double? Latitude { get; set; }

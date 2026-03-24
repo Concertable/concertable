@@ -19,7 +19,7 @@ public class MessageRepository : Repository<MessageEntity>, IMessageRepository
 {
     public MessageRepository(ApplicationDbContext context) : base(context) { }
 
-    public async Task<Pagination<MessageEntity>> GetByUserIdAsync(int id, IPageParams pageParams)
+    public async Task<Pagination<MessageEntity>> GetByUserIdAsync(Guid id, IPageParams pageParams)
     {
         var query = context.Messages
             .Include(m => m.FromUser)
@@ -29,7 +29,7 @@ public class MessageRepository : Repository<MessageEntity>, IMessageRepository
         return await query.ToPaginationAsync(pageParams);
     }
 
-    public async Task<int> GetUnreadCountByUserIdAsync(int id)
+    public async Task<int> GetUnreadCountByUserIdAsync(Guid id)
     {
         var query = context.Messages
             .Where(m => m.ToUserId == id && !m.Read);
