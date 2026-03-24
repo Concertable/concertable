@@ -35,7 +35,7 @@ function RootLayout() {
   return (
     <>
       {showNav && <Navbar links={links} />}
-      {showNav && <Breadcrumbs />
+      {showNav && <Breadcrumbs />}
       <Outlet />
       <Toaster richColors />
       {import.meta.env.DEV && <TanStackRouterDevtools />}

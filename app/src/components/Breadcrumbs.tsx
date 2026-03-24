@@ -1,7 +1,6 @@
 import { Link, useMatches } from "@tanstack/react-router";
 
 function formatSegment(segment: string) {
-  // turn param segments like $id into readable label, and kebab-case into words
   return segment
     .replace(/^\$/, "")
     .replace(/-/g, " ")
@@ -13,17 +12,10 @@ export function Breadcrumbs() {
 
   const crumbs = matches
     .filter((m) => m.pathname !== "/")
-    .flatMap((m) =>
-      m.pathname
-        .split("/")
-        .filter(Boolean)
-        .map((segment, i, arr) => ({
-          label: formatSegment(segment),
-          to: "/" + arr.slice(0, i + 1).join("/"),
-        }))
-    )
-    // deduplicate by path
-    .filter((crumb, i, arr) => arr.findIndex((c) => c.to === crumb.to) === i);
+    .map((m) => {
+      const segment = m.pathname.split("/").filter(Boolean).at(-1) ?? "";
+      return { label: formatSegment(segment), to: m.pathname };
+    });
 
   if (crumbs.length === 0) return null;
 
