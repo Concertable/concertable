@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserMenu } from "@/components/UserMenu";
 
 export interface NavLink {
   label: string;
@@ -27,6 +28,7 @@ export function Navbar({ links }: NavbarProps) {
             <Link
               key={link.to}
               to={link.to}
+              activeOptions={{ exact: true }}
               className="text-sm text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground [&.active]:font-medium"
             >
               {link.label}
@@ -35,7 +37,10 @@ export function Navbar({ links }: NavbarProps) {
         </div>
       </div>
 
-      <ThemeToggle />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <UserMenu />
+      </div>
     </nav>
   );
 }
