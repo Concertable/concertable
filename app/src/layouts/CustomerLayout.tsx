@@ -1,9 +1,5 @@
 import { Outlet } from "@tanstack/react-router";
 
 export default function CustomerLayout() {
-  return (
-    <div>
-      <Outlet />
-    </div>
-  );
+  return <Outlet />;
 }

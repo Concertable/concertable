@@ -35,28 +35,35 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4">
-      <h1>Login</h1>
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-sm px-6">
+        <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4">
+          <h1>Login</h1>
 
-      <div className="space-y-1">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" {...register("email")} />
-        {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+          <div className="space-y-1">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" {...register("email")} />
+            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" {...register("password")} />
+            {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+          </div>
+
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? "Logging in..." : "Login"}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            No account?{" "}
+            <Link to="/register" className="text-foreground underline underline-offset-4 hover:opacity-70">
+              Register
+            </Link>
+          </p>
+        </form>
       </div>
-
-      <div className="space-y-1">
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" {...register("password")} />
-        {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
-      </div>
-
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Logging in..." : "Login"}
-      </Button>
-
-      <p>
-        No account? <Link to="/register">Register</Link>
-      </p>
-    </form>
+    </div>
   );
 }
