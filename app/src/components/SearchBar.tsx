@@ -1,16 +1,18 @@
-import { useState } from "react";
 import { MapPin, Search, CalendarIcon } from "lucide-react";
-import type { DateRange } from "react-day-picker";
 import type { LatLng } from "@/types/location";
+import type { HeaderType } from "@/types/header";
+import { useSearchParamsState } from "@/hooks/useSearchParamsState";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 export interface SearchFilters {
-  query: string;
+  query?: string;
+  headerType: HeaderType;
   location?: LatLng;
-  dates?: DateRange;
+  from?: string;
+  to?: string;
 }
 
 interface Props {
@@ -18,12 +20,10 @@ interface Props {
 }
 
 export function SearchBar({ onSearch }: Props) {
-  const [query, setQuery] = useState("");
-  const [location, setLocation] = useState<LatLng | undefined>();
-  const [dates, setDates] = useState<DateRange | undefined>();
+  const { query, setQuery, headerType, location, setLocation, from, to, setDates } = useSearchParamsState();
 
   function handleSearch() {
-    onSearch({ query, location, dates });
+    onSearch({ query, headerType, location, from, to });
   }
 
   return (
@@ -36,7 +36,7 @@ export function SearchBar({ onSearch }: Props) {
       <Separator orientation="vertical" />
 
       <input
-        value={query}
+        value={query ?? ""}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         placeholder="Search"
@@ -50,7 +50,7 @@ export function SearchBar({ onSearch }: Props) {
         <DateRangePicker onChange={setDates} />
       </div>
 
-      <div className="pr-2">
+      <div className="pr-2 flex items-center">
         <Button onClick={handleSearch} size="icon" className="rounded-full">
           <Search size={16} />
         </Button>

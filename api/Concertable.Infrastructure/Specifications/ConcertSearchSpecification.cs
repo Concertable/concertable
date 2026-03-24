@@ -23,8 +23,8 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
             .Where(e => e.DatePosted != null)
             .Where(e => e.Application.Opportunity.EndDate > timeProvider.GetUtcNow());
 
-        if (searchParams.Date != null)
-            query = query.Where(e => e.Application.Opportunity.StartDate >= searchParams.Date);
+        if (searchParams.From != null)
+            query = query.Where(e => DateOnly.FromDateTime(e.Application.Opportunity.StartDate.DateTime) >= searchParams.From);
 
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));

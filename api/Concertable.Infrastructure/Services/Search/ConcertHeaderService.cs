@@ -14,10 +14,10 @@ public class ConcertHeaderService : IConcertHeaderService
         this.concertHeaderRepository = concertHeaderRepository;
     }
 
-    public async Task<Pagination<IHeader>> SearchAsync(SearchParams searchParams)
+    public async Task<IPagination<IHeader>> SearchAsync(SearchParams searchParams)
     {
         var result = await concertHeaderRepository.SearchAsync(searchParams);
-        return new Pagination<IHeader>(result.Data, result.TotalCount, result.PageNumber, result.PageSize);
+        return new Pagination<ConcertHeaderDto>(result.Data, result.TotalCount, result.PageNumber, result.PageSize);
     }
 
     public async Task<IEnumerable<IHeader>> GetByAmountAsync(int amount) =>

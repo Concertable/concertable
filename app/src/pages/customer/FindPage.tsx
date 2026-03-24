@@ -1,14 +1,14 @@
+import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { SearchBar } from "@/components/SearchBar";
-import type { SearchFilters } from "@/components/SearchBar";
+import { SearchResults } from "@/components/SearchResults";
 
 export default function FindPage() {
-  function handleSearch(filters: SearchFilters) {
-    console.log(filters);
-  }
+  const { filters, setFilters } = useSearchFilters();
 
   return (
-    <div className="p-6 w-full max-w-7xl mx-auto">
-      <SearchBar onSearch={handleSearch} />
+    <div className="p-6 w-full max-w-7xl mx-auto space-y-6">
+      <SearchBar onSearch={setFilters} />
+      <SearchResults filters={filters} />
     </div>
   );
 }

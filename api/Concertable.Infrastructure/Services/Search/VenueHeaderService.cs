@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Interfaces.Search;
 using Application.Responses;
 using Core.Parameters;
@@ -13,10 +14,10 @@ public class VenueHeaderService : IHeaderService
         this.venueHeaderRepository = venueHeaderRepository;
     }
 
-    public async Task<Pagination<IHeader>> SearchAsync(SearchParams searchParams)
+    public async Task<IPagination<IHeader>> SearchAsync(SearchParams searchParams)
     {
         var result = await venueHeaderRepository.SearchAsync(searchParams);
-        return new Pagination<IHeader>(result.Data, result.TotalCount, result.PageNumber, result.PageSize);
+        return new Pagination<VenueHeaderDto>(result.Data, result.TotalCount, result.PageNumber, result.PageSize);
     }
 
     public async Task<IEnumerable<IHeader>> GetByAmountAsync(int amount) =>

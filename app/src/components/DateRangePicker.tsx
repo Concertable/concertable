@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import dayjs from "dayjs";
 import type { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Props {
-  onChange?: (range: DateRange | undefined) => void;
+  onChange?: (from: string | undefined, to: string | undefined) => void;
 }
 
 export function DateRangePicker({ onChange }: Props) {
@@ -13,7 +13,10 @@ export function DateRangePicker({ onChange }: Props) {
 
   function handleSelect(value: DateRange | undefined) {
     setRange(value);
-    onChange?.(value);
+    onChange?.(
+      value?.from ? dayjs(value.from).format("YYYY-MM-DD") : undefined,
+      value?.to ? dayjs(value.to).format("YYYY-MM-DD") : undefined,
+    );
   }
 
   return (
@@ -21,11 +24,7 @@ export function DateRangePicker({ onChange }: Props) {
       <PopoverTrigger asChild>
         <span className="text-sm cursor-pointer text-foreground">
           {range?.from ? (
-            range.to ? (
-              `${format(range.from, "dd MMM")} – ${format(range.to, "dd MMM")}`
-            ) : (
-              format(range.from, "dd MMM yyyy")
-            )
+            `${dayjs(range.from).format("DD/MM/YYYY")}${range.to ? ` – ${dayjs(range.to).format("DD/MM/YYYY")}` : ""}`
           ) : (
             <span className="text-muted-foreground">Date</span>
           )}

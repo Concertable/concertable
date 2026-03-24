@@ -39,8 +39,12 @@ export const useAuthStore = create<AuthState>()(
 
       refresh: async () => {
         const { refreshToken } = get();
-        const { data } = await api.post<LoginResponse>("/auth/refresh", { refreshToken });
-        set({ user: data.user, baseUrl: data.baseUrl, accessToken: data.accessToken, refreshToken: data.refreshToken });
+        try {
+          const { data } = await api.post<LoginResponse>("/auth/refresh", { refreshToken });
+          set({ user: data.user, baseUrl: data.baseUrl, accessToken: data.accessToken, refreshToken: data.refreshToken });
+        } catch {
+          set({ user: null, baseUrl: null, accessToken: null, refreshToken: null });
+        }
       },
     }),
     {

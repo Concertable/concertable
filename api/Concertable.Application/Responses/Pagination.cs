@@ -1,6 +1,6 @@
 namespace Application.Responses;
 
-public class Pagination<T>
+public class Pagination<T> : IPagination<T>
 {
     public IEnumerable<T> Data { get; set; } = null!;
     public int TotalCount { get; set; }
