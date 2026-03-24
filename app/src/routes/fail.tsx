@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import FailPage from "@/pages/FailPage";
 
 export const Route = createFileRoute("/fail")({
-  component: () => <div>Fail</div>,
+  component: FailPage,
 });
