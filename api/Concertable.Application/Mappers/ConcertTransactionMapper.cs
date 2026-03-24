@@ -14,6 +14,7 @@ public class SettlementTransactionMapper : ITransactionMapper
         var d = (SettlementTransactionDto)dto;
         return new SettlementTransactionEntity
         {
+            CreatedBy = d.FromUserId.ToString(),
             ApplicationId = d.ApplicationId,
             FromUserId = d.FromUserId,
             ToUserId = d.ToUserId,

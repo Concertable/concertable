@@ -1,7 +1,10 @@
+using Core.Entities.Interfaces;
+
 namespace Core.Entities;
 
-public class MessageEntity : BaseEntity
+public class MessageEntity : IEntity
 {
+    public int Id { get; set; }
     public required string Content { get; set; }
     public int FromUserId { get; set; }
     public int ToUserId { get; set; }

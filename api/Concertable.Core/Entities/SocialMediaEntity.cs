@@ -1,9 +1,10 @@
-
+using Core.Entities.Interfaces;
 
 namespace Core.Entities;
 
-public class SocialMediaEntity : BaseEntity
+public class SocialMediaEntity : IEntity
 {
+    public int Id { get; set; }
     public int Site { get; set; }
     public required string Handle { get; set; }
     public int ArtistId { get; set; }

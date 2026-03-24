@@ -1,7 +1,10 @@
+using Core.Entities.Interfaces;
+
 namespace Core.Entities;
 
-public class RefreshTokenEntity : BaseEntity
+public class RefreshTokenEntity : IEntity
 {
+    public int Id { get; set; }
     public int UserId { get; set; }
     public required string Token { get; set; }
     public DateTime Expires { get; set; }

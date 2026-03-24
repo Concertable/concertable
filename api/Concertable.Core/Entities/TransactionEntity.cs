@@ -1,9 +1,11 @@
+using Core.Entities.Interfaces;
 using Core.Enums;
 
 namespace Core.Entities;
 
-public abstract class TransactionEntity : BaseEntity
+public abstract class TransactionEntity : IEntity, IAuditable
 {
+    public int Id { get; set; }
     public abstract TransactionType TransactionType { get; }
     public int FromUserId { get; set; }
     public UserEntity FromUser { get; set; } = null!;
@@ -13,4 +15,7 @@ public abstract class TransactionEntity : BaseEntity
     public long Amount { get; set; }
     public TransactionStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
+    public required string CreatedBy { get; set; }
+    public DateTime? LastModifiedAt { get; set; }
+    public string? LastModifiedBy { get; set; }
 }

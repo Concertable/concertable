@@ -1,15 +1,10 @@
 ﻿using Application.Interfaces;
-using Core.Entities;
+using Core.Entities.Interfaces;
 using Infrastructure.Data.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories;
 
-public class Repository<T> : BaseRepository<T>, IRepository<T> where T : BaseEntity
+public class Repository<T> : BaseRepository<T>, IRepository<T> where T : class, IEntity
 {
     public Repository(ApplicationDbContext context) : base(context) { }
 

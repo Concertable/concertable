@@ -17,6 +17,7 @@ using Application.Serializers;
 using Core.Entities;
 using Infrastructure;
 using Infrastructure.Background;
+using Infrastructure.Data;
 using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Concert;
@@ -66,10 +67,13 @@ public static class ServiceCollectionExtensions
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
-        services.AddDbContext<ApplicationDbContext>(opt =>
+        services.AddScoped<AuditInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                sqlOpt => sqlOpt.UseNetTopologySuite()));
+                    configuration.GetConnectionString("DefaultConnection"),
+                    sqlOpt => sqlOpt.UseNetTopologySuite())
+                .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));

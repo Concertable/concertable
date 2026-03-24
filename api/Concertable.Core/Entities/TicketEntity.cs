@@ -1,7 +1,10 @@
+using Core.Entities.Interfaces;
+
 namespace Core.Entities;
 
-public class TicketEntity : BaseEntity
+public class TicketEntity : IEntity
 {
+    public int Id { get; set; }
     public int UserId { get; set; }
     public int ConcertId { get; set; }
     public DateTime PurchaseDate { get; set; }

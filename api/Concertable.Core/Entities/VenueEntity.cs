@@ -1,11 +1,12 @@
-using Core.Entities;
+using Core.Entities.Interfaces;
 using Core.Interfaces;
 using NetTopologySuite.Geometries;
 
 namespace Core.Entities;
 
-public class VenueEntity : BaseEntity, IHasName, IHasLocation
+public class VenueEntity : IEntity, IHasName, IHasLocation
 {
+    public int Id { get; set; }
     public int UserId { get; set; }
     public required string Name { get; set; }
     public required string About { get; set; }

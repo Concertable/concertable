@@ -1,11 +1,12 @@
-using Core.Entities;
+using Core.Entities.Interfaces;
 using Core.Interfaces;
 using NetTopologySuite.Geometries;
 
 namespace Core.Entities;
 
-public class ArtistEntity : BaseEntity, IHasName, IHasLocation
+public class ArtistEntity : IEntity, IHasName, IHasLocation
 {
+    public int Id { get; set; }
     public int UserId { get; set; }
     public required string Name { get; set; }
     public required string About { get; set; }

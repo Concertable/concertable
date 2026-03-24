@@ -1,12 +1,12 @@
 using Application.Interfaces.Search;
-using Core.Entities;
+using Core.Entities.Interfaces;
 using Core.Interfaces;
 using Core.Parameters;
 
 namespace Infrastructure.Specifications;
 
 public class SearchSpecification<TEntity> : ISearchSpecification<TEntity>
-    where TEntity : BaseEntity, IHasName
+    where TEntity : IEntity, IHasName
 {
     public IQueryable<TEntity> Apply(IQueryable<TEntity> query, SearchParams searchParams)
     {

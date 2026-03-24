@@ -1,3 +1,4 @@
+using Core.Entities.Interfaces;
 using Core.Enums;
 using NetTopologySuite.Geometries;
 
@@ -6,8 +7,9 @@ namespace Core.Entities;
 /// <summary>
 /// UserEntity for auth. Role is on the entity (Customer, VenueManager, ArtistManager, Admin).
 /// </summary>
-public class UserEntity : BaseEntity
+public class UserEntity : IEntity
 {
+    public int Id { get; set; }
     public required string Email { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
     public required Role Role { get; set; }

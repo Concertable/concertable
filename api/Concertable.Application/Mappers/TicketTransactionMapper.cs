@@ -14,6 +14,7 @@ public class TicketTransactionMapper : ITransactionMapper
         var d = (TicketTransactionDto)dto;
         return new TicketTransactionEntity
         {
+            CreatedBy = d.FromUserId.ToString(),
             ConcertId = d.ConcertId,
             FromUserId = d.FromUserId,
             ToUserId = d.ToUserId,

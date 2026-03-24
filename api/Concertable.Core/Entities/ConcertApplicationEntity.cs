@@ -1,9 +1,11 @@
+using Core.Entities.Interfaces;
 using Core.Enums;
 
 namespace Core.Entities;
 
-public class ConcertApplicationEntity : BaseEntity
+public class ConcertApplicationEntity : IEntity
 {
+    public int Id { get; set; }
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
     public int OpportunityId { get; set; }
     public int ArtistId { get; set; }

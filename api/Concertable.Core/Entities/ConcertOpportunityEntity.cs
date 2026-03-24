@@ -1,11 +1,11 @@
-
-
 using Concertable.Core.Entities.Contracts;
+using Core.Entities.Interfaces;
 
 namespace Core.Entities;
 
-public class ConcertOpportunityEntity : BaseEntity
+public class ConcertOpportunityEntity : IEntity
 {
+    public int Id { get; set; }
     public int VenueId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
