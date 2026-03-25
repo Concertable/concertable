@@ -20,7 +20,8 @@ const navLinks: Record<UserRole, NavLink[]> = {
   ],
   VenueManager: [
     { label: "Dashboard", to: "/venue" },
-    { label: "My Concerts", to: "/venue/my" },
+    { label: "My Venue", to: "/venue/my" },
+    { label: "My Concerts", to: "/venue/my/concerts" },
     { label: "Find Artists", to: "/venue/find" },
   ],
 };
