@@ -11,11 +11,13 @@ public class VenueRatingRepository : IRatingRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IRatingSpecification<VenueEntity> ratingSpecification;
+    private readonly IDapperRepository dapper;
 
-    public VenueRatingRepository(ApplicationDbContext context, IRatingSpecification<VenueEntity> ratingSpecification)
+    public VenueRatingRepository(ApplicationDbContext context, IRatingSpecification<VenueEntity> ratingSpecification, IDapperRepository dapper)
     {
         this.context = context;
         this.ratingSpecification = ratingSpecification;
+        this.dapper = dapper;
     }
 
     public async Task<double> GetRatingAsync(int id)
@@ -28,16 +30,16 @@ public class VenueRatingRepository : IRatingRepository
         if (!ids.Any())
             return new Dictionary<int, double>();
 
-        return await context.Reviews
-            .Where(r => ids.Contains(r.Ticket.Concert.Application.Opportunity.VenueId))
-            .GroupBy(r => r.Ticket.Concert.Application.Opportunity.VenueId)
-            .Select(g => new
-            {
-                Id = g.Key,
-                AvgRating = g.Average(r => (double?)r.Stars) ?? 0.0
-            })
-            .ToDictionaryAsync(
-                x => x.Id,
-                x => Math.Round(x.AvgRating, 1));
+        var results = await dapper.QueryAsync<(int Id, double AvgRating)>(@"
+            SELECT co.VenueId AS Id, ROUND(AVG(CAST(r.Stars AS FLOAT)), 1) AS AvgRating
+            FROM Reviews r
+            JOIN Tickets t ON t.Id = r.TicketId
+            JOIN Concerts c ON c.Id = t.ConcertId
+            JOIN ConcertApplications ca ON ca.Id = c.ApplicationId
+            JOIN ConcertOpportunities co ON co.Id = ca.OpportunityId
+            WHERE co.VenueId IN @Ids
+            GROUP BY co.VenueId", new { Ids = ids });
+
+        return results.ToDictionary(x => x.Id, x => x.AvgRating);
     }
 }

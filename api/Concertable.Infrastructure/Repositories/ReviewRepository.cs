@@ -38,14 +38,19 @@ public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
 
     private async Task<ReviewSummaryDto> GetSummaryAsync(Expression<Func<ReviewEntity, bool>> filter)
     {
-        var query = context.Reviews.Where(filter);
-
-        var averageRating = await query.AverageAsync(r => (double?)r.Stars);
-        var totalReviews = await query.CountAsync();
+        var result = await context.Reviews
+            .Where(filter)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                AverageRating = g.Average(r => (double?)r.Stars),
+                TotalReviews = g.Count()
+            })
+            .FirstOrDefaultAsync();
 
         return new ReviewSummaryDto(
-            totalReviews,
-            averageRating is double avg ? Math.Round(avg, 1) : null
+            result?.TotalReviews ?? 0,
+            result?.AverageRating is double avg ? Math.Round(avg, 1) : null
         );
     }
 

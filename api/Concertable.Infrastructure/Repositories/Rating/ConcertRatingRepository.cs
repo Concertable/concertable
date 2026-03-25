@@ -11,11 +11,13 @@ public class ConcertRatingRepository : IRatingRepository
 {
     private readonly ApplicationDbContext context;
     private readonly IRatingSpecification<ConcertEntity> ratingSpecification;
+    private readonly IDapperRepository dapper;
 
-    public ConcertRatingRepository(ApplicationDbContext context, IRatingSpecification<ConcertEntity> ratingSpecification)
+    public ConcertRatingRepository(ApplicationDbContext context, IRatingSpecification<ConcertEntity> ratingSpecification, IDapperRepository dapper)
     {
         this.context = context;
         this.ratingSpecification = ratingSpecification;
+        this.dapper = dapper;
     }
 
     public async Task<double> GetRatingAsync(int id)
@@ -28,16 +30,13 @@ public class ConcertRatingRepository : IRatingRepository
         if (!ids.Any())
             return new Dictionary<int, double>();
 
-        return await context.Reviews
-            .Where(r => ids.Contains(r.Ticket.ConcertId))
-            .GroupBy(r => r.Ticket.ConcertId)
-            .Select(g => new
-            {
-                Id = g.Key,
-                AvgRating = g.Average(r => (double?)r.Stars) ?? 0.0
-            })
-            .ToDictionaryAsync(
-                x => x.Id,
-                x => Math.Round(x.AvgRating, 1));
+        var results = await dapper.QueryAsync<(int Id, double AvgRating)>(@"
+            SELECT t.ConcertId AS Id, ROUND(AVG(CAST(r.Stars AS FLOAT)), 1) AS AvgRating
+            FROM Reviews r
+            JOIN Tickets t ON t.Id = r.TicketId
+            WHERE t.ConcertId IN @Ids
+            GROUP BY t.ConcertId", new { Ids = ids });
+
+        return results.ToDictionary(x => x.Id, x => x.AvgRating);
     }
 }
