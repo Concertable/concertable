@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Interfaces.Auth;
+using Application.Interfaces.Geometry;
 using Concertable.Core.Entities.Contracts;
 using Core.Entities;
 using Core.Enums;
@@ -7,7 +8,6 @@ using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Data.SeedData;
 using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Geometries;
 
 namespace Infrastructure.Data;
 
@@ -15,11 +15,24 @@ public class ApplicationDbInitializer
 {
     private const string SeedPassword = "Password11!";
 
-    public static async Task InitializeAsync(ApplicationDbContext context, IPasswordHasher passwordHasher)
+    private readonly ApplicationDbContext context;
+    private readonly IPasswordHasher passwordHasher;
+    private readonly TimeProvider timeProvider;
+    private readonly IGeometryProvider geometryProvider;
+
+    public ApplicationDbInitializer(ApplicationDbContext context, IPasswordHasher passwordHasher, TimeProvider timeProvider, IGeometryProvider geometryProvider)
+    {
+        this.context = context;
+        this.passwordHasher = passwordHasher;
+        this.timeProvider = timeProvider;
+        this.geometryProvider = geometryProvider;
+    }
+
+    public async Task InitializeAsync()
     {
         await context.Database.MigrateAsync();
 
-        var now = DateTime.UtcNow;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         if (!context.Users.Any())
         {
             var locations = LocationList.GetLocations();
@@ -31,7 +44,7 @@ public class ApplicationDbInitializer
                 Role = Role.Admin,
                 County = "Leicestershire",
                 Town = "Loughborough",
-                Location = new Point(-0.5, 51.0) { SRID = 4326 }
+                Location = geometryProvider.CreatePoint(51.0, -0.5)
             });
 
             context.Users.Add(new CustomerEntity
@@ -41,7 +54,7 @@ public class ApplicationDbInitializer
                 Role = Role.Customer,
                 County = locations[0].County,
                 Town = locations[0].Town,
-                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71vrGWdDleGW3a"
             });
 
@@ -55,7 +68,7 @@ public class ApplicationDbInitializer
                     Role = Role.Customer,
                     County = loc.County,
                     Town = loc.Town,
-                    Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
+                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
                 });
             }
 
@@ -66,7 +79,7 @@ public class ApplicationDbInitializer
                 Role = Role.ArtistManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
-                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71yoLnJh1ZDYF4"
             });
             context.Users.Add(new ArtistManagerEntity
@@ -76,7 +89,7 @@ public class ApplicationDbInitializer
                 Role = Role.ArtistManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
-                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71z6IBXwkKnqix"
             });
             for (int i = 3; i <= 35; i++)
@@ -89,7 +102,7 @@ public class ApplicationDbInitializer
                     Role = Role.ArtistManager,
                     County = loc.County,
                     Town = loc.Town,
-                    Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
+                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
                 });
             }
 
@@ -100,7 +113,7 @@ public class ApplicationDbInitializer
                 Role = Role.VenueManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
-                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71zKBsonWwC9oM"
             });
             context.Users.Add(new VenueManagerEntity
@@ -110,7 +123,7 @@ public class ApplicationDbInitializer
                 Role = Role.VenueManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
-                Location = new Point(locations[0].Longitude, locations[0].Latitude) { SRID = 4326 },
+                Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71zvLnLloN6AmB"
             });
             for (int i = 3; i <= 35; i++)
@@ -123,7 +136,7 @@ public class ApplicationDbInitializer
                     Role = Role.VenueManager,
                     County = loc.County,
                     Town = loc.Town,
-                    Location = new Point(loc.Longitude, loc.Latitude) { SRID = 4326 }
+                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
                 });
             }
 

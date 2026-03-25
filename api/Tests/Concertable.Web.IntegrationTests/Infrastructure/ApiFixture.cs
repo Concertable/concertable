@@ -39,6 +39,7 @@ public class ApiFixture : IAsyncLifetime
             {
                 services.AddSingleton<IConcertNotificationService>(NotificationService);
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
+                services.AddScoped<TestDbInitializer>();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {
@@ -52,8 +53,8 @@ public class ApiFixture : IAsyncLifetime
         });
 
         using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TestDbInitializer.InitializeAsync(db);
+        var initializer = scope.ServiceProvider.GetRequiredService<TestDbInitializer>();
+        await initializer.InitializeAsync();
     }
 
     public async Task DisposeAsync()

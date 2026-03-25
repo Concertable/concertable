@@ -67,7 +67,9 @@ public static class ServiceCollectionExtensions
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
+        services.AddSingleton(TimeProvider.System);
         services.AddScoped<AuditInterceptor>();
+        services.AddScoped<ApplicationDbInitializer>();
 
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(

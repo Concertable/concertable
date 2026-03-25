@@ -16,22 +16,6 @@ namespace Web.Controllers;
 [Route("api/[controller]")]
 public class DevController : ControllerBase
 {
-    [HttpPost("reset-db")]
-    public async Task<IActionResult> ResetDb(
-        [FromServices] ApplicationDbContext context,
-        [FromServices] IPasswordHasher passwordHasher,
-        [FromServices] IConfiguration configuration)
-    {
-        if (!configuration.GetValue<bool>("UseFakeExternalServices"))
-            return NotFound();
-
-        var dbName = context.Database.GetDbConnection().Database;
-        await context.Database.ExecuteSqlRawAsync($"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE");
-        await context.Database.EnsureDeletedAsync();
-        await ApplicationDbInitializer.InitializeAsync(context, passwordHasher);
-        return Ok("Database reset and reseeded.");
-    }
-
     [HttpGet("debug")]
     public async Task<IActionResult> Debug(
         [FromQuery] int applicationId,

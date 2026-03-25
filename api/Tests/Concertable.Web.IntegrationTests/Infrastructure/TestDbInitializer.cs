@@ -1,60 +1,71 @@
+using Application.Interfaces.Geometry;
 using Core.Entities;
 using Core.Enums;
 using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Geometries;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 
-public static class TestDbInitializer
+public class TestDbInitializer
 {
     public static readonly Guid VenueManagerId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
     public static readonly Guid ArtistManagerId = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000001");
     public static readonly Guid CustomerId = Guid.Parse("cccccccc-0000-0000-0000-000000000001");
     public static readonly Guid AdminId = Guid.Parse("dddddddd-0000-0000-0000-000000000001");
 
-    public static async Task InitializeAsync(ApplicationDbContext db)
-    {
-        await db.Database.MigrateAsync();
+    private readonly ApplicationDbContext context;
+    private readonly TimeProvider timeProvider;
+    private readonly IGeometryProvider geometryProvider;
 
-        db.Users.Add(new VenueManagerEntity
+    public TestDbInitializer(ApplicationDbContext context, TimeProvider timeProvider, IGeometryProvider geometryProvider)
+    {
+        this.context = context;
+        this.timeProvider = timeProvider;
+        this.geometryProvider = geometryProvider;
+    }
+
+    public async Task InitializeAsync()
+    {
+        await context.Database.MigrateAsync();
+
+        context.Users.Add(new VenueManagerEntity
         {
             Id = VenueManagerId,
             Email = "venuemanager@test.com",
             PasswordHash = string.Empty,
             Role = Role.VenueManager,
             StripeId = "acct_test_venuemanager",
-            Location = new Point(0, 51) { SRID = 4326 }
+            Location = geometryProvider.CreatePoint(51, 0)
         });
 
-        db.Users.Add(new ArtistManagerEntity
+        context.Users.Add(new ArtistManagerEntity
         {
             Id = ArtistManagerId,
             Email = "artistmanager@test.com",
             PasswordHash = string.Empty,
             Role = Role.ArtistManager,
-            Location = new Point(0, 51) { SRID = 4326 }
+            Location = geometryProvider.CreatePoint(51, 0)
         });
 
-        db.Users.Add(new CustomerEntity
+        context.Users.Add(new CustomerEntity
         {
             Id = CustomerId,
             Email = "customer@test.com",
             PasswordHash = string.Empty,
             Role = Role.Customer,
-            Location = new Point(0, 51) { SRID = 4326 }
+            Location = geometryProvider.CreatePoint(51, 0)
         });
 
-        db.Users.Add(new UserEntity
+        context.Users.Add(new UserEntity
         {
             Id = AdminId,
             Email = "admin@test.com",
             PasswordHash = string.Empty,
             Role = Role.Admin,
-            Location = new Point(0, 51) { SRID = 4326 }
+            Location = geometryProvider.CreatePoint(51, 0)
         });
 
-        db.Venues.Add(new VenueEntity
+        context.Venues.Add(new VenueEntity
         {
             UserId = VenueManagerId,
             Name = "Test Venue",
@@ -69,8 +80,8 @@ public static class TestDbInitializer
             new GenreEntity { Id = 3, Name = "Hip-Hop" },
             new GenreEntity { Id = 4, Name = "Electronic" }
         };
-        db.Genres.AddRange(genres);
+        context.Genres.AddRange(genres);
 
-        await db.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 }
