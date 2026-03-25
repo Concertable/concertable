@@ -33,6 +33,11 @@ public class ApplicationDbInitializer
         await context.Database.MigrateAsync();
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
+
+        var customerIds = new List<Guid>();
+        var artistManagerIds = new List<Guid>();
+        var venueManagerIds = new List<Guid>();
+
         if (!context.Users.Any())
         {
             var locations = LocationList.GetLocations();
@@ -47,7 +52,7 @@ public class ApplicationDbInitializer
                 Location = geometryProvider.CreatePoint(51.0, -0.5)
             });
 
-            context.Users.Add(new CustomerEntity
+            customerIds.Add(context.Users.Add(new CustomerEntity
             {
                 Email = "customer1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -56,12 +61,12 @@ public class ApplicationDbInitializer
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71vrGWdDleGW3a"
-            });
+            }).Entity.Id);
 
             for (int i = 2; i <= 6; i++)
             {
                 var loc = locations[i % locations.Count];
-                context.Users.Add(new CustomerEntity
+                customerIds.Add(context.Users.Add(new CustomerEntity
                 {
                     Email = $"customer{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -69,10 +74,10 @@ public class ApplicationDbInitializer
                     County = loc.County,
                     Town = loc.Town,
                     Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
-                });
+                }).Entity.Id);
             }
 
-            context.Users.Add(new ArtistManagerEntity
+            artistManagerIds.Add(context.Users.Add(new ArtistManagerEntity
             {
                 Email = "artistmanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -81,8 +86,8 @@ public class ApplicationDbInitializer
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71yoLnJh1ZDYF4"
-            });
-            context.Users.Add(new ArtistManagerEntity
+            }).Entity.Id);
+            artistManagerIds.Add(context.Users.Add(new ArtistManagerEntity
             {
                 Email = "artistmanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -91,11 +96,11 @@ public class ApplicationDbInitializer
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71z6IBXwkKnqix"
-            });
+            }).Entity.Id);
             for (int i = 3; i <= 35; i++)
             {
                 var loc = locations[i % locations.Count];
-                context.Users.Add(new ArtistManagerEntity
+                artistManagerIds.Add(context.Users.Add(new ArtistManagerEntity
                 {
                     Email = $"artistmanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -103,10 +108,10 @@ public class ApplicationDbInitializer
                     County = loc.County,
                     Town = loc.Town,
                     Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
-                });
+                }).Entity.Id);
             }
 
-            context.Users.Add(new VenueManagerEntity
+            venueManagerIds.Add(context.Users.Add(new VenueManagerEntity
             {
                 Email = "venuemanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -115,8 +120,8 @@ public class ApplicationDbInitializer
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71zKBsonWwC9oM"
-            });
-            context.Users.Add(new VenueManagerEntity
+            }).Entity.Id);
+            venueManagerIds.Add(context.Users.Add(new VenueManagerEntity
             {
                 Email = "venuemanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -125,11 +130,11 @@ public class ApplicationDbInitializer
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeId = "acct_1R71zvLnLloN6AmB"
-            });
+            }).Entity.Id);
             for (int i = 3; i <= 35; i++)
             {
                 var loc = locations[i % locations.Count];
-                context.Users.Add(new VenueManagerEntity
+                venueManagerIds.Add(context.Users.Add(new VenueManagerEntity
                 {
                     Email = $"venuemanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
@@ -137,20 +142,18 @@ public class ApplicationDbInitializer
                     County = loc.County,
                     Town = loc.Town,
                     Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
-                });
+                }).Entity.Id);
             }
 
             await context.SaveChangesAsync();
         }
-
-        // Look up user GUIDs by email for use in related entities
-        var userIdsByEmail = await context.Users
-            .ToDictionaryAsync(u => u.Email, u => u.Id);
-
-        Guid GetUserId(string email) => userIdsByEmail[email];
-        Guid GetCustomer(int n) => GetUserId(n == 1 ? "customer1@test.com" : $"customer{n}@test.com");
-        Guid GetArtistManager(int n) => GetUserId($"artistmanager{n}@test.com");
-        Guid GetVenueManager(int n) => GetUserId($"venuemanager{n}@test.com");
+        else
+        {
+            var usersByEmail = await context.Users.ToDictionaryAsync(u => u.Email, u => u.Id);
+            for (int i = 1; i <= 6; i++) customerIds.Add(usersByEmail[$"customer{i}@test.com"]);
+            for (int i = 1; i <= 35; i++) artistManagerIds.Add(usersByEmail[$"artistmanager{i}@test.com"]);
+            for (int i = 1; i <= 35; i++) venueManagerIds.Add(usersByEmail[$"venuemanager{i}@test.com"]);
+        }
 
         //Preferences
         if (!context.Preferences.Any())
@@ -159,7 +162,7 @@ public class ApplicationDbInitializer
             {
                 new PreferenceEntity
                 {
-                    UserId = GetCustomer(1),
+                    UserId = customerIds[0],
                     RadiusKm = 10
                 }
             };
@@ -204,41 +207,41 @@ public class ApplicationDbInitializer
         {
             var artists = new ArtistEntity[]
             {
-                ArtistFaker.GetFaker(GetArtistManager(1),  "The Rockers",              "rockers.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(2),  "Indie Vibes",              "indievibes.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(3),  "Electronic Pulse",         "electronicpulse.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(4),  "Hip-Hop Flow",             "hiphopflow.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(5),  "Jazz Masters",             "jazzmaster.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(6),  "Always Punks",             "alwayspunks.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(7),  "The Hollow Frequencies",   "hollowfrequencies.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(8),  "Neon Foxes",               "neonfoxes.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(9),  "Velvet Static",            "velvetstatic.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(10), "Echo Bloom",               "echobloom.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(11), "The Wild Chords",          "wildchords.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(12), "Glitch & Glow",            "glitchandglow.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(13), "Sonic Mirage",             "sonicmirage.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(14), "Neon Echoes",              "neonechoes.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(15), "Dreamwave Collective",     "dreamwavecollective.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(16), "Synth Pulse",              "synthpulse.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(17), "The Brass Poets",          "brasspoets.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(18), "Groove Alchemy",           "groovealchemy.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(19), "Velvet Rhymes",            "velvetrhymes.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(20), "The Lo-Fi Syndicate",      "lofisyndicate.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(21), "Beats & Blue Notes",       "beatsbluenotes.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(22), "Bass Pilots",              "basspilots.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(23), "The Digital Prophets",     "digitalprophets.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(24), "Neon Bass Theory",         "neonbasstheory.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(25), "Wavelength 303",           "wavelength303.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(26), "Gravity Loops",            "gravityloops.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(27), "The Golden Reverie",       "goldenreverie.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(28), "Fable Sound",              "fablesound.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(29), "Moonlight Static",         "moonlightstatic.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(30), "The Chromatics",           "thechromatics.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(31), "Echo Reverberation",       "echoreverberation.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(32), "Midnight Reverie",         "midnightreverie.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(33), "Static Wolves",            "staticwolves.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(34), "Echo Collapse",            "echocollapse.jpg").Generate(),
-                ArtistFaker.GetFaker(GetArtistManager(35), "Violet Sundown",           "violetsundown.jpg").Generate()
+                ArtistFaker.GetFaker(artistManagerIds[0], "The Rockers", "rockers.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[1], "Indie Vibes", "indievibes.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[2], "Electronic Pulse", "electronicpulse.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[3], "Hip-Hop Flow", "hiphopflow.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[4], "Jazz Masters", "jazzmaster.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[5], "Always Punks", "alwayspunks.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[6], "The Hollow Frequencies", "hollowfrequencies.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[7], "Neon Foxes", "neonfoxes.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[8], "Velvet Static", "velvetstatic.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[9], "Echo Bloom", "echobloom.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[10], "The Wild Chords", "wildchords.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[11], "Glitch & Glow", "glitchandglow.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[12], "Sonic Mirage", "sonicmirage.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[13], "Neon Echoes", "neonechoes.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[14], "Dreamwave Collective", "dreamwavecollective.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[15], "Synth Pulse", "synthpulse.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[16], "The Brass Poets", "brasspoets.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[17], "Groove Alchemy", "groovealchemy.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[18], "Velvet Rhymes", "velvetrhymes.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[19], "The Lo-Fi Syndicate", "lofisyndicate.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[20], "Beats & Blue Notes", "beatsbluenotes.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[21], "Bass Pilots", "basspilots.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[22], "The Digital Prophets", "digitalprophets.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[23], "Neon Bass Theory", "neonbasstheory.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[24], "Wavelength 303", "wavelength303.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[25], "Gravity Loops", "gravityloops.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[26], "The Golden Reverie", "goldenreverie.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[27], "Fable Sound", "fablesound.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[28], "Moonlight Static", "moonlightstatic.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[29], "The Chromatics", "thechromatics.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[30], "Echo Reverberation", "echoreverberation.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[31], "Midnight Reverie", "midnightreverie.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[32], "Static Wolves", "staticwolves.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[33], "Echo Collapse", "echocollapse.jpg").Generate(),
+                ArtistFaker.GetFaker(artistManagerIds[34], "Violet Sundown", "violetsundown.jpg").Generate()
             };
             context.Artists.AddRange(artists);
             await context.SaveChangesAsync();
@@ -340,41 +343,41 @@ public class ApplicationDbInitializer
         {
             var venues = new VenueEntity[]
             {
-                VenueFaker.GetFaker(GetVenueManager(1),  "The Grand Venue",                  "grandvenue.jpg").Generate(), //1
-                VenueFaker.GetFaker(GetVenueManager(2),  "Redhill Hall",                     "redhillhall.jpg").Generate(), //2
-                VenueFaker.GetFaker(GetVenueManager(3),  "Weybridge Pavilion",               "weybridgepavilon.jpg").Generate(), //3
-                VenueFaker.GetFaker(GetVenueManager(4),  "Cobham Arts Centre",               "cobhamarts.jpg").Generate(), //4
-                VenueFaker.GetFaker(GetVenueManager(5),  "Chertsey Arena",                   "chertseyarena.jpg").Generate(), //5
-                VenueFaker.GetFaker(GetVenueManager(6),  "Camden Electric Ballroom",         "camdenballroom.jpg").Generate(), //6
-                VenueFaker.GetFaker(GetVenueManager(7),  "Manchester Night & Day Café",      "manchesternightday.jpg").Generate(), //7
-                VenueFaker.GetFaker(GetVenueManager(8),  "Birmingham O2 Institute",          "birminghamo2.jpg").Generate(), //8
-                VenueFaker.GetFaker(GetVenueManager(9),  "Edinburgh Usher Hall",             "edinburghusher.jpg").Generate(), //9
-                VenueFaker.GetFaker(GetVenueManager(10), "Liverpool Philharmonic Hall",      "liverpoolphilharmonic.jpg").Generate(), //10
-                VenueFaker.GetFaker(GetVenueManager(11), "Leeds Brudenell Social Club",      "leedsbrudenell.jpg").Generate(), //11
-                VenueFaker.GetFaker(GetVenueManager(12), "Glasgow Barrowland Ballroom",      "glasgowbarrowland.jpg").Generate(), //12
-                VenueFaker.GetFaker(GetVenueManager(13), "Sheffield Leadmill",               "sheffieldleadmill.jpg").Generate(), //13
-                VenueFaker.GetFaker(GetVenueManager(14), "Nottingham Rock City",             "nottinghamrockcity.jpg").Generate(), //14
-                VenueFaker.GetFaker(GetVenueManager(15), "Bristol Thekla",                  "bristolthekla.jpg").Generate(), //15
-                VenueFaker.GetFaker(GetVenueManager(16), "Brighton Concorde 2",             "brightonconcorde2.jpg").Generate(), //16
-                VenueFaker.GetFaker(GetVenueManager(17), "Cardiff Tramshed",                "cardifftramshed.jpg").Generate(), //17
-                VenueFaker.GetFaker(GetVenueManager(18), "Newcastle O2 Academy",            "newcastleo2.jpg").Generate(), //18
-                VenueFaker.GetFaker(GetVenueManager(19), "Oxford O2 Academy",               "oxfordo2.jpg").Generate(), //19
-                VenueFaker.GetFaker(GetVenueManager(20), "Cambridge Corn Exchange",         "cambridgecornexchange.jpg").Generate(), //20
-                VenueFaker.GetFaker(GetVenueManager(21), "Bath Komedia",                    "bathkomedia.jpg").Generate(), //21
-                VenueFaker.GetFaker(GetVenueManager(22), "Aberdeen The Lemon Tree",         "aberdeenlemontree.jpg").Generate(), //22
-                VenueFaker.GetFaker(GetVenueManager(23), "York Barbican",                   "yorkbarbican.jpg").Generate(), //23
-                VenueFaker.GetFaker(GetVenueManager(24), "Belfast Limelight",               "belfastlimelight.jpg").Generate(), //24
-                VenueFaker.GetFaker(GetVenueManager(25), "Dublin Vicar Street",             "dublinvicarstreet.jpg").Generate(), //25
-                VenueFaker.GetFaker(GetVenueManager(26), "Norwich Waterfront",              "norwichwaterfront.jpg").Generate(), //26
-                VenueFaker.GetFaker(GetVenueManager(27), "Exeter Phoenix",                  "exeterphoenix.jpg").Generate(), //27
-                VenueFaker.GetFaker(GetVenueManager(28), "Southampton Engine Rooms",        "southamptonengine.jpg").Generate(), //28
-                VenueFaker.GetFaker(GetVenueManager(29), "Hull The Welly Club",             "hullwellyclub.jpg").Generate(), //29
-                VenueFaker.GetFaker(GetVenueManager(30), "Plymouth Junction",               "plymouthjunction.jpg").Generate(), //30
-                VenueFaker.GetFaker(GetVenueManager(31), "Swansea Sin City",                "swanseasincity.jpg").Generate(), //31
-                VenueFaker.GetFaker(GetVenueManager(32), "Inverness Ironworks",             "invernessironworks.jpg").Generate(), //32
-                VenueFaker.GetFaker(GetVenueManager(33), "Stirling Albert Halls",           "stirlingalberthalls.jpg").Generate(), //33
-                VenueFaker.GetFaker(GetVenueManager(34), "Dundee Fat Sams",                 "dundeefatsams.jpg").Generate(), //34
-                VenueFaker.GetFaker(GetVenueManager(35), "Coventry Empire",                 "coventryempire.jpg").Generate()  //35
+                VenueFaker.GetFaker(venueManagerIds[0], "The Grand Venue", "grandvenue.jpg").Generate(), //1
+                VenueFaker.GetFaker(venueManagerIds[1], "Redhill Hall", "redhillhall.jpg").Generate(), //2
+                VenueFaker.GetFaker(venueManagerIds[2], "Weybridge Pavilion", "weybridgepavilon.jpg").Generate(), //3
+                VenueFaker.GetFaker(venueManagerIds[3], "Cobham Arts Centre", "cobhamarts.jpg").Generate(), //4
+                VenueFaker.GetFaker(venueManagerIds[4], "Chertsey Arena", "chertseyarena.jpg").Generate(), //5
+                VenueFaker.GetFaker(venueManagerIds[5], "Camden Electric Ballroom", "camdenballroom.jpg").Generate(), //6
+                VenueFaker.GetFaker(venueManagerIds[6], "Manchester Night & Day Café", "manchesternightday.jpg").Generate(), //7
+                VenueFaker.GetFaker(venueManagerIds[7], "Birmingham O2 Institute", "birminghamo2.jpg").Generate(), //8
+                VenueFaker.GetFaker(venueManagerIds[8], "Edinburgh Usher Hall", "edinburghusher.jpg").Generate(), //9
+                VenueFaker.GetFaker(venueManagerIds[9], "Liverpool Philharmonic Hall", "liverpoolphilharmonic.jpg").Generate(), //10
+                VenueFaker.GetFaker(venueManagerIds[10], "Leeds Brudenell Social Club", "leedsbrudenell.jpg").Generate(), //11
+                VenueFaker.GetFaker(venueManagerIds[11], "Glasgow Barrowland Ballroom", "glasgowbarrowland.jpg").Generate(), //12
+                VenueFaker.GetFaker(venueManagerIds[12], "Sheffield Leadmill", "sheffieldleadmill.jpg").Generate(), //13
+                VenueFaker.GetFaker(venueManagerIds[13], "Nottingham Rock City", "nottinghamrockcity.jpg").Generate(), //14
+                VenueFaker.GetFaker(venueManagerIds[14], "Bristol Thekla", "bristolthekla.jpg").Generate(), //15
+                VenueFaker.GetFaker(venueManagerIds[15], "Brighton Concorde 2", "brightonconcorde2.jpg").Generate(), //16
+                VenueFaker.GetFaker(venueManagerIds[16], "Cardiff Tramshed", "cardifftramshed.jpg").Generate(), //17
+                VenueFaker.GetFaker(venueManagerIds[17], "Newcastle O2 Academy", "newcastleo2.jpg").Generate(), //18
+                VenueFaker.GetFaker(venueManagerIds[18], "Oxford O2 Academy", "oxfordo2.jpg").Generate(), //19
+                VenueFaker.GetFaker(venueManagerIds[19], "Cambridge Corn Exchange", "cambridgecornexchange.jpg").Generate(), //20
+                VenueFaker.GetFaker(venueManagerIds[20], "Bath Komedia", "bathkomedia.jpg").Generate(), //21
+                VenueFaker.GetFaker(venueManagerIds[21], "Aberdeen The Lemon Tree", "aberdeenlemontree.jpg").Generate(), //22
+                VenueFaker.GetFaker(venueManagerIds[22], "York Barbican", "yorkbarbican.jpg").Generate(), //23
+                VenueFaker.GetFaker(venueManagerIds[23], "Belfast Limelight", "belfastlimelight.jpg").Generate(), //24
+                VenueFaker.GetFaker(venueManagerIds[24], "Dublin Vicar Street", "dublinvicarstreet.jpg").Generate(), //25
+                VenueFaker.GetFaker(venueManagerIds[25], "Norwich Waterfront", "norwichwaterfront.jpg").Generate(), //26
+                VenueFaker.GetFaker(venueManagerIds[26], "Exeter Phoenix", "exeterphoenix.jpg").Generate(), //27
+                VenueFaker.GetFaker(venueManagerIds[27], "Southampton Engine Rooms", "southamptonengine.jpg").Generate(), //28
+                VenueFaker.GetFaker(venueManagerIds[28], "Hull The Welly Club", "hullwellyclub.jpg").Generate(), //29
+                VenueFaker.GetFaker(venueManagerIds[29], "Plymouth Junction", "plymouthjunction.jpg").Generate(), //30
+                VenueFaker.GetFaker(venueManagerIds[30], "Swansea Sin City", "swanseasincity.jpg").Generate(), //31
+                VenueFaker.GetFaker(venueManagerIds[31], "Inverness Ironworks", "invernessironworks.jpg").Generate(), //32
+                VenueFaker.GetFaker(venueManagerIds[32], "Stirling Albert Halls", "stirlingalberthalls.jpg").Generate(), //33
+                VenueFaker.GetFaker(venueManagerIds[33], "Dundee Fat Sams", "dundeefatsams.jpg").Generate(), //34
+                VenueFaker.GetFaker(venueManagerIds[34], "Coventry Empire", "coventryempire.jpg").Generate()  //35
             };
             context.Venues.AddRange(venues);
             await context.SaveChangesAsync();
@@ -430,13 +433,13 @@ public class ApplicationDbInitializer
             new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(24), EndDate = now.AddDays(24).AddHours(3) }, //43 - no contract
             new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(26), EndDate = now.AddDays(26).AddHours(3) }, //44 - no contract
 
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(30),  EndDate = now.AddDays(30).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //45
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(32),  EndDate = now.AddDays(32).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //46
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(34),  EndDate = now.AddDays(34).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //47
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(36),  EndDate = now.AddDays(36).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //48
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(38),  EndDate = now.AddDays(38).AddHours(3),  Contract = new FlatFeeContractEntity   { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //49
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(60),  EndDate = now.AddDays(60).AddHours(3),  Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(90),  EndDate = now.AddDays(90).AddHours(3),  Contract = new VersusContractEntity    { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //45
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(32), EndDate = now.AddDays(32).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //46
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(34), EndDate = now.AddDays(34).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //47
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(36), EndDate = now.AddDays(36).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //48
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(38), EndDate = now.AddDays(38).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //49
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
+            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(90), EndDate = now.AddDays(90).AddHours(3), Contract = new VersusContractEntity { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
             new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250, PaymentMethod = PaymentMethod.Transfer } }, //52
 
             };
@@ -759,146 +762,133 @@ public class ApplicationDbInitializer
         // Tickets
         if (!context.Tickets.Any())
         {
-            var c1 = GetCustomer(1);
-            var c2 = GetCustomer(2);
-            var c3 = GetCustomer(3);
-            var c4 = GetCustomer(4);
-            var c5 = GetCustomer(5);
-            var c6 = GetCustomer(6);
-
-            // artistmanager users 8-10 are used for ticket purchases in the original data
-            // those mapped to customers in original seed — map to artist managers for compatibility
-            var am1 = GetArtistManager(1);
-            var am2 = GetArtistManager(2);
-            var am3 = GetArtistManager(3);
-
             var tickets = new TicketEntity[]
             {
-            new TicketEntity { UserId = c1, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
-            new TicketEntity { UserId = c2, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
-            new TicketEntity { UserId = c3, ConcertId = 1, PurchaseDate = now.AddDays(-58) },
-            new TicketEntity { UserId = c4, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
-            new TicketEntity { UserId = c5, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
-            new TicketEntity { UserId = c6, ConcertId = 1, PurchaseDate = now.AddDays(-57) },
-            new TicketEntity { UserId = am1, ConcertId = 1, PurchaseDate = now.AddDays(-56) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+            new TicketEntity { UserId = customerIds[2], ConcertId = 1, PurchaseDate = now.AddDays(-58) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+            new TicketEntity { UserId = customerIds[5], ConcertId = 1, PurchaseDate = now.AddDays(-57) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 1, PurchaseDate = now.AddDays(-56) },
 
-            new TicketEntity { UserId = c2, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
-            new TicketEntity { UserId = c3, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
-            new TicketEntity { UserId = c4, ConcertId = 2, PurchaseDate = now.AddDays(-55) },
-            new TicketEntity { UserId = c5, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
-            new TicketEntity { UserId = c6, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
-            new TicketEntity { UserId = am1, ConcertId = 2, PurchaseDate = now.AddDays(-54) },
-            new TicketEntity { UserId = am2, ConcertId = 2, PurchaseDate = now.AddDays(-53) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+            new TicketEntity { UserId = customerIds[2], ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 2, PurchaseDate = now.AddDays(-55) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+            new TicketEntity { UserId = customerIds[5], ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 2, PurchaseDate = now.AddDays(-54) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 2, PurchaseDate = now.AddDays(-53) },
 
-            new TicketEntity { UserId = c3, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
-            new TicketEntity { UserId = c4, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
-            new TicketEntity { UserId = c5, ConcertId = 3, PurchaseDate = now.AddDays(-52) },
-            new TicketEntity { UserId = c6, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
-            new TicketEntity { UserId = am1, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
-            new TicketEntity { UserId = am2, ConcertId = 3, PurchaseDate = now.AddDays(-51) },
-            new TicketEntity { UserId = am3, ConcertId = 3, PurchaseDate = now.AddDays(-50) },
+            new TicketEntity { UserId = customerIds[2], ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 3, PurchaseDate = now.AddDays(-52) },
+            new TicketEntity { UserId = customerIds[5], ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 3, PurchaseDate = now.AddDays(-51) },
+            new TicketEntity { UserId = artistManagerIds[2], ConcertId = 3, PurchaseDate = now.AddDays(-50) },
 
-            new TicketEntity { UserId = c1, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
-            new TicketEntity { UserId = c2, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
-            new TicketEntity { UserId = c3, ConcertId = 4, PurchaseDate = now.AddDays(-49) },
-            new TicketEntity { UserId = c4, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
-            new TicketEntity { UserId = c5, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
-            new TicketEntity { UserId = c6, ConcertId = 4, PurchaseDate = now.AddDays(-48) },
-            new TicketEntity { UserId = am1, ConcertId = 4, PurchaseDate = now.AddDays(-47) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+            new TicketEntity { UserId = customerIds[2], ConcertId = 4, PurchaseDate = now.AddDays(-49) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+            new TicketEntity { UserId = customerIds[5], ConcertId = 4, PurchaseDate = now.AddDays(-48) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 4, PurchaseDate = now.AddDays(-47) },
 
-            new TicketEntity { UserId = am2, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
-            new TicketEntity { UserId = am3, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
-            new TicketEntity { UserId = c1, ConcertId = 5, PurchaseDate = now.AddDays(-46) },
-            new TicketEntity { UserId = c2, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
-            new TicketEntity { UserId = c3, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
-            new TicketEntity { UserId = c4, ConcertId = 5, PurchaseDate = now.AddDays(-45) },
-            new TicketEntity { UserId = c5, ConcertId = 5, PurchaseDate = now.AddDays(-44) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+            new TicketEntity { UserId = artistManagerIds[2], ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 5, PurchaseDate = now.AddDays(-46) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+            new TicketEntity { UserId = customerIds[2], ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 5, PurchaseDate = now.AddDays(-45) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 5, PurchaseDate = now.AddDays(-44) },
 
-            new TicketEntity { UserId = c1, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
-            new TicketEntity { UserId = c2, ConcertId = 6, PurchaseDate = now.AddDays(-43) },
-            new TicketEntity { UserId = c4, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
-            new TicketEntity { UserId = c5, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
-            new TicketEntity { UserId = am1, ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 6, PurchaseDate = now.AddDays(-43) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 6, PurchaseDate = now.AddDays(-43) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 6, PurchaseDate = now.AddDays(-42) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 6, PurchaseDate = now.AddDays(-42) },
 
-            new TicketEntity { UserId = c1, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
-            new TicketEntity { UserId = c2, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
-            new TicketEntity { UserId = am2, ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 7, PurchaseDate = now.AddDays(-40) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 7, PurchaseDate = now.AddDays(-40) },
 
-            new TicketEntity { UserId = c1, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
-            new TicketEntity { UserId = c2, ConcertId = 8, PurchaseDate = now.AddDays(-38) },
-            new TicketEntity { UserId = c5, ConcertId = 8, PurchaseDate = now.AddDays(-37) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 8, PurchaseDate = now.AddDays(-38) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 8, PurchaseDate = now.AddDays(-38) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 8, PurchaseDate = now.AddDays(-37) },
 
-            new TicketEntity { UserId = c1, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
-            new TicketEntity { UserId = c2, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
-            new TicketEntity { UserId = am1, ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 9, PurchaseDate = now.AddDays(-36) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 9, PurchaseDate = now.AddDays(-36) },
 
-            new TicketEntity { UserId = c1, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
-            new TicketEntity { UserId = c2, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
-            new TicketEntity { UserId = am2, ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 10, PurchaseDate = now.AddDays(-34) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 10, PurchaseDate = now.AddDays(-34) },
 
-            new TicketEntity { UserId = c1, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
-            new TicketEntity { UserId = c2, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
-            new TicketEntity { UserId = c5, ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 11, PurchaseDate = now.AddDays(-32) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 11, PurchaseDate = now.AddDays(-32) },
 
-            new TicketEntity { UserId = c1, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
-            new TicketEntity { UserId = c2, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
-            new TicketEntity { UserId = c6, ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 12, PurchaseDate = now.AddDays(-30) },
+            new TicketEntity { UserId = customerIds[5], ConcertId = 12, PurchaseDate = now.AddDays(-30) },
 
-            new TicketEntity { UserId = c1, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
-            new TicketEntity { UserId = c2, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
-            new TicketEntity { UserId = am1, ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 13, PurchaseDate = now.AddDays(-28) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 13, PurchaseDate = now.AddDays(-28) },
 
-            new TicketEntity { UserId = c1, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
-            new TicketEntity { UserId = c2, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
-            new TicketEntity { UserId = c5, ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 14, PurchaseDate = now.AddDays(-26) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 14, PurchaseDate = now.AddDays(-26) },
 
-            new TicketEntity { UserId = c1, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
-            new TicketEntity { UserId = c2, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
-            new TicketEntity { UserId = c4, ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 15, PurchaseDate = now.AddDays(-24) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 15, PurchaseDate = now.AddDays(-24) },
 
-            new TicketEntity { UserId = c1, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
-            new TicketEntity { UserId = c2, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
-            new TicketEntity { UserId = am2, ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 16, PurchaseDate = now.AddDays(-22) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 16, PurchaseDate = now.AddDays(-22) },
 
-            new TicketEntity { UserId = c1, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
-            new TicketEntity { UserId = c2, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
-            new TicketEntity { UserId = c6, ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 17, PurchaseDate = now.AddDays(-20) },
+            new TicketEntity { UserId = customerIds[5], ConcertId = 17, PurchaseDate = now.AddDays(-20) },
 
-            new TicketEntity { UserId = c1, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
-            new TicketEntity { UserId = c2, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
-            new TicketEntity { UserId = am1, ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 18, PurchaseDate = now.AddDays(-18) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 18, PurchaseDate = now.AddDays(-18) },
 
-            new TicketEntity { UserId = c1, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
-            new TicketEntity { UserId = c2, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
-            new TicketEntity { UserId = c5, ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 19, PurchaseDate = now.AddDays(-16) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 19, PurchaseDate = now.AddDays(-16) },
 
-            new TicketEntity { UserId = c1, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
-            new TicketEntity { UserId = c2, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
-            new TicketEntity { UserId = am2, ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 20, PurchaseDate = now.AddDays(-14) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 20, PurchaseDate = now.AddDays(-14) },
 
-            new TicketEntity { UserId = c1, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
-            new TicketEntity { UserId = c2, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
-            new TicketEntity { UserId = c4, ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 21, PurchaseDate = now.AddDays(-12) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 21, PurchaseDate = now.AddDays(-12) },
 
-            new TicketEntity { UserId = c1, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
-            new TicketEntity { UserId = c2, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
-            new TicketEntity { UserId = am1, ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 22, PurchaseDate = now.AddDays(-10) },
+            new TicketEntity { UserId = artistManagerIds[0], ConcertId = 22, PurchaseDate = now.AddDays(-10) },
 
-            new TicketEntity { UserId = c1, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
-            new TicketEntity { UserId = c2, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
-            new TicketEntity { UserId = c5, ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 23, PurchaseDate = now.AddDays(-8) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 23, PurchaseDate = now.AddDays(-8) },
 
-            new TicketEntity { UserId = c1, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
-            new TicketEntity { UserId = c2, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
-            new TicketEntity { UserId = c4, ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 24, PurchaseDate = now.AddDays(-6) },
+            new TicketEntity { UserId = customerIds[3], ConcertId = 24, PurchaseDate = now.AddDays(-6) },
 
-            new TicketEntity { UserId = c1, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
-            new TicketEntity { UserId = c2, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
-            new TicketEntity { UserId = am2, ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+            new TicketEntity { UserId = customerIds[0], ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 25, PurchaseDate = now.AddDays(-4) },
+            new TicketEntity { UserId = artistManagerIds[1], ConcertId = 25, PurchaseDate = now.AddDays(-4) },
 
-            new TicketEntity { UserId = c1, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
-            new TicketEntity { UserId = c2, ConcertId = 26, PurchaseDate = now.AddDays(-2) },
-            new TicketEntity { UserId = c5, ConcertId = 26, PurchaseDate = now.AddDays(-2) }
+            new TicketEntity { UserId = customerIds[0], ConcertId = 26, PurchaseDate = now.AddDays(-2) },
+            new TicketEntity { UserId = customerIds[1], ConcertId = 26, PurchaseDate = now.AddDays(-2) },
+            new TicketEntity { UserId = customerIds[4], ConcertId = 26, PurchaseDate = now.AddDays(-2) }
             };
 
             context.Tickets.AddRange(tickets);
@@ -954,58 +944,38 @@ public class ApplicationDbInitializer
 
         if (!context.Transactions.Any())
         {
-            var vm1 = GetVenueManager(1);
-            var vm2 = GetVenueManager(2);
-            var vm3 = GetVenueManager(3);
-            var vm4 = GetVenueManager(4);
-            var vm5 = GetVenueManager(5);
-            var tam1 = GetArtistManager(1);
-            var tam2 = GetArtistManager(2);
-            var tam3 = GetArtistManager(3);
-            var tam4 = GetArtistManager(4);
-            var tam5 = GetArtistManager(5);
-            var tc1 = GetCustomer(1);
-            var tc2 = GetCustomer(2);
-            var tc3 = GetCustomer(3);
-            var tc4 = GetCustomer(4);
-            var tc5 = GetCustomer(5);
-            var tc6 = GetCustomer(6);
-            var tAm1 = GetArtistManager(1);
-            var tAm2 = GetArtistManager(2);
-            var tAm3 = GetArtistManager(3);
-
             var settlementTransactions = new List<SettlementTransactionEntity>
             {
-                new SettlementTransactionEntity { CreatedBy = vm1.ToString(), ApplicationId = 1, FromUserId = vm1, ToUserId = tam1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 15000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-58) },
-                new SettlementTransactionEntity { CreatedBy = vm2.ToString(), ApplicationId = 2, FromUserId = vm2, ToUserId = tam2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 20000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-55) },
-                new SettlementTransactionEntity { CreatedBy = vm3.ToString(), ApplicationId = 3, FromUserId = vm3, ToUserId = tam3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 18000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-52) },
-                new SettlementTransactionEntity { CreatedBy = vm4.ToString(), ApplicationId = 4, FromUserId = vm4, ToUserId = tam4, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 17500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-49) },
-                new SettlementTransactionEntity { CreatedBy = vm5.ToString(), ApplicationId = 5, FromUserId = vm5, ToUserId = tam5, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 16000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-46) },
+                new SettlementTransactionEntity { CreatedBy = venueManagerIds[0].ToString(), ApplicationId = 1, FromUserId = venueManagerIds[0], ToUserId = artistManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 15000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-58) },
+                new SettlementTransactionEntity { CreatedBy = venueManagerIds[1].ToString(), ApplicationId = 2, FromUserId = venueManagerIds[1], ToUserId = artistManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 20000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-55) },
+                new SettlementTransactionEntity { CreatedBy = venueManagerIds[2].ToString(), ApplicationId = 3, FromUserId = venueManagerIds[2], ToUserId = artistManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 18000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-52) },
+                new SettlementTransactionEntity { CreatedBy = venueManagerIds[3].ToString(), ApplicationId = 4, FromUserId = venueManagerIds[3], ToUserId = artistManagerIds[3], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 17500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-49) },
+                new SettlementTransactionEntity { CreatedBy = venueManagerIds[4].ToString(), ApplicationId = 5, FromUserId = venueManagerIds[4], ToUserId = artistManagerIds[4], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 16000, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-46) },
             };
 
             var ticketTransactions = new List<TicketTransactionEntity>
             {
-                new TicketTransactionEntity { CreatedBy = tc1.ToString(),  ConcertId = 1, FromUserId = tc1,  ToUserId = vm1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-57) },
-                new TicketTransactionEntity { CreatedBy = tc2.ToString(),  ConcertId = 1, FromUserId = tc2,  ToUserId = vm1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-57) },
-                new TicketTransactionEntity { CreatedBy = tc3.ToString(),  ConcertId = 1, FromUserId = tc3,  ToUserId = vm1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-57) },
-                new TicketTransactionEntity { CreatedBy = tc4.ToString(),  ConcertId = 1, FromUserId = tc4,  ToUserId = vm1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-56) },
-                new TicketTransactionEntity { CreatedBy = tc5.ToString(),  ConcertId = 1, FromUserId = tc5,  ToUserId = vm1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-56) },
-                new TicketTransactionEntity { CreatedBy = tc6.ToString(),  ConcertId = 1, FromUserId = tc6,  ToUserId = vm1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-56) },
-                new TicketTransactionEntity { CreatedBy = tAm1.ToString(), ConcertId = 1, FromUserId = tAm1, ToUserId = vm1, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-55) },
-                new TicketTransactionEntity { CreatedBy = tc2.ToString(),  ConcertId = 2, FromUserId = tc2,  ToUserId = vm2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-54) },
-                new TicketTransactionEntity { CreatedBy = tc3.ToString(),  ConcertId = 2, FromUserId = tc3,  ToUserId = vm2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-54) },
-                new TicketTransactionEntity { CreatedBy = tc4.ToString(),  ConcertId = 2, FromUserId = tc4,  ToUserId = vm2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-54) },
-                new TicketTransactionEntity { CreatedBy = tc5.ToString(),  ConcertId = 2, FromUserId = tc5,  ToUserId = vm2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-53) },
-                new TicketTransactionEntity { CreatedBy = tc6.ToString(),  ConcertId = 2, FromUserId = tc6,  ToUserId = vm2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-53) },
-                new TicketTransactionEntity { CreatedBy = tAm1.ToString(), ConcertId = 2, FromUserId = tAm1, ToUserId = vm2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-53) },
-                new TicketTransactionEntity { CreatedBy = tAm2.ToString(), ConcertId = 2, FromUserId = tAm2, ToUserId = vm2, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-52) },
-                new TicketTransactionEntity { CreatedBy = tc3.ToString(),  ConcertId = 3, FromUserId = tc3,  ToUserId = vm3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-51) },
-                new TicketTransactionEntity { CreatedBy = tc4.ToString(),  ConcertId = 3, FromUserId = tc4,  ToUserId = vm3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-51) },
-                new TicketTransactionEntity { CreatedBy = tc5.ToString(),  ConcertId = 3, FromUserId = tc5,  ToUserId = vm3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-51) },
-                new TicketTransactionEntity { CreatedBy = tc6.ToString(),  ConcertId = 3, FromUserId = tc6,  ToUserId = vm3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-50) },
-                new TicketTransactionEntity { CreatedBy = tAm1.ToString(), ConcertId = 3, FromUserId = tAm1, ToUserId = vm3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-50) },
-                new TicketTransactionEntity { CreatedBy = tAm2.ToString(), ConcertId = 3, FromUserId = tAm2, ToUserId = vm3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-50) },
-                new TicketTransactionEntity { CreatedBy = tAm3.ToString(), ConcertId = 3, FromUserId = tAm3, ToUserId = vm3, PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-49) },
+                new TicketTransactionEntity { CreatedBy = customerIds[0].ToString(),      ConcertId = 1, FromUserId = customerIds[0],      ToUserId = venueManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-57) },
+                new TicketTransactionEntity { CreatedBy = customerIds[1].ToString(),      ConcertId = 1, FromUserId = customerIds[1],      ToUserId = venueManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-57) },
+                new TicketTransactionEntity { CreatedBy = customerIds[2].ToString(),      ConcertId = 1, FromUserId = customerIds[2],      ToUserId = venueManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-57) },
+                new TicketTransactionEntity { CreatedBy = customerIds[3].ToString(),      ConcertId = 1, FromUserId = customerIds[3],      ToUserId = venueManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-56) },
+                new TicketTransactionEntity { CreatedBy = customerIds[4].ToString(),      ConcertId = 1, FromUserId = customerIds[4],      ToUserId = venueManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-56) },
+                new TicketTransactionEntity { CreatedBy = customerIds[5].ToString(),      ConcertId = 1, FromUserId = customerIds[5],      ToUserId = venueManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-56) },
+                new TicketTransactionEntity { CreatedBy = artistManagerIds[0].ToString(), ConcertId = 1, FromUserId = artistManagerIds[0], ToUserId = venueManagerIds[0], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1500, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-55) },
+                new TicketTransactionEntity { CreatedBy = customerIds[1].ToString(),      ConcertId = 2, FromUserId = customerIds[1],      ToUserId = venueManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-54) },
+                new TicketTransactionEntity { CreatedBy = customerIds[2].ToString(),      ConcertId = 2, FromUserId = customerIds[2],      ToUserId = venueManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-54) },
+                new TicketTransactionEntity { CreatedBy = customerIds[3].ToString(),      ConcertId = 2, FromUserId = customerIds[3],      ToUserId = venueManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-54) },
+                new TicketTransactionEntity { CreatedBy = customerIds[4].ToString(),      ConcertId = 2, FromUserId = customerIds[4],      ToUserId = venueManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-53) },
+                new TicketTransactionEntity { CreatedBy = customerIds[5].ToString(),      ConcertId = 2, FromUserId = customerIds[5],      ToUserId = venueManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-53) },
+                new TicketTransactionEntity { CreatedBy = artistManagerIds[0].ToString(), ConcertId = 2, FromUserId = artistManagerIds[0], ToUserId = venueManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-53) },
+                new TicketTransactionEntity { CreatedBy = artistManagerIds[1].ToString(), ConcertId = 2, FromUserId = artistManagerIds[1], ToUserId = venueManagerIds[1], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1200, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-52) },
+                new TicketTransactionEntity { CreatedBy = customerIds[2].ToString(),      ConcertId = 3, FromUserId = customerIds[2],      ToUserId = venueManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-51) },
+                new TicketTransactionEntity { CreatedBy = customerIds[3].ToString(),      ConcertId = 3, FromUserId = customerIds[3],      ToUserId = venueManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-51) },
+                new TicketTransactionEntity { CreatedBy = customerIds[4].ToString(),      ConcertId = 3, FromUserId = customerIds[4],      ToUserId = venueManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-51) },
+                new TicketTransactionEntity { CreatedBy = customerIds[5].ToString(),      ConcertId = 3, FromUserId = customerIds[5],      ToUserId = venueManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-50) },
+                new TicketTransactionEntity { CreatedBy = artistManagerIds[0].ToString(), ConcertId = 3, FromUserId = artistManagerIds[0], ToUserId = venueManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-50) },
+                new TicketTransactionEntity { CreatedBy = artistManagerIds[1].ToString(), ConcertId = 3, FromUserId = artistManagerIds[1], ToUserId = venueManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-50) },
+                new TicketTransactionEntity { CreatedBy = artistManagerIds[2].ToString(), ConcertId = 3, FromUserId = artistManagerIds[2], ToUserId = venueManagerIds[2], PaymentIntentId = Guid.NewGuid().ToString(), Amount = 1800, Status = TransactionStatus.Complete, CreatedAt = now.AddDays(-49) },
             };
 
             context.SettlementTransactions.AddRange(settlementTransactions);
