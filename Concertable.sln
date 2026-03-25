@@ -17,10 +17,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Infrastructure.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Web.UnitTests", "api\Tests\Concertable.Web.UnitTests\Concertable.Web.UnitTests.csproj", "{2EDB45B4-530E-4C04-B603-BBC17B9F7A24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Core.IntegrationTests", "api\Tests\Concertable.Core.IntegrationTests\Concertable.Core.IntegrationTests.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Infrastructure.IntegrationTests", "api\Tests\Concertable.Infrastructure.IntegrationTests\Concertable.Infrastructure.IntegrationTests.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Web.IntegrationTests", "api\Tests\Concertable.Web.IntegrationTests\Concertable.Web.IntegrationTests.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567893}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Application", "api\Concertable.Application\Concertable.Application.csproj", "{0F7CACA1-4D8C-400A-AD99-0A1C33E4112A}"
@@ -115,30 +111,6 @@ Global
 		{2EDB45B4-530E-4C04-B603-BBC17B9F7A24}.Release|x64.Build.0 = Release|Any CPU
 		{2EDB45B4-530E-4C04-B603-BBC17B9F7A24}.Release|x86.ActiveCfg = Release|Any CPU
 		{2EDB45B4-530E-4C04-B603-BBC17B9F7A24}.Release|x86.Build.0 = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Debug|x64.Build.0 = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Debug|x86.Build.0 = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Release|x64.ActiveCfg = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Release|x64.Build.0 = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Release|x86.ActiveCfg = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}.Release|x86.Build.0 = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Debug|x64.Build.0 = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Debug|x86.Build.0 = Debug|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Release|x64.ActiveCfg = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Release|x64.Build.0 = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Release|x86.ActiveCfg = Release|Any CPU
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}.Release|x86.Build.0 = Release|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567893}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567893}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -219,8 +191,6 @@ Global
 		{937627D5-0DF4-4D27-8515-08A2AE0CC265} = {9C8FFF27-5BE4-449F-BE2F-1440CC35EFCB}
 		{962F0F6A-7F47-459F-9F81-F77EEBF603B5} = {9C8FFF27-5BE4-449F-BE2F-1440CC35EFCB}
 		{2EDB45B4-530E-4C04-B603-BBC17B9F7A24} = {9C8FFF27-5BE4-449F-BE2F-1440CC35EFCB}
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567891} = {9C8FFF27-5BE4-449F-BE2F-1440CC35EFCB}
-		{A1B2C3D4-E5F6-7890-ABCD-EF1234567892} = {9C8FFF27-5BE4-449F-BE2F-1440CC35EFCB}
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567893} = {9C8FFF27-5BE4-449F-BE2F-1440CC35EFCB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
