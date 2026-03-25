@@ -7,7 +7,7 @@ export default function FindPage() {
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto space-y-6">
-      <SearchBar onSearch={setFilters} />
+      <SearchBar onSearch={setFilters} defaultHeaderType="concert" />
       <SearchResults filters={filters} />
     </div>
   );

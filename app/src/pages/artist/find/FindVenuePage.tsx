@@ -1,3 +1,5 @@
+import { FindPage } from "@/components/FindPage";
+
 export default function FindVenuePage() {
-  return <div>Find Venues</div>;
+  return <FindPage defaultHeaderType="venue" />;
 }

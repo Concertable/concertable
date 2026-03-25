@@ -1,3 +1,5 @@
+import { FindPage } from "@/components/FindPage";
+
 export default function FindArtistPage() {
-  return <div>Find Artists</div>;
+  return <FindPage defaultHeaderType="artist" />;
 }

@@ -1,7 +1,6 @@
 import { MapPin, Search, CalendarIcon } from "lucide-react";
-import type { LatLng } from "@/types/location";
 import type { HeaderType } from "@/types/header";
-import { useSearchParamsState } from "@/hooks/useSearchParamsState";
+import { useSearchParams } from "@/hooks/useSearchParams";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
@@ -17,10 +16,11 @@ export interface SearchFilters {
 
 interface Props {
   onSearch: (filters: SearchFilters) => void;
+  defaultHeaderType?: HeaderType;
 }
 
-export function SearchBar({ onSearch }: Props) {
-  const { query, setQuery, headerType, location, setLocation, from, to, setDates } = useSearchParamsState();
+export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Props) {
+  const { query, setQuery, headerType, location, setLocation, from, to, setDates } = useSearchParams(defaultHeaderType);
 
   function handleSearch() {
     onSearch({ query, headerType, location, from, to });
