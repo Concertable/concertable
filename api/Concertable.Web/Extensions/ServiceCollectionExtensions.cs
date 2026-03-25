@@ -46,8 +46,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using QuestPDF.Infrastructure;
@@ -76,6 +78,9 @@ public static class ServiceCollectionExtensions
                     configuration.GetConnectionString("DefaultConnection"),
                     sqlOpt => sqlOpt.UseNetTopologySuite())
                 .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
+
+        services.AddScoped<IDbConnection>(_ =>
+            new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
@@ -181,6 +186,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IDapperRepository, DapperRepository>();
 
         return services;
     }
