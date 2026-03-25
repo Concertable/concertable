@@ -14,11 +14,17 @@ public class SignalRNotificationService : IConcertNotificationService, ITicketNo
     }
 
     public async Task ConcertDraftCreatedAsync(string userId, object payload)
-        => await hubContext.Clients.Group(userId).SendAsync("ConcertDraftCreated", payload);
+    {
+        await hubContext.Clients.Group(userId).SendAsync("ConcertDraftCreated", payload);
+    }
 
     public async Task ConcertPostedAsync(string userId, object payload)
-        => await hubContext.Clients.Group(userId).SendAsync("ConcertPosted", payload);
+    {
+        await hubContext.Clients.Group(userId).SendAsync("ConcertPosted", payload);
+    }
 
     public async Task TicketPurchasedAsync(string userId, object payload)
-        => await hubContext.Clients.Group(userId).SendAsync("TicketPurchased", payload);
+    {
+        await hubContext.Clients.Group(userId).SendAsync("TicketPurchased", payload);
+    }
 }

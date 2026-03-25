@@ -25,12 +25,18 @@ public class ConcertOpportunityController : ControllerBase
         return Ok(await opportunityService.GetActiveByVenueIdAsync(id));
     }
 
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<ConcertOpportunityDto>> GetById(int id)
+    {
+        return Ok(await opportunityService.GetByIdAsync(id));
+    }
+
     [Authorize(Roles = "VenueManager")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ConcertOpportunityRequest request)
     {
-        await opportunityService.CreateAsync(request);
-        return Created();
+        var opportunity = await opportunityService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = opportunity.Id }, opportunity);
     }
 
     [Authorize(Roles = "VenueManager")]

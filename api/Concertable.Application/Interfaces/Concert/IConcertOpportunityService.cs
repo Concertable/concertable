@@ -6,7 +6,7 @@ namespace Application.Interfaces.Concert;
 
 public interface IConcertOpportunityService
 {
-    Task CreateAsync(ConcertOpportunityRequest request);
+    Task<ConcertOpportunityDto> CreateAsync(ConcertOpportunityRequest request);
     Task CreateMultipleAsync(IEnumerable<ConcertOpportunityRequest> requests);
     Task<ConcertOpportunityDto> UpdateAsync(int id, ConcertOpportunityRequest request);
     Task<IEnumerable<ConcertOpportunityDto>> GetActiveByVenueIdAsync(int id);

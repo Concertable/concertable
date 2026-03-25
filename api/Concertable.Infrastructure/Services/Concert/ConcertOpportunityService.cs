@@ -34,7 +34,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
         this.genreSyncService = genreSyncService;
     }
 
-    public async Task CreateAsync(ConcertOpportunityRequest request)
+    public async Task<ConcertOpportunityDto> CreateAsync(ConcertOpportunityRequest request)
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
@@ -55,6 +55,8 @@ public class ConcertOpportunityService : IConcertOpportunityService
             await unitOfWork.TrySaveChangesAsync();
 
             await transaction.CommitAsync();
+
+            return opportunity.ToDto();
         }
         catch
         {

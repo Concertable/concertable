@@ -103,10 +103,8 @@ if (app.Environment.IsDevelopment())
 try
 {
     using var scope = app.Services.CreateScope();
-    var serviceProvider = scope.ServiceProvider;
-    var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-    var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
-    await ApplicationDbInitializer.InitializeAsync(context, passwordHasher);
+    var initializer = scope.ServiceProvider.GetRequiredService<ApplicationDbInitializer>();
+    await initializer.InitializeAsync();
 }
 catch (Exception ex)
 {
@@ -114,3 +112,5 @@ catch (Exception ex)
 }
 
 app.Run();
+
+public partial class Program { }
