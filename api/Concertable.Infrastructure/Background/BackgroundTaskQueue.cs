@@ -20,13 +20,12 @@ public class BackgroundTaskQueue : IBackgroundTaskQueue
             FullMode = BoundedChannelFullMode.Wait // Keep waiting until space is available
         };
 
-        this.queue = Channel.CreateBounded<Func<CancellationToken, Task>>(options);
+        queue = Channel.CreateBounded<Func<CancellationToken, Task>>(options);
     }
 
     public async Task EnqueueAsync(Func<CancellationToken, Task> workItem)
     {
-        if (workItem == null)
-            throw new ArgumentNullException(nameof(workItem));
+        ArgumentNullException.ThrowIfNull(workItem);
 
         await queue.Writer.WriteAsync(workItem);
     }

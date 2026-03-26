@@ -13,4 +13,8 @@ public static class TestConstants
     public static readonly TestUser Admin = new(Guid.Parse("dddddddd-0000-0000-0000-000000000001"), Role.Admin);
 
     public const int RockGenreId = 1;
+    public const int ArtistId = 1;
+    public const int VenueId = 1;
+    public const int FlatFeeOpportunityId = 1;
+    public const int PendingApplicationId = 1;
 }

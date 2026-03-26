@@ -75,7 +75,7 @@ public class ConcertApplicationService : IConcertApplicationService
         return applications.ToDtos();
     }
 
-    public async Task ApplyAsync(int opportunityId)
+    public async Task<ConcertApplicationDto> ApplyAsync(int opportunityId)
     {
         var stripeResult = await stripeValidator.ValidateUserAsync();
         if (!stripeResult.IsValid)
@@ -124,6 +124,8 @@ public class ConcertApplicationService : IConcertApplicationService
         {
             throw new BadRequestException("You cannot apply to the same concert opportunity twice");
         }
+
+        return application.ToDto();
     }
 
     public async Task AcceptAsync(int applicationId)

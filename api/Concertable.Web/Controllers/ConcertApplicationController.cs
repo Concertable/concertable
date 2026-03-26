@@ -42,8 +42,8 @@ public class ConcertApplicationController : ControllerBase
     [HttpPost("{opportunityId}")]
     public async Task<IActionResult> Apply(int opportunityId)
     {
-        await applicationService.ApplyAsync(opportunityId);
-        return NoContent();
+        var application = await applicationService.ApplyAsync(opportunityId);
+        return CreatedAtAction(nameof(GetById), new { id = application.Id }, application);
     }
 
     [HttpGet("artist/pending")]

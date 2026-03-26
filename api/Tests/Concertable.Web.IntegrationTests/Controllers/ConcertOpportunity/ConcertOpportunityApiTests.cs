@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using Application.DTOs;
 using Application.Interfaces.Concert;
 using Application.Requests;
@@ -7,7 +6,7 @@ using Concertable.Web.IntegrationTests.Infrastructure;
 using Core.Enums;
 using Xunit;
 
-namespace Concertable.Web.IntegrationTests.Controllers;
+namespace Concertable.Web.IntegrationTests.Controllers.ConcertOpportunity;
 
 [Collection("Integration")]
 public class ConcertOpportunityApiTests : IAsyncLifetime
@@ -34,13 +33,18 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
 
     [Theory]
     [MemberData(nameof(AllContractTypes))]
-    public async Task Create_ShouldReturn201(IContract contract)
+    public async Task Create_ShouldReturnCreatedOpportunity(IContract contract)
     {
         var client = fixture.CreateClient(TestConstants.VenueManager);
+        var request = BuildRequest(contract);
 
-        var response = await client.PostAsync("/api/ConcertOpportunity", BuildRequest(contract));
+        var opportunity = await client.PostAsync<ConcertOpportunityRequest, ConcertOpportunityDto>("/api/ConcertOpportunity", request);
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotNull(opportunity);
+        Assert.NotNull(opportunity.Id);
+        Assert.Equal(request.StartDate, opportunity.StartDate);
+        Assert.Equal(request.EndDate, opportunity.EndDate);
+        Assert.Contains(opportunity.Genres, g => g.Id == TestConstants.RockGenreId);
     }
 
     [Fact]
@@ -68,15 +72,15 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
     #region GetActiveByVenueId
 
     [Fact]
-    public async Task GetActiveByVenueId_ShouldReturnOpportunities()
+    public async Task GetActiveByVenueId_ShouldReturnSeededOpportunity()
     {
         var client = fixture.CreateClient();
 
-        var response = await client.GetAsync("/api/ConcertOpportunity/active/venue/1");
+        var opportunities = await client.GetAsync<IEnumerable<ConcertOpportunityDto>>(
+            $"/api/ConcertOpportunity/active/venue/{TestConstants.VenueId}");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<IEnumerable<ConcertOpportunityDto>>();
-        Assert.NotNull(result);
+        Assert.NotNull(opportunities);
+        Assert.Contains(opportunities, o => o.Id == TestConstants.FlatFeeOpportunityId);
     }
 
     #endregion

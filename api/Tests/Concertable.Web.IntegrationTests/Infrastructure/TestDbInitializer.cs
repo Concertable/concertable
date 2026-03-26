@@ -1,4 +1,5 @@
 using Application.Interfaces.Geometry;
+using Concertable.Core.Entities.Contracts;
 using Core.Entities;
 using Core.Enums;
 using Infrastructure.Data.Identity;
@@ -81,6 +82,7 @@ public class TestDbInitializer
 
         context.Artists.Add(new ArtistEntity
         {
+            Id = TestConstants.ArtistId,
             UserId = TestConstants.ArtistManager.Id,
             Name = "Test Artist",
             About = "Test Artist About",
@@ -90,10 +92,35 @@ public class TestDbInitializer
 
         context.Venues.Add(new VenueEntity
         {
+            Id = TestConstants.VenueId,
             UserId = TestConstants.VenueManager.Id,
             Name = "Test Venue",
             About = "Test",
-            ImageUrl = "test.jpg"
+            ImageUrl = "test.jpg",
+            Opportunities =
+            [
+                new ConcertOpportunityEntity
+                {
+                    Id = TestConstants.FlatFeeOpportunityId,
+                    StartDate = DateTime.UtcNow.AddMonths(2),
+                    EndDate = DateTime.UtcNow.AddMonths(2).AddHours(3),
+                    Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                    OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.RockGenreId }]
+                }
+            ]
+        });
+
+        await context.SaveChangesAsync();
+    }
+
+    public async Task SeedApplicationAsync()
+    {
+        context.Set<ConcertApplicationEntity>().Add(new ConcertApplicationEntity
+        {
+            Id = TestConstants.PendingApplicationId,
+            OpportunityId = TestConstants.FlatFeeOpportunityId,
+            ArtistId = TestConstants.ArtistId,
+            Status = ApplicationStatus.Pending
         });
 
         await context.SaveChangesAsync();

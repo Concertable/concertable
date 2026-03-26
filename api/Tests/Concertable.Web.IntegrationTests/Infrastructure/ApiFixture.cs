@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
@@ -19,6 +20,7 @@ public class ApiFixture : IAsyncLifetime
 
     public MockNotificationService NotificationService { get; } = new();
     public MockStripePaymentClient StripeClient { get; } = new();
+    public FakeStripeClient FakeStripeClient { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
@@ -63,6 +65,7 @@ public class ApiFixture : IAsyncLifetime
         await initializer.InitializeAsync();
 
         await sqlFixture.InitializeRespawnerAsync();
+        FakeStripeClient = new FakeStripeClient(StripeClient, new WebApplicationHttpClientFactory(factory));
     }
 
     public async Task DisposeAsync()
@@ -75,6 +78,10 @@ public class ApiFixture : IAsyncLifetime
     {
         await sqlFixture.ResetAsync();
         NotificationService.Reset();
+
+        using var scope = factory.Services.CreateScope();
+        var initializer = scope.ServiceProvider.GetRequiredService<TestDbInitializer>();
+        await initializer.SeedApplicationAsync();
     }
 
     public HttpClient CreateClient(TestUser user)

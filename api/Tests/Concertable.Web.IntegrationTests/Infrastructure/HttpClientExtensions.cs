@@ -43,9 +43,4 @@ public static class HttpClientExtensions
     {
         return await client.DeleteAsync(url);
     }
-
-    public static Task<HttpResponseMessage> PostWebhookAsync(this HttpClient client, string json)
-    {
-        return client.PostAsync("/api/Webhook", new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
-    }
 }

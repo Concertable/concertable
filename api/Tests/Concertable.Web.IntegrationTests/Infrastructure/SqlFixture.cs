@@ -25,7 +25,7 @@ public class SqlFixture : IAsyncLifetime
     {
         _respawner = await Respawner.CreateAsync(_dbConnection, new RespawnerOptions
         {
-            TablesToIgnore = ["__EFMigrationsHistory", "Users", "Genres", "ArtistGenres", "Artists", "Venues"],
+            TablesToIgnore = ["__EFMigrationsHistory", "Users", "Genres", "ArtistGenres", "Artists", "Venues", "ConcertOpportunities", "Contracts", "OpportunityGenres"],
             DbAdapter = DbAdapter.SqlServer
         });
     }
