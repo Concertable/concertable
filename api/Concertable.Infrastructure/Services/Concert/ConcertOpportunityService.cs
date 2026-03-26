@@ -51,12 +51,17 @@ public class ConcertOpportunityService : IConcertOpportunityService
             opportunity.VenueId = venueDto.Id;
 
             await opportunityRepository.AddAsync(opportunity);
+            await unitOfWork.TrySaveChangesAsync();
+
             await contractService.AddAsync(request.Contract, opportunity.Id);
             await unitOfWork.TrySaveChangesAsync();
 
             await transaction.CommitAsync();
 
-            return opportunity.ToDto();
+            var saved = await opportunityRepository.GetByIdAsync(opportunity.Id)
+                ?? throw new NotFoundException("Opportunity not found after save");
+
+            return saved.ToDto();
         }
         catch
         {
@@ -84,6 +89,8 @@ public class ConcertOpportunityService : IConcertOpportunityService
                 opportunity.VenueId = venueDto.Id;
 
                 await opportunityRepository.AddAsync(opportunity);
+                await unitOfWork.TrySaveChangesAsync();
+
                 await contractService.AddAsync(request.Contract, opportunity.Id);
             }
 
@@ -118,7 +125,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
         {
             opportunity.StartDate = request.StartDate;
             opportunity.EndDate = request.EndDate;
-            genreSyncService.Sync(opportunity.OpportunityGenres, request.Genres.Select(g => g.Id));
+            genreSyncService.Sync(opportunity.OpportunityGenres, request.GenreIds);
             await contractService.UpdateAsync(request.Contract, id);
             await unitOfWork.TrySaveChangesAsync();
             await transaction.CommitAsync();

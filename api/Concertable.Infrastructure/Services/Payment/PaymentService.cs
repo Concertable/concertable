@@ -1,28 +1,19 @@
-using Application.DTOs;
-using Application.Requests;
-using Application.Interfaces;
 using Application.Interfaces.Payment;
-using Core.Exceptions;
+using Application.Requests;
 using Application.Responses;
-using Infrastructure.Settings;
-using Microsoft.Extensions.Options;
+using Infrastructure.Interfaces;
 using Stripe;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Infrastructure.Services.Payment;
 
 public class PaymentService : IPaymentService
 {
-    private readonly StripeSettings stripeSettings;
+    private readonly IStripePaymentClient stripeClient;
     private readonly IStripeAccountService stripeAccountService;
 
-    public PaymentService(IOptions<StripeSettings> stripeSettings, IStripeAccountService stripeAccountService)
+    public PaymentService(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService)
     {
-        this.stripeSettings = stripeSettings.Value;
-        StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
+        this.stripeClient = stripeClient;
         this.stripeAccountService = stripeAccountService;
     }
 
@@ -31,34 +22,20 @@ public class PaymentService : IPaymentService
         try
         {
             if (string.IsNullOrEmpty(request.DestinationStripeId))
-            {
-                return new PaymentResponse
-                {
-                    Success = false,
-                    Message = "Recipient does not have a Stripe account"
-                };
-            }
+                return new PaymentResponse { Success = false, Message = "Recipient does not have a Stripe account" };
 
             if (!await stripeAccountService.IsUserVerifiedAsync(request.DestinationStripeId))
-            {
-                return new PaymentResponse
-                {
-                    Success = false,
-                    Message = "Recipient is not eligible for payouts"
-                };
-            }
-
-            long amount = (long)(request.Amount * 100);
+                return new PaymentResponse { Success = false, Message = "Recipient is not eligible for payouts" };
 
             var options = new PaymentIntentCreateOptions
             {
-                Amount = amount,
+                Amount = (long)(request.Amount * 100),
                 Currency = "GBP",
                 PaymentMethod = request.PaymentMethodId,
                 Confirm = true,
                 ConfirmationMethod = "automatic",
                 CaptureMethod = "automatic",
-                PaymentMethodTypes = new List<string> { "card" },
+                PaymentMethodTypes = ["card"],
                 ReceiptEmail = request.FromUserEmail,
                 Metadata = request.Metadata,
                 TransferData = new PaymentIntentTransferDataOptions
@@ -67,8 +44,7 @@ public class PaymentService : IPaymentService
                 }
             };
 
-            var service = new PaymentIntentService();
-            var paymentIntent = await service.CreateAsync(options);
+            var paymentIntent = await stripeClient.CreatePaymentIntentAsync(options);
 
             return new PaymentResponse
             {
@@ -81,20 +57,11 @@ public class PaymentService : IPaymentService
         }
         catch (StripeException ex)
         {
-            return new PaymentResponse
-            {
-                Success = false,
-                Message = $"Stripe Error: {ex.Message}"
-            };
+            return new PaymentResponse { Success = false, Message = $"Stripe Error: {ex.Message}" };
         }
         catch (Exception ex)
         {
-            return new PaymentResponse
-            {
-                Success = false,
-                Message = $"General Error: {ex.Message}"
-            };
+            return new PaymentResponse { Success = false, Message = $"General Error: {ex.Message}" };
         }
     }
-
 }

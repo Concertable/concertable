@@ -95,6 +95,14 @@ public class ConcertApplicationController : ControllerBase
         return Ok(true);
     }
 
+    [Authorize(Roles = "VenueManager")]
+    [HttpPost("accept/{applicationId}")]
+    public async Task<IActionResult> Accept(int applicationId)
+    {
+        await applicationService.AcceptAsync(applicationId);
+        return Ok();
+    }
+
     [HttpGet("is-owner/{id}")]
     public async Task<ActionResult<bool>> IsOwner(int id)
     {

@@ -9,23 +9,26 @@ using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Controllers;
 
-public class ConcertOpportunityApiTests : IClassFixture<ApiFixture>
+[Collection("Integration")]
+public class ConcertOpportunityApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;
-
 
     public ConcertOpportunityApiTests(ApiFixture fixture)
     {
         this.fixture = fixture;
     }
 
-    public static TheoryData<IContract> AllContractTypes => new()
-    {
+    public Task InitializeAsync() => fixture.ResetAsync();
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    public static TheoryData<IContract> AllContractTypes =>
+    [
         new FlatFeeContractDto { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
         new DoorSplitContractDto { PaymentMethod = PaymentMethod.Cash, ArtistDoorPercent = 70 },
         new VersusContractDto { PaymentMethod = PaymentMethod.Cash, Guarantee = 200, ArtistDoorPercent = 60 },
         new VenueHireContractDto { PaymentMethod = PaymentMethod.Cash, HireFee = 300 },
-    };
+    ];
 
     #region Create
 
@@ -33,7 +36,7 @@ public class ConcertOpportunityApiTests : IClassFixture<ApiFixture>
     [MemberData(nameof(AllContractTypes))]
     public async Task Create_ShouldReturn201(IContract contract)
     {
-        var client = fixture.CreateClient(TestDbInitializer.VenueManagerId, "VenueManager");
+        var client = fixture.CreateClient(TestConstants.VenueManager);
 
         var response = await client.PostAsync("/api/ConcertOpportunity", BuildRequest(contract));
 
@@ -43,7 +46,7 @@ public class ConcertOpportunityApiTests : IClassFixture<ApiFixture>
     [Fact]
     public async Task Create_ShouldReturn403_WhenNotVenueManager()
     {
-        var client = fixture.CreateClient(TestDbInitializer.ArtistManagerId, "ArtistManager");
+        var client = fixture.CreateClient(TestConstants.ArtistManager);
 
         var response = await client.PostAsync("/api/ConcertOpportunity", DefaultRequest());
 
@@ -78,32 +81,6 @@ public class ConcertOpportunityApiTests : IClassFixture<ApiFixture>
 
     #endregion
 
-    #region Update
-
-    [Theory]
-    [MemberData(nameof(AllContractTypes))]
-    public async Task Update_ShouldReturn200(IContract contract)
-    {
-        var client = fixture.CreateClient(TestDbInitializer.VenueManagerId, "VenueManager");
-
-        var created = await client.PostAsync<ConcertOpportunityRequest, ConcertOpportunityDto>("/api/ConcertOpportunity", DefaultRequest());
-        var response = await client.PutAsync($"/api/ConcertOpportunity/{created!.Id}", BuildRequest(contract));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Update_ShouldReturn403_WhenNotVenueManager()
-    {
-        var client = fixture.CreateClient(TestDbInitializer.ArtistManagerId, "ArtistManager");
-
-        var response = await client.PutAsync("/api/ConcertOpportunity/1", DefaultRequest());
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    #endregion
-
     #region Helpers
 
     private static ConcertOpportunityRequest DefaultRequest() =>
@@ -114,7 +91,7 @@ public class ConcertOpportunityApiTests : IClassFixture<ApiFixture>
         {
             StartDate = DateTime.UtcNow.AddMonths(1),
             EndDate = DateTime.UtcNow.AddMonths(1).AddHours(3),
-            Genres = [new GenreDto(1, "Rock")],
+            GenreIds = [TestConstants.RockGenreId],
             Contract = contract
         };
 

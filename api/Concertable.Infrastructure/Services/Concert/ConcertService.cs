@@ -1,3 +1,4 @@
+
 using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
@@ -112,7 +113,7 @@ public class ConcertService : IConcertService
 
         var matchingGenres = await genreRepository.GetByIdsAsync(matchingGenreIds);
 
-        var concertEntity = new Core.Entities.ConcertEntity
+        var concertEntity = new ConcertEntity
         {
             ApplicationId = applicationId,
             Name = $"{artist.Name} performing at {venue.Name}",
@@ -122,7 +123,7 @@ public class ConcertService : IConcertService
             AvailableTickets = 0,
             DatePosted = null,
             ConcertGenres = matchingGenres
-                .Select(g => new ConcertGenreEntity { GenreId = g.Id, Genre = g })
+                .Select(g => new ConcertGenreEntity { GenreId = g.Id })
                 .ToList()
         };
 

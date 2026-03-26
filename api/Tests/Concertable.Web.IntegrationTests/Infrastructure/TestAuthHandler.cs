@@ -28,7 +28,7 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         if (Request.Headers.TryGetValue(RoleHeader, out var roleValues))
             claims.Add(new Claim("role", roleValues.ToString()));
 
-        var identity = new ClaimsIdentity(claims, SchemeName);
+        var identity = new ClaimsIdentity(claims, SchemeName, "sub", "role");
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName);
 
         return Task.FromResult(AuthenticateResult.Success(ticket));

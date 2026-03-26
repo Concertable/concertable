@@ -1,0 +1,25 @@
+using Infrastructure.Interfaces;
+using Stripe;
+
+namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+
+public class MockStripePaymentClient : IStripePaymentClient
+{
+    public string LastPaymentIntentId { get; private set; } = string.Empty;
+    public Dictionary<string, string> LastMetadata { get; private set; } = [];
+
+    public Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options)
+    {
+        LastPaymentIntentId = $"pi_test_{Guid.NewGuid():N}";
+        LastMetadata = options.Metadata ?? [];
+
+        return Task.FromResult(new PaymentIntent
+        {
+            Id = LastPaymentIntentId,
+            Status = "succeeded",
+            AmountReceived = options.Amount ?? 0,
+            Metadata = options.Metadata ?? []
+        });
+    }
+
+}

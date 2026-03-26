@@ -29,7 +29,12 @@ public class ConcertApplicationRepository : Repository<ConcertApplicationEntity>
             .ThenInclude(a => a.User)
         .Include(ca => ca.Artist)
             .ThenInclude(a => a.ArtistGenres)
-                .ThenInclude(ag => ag.Genre);
+                .ThenInclude(ag => ag.Genre)
+        .Include(ca => ca.Opportunity)
+            .ThenInclude(o => o.Contract)
+        .Include(ca => ca.Opportunity)
+            .ThenInclude(o => o.OpportunityGenres)
+                .ThenInclude(og => og.Genre);
 
         return await query.ToListAsync();
     }
@@ -73,7 +78,11 @@ public class ConcertApplicationRepository : Repository<ConcertApplicationEntity>
                 .ThenInclude(ca => ca.ArtistGenres)
                     .ThenInclude(ca => ca.Genre)
             .Include(ca => ca.Artist.User)
-            .Include(ca => ca.Opportunity);
+            .Include(ca => ca.Opportunity)
+                .ThenInclude(o => o.Contract)
+            .Include(ca => ca.Opportunity)
+                .ThenInclude(o => o.OpportunityGenres)
+                    .ThenInclude(og => og.Genre);
 
         return await query.FirstOrDefaultAsync();
     }

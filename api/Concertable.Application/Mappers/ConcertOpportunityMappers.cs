@@ -24,6 +24,6 @@ public static class ConcertOpportunityMappers
     {
         StartDate = request.StartDate,
         EndDate = request.EndDate,
-        OpportunityGenres = request.Genres.Select(g => new OpportunityGenreEntity { GenreId = g.Id }).ToList()
+        OpportunityGenres = request.GenreIds.Select(g => new OpportunityGenreEntity { GenreId = g }).ToList()
     };
 }

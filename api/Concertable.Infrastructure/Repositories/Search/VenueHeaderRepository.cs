@@ -31,7 +31,7 @@ public class VenueHeaderRepository : IVenueHeaderRepository
 
     public async Task<Pagination<VenueHeaderDto>> SearchAsync(SearchParams searchParams)
     {
-        var query = searchSpecification.Apply(context.Venues.AsQueryable(), searchParams);
+        var query = searchSpecification.Apply(context.Venues.AsNoTracking().AsQueryable(), searchParams);
         query = geometrySpecification.Apply(query, searchParams);
         return await query
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
@@ -41,6 +41,7 @@ public class VenueHeaderRepository : IVenueHeaderRepository
     public async Task<IEnumerable<VenueHeaderDto>> GetByAmountAsync(int amount)
     {
         return await context.Venues
+            .AsNoTracking()
             .OrderBy(v => v.Id)
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(amount)

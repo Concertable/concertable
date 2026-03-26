@@ -96,6 +96,7 @@ public static class ServiceCollectionExtensions
         {
             services.AddScoped<IBlobStorageService, BlobStorageService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
+            services.AddScoped<IStripePaymentClient, StripePaymentClient>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IWebhookService, WebhookService>();
         }

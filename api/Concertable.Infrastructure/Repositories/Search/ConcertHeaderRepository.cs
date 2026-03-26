@@ -35,7 +35,7 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
 
     public async Task<Pagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams)
     {
-        var query = searchSpecification.Apply(context.Concerts.AsQueryable(), searchParams);
+        var query = searchSpecification.Apply(context.Concerts.AsNoTracking().AsQueryable(), searchParams);
         query = geometrySpecification.Apply(query, searchParams);
         return await query
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
@@ -43,21 +43,21 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
     }
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
+        await context.Concerts.AsNoTracking().Active(timeProvider.GetUtcNow().DateTime)
             .OrderByDescending(c => c.DatePosted)
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(amount)
             .ToListAsync();
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync() =>
-        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
+        await context.Concerts.AsNoTracking().Active(timeProvider.GetUtcNow().DateTime)
             .OrderByDescending(c => c.TotalTickets - c.AvailableTickets)
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(10)
             .ToListAsync();
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync() =>
-        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
+        await context.Concerts.AsNoTracking().Active(timeProvider.GetUtcNow().DateTime)
             .Where(c => c.Price == 0)
             .OrderByDescending(c => c.DatePosted)
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
@@ -66,7 +66,7 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedAsync(ConcertParams concertParams)
     {
-        var query = context.Concerts.Active(timeProvider.GetUtcNow().DateTime);
+        var query = context.Concerts.AsNoTracking().Active(timeProvider.GetUtcNow().DateTime);
 
         if (concertParams.GenreIds.Any())
             query = query.Where(c => c.ConcertGenres.Any(eg => concertParams.GenreIds.Contains(eg.GenreId)));
