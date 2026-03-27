@@ -9,8 +9,26 @@ public static class TestConstants
     public const int ArtistId = 1;
     public const int GenreId = 1;
     public const int VenueId = 1;
-    public const int FlatFeeOpportunityId = 1;
-    public const int PendingApplicationId = 1;
+
+    public static class FlatFee
+    {
+        public const int OpportunityId = 1;
+        public const int ApplicationId = 1;
+    }
+
+    public static class Settled
+    {
+        public const int OpportunityId = 2;
+        public const int ApplicationId = 2;
+        public const int ConcertId = 1;
+    }
+
+    public static class AwaitingPayment
+    {
+        public const int OpportunityId = 3;
+        public const int ApplicationId = 3;
+        public const int ConcertId = 2;
+    }
 
     public static readonly TestUser VenueManager = new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"), Role.VenueManager);
     public static readonly TestUser VenueManager2 = new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002"), Role.VenueManager);

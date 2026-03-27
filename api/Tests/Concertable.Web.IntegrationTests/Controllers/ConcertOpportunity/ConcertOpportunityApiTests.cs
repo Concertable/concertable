@@ -81,7 +81,7 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
             $"/api/ConcertOpportunity/active/venue/{TestConstants.VenueId}");
 
         Assert.NotNull(opportunities);
-        Assert.Contains(opportunities, o => o.Id == TestConstants.FlatFeeOpportunityId);
+        Assert.Contains(opportunities, o => o.Id == TestConstants.FlatFee.OpportunityId);
     }
 
     #endregion

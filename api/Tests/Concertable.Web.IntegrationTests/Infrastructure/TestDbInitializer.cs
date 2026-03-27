@@ -109,28 +109,36 @@ public class TestDbInitializer : IDbInitializer
 
         if (!await context.Venues.AnyAsync())
         {
-            var opportunity = new ConcertOpportunityEntity
-            {
-                StartDate = DateTime.UtcNow.AddMonths(2),
-                EndDate = DateTime.UtcNow.AddMonths(2).AddHours(3),
-                Contract = new FlatFeeContractEntity
-                {
-                    PaymentMethod = PaymentMethod.Cash,
-                    Fee = 500
-                },
-                OpportunityGenres =
-                [
-                    new OpportunityGenreEntity { GenreId = TestConstants.GenreId }
-                ]
-            };
-
             var venue = new VenueEntity
             {
                 UserId = TestConstants.VenueManager.Id,
                 Name = "Test Venue",
                 About = "Test",
                 ImageUrl = "test.jpg",
-                Opportunities = [opportunity]
+                Opportunities =
+                [
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(2),
+                        EndDate = DateTime.UtcNow.AddMonths(2).AddHours(3),
+                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(3),
+                        EndDate = DateTime.UtcNow.AddMonths(3).AddHours(3),
+                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(4),
+                        EndDate = DateTime.UtcNow.AddMonths(4).AddHours(3),
+                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    }
+                ]
             };
 
             context.Venues.Add(venue);
@@ -139,12 +147,42 @@ public class TestDbInitializer : IDbInitializer
 
         if (!await context.ConcertApplications.AnyAsync())
         {
-            context.ConcertApplications.Add(new ConcertApplicationEntity
-            {
-                OpportunityId = 1,
-                ArtistId = 1,
-                Status = ApplicationStatus.Pending
-            });
+            context.ConcertApplications.AddRange(
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.FlatFee.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Pending
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.Settled.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Settled,
+                    Concert = new ConcertEntity
+                    {
+                        Name = "Draft Concert",
+                        About = "Draft Concert About",
+                        Price = 0,
+                        TotalTickets = 0,
+                        AvailableTickets = 0
+                    }
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.AwaitingPayment.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.AwaitingPayment,
+                    Concert = new ConcertEntity
+                    {
+                        Name = "Unsettled Concert",
+                        About = "Unsettled Concert About",
+                        Price = 0,
+                        TotalTickets = 0,
+                        AvailableTickets = 0
+                    }
+                }
+            );
 
             await context.SaveChangesAsync();
         }

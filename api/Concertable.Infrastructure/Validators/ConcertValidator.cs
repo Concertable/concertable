@@ -2,6 +2,7 @@ using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Responses;
 using Core.Entities;
+using Core.Enums;
 
 namespace Infrastructure.Validators;
 
@@ -21,6 +22,9 @@ public class ConcertValidator : IConcertValidator
     public Task<ValidationResult> CanPostAsync(ConcertEntity concert)
     {
         var result = new ValidationResult();
+
+        if (concert.Application.Status != ApplicationStatus.Settled)
+            result.AddError("Concert cannot be posted until the application is settled");
 
         if (concert.DatePosted is not null)
             result.AddError("Concert has already been posted");
