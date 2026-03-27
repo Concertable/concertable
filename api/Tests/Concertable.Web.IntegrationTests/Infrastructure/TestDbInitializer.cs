@@ -4,7 +4,9 @@ using Concertable.Core.Entities.Contracts;
 using Core.Entities;
 using Core.Enums;
 using Infrastructure.Data.Identity;
+using Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 
@@ -14,7 +16,7 @@ public class TestDbInitializer : IDbInitializer
     private readonly TimeProvider timeProvider;
     private readonly IGeometryProvider geometryProvider;
 
-    public TestDbInitializer(ApplicationDbContext context, TimeProvider timeProvider, IGeometryProvider geometryProvider)
+    public TestDbInitializer(ApplicationDbContext context, TimeProvider timeProvider, [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.context = context;
         this.timeProvider = timeProvider;
@@ -35,11 +37,6 @@ public class TestDbInitializer : IDbInitializer
             );
             await context.SaveChangesAsync();
         }
-
-        var rockGenreId = await context.Genres
-    .Where(g => g.Name == "Rock")
-    .Select(g => g.Id)
-    .FirstAsync();
 
         if (!await context.Users.AnyAsync())
         {
@@ -144,6 +141,20 @@ public class TestDbInitializer : IDbInitializer
                         EndDate = DateTime.UtcNow.AddMonths(5).AddHours(3),
                         Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 50 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(6),
+                        EndDate = DateTime.UtcNow.AddMonths(6).AddHours(3),
+                        Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(7),
+                        EndDate = DateTime.UtcNow.AddMonths(7).AddHours(3),
+                        Contract = new VenueHireContractEntity { HireFee = 300 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     }
                 ]
             };
@@ -192,6 +203,18 @@ public class TestDbInitializer : IDbInitializer
                 new ConcertApplicationEntity
                 {
                     OpportunityId = TestConstants.Versus.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Pending
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.DoorSplit.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Pending
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.VenueHire.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Pending
                 }
