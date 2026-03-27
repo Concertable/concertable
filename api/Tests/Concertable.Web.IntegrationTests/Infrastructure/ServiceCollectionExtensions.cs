@@ -5,10 +5,13 @@ namespace Concertable.Web.IntegrationTests.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddResettables(this IServiceCollection services)
+    public static IServiceCollection AddResettables(
+        this IServiceCollection services,
+        IMockNotificationService notificationService,
+        IMockStripePaymentClient stripePaymentClient)
     {
-        services.AddSingleton<IResettable>(p => p.GetRequiredService<IMockNotificationService>());
-        services.AddSingleton<IResettable>(p => p.GetRequiredService<IMockStripePaymentClient>());
+        services.AddSingleton<IResettable>(notificationService);
+        services.AddSingleton<IResettable>(stripePaymentClient);
         return services;
     }
 }
