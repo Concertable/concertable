@@ -312,8 +312,7 @@ namespace Concertable.Infrastructure.Migrations
                         name: "FK_ConcertOpportunities_Venues_VenueId",
                         column: x => x.VenueId,
                         principalTable: "Venues",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -353,8 +352,7 @@ namespace Concertable.Infrastructure.Migrations
                         name: "FK_ConcertApplications_Artists_ArtistId",
                         column: x => x.ArtistId,
                         principalTable: "Artists",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_ConcertApplications_ConcertOpportunities_OpportunityId",
                         column: x => x.OpportunityId,

@@ -4,11 +4,12 @@ using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Infrastructure.Interfaces;
 using Infrastructure.Services.Payment;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
@@ -20,13 +21,14 @@ public class ApiFixture : IAsyncLifetime
 
     public MockNotificationService NotificationService { get; } = new();
     public MockStripePaymentClient StripeClient { get; } = new();
-    public FakeStripeClient FakeStripeClient { get; private set; } = null!;
+    public IFakeStripeClient FakeStripeClient { get; private set; } = null!;
 
-    public async Task InitializeAsync()
+public async Task InitializeAsync()
     {
         await sqlFixture.InitializeAsync();
         factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
+            builder.UseEnvironment("Testing");
             builder.ConfigureAppConfiguration((_, config) =>
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
@@ -44,10 +46,13 @@ public class ApiFixture : IAsyncLifetime
                 services.AddSingleton<IConcertNotificationService>(NotificationService);
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
                 services.AddScoped<IEmailService, MockEmailService>();
+                services.AddSingleton(StripeClient);
                 services.AddSingleton<IStripePaymentClient>(StripeClient);
                 services.AddScoped<IPaymentService, PaymentService>();
                 services.AddScoped<IWebhookService, MockWebhookService>();
-                services.AddScoped<TestDbInitializer>();
+                services.AddSingleton<IFakeStripeClient, FakeStripeClient>();
+                services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));
+                services.AddScoped<IDbInitializer, TestDbInitializer>();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {
@@ -60,12 +65,10 @@ public class ApiFixture : IAsyncLifetime
             });
         });
 
-        using var scope = factory.Services.CreateScope();
-        var initializer = scope.ServiceProvider.GetRequiredService<TestDbInitializer>();
-        await initializer.InitializeAsync();
+        _ = factory.Services;
 
         await sqlFixture.InitializeRespawnerAsync();
-        FakeStripeClient = new FakeStripeClient(StripeClient, new WebApplicationHttpClientFactory(factory));
+        FakeStripeClient = factory.Services.GetRequiredService<IFakeStripeClient>();
     }
 
     public async Task DisposeAsync()
@@ -78,10 +81,12 @@ public class ApiFixture : IAsyncLifetime
     {
         await sqlFixture.ResetAsync();
         NotificationService.Reset();
+        StripeClient.Reset();
+        FakeStripeClient = factory.Services.GetRequiredService<IFakeStripeClient>();
 
         using var scope = factory.Services.CreateScope();
-        var initializer = scope.ServiceProvider.GetRequiredService<TestDbInitializer>();
-        await initializer.SeedApplicationAsync();
+        var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        await initializer.InitializeAsync();
     }
 
     public HttpClient CreateClient(TestUser user)
@@ -92,16 +97,26 @@ public class ApiFixture : IAsyncLifetime
         return client;
     }
 
-    public HttpClient CreateClient(TestUser user, Action<IServiceCollection> configure)
+    public HttpClient CreateClient(TestUser user, Action<TestClientOptions> configure)
     {
-        var client = factory.WithWebHostBuilder(b => b.ConfigureTestServices(configure)).CreateClient();
+        var options = new TestClientOptions();
+        configure(options);
+
+        var customFactory = factory.WithWebHostBuilder(b =>
+        {
+            if (options.Configure is not null)
+                b.ConfigureAppConfiguration((_, config) => options.Configure(config));
+            if (options.Services is not null)
+                b.ConfigureTestServices(options.Services);
+        });
+
+        FakeStripeClient = customFactory.Services.GetRequiredService<IFakeStripeClient>();
+
+        var client = customFactory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, user.Id.ToString());
         client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, user.Role.ToString());
         return client;
     }
 
     public HttpClient CreateClient() => factory.CreateClient();
-
-    public HttpClient CreateClient(Action<IServiceCollection> configure) =>
-        factory.WithWebHostBuilder(b => b.ConfigureTestServices(configure)).CreateClient();
 }

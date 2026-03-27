@@ -63,6 +63,8 @@ builder.Services.AddCors(options =>
 var services = builder.Services;
 
 services.AddInfrastructure(builder.Configuration);
+if (!builder.Environment.IsEnvironment("Testing"))
+    services.AddScoped<IDbInitializer, ApplicationDbInitializer>();
 services.AddServices();
 services.AddRepositories();
 services.AddSearch();
@@ -100,15 +102,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-try
+if (!app.Environment.IsProduction())
 {
     using var scope = app.Services.CreateScope();
-    var initializer = scope.ServiceProvider.GetRequiredService<ApplicationDbInitializer>();
+    var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
     await initializer.InitializeAsync();
-}
-catch (Exception ex)
-{
-    Console.WriteLine("DB init failed: " + ex);
 }
 
 app.Run();

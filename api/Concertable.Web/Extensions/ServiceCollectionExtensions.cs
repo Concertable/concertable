@@ -71,7 +71,6 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<AuditInterceptor>();
-        services.AddScoped<ApplicationDbInitializer>();
 
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(

@@ -3,7 +3,7 @@ using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 
-public class FakeStripeClient
+public class FakeStripeClient : IFakeStripeClient
 {
     private readonly MockStripePaymentClient paymentClient;
     private readonly IHttpClientFactory httpClientFactory;
@@ -16,6 +16,9 @@ public class FakeStripeClient
 
     public async Task SendWebhookAsync()
     {
+        if (string.IsNullOrEmpty(paymentClient.LastPaymentIntentId))
+            throw new InvalidOperationException("No payment intent from the last accept; cannot simulate webhook.");
+
         var metadataJson = string.Join(",\n", paymentClient.LastMetadata.Select(kv => $"\"{kv.Key}\": \"{kv.Value}\""));
 
         var json = $$"""

@@ -44,7 +44,7 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
         Assert.NotNull(opportunity.Id);
         Assert.Equal(request.StartDate, opportunity.StartDate);
         Assert.Equal(request.EndDate, opportunity.EndDate);
-        Assert.Contains(opportunity.Genres, g => g.Id == TestConstants.RockGenreId);
+        Assert.Contains(opportunity.Genres, g => g.Id == TestConstants.GenreId);
     }
 
     [Fact]
@@ -87,15 +87,15 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
 
     #region Helpers
 
-    private static ConcertOpportunityRequest DefaultRequest() =>
+    private ConcertOpportunityRequest DefaultRequest() =>
         BuildRequest(new FlatFeeContractDto { PaymentMethod = PaymentMethod.Cash, Fee = 500 });
 
-    private static ConcertOpportunityRequest BuildRequest(IContract contract) =>
+    private ConcertOpportunityRequest BuildRequest(IContract contract) =>
         new()
         {
             StartDate = DateTime.UtcNow.AddMonths(1),
             EndDate = DateTime.UtcNow.AddMonths(1).AddHours(3),
-            GenreIds = [TestConstants.RockGenreId],
+            GenreIds = [TestConstants.GenreId],
             Contract = contract
         };
 

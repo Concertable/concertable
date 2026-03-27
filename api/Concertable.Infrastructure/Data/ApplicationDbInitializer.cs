@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
-public class ApplicationDbInitializer
+public class ApplicationDbInitializer : IDbInitializer
 {
     private const string SeedPassword = "Password11!";
 
@@ -982,6 +982,6 @@ public class ApplicationDbInitializer
             context.TicketTransactions.AddRange(ticketTransactions);
             await context.SaveChangesAsync();
         }
-
     }
+
 }

@@ -25,15 +25,13 @@ public class SqlFixture : IAsyncLifetime
     {
         _respawner = await Respawner.CreateAsync(_dbConnection, new RespawnerOptions
         {
-            TablesToIgnore = ["__EFMigrationsHistory", "Users", "Genres", "ArtistGenres", "Artists", "Venues", "ConcertOpportunities", "Contracts", "OpportunityGenres"],
-            DbAdapter = DbAdapter.SqlServer
+            TablesToIgnore = ["__EFMigrationsHistory"],
+            DbAdapter = DbAdapter.SqlServer,
+            WithReseed = true // resets IDENTITY counters to 0 (next insert = 1) so hardcoded IDs in TestDbInitializer remain valid after each reset
         });
     }
 
-    public async Task ResetAsync() 
-    {
-        await _respawner.ResetAsync(_dbConnection);
-    }
+    public async Task ResetAsync() => await _respawner.ResetAsync(_dbConnection);
 
     public async Task DisposeAsync()
     {

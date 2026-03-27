@@ -126,6 +126,13 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
+        modelBuilder.Entity<ConcertOpportunityEntity>()
+            .HasOne(o => o.Venue)
+            .WithMany(v => v.Opportunities)
+            .HasForeignKey(o => o.VenueId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.NoAction);
+
         modelBuilder.Entity<ConcertApplicationEntity>()
             .HasOne(ca => ca.Opportunity)
             .WithMany(o => o.Applications)
@@ -137,7 +144,8 @@ public class ApplicationDbContext : DbContext
             .HasOne(ca => ca.Artist)
             .WithMany(a => a.Applications)
             .HasForeignKey(ca => ca.ArtistId)
-            .IsRequired();
+            .IsRequired()
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<TicketEntity>()
             .HasOne(t => t.Concert)
@@ -182,5 +190,6 @@ public class ApplicationDbContext : DbContext
             .WithOne(o => o.Contract)
             .HasForeignKey<ContractEntity>(c => c.Id)
             .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

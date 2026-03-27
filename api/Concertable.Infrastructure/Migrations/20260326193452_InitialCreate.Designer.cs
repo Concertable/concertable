@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260324005306_InitialCreate")]
+    [Migration("20260326193452_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -111,7 +111,12 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasIndex("OpportunityId", "ArtistId")
                         .IsUnique();
 
-                    b.ToTable("ConcertApplications");
+                    b.ToTable("ConcertApplications", t =>
+                        {
+                            t.HasTrigger("TR_ConcertApplications_CascadeDelete");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("Core.Entities.ConcertEntity", b =>
@@ -150,7 +155,12 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasIndex("ApplicationId")
                         .IsUnique();
 
-                    b.ToTable("Concerts");
+                    b.ToTable("Concerts", t =>
+                        {
+                            t.HasTrigger("TR_Concerts_CascadeDelete");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("Core.Entities.ConcertGenreEntity", b =>
@@ -214,7 +224,12 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("ConcertOpportunities");
+                    b.ToTable("ConcertOpportunities", t =>
+                        {
+                            t.HasTrigger("TR_ConcertOpportunities_CascadeDelete");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("Core.Entities.GenreEntity", b =>
@@ -757,7 +772,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasOne("Core.Entities.ArtistEntity", "Artist")
                         .WithMany("Applications")
                         .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Core.Entities.ConcertOpportunityEntity", "Opportunity")
@@ -817,7 +832,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasOne("Core.Entities.VenueEntity", "Venue")
                         .WithMany("Opportunities")
                         .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Venue");

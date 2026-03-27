@@ -8,6 +8,12 @@ public class MockStripePaymentClient : IStripePaymentClient
     public string LastPaymentIntentId { get; private set; } = string.Empty;
     public Dictionary<string, string> LastMetadata { get; private set; } = [];
 
+    public void Reset()
+    {
+        LastPaymentIntentId = string.Empty;
+        LastMetadata = [];
+    }
+
     public Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options)
     {
         LastPaymentIntentId = $"pi_test_{Guid.NewGuid():N}";

@@ -1,0 +1,17 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace Concertable.Web.IntegrationTests.Infrastructure;
+
+public class TestClientOptions
+{
+    public Action<IConfigurationBuilder>? Configure { get; set; }
+    public Action<IServiceCollection>? Services { get; set; }
+
+    public TestClientOptions UseFailingStripe()
+    {
+        Services += services => services.Replace(ServiceDescriptor.Singleton<IFakeStripeClient, FakeStripeClientFail>());
+        return this;
+    }
+}

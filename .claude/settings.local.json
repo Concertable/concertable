@@ -46,7 +46,15 @@
       "Bash(cmd /c \"taskkill /PID 1424 /F\" 2>&1)",
       "Bash(cmd /c \"taskkill /IM testhost.exe /F\" 2>&1)",
       "Bash(dotnet csharp:*)",
-      "Bash(dotnet script:*)"
+      "Bash(dotnet script:*)",
+      "Bash(find /c/Users/TommySeery/.nuget/packages/respawn -name *.cs)",
+      "Bash(where ilspycmd:*)",
+      "Bash(where ildasm:*)",
+      "Bash(dotnet tool:*)",
+      "Bash(ilspycmd \"C:/Users/TommySeery/.nuget/packages/respawn/7.0.0/lib/netstandard2.1/Respawn.dll\")",
+      "WebFetch(domain:github.com)",
+      "Bash(ilspycmd:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

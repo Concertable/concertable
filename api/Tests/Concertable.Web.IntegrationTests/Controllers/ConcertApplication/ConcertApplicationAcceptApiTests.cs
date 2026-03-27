@@ -59,7 +59,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
-        await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}", (object?)null);
+        await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
         await fixture.FakeStripeClient.SendWebhookAsync();
 
         var response = await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}", (object?)null);
@@ -74,7 +74,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
-        await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}", (object?)null);
+        await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
         await fixture.FakeStripeClient.SendWebhookAsync();
 
         var application = await client.GetAsync<ConcertApplicationDto>($"/api/ConcertApplication/{TestConstants.PendingApplicationId}");
@@ -87,7 +87,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
-        await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}", (object?)null);
+        await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
         await fixture.FakeStripeClient.SendWebhookAsync();
 
         var concert = await client.GetAsync<ConcertDto>($"/api/Concert/application/{TestConstants.PendingApplicationId}");
@@ -104,7 +104,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
-        await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}", (object?)null);
+        await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
         await fixture.FakeStripeClient.SendWebhookAsync();
         await fixture.FakeStripeClient.SendWebhookAsync();
 
