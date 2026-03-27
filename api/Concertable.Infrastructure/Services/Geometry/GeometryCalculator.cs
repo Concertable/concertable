@@ -1,4 +1,5 @@
 using Application.Interfaces.Geometry;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Services.Geometry;
 
@@ -6,7 +7,7 @@ public class GeometryCalculator : IGeometryCalculator
 {
     private readonly IGeometryProvider geometryProvider;
 
-    public GeometryCalculator(IGeometryProvider geometryProvider)
+    public GeometryCalculator([FromKeyedServices(GeometryProviderType.Metric)] IGeometryProvider geometryProvider)
     {
         this.geometryProvider = geometryProvider;
     }

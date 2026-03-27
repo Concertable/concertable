@@ -7,12 +7,12 @@ namespace Concertable.Infrastructure.UnitTests.Services;
 
 public class GeometryProviderTests
 {
-    private readonly GeometryProvider sut;
+    private readonly GeographicGeometryProvider sut;
 
     public GeometryProviderTests()
     {
         var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-        sut = new GeometryProvider(geometryFactory);
+        sut = new GeographicGeometryProvider(geometryFactory);
     }
 
     [Fact]

@@ -3,6 +3,8 @@ using Application.Interfaces;
 using Application.Interfaces.Geometry;
 using Application.Mappers;
 using Core.Entities;
+using Infrastructure.Services.Geometry;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Services;
 
@@ -17,7 +19,7 @@ public class UserService : IUserService
         IUserRepository userRepsitory,
         ICurrentUser currentUser,
         IGeocodingService geocodingService,
-        IGeometryProvider geometryProvider)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.userRepsitory = userRepsitory;
         this.currentUser = currentUser;

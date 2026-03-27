@@ -1,6 +1,7 @@
 using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Geometry;
+using Infrastructure.Services.Geometry;
 using Application.Interfaces.Rating;
 using Application.DTOs;
 using Application.Mappers;
@@ -31,7 +32,7 @@ public class VenueService : IVenueService
         ICurrentUser currentUser,
         IGeocodingService geocodingService,
         IUnitOfWork unitOfWork,
-        IGeometryProvider geometryService)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryService)
     {
         this.venueRepository = venueRepository;
         this.userRepository = userRepository;

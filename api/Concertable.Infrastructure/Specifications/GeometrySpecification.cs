@@ -1,6 +1,8 @@
 using Application.Interfaces;
 using Application.Interfaces.Geometry;
 using Application.Interfaces.Search;
+using Infrastructure.Services.Geometry;
+using Microsoft.Extensions.DependencyInjection;
 using Core.Extensions;
 using Core.Interfaces;
 using Core.Parameters;
@@ -16,7 +18,7 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
     private readonly Expression<Func<TEntity, Point?>> locationSelector;
 
     public GeometrySpecification(
-        IGeometryProvider geometryProvider,
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
         ILocationSelector<TEntity> locationSelector)
     {
         this.geometryProvider = geometryProvider;

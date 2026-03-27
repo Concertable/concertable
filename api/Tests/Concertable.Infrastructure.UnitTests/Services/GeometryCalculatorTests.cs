@@ -10,8 +10,8 @@ public class GeometryCalculatorTests
 
     public GeometryCalculatorTests()
     {
-        var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-        var geometryProvider = new GeometryProvider(geometryFactory);
+        var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857);
+        var geometryProvider = new MetricGeometryProvider(geometryFactory);
         sut = new GeometryCalculator(geometryProvider);
     }
 

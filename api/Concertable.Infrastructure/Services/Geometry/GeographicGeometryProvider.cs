@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Services.Geometry;
 
-public class GeometryProvider : IGeometryProvider
+public class GeographicGeometryProvider : IGeometryProvider
 {
     private readonly GeometryFactory geometryFactory;
 
-    public GeometryProvider(GeometryFactory geometryFactory)
+    public GeographicGeometryProvider(GeometryFactory geometryFactory)
     {
         this.geometryFactory = geometryFactory;
     }

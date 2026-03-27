@@ -100,8 +100,10 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IWebhookService, WebhookService>();
         }
 
-        services.AddSingleton<GeometryFactory>(
-            NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
+        services.AddKeyedSingleton<IGeometryProvider, GeographicGeometryProvider>(GeometryProviderType.Geographic, (_, _) =>
+            new GeographicGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326)));
+        services.AddKeyedSingleton<IGeometryProvider, MetricGeometryProvider>(GeometryProviderType.Metric, (_, _) =>
+            new MetricGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857)));
 
 
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -143,7 +145,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddScoped<IUriService, UriService>();
-        services.AddSingleton<IGeometryProvider, GeometryProvider>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
         services.AddSingleton<ICollectionDiffer, CollectionDiffer>();
