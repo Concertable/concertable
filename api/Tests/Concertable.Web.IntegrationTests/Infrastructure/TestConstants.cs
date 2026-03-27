@@ -7,6 +7,7 @@ public record PendingContract(int OpportunityId, int ApplicationId);
 public record SettledContract(int OpportunityId, int ApplicationId, int ConcertId);
 public record AwaitingPaymentContract(int OpportunityId, int ApplicationId, int ConcertId);
 public record CompletedContract(int OpportunityId, int ApplicationId, int ConcertId);
+public record PostedConcert(int OpportunityId, int ApplicationId, int ConcertId);
 
 public static class TestConstants
 {
@@ -20,6 +21,10 @@ public static class TestConstants
     public static readonly PendingContract Versus = new(4, 4);
     public static readonly PendingContract DoorSplit = new(5, 5);
     public static readonly PendingContract VenueHire = new(6, 6);
+    public static readonly PostedConcert PostedFlatFee = new(7, 7, 3);
+    public static readonly PostedConcert PostedDoorSplit = new(8, 8, 4);
+    public static readonly PostedConcert PostedVersus = new(9, 9, 5);
+    public static readonly PostedConcert PostedVenueHire = new(10, 10, 6);
 
     public static readonly TestUser VenueManager = new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"), Role.VenueManager);
     public static readonly TestUser VenueManager2 = new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002"), Role.VenueManager);

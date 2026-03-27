@@ -1,4 +1,3 @@
-using Core.Interfaces;
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Payment;
@@ -21,7 +20,7 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Pagination<ITransaction>>> GetPurchases([FromQuery] IPageParams pageParams)
+    public async Task<ActionResult<Pagination<ITransaction>>> GetPurchases([FromQuery] PageParams pageParams)
     {
         var result = await purchaseService.GetAsync(pageParams);
         return Ok(result);

@@ -48,6 +48,6 @@ public record TicketDto
     public int Id { get; set; }
     public DateTime PurchaseDate { get; set; }
     public byte[]? QrCode { get; set; }
-    public required ConcertDto Concert { get; set; }
+    public required TicketConcertDto Concert { get; set; }
     public required UserDto User { get; set; }
 }

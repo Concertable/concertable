@@ -31,20 +31,22 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
 
     public async Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(Guid id)
     {
-        var query = context.Tickets
+        return await context.Tickets
             .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
-            .Include(t => t.Concert);
-
-        return await query.ToListAsync();
+            .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Opportunity).ThenInclude(o => o.Venue)
+            .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Artist)
+            .Include(t => t.User)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(Guid id)
     {
-        var query = context.Tickets
-             .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate >= timeProvider.GetUtcNow())
-             .Include(t => t.Concert);
-
-        return await query.ToListAsync();
+        return await context.Tickets
+            .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate >= timeProvider.GetUtcNow())
+            .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Opportunity).ThenInclude(o => o.Venue)
+            .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Artist)
+            .Include(t => t.User)
+            .ToListAsync();
     }
 
     public async Task<TicketEntity?> GetByUserIdAndConcertIdAsync(Guid userId, int concertId)

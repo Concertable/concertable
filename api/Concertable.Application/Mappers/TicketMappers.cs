@@ -10,8 +10,19 @@ public static class TicketMappers
         Id = ticket.Id,
         PurchaseDate = ticket.PurchaseDate,
         QrCode = ticket.QrCode,
-        Concert = ticket.Concert.ToDto(),
+        Concert = ToTicketConcertDto(ticket.Concert),
         User = ticket.User.ToDto()
+    };
+
+    private static TicketConcertDto ToTicketConcertDto(ConcertEntity concert) => new()
+    {
+        Id = concert.Id,
+        Name = concert.Name,
+        Price = concert.Price,
+        StartDate = concert.Application.Opportunity.StartDate,
+        EndDate = concert.Application.Opportunity.EndDate,
+        VenueName = concert.Application.Opportunity.Venue.Name,
+        ArtistName = concert.Application.Artist.Name
     };
 
     public static IEnumerable<TicketDto> ToDtos(this IEnumerable<TicketEntity> tickets) =>

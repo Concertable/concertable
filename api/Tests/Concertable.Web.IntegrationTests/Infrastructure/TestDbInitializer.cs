@@ -155,6 +155,34 @@ public class TestDbInitializer : IDbInitializer
                         EndDate = DateTime.UtcNow.AddMonths(7).AddHours(3),
                         Contract = new VenueHireContractEntity { HireFee = 300 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(8),
+                        EndDate = DateTime.UtcNow.AddMonths(8).AddHours(3),
+                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(9),
+                        EndDate = DateTime.UtcNow.AddMonths(9).AddHours(3),
+                        Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(10),
+                        EndDate = DateTime.UtcNow.AddMonths(10).AddHours(3),
+                        Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 50 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(11),
+                        EndDate = DateTime.UtcNow.AddMonths(11).AddHours(3),
+                        Contract = new VenueHireContractEntity { HireFee = 300 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     }
                 ]
             };
@@ -217,6 +245,66 @@ public class TestDbInitializer : IDbInitializer
                     OpportunityId = TestConstants.VenueHire.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Pending
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.PostedFlatFee.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Settled,
+                    Concert = new ConcertEntity
+                    {
+                        Name = "Posted FlatFee Concert",
+                        About = "Posted FlatFee Concert About",
+                        Price = 10.00m,
+                        TotalTickets = 100,
+                        AvailableTickets = 100,
+                        DatePosted = DateTime.UtcNow
+                    }
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.PostedDoorSplit.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Settled,
+                    Concert = new ConcertEntity
+                    {
+                        Name = "Posted DoorSplit Concert",
+                        About = "Posted DoorSplit Concert About",
+                        Price = 10.00m,
+                        TotalTickets = 100,
+                        AvailableTickets = 100,
+                        DatePosted = DateTime.UtcNow
+                    }
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.PostedVersus.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Settled,
+                    Concert = new ConcertEntity
+                    {
+                        Name = "Posted Versus Concert",
+                        About = "Posted Versus Concert About",
+                        Price = 10.00m,
+                        TotalTickets = 100,
+                        AvailableTickets = 100,
+                        DatePosted = DateTime.UtcNow
+                    }
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.PostedVenueHire.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Settled,
+                    Concert = new ConcertEntity
+                    {
+                        Name = "Posted VenueHire Concert",
+                        About = "Posted VenueHire Concert About",
+                        Price = 10.00m,
+                        TotalTickets = 100,
+                        AvailableTickets = 100,
+                        DatePosted = DateTime.UtcNow
+                    }
                 }
             );
 
