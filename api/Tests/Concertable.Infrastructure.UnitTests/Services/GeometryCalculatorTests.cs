@@ -1,0 +1,37 @@
+using Infrastructure.Services.Geometry;
+using NetTopologySuite;
+using Xunit;
+
+namespace Concertable.Infrastructure.UnitTests.Services;
+
+public class GeometryCalculatorTests
+{
+    private readonly GeometryCalculator sut;
+
+    public GeometryCalculatorTests()
+    {
+        var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+        var geometryProvider = new GeometryProvider(geometryFactory);
+        sut = new GeometryCalculator(geometryProvider);
+    }
+
+    [Fact]
+    public void IsWithinRadius_ShouldReturnTrue_WhenPointsAreWithinRadius()
+    {
+        // London to nearby point (~1km apart)
+        Assert.True(sut.IsWithinRadius(51.5074, -0.1278, 51.5154, -0.1278, 10));
+    }
+
+    [Fact]
+    public void IsWithinRadius_ShouldReturnFalse_WhenPointsAreOutsideRadius()
+    {
+        // London to Manchester (~260km apart)
+        Assert.False(sut.IsWithinRadius(51.5074, -0.1278, 53.4808, -2.2426, 10));
+    }
+
+    [Fact]
+    public void IsWithinRadius_ShouldReturnTrue_WhenSamePoint()
+    {
+        Assert.True(sut.IsWithinRadius(51.5074, -0.1278, 51.5074, -0.1278, 1));
+    }
+}

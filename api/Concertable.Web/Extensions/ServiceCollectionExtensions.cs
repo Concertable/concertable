@@ -231,8 +231,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
         services.AddScoped<IWebhookQueue, WebhookQueue>();
-        services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>("concert");
-        services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>("settlement");
+        services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>(WebhookType.Concert);
+        services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>(WebhookType.Settlement);
 
         return services;
     }

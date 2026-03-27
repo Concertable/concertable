@@ -1,69 +1,110 @@
 using Core.Entities;
 using Core.Enums;
-using Core.Parameters;
 using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Xunit;
 
-namespace Infrastructure.Tests.Repositories;
+namespace Concertable.Infrastructure.UnitTests.Repositories;
 
-[TestFixture]
 public class VenueRepositoryTests : IDisposable
 {
-    private ApplicationDbContext context;
-    private VenueRepository venueRepository;
+    private readonly ApplicationDbContext context;
+    private readonly VenueRepository sut;
 
-    [SetUp]
-    public void Constructor()
+    private static readonly Guid UserId = Guid.NewGuid();
+    private static readonly Guid OtherUserId = Guid.NewGuid();
+
+    public VenueRepositoryTests()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: "Concertable")
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
         context = new ApplicationDbContext(options);
-        venueRepository = new VenueRepository(context);
+        sut = new VenueRepository(context);
+
+        SeedData();
     }
 
-    [Test]
-    public async Task GetHeadersAsync_ShouldReturnHeaders()
+    private void SeedData()
     {
-        // Arrange
-        var venueParams = new SearchParams { Sort = "Name", HeaderType = HeaderType.Venue };
+        context.Users.AddRange(
+            new VenueManagerEntity { Id = UserId, Email = "a@test.com", PasswordHash = string.Empty, Role = Role.VenueManager },
+            new VenueManagerEntity { Id = OtherUserId, Email = "b@test.com", PasswordHash = string.Empty, Role = Role.VenueManager }
+        );
 
-        var userId1 = Guid.NewGuid();
-        var userId2 = Guid.NewGuid();
+        context.Venues.AddRange(
+            new VenueEntity { Id = 1, UserId = UserId, Name = "Venue A", About = "About A", ImageUrl = "a.jpg" },
+            new VenueEntity { Id = 2, UserId = OtherUserId, Name = "Venue B", About = "About B", ImageUrl = "b.jpg" }
+        );
 
-        var venueHeaders = new List<VenueEntity> {
-            new VenueEntity { Id = 1, Name = "Test Venue 1", About = "About 1", ImageUrl = "", UserId = userId1 },
-            new VenueEntity { Id = 2, Name = "Test Venue 2", About = "About 2", ImageUrl = "", UserId = userId2 }
-        };
-
-        // Populate database
-        context.Venues.AddRange(venueHeaders);
-
-        // Act
-        //var result = await venueRepository.GetHeadersAsync(venueParams);
-        // Assert
-        //Assert.That(result, Is.Not.Null);
-        //Assert.That(result.Count(), Is.EqualTo(venueHeaders.Count()));
+        context.SaveChanges();
     }
 
-    [Test]
-    public async Task GetByUserIdAsync_ShouldReturnVenue()
+    public void Dispose() => context.Dispose();
+
+    #region GetByIdAsync
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnVenueWithUser_WhenExists()
     {
-        // Arrange
-        var userId = Guid.NewGuid();
-        // Act
-        var result = await venueRepository.GetByUserIdAsync(userId);
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result!.UserId, Is.EqualTo(userId));
-        Assert.That(result.Name, Is.EqualTo("Test Venue 1"));
+        var result = await sut.GetByIdAsync(1);
+
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Id);
+        Assert.NotNull(result.User);
     }
 
-    public void Dispose()
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenNotFound()
     {
-        context.Database.EnsureDeleted();
-        context.Dispose();
+        var result = await sut.GetByIdAsync(999);
+
+        Assert.Null(result);
     }
+
+    #endregion
+
+    #region GetByUserIdAsync
+
+    [Fact]
+    public async Task GetByUserIdAsync_ShouldReturnVenueWithUser_WhenExists()
+    {
+        var result = await sut.GetByUserIdAsync(UserId);
+
+        Assert.NotNull(result);
+        Assert.Equal(UserId, result.UserId);
+        Assert.NotNull(result.User);
+    }
+
+    [Fact]
+    public async Task GetByUserIdAsync_ShouldReturnNull_WhenNotFound()
+    {
+        var result = await sut.GetByUserIdAsync(Guid.NewGuid());
+
+        Assert.Null(result);
+    }
+
+    #endregion
+
+    #region GetIdByUserIdAsync
+
+    [Fact]
+    public async Task GetIdByUserIdAsync_ShouldReturnId_WhenExists()
+    {
+        var result = await sut.GetIdByUserIdAsync(UserId);
+
+        Assert.Equal(1, result);
+    }
+
+    [Fact]
+    public async Task GetIdByUserIdAsync_ShouldReturnNull_WhenNotFound()
+    {
+        var result = await sut.GetIdByUserIdAsync(Guid.NewGuid());
+
+        Assert.Null(result);
+    }
+
+    #endregion
 }

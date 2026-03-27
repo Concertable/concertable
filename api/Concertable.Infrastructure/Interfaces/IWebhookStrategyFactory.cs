@@ -1,6 +1,8 @@
+using Core.Enums;
+
 namespace Infrastructure.Interfaces;
 
 public interface IWebhookStrategyFactory
 {
-    IWebhookStrategy Create(string type);
+    IWebhookStrategy Create(WebhookType type);
 }

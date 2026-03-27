@@ -31,7 +31,7 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
     {
         return await context.Venues
             .Where(a => a.UserId == userId)
-            .Select(a => a.Id)
+            .Select(a => (int?)a.Id)
             .FirstOrDefaultAsync();
     }
 

@@ -1,3 +1,4 @@
+using Core.Enums;
 using Infrastructure.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,6 @@ public class WebhookStrategyFactory : IWebhookStrategyFactory
     public WebhookStrategyFactory(IServiceProvider serviceProvider)
         => this.serviceProvider = serviceProvider;
 
-    public IWebhookStrategy Create(string type)
+    public IWebhookStrategy Create(WebhookType type)
         => serviceProvider.GetRequiredKeyedService<IWebhookStrategy>(type);
 }

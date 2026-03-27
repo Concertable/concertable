@@ -1,6 +1,7 @@
 using Application.Interfaces;
-using Infrastructure.Interfaces;
 using Core.Entities;
+using Core.Enums;
+using Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 using Stripe;
 
@@ -44,7 +45,8 @@ public class WebhookProcessor : IWebhookProcessor
             if (intent.Status != "succeeded")
                 return;
 
-            var strategy = strategyFactory.Create(intent.Metadata["type"]);
+            var webhookType = Enum.Parse<WebhookType>(intent.Metadata["type"], ignoreCase: true);
+            var strategy = strategyFactory.Create(webhookType);
             await strategy.HandleAsync(intent, cancellationToken);
         }
         catch (Exception ex)
