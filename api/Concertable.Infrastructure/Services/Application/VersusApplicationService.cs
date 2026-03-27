@@ -6,6 +6,7 @@ using Application.Requests;
 using Concertable.Core.Entities.Contracts;
 using Core.Enums;
 using Core.Exceptions;
+using Infrastructure.Calculators;
 
 namespace Infrastructure.Services.Application;
 
@@ -100,7 +101,7 @@ public class VersusApplicationService : IApplicationStrategy
         await applicationRepository.SaveChangesAsync();
 
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
-        var artistShare = contract.Guarantee + (totalRevenue * (contract.ArtistDoorPercent / 100));
+        var artistShare = VersusCalculator.ArtistShare(contract.Guarantee, totalRevenue, contract.ArtistDoorPercent);
 
         if (venueManager.StripeId is null)
             throw new BadRequestException("Venue manager does not have a Stripe account");
