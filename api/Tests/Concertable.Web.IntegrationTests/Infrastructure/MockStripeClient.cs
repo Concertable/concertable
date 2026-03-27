@@ -5,10 +5,10 @@ namespace Concertable.Web.IntegrationTests.Infrastructure;
 
 public class MockStripeClient : IStripeClient
 {
-    private readonly MockStripePaymentClient paymentClient;
+    private readonly IMockStripePaymentClient paymentClient;
     private readonly IHttpClientFactory httpClientFactory;
 
-    public MockStripeClient(MockStripePaymentClient paymentClient, IHttpClientFactory httpClientFactory)
+    public MockStripeClient(IMockStripePaymentClient paymentClient, IHttpClientFactory httpClientFactory)
     {
         this.paymentClient = paymentClient;
         this.httpClientFactory = httpClientFactory;

@@ -1,12 +1,13 @@
 using Application.Interfaces;
+using Concertable.Web.IntegrationTests.Infrastructure;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 
-public class MockNotificationService : IConcertNotificationService, ITicketNotificationService
+public class MockNotificationService : IMockNotificationService
 {
-    public readonly List<(string UserId, object Payload)> DraftCreated = [];
-    public readonly List<(string UserId, object Payload)> ConcertPosted = [];
-    public readonly List<(string UserId, object Payload)> TicketPurchased = [];
+    public List<(string UserId, object Payload)> DraftCreated { get; } = [];
+    public List<(string UserId, object Payload)> ConcertPosted { get; } = [];
+    public List<(string UserId, object Payload)> TicketPurchased { get; } = [];
 
     public Task ConcertDraftCreatedAsync(string userId, object payload)
     {

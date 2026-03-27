@@ -1,9 +1,10 @@
+using Concertable.Web.IntegrationTests.Infrastructure;
 using Infrastructure.Interfaces;
 using Stripe;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 
-public class MockStripePaymentClient : IStripePaymentClient
+public class MockStripePaymentClient : IMockStripePaymentClient
 {
     public string LastPaymentIntentId { get; private set; } = string.Empty;
     public Dictionary<string, string> LastMetadata { get; private set; } = [];

@@ -19,8 +19,8 @@ public class ApiFixture : IAsyncLifetime
     private readonly SqlFixture sqlFixture = new();
     private WebApplicationFactory<Program> factory = null!;
 
-    public MockNotificationService NotificationService { get; } = new();
-    public MockStripePaymentClient StripePaymentClient { get; } = new();
+    public IMockNotificationService NotificationService { get; } = new MockNotificationService();
+    public IMockStripePaymentClient StripePaymentClient { get; private set; } = null!;
     public IStripeClient StripeClient { get; private set; } = null!;
 
 public async Task InitializeAsync()
@@ -43,11 +43,13 @@ public async Task InitializeAsync()
 
             builder.ConfigureTestServices(services =>
             {
+                services.AddSingleton<IMockNotificationService>(NotificationService);
                 services.AddSingleton<IConcertNotificationService>(NotificationService);
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
+                services.AddSingleton<IMockStripePaymentClient, MockStripePaymentClient>();
+                services.AddSingleton<IStripePaymentClient>(p => p.GetRequiredService<IMockStripePaymentClient>());
+                services.AddResettables();
                 services.AddScoped<IEmailService, MockEmailService>();
-                services.AddSingleton(StripePaymentClient);
-                services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
                 services.AddScoped<IPaymentService, PaymentService>();
                 services.AddScoped<IWebhookService, MockWebhookService>();
                 services.AddSingleton<IStripeClient, MockStripeClient>();
@@ -69,7 +71,8 @@ public async Task InitializeAsync()
         _ = factory.Services;
 
         await sqlFixture.InitializeRespawnerAsync();
-        StripeClient =factory.Services.GetRequiredService<IStripeClient>();
+        StripePaymentClient = factory.Services.GetRequiredService<IMockStripePaymentClient>();
+        StripeClient = factory.Services.GetRequiredService<IStripeClient>();
     }
 
     public async Task DisposeAsync()
@@ -81,9 +84,10 @@ public async Task InitializeAsync()
     public async Task ResetAsync()
     {
         await sqlFixture.ResetAsync();
-        NotificationService.Reset();
-        StripePaymentClient.Reset();
-        StripeClient =factory.Services.GetRequiredService<IStripeClient>();
+        foreach (var resettable in factory.Services.GetServices<IResettable>())
+            resettable.Reset();
+        StripePaymentClient = factory.Services.GetRequiredService<IMockStripePaymentClient>();
+        StripeClient = factory.Services.GetRequiredService<IStripeClient>();
 
         using var scope = factory.Services.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
