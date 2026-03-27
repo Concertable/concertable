@@ -11,7 +11,7 @@ public class TestClientOptions
 
     public TestClientOptions UseFailingStripe()
     {
-        Services += services => services.Replace(ServiceDescriptor.Singleton<IFakeStripeClient, FakeStripeClientFail>());
+        Services += services => services.Replace(ServiceDescriptor.Singleton<IStripeClient, MockStripeClientFail>());
         return this;
     }
 }

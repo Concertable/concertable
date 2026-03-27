@@ -20,8 +20,8 @@ public class ApiFixture : IAsyncLifetime
     private WebApplicationFactory<Program> factory = null!;
 
     public MockNotificationService NotificationService { get; } = new();
-    public MockStripePaymentClient StripeClient { get; } = new();
-    public IFakeStripeClient FakeStripeClient { get; private set; } = null!;
+    public MockStripePaymentClient StripePaymentClient { get; } = new();
+    public IStripeClient StripeClient { get; private set; } = null!;
 
 public async Task InitializeAsync()
     {
@@ -46,11 +46,11 @@ public async Task InitializeAsync()
                 services.AddSingleton<IConcertNotificationService>(NotificationService);
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
                 services.AddScoped<IEmailService, MockEmailService>();
-                services.AddSingleton(StripeClient);
-                services.AddSingleton<IStripePaymentClient>(StripeClient);
+                services.AddSingleton(StripePaymentClient);
+                services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
                 services.AddScoped<IPaymentService, PaymentService>();
                 services.AddScoped<IWebhookService, MockWebhookService>();
-                services.AddSingleton<IFakeStripeClient, FakeStripeClient>();
+                services.AddSingleton<IStripeClient, MockStripeClient>();
                 services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
 
@@ -68,7 +68,7 @@ public async Task InitializeAsync()
         _ = factory.Services;
 
         await sqlFixture.InitializeRespawnerAsync();
-        FakeStripeClient = factory.Services.GetRequiredService<IFakeStripeClient>();
+        StripeClient =factory.Services.GetRequiredService<IStripeClient>();
     }
 
     public async Task DisposeAsync()
@@ -81,8 +81,8 @@ public async Task InitializeAsync()
     {
         await sqlFixture.ResetAsync();
         NotificationService.Reset();
-        StripeClient.Reset();
-        FakeStripeClient = factory.Services.GetRequiredService<IFakeStripeClient>();
+        StripePaymentClient.Reset();
+        StripeClient =factory.Services.GetRequiredService<IStripeClient>();
 
         using var scope = factory.Services.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
@@ -110,7 +110,7 @@ public async Task InitializeAsync()
                 b.ConfigureTestServices(options.Services);
         });
 
-        FakeStripeClient = customFactory.Services.GetRequiredService<IFakeStripeClient>();
+        StripeClient =customFactory.Services.GetRequiredService<IStripeClient>();
 
         var client = customFactory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, user.Id.ToString());

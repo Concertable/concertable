@@ -60,7 +60,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
         await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
-        await fixture.FakeStripeClient.SendWebhookAsync();
+        await fixture.StripeClient.SendWebhookAsync();
 
         var response = await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}", (object?)null);
 
@@ -75,7 +75,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
         await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
-        await fixture.FakeStripeClient.SendWebhookAsync();
+        await fixture.StripeClient.SendWebhookAsync();
 
         var application = await client.GetAsync<ConcertApplicationDto>($"/api/ConcertApplication/{TestConstants.PendingApplicationId}");
         Assert.NotNull(application);
@@ -88,7 +88,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
         await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
-        await fixture.FakeStripeClient.SendWebhookAsync();
+        await fixture.StripeClient.SendWebhookAsync();
 
         var concert = await client.GetAsync<ConcertDto>($"/api/Concert/application/{TestConstants.PendingApplicationId}");
         Assert.NotNull(concert);
@@ -105,8 +105,8 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
         var client = fixture.CreateClient(TestConstants.VenueManager);
 
         await client.PostAsJsonEnsureSuccessAsync($"/api/ConcertApplication/accept/{TestConstants.PendingApplicationId}");
-        await fixture.FakeStripeClient.SendWebhookAsync();
-        await fixture.FakeStripeClient.SendWebhookAsync();
+        await fixture.StripeClient.SendWebhookAsync();
+        await fixture.StripeClient.SendWebhookAsync();
 
         Assert.Single(fixture.NotificationService.DraftCreated);
     }

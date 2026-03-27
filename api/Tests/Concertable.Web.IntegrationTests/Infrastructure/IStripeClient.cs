@@ -1,6 +1,6 @@
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 
-public interface IFakeStripeClient
+public interface IStripeClient
 {
     Task SendWebhookAsync();
 }

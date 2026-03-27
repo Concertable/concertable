@@ -3,12 +3,12 @@ using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 
-public class FakeStripeClientFail : IFakeStripeClient
+public class MockStripeClient : IStripeClient
 {
     private readonly MockStripePaymentClient paymentClient;
     private readonly IHttpClientFactory httpClientFactory;
 
-    public FakeStripeClientFail(MockStripePaymentClient paymentClient, IHttpClientFactory httpClientFactory)
+    public MockStripeClient(MockStripePaymentClient paymentClient, IHttpClientFactory httpClientFactory)
     {
         this.paymentClient = paymentClient;
         this.httpClientFactory = httpClientFactory;
@@ -25,15 +25,12 @@ public class FakeStripeClientFail : IFakeStripeClient
         {
             "id": "evt_test_{{Guid.NewGuid():N}}",
             "object": "event",
-            "type": "payment_intent.payment_failed",
+            "type": "payment_intent.succeeded",
             "data": {
                 "object": {
                     "id": "{{paymentClient.LastPaymentIntentId}}",
                     "object": "payment_intent",
-                    "status": "requires_payment_method",
-                    "last_payment_error": {
-                        "message": "Your card was declined."
-                    },
+                    "status": "succeeded",
                     "metadata": { {{metadataJson}} }
                 }
             }
