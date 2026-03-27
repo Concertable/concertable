@@ -1,9 +1,9 @@
 using Application.DTOs;
 using Application.Interfaces.Search;
 using Application.Responses;
+using Concertable.Infrastructure.Data;
 using Core.Entities;
 using Core.Parameters;
-using Infrastructure.Data.Identity;
 using Infrastructure.Extensions;
 using Infrastructure.Helpers;
 using Infrastructure.Mappers;

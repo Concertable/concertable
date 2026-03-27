@@ -18,7 +18,6 @@ using Core.Entities;
 using Infrastructure;
 using Infrastructure.Background;
 using Infrastructure.Data;
-using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Concert;
 using Infrastructure.Repositories.Rating;
@@ -60,6 +59,7 @@ using Application.Requests;
 using Core.Parameters;
 using Microsoft.AspNetCore.Http;
 using QRCoder;
+using Concertable.Infrastructure.Data;
 
 namespace Web.Extensions;
 

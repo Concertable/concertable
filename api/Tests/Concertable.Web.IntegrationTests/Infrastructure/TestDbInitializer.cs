@@ -1,9 +1,9 @@
 using Application.Interfaces;
 using Application.Interfaces.Geometry;
 using Concertable.Core.Entities.Contracts;
+using Concertable.Infrastructure.Data;
 using Core.Entities;
 using Core.Enums;
-using Infrastructure.Data.Identity;
 using Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

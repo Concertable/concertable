@@ -2,10 +2,10 @@ using Application.Interfaces;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Geometry;
 using Concertable.Core.Entities.Contracts;
+using Concertable.Infrastructure.Data;
 using Core.Entities;
 using Core.Enums;
 using Core.Parameters;
-using Infrastructure.Data.Identity;
 using Infrastructure.Data.SeedData;
 using Microsoft.EntityFrameworkCore;
 

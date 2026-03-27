@@ -1,6 +1,6 @@
 using Application.Interfaces;
+using Concertable.Infrastructure.Data;
 using Core.Entities;
-using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

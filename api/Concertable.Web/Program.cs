@@ -1,7 +1,6 @@
 using Application.Interfaces;
 using Application.Interfaces.Auth;
 using Infrastructure.Data;
-using Infrastructure.Data.Identity;
 using Web.Extensions;
 using Web.Hubs;
 using Web.Middleware;
@@ -9,7 +8,6 @@ using Web.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
-Console.WriteLine("Stripe__SecretKey: " + Environment.GetEnvironmentVariable("Stripe__SecretKey")?.Substring(0, 8) ?? "NULL");
 
 builder.Services.AddControllers(opts =>
     opts.ModelBinderProviders.Insert(0, new Core.ModelBinders.CommaDelimitedIntArrayBinderProvider()))

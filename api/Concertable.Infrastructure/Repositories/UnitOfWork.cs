@@ -1,7 +1,7 @@
 using Application.Interfaces;
+using Concertable.Infrastructure.Data;
 using Core.Enums;
 using Core.Exceptions;
-using Infrastructure.Data.Identity;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;

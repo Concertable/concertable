@@ -3,11 +3,11 @@ using Application.Interfaces;
 using Core.Entities;
 using Core.Parameters;
 using Application.Responses;
-using Infrastructure.Data.Identity;
 using Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Core.Interfaces;
+using Concertable.Infrastructure.Data;
 
 namespace Infrastructure.Repositories;
 

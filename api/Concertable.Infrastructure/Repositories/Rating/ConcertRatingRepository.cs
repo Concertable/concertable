@@ -1,8 +1,8 @@
 using Application.Interfaces;
 using Application.Interfaces.Rating;
 using Application.Interfaces.Search;
+using Concertable.Infrastructure.Data;
 using Core.Entities;
-using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Rating;

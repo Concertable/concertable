@@ -3,7 +3,6 @@ using Application.Interfaces.Concert;
 using Application.Interfaces.Payment;
 using Core.Enums;
 using Infrastructure;
-using Infrastructure.Data.Identity;
 using Infrastructure.Factories;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Concert;
@@ -16,6 +15,7 @@ using Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Concertable.Infrastructure.Data;
 
 namespace Workers;
 

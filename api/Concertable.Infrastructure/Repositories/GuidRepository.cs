@@ -1,6 +1,6 @@
 using Application.Interfaces;
+using Concertable.Infrastructure.Data;
 using Core.Entities.Interfaces;
-using Infrastructure.Data.Identity;
 
 namespace Infrastructure.Repositories;
 

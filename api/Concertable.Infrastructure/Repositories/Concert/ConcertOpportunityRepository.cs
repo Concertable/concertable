@@ -1,8 +1,8 @@
 using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
-using Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
+using Concertable.Infrastructure.Data;
 
 namespace Infrastructure.Repositories.Concert;
 

@@ -1,5 +1,5 @@
 using Application.Interfaces.Auth;
-using Infrastructure.Data.Identity;
+using Concertable.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

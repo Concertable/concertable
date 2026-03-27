@@ -3,7 +3,6 @@ using Application.Interfaces;
 using Core.Entities;
 using Core.Parameters;
 using Application.Responses;
-using Infrastructure.Data.Identity;
 using Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Concertable.Infrastructure.Data;
 
 namespace Infrastructure.Repositories;
 

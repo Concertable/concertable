@@ -3,7 +3,7 @@ using Core.Entities;
 using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Data.Identity;
+namespace Concertable.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
 {

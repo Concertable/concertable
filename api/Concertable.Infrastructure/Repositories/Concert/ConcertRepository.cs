@@ -2,10 +2,10 @@ using Core.Entities;
 using Application.Interfaces;
 using Application.Interfaces.Concert;
 using Application.Mappers;
-using Infrastructure.Data.Identity;
 using Core.Extensions;
 using Core.Enums;
 using Microsoft.EntityFrameworkCore;
+using Concertable.Infrastructure.Data;
 
 namespace Infrastructure.Repositories.Concert;
 

@@ -1,7 +1,7 @@
 using Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
+using Concertable.Infrastructure.Data;
 using Core.Enums;
-using Infrastructure.Data.Identity;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 

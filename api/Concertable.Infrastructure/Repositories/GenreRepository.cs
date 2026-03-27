@@ -1,12 +1,12 @@
 using Core.Entities;
 using Application.Interfaces;
-using Infrastructure.Data.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Concertable.Infrastructure.Data;
 
 namespace Infrastructure.Repositories;
 
