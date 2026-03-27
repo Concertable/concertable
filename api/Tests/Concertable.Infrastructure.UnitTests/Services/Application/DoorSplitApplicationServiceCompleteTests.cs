@@ -62,14 +62,12 @@ public class DoorSplitApplicationServiceCompleteTests
         stripeAccountService.Setup(s => s.GetPaymentMethodAsync("acct_venue")).ReturnsAsync("pm_test");
         paymentService.Setup(s => s.ProcessAsync(It.IsAny<TransactionRequest>()))
             .ReturnsAsync(new PaymentResponse { Success = true, Message = "ok", TransactionId = "pi_test_123" });
+        concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
     }
 
     [Fact]
     public async Task CompleteAsync_ShouldSetStatusToComplete()
     {
-        // Arrange
-        concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
-
         // Act
         await sut.CompleteAsync(10);
 
@@ -82,8 +80,6 @@ public class DoorSplitApplicationServiceCompleteTests
     public async Task CompleteAsync_ShouldProcessCorrectArtistShare()
     {
         // Arrange - 50% of 1000 = 500
-        concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
-
         TransactionRequest? captured = null;
         paymentService.Setup(s => s.ProcessAsync(It.IsAny<TransactionRequest>()))
             .Callback<TransactionRequest>(r => captured = r)
@@ -102,9 +98,6 @@ public class DoorSplitApplicationServiceCompleteTests
     [Fact]
     public async Task CompleteAsync_ShouldLogTransaction()
     {
-        // Arrange
-        concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
-
         // Act
         await sut.CompleteAsync(10);
 
