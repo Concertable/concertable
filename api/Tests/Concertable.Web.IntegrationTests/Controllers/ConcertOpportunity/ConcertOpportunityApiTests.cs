@@ -35,12 +35,15 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
     [MemberData(nameof(AllContractTypes))]
     public async Task Create_ShouldReturnCreatedOpportunity(IContract contract)
     {
+        // Arrange
         var client = fixture.CreateClient(TestConstants.VenueManager);
         var request = BuildRequest(contract);
 
+        // Act
         var response = await client.PostAsync("/api/ConcertOpportunity", request);
-        var opportunity = await response.Content.ReadAsync<ConcertOpportunityDto>();
 
+        // Assert
+        var opportunity = await response.Content.ReadAsync<ConcertOpportunityDto>();
         Assert.NotNull(opportunity);
         Assert.NotNull(opportunity.Id);
         Assert.Equal(request.StartDate, opportunity.StartDate);
@@ -51,20 +54,26 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
     [Fact]
     public async Task Create_ShouldReturn403_WhenNotVenueManager()
     {
+        // Arrange
         var client = fixture.CreateClient(TestConstants.ArtistManager);
 
+        // Act
         var response = await client.PostAsync("/api/ConcertOpportunity", BuildDefaultRequest());
 
+        // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
     public async Task Create_ShouldReturn401_WhenUnauthenticated()
     {
+        // Arrange
         var client = fixture.CreateClient();
 
+        // Act
         var response = await client.PostAsync("/api/ConcertOpportunity", BuildDefaultRequest());
 
+        // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
@@ -75,11 +84,14 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
     [Fact]
     public async Task GetActiveByVenueId_ShouldReturnSeededOpportunity()
     {
+        // Arrange
         var client = fixture.CreateClient();
 
+        // Act
         var opportunities = await client.GetAsync<IEnumerable<ConcertOpportunityDto>>(
             $"/api/ConcertOpportunity/active/venue/{TestConstants.VenueId}");
 
+        // Assert
         Assert.NotNull(opportunities);
         Assert.Contains(opportunities, o => o.Id == TestConstants.FlatFee.OpportunityId);
     }

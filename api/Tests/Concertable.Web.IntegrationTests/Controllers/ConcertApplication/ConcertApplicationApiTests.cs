@@ -22,20 +22,26 @@ public class ConcertApplicationApiTests : IAsyncLifetime
     [Fact]
     public async Task Accept_ShouldReturn403_WhenNotVenueManager()
     {
+        // Arrange
         var client = fixture.CreateClient(TestConstants.ArtistManager);
 
+        // Act
         var response = await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.FlatFee.ApplicationId}", (object?)null);
 
+        // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
     public async Task Accept_ShouldReturn400_WhenCalledByDifferentVenueManager()
     {
+        // Arrange
         var client = fixture.CreateClient(TestConstants.VenueManager2);
 
+        // Act
         var response = await client.PostAsync($"/api/ConcertApplication/accept/{TestConstants.FlatFee.ApplicationId}", (object?)null);
 
+        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
