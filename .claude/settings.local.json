@@ -54,7 +54,11 @@
       "Bash(ilspycmd \"C:/Users/TommySeery/.nuget/packages/respawn/7.0.0/lib/netstandard2.1/Respawn.dll\")",
       "WebFetch(domain:github.com)",
       "Bash(ilspycmd:*)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find /c/Users/TommySeery/source/repos/Concertable -name *.csproj)",
+      "Bash(dotnet sln:*)",
+      "Bash(dotnet-ildasm /c/Users/TommySeery/.nuget/packages/nettopologysuite/2.6.0/lib/netstandard2.0/NetTopologySuite.dll)",
+      "Bash(powershell -Command \"[System.Reflection.Assembly]::LoadFrom\\(''''C:\\\\Users\\\\TommySeery\\\\.nuget\\\\packages\\\\nettopologysuite\\\\2.6.0\\\\lib\\\\netstandard2.0\\\\NetTopologySuite.dll''''\\).GetTypes\\(\\) | Where-Object { $_ame -like ''''*GeometryCalculator*'''' } | Select-Object FullName\")"
     ]
   }
 }
