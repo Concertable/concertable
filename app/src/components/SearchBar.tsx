@@ -1,5 +1,6 @@
 import { MapPin, Search, CalendarIcon } from "lucide-react";
 import type { HeaderType } from "@/types/header";
+import type { LatLng } from "@/types/location";
 import { useSearchParams } from "@/hooks/useSearchParams";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";

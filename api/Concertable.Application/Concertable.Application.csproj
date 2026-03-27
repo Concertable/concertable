@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Core\Concertable.Core.csproj" />
-    <ProjectReference Include="..\Concertable.Common\Concertable.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,6 +18,7 @@ jobs:
     env:
       CLIENT_APP_PATH: ./app
       PROJECT_PATH: ./api/Concertable.Web
+      WORKERS_PATH: ./api/Concertable.Workers
 
     steps:
       - uses: actions/checkout@v4

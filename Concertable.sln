@@ -19,13 +19,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Web.Integration
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Application", "api\Concertable.Application\Concertable.Application.csproj", "{0F7CACA1-4D8C-400A-AD99-0A1C33E4112A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Common", "api\Concertable.Common\Concertable.Common.csproj", "{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.AppHost", "api\Concertable.AppHost\Concertable.AppHost.csproj", "{A37D6496-F295-47AA-92CB-A1ACF954323E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.ServiceDefaults", "api\Concertable.ServiceDefaults\Concertable.ServiceDefaults.csproj", "{6593F7BE-90FB-44DC-AF0F-434A154672AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Workers", "Concertable.Workers\Concertable.Workers.csproj", "{4ABD5932-6746-44C1-A968-7A8E445289FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Workers", "api\Concertable.Workers\Concertable.Workers.csproj", "{4ABD5932-6746-44C1-A968-7A8E445289FA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{D82C56D6-B2CD-F611-9E31-04638F7EC30E}"
 EndProject
@@ -127,18 +125,6 @@ Global
 		{0F7CACA1-4D8C-400A-AD99-0A1C33E4112A}.Release|x64.Build.0 = Release|Any CPU
 		{0F7CACA1-4D8C-400A-AD99-0A1C33E4112A}.Release|x86.ActiveCfg = Release|Any CPU
 		{0F7CACA1-4D8C-400A-AD99-0A1C33E4112A}.Release|x86.Build.0 = Release|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Debug|x64.Build.0 = Debug|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Debug|x86.Build.0 = Debug|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Release|x64.ActiveCfg = Release|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Release|x64.Build.0 = Release|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Release|x86.ActiveCfg = Release|Any CPU
-		{BBB68A02-4CB9-47DC-ABDA-250BE582AEFF}.Release|x86.Build.0 = Release|Any CPU
 		{A37D6496-F295-47AA-92CB-A1ACF954323E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A37D6496-F295-47AA-92CB-A1ACF954323E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A37D6496-F295-47AA-92CB-A1ACF954323E}.Debug|x64.ActiveCfg = Debug|Any CPU
