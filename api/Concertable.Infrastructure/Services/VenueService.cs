@@ -116,6 +116,15 @@ public class VenueService : IVenueService
         return id.Value;
     }
 
+    public async Task ApproveAsync(int id)
+    {
+        var venue = await venueRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Venue not found");
+
+        venue.Approved = true;
+        await unitOfWork.SaveChangesAsync();
+    }
+
     private async Task UpdateUserLocationAsync(UserEntity user, double latitude, double longitude)
     {
         var location = await geocodingService.GetLocationAsync(latitude, longitude);

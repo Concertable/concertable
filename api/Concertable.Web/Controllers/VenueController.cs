@@ -47,6 +47,14 @@ public class VenueController : ControllerBase
         return Ok(await venueService.UpdateAsync(id, request));
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpPatch("{id}/approve")]
+    public async Task<IActionResult> Approve(int id)
+    {
+        await venueService.ApproveAsync(id);
+        return NoContent();
+    }
+
     [HttpGet("is-owner/{id}")]
     public async Task<ActionResult<bool>> IsOwner(int id)
     {

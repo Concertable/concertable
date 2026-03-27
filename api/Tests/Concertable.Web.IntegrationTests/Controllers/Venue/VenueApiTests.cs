@@ -293,6 +293,64 @@ public class VenueApiTests : IAsyncLifetime
 
     #endregion
 
+    #region Approve
+
+    [Fact]
+    public async Task Approve_ShouldReturn401_WhenUnauthenticated()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+
+        // Act
+        var response = await client.PatchAsync($"/api/Venue/{TestConstants.VenueId}/approve", null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Approve_ShouldReturn403_WhenNotAdmin()
+    {
+        // Arrange
+        var client = fixture.CreateClient(TestConstants.VenueManager);
+
+        // Act
+        var response = await client.PatchAsync($"/api/Venue/{TestConstants.VenueId}/approve", null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Approve_ShouldReturn404_WhenVenueDoesNotExist()
+    {
+        // Arrange
+        var client = fixture.CreateClient(TestConstants.Admin);
+
+        // Act
+        var response = await client.PatchAsync("/api/Venue/99999/approve", null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Approve_ShouldReturn204_AndApproveVenue()
+    {
+        // Arrange
+        var client = fixture.CreateClient(TestConstants.Admin);
+
+        // Act
+        var response = await client.PatchAsync($"/api/Venue/{TestConstants.VenueId}/approve", null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var venue = await fixture.CreateClient().GetAsync<VenueDto>($"/api/Venue/{TestConstants.VenueId}");
+        Assert.True(venue!.Approved);
+    }
+
+    #endregion
+
     #region IsOwner
 
     [Fact]
