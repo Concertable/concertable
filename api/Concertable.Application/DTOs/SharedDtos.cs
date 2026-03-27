@@ -1,4 +1,5 @@
 using Core.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.DTOs;
 
@@ -35,6 +36,12 @@ public record EmailDto
 }
 
 public record CoordinatesDto(double Latitude, double Longitude);
+
+public record ImageDto
+{
+    public required string Url { get; init; }
+    public required IFormFile File { get; init; }
+}
 
 public record TicketDto
 {

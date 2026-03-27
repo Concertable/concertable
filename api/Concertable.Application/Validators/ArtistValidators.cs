@@ -31,11 +31,9 @@ public class UpdateArtistRequestValidator : AbstractValidator<UpdateArtistReques
         RuleFor(x => x.About)
             .MaximumLength(1000);
 
-        RuleFor(x => x.ImageUrl).NotEmpty();
-
         When(x => x.Image != null, () =>
         {
-            RuleFor(x => x.Image!)
+            RuleFor(x => x.Image!.File)
                 .SetValidator(new IFormFileValidator());
         });
     }

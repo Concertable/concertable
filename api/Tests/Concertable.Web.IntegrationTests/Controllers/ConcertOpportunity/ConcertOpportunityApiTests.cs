@@ -1,10 +1,10 @@
 using System.Net;
 using Application.DTOs;
 using Application.Interfaces.Concert;
-using Application.Requests;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Core.Enums;
 using Xunit;
+using static Concertable.Web.IntegrationTests.Controllers.ConcertOpportunity.ConcertOpportunityRequestBuilders;
 
 namespace Concertable.Web.IntegrationTests.Controllers.ConcertOpportunity;
 
@@ -53,7 +53,7 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(TestConstants.ArtistManager);
 
-        var response = await client.PostAsync("/api/ConcertOpportunity", DefaultRequest());
+        var response = await client.PostAsync("/api/ConcertOpportunity", BuildDefaultRequest());
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -63,7 +63,7 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient();
 
-        var response = await client.PostAsync("/api/ConcertOpportunity", DefaultRequest());
+        var response = await client.PostAsync("/api/ConcertOpportunity", BuildDefaultRequest());
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -83,22 +83,6 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
         Assert.NotNull(opportunities);
         Assert.Contains(opportunities, o => o.Id == TestConstants.FlatFeeOpportunityId);
     }
-
-    #endregion
-
-    #region Helpers
-
-    private ConcertOpportunityRequest DefaultRequest() =>
-        BuildRequest(new FlatFeeContractDto { PaymentMethod = PaymentMethod.Cash, Fee = 500 });
-
-    private ConcertOpportunityRequest BuildRequest(IContract contract) =>
-        new()
-        {
-            StartDate = DateTime.UtcNow.AddMonths(1),
-            EndDate = DateTime.UtcNow.AddMonths(1).AddHours(3),
-            GenreIds = [TestConstants.GenreId],
-            Contract = contract
-        };
 
     #endregion
 }

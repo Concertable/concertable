@@ -7,11 +7,11 @@ using Xunit;
 namespace Concertable.Web.IntegrationTests.Controllers.ConcertApplication;
 
 [Collection("Integration")]
-public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
+public class ConcertApplicationAcceptApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;
 
-    public ConcertApplicationAcceptFlatFeeTests(ApiFixture fixture)
+    public ConcertApplicationAcceptApiTests(ApiFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -19,7 +19,7 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
     public Task InitializeAsync() => fixture.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
 
-    #region Accept
+    #region Basic
 
     [Fact]
     public async Task Accept_ShouldReturn403_WhenNotVenueManager()
@@ -67,7 +67,9 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    #region Webhook Settlement
+    #endregion
+
+    #region Flat Fee
 
     [Fact]
     public async Task Accept_ShouldTransitionToSettled_AfterWebhookProcessed()
@@ -110,8 +112,6 @@ public class ConcertApplicationAcceptFlatFeeTests : IAsyncLifetime
 
         Assert.Single(fixture.NotificationService.DraftCreated);
     }
-
-    #endregion
 
     #endregion
 }

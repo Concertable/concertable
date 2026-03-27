@@ -47,7 +47,7 @@ public class TestDbInitializer : IDbInitializer
                 new VenueManagerEntity
                 {
                     Id = TestConstants.VenueManager.Id,
-                    Email = "venuemanager@test.com",
+                    Email = "venuemanager1@test.com",
                     PasswordHash = string.Empty,
                     Role = Role.VenueManager,
                     StripeId = "acct_test_venuemanager",
@@ -56,7 +56,7 @@ public class TestDbInitializer : IDbInitializer
                 new VenueManagerEntity
                 {
                     Id = TestConstants.VenueManager2.Id,
-                    Email = "venuemanager_b@test.com",
+                    Email = "venuemanager2@test.com",
                     PasswordHash = string.Empty,
                     Role = Role.VenueManager,
                     StripeId = "acct_test_venuemanager2",
@@ -65,7 +65,7 @@ public class TestDbInitializer : IDbInitializer
                 new ArtistManagerEntity
                 {
                     Id = TestConstants.ArtistManager.Id,
-                    Email = "artistmanager@test.com",
+                    Email = "artistmanager1@test.com",
                     PasswordHash = string.Empty,
                     Role = Role.ArtistManager,
                     StripeId = "acct_test_artistmanager",

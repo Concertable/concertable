@@ -15,7 +15,6 @@ public record UpdateArtistRequest
 {
     public required string Name { get; init; }
     public required string About { get; init; }
-    public required string ImageUrl { get; init; }
+    public ImageDto? Image { get; init; }
     public IEnumerable<GenreDto> Genres { get; init; } = [];
-    public IFormFile? Image { get; init; }
 }

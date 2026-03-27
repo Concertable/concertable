@@ -37,8 +37,6 @@ public class UpdateVenueRequestValidator : AbstractValidator<UpdateVenueRequest>
         RuleFor(x => x.About)
             .MaximumLength(1000);
 
-        RuleFor(x => x.ImageUrl).NotEmpty();
-
         RuleFor(x => x.Latitude)
             .InclusiveBetween(-90, 90);
 
@@ -47,7 +45,7 @@ public class UpdateVenueRequestValidator : AbstractValidator<UpdateVenueRequest>
 
         When(x => x.Image != null, () =>
         {
-            RuleFor(x => x.Image!)
+            RuleFor(x => x.Image!.File)
                 .SetValidator(new IFormFileValidator());
         });
     }

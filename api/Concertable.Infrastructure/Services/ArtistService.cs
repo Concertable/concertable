@@ -64,12 +64,11 @@ public class ArtistService : IArtistService
 
         artist.Name = request.Name;
         artist.About = request.About;
-        artist.ImageUrl = request.ImageUrl;
 
         genreSyncService.Sync(artist.ArtistGenres, request.Genres.Select(g => g.Id));
 
         if (request.Image is not null)
-            artist.ImageUrl = await imageService.ReplaceAsync(request.Image, artist.ImageUrl);
+            artist.ImageUrl = await imageService.ReplaceAsync(request.Image.File, request.Image.Url);
 
         await artistRepository.SaveChangesAsync();
 

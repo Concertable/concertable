@@ -81,12 +81,11 @@ public class VenueService : IVenueService
         venue.Name = request.Name;
         venue.About = request.About;
         venue.Approved = request.Approved;
-        venue.ImageUrl = request.ImageUrl;
 
         await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
         if (request.Image is not null)
-            venue.ImageUrl = await imageService.ReplaceAsync(request.Image);
+            venue.ImageUrl = await imageService.ReplaceAsync(request.Image.File, request.Image.Url);
 
         userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
