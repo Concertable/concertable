@@ -16,30 +16,27 @@ jobs:
       contents: read #This is required for actions/checkout
 
     env:
-      CLIENT_APP_PATH: ./ClientApp
-      PROJECT_PATH: ./Web
+      CLIENT_APP_PATH: ./app
+      PROJECT_PATH: ./api/Concertable.Web
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up node.js
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
-      - name: Install Angular CLI
-        run: npm install -g @angular/cli@18
-      
-      - name: Install dependencies and build Angular app
+
+      - name: Install dependencies and build React app
         run: |
           cd ${{ env.CLIENT_APP_PATH }}
-          npm install
-          ng build --configuration production
+          npm ci
+          npm run build
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '10.x'
 
       - name: Build with dotnet
         run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release
@@ -81,13 +78,8 @@ jobs:
       - name: Install EF Core CLI
         run: dotnet tool install --global dotnet-ef
 
-      - name: DEBUG - Show Infrastructure directory contents
-        run: |
-          echo "WORKSPACE: ${{ github.workspace }}"
-          dir ${{ github.workspace }}\Infrastructure
-
       - name: Create EF Migration Bundle
-        run: dotnet ef migrations bundle --project ${{ github.workspace }}/Infrastructure/Infrastructure.csproj --startup-project ${{ github.workspace }}/Web/Web.csproj --output efbundle
+        run: dotnet ef migrations bundle --project ${{ github.workspace }}/api/Concertable.Infrastructure/Concertable.Infrastructure.csproj --startup-project ${{ github.workspace }}/api/Concertable.Web/Concertable.Web.csproj --output efbundle
         working-directory: ${{ github.workspace }}
         
       - name: Run EF Migrations
