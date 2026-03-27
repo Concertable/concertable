@@ -52,6 +52,7 @@ public async Task InitializeAsync()
                 services.AddScoped<IWebhookService, MockWebhookService>();
                 services.AddSingleton<IStripeClient, MockStripeClient>();
                 services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));
+                services.AddScoped<IGeocodingService, MockGeocodingService>();
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>

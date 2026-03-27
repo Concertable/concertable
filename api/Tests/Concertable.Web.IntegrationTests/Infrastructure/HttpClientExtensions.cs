@@ -38,13 +38,6 @@ public static class HttpClientExtensions
         return response;
     }
 
-    public static async Task<TResponse?> PostAsync<TBody, TResponse>(this HttpClient client, string url, TBody body)
-    {
-        var response = await client.PostAsJsonAsync(url, body, JsonOptions);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions);
-    }
-
     public static async Task<HttpResponseMessage> PutAsync<T>(this HttpClient client, string url, T body)
     {
         return await client.PutAsJsonAsync(url, body, JsonOptions);
@@ -63,5 +56,10 @@ public static class HttpClientExtensions
     public static async Task<HttpResponseMessage> DeleteAsync(this HttpClient client, string url)
     {
         return await client.DeleteAsync(url);
+    }
+
+    public static async Task<T?> ReadAsync<T>(this HttpContent content)
+    {
+        return await content.ReadFromJsonAsync<T>(JsonOptions);
     }
 }

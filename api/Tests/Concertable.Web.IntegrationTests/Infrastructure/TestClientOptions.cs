@@ -1,3 +1,5 @@
+using Application.Interfaces;
+using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -12,6 +14,12 @@ public class TestClientOptions
     public TestClientOptions UseFailingStripe()
     {
         Services += services => services.Replace(ServiceDescriptor.Singleton<IStripeClient, MockStripeClientFail>());
+        return this;
+    }
+
+    public TestClientOptions UseFailingGeocoding()
+    {
+        Services += services => services.Replace(ServiceDescriptor.Scoped<IGeocodingService, MockGeocodingServiceFail>());
         return this;
     }
 }

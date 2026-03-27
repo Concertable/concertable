@@ -38,7 +38,8 @@ public class ConcertOpportunityApiTests : IAsyncLifetime
         var client = fixture.CreateClient(TestConstants.VenueManager);
         var request = BuildRequest(contract);
 
-        var opportunity = await client.PostAsync<ConcertOpportunityRequest, ConcertOpportunityDto>("/api/ConcertOpportunity", request);
+        var response = await client.PostAsync("/api/ConcertOpportunity", request);
+        var opportunity = await response.Content.ReadAsync<ConcertOpportunityDto>();
 
         Assert.NotNull(opportunity);
         Assert.NotNull(opportunity.Id);
