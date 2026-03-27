@@ -137,6 +137,13 @@ public class TestDbInitializer : IDbInitializer
                         EndDate = DateTime.UtcNow.AddMonths(4).AddHours(3),
                         Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
+                    },
+                    new ConcertOpportunityEntity
+                    {
+                        StartDate = DateTime.UtcNow.AddMonths(5),
+                        EndDate = DateTime.UtcNow.AddMonths(5).AddHours(3),
+                        Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 50 },
+                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     }
                 ]
             };
@@ -181,6 +188,12 @@ public class TestDbInitializer : IDbInitializer
                         TotalTickets = 0,
                         AvailableTickets = 0
                     }
+                },
+                new ConcertApplicationEntity
+                {
+                    OpportunityId = TestConstants.Versus.OpportunityId,
+                    ArtistId = TestConstants.ArtistId,
+                    Status = ApplicationStatus.Pending
                 }
             );
 

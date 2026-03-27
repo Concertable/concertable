@@ -30,6 +30,12 @@ public static class TestConstants
         public const int ConcertId = 2;
     }
 
+    public static class Versus
+    {
+        public const int OpportunityId = 4;
+        public const int ApplicationId = 4;
+    }
+
     public static readonly TestUser VenueManager = new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"), Role.VenueManager);
     public static readonly TestUser VenueManager2 = new(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002"), Role.VenueManager);
     public static readonly TestUser ArtistManager = new(Guid.Parse("bbbbbbbb-0000-0000-0000-000000000001"), Role.ArtistManager);
