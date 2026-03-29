@@ -6,7 +6,7 @@ import { ArtistHeaderCard } from "@/components/headers/ArtistHeaderCard";
 import { VenueHeaderCard } from "@/components/headers/VenueHeaderCard";
 import { ConcertHeaderCard } from "@/components/headers/ConcertHeaderCard";
 
-const cardMapper = {
+const cardRegistry = {
   artist: ArtistHeaderCard,
   venue: VenueHeaderCard,
   concert: ConcertHeaderCard,
@@ -16,18 +16,18 @@ interface Props {
   filters: SearchFilters;
 }
 
-export function SearchResults({ filters }: Props) {
+export function SearchResults({ filters }: Readonly<Props>) {
   const { data, isLoading, isError } = useHeaderQuery(filters);
 
   if (isLoading) return <p className="text-muted-foreground text-sm">Loading...</p>;
   if (isError) return <p className="text-destructive text-sm">Something went wrong.</p>;
   if (!data?.data.length) return <p className="text-muted-foreground text-sm">No results found.</p>;
 
-  const Card = cardMapper[filters.headerType];
+  const Card = cardRegistry[filters.headerType];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {data.data.map((header) => (
+      {data.data.map((header: Header) => (
         <Card key={header.id} data={header} />
       ))}
     </div>

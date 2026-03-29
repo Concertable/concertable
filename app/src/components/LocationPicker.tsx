@@ -6,7 +6,7 @@ interface Props {
   onSelect: (location: LatLng) => void;
 }
 
-export function LocationPicker({ onSelect }: Props) {
+export function LocationPicker({ onSelect }: Readonly<Props>) {
   const {
     ready,
     value,

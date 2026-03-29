@@ -5,6 +5,6 @@ interface Props {
   data: VenueHeader;
 }
 
-export function VenueHeaderCard({ data }: Props) {
-  return <HeaderCard data={data} />;
+export function VenueHeaderCard({ data }: Readonly<Props>) {
+  return <HeaderCard data={data} to={`/find/venue/${data.id}`} />;
 }

@@ -5,6 +5,6 @@ interface Props {
   data: ArtistHeader;
 }
 
-export function ArtistHeaderCard({ data }: Props) {
-  return <HeaderCard data={data} />;
+export function ArtistHeaderCard({ data }: Readonly<Props>) {
+  return <HeaderCard data={data} to={`/find/artist/${data.id}`} />;
 }

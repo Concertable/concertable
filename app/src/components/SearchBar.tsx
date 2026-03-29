@@ -20,7 +20,7 @@ interface Props {
   defaultHeaderType?: HeaderType;
 }
 
-export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Props) {
+export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Readonly<Props>) {
   const { query, setQuery, headerType, location, setLocation, from, to, setDates } = useSearchParams(defaultHeaderType);
 
   function handleSearch() {

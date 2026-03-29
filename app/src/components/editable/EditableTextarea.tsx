@@ -14,7 +14,7 @@ export function EditableTextarea({
   editMode,
   placeholder = "—",
   className,
-}: EditableTextareaProps) {
+}: Readonly<EditableTextareaProps>) {
   if (editMode) {
     return (
       <Textarea

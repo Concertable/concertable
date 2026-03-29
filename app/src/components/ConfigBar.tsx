@@ -9,7 +9,7 @@ interface ConfigBarProps {
   onCancel: () => void;
 }
 
-export function ConfigBar({ editMode, isDirty, isSaving, onToggleEdit, onSave, onCancel }: ConfigBarProps) {
+export function ConfigBar({ editMode, isDirty, isSaving, onToggleEdit, onSave, onCancel }: Readonly<ConfigBarProps>) {
   return (
     <div className="flex items-center justify-end gap-2 border-b border-border px-6 py-3">
       <Button variant={editMode ? "secondary" : "outline"} onClick={onToggleEdit}>

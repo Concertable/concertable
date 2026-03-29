@@ -8,7 +8,7 @@ interface Props {
   onChange?: (from: string | undefined, to: string | undefined) => void;
 }
 
-export function DateRangePicker({ onChange }: Props) {
+export function DateRangePicker({ onChange }: Readonly<Props>) {
   const [range, setRange] = useState<DateRange | undefined>();
 
   function handleSelect(value: DateRange | undefined) {

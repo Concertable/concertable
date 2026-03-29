@@ -11,7 +11,7 @@ interface NavbarProps {
   links: NavLink[];
 }
 
-export function Navbar({ links }: NavbarProps) {
+export function Navbar({ links }: Readonly<NavbarProps>) {
   return (
     <nav className="flex items-center justify-between border-b border-border px-6 py-3">
       <div className="flex items-center gap-8">

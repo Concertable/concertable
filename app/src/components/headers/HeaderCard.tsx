@@ -1,13 +1,15 @@
 import type { Header } from "@/types/header";
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 
 interface Props<T extends Header> {
   data: T;
+  to?: string;
   children?: ReactNode;
 }
 
-export function HeaderCard<T extends Header>({ data, children }: Props<T>) {
-  return (
+export function HeaderCard<T extends Header>({ data, to, children }: Readonly<Props<T>>) {
+  const content = (
     <div className="rounded-lg border border-border overflow-hidden bg-background">
       <img src={data.imageUrl} alt={data.name} className="w-full h-40 object-cover" />
       <div className="p-3">
@@ -20,4 +22,7 @@ export function HeaderCard<T extends Header>({ data, children }: Props<T>) {
       </div>
     </div>
   );
+
+  if (to) return <Link to={to}>{content}</Link>;
+  return content;
 }

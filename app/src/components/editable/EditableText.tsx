@@ -16,7 +16,7 @@ export function EditableText({
   as: Tag = "p",
   placeholder = "—",
   className,
-}: EditableTextProps) {
+}: Readonly<EditableTextProps>) {
   if (editMode) {
     return (
       <Input

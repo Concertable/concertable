@@ -8,7 +8,7 @@ interface FindPageProps {
   defaultHeaderType: HeaderType;
 }
 
-export function FindPage({ defaultHeaderType }: FindPageProps) {
+export function FindPage({ defaultHeaderType }: Readonly<FindPageProps>) {
   const [filters, setFilters] = useState<SearchFilters>({ headerType: defaultHeaderType });
 
   return (

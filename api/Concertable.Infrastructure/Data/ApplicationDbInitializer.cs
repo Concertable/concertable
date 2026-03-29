@@ -8,6 +8,8 @@ using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Data.SeedData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Concertable.Infrastructure.Services.Geometry;
 
 namespace Concertable.Infrastructure.Data;
 
@@ -20,7 +22,7 @@ public class ApplicationDbInitializer : IDbInitializer
     private readonly TimeProvider timeProvider;
     private readonly IGeometryProvider geometryProvider;
 
-    public ApplicationDbInitializer(ApplicationDbContext context, IPasswordHasher passwordHasher, TimeProvider timeProvider, IGeometryProvider geometryProvider)
+    public ApplicationDbInitializer(ApplicationDbContext context, IPasswordHasher passwordHasher, TimeProvider timeProvider, [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.context = context;
         this.passwordHasher = passwordHasher;
