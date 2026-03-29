@@ -1,36 +1,36 @@
 import { Input } from "@/components/ui/input";
+import type { TextElement } from "@/types/ui";
+import { Editable } from "./Editable";
 
-interface EditableTextProps {
-  value: string | undefined;
-  onChange: (value: string) => void;
-  editMode: boolean;
-  as?: "h1" | "h2" | "h3" | "p";
-  placeholder?: string;
+interface Props {
+  value: string;
+  onChange?: (value: string) => void;
+  editMode?: boolean;
   className?: string;
+  element: TextElement;
+  placeholder?: string;
 }
 
 export function EditableText({
   value,
   onChange,
-  editMode,
-  as: Tag = "p",
-  placeholder = "—",
   className,
-}: Readonly<EditableTextProps>) {
-  if (editMode) {
-    return (
-      <Input
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={className}
-      />
-    );
-  }
+  element,
+  placeholder,
+}: Readonly<Props>) {
+  const Tag = element;
 
   return (
-    <Tag className={className}>
-      {value || <span className="text-muted-foreground">{placeholder}</span>}
-    </Tag>
+    <Editable
+      edit={
+        <Input
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          className={className}
+          placeholder={placeholder}
+        />
+      }
+      view={<Tag className={className}>{value}</Tag>}
+    />
   );
 }

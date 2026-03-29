@@ -2,6 +2,7 @@ import { useMyVenue } from "@/hooks/useMyVenue";
 import { useVenueStore } from "@/store/useVenueStore";
 import { ConfigBar } from "@/components/ConfigBar";
 import { VenueDetails } from "@/components/venue/VenueDetails";
+import { EditableProvider } from "@/providers/EditableProvider";
 
 export default function MyVenuePage() {
   const { venue, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } = useMyVenue();
@@ -25,12 +26,13 @@ export default function MyVenuePage() {
         onCancel={resetDraft}
       />
 
-      <VenueDetails
-        venue={display}
-        editMode={editMode}
-        onNameChange={setName}
-        onAboutChange={setAbout}
-      />
+      <EditableProvider editMode={editMode}>
+        <VenueDetails
+          venue={display}
+          onNameChange={setName}
+          onAboutChange={setAbout}
+        />
+      </EditableProvider>
     </div>
   );
 }

@@ -1,35 +1,30 @@
 import { Textarea } from "@/components/ui/textarea";
+import { Editable } from "./Editable";
 
-interface EditableTextareaProps {
+interface Props {
   value: string | undefined;
-  onChange: (value: string) => void;
-  editMode: boolean;
-  placeholder?: string;
+  onChange?: (value: string) => void;
   className?: string;
+  placeholder?: string;
 }
 
 export function EditableTextarea({
   value,
   onChange,
-  editMode,
-  placeholder = "—",
   className,
-}: Readonly<EditableTextareaProps>) {
-  if (editMode) {
-    return (
-      <Textarea
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={4}
-        className={className}
-      />
-    );
-  }
-
+  placeholder,
+}: Readonly<Props>) {
   return (
-    <p className={className}>
-      {value || <span className="text-muted-foreground">{placeholder}</span>}
-    </p>
+    <Editable
+      edit={
+        <Textarea
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          className={className}
+          placeholder={placeholder}
+        />
+      }
+      view={<p className={className}>{value}</p>}
+    />
   );
 }

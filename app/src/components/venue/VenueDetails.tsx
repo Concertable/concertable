@@ -5,12 +5,11 @@ import { EditableTextarea } from "@/components/editable/EditableTextarea";
 
 interface Props {
   venue: Venue;
-  editMode?: boolean;
   onNameChange?: (value: string) => void;
   onAboutChange?: (value: string) => void;
 }
 
-export function VenueDetails({ venue, editMode = false, onNameChange, onAboutChange }: Readonly<Props>) {
+export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Props>) {
   return (
     <div>
       {/* Hero */}
@@ -26,9 +25,8 @@ export function VenueDetails({ venue, editMode = false, onNameChange, onAboutCha
           <div className="space-y-1">
             <EditableText
               value={venue.name}
-              onChange={onNameChange ?? (() => {})}
-              editMode={editMode}
-              as="h1"
+              onChange={onNameChange}
+              element="h1"
               placeholder="Venue name"
               className="text-3xl font-bold text-white drop-shadow"
             />
@@ -52,8 +50,7 @@ export function VenueDetails({ venue, editMode = false, onNameChange, onAboutCha
           <h2 className="text-xl font-semibold">About</h2>
           <EditableTextarea
             value={venue.about}
-            onChange={onAboutChange ?? (() => {})}
-            editMode={editMode}
+            onChange={onAboutChange}
             placeholder="Tell artists about your venue..."
           />
         </section>

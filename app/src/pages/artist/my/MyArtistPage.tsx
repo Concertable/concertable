@@ -2,6 +2,7 @@ import { useMyArtist } from "@/hooks/useMyArtist";
 import { useArtistStore } from "@/store/useArtistStore";
 import { ConfigBar } from "@/components/ConfigBar";
 import { ArtistDetails } from "@/components/artist/ArtistDetails";
+import { EditableProvider } from "@/providers/EditableProvider";
 
 export default function MyArtistPage() {
   const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } = useMyArtist();
@@ -24,12 +25,14 @@ export default function MyArtistPage() {
         onSave={() => save()}
         onCancel={resetDraft}
       />
-      <ArtistDetails
-        artist={display}
-        editMode={editMode}
-        onNameChange={setName}
-        onAboutChange={setAbout}
-      />
+
+      <EditableProvider editMode={editMode}>
+        <ArtistDetails
+          artist={display}
+          onNameChange={setName}
+          onAboutChange={setAbout}
+        />
+      </EditableProvider>
     </div>
   );
 }
