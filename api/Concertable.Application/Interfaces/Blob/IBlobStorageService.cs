@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces.Blob;
+namespace Concertable.Application.Interfaces.Blob;
 
 public interface IBlobStorageService
 {

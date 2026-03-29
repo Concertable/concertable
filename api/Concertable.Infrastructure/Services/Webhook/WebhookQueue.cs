@@ -1,9 +1,9 @@
-using Application.Interfaces;
-using Infrastructure.Interfaces;
+using Concertable.Application.Interfaces;
+using Concertable.Infrastructure.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Stripe;
 
-namespace Infrastructure.Services.Webhook;
+namespace Concertable.Infrastructure.Services.Webhook;
 
 public class WebhookQueue : IWebhookQueue
 {

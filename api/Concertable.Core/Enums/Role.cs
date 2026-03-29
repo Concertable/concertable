@@ -1,4 +1,4 @@
-namespace Core.Enums;
+namespace Concertable.Core.Enums;
 
 public enum Role
 {

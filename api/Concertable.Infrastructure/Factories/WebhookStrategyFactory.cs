@@ -1,8 +1,8 @@
-using Core.Enums;
-using Infrastructure.Interfaces;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Factories;
+namespace Concertable.Infrastructure.Factories;
 
 public class WebhookStrategyFactory : IWebhookStrategyFactory
 {

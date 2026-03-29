@@ -1,5 +1,5 @@
-using Application.DTOs;
-using Application.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 

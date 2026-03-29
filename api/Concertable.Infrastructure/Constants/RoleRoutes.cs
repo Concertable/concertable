@@ -1,6 +1,6 @@
-﻿using Core.Enums;
+﻿using Concertable.Core.Enums;
 
-namespace Infrastructure.Constants;
+namespace Concertable.Infrastructure.Constants;
 
 public static class RoleRoutes
 {

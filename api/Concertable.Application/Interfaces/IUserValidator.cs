@@ -1,7 +1,7 @@
-using Application.Responses;
-using Application.Requests;
+using Concertable.Application.Responses;
+using Concertable.Application.Requests;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IUserValidator
 {

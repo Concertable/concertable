@@ -1,4 +1,4 @@
-namespace Application.Responses;
+namespace Concertable.Application.Responses;
 
 public class ValidationResult
 {

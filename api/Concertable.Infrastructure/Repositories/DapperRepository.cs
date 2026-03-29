@@ -1,8 +1,8 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Dapper;
 using System.Data;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class DapperRepository : IDapperRepository
 {

@@ -1,4 +1,4 @@
-using Core.Entities;
+using Concertable.Core.Entities;
 using Xunit;
 
 namespace Concertable.Core.UnitTests.Entities;

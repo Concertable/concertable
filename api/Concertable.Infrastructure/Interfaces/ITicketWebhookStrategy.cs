@@ -1,3 +1,3 @@
-namespace Infrastructure.Interfaces;
+namespace Concertable.Infrastructure.Interfaces;
 
 public interface ITicketWebhookStrategy : IWebhookStrategy { }

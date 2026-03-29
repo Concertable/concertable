@@ -1,8 +1,8 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Core.Enums;
-using Core.Exceptions;
-using Infrastructure.Factories;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
+using Concertable.Infrastructure.Factories;
 using Moq;
 using Xunit;
 

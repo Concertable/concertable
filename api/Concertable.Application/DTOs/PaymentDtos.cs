@@ -1,7 +1,7 @@
-using Application.Interfaces.Payment;
-using Core.Enums;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Enums;
 
-namespace Application.DTOs;
+namespace Concertable.Application.DTOs;
 
 public record PaymentDto
 {

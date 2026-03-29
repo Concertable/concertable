@@ -1,11 +1,11 @@
-using Application.Interfaces;
-using Core.Entities;
-using Core.Enums;
-using Infrastructure.Interfaces;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 using Stripe;
 
-namespace Infrastructure.Services.Webhook;
+namespace Concertable.Infrastructure.Services.Webhook;
 
 public class WebhookProcessor : IWebhookProcessor
 {

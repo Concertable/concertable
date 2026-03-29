@@ -1,6 +1,6 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 public class SettlementTransactionEntity : TransactionEntity
 {

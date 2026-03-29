@@ -1,9 +1,9 @@
-using Core.Interfaces;
-using Application.Interfaces;
-using Core.Entities;
-using Core.Parameters;
-using Application.Responses;
-using Infrastructure.Helpers;
+using Concertable.Core.Interfaces;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Entities;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
+using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Concertable.Infrastructure.Data;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class MessageRepository : Repository<MessageEntity>, IMessageRepository
 {

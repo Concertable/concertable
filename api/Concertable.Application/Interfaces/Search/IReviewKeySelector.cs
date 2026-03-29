@@ -1,7 +1,7 @@
-using Core.Entities;
+using Concertable.Core.Entities;
 using System.Linq.Expressions;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface IReviewKeySelector<TEntity>
 {

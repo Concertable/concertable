@@ -1,4 +1,4 @@
-using Application.Interfaces.Geometry;
+using Concertable.Application.Interfaces.Geometry;
 using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services.Geometry;
+namespace Concertable.Infrastructure.Services.Geometry;
 
 public class GeographicGeometryProvider : IGeometryProvider
 {

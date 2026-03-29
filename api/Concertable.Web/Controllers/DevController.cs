@@ -1,16 +1,16 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Auth;
-using Application.Interfaces.Concert;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Auth;
+using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
-using Infrastructure.Data;
+using Concertable.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

@@ -1,10 +1,10 @@
-using Application.DTOs;
-using Application.Interfaces.Concert;
-using Application.Mappers;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Mappers;
 using Concertable.Core.Entities.Contracts;
-using Core.Enums;
-using Core.Exceptions;
-using Infrastructure.Services.Concert;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
+using Concertable.Infrastructure.Services.Concert;
 using Moq;
 using Xunit;
 

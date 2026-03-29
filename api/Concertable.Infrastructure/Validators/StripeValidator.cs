@@ -1,8 +1,8 @@
-using Application.Interfaces;
-using Application.Interfaces.Payment;
-using Application.Responses;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 
-namespace Infrastructure.Validators;
+namespace Concertable.Infrastructure.Validators;
 
 public class StripeValidator : IStripeValidator
 {

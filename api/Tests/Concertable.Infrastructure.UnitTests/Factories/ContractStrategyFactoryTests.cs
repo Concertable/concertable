@@ -1,6 +1,6 @@
-using Application.Interfaces.Concert;
-using Core.Enums;
-using Infrastructure.Factories;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;

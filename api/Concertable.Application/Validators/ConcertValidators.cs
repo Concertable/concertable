@@ -1,8 +1,8 @@
-using Application.Requests;
-using Core.Parameters;
+using Concertable.Application.Requests;
+using Concertable.Core.Parameters;
 using FluentValidation;
 
-namespace Application.Validators;
+namespace Concertable.Application.Validators;
 
 public class UpdateConcertRequestValidator : AbstractValidator<UpdateConcertRequest>
 {

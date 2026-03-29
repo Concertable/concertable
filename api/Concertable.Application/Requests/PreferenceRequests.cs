@@ -1,6 +1,6 @@
-using Application.DTOs;
+using Concertable.Application.DTOs;
 
-namespace Application.Requests;
+namespace Concertable.Application.Requests;
 
 public record CreatePreferenceRequest
 {

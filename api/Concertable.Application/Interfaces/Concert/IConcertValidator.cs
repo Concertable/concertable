@@ -1,7 +1,7 @@
-using Application.Responses;
-using Core.Entities;
+using Concertable.Application.Responses;
+using Concertable.Core.Entities;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertValidator
 {

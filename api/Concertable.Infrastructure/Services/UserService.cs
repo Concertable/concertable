@@ -1,12 +1,12 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Geometry;
-using Application.Mappers;
-using Core.Entities;
-using Infrastructure.Services.Geometry;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Geometry;
+using Concertable.Application.Mappers;
+using Concertable.Core.Entities;
+using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class UserService : IUserService
 {

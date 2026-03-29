@@ -1,8 +1,8 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Core.Entities.Contracts;
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IContractRepository : IRepository<ContractEntity>
 {

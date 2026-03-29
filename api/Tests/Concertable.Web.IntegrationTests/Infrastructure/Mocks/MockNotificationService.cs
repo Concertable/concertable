@@ -1,4 +1,4 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;

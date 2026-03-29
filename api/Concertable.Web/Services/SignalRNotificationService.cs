@@ -1,8 +1,8 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-using Web.Hubs;
+using Concertable.Web.Hubs;
 
-namespace Web.Services;
+namespace Concertable.Web.Services;
 
 public class SignalRNotificationService : IConcertNotificationService, ITicketNotificationService
 {

@@ -1,7 +1,7 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
 
-namespace Infrastructure.Services.Accept;
+namespace Concertable.Infrastructure.Services.Accept;
 
 public class AcceptProcessor : IAcceptProcessor
 {

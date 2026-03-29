@@ -1,12 +1,12 @@
-﻿using Application.Interfaces;
-using Core.Parameters;
-using Application.Responses;
+﻿using Concertable.Application.Interfaces;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Application.DTOs;
+using Concertable.Application.DTOs;
 using System;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [Authorize(Roles = "Customer")]
 [ApiController]

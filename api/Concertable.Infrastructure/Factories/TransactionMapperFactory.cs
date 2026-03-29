@@ -1,8 +1,8 @@
-using Application.Interfaces.Payment;
-using Application.Mappers;
-using Core.Enums;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Mappers;
+using Concertable.Core.Enums;
 
-namespace Infrastructure.Factories;
+namespace Concertable.Infrastructure.Factories;
 
 public class TransactionMapperFactory : ITransactionMapperFactory
 {

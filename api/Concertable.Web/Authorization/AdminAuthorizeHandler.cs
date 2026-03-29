@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Web.Authorization;
+namespace Concertable.Web.Authorization;
 
 public class AdminAuthorizeHandler : AuthorizationHandler<RolesAuthorizationRequirement>
 {

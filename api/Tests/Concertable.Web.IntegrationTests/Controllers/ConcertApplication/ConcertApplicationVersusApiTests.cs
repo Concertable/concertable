@@ -1,4 +1,4 @@
-using Application.DTOs;
+using Concertable.Application.DTOs;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
 

@@ -1,14 +1,14 @@
-using Application.Interfaces;
-using Application.Interfaces.Payment;
-using Application.Responses;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
-using Core.Interfaces;
-using Core.Parameters;
-using Infrastructure.Helpers;
+using Concertable.Core.Entities;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
+using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class TransactionRepository : Repository<TransactionEntity>, ITransactionRepository
 {

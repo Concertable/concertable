@@ -1,9 +1,9 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Core.Enums;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Factories;
+namespace Concertable.Infrastructure.Factories;
 
 public class ContractStrategyFactory<T> : IContractStrategyFactory<T> where T : IContractStrategy
 {

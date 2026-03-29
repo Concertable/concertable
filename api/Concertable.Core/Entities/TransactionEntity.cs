@@ -1,7 +1,7 @@
-using Core.Entities.Interfaces;
-using Core.Enums;
+using Concertable.Core.Entities.Interfaces;
+using Concertable.Core.Enums;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 public abstract class TransactionEntity : IEntity, IAuditable
 {

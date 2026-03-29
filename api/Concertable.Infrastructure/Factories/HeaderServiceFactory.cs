@@ -1,8 +1,8 @@
-using Application.Interfaces.Search;
-using Core.Enums;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Factories;
+namespace Concertable.Infrastructure.Factories;
 
 public class HeaderServiceFactory : IHeaderServiceFactory
 {

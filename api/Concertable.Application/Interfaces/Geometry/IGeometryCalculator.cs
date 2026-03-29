@@ -1,4 +1,4 @@
-namespace Application.Interfaces.Geometry;
+namespace Concertable.Application.Interfaces.Geometry;
 
 public interface IGeometryCalculator
 {

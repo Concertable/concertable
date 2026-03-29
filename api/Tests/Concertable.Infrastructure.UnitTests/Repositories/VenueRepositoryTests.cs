@@ -1,7 +1,7 @@
 using Concertable.Infrastructure.Data;
-using Core.Entities;
-using Core.Enums;
-using Infrastructure.Repositories;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

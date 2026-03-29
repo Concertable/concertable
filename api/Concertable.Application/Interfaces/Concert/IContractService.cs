@@ -1,7 +1,7 @@
-using Application.DTOs;
-using Application.Interfaces.Concert;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Concert;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IContractService
 {

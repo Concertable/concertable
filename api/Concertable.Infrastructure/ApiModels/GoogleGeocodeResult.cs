@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.ApiModels;
+namespace Concertable.Infrastructure.ApiModels;
 
 public class GoogleGeocodeResult
 {

@@ -1,7 +1,7 @@
 using Concertable.Core.Entities.Contracts;
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IContractMapper : IContractStrategy
 {

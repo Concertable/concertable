@@ -1,11 +1,11 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Payment;
-using Core.Enums;
-using Infrastructure.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
-namespace Infrastructure.Services.Webhook;
+namespace Concertable.Infrastructure.Services.Webhook;
 
 public class TicketWebhookHandler : ITicketWebhookStrategy
 {

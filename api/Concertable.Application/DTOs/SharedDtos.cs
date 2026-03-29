@@ -1,7 +1,7 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 using Microsoft.AspNetCore.Http;
 
-namespace Application.DTOs;
+namespace Concertable.Application.DTOs;
 
 public record UserDto
 {

@@ -1,5 +1,5 @@
-using Core.Extensions;
-using Core.Interfaces;
+using Concertable.Core.Extensions;
+using Concertable.Core.Interfaces;
 using Xunit;
 
 namespace Concertable.Core.UnitTests.Extensions;

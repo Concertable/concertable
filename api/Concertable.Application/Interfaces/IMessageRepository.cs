@@ -1,14 +1,14 @@
-using Core.Interfaces;
-using Core.Entities;
-using Core.Parameters;
-using Application.Responses;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Entities;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IMessageRepository : IRepository<MessageEntity>
 {

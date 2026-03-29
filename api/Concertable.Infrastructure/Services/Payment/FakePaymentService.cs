@@ -1,10 +1,10 @@
-using Application.Interfaces.Payment;
-using Application.Requests;
-using Application.Responses;
-using Infrastructure.Interfaces;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
+using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
-namespace Infrastructure.Services.Payment;
+namespace Concertable.Infrastructure.Services.Payment;
 
 public class FakePaymentService : IPaymentService
 {

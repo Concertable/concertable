@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using Application.Requests;
+using Concertable.Application.Requests;
 using Concertable.Web.IntegrationTests.Controllers;
 using Microsoft.AspNetCore.Http;
 

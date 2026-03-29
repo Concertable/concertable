@@ -1,7 +1,7 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
 
-namespace Infrastructure.Services.Complete;
+namespace Concertable.Infrastructure.Services.Complete;
 
 public class CompleteProcessor : ICompleteProcessor
 {

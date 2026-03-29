@@ -1,6 +1,6 @@
 using Stripe;
 
-namespace Infrastructure.Interfaces;
+namespace Concertable.Infrastructure.Interfaces;
 
 public interface IWebhookStrategy
 {

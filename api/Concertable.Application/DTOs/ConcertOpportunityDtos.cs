@@ -1,9 +1,9 @@
-using Application.Interfaces.Concert;
-using Application.Serializers;
-using Core.Enums;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Serializers;
+using Concertable.Core.Enums;
 using System.Text.Json.Serialization;
 
-namespace Application.DTOs;
+namespace Concertable.Application.DTOs;
 
 public record ConcertOpportunityDto
 {

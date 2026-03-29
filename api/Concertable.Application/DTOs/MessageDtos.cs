@@ -1,6 +1,6 @@
-using Application.Responses;
+using Concertable.Application.Responses;
 
-namespace Application.DTOs;
+namespace Concertable.Application.DTOs;
 
 public record MessageDto
 {

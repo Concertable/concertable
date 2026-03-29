@@ -1,12 +1,12 @@
-﻿using Application.Interfaces;
-using Application.DTOs;
+﻿using Concertable.Application.Interfaces;
+using Concertable.Application.DTOs;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class EmailService : IEmailService
 {

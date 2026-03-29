@@ -1,7 +1,7 @@
-using Application.DTOs;
-using Application.Requests;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IVenueService
 {

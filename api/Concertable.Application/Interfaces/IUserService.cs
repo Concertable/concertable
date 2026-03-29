@@ -1,7 +1,7 @@
-using Application.DTOs;
-using Core.Entities;
+using Concertable.Application.DTOs;
+using Concertable.Core.Entities;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IUserService
 {

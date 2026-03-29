@@ -1,7 +1,7 @@
-using Application.Interfaces.Concert;
-using Core.Enums;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Enums;
 
-namespace Application.DTOs;
+namespace Concertable.Application.DTOs;
 
 public record FlatFeeContractDto : IContract
 {

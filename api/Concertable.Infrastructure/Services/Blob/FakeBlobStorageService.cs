@@ -1,6 +1,6 @@
-using Application.Interfaces.Blob;
+using Concertable.Application.Interfaces.Blob;
 
-namespace Infrastructure.Services.Blob;
+namespace Concertable.Infrastructure.Services.Blob;
 
 public class FakeBlobStorageService : IBlobStorageService
 {

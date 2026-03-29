@@ -1,6 +1,6 @@
-using Application.Responses;
+using Concertable.Application.Responses;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 /// <summary>
 /// Handles logic related to event scheduling and artist availability.

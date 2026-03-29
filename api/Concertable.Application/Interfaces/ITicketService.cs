@@ -1,13 +1,13 @@
-﻿using Application.DTOs;
-using Core.Parameters;
-using Application.Responses;
+﻿using Concertable.Application.DTOs;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface ITicketService
 {

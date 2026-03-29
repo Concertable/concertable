@@ -1,9 +1,9 @@
-using Application.Interfaces;
-using Core.Entities.Interfaces;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Infrastructure.Data;
+namespace Concertable.Infrastructure.Data;
 
 public class AuditInterceptor : SaveChangesInterceptor
 {

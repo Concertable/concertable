@@ -1,7 +1,7 @@
-using Infrastructure.Interfaces;
+using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
-namespace Infrastructure.Services.Payment;
+namespace Concertable.Infrastructure.Services.Payment;
 
 public class FakeWebhookService : IWebhookService
 {

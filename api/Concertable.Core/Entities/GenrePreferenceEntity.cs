@@ -1,7 +1,7 @@
-using Core.Entities.Interfaces;
-using Core.Interfaces;
+using Concertable.Core.Entities.Interfaces;
+using Concertable.Core.Interfaces;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 public class GenrePreferenceEntity : IEntity, IGenreJoin
 {

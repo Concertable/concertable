@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Core.Entities;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Entities;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertOpportunityRepository : IRepository<ConcertOpportunityEntity>
 {

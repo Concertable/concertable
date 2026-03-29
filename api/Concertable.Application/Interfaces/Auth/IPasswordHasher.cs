@@ -1,4 +1,4 @@
-namespace Application.Interfaces.Auth;
+namespace Concertable.Application.Interfaces.Auth;
 
 public interface IPasswordHasher
 {

@@ -1,7 +1,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Extensions;
+namespace Concertable.Infrastructure.Extensions;
 
 public static class DbUpdateExceptionExtensions
 {

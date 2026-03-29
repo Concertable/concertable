@@ -1,14 +1,14 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Core.Entities;
-using Core.Exceptions;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Entities;
+using Concertable.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class OwnershipService : IOwnershipService
 {

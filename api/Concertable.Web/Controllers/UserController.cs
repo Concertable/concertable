@@ -1,10 +1,10 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
-using Application.Requests;
+﻿using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [Authorize]
 [ApiController]

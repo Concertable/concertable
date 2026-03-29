@@ -1,22 +1,24 @@
-using Application.Interfaces;
-using Application.Interfaces.Auth;
-using Infrastructure.Data;
-using Web.Extensions;
-using Web.Hubs;
-using Web.Middleware;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Auth;
+using Concertable.Application.Serializers;
+using Concertable.Core.ModelBinders;
+using Concertable.Infrastructure.Data;
+using Concertable.Web.Extensions;
+using Concertable.Web.Hubs;
+using Concertable.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddControllers(opts =>
-    opts.ModelBinderProviders.Insert(0, new Core.ModelBinders.CommaDelimitedIntArrayBinderProvider()))
+    opts.ModelBinderProviders.Insert(0, new CommaDelimitedIntArrayBinderProvider()))
 .AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.IncludeFields = true;
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.WriteIndented = true;
-    options.JsonSerializerOptions.Converters.Add(new Application.Serializers.TimeOnlyJsonConverter());
+    options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
 

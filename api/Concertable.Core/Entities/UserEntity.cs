@@ -1,8 +1,8 @@
-using Core.Entities.Interfaces;
-using Core.Enums;
+using Concertable.Core.Entities.Interfaces;
+using Concertable.Core.Enums;
 using NetTopologySuite.Geometries;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 /// <summary>
 /// UserEntity for auth. Role is on the entity (Customer, VenueManager, ArtistManager, Admin).

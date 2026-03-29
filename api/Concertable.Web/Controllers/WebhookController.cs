@@ -1,8 +1,8 @@
-using Infrastructure.Interfaces;
+using Concertable.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [Route("api/[controller]")]
 public class WebhookController : ControllerBase

@@ -1,6 +1,6 @@
-using Core.Entities.Interfaces;
+using Concertable.Core.Entities.Interfaces;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IGuidRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class, IGuidEntity
 {

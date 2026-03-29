@@ -1,17 +1,17 @@
-using Core.Entities;
-using Application.Interfaces;
-using Application.Interfaces.Geometry;
-using Infrastructure.Services.Geometry;
-using Application.Interfaces.Rating;
-using Application.DTOs;
-using Application.Mappers;
-using Application.Requests;
-using Core.Enums;
-using Core.Exceptions;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Geometry;
+using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Application.Interfaces.Rating;
+using Concertable.Application.DTOs;
+using Concertable.Application.Mappers;
+using Concertable.Application.Requests;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class VenueService : IVenueService
 {

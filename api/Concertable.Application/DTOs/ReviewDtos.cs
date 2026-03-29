@@ -1,4 +1,4 @@
-namespace Application.DTOs;
+namespace Concertable.Application.DTOs;
 
 public record ReviewDto
 {

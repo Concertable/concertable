@@ -1,8 +1,8 @@
-using Core.Entities.Interfaces;
-using Core.Interfaces;
+using Concertable.Core.Entities.Interfaces;
+using Concertable.Core.Interfaces;
 using NetTopologySuite.Geometries;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 public class VenueEntity : IEntity, IHasName, IHasLocation
 {

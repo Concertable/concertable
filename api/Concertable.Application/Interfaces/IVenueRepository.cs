@@ -1,7 +1,7 @@
-using Core.Entities;
-using Core.Interfaces;
+using Concertable.Core.Entities;
+using Concertable.Core.Interfaces;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IVenueRepository : IRepository<VenueEntity>
 {

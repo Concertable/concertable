@@ -1,4 +1,4 @@
-using Infrastructure.Calculators;
+using Concertable.Infrastructure.Calculators;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Calculators;

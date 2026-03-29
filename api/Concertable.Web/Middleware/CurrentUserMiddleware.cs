@@ -1,8 +1,8 @@
-using Application.Interfaces;
-using Infrastructure.Services;
+using Concertable.Application.Interfaces;
+using Concertable.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 
-namespace Web.Middleware;
+namespace Concertable.Web.Middleware;
 
 public class CurrentUserMiddleware
 {

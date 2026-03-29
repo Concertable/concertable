@@ -1,7 +1,7 @@
-using Application.Interfaces;
-using Core.Interfaces;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Interfaces;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class GenreSyncService : IGenreSyncService
 {

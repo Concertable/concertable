@@ -1,6 +1,6 @@
 using Concertable.Core.Entities.Contracts;
-using Core.Entities;
-using Core.Enums;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Data;

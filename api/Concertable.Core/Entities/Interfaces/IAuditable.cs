@@ -1,4 +1,4 @@
-namespace Core.Entities.Interfaces;
+namespace Concertable.Core.Entities.Interfaces;
 
 public interface IAuditable
 {

@@ -1,9 +1,9 @@
-using Application.DTOs;
-using Application.Interfaces.Concert;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Application.Mappers;
+namespace Concertable.Application.Mappers;
 
 public class DoorSplitContractMapper : IContractMapper
 {

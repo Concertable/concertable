@@ -1,8 +1,8 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Data;
-using Core.Entities.Interfaces;
+using Concertable.Core.Entities.Interfaces;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class GuidRepository<T> : BaseRepository<T>, IGuidRepository<T> where T : class, IGuidEntity
 {

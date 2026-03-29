@@ -1,7 +1,7 @@
-using Core.Interfaces;
-using Core.Parameters;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface IGeometrySpecification<TEntity> where TEntity : IHasLocation
 {

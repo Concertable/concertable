@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Application.Serializers;
+namespace Concertable.Application.Serializers;
 
 public class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
 {

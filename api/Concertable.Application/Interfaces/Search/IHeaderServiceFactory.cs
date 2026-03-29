@@ -1,6 +1,6 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface IHeaderServiceFactory
 {

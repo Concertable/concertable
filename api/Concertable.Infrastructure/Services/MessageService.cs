@@ -1,12 +1,12 @@
-using Core.Interfaces;
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Mappers;
-using Core.Entities;
-using Core.Parameters;
-using Application.Responses;
+using Concertable.Core.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Mappers;
+using Concertable.Core.Entities;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class MessageService : IMessageService
 {

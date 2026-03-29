@@ -1,4 +1,4 @@
-using Application.Requests;
+using Concertable.Application.Requests;
 using Microsoft.AspNetCore.Http;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Venue;

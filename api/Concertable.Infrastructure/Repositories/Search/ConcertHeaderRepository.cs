@@ -1,15 +1,15 @@
-using Application.DTOs;
-using Application.Interfaces.Search;
-using Application.Responses;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Application.Responses;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
-using Core.Parameters;
-using Infrastructure.Extensions;
-using Infrastructure.Helpers;
-using Infrastructure.Mappers;
+using Concertable.Core.Entities;
+using Concertable.Core.Parameters;
+using Concertable.Infrastructure.Extensions;
+using Concertable.Infrastructure.Helpers;
+using Concertable.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories.Search;
+namespace Concertable.Infrastructure.Repositories.Search;
 
 public class ConcertHeaderRepository : IConcertHeaderRepository
 {

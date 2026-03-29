@@ -1,7 +1,7 @@
-using Application.Interfaces.Payment;
-using Core.Entities;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Entities;
 
-namespace Infrastructure.Services.Payment;
+namespace Concertable.Infrastructure.Services.Payment;
 
 public class FakeStripeAccountService : IStripeAccountService
 {

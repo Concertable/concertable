@@ -1,7 +1,7 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
-using Core.Exceptions;
-using Infrastructure.ApiModels;
+﻿using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Exceptions;
+using Concertable.Infrastructure.ApiModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class GeocodingService : IGeocodingService
 {

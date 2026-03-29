@@ -1,7 +1,7 @@
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 [PrimaryKey(nameof(ArtistId), nameof(GenreId))]
 public class ArtistGenreEntity : IGenreJoin

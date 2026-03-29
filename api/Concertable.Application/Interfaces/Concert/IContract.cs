@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Core.Enums;
+using Concertable.Application.DTOs;
+using Concertable.Core.Enums;
 using System.Text.Json.Serialization;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 [JsonDerivedType(typeof(FlatFeeContractDto), "flatFee")]
 [JsonDerivedType(typeof(DoorSplitContractDto), "doorSplit")]

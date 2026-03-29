@@ -1,10 +1,10 @@
-using Core.Entities;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
 using Microsoft.EntityFrameworkCore;
 using Concertable.Infrastructure.Data;
 
-namespace Infrastructure.Repositories.Concert;
+namespace Concertable.Infrastructure.Repositories.Concert;
 
 public class ConcertOpportunityRepository : Repository<ConcertOpportunityEntity>, IConcertOpportunityRepository
 {

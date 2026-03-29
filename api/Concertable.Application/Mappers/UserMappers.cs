@@ -1,7 +1,7 @@
-using Application.DTOs;
-using Core.Entities;
+using Concertable.Application.DTOs;
+using Concertable.Core.Entities;
 
-namespace Application.Mappers;
+namespace Concertable.Application.Mappers;
 
 public static class UserMappers
 {

@@ -1,4 +1,4 @@
-using Core.Parameters;
+using Concertable.Core.Parameters;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Ticket;
 

@@ -1,6 +1,6 @@
-using Application.Responses;
+using Concertable.Application.Responses;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface ITicketValidator
 {

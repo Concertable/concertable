@@ -1,10 +1,10 @@
-using Application.Interfaces;
-using Application.Interfaces.Geometry;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
-using Core.Enums;
-using Infrastructure.Services.Geometry;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

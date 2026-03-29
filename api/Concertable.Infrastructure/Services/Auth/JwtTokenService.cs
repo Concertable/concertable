@@ -1,13 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using Application.Interfaces.Auth;
-using Core.Enums;
+using Concertable.Application.Interfaces.Auth;
+using Concertable.Core.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Infrastructure.Settings;
+using Concertable.Infrastructure.Settings;
 
-namespace Infrastructure.Services.Auth;
+namespace Concertable.Infrastructure.Services.Auth;
 
 public class JwtTokenService : ITokenService
 {

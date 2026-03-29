@@ -1,7 +1,7 @@
 using Concertable.Core.Entities.Contracts;
-using Core.Entities.Interfaces;
+using Concertable.Core.Entities.Interfaces;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 public class ConcertOpportunityEntity : IEntity
 {

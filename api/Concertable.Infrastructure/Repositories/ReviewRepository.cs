@@ -1,15 +1,15 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Core.Entities;
-using Core.Parameters;
-using Application.Responses;
-using Infrastructure.Helpers;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Entities;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
+using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 using Concertable.Infrastructure.Data;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
 {

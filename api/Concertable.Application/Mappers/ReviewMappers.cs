@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Application.Requests;
-using Core.Entities;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
+using Concertable.Core.Entities;
 
-namespace Application.Mappers;
+namespace Concertable.Application.Mappers;
 
 public static class ReviewMappers
 {

@@ -1,9 +1,9 @@
-using Application.Interfaces.Search;
-using Core.Projections;
-using Core.Entities;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Projections;
+using Concertable.Core.Entities;
 using System.Linq.Expressions;
 
-namespace Infrastructure.Specifications;
+namespace Concertable.Infrastructure.Specifications;
 
 public class RatingSpecification<TEntity> : IRatingSpecification<TEntity>
 {

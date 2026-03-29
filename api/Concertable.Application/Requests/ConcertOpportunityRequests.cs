@@ -1,6 +1,6 @@
-using Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Concert;
 
-namespace Application.Requests;
+namespace Concertable.Application.Requests;
 
 public record ConcertOpportunityRequest
 {

@@ -1,6 +1,6 @@
-using Core.Entities;
+using Concertable.Core.Entities;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IVenueManagerRepository : IGuidRepository<VenueManagerEntity>
 {

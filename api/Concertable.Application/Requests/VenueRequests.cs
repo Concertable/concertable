@@ -1,7 +1,7 @@
-using Application.DTOs;
+using Concertable.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 
-namespace Application.Requests;
+namespace Concertable.Application.Requests;
 
 public record CreateVenueRequest
 {

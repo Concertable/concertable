@@ -1,7 +1,7 @@
-using Core.Entities;
-using Core.Enums;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 
-namespace Application.Interfaces.Payment;
+namespace Concertable.Application.Interfaces.Payment;
 
 public interface ITransactionMapper
 {

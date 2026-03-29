@@ -1,4 +1,4 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 

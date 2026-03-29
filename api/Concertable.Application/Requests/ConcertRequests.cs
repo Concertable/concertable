@@ -1,4 +1,4 @@
-namespace Application.Requests;
+namespace Concertable.Application.Requests;
 
 public record UpdateConcertRequest
 {

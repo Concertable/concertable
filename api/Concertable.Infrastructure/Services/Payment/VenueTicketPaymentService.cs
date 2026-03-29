@@ -1,11 +1,11 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Interfaces.Payment;
-using Application.Requests;
-using Application.Responses;
-using Core.Exceptions;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
+using Concertable.Core.Exceptions;
 
-namespace Infrastructure.Services.Payment;
+namespace Concertable.Infrastructure.Services.Payment;
 
 public class VenueTicketPaymentService : ITicketPaymentStrategy
 {

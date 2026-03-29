@@ -1,6 +1,6 @@
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IGenreSyncService
 {

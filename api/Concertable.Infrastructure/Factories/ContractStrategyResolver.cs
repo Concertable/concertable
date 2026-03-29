@@ -1,8 +1,8 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Core.Exceptions;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Exceptions;
 
-namespace Infrastructure.Factories;
+namespace Concertable.Infrastructure.Factories;
 
 public class ContractStrategyResolver<T> : IContractStrategyResolver<T> where T : IContractStrategy
 {

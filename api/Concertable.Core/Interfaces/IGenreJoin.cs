@@ -1,4 +1,4 @@
-namespace Core.Interfaces;
+namespace Concertable.Core.Interfaces;
 
 public interface IGenreJoin
 {

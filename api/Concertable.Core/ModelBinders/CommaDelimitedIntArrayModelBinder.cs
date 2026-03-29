@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Core.ModelBinders;
+namespace Concertable.Core.ModelBinders;
 
 public class CommaDelimitedIntArrayModelBinder : IModelBinder
 {

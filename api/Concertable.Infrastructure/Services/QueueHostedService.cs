@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+﻿using Concertable.Application.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class QueueHostedService : BackgroundService
 {

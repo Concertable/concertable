@@ -1,7 +1,7 @@
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 using FluentValidation;
 
-namespace Application.Validators.Parameters;
+namespace Concertable.Application.Validators.Parameters;
 
 public class PageParamsValidator : AbstractValidator<IPageParams>
 {

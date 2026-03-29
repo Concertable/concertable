@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces.Geometry;
+namespace Concertable.Application.Interfaces.Geometry;
 
 public interface IGeometryProvider
 {

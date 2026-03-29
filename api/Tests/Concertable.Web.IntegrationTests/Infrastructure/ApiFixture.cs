@@ -1,8 +1,8 @@
-using Application.Interfaces;
-using Application.Interfaces.Payment;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
-using Infrastructure.Interfaces;
-using Infrastructure.Services.Payment;
+using Concertable.Infrastructure.Interfaces;
+using Concertable.Infrastructure.Services.Payment;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

@@ -1,9 +1,9 @@
-﻿using Application.Interfaces;
-using Application.Interfaces.Payment;
-using Core.Parameters;
+﻿using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/payment")]

@@ -1,6 +1,6 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class CollectionDiffer : ICollectionDiffer
 {

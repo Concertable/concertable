@@ -1,6 +1,6 @@
-using Core.Entities;
+using Concertable.Core.Entities;
 
-namespace Infrastructure.Extensions;
+namespace Concertable.Infrastructure.Extensions;
 
 public static class ConcertQueryableExtensions
 {

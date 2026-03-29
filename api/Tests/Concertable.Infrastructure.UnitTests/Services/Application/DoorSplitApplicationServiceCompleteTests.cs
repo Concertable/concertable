@@ -1,13 +1,13 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Interfaces.Payment;
-using Application.Requests;
-using Application.Responses;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities.Contracts;
-using Core.Entities;
-using Core.Enums;
-using Infrastructure.Services.Application;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Services.Application;
 using Moq;
 using Xunit;
 

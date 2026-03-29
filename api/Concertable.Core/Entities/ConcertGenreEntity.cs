@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 [PrimaryKey(nameof(ConcertId), nameof(GenreId))]
 public class ConcertGenreEntity

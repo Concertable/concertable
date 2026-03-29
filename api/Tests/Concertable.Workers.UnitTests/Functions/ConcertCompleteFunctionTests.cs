@@ -1,4 +1,4 @@
-using Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Concert;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Workers.Functions;

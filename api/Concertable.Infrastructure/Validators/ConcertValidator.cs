@@ -1,10 +1,10 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Responses;
-using Core.Entities;
-using Core.Enums;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Responses;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 
-namespace Infrastructure.Validators;
+namespace Concertable.Infrastructure.Validators;
 
 public class ConcertValidator : IConcertValidator
 {

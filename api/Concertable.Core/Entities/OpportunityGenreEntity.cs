@@ -1,7 +1,7 @@
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Core.Entities;
+namespace Concertable.Core.Entities;
 
 [PrimaryKey(nameof(OpportunityId), nameof(GenreId))]
 public class OpportunityGenreEntity : IGenreJoin

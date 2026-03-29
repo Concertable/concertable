@@ -1,6 +1,6 @@
-using Application.Interfaces.Rating;
+using Concertable.Application.Interfaces.Rating;
 
-namespace Infrastructure.Services.Rating;
+namespace Concertable.Infrastructure.Services.Rating;
 
 public class RatingEnricher : IRatingEnricher
 {

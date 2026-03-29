@@ -1,9 +1,9 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using QuestPDF.Infrastructure;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class PdfService : IPdfService
 {

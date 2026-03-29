@@ -1,9 +1,9 @@
-using Application.Interfaces;
-using Application.Requests;
-using Application.Responses;
-using Core.Enums;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
+using Concertable.Core.Enums;
 
-namespace Infrastructure.Validators;
+namespace Concertable.Infrastructure.Validators;
 
 public class UserValidator : IUserValidator
 {

@@ -1,4 +1,4 @@
-namespace Infrastructure.Settings;
+namespace Concertable.Infrastructure.Settings;
 
 public class BlobStorageSettings
 {

@@ -1,10 +1,10 @@
-using Application.DTOs;
-using Application.Interfaces.Concert;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
-using Core.Enums;
-using Core.Exceptions;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
 
-namespace Infrastructure.Services.Concert;
+namespace Concertable.Infrastructure.Services.Concert;
 
 public class ContractService : IContractService
 {

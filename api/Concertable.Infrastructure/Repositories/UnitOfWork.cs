@@ -1,12 +1,12 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Data;
-using Core.Enums;
-using Core.Exceptions;
-using Infrastructure.Extensions;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
+using Concertable.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {

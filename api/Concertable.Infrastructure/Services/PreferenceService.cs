@@ -1,11 +1,11 @@
-using Application.DTOs;
-using Application.Requests;
-using Application.Interfaces;
-using Application.Mappers;
-using Core.Entities;
-using Core.Exceptions;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Mappers;
+using Concertable.Core.Entities;
+using Concertable.Core.Exceptions;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class PreferenceService : IPreferenceService
 {

@@ -1,11 +1,11 @@
-using Application.Interfaces;
-using Application.Interfaces.Rating;
-using Application.Interfaces.Search;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Rating;
+using Concertable.Application.Interfaces.Search;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
+using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories.Rating;
+namespace Concertable.Infrastructure.Repositories.Rating;
 
 public class ConcertRatingRepository : IRatingRepository
 {

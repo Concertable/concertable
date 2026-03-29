@@ -1,6 +1,6 @@
-using Application.Responses;
+using Concertable.Application.Responses;
 
-namespace Application.Interfaces.Payment;
+namespace Concertable.Application.Interfaces.Payment;
 
 public interface IStripeValidator
 {

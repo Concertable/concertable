@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Core.Entities;
-using Core.Exceptions;
+using Concertable.Application.DTOs;
+using Concertable.Core.Entities;
+using Concertable.Core.Exceptions;
 
-namespace Application.Mappers;
+namespace Concertable.Application.Mappers;
 
 public static class ConcertMappers
 {

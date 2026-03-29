@@ -1,8 +1,8 @@
-using Application.Interfaces.Search;
-using Core.Entities;
-using Core.Parameters;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Entities;
+using Concertable.Core.Parameters;
 
-namespace Infrastructure.Specifications;
+namespace Concertable.Infrastructure.Specifications;
 
 public class ConcertSearchSpecification : IConcertSearchSpecification
 {

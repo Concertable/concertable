@@ -1,11 +1,11 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Requests;
-using Core.Entities;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Requests;
+using Concertable.Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

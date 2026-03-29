@@ -1,6 +1,6 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Infrastructure.Interfaces;
+namespace Concertable.Infrastructure.Interfaces;
 
 public interface IWebhookStrategyFactory
 {

@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Core.Entities;
-using Core.Enums;
+using Concertable.Application.DTOs;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface ICurrentUser
 {

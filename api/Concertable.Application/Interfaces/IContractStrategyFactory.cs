@@ -1,7 +1,7 @@
-using Application.Interfaces.Concert;
-using Core.Enums;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Enums;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IContractStrategyFactory<T> where T : IContractStrategy
 {

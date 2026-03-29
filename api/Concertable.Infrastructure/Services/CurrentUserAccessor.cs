@@ -1,10 +1,10 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Core.Entities;
-using Core.Enums;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 using Microsoft.AspNetCore.Http;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class CurrentUserAccessor : ICurrentUser
 {

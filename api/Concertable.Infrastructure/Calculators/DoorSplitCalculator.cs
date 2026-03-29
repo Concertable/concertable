@@ -1,4 +1,4 @@
-namespace Infrastructure.Calculators;
+namespace Concertable.Infrastructure.Calculators;
 
 public static class DoorSplitCalculator
 {

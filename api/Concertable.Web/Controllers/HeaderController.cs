@@ -1,10 +1,10 @@
-using Application.Interfaces.Search;
-using Core.Enums;
-using Core.Parameters;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Enums;
+using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

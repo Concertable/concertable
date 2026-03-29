@@ -1,18 +1,18 @@
-using Application.Interfaces;
-using Application.Interfaces.Auth;
-using Application.Mappers;
-using Application.Requests;
-using Application.Responses;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Auth;
+using Concertable.Application.Mappers;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
-using Core.Enums;
-using Core.Exceptions;
-using Infrastructure.Constants;
-using Infrastructure.Settings;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
+using Concertable.Infrastructure.Constants;
+using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {

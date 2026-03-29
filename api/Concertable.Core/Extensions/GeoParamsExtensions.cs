@@ -1,6 +1,6 @@
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 
-namespace Core.Extensions;
+namespace Concertable.Core.Extensions;
 
 public static class GeoParamsExtensions
 {

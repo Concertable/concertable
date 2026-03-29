@@ -1,6 +1,6 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
-using Infrastructure.Interfaces;
+using Concertable.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

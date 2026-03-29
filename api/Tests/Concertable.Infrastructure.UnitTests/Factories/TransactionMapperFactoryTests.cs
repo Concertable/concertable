@@ -1,6 +1,6 @@
-using Application.Mappers;
-using Core.Enums;
-using Infrastructure.Factories;
+using Concertable.Application.Mappers;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Factories;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Factories;

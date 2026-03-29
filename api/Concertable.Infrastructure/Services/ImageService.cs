@@ -1,5 +1,5 @@
-﻿using Application.Interfaces;
-using Application.Interfaces.Blob;
+﻿using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Blob;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class ImageService : IImageService
 {

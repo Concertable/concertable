@@ -1,13 +1,13 @@
-using Application.Interfaces;
-using Application.Models;
-using Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Models;
+using Concertable.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertApplicationRepository : IRepository<ConcertApplicationEntity>
 {

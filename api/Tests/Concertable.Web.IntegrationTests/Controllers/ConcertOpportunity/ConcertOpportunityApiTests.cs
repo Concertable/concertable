@@ -1,8 +1,8 @@
 using System.Net;
-using Application.DTOs;
-using Application.Interfaces.Concert;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Concert;
 using Concertable.Web.IntegrationTests.Infrastructure;
-using Core.Enums;
+using Concertable.Core.Enums;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.ConcertOpportunity.ConcertOpportunityRequestBuilders;
 

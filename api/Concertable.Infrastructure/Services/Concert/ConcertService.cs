@@ -1,17 +1,17 @@
 
-using Core.Entities;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Interfaces.Geometry;
-using Application.Interfaces.Search;
-using Core.Parameters;
-using Application.DTOs;
-using Application.Mappers;
-using Application.Requests;
-using Application.Responses;
-using Core.Exceptions;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Geometry;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Parameters;
+using Concertable.Application.DTOs;
+using Concertable.Application.Mappers;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
+using Concertable.Core.Exceptions;
 
-namespace Infrastructure.Services.Concert;
+namespace Concertable.Infrastructure.Services.Concert;
 
 public class ConcertService : IConcertService
 {

@@ -1,9 +1,9 @@
-using Core.Entities;
-using Application.Interfaces;
-using Application.DTOs;
-using Application.Mappers;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Application.Mappers;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class GenreService : IGenreService
 {

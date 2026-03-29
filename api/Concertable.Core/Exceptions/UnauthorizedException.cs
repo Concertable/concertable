@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Core.Exceptions;
+namespace Concertable.Core.Exceptions;
 
 public class UnauthorizedException : HttpException
 {

@@ -1,4 +1,4 @@
-namespace Application.Interfaces.Rating;
+namespace Concertable.Application.Interfaces.Rating;
 
 public interface IRatingRepository
 {

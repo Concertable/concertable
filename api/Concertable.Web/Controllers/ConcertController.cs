@@ -1,13 +1,13 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Core.Parameters;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Application.DTOs;
-using Application.Requests;
-using Application.Responses;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

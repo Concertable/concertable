@@ -1,8 +1,8 @@
-using Infrastructure.Interfaces;
+using Concertable.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Stripe;
 
-namespace Infrastructure.Services.Webhook;
+namespace Concertable.Infrastructure.Services.Webhook;
 
 public class WebhookService : IWebhookService
 {

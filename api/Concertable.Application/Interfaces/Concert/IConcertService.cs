@@ -1,10 +1,10 @@
-using Application.DTOs;
-using Application.Requests;
-using Application.Responses;
-using Core.Parameters;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
+using Concertable.Core.Parameters;
 
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertService
 {

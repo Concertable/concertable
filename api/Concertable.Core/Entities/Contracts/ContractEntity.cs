@@ -1,6 +1,6 @@
-using Core.Entities;
-using Core.Entities.Interfaces;
-using Core.Enums;
+using Concertable.Core.Entities;
+using Concertable.Core.Entities.Interfaces;
+using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities.Contracts;
 

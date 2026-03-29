@@ -1,9 +1,9 @@
-using Application.DTOs;
-using Application.Interfaces.Payment;
-using Core.Entities;
-using Core.Enums;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 
-namespace Application.Mappers;
+namespace Concertable.Application.Mappers;
 
 public class TicketTransactionMapper : ITransactionMapper
 {

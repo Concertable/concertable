@@ -1,9 +1,9 @@
-using Application.Interfaces.Auth;
+using Concertable.Application.Interfaces.Auth;
 using Concertable.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Web.Controllers;
+namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

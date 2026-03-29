@@ -1,9 +1,9 @@
-using Infrastructure.Interfaces;
-using Infrastructure.Settings;
+using Concertable.Infrastructure.Interfaces;
+using Concertable.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Stripe;
 
-namespace Infrastructure.Services.Payment;
+namespace Concertable.Infrastructure.Services.Payment;
 
 public class StripePaymentClient : IStripePaymentClient
 {

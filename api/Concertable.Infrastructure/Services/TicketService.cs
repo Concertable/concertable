@@ -1,12 +1,12 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Mappers;
-using Application.Responses;
-using Core.Entities;
-using Core.Enums;
-using Core.Exceptions;
-using Core.Parameters;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Mappers;
+using Concertable.Application.Responses;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
+using Concertable.Core.Parameters;
 
 public class TicketService : ITicketService
 {

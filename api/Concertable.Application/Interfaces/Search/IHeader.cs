@@ -1,7 +1,7 @@
-using Application.Interfaces;
-using Application.Interfaces.Rating;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Rating;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface IHeader : IHasRating, IAddress, ILatLong
 {

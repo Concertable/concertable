@@ -1,4 +1,4 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities.Contracts;
 

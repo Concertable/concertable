@@ -1,7 +1,7 @@
-using Application.Interfaces;
-using Application.Interfaces.Search;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Search;
 
-namespace Application.DTOs;
+namespace Concertable.Application.DTOs;
 
 public record VenueDto : IDetails, IAddress, ILatLong
 {

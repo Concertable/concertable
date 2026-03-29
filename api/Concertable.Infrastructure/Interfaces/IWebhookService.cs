@@ -1,4 +1,4 @@
-namespace Infrastructure.Interfaces;
+namespace Concertable.Infrastructure.Interfaces;
 
 public interface IWebhookService
 {

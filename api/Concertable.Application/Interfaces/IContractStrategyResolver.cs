@@ -1,6 +1,6 @@
-using Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Concert;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IContractStrategyResolver<T> where T : IContractStrategy
 {

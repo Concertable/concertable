@@ -1,7 +1,7 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Responses;
-using Infrastructure.Services.Payment;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Responses;
+using Concertable.Infrastructure.Services.Payment;
 using Moq;
 using Xunit;
 

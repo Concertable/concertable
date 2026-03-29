@@ -1,5 +1,5 @@
-﻿using Core.Entities;
-using Application.Interfaces;
+﻿using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Concertable.Infrastructure.Data;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {

@@ -1,4 +1,4 @@
-using Infrastructure.Services;
+using Concertable.Infrastructure.Services;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services;

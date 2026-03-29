@@ -1,5 +1,5 @@
-using Core.Entities;
-using Application.Interfaces;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Concertable.Infrastructure.Data;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class GenreRepository : Repository<GenreEntity>, IGenreRepository
 {

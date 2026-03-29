@@ -1,15 +1,15 @@
-using Application.Interfaces;
-using Application.Interfaces.Auth;
-using Application.Interfaces.Geometry;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Auth;
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
-using Core.Enums;
-using Core.Parameters;
-using Infrastructure.Data.SeedData;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Core.Parameters;
+using Concertable.Infrastructure.Data.SeedData;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Data;
+namespace Concertable.Infrastructure.Data;
 
 public class ApplicationDbInitializer : IDbInitializer
 {

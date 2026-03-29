@@ -1,6 +1,6 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
+using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class TicketRepository : Repository<TicketEntity>, ITicketRepository
 {

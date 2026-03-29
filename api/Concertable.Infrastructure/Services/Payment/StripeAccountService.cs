@@ -1,13 +1,13 @@
-using Application.Interfaces;
-using Application.Interfaces.Payment;
-using Core.Entities;
-using Core.Exceptions;
-using Infrastructure.Settings;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Entities;
+using Concertable.Core.Exceptions;
+using Concertable.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Stripe;
 
-namespace Infrastructure.Services.Payment;
+namespace Concertable.Infrastructure.Services.Payment;
 
 public class StripeAccountService : IStripeAccountService
 {

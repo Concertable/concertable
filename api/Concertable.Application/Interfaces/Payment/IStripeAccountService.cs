@@ -1,6 +1,6 @@
-using Core.Entities;
+using Concertable.Core.Entities;
 
-namespace Application.Interfaces.Payment;
+namespace Concertable.Application.Interfaces.Payment;
 
 public interface IStripeAccountService
 {

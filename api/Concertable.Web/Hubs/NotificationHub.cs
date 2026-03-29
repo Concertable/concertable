@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Web.Extentions;
+using Concertable.Web.Extentions;
 
-namespace Web.Hubs;
+namespace Concertable.Web.Hubs;
 
 [Authorize]
 public class NotificationHub : Hub

@@ -1,4 +1,4 @@
-using Infrastructure.Interfaces;
+using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;

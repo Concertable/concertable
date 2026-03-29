@@ -1,8 +1,8 @@
-using Application.Responses;
-using Core.Interfaces;
-using Core.Parameters;
+using Concertable.Application.Responses;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 
-namespace Application.Interfaces.Payment;
+namespace Concertable.Application.Interfaces.Payment;
 
 public interface ITransactionService
 {

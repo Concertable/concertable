@@ -1,4 +1,4 @@
-using Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Concert;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 

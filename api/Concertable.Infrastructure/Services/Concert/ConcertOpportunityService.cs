@@ -1,13 +1,13 @@
-using Core.Entities;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Mappers;
-using Application.Interfaces.Payment;
-using Application.DTOs;
-using Application.Requests;
-using Core.Exceptions;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Mappers;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
+using Concertable.Core.Exceptions;
 
-namespace Infrastructure.Services.Concert;
+namespace Concertable.Infrastructure.Services.Concert;
 
 public class ConcertOpportunityService : IConcertOpportunityService
 {

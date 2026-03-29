@@ -1,4 +1,4 @@
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IReviewValidator
 {

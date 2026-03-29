@@ -1,6 +1,6 @@
-using Core.Parameters;
+using Concertable.Core.Parameters;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface ISearchSpecification<TEntity>
 {

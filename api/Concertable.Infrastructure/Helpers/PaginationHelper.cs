@@ -1,6 +1,6 @@
-using Core.Interfaces;
-using Core.Parameters;
-using Application.Responses;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
-namespace Infrastructure.Helpers;
+namespace Concertable.Infrastructure.Helpers;
 
 public static class PaginationHelper
 {

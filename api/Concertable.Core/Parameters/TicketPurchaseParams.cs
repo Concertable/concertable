@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Core.Parameters;
+namespace Concertable.Core.Parameters;
 
 public class TicketPurchaseParams
 {

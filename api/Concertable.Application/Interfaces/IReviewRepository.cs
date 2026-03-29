@@ -1,10 +1,10 @@
-using Core.Interfaces;
-using Application.DTOs;
-using Core.Entities;
-using Core.Parameters;
-using Application.Responses;
+using Concertable.Core.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Core.Entities;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IReviewRepository : IRepository<ReviewEntity>
 {

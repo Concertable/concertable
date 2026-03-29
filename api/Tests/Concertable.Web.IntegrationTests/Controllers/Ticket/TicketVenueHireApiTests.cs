@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Application.Interfaces.Payment;
-using Application.Responses;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
-using Core.Enums;
+using Concertable.Core.Enums;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Ticket.TicketRequestBuilders;
 

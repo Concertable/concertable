@@ -1,7 +1,7 @@
-using Application.DTOs;
-using Application.Mappers;
+using Concertable.Application.DTOs;
+using Concertable.Application.Mappers;
 using Concertable.Core.Entities.Contracts;
-using Core.Enums;
+using Concertable.Core.Enums;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Mappers;

@@ -1,7 +1,7 @@
-using Application.Requests;
-using Application.Responses;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IAuthService
 {

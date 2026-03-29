@@ -1,12 +1,12 @@
-using Core.Entities;
-using Application.Interfaces;
-using Application.DTOs;
-using Application.Mappers;
-using Application.Requests;
-using Core.Exceptions;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Application.Mappers;
+using Concertable.Application.Requests;
+using Concertable.Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class ArtistService : IArtistService
 {

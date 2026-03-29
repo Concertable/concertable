@@ -1,15 +1,15 @@
-using Application.Interfaces;
-using Application.Interfaces.Geometry;
-using Application.Interfaces.Search;
-using Infrastructure.Services.Geometry;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Geometry;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
-using Core.Extensions;
-using Core.Interfaces;
-using Core.Parameters;
+using Concertable.Core.Extensions;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
-namespace Infrastructure.Specifications;
+namespace Concertable.Infrastructure.Specifications;
 
 public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
     where TEntity : class, IHasLocation

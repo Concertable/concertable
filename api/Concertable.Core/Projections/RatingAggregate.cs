@@ -1,4 +1,4 @@
-namespace Core.Projections;
+namespace Concertable.Core.Projections;
 
 public record RatingAggregate
 {

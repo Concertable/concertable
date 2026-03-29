@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+﻿using Concertable.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class UriService : IUriService
 {

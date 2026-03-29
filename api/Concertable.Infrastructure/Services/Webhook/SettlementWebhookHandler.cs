@@ -1,9 +1,9 @@
-using Application.Interfaces.Concert;
-using Application.Interfaces.Payment;
-using Infrastructure.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
-namespace Infrastructure.Services.Webhook;
+namespace Concertable.Infrastructure.Services.Webhook;
 
 public class SettlementWebhookHandler : ISettlementWebhookStrategy
 {

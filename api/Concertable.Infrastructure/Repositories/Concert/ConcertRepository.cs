@@ -1,13 +1,13 @@
-using Core.Entities;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Mappers;
-using Core.Extensions;
-using Core.Enums;
+using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Mappers;
+using Concertable.Core.Extensions;
+using Concertable.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Concertable.Infrastructure.Data;
 
-namespace Infrastructure.Repositories.Concert;
+namespace Concertable.Infrastructure.Repositories.Concert;
 
 public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConcertRepository
 {

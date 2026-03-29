@@ -1,8 +1,8 @@
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface ILocationSelector<TEntity> where TEntity : class, IHasLocation
 {

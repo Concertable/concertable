@@ -1,10 +1,10 @@
-using Application.Interfaces;
-using Application.Responses;
-using Core.Entities;
-using Core.Interfaces;
-using Core.Parameters;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Responses;
+using Concertable.Core.Entities;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 
-namespace Application.Interfaces.Payment;
+namespace Concertable.Application.Interfaces.Payment;
 
 public interface ITransactionRepository : IRepository<TransactionEntity>
 {

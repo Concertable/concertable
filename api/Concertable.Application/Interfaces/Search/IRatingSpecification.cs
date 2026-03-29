@@ -1,7 +1,7 @@
-using Core.Projections;
-using Core.Entities;
+using Concertable.Core.Projections;
+using Concertable.Core.Entities;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface IRatingSpecification<TEntity>
 {

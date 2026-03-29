@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Core.Enums;
+using Concertable.Application.DTOs;
+using Concertable.Core.Enums;
 using System.Text.Json.Serialization;
 
-namespace Application.Interfaces.Payment;
+namespace Concertable.Application.Interfaces.Payment;
 
 [JsonDerivedType(typeof(TicketTransactionDto), "ticket")]
 [JsonDerivedType(typeof(SettlementTransactionDto), "settlement")]

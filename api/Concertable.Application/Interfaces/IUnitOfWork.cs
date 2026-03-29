@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {

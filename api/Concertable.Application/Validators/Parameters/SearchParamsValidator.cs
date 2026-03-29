@@ -1,7 +1,7 @@
-using Core.Parameters;
+using Concertable.Core.Parameters;
 using FluentValidation;
 
-namespace Application.Validators.Parameters;
+namespace Concertable.Application.Validators.Parameters;
 
 public class SearchParamsValidator : AbstractValidator<SearchParams>
 {

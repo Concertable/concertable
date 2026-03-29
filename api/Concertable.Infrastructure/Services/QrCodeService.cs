@@ -1,8 +1,8 @@
-using Application.Interfaces;
-using Core.Exceptions;
+using Concertable.Application.Interfaces;
+using Concertable.Core.Exceptions;
 using QRCoder;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class QrCodeService : IQrCodeService
 {

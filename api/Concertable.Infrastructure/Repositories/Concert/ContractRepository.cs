@@ -1,11 +1,11 @@
-using Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
-using Core.Enums;
-using Infrastructure.Repositories;
+using Concertable.Core.Enums;
+using Concertable.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories.Concert;
+namespace Concertable.Infrastructure.Repositories.Concert;
 
 public class ContractRepository : Repository<ContractEntity>, IContractRepository
 {

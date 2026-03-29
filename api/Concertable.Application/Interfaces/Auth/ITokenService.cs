@@ -1,6 +1,6 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Application.Interfaces.Auth;
+namespace Concertable.Application.Interfaces.Auth;
 
 public interface ITokenService
 {

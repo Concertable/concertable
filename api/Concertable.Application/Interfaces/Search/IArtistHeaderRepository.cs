@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Application.Responses;
-using Core.Parameters;
+using Concertable.Application.DTOs;
+using Concertable.Application.Responses;
+using Concertable.Core.Parameters;
 
-namespace Application.Interfaces.Search;
+namespace Concertable.Application.Interfaces.Search;
 
 public interface IArtistHeaderRepository
 {

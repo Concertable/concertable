@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Application.Interfaces.Concert;
-using Application.Requests;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Requests;
 using Concertable.Web.IntegrationTests.Infrastructure;
-using Core.Enums;
+using Concertable.Core.Enums;
 
 namespace Concertable.Web.IntegrationTests.Controllers.ConcertOpportunity;
 

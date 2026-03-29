@@ -1,13 +1,13 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Mappers;
-using Application.Requests;
-using Core.Exceptions;
-using Core.Parameters;
-using Application.Responses;
-using Core.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Mappers;
+using Concertable.Application.Requests;
+using Concertable.Core.Exceptions;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
+using Concertable.Core.Interfaces;
 
-namespace Infrastructure.Services;
+namespace Concertable.Infrastructure.Services;
 
 public class ReviewService : IReviewService
 {

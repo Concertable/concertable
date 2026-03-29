@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace Web.Extentions;
+namespace Concertable.Web.Extentions;
 
 public static class ClaimsPrincipalExtensions
 {

@@ -1,7 +1,7 @@
-using Application.DTOs;
+using Concertable.Application.DTOs;
 using FluentValidation;
 
-namespace Application.Validators;
+namespace Concertable.Application.Validators;
 
 public class ConcertOpportunityDtoValidator : AbstractValidator<ConcertOpportunityDto>
 {

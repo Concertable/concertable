@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Application.Requests;
-using Core.Entities;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
+using Concertable.Core.Entities;
 
-namespace Application.Interfaces.Concert;
+namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertOpportunityService
 {

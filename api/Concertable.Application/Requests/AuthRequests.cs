@@ -1,6 +1,6 @@
-using Core.Enums;
+using Concertable.Core.Enums;
 
-namespace Application.Requests;
+namespace Concertable.Application.Requests;
 
 public record LoginRequest
 {

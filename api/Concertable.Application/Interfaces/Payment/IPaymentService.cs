@@ -1,7 +1,7 @@
-using Application.Requests;
-using Application.Responses;
+using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 
-namespace Application.Interfaces.Payment;
+namespace Concertable.Application.Interfaces.Payment;
 
 public interface IPaymentService
 {

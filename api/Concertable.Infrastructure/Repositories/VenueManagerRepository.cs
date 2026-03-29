@@ -1,9 +1,9 @@
-using Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Data;
-using Core.Entities;
+using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories;
+namespace Concertable.Infrastructure.Repositories;
 
 public class VenueManagerRepository : GuidRepository<VenueManagerEntity>, IVenueManagerRepository
 {

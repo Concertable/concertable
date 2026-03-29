@@ -1,8 +1,8 @@
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Responses;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Responses;
 
-namespace Infrastructure.Services.Payment;
+namespace Concertable.Infrastructure.Services.Payment;
 
 public class TicketPaymentProcessor : ITicketPaymentProcessor
 {

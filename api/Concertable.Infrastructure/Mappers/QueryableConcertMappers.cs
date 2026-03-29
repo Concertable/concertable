@@ -1,8 +1,8 @@
-using Application.DTOs;
-using Core.Projections;
-using Core.Entities;
+using Concertable.Application.DTOs;
+using Concertable.Core.Projections;
+using Concertable.Core.Entities;
 
-namespace Infrastructure.Mappers;
+namespace Concertable.Infrastructure.Mappers;
 
 public static class QueryableConcertMappers
 {

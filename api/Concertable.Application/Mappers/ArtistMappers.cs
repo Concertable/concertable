@@ -1,9 +1,9 @@
-using Application.DTOs;
-using Application.Requests;
-using Core.Entities;
-using Core.Exceptions;
+using Concertable.Application.DTOs;
+using Concertable.Application.Requests;
+using Concertable.Core.Entities;
+using Concertable.Core.Exceptions;
 
-namespace Application.Mappers;
+namespace Concertable.Application.Mappers;
 
 public static class ArtistMappers
 {

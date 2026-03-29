@@ -1,10 +1,10 @@
-using Application.DTOs;
-using Core.Parameters;
-using Application.Responses;
-using Application.Requests;
-using Core.Interfaces;
+using Concertable.Application.DTOs;
+using Concertable.Core.Parameters;
+using Concertable.Application.Responses;
+using Concertable.Application.Requests;
+using Concertable.Core.Interfaces;
 
-namespace Application.Interfaces;
+namespace Concertable.Application.Interfaces;
 
 public interface IReviewService
 {

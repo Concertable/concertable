@@ -1,9 +1,9 @@
-using Application.Interfaces.Search;
-using Core.Entities.Interfaces;
-using Core.Interfaces;
-using Core.Parameters;
+using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Entities.Interfaces;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 
-namespace Infrastructure.Specifications;
+namespace Concertable.Infrastructure.Specifications;
 
 public class SearchSpecification<TEntity> : ISearchSpecification<TEntity>
     where TEntity : IEntity, IHasName

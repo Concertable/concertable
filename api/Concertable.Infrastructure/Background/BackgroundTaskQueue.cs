@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+﻿using Concertable.Application.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Background;
+namespace Concertable.Infrastructure.Background;
 
 public class BackgroundTaskQueue : IBackgroundTaskQueue
 {

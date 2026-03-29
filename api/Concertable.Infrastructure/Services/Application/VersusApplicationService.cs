@@ -1,14 +1,14 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Concert;
-using Application.Interfaces.Payment;
-using Application.Requests;
+using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Requests;
 using Concertable.Core.Entities.Contracts;
-using Core.Enums;
-using Core.Exceptions;
-using Infrastructure.Calculators;
+using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
+using Concertable.Infrastructure.Calculators;
 
-namespace Infrastructure.Services.Application;
+namespace Concertable.Infrastructure.Services.Application;
 
 public class VersusApplicationService : IApplicationStrategy
 {

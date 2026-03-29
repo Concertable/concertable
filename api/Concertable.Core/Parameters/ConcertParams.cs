@@ -1,11 +1,11 @@
-using Core.Interfaces;
+using Concertable.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Parameters;
+namespace Concertable.Core.Parameters;
 
 public class ConcertParams : IGeoParams
 {
