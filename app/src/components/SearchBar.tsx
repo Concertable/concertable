@@ -1,6 +1,6 @@
 import { MapPin, Search, CalendarIcon } from "lucide-react";
+import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import type { HeaderType } from "@/types/header";
-import type { LatLng } from "@/types/location";
 import { useSearchParams } from "@/hooks/useSearchParams";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
@@ -10,7 +10,8 @@ import { Separator } from "@/components/ui/separator";
 export interface SearchFilters {
   query?: string;
   headerType: HeaderType;
-  location?: LatLng;
+  lat?: number;
+  lng?: number;
   from?: string;
   to?: string;
 }
@@ -21,17 +22,23 @@ interface Props {
 }
 
 export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Readonly<Props>) {
-  const { query, setQuery, headerType, location, setLocation, from, to, setDates } = useSearchParams(defaultHeaderType);
+  const mapsLoaded = useApiIsLoaded();
+  const { query, setQuery, headerType, lat, lng, setLocation, from, to, setDates } = useSearchParams(defaultHeaderType);
 
   function handleSearch() {
-    onSearch({ query, headerType, location, from, to });
+    onSearch({ query, headerType, lat, lng, from, to });
   }
 
   return (
     <div className="flex items-stretch w-full bg-background rounded-full shadow-md overflow-visible border border-border">
       <div className="flex items-center gap-2 px-4 py-3 min-w-48">
         <MapPin className="text-muted-foreground shrink-0" size={18} />
-        <LocationPicker onSelect={setLocation} />
+        {mapsLoaded && (
+          <LocationPicker
+            onSelect={setLocation}
+            latLng={lat && lng ? { lat, lng } : undefined}
+          />
+        )}
       </div>
 
       <Separator orientation="vertical" />

@@ -1,12 +1,14 @@
+import { useEffect } from "react";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
 import { Input } from "@/components/ui/input";
 import type { LatLng } from "@/types/location";
 
 interface Props {
-  onSelect: (location: LatLng) => void;
+  onSelect: (lat: number, lng: number) => void;
+  latLng?: LatLng;
 }
 
-export function LocationPicker({ onSelect }: Readonly<Props>) {
+export function LocationPicker({ onSelect, latLng }: Readonly<Props>) {
   const {
     ready,
     value,
@@ -20,13 +22,28 @@ export function LocationPicker({ onSelect }: Readonly<Props>) {
     },
   });
 
+  useEffect(() => {
+    if (!latLng) return;
+
+    async function resolveDisplayName() {
+      const results = await getGeocode({ location: latLng });
+      const locality = results.find(r => r.types.includes("locality") || r.types.includes("postal_town"));
+      const display = locality ?? results[0];
+      if (display?.formatted_address) {
+        setValue(display.formatted_address, false);
+      }
+    }
+
+    resolveDisplayName();
+  }, [latLng?.lat, latLng?.lng]);
+
   async function handleSelect(description: string) {
     setValue(description, false);
     clearSuggestions();
 
     const results = await getGeocode({ address: description });
     const { lat, lng } = await getLatLng(results[0]);
-    onSelect({ lat, lng });
+    onSelect(lat, lng);
   }
 
   return (

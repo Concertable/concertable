@@ -5,7 +5,8 @@ export function validateSearchFilters(defaultHeaderType: HeaderType) {
   return (search: Record<string, unknown>): SearchFilters => ({
     query: (search.query as string) ?? undefined,
     headerType: (search.headerType as HeaderType) ?? defaultHeaderType,
-    location: search.location as SearchFilters["location"],
+    lat: (search.lat as number) ?? undefined,
+    lng: (search.lng as number) ?? undefined,
     from: (search.from as string) ?? undefined,
     to: (search.to as string) ?? undefined,
   });
