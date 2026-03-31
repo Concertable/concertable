@@ -8,9 +8,11 @@ namespace Concertable.Application.DTOs;
 public record ConcertOpportunityDto
 {
     public int? Id { get; set; }
+    public int VenueId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
+    public required IContract Contract { get; set; }
 }
 
 public record OpportunityResponse
@@ -21,6 +23,4 @@ public record OpportunityResponse
     public TimeOnly EndTime { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
-
-public record OpportunityWithVenueDto(ConcertOpportunityDto Opportunity, VenueDto Venue);
 

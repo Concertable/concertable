@@ -1,8 +1,11 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Microsoft.EntityFrameworkCore;
+using Concertable.Application.Responses;
+using Concertable.Core.Interfaces;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
 
@@ -15,7 +18,7 @@ public class ConcertOpportunityRepository : Repository<ConcertOpportunityEntity>
         this.timeProvider = timeProvider;
     }
 
-    public async Task<IEnumerable<ConcertOpportunityEntity>> GetActiveByVenueIdAsync(int id)
+    public async Task<IPagination<ConcertOpportunityEntity>> GetActiveByVenueIdAsync(int id, IPageParams pageParams)
     {
         var query = context.ConcertOpportunities
             .Where(o => o.VenueId == id && o.StartDate >= timeProvider.GetUtcNow())
@@ -24,11 +27,12 @@ public class ConcertOpportunityRepository : Repository<ConcertOpportunityEntity>
                     .Where(ca => ca.OpportunityId == o.Id)
                     .Select(ca => ca.Id)
                     .FirstOrDefault()))
+            .Include(o => o.Contract)
             .Include(o => o.OpportunityGenres)
             .ThenInclude(og => og.Genre)
             .OrderBy(o => o.StartDate);
 
-        return await query.ToListAsync();
+        return await query.ToPaginationAsync(pageParams);
     }
 
     public async Task<UserEntity?> GetOwnerByIdAsync(int opportunityId)

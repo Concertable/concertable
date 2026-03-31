@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Concertable.Application.DTOs;
@@ -20,9 +21,9 @@ public class ConcertOpportunityController : ControllerBase
     }
 
     [HttpGet("active/venue/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertOpportunityDto>>> GetActiveByVenueId(int id)
+    public async Task<IActionResult> GetActiveByVenueId(int id, [FromQuery] PageParams pageParams)
     {
-        return Ok(await opportunityService.GetActiveByVenueIdAsync(id));
+        return Ok(await opportunityService.GetActiveByVenueIdAsync(id, pageParams));
     }
 
     [HttpGet("{id:int}")]

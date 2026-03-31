@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import type { ReviewEntityType } from "@/api/reviewApi";
 import { useReviews } from "@/hooks/useReviews";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 
 interface Props {
   type: ReviewEntityType;
@@ -9,8 +10,6 @@ interface Props {
 
 export function ReviewSection({ type, id }: Readonly<Props>) {
   const { reviews, summary, isLoading, params, nextPage, prevPage } = useReviews(type, id);
-
-  const totalPages = reviews ? Math.ceil(reviews.totalCount / params.pageSize) : 0;
 
   return (
     <section className="space-y-4">
@@ -51,25 +50,12 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
         ))}
       </ul>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2 text-sm">
-          <button
-            onClick={prevPage}
-            disabled={params.pageNumber === 1}
-            className="px-3 py-1 rounded border border-border disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <span className="text-muted-foreground">{params.pageNumber} / {totalPages}</span>
-          <button
-            onClick={nextPage}
-            disabled={params.pageNumber === totalPages}
-            className="px-3 py-1 rounded border border-border disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <PaginationControls
+        pageNumber={params.pageNumber}
+        totalPages={reviews?.totalPages ?? 0}
+        onPrev={prevPage}
+        onNext={nextPage}
+      />
     </section>
   );
 }

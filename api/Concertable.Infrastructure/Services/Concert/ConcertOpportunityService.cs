@@ -1,11 +1,13 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Mappers;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
+using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 using Concertable.Core.Exceptions;
+using Concertable.Core.Interfaces;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -17,6 +19,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
     private readonly IContractService contractService;
     private readonly IUnitOfWork unitOfWork;
     private readonly IGenreSyncService genreSyncService;
+    private readonly IConcertOpportunityMapper mapper;
 
     public ConcertOpportunityService(
         IConcertOpportunityRepository opportunityRepository,
@@ -24,7 +27,8 @@ public class ConcertOpportunityService : IConcertOpportunityService
         IVenueService venueService,
         IContractService contractService,
         IUnitOfWork unitOfWork,
-        IGenreSyncService genreSyncService)
+        IGenreSyncService genreSyncService,
+        IConcertOpportunityMapper mapper)
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidator = stripeValidator;
@@ -32,6 +36,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
         this.contractService = contractService;
         this.unitOfWork = unitOfWork;
         this.genreSyncService = genreSyncService;
+        this.mapper = mapper;
     }
 
     public async Task<ConcertOpportunityDto> CreateAsync(ConcertOpportunityRequest request)
@@ -61,7 +66,7 @@ public class ConcertOpportunityService : IConcertOpportunityService
             var saved = await opportunityRepository.GetByIdAsync(opportunity.Id)
                 ?? throw new NotFoundException("Opportunity not found after save");
 
-            return saved.ToDto();
+            return mapper.ToDto(saved);
         }
         catch
         {
@@ -138,20 +143,20 @@ public class ConcertOpportunityService : IConcertOpportunityService
 
         var updated = await opportunityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity not found");
-        return updated.ToDto();
+        return mapper.ToDto(updated);
     }
 
-    public async Task<IEnumerable<ConcertOpportunityDto>> GetActiveByVenueIdAsync(int id)
+    public async Task<IPagination<ConcertOpportunityDto>> GetActiveByVenueIdAsync(int id, IPageParams pageParams)
     {
-        var opportunities = await opportunityRepository.GetActiveByVenueIdAsync(id);
-        return opportunities.ToDtos();
+        var opportunities = await opportunityRepository.GetActiveByVenueIdAsync(id, pageParams);
+        return mapper.ToDtos(opportunities);
     }
 
     public async Task<ConcertOpportunityDto> GetByIdAsync(int id)
     {
         var opportunity = await opportunityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity not found");
-        return opportunity.ToDto();
+        return mapper.ToDto(opportunity);
     }
 
     public async Task<UserEntity> GetOwnerByIdAsync(int id)

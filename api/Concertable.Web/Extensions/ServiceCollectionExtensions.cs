@@ -212,7 +212,9 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IContractMapper, DoorSplitContractMapper>(ContractType.DoorSplit);
         services.AddKeyedSingleton<IContractMapper, VersusContractMapper>(ContractType.Versus);
         services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
-        services.AddScoped<IContractMapperFactory, ContractMapperFactory>();
+        services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
+        services.AddSingleton<IConcertOpportunityMapper, ConcertOpportunityMapper>();
+        services.AddSingleton<IConcertApplicationMapper, ConcertApplicationMapper>();
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();

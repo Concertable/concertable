@@ -3,6 +3,7 @@ import { MapPin } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
+import { OpportunitySection } from "@/components/opportunities/OpportunitySection";
 
 interface Props {
   venue: Venue;
@@ -55,7 +56,7 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
 
         <section className="space-y-2">
           <h2 className="text-xl font-semibold">Opportunities</h2>
-          <p className="text-muted-foreground">No opportunities yet.</p>
+          <OpportunitySection venueId={venue.id} />
         </section>
 
         <div className="border-t border-border" />

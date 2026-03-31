@@ -1,4 +1,3 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
 
@@ -6,20 +5,6 @@ namespace Concertable.Application.Mappers;
 
 public static class ConcertOpportunityMappers
 {
-    public static ConcertOpportunityDto ToDto(this ConcertOpportunityEntity opportunity) => new()
-    {
-        Id = opportunity.Id,
-        StartDate = opportunity.StartDate,
-        EndDate = opportunity.EndDate,
-        Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto())
-    };
-
-    public static OpportunityWithVenueDto ToWithVenueDto(this ConcertOpportunityEntity opportunity) =>
-        new(opportunity.ToDto(), opportunity.Venue.ToDto());
-
-    public static IEnumerable<ConcertOpportunityDto> ToDtos(this IEnumerable<ConcertOpportunityEntity> opportunities) =>
-        opportunities.Select(o => o.ToDto());
-
     public static ConcertOpportunityEntity ToEntity(this ConcertOpportunityRequest request) => new()
     {
         StartDate = request.StartDate,
