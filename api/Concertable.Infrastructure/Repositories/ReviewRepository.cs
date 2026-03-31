@@ -3,11 +3,11 @@ using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
 using Concertable.Application.Responses;
-using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Concertable.Core.Interfaces;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Helpers;
 
 namespace Concertable.Infrastructure.Repositories;
 
@@ -64,7 +64,7 @@ public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
             .Where(predicate)
             .OrderByDescending(r => r.Id);
 
-        return await PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
+        return await query.ToPaginationAsync(pageParams);
     }
 
     public Task<Pagination<ReviewEntity>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>

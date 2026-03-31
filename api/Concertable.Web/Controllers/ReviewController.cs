@@ -1,4 +1,3 @@
-using Concertable.Core.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Core.Parameters;
@@ -48,19 +47,19 @@ public class ReviewController : ControllerBase
     }
 
     [HttpGet("venue/{id}")]
-    public async Task<ActionResult<Pagination<ReviewDto>>> GetByVenueId(int id, [FromQuery] IPageParams pageParams)
+    public async Task<ActionResult<Pagination<ReviewDto>>> GetByVenueId(int id, [FromQuery] PageParams pageParams)
     {
         return Ok(await reviewService.GetByVenueIdAsync(id, pageParams));
     }
 
     [HttpGet("artist/{id}")]
-    public async Task<ActionResult<Pagination<ReviewDto>>> GetByArtistId(int id, [FromQuery] IPageParams pageParams)
+    public async Task<ActionResult<Pagination<ReviewDto>>> GetByArtistId(int id, [FromQuery] PageParams pageParams)
     {
         return Ok(await reviewService.GetByArtistIdAsync(id, pageParams));
     }
 
     [HttpGet("concert/{id}")]
-    public async Task<ActionResult<Pagination<ReviewDto>>> GetByConcertId(int id, [FromQuery] IPageParams pageParams)
+    public async Task<ActionResult<Pagination<ReviewDto>>> GetByConcertId(int id, [FromQuery] PageParams pageParams)
     {
         return Ok(await reviewService.GetByConcertIdAsync(id, pageParams));
     }

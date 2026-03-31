@@ -2,10 +2,10 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Helpers;
 using Concertable.Core.Entities;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
-using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories;
@@ -20,7 +20,7 @@ public class TransactionRepository : Repository<TransactionEntity>, ITransaction
             .Where(t => t.FromUserId == userId || t.ToUserId == userId)
             .OrderByDescending(t => t.CreatedAt);
 
-        return PaginationHelper.CreatePaginatedResponseAsync(query, pageParams);
+        return query.ToPaginationAsync(pageParams);
     }
 
     public Task<TransactionEntity?> GetByPaymentIntentIdAsync(string paymentIntentId) =>

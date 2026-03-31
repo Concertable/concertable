@@ -2,6 +2,7 @@ import type { Venue } from "@/types/venue";
 import { MapPin } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 
 interface Props {
   venue: Venue;
@@ -56,6 +57,10 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
           <h2 className="text-xl font-semibold">Opportunities</h2>
           <p className="text-muted-foreground">No opportunities yet.</p>
         </section>
+
+        <div className="border-t border-border" />
+
+        <ReviewSection type="venue" id={venue.id} />
       </div>
     </div>
   );

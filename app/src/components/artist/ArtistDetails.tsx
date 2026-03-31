@@ -2,6 +2,7 @@ import type { Artist } from "@/types/artist";
 import { MapPin } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 
 interface Props {
   artist: Artist;
@@ -56,6 +57,10 @@ export function ArtistDetails({ artist, onNameChange, onAboutChange }: Readonly<
           <h2 className="text-xl font-semibold">Opportunities</h2>
           <p className="text-muted-foreground">No opportunities yet.</p>
         </section>
+
+        <div className="border-t border-border" />
+
+        <ReviewSection type="artist" id={artist.id} />
       </div>
     </div>
   );

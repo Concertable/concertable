@@ -1,6 +1,7 @@
 import type { Concert } from "@/types/concert";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 
 interface Props {
   concert: Concert;
@@ -41,6 +42,10 @@ export function ConcertDetails({ concert, onNameChange, onAboutChange }: Readonl
           <h2 className="text-xl font-semibold">Venue</h2>
           <p className="text-muted-foreground">{concert.venue.name}</p>
         </section>
+
+        <div className="border-t border-border" />
+
+        <ReviewSection type="concert" id={concert.id} />
       </div>
     </div>
   );
