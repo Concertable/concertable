@@ -24,12 +24,13 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
         <div className="relative z-10 flex items-end justify-between w-full px-8 pb-6">
           <div className="space-y-1">
             <EditableText
-              value={venue.name}
               onChange={onNameChange}
               element="h1"
               placeholder="Venue name"
               className="text-3xl font-bold text-white drop-shadow"
-            />
+            >
+              {venue.name}
+            </EditableText>
             {(venue.town || venue.county) && (
               <p className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
                 <MapPin className="size-4" />
@@ -49,10 +50,11 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
         <section className="space-y-2">
           <h2 className="text-xl font-semibold">About</h2>
           <EditableTextarea
-            value={venue.about}
             onChange={onAboutChange}
             placeholder="Tell artists about your venue..."
-          />
+          >
+            {venue.about}
+          </EditableTextarea>
         </section>
 
         <div className="border-t border-border" />

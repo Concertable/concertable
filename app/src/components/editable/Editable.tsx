@@ -1,11 +1,11 @@
 import { useEditableContext } from "@/providers/EditableProvider";
 
 interface Props {
-    edit: React.ReactNode;
     view: React.ReactNode;
+    edit: React.ReactNode;
 }
 
-export function Editable({ edit, view }: Readonly<Props>) {
+export function Editable({ view, edit }: Readonly<Props>) {
     const editMode = useEditableContext();
     return editMode ? edit : view;
 }

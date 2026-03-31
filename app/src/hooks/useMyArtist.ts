@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyArtistQuery } from "@/hooks/query/useArtist";
+import { useMyArtistQuery } from "@/hooks/query/useArtistQuery";
 import { useArtistStore } from "@/store/useArtistStore";
 import { updateArtist } from "@/api/artistApi";
 

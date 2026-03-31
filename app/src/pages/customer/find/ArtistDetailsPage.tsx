@@ -1,5 +1,5 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { useArtistQuery } from "@/hooks/query/useArtist";
+import { useArtistQuery } from "@/hooks/query/useArtistQuery";
 import { ArtistDetails } from "@/components/artist/ArtistDetails";
 
 const routeApi = getRouteApi("/_customer/find/artist/$id");

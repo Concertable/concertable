@@ -1,9 +1,21 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyVenueQuery } from "@/hooks/query/useVenue";
+import { useMyVenueQuery } from "@/hooks/query/useVenueQuery";
 import { useVenueStore } from "@/store/useVenueStore";
 import { updateVenue } from "@/api/venueApi";
+import type { Venue } from "@/types/venue";
+import type { UseVenueResult } from "@/hooks/useVenue";
 
-export function useMyVenue() {
+interface UseMyVenueResult extends UseVenueResult {
+  draft: Venue | undefined;
+  editMode: boolean;
+  isDirty: boolean;
+  isSaving: boolean;
+  save: () => void;
+  toggleEdit: () => void;
+  resetDraft: () => void;
+}
+
+export function useMyVenue(): UseMyVenueResult {
   const query = useMyVenueQuery();
   const queryClient = useQueryClient();
 
@@ -13,6 +25,7 @@ export function useMyVenue() {
     mutationFn: () => updateVenue(draft!, image),
     onSuccess: (saved) => {
       queryClient.setQueryData(["venue", "my"], saved);
+      resetDraft(saved);
     },
   });
 

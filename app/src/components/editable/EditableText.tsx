@@ -1,36 +1,37 @@
-import { Input } from "@/components/ui/input";
 import type { TextElement } from "@/types/ui";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Editable } from "./Editable";
+import { Input } from "../ui/input";
 
 interface Props {
-  value: string;
+  children?: string;
   onChange?: (value: string) => void;
-  editMode?: boolean;
   className?: string;
   element: TextElement;
   placeholder?: string;
 }
 
 export function EditableText({
-  value,
+  children,
   onChange,
   className,
   element,
   placeholder,
 }: Readonly<Props>) {
   const Tag = element;
+  const debouncedOnChange = useDebounce(onChange, 300);
 
   return (
     <Editable
+      view={<Tag className={className}>{children}</Tag>}
       edit={
         <Input
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          defaultValue={children}
+          onChange={(e) => debouncedOnChange?.(e.target.value)}
           className={className}
           placeholder={placeholder}
         />
       }
-      view={<Tag className={className}>{value}</Tag>}
     />
   );
 }
