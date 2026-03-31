@@ -1,6 +1,6 @@
 import type { Venue } from "@/types/venue";
-import { MapPin, Star } from "lucide-react";
-import { EditableText } from "@/components/editable/EditableText";
+import { MapPin } from "lucide-react";
+import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 
 interface Props {
@@ -12,38 +12,14 @@ interface Props {
 export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Props>) {
   return (
     <div>
-      {/* Hero */}
-      <div className="relative bg-muted h-72 flex items-end">
-        {venue.imageUrl && (
-          <img
-            src={venue.imageUrl}
-            alt={venue.name}
-            className="absolute inset-0 w-full h-full object-cover opacity-60"
-          />
-        )}
-        <div className="relative z-10 flex items-end justify-between w-full px-8 pb-6">
-          <div className="space-y-1">
-            <EditableText
-              onChange={onNameChange}
-              element="h1"
-              placeholder="Venue name"
-              className="text-3xl font-bold text-white drop-shadow"
-            >
-              {venue.name}
-            </EditableText>
-            {(venue.town || venue.county) && (
-              <p className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
-                <MapPin className="size-4" />
-                {[venue.town, venue.county].filter(Boolean).join(", ")}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
-            <Star className="size-4 fill-yellow-400 text-yellow-400" />
-            <span>No reviews yet</span>
-          </div>
-        </div>
-      </div>
+      <Hero
+        imageUrl={venue.imageUrl}
+        name={venue.name}
+        town={venue.town}
+        county={venue.county}
+        namePlaceholder="Venue name"
+        onNameChange={onNameChange}
+      />
 
       {/* Sections */}
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">

@@ -1,6 +1,6 @@
 import type { Artist } from "@/types/artist";
-import { MapPin, Star } from "lucide-react";
-import { EditableText } from "@/components/editable/EditableText";
+import { MapPin } from "lucide-react";
+import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 
 interface Props {
@@ -12,38 +12,14 @@ interface Props {
 export function ArtistDetails({ artist, onNameChange, onAboutChange }: Readonly<Props>) {
   return (
     <div>
-      {/* Hero */}
-      <div className="relative bg-muted h-72 flex items-end">
-        {artist.imageUrl && (
-          <img
-            src={artist.imageUrl}
-            alt={artist.name}
-            className="absolute inset-0 w-full h-full object-cover opacity-60"
-          />
-        )}
-        <div className="relative z-10 flex items-end justify-between w-full px-8 pb-6">
-          <div className="space-y-1">
-            <EditableText
-              onChange={onNameChange}
-              element="h1"
-              placeholder="Artist name"
-              className="text-3xl font-bold text-white drop-shadow"
-            >
-              {artist.name}
-            </EditableText>
-            {(artist.town || artist.county) && (
-              <p className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
-                <MapPin className="size-4" />
-                {[artist.town, artist.county].filter(Boolean).join(", ")}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
-            <Star className="size-4 fill-yellow-400 text-yellow-400" />
-            <span>No reviews yet</span>
-          </div>
-        </div>
-      </div>
+      <Hero
+        imageUrl={artist.imageUrl}
+        name={artist.name}
+        town={artist.town}
+        county={artist.county}
+        namePlaceholder="Artist name"
+        onNameChange={onNameChange}
+      />
 
       {/* Sections */}
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">
