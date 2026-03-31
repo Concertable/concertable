@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { getArtist, getMyArtist } from "@/api/artistApi";
+import * as artistApi from "@/api/artistApi";
 
 export function useArtistQuery(id: number) {
   return useQuery({
     queryKey: ["artist", id],
-    queryFn: () => getArtist(id),
+    queryFn: () => artistApi.getArtist(id),
   });
 }
 
 export function useMyArtistQuery() {
   return useQuery({
     queryKey: ["artist", "my"],
-    queryFn: getMyArtist,
+    queryFn: artistApi.getMyArtist,
   });
 }
