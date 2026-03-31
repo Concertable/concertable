@@ -4,8 +4,8 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
-using Concertable.Core.Exceptions;
 using Concertable.Core.Enums;
+using Concertable.Core.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -114,8 +114,7 @@ public class ConcertApplicationService : IConcertApplicationService
             fromUserId: user.Id,
             toUserId: opportunityOwner.Id,
             content: $"{user.Email} has applied to your concert opportunity",
-            action: "application",
-            actionId: opportunityId);
+            action: MessageAction.ApplicationReceived);
 
         await emailService.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{user.Email} has applied to your concert opportunity");
 
@@ -139,11 +138,10 @@ public class ConcertApplicationService : IConcertApplicationService
             ?? throw new NotFoundException("Concert application not found");
 
         await messageService.SendAndSaveAsync(
-            venue.UserId,
-            artist.UserId,
-            "application",
-            applicationId,
-            "Your application has been accepted!");
+            fromUserId: venue.UserId,
+            toUserId: artist.UserId,
+            content: "Your application has been accepted!",
+            action: MessageAction.ApplicationAccepted);
 
         await emailService.SendEmailAsync(artist.User.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
     }

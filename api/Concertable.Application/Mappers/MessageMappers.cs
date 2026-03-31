@@ -10,9 +10,7 @@ public static class MessageMappers
         Id = message.Id,
         Content = message.Content,
         FromUser = message.FromUser.ToDto(),
-        Action = !string.IsNullOrEmpty(message.Action) && message.ActionId.HasValue
-            ? new ActionDto(message.Action, message.ActionId.Value)
-            : null
+        Action = message.Action
     };
 
     public static IEnumerable<MessageDto> ToDtos(this IEnumerable<MessageEntity> messages) =>

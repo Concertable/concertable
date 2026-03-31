@@ -16,8 +16,6 @@ public record UserDto
 
 public record GenreDto(int Id, string Name);
 
-public record ActionDto(string Name, int Id);
-
 public record LocationDto(string County, string Town);
 
 public record AttachmentDto

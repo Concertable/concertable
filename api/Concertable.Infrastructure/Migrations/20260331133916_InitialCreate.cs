@@ -86,8 +86,7 @@ namespace Concertable.Infrastructure.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FromUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ToUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ActionId = table.Column<int>(type: "int", nullable: true),
+                    Action = table.Column<int>(type: "int", nullable: true),
                     SentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Read = table.Column<bool>(type: "bit", nullable: false)
                 },

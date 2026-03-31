@@ -1,14 +1,14 @@
 using Concertable.Application.Interfaces;
-using Microsoft.AspNetCore.SignalR;
 using Concertable.Web.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Concertable.Web.Services;
 
-public class SignalRNotificationService : IConcertNotificationService, ITicketNotificationService
+public class SignalRConcertNotificationService : IConcertNotificationService
 {
     private readonly IHubContext<NotificationHub> hubContext;
 
-    public SignalRNotificationService(IHubContext<NotificationHub> hubContext)
+    public SignalRConcertNotificationService(IHubContext<NotificationHub> hubContext)
     {
         this.hubContext = hubContext;
     }
@@ -21,10 +21,5 @@ public class SignalRNotificationService : IConcertNotificationService, ITicketNo
     public async Task ConcertPostedAsync(string userId, object payload)
     {
         await hubContext.Clients.Group(userId).SendAsync("ConcertPosted", payload);
-    }
-
-    public async Task TicketPurchasedAsync(string userId, object payload)
-    {
-        await hubContext.Clients.Group(userId).SendAsync("TicketPurchased", payload);
     }
 }

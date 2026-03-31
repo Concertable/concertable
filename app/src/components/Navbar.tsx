@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
+import { Mailbox } from "@/components/Mailbox";
+import { useRole } from "@/hooks/useRole";
 
 export interface NavLink {
   label: string;
@@ -12,6 +14,8 @@ interface NavbarProps {
 }
 
 export function Navbar({ links }: Readonly<NavbarProps>) {
+  const role = useRole();
+
   return (
     <nav className="flex items-center justify-between border-b border-border px-6 py-3">
       <div className="flex items-center gap-8">
@@ -38,6 +42,7 @@ export function Navbar({ links }: Readonly<NavbarProps>) {
       </div>
 
       <div className="flex items-center gap-2">
+        {role && <Mailbox />}
         <ThemeToggle />
         <UserMenu />
       </div>

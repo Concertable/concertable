@@ -1,30 +1,34 @@
-using Concertable.Core.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
-using Concertable.Core.Entities;
-using Concertable.Core.Parameters;
 using Concertable.Application.Responses;
+using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 
 namespace Concertable.Infrastructure.Services;
 
 public class MessageService : IMessageService
 {
     private readonly IMessageRepository messageRepository;
+    private readonly IMessageNotificationService notificationService;
     private readonly ICurrentUser currentUser;
     private readonly TimeProvider timeProvider;
 
     public MessageService(
         IMessageRepository messageRepository,
+        IMessageNotificationService notificationService,
         ICurrentUser currentUser,
         TimeProvider timeProvider)
     {
         this.messageRepository = messageRepository;
+        this.notificationService = notificationService;
         this.currentUser = currentUser;
         this.timeProvider = timeProvider;
     }
 
-    public async Task SendAsync(Guid fromUserId, Guid toUserId, string action, int actionId, string content)
+    public async Task SendAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null)
     {
         var message = new MessageEntity
         {
@@ -32,7 +36,6 @@ public class MessageService : IMessageService
             FromUserId = fromUserId,
             ToUserId = toUserId,
             Action = action,
-            ActionId = actionId,
             SentDate = timeProvider.GetUtcNow().DateTime,
             Read = false
         };
@@ -40,7 +43,7 @@ public class MessageService : IMessageService
         await messageRepository.AddAsync(message);
     }
 
-    public async Task SendAndSaveAsync(Guid fromUserId, Guid toUserId, string action, int actionId, string content)
+    public async Task SendAndSaveAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null)
     {
         var message = new MessageEntity
         {
@@ -48,13 +51,13 @@ public class MessageService : IMessageService
             FromUserId = fromUserId,
             ToUserId = toUserId,
             Action = action,
-            ActionId = actionId,
             SentDate = timeProvider.GetUtcNow().DateTime,
             Read = false
         };
 
         await messageRepository.AddAsync(message);
         await messageRepository.SaveChangesAsync();
+        await notificationService.MessageReceivedAsync(toUserId.ToString(), message.ToDto());
     }
 
     public async Task<Pagination<MessageDto>> GetForUserAsync(IPageParams pageParams)
