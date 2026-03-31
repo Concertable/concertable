@@ -1,5 +1,5 @@
 import { MailIcon } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useMailbox } from "@/hooks/useMailbox";
@@ -8,8 +8,8 @@ export function Mailbox() {
   const { open, setOpen, unreadCount, messages, isLoading, isError, params, nextPage, prevPage } = useMailbox();
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <MailIcon />
           {unreadCount > 0 && (
@@ -18,21 +18,21 @@ export function Mailbox() {
             </span>
           )}
         </Button>
-      </SheetTrigger>
+      </PopoverTrigger>
 
-      <SheetContent className="flex flex-col">
-        <SheetHeader>
-          <SheetTitle>Inbox</SheetTitle>
-        </SheetHeader>
+      <PopoverContent align="end" className="w-80 p-0">
+        <div className="border-b border-border px-3 py-2">
+          <p className="font-medium text-sm">Inbox</p>
+        </div>
 
-        <div className="flex-1 overflow-y-auto mt-4 space-y-2">
-          {isLoading && <p className="text-sm text-muted-foreground">Loading messages...</p>}
-          {isError && <p className="text-sm text-destructive">Failed to load messages.</p>}
+        <div className="max-h-96 overflow-y-auto divide-y divide-border">
+          {isLoading && <p className="text-sm text-muted-foreground p-3">Loading messages...</p>}
+          {isError && <p className="text-sm text-destructive p-3">Failed to load messages.</p>}
           {!isLoading && !messages?.data.length && (
-            <p className="text-sm text-muted-foreground">No messages yet.</p>
+            <p className="text-sm text-muted-foreground p-3">No messages yet.</p>
           )}
           {messages?.data.map((message) => (
-            <div key={message.id} className="rounded-lg border border-border p-3 space-y-1">
+            <div key={message.id} className="px-3 py-2.5 space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs text-muted-foreground">{message.fromUser.email}</span>
                 {message.action && (
@@ -46,13 +46,17 @@ export function Mailbox() {
           ))}
         </div>
 
-        <PaginationControls
-          pageNumber={params.pageNumber}
-          totalPages={messages?.totalPages ?? 0}
-          onPrev={prevPage}
-          onNext={nextPage}
-        />
-      </SheetContent>
-    </Sheet>
+        {(messages?.totalPages ?? 0) > 1 && (
+          <div className="border-t border-border px-3 py-2">
+            <PaginationControls
+              pageNumber={params.pageNumber}
+              totalPages={messages?.totalPages ?? 0}
+              onPrev={prevPage}
+              onNext={nextPage}
+            />
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
