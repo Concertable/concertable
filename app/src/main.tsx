@@ -8,7 +8,13 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { useAuthStore } from "./store/useAuthStore";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+    },
+  },
+});
 
 const router = createRouter({ routeTree });
 
