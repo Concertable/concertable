@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { MapPin, Search, CalendarIcon } from "lucide-react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import type { HeaderType } from "@/types/header";
-import { useSearchParams } from "@/hooks/useSearchParams";
+import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,24 @@ interface Props {
 
 export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Readonly<Props>) {
   const mapsLoaded = useApiIsLoaded();
-  const { query, setQuery, headerType, lat, lng, setLocation, from, to, setDates } = useSearchParams(defaultHeaderType);
+  const storeFilters = useSearchFiltersStore((s) => s.filters);
+
+  const [query, setQuery] = useState(storeFilters.query);
+  const [lat, setLat] = useState(storeFilters.lat);
+  const [lng, setLng] = useState(storeFilters.lng);
+  const [from, setFrom] = useState(storeFilters.from);
+  const [to, setTo] = useState(storeFilters.to);
+  const headerType: HeaderType = storeFilters.headerType ?? defaultHeaderType;
+
+  function setLocation(newLat: number, newLng: number) {
+    setLat(newLat);
+    setLng(newLng);
+  }
+
+  function setDates(newFrom: string | undefined, newTo: string | undefined) {
+    setFrom(newFrom);
+    setTo(newTo);
+  }
 
   function handleSearch() {
     onSearch({ query, headerType, lat, lng, from, to });

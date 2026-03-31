@@ -1,14 +1,22 @@
-import { useNavigate } from "@tanstack/react-router";
-import { Route } from "@/routes/_customer/find/index";
+import { useEffect } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import type { SearchFilters } from "@/components/SearchBar";
+import type { HeaderType } from "@/types/header";
 
-export function useSearchFilters() {
-  const filters = Route.useSearch();
+export function useSearchFilters(defaultHeaderType: HeaderType) {
+  const { filters, setFilters } = useSearchFiltersStore();
   const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as Partial<SearchFilters>;
 
-  function setFilters(filters: SearchFilters) {
-    navigate({ to: "/find", search: filters });
+  useEffect(() => {
+    setFilters({ headerType: defaultHeaderType, ...search });
+  }, []);
+
+  function updateFilters(next: SearchFilters) {
+    setFilters(next);
+    navigate({ to: ".", search: next });
   }
 
-  return { filters, setFilters };
+  return { filters, updateFilters };
 }
