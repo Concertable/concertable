@@ -7,6 +7,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import type { NavLink } from "@/components/Navbar";
 import type { UserRole } from "@/types/auth";
 import { useNavSection } from "@/hooks/useNavSection";
+import { useSignalR } from "@/hooks/useSignalR";
 
 const navLinks: Record<UserRole, NavLink[]> = {
   Customer: [
@@ -30,6 +31,7 @@ const navLinks: Record<UserRole, NavLink[]> = {
 const authRoutes = ["/login", "/register"];
 
 function RootLayout() {
+  useSignalR();
   const section = useNavSection();
   const links = navLinks[section];
   const pathname = useRouterState({ select: (s) => s.location.pathname });
