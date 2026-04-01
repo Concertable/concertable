@@ -2,7 +2,6 @@ import { MapPin, Search, CalendarIcon } from "lucide-react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
-import type { SearchFilters } from "@/schemas/searchSchema";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";

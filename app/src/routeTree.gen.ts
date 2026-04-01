@@ -27,6 +27,7 @@ import { Route as ArtistMyIndexRouteImport } from './routes/artist/my/index'
 import { Route as ArtistFindIndexRouteImport } from './routes/artist/find/index'
 import { Route as CustomerProfileIndexRouteImport } from './routes/_customer/profile/index'
 import { Route as CustomerFindIndexRouteImport } from './routes/_customer/find/index'
+import { Route as VenueAcceptApplicationIdRouteImport } from './routes/venue/accept/$applicationId'
 import { Route as CustomerProfilePaymentRouteImport } from './routes/_customer/profile/payment'
 import { Route as CustomerProfileMyRouteImport } from './routes/_customer/profile/my'
 import { Route as CustomerProfileTicketsIndexRouteImport } from './routes/_customer/profile/tickets/index'
@@ -134,6 +135,12 @@ const CustomerFindIndexRoute = CustomerFindIndexRouteImport.update({
   path: '/find/',
   getParentRoute: () => CustomerRouteRoute,
 } as any)
+const VenueAcceptApplicationIdRoute =
+  VenueAcceptApplicationIdRouteImport.update({
+    id: '/accept/$applicationId',
+    path: '/accept/$applicationId',
+    getParentRoute: () => VenueRouteRoute,
+  } as any)
 const CustomerProfilePaymentRoute = CustomerProfilePaymentRouteImport.update({
   id: '/profile/payment',
   path: '/profile/payment',
@@ -243,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/venue/': typeof VenueIndexRoute
   '/profile/my': typeof CustomerProfileMyRoute
   '/profile/payment': typeof CustomerProfilePaymentRoute
+  '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/find/': typeof CustomerFindIndexRoute
   '/profile/': typeof CustomerProfileIndexRoute
   '/artist/find/': typeof ArtistFindIndexRoute
@@ -277,6 +285,7 @@ export interface FileRoutesByTo {
   '/venue': typeof VenueIndexRoute
   '/profile/my': typeof CustomerProfileMyRoute
   '/profile/payment': typeof CustomerProfilePaymentRoute
+  '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/find': typeof CustomerFindIndexRoute
   '/profile': typeof CustomerProfileIndexRoute
   '/artist/find': typeof ArtistFindIndexRoute
@@ -315,6 +324,7 @@ export interface FileRoutesById {
   '/venue/': typeof VenueIndexRoute
   '/_customer/profile/my': typeof CustomerProfileMyRoute
   '/_customer/profile/payment': typeof CustomerProfilePaymentRoute
+  '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/_customer/find/': typeof CustomerFindIndexRoute
   '/_customer/profile/': typeof CustomerProfileIndexRoute
   '/artist/find/': typeof ArtistFindIndexRoute
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/venue/'
     | '/profile/my'
     | '/profile/payment'
+    | '/venue/accept/$applicationId'
     | '/find/'
     | '/profile/'
     | '/artist/find/'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/venue'
     | '/profile/my'
     | '/profile/payment'
+    | '/venue/accept/$applicationId'
     | '/find'
     | '/profile'
     | '/artist/find'
@@ -424,6 +436,7 @@ export interface FileRouteTypes {
     | '/venue/'
     | '/_customer/profile/my'
     | '/_customer/profile/payment'
+    | '/venue/accept/$applicationId'
     | '/_customer/find/'
     | '/_customer/profile/'
     | '/artist/find/'
@@ -584,6 +597,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/find/'
       preLoaderRoute: typeof CustomerFindIndexRouteImport
       parentRoute: typeof CustomerRouteRoute
+    }
+    '/venue/accept/$applicationId': {
+      id: '/venue/accept/$applicationId'
+      path: '/accept/$applicationId'
+      fullPath: '/venue/accept/$applicationId'
+      preLoaderRoute: typeof VenueAcceptApplicationIdRouteImport
+      parentRoute: typeof VenueRouteRoute
     }
     '/_customer/profile/payment': {
       id: '/_customer/profile/payment'
@@ -772,6 +792,7 @@ const ArtistRouteRouteWithChildren = ArtistRouteRoute._addFileChildren(
 interface VenueRouteRouteChildren {
   VenueCreateRoute: typeof VenueCreateRoute
   VenueIndexRoute: typeof VenueIndexRoute
+  VenueAcceptApplicationIdRoute: typeof VenueAcceptApplicationIdRoute
   VenueFindIndexRoute: typeof VenueFindIndexRoute
   VenueMyIndexRoute: typeof VenueMyIndexRoute
   VenueFindArtistIdRoute: typeof VenueFindArtistIdRoute
@@ -782,6 +803,7 @@ interface VenueRouteRouteChildren {
 const VenueRouteRouteChildren: VenueRouteRouteChildren = {
   VenueCreateRoute: VenueCreateRoute,
   VenueIndexRoute: VenueIndexRoute,
+  VenueAcceptApplicationIdRoute: VenueAcceptApplicationIdRoute,
   VenueFindIndexRoute: VenueFindIndexRoute,
   VenueMyIndexRoute: VenueMyIndexRoute,
   VenueFindArtistIdRoute: VenueFindArtistIdRoute,
