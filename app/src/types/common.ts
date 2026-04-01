@@ -1,3 +1,8 @@
+export interface Genre {
+  id: number;
+  name: string;
+}
+
 export interface Pagination<T> {
   data: T[];
   totalCount: number;

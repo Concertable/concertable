@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { stringifySearch, parseSearch } from "@/lib/searchSerializer";
 import { APIProvider as MapsProvider } from "@vis.gl/react-google-maps";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
@@ -8,15 +9,9 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { useAuthStore } from "./store/useAuthStore";
 import "./index.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, stringifySearch, parseSearch, defaultStructuralSharing: true });
 
 declare module "@tanstack/react-router" {
   interface Register {

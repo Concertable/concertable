@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
-import type { SearchFilters } from "@/components/SearchBar";
 import type { Header, HeaderType } from "@/types/header";
+import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useHeaderQuery } from "@/hooks/query/useHeaderQuery";
 import { ArtistHeaderCard } from "@/components/headers/ArtistHeaderCard";
 import { VenueHeaderCard } from "@/components/headers/VenueHeaderCard";
@@ -12,11 +12,8 @@ const cardRegistry = {
   concert: ConcertHeaderCard,
 } as Record<HeaderType, ComponentType<{ data: Header }>>;
 
-interface Props {
-  filters: SearchFilters;
-}
-
-export function SearchResults({ filters }: Readonly<Props>) {
+export function SearchResults() {
+  const { filters } = useSearchFilters();
   const { data, isLoading, isError } = useHeaderQuery(filters);
 
   if (isLoading) return <p className="text-muted-foreground text-sm">Loading...</p>;

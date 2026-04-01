@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { MapPin, Search, CalendarIcon } from "lucide-react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import type { HeaderType } from "@/types/header";
@@ -15,36 +14,32 @@ export interface SearchFilters {
   lng?: number;
   from?: string;
   to?: string;
+  genreIds?: number[];
+  radius?: number;
+  orderBy?: string;
+  sortOrder?: "asc" | "desc";
+  showHistory?: boolean;
+  showSold?: boolean;
 }
 
 interface Props {
   onSearch: (filters: SearchFilters) => void;
-  defaultHeaderType?: HeaderType;
 }
 
-export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Readonly<Props>) {
+export function SearchBar({ onSearch }: Readonly<Props>) {
   const mapsLoaded = useApiIsLoaded();
-  const storeFilters = useSearchFiltersStore((s) => s.filters);
-
-  const [query, setQuery] = useState(storeFilters.query);
-  const [lat, setLat] = useState(storeFilters.lat);
-  const [lng, setLng] = useState(storeFilters.lng);
-  const [from, setFrom] = useState(storeFilters.from);
-  const [to, setTo] = useState(storeFilters.to);
-  const headerType: HeaderType = storeFilters.headerType ?? defaultHeaderType;
+  const { filters, setFilters } = useSearchFiltersStore();
 
   function setLocation(newLat: number, newLng: number) {
-    setLat(newLat);
-    setLng(newLng);
+    setFilters({ ...filters, lat: newLat, lng: newLng });
   }
 
   function setDates(newFrom: string | undefined, newTo: string | undefined) {
-    setFrom(newFrom);
-    setTo(newTo);
+    setFilters({ ...filters, from: newFrom, to: newTo });
   }
 
   function handleSearch() {
-    onSearch({ query, headerType, lat, lng, from, to });
+    onSearch(useSearchFiltersStore.getState().filters);
   }
 
   return (
@@ -54,7 +49,7 @@ export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Readonly<
         {mapsLoaded && (
           <LocationPicker
             onSelect={setLocation}
-            latLng={lat && lng ? { lat, lng } : undefined}
+            latLng={filters.lat && filters.lng ? { lat: filters.lat, lng: filters.lng } : undefined}
           />
         )}
       </div>
@@ -62,8 +57,8 @@ export function SearchBar({ onSearch, defaultHeaderType = "concert" }: Readonly<
       <Separator orientation="vertical" />
 
       <input
-        value={query ?? ""}
-        onChange={(e) => setQuery(e.target.value)}
+        value={filters.query ?? ""}
+        onChange={(e) => setFilters({ ...filters, query: e.target.value })}
         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         placeholder="Search"
         className="flex-1 px-4 py-3 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground"

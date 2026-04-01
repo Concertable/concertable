@@ -1,21 +1,18 @@
-import { useEffect } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
+import { useMountEffect } from "@/hooks/useMountEffect";
 import type { SearchFilters } from "@/components/SearchBar";
-import type { HeaderType } from "@/types/header";
 
-export function useSearchFilters(defaultHeaderType: HeaderType) {
-  const { filters, setFilters } = useSearchFiltersStore();
+export function useSearchFilters() {
+  const { setFilters } = useSearchFiltersStore();
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as Partial<SearchFilters>;
+  const filters = useSearch({ strict: false }) as SearchFilters;
 
-  useEffect(() => {
-    setFilters({ headerType: defaultHeaderType, ...search });
-  }, []);
+  useMountEffect(() => setFilters(filters));
 
   function updateFilters(next: SearchFilters) {
     setFilters(next);
-    navigate({ to: ".", search: next });
+    navigate({ search: next });
   }
 
   return { filters, updateFilters };

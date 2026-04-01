@@ -1,14 +1,17 @@
 import axios, { AxiosError } from "axios";
+import qs from "qs";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
+  paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "comma", encode: false, skipNulls: true }),
 });
 
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  console.log("[axios] request:", config.url, config.params);
   return config;
 });
 
