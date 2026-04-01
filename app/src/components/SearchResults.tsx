@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { Header, HeaderType } from "@/types/header";
-import { useSearchFilters } from "@/hooks/useSearchFilters";
+import type { SearchFilters } from "@/components/SearchBar";
+import { useSearch } from "@tanstack/react-router";
 import { useHeaderQuery } from "@/hooks/query/useHeaderQuery";
 import { ArtistHeaderCard } from "@/components/headers/ArtistHeaderCard";
 import { VenueHeaderCard } from "@/components/headers/VenueHeaderCard";
@@ -13,7 +14,7 @@ const cardRegistry = {
 } as Record<HeaderType, ComponentType<{ data: Header }>>;
 
 export function SearchResults() {
-  const { filters } = useSearchFilters();
+  const filters = useSearch({ strict: false }) as SearchFilters;
   const { data, isLoading, isError } = useHeaderQuery(filters);
 
   if (isLoading) return <p className="text-muted-foreground text-sm">Loading...</p>;

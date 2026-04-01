@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
+import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useGenresQuery } from "@/hooks/query/useGenreQuery";
 import type { SearchFilters } from "@/components/SearchBar";
 
@@ -14,12 +15,9 @@ const ORDER_BY_OPTIONS = [
   { value: "distance", label: "Distance" },
 ];
 
-interface FilterSliderProps {
-  onApply: (filters: SearchFilters) => void;
-}
-
-export function FilterSlider({ onApply }: Readonly<FilterSliderProps>) {
+export function FilterSlider() {
   const { filters, setFilters } = useSearchFiltersStore();
+  const { updateFilters } = useSearchFilters();
   const { data: genres } = useGenresQuery();
   const [pendingGenre, setPendingGenre] = useState("");
 
@@ -36,7 +34,7 @@ export function FilterSlider({ onApply }: Readonly<FilterSliderProps>) {
   }
 
   function apply() {
-    onApply(filters);
+    updateFilters(filters);
   }
 
   const selectedGenres = genres?.filter((g) => filters.genreIds?.includes(g.id)) ?? [];

@@ -2,6 +2,7 @@ import { MapPin, Search, CalendarIcon } from "lucide-react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import type { HeaderType } from "@/types/header";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
+import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
@@ -22,13 +23,10 @@ export interface SearchFilters {
   showSold?: boolean;
 }
 
-interface Props {
-  onSearch: (filters: SearchFilters) => void;
-}
-
-export function SearchBar({ onSearch }: Readonly<Props>) {
+export function SearchBar() {
   const mapsLoaded = useApiIsLoaded();
   const { filters, setFilters } = useSearchFiltersStore();
+  const { updateFilters } = useSearchFilters();
 
   function setLocation(newLat: number, newLng: number) {
     setFilters({ ...filters, lat: newLat, lng: newLng });
@@ -39,7 +37,7 @@ export function SearchBar({ onSearch }: Readonly<Props>) {
   }
 
   function handleSearch() {
-    onSearch(useSearchFiltersStore.getState().filters);
+    updateFilters(useSearchFiltersStore.getState().filters);
   }
 
   return (

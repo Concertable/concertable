@@ -9,7 +9,13 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { useAuthStore } from "./store/useAuthStore";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000 * 5,
+    },
+  },
+});
 
 const router = createRouter({ routeTree, stringifySearch, parseSearch, defaultStructuralSharing: true });
 
