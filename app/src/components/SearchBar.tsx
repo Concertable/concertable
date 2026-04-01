@@ -1,27 +1,13 @@
 import { MapPin, Search, CalendarIcon } from "lucide-react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
-import type { HeaderType } from "@/types/header";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
+import type { SearchFilters } from "@/schemas/searchSchema";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-export interface SearchFilters {
-  query?: string;
-  headerType: HeaderType;
-  lat?: number;
-  lng?: number;
-  from?: string;
-  to?: string;
-  genreIds?: number[];
-  radius?: number;
-  orderBy?: string;
-  sortOrder?: "asc" | "desc";
-  showHistory?: boolean;
-  showSold?: boolean;
-}
 
 export function SearchBar() {
   const mapsLoaded = useApiIsLoaded();

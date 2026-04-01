@@ -1,7 +1,7 @@
 import { useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import { useMountEffect } from "@/hooks/useMountEffect";
-import type { SearchFilters } from "@/components/SearchBar";
+import type { SearchFilters } from "@/schemas/searchSchema";
 
 export function useSearchFilters() {
   const { setFilters } = useSearchFiltersStore();

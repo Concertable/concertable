@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useGenresQuery } from "@/hooks/query/useGenreQuery";
-import type { SearchFilters } from "@/components/SearchBar";
+import type { SearchFilters } from "@/schemas/searchSchema";
 
 const ORDER_BY_OPTIONS = [
   { value: "name", label: "Name" },

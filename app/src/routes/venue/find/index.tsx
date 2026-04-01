@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import FindArtistPage from "@/pages/venue/find/FindArtistPage";
-import { searchSchema } from "@/lib/searchParams";
+import { SearchSchema } from "@/schemas/searchSchema";
 
 export const Route = createFileRoute("/venue/find/")({
   component: FindArtistPage,
-  validateSearch: searchSchema("artist"),
+  validateSearch: SearchSchema("artist"),
 });

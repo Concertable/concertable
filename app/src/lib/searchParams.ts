@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { HeaderType } from "@/types/header";
+import { z } from "zod";
 
 export const searchSchema = (defaultHeaderType: HeaderType = "concert") => z.object({
   headerType: z.enum(["concert", "artist", "venue"]).default(defaultHeaderType),

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SearchFilters } from "@/components/SearchBar";
+import type { SearchFilters } from "@/schemas/searchSchema";
 
 interface SearchFiltersState {
   filters: SearchFilters;
