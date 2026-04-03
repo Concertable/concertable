@@ -147,6 +147,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IConcertNotificationService, SignalRConcertNotificationService>();
+        services.AddScoped<IApplicationNotificationService, SignalRApplicationNotificationService>();
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
         services.AddScoped<IVenueService, VenueService>();

@@ -27,6 +27,7 @@ public class FlatFeeApplicationServiceCompleteTests
             new Mock<IPaymentService>().Object,
             new Mock<IConcertService>().Object,
             new Mock<IConcertNotificationService>().Object,
+            new Mock<IApplicationNotificationService>().Object,
             new Mock<ITransactionService>().Object,
             TimeProvider.System);
     }

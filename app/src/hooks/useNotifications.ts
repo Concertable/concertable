@@ -1,44 +1,70 @@
 import { useEffect } from "react";
+import { useRouter } from "@tanstack/react-router";
 import { notificationConnection } from "@/lib/signalr";
-import { useRole } from "@/hooks/useRole";
 import type {
   TicketPurchasedPayload,
   MessageReceivedPayload,
   ConcertDraftCreatedPayload,
   ConcertPostedPayload,
+  ApplicationAcceptedPayload,
 } from "@/types/notification";
 
-export function useNotifications() {
-  const role = useRole();
+export function useVenueNotifications() {
+  const router = useRouter();
 
   useEffect(() => {
-    if (!role) return;
+    console.log("[SignalR] useVenueNotifications mounted, connection state:", notificationConnection.state);
 
     notificationConnection.on("MessageReceived", (payload: MessageReceivedPayload) => {
       console.log("[SignalR] MessageReceived:", payload);
     });
 
-    if (role === "Customer") {
-      notificationConnection.on("TicketPurchased", (payload: TicketPurchasedPayload) => {
-        console.log("[SignalR] TicketPurchased:", payload);
-      });
+    notificationConnection.on("ConcertDraftCreated", (payload: ConcertDraftCreatedPayload) => {
+      console.log("[SignalR] ConcertDraftCreated received, payload:", payload, "type:", typeof payload);
+      void router.navigate({ to: "/venue/my/concerts/concert/$id", params: { id: payload } });
+    });
 
-      notificationConnection.on("ConcertPosted", (payload: ConcertPostedPayload) => {
-        console.log("[SignalR] ConcertPosted:", payload);
-      });
-    }
+    return () => {
+      console.log("[SignalR] useVenueNotifications unmounted");
+      notificationConnection.off("MessageReceived");
+      notificationConnection.off("ConcertDraftCreated");
+    };
+  }, []);
+}
 
-    if (role === "VenueManager") {
-      notificationConnection.on("ConcertDraftCreated", (payload: ConcertDraftCreatedPayload) => {
-        console.log("[SignalR] ConcertDraftCreated:", payload);
-      });
-    }
+export function useArtistNotifications() {
+  const router = useRouter();
+
+  useEffect(() => {
+    notificationConnection.on("MessageReceived", (payload: MessageReceivedPayload) => {
+      console.log("[SignalR] MessageReceived:", payload);
+    });
+
+    notificationConnection.on("ApplicationAccepted", (payload: ApplicationAcceptedPayload) => {
+      console.log("[SignalR] ApplicationAccepted:", payload);
+      void router.navigate({ to: "/artist/my/concerts/concert/$id", params: { id: payload } });
+    });
 
     return () => {
       notificationConnection.off("MessageReceived");
+      notificationConnection.off("ApplicationAccepted");
+    };
+  }, []);
+}
+
+export function useCustomerNotifications() {
+  useEffect(() => {
+    notificationConnection.on("TicketPurchased", (payload: TicketPurchasedPayload) => {
+      console.log("[SignalR] TicketPurchased:", payload);
+    });
+
+    notificationConnection.on("ConcertPosted", (payload: ConcertPostedPayload) => {
+      console.log("[SignalR] ConcertPosted:", payload);
+    });
+
+    return () => {
       notificationConnection.off("TicketPurchased");
       notificationConnection.off("ConcertPosted");
-      notificationConnection.off("ConcertDraftCreated");
     };
-  }, [role]);
+  }, []);
 }

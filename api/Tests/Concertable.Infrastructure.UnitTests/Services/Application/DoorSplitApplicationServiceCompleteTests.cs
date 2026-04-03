@@ -52,6 +52,7 @@ public class DoorSplitApplicationServiceCompleteTests
             paymentService.Object,
             new Mock<IConcertService>().Object,
             new Mock<IConcertNotificationService>().Object,
+            new Mock<IApplicationNotificationService>().Object,
             transactionService.Object,
             TimeProvider.System);
 

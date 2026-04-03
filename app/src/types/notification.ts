@@ -1,5 +1,4 @@
 import type { Message } from "@/types/message";
-import type { Concert } from "@/types/concert";
 
 export interface TicketPurchasedPayload {
   success: boolean;
@@ -30,4 +29,5 @@ export interface ConcertPostedPayload {
 }
 
 export type MessageReceivedPayload = Message;
-export type ConcertDraftCreatedPayload = Concert;
+export type ConcertDraftCreatedPayload = number;
+export type ApplicationAcceptedPayload = number;

@@ -19,7 +19,8 @@ public class FlatFeeApplicationService : IApplicationStrategy
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPaymentService paymentService;
     private readonly IConcertService concertService;
-    private readonly IConcertNotificationService notificationService;
+    private readonly IConcertNotificationService concertNotificationService;
+    private readonly IApplicationNotificationService applicationNotificationService;
     private readonly ITransactionService transactionService;
     private readonly TimeProvider timeProvider;
 
@@ -32,7 +33,8 @@ public class FlatFeeApplicationService : IApplicationStrategy
         IStripeAccountService stripeAccountService,
         IPaymentService paymentService,
         IConcertService concertService,
-        IConcertNotificationService notificationService,
+        IConcertNotificationService concertNotificationService,
+        IApplicationNotificationService applicationNotificationService,
         ITransactionService transactionService,
         TimeProvider timeProvider)
     {
@@ -44,7 +46,8 @@ public class FlatFeeApplicationService : IApplicationStrategy
         this.stripeAccountService = stripeAccountService;
         this.paymentService = paymentService;
         this.concertService = concertService;
-        this.notificationService = notificationService;
+        this.concertNotificationService = concertNotificationService;
+        this.applicationNotificationService = applicationNotificationService;
         this.transactionService = transactionService;
         this.timeProvider = timeProvider;
     }
@@ -114,11 +117,15 @@ public class FlatFeeApplicationService : IApplicationStrategy
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
+        var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("Venue manager not found");
+
         application.Status = ApplicationStatus.Settled;
         await applicationRepository.SaveChangesAsync();
 
         var concert = await concertService.CreateDraftAsync(applicationId);
-        await notificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
+        await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concert.Id);
+        await concertNotificationService.ConcertDraftCreatedAsync(venueManager.Id.ToString(), concert.Id);
     }
 
     public async Task CompleteAsync(int concertId)

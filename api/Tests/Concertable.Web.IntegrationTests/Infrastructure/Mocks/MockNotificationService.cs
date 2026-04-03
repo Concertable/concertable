@@ -7,7 +7,14 @@ public class MockNotificationService : IMockNotificationService
 {
     public List<(string UserId, object Payload)> DraftCreated { get; } = [];
     public List<(string UserId, object Payload)> ConcertPosted { get; } = [];
+    public List<(string UserId, object Payload)> ApplicationAccepted { get; } = [];
     public List<(string UserId, object Payload)> TicketPurchased { get; } = [];
+
+    public Task ApplicationAcceptedAsync(string userId, object payload)
+    {
+        ApplicationAccepted.Add((userId, payload));
+        return Task.CompletedTask;
+    }
 
     public Task ConcertDraftCreatedAsync(string userId, object payload)
     {
@@ -31,6 +38,7 @@ public class MockNotificationService : IMockNotificationService
     {
         DraftCreated.Clear();
         ConcertPosted.Clear();
+        ApplicationAccepted.Clear();
         TicketPurchased.Clear();
     }
 }

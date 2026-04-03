@@ -46,6 +46,7 @@ public async Task InitializeAsync()
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton<IConcertNotificationService>(NotificationService);
+                services.AddSingleton<IApplicationNotificationService>(NotificationService);
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
