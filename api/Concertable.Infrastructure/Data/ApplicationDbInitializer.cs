@@ -655,7 +655,7 @@ public class ApplicationDbInitializer : IDbInitializer
                     ConcertFaker.GetFaker(42, "Bass in the Air", 30m, 140, 120, now.AddDays(18)).Generate(), //29
                     ConcertFaker.GetFaker(45, "Jumpin and thumpin", 15m, 100, 80, now.AddDays(22)).Generate(), //30
                     ConcertFaker.GetFaker(49, "Funk it up", 20m, 150, 130, now.AddDays(25)).Generate(), //31
-                    ConcertFaker.GetFaker(54, "Boogie it up!", 20m, 150, 130, now.AddDays(25)).Generate(), //32
+                    ConcertFaker.GetFaker(71, "Boogie it up!", 20m, 150, 130, now.AddDays(85)).Generate(), //32
                     ConcertFaker.GetFaker(59, "Dev FlatFee Test Concert", 10m, 50, 50, now.AddDays(-1)).Generate() //33
             };
 

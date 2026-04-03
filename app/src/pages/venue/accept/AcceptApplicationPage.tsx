@@ -4,6 +4,7 @@ import { useStripeVerifiedQuery } from "@/hooks/query/useStripeAccountQuery";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
 import { StripeOnboardingBanner } from "@/components/stripe/StripeOnboardingBanner";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import dayjs from "dayjs";
 
 export default function AcceptApplicationPage() {
@@ -21,7 +22,7 @@ export default function AcceptApplicationPage() {
 
   function handleConfirm() {
     accept(application!.id, {
-      onSuccess: () => navigate({ to: "/venue/my/applications/$id", params: { id: opportunity.id } }),
+      onSuccess: () => toast.success("Application accepted"),
     });
   }
 
