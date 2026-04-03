@@ -69,7 +69,8 @@
       "Bash(find /c/Users/TommySeery/source/repos/Concertable/app/src/components -type f -name *.tsx)",
       "Bash(npx shadcn@latest add badge)",
       "Bash(npx tsr:*)",
-      "Bash(npx @tanstack/router-cli generate)"
+      "Bash(npx @tanstack/router-cli generate)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

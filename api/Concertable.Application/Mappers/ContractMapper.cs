@@ -1,10 +1,10 @@
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Mappers;
+using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 
-namespace Concertable.Infrastructure.Factories;
+namespace Concertable.Application.Mappers;
 
-public class ContractMapperFactory : IContractMapperFactory
+public class ContractMapper : IContractMapper
 {
     private readonly IDictionary<ContractType, IContractMapper> mappers = new Dictionary<ContractType, IContractMapper>
     {
@@ -14,5 +14,6 @@ public class ContractMapperFactory : IContractMapperFactory
         { ContractType.VenueHire, new VenueHireContractMapper() }
     };
 
-    public IContractMapper Create(ContractType type) => mappers[type];
+    public IContract ToDto(ContractEntity entity) => mappers[entity.ContractType].ToDto(entity);
+    public ContractEntity ToEntity(IContract dto) => mappers[dto.ContractType].ToEntity(dto);
 }

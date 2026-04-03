@@ -1,14 +1,10 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
-using Concertable.Core.Enums;
-
 namespace Concertable.Application.Mappers;
 
 public class VersusContractMapper : IContractMapper
 {
-    public ContractType ContractType => ContractType.Versus;
-
     public ContractEntity ToEntity(IContract dto)
     {
         var d = (VersusContractDto)dto;

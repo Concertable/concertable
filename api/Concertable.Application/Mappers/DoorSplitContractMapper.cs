@@ -1,14 +1,10 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
-using Concertable.Core.Enums;
-
 namespace Concertable.Application.Mappers;
 
 public class DoorSplitContractMapper : IContractMapper
 {
-    public ContractType ContractType => ContractType.DoorSplit;
-
     public ContractEntity ToEntity(IContract dto)
     {
         var d = (DoorSplitContractDto)dto;

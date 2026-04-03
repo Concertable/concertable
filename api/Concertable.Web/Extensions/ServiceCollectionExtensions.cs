@@ -230,11 +230,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IContractService, ContractService>();
 
-        services.AddKeyedSingleton<IContractMapper, FlatFeeContractMapper>(ContractType.FlatFee);
-        services.AddKeyedSingleton<IContractMapper, DoorSplitContractMapper>(ContractType.DoorSplit);
-        services.AddKeyedSingleton<IContractMapper, VersusContractMapper>(ContractType.Versus);
-        services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
-        services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
+        services.AddSingleton<IContractMapper, ContractMapper>();
         services.AddSingleton<IUserMapper, UserMapper>();
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();

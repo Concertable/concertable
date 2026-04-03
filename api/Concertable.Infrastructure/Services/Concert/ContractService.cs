@@ -9,14 +9,14 @@ namespace Concertable.Infrastructure.Services.Concert;
 public class ContractService : IContractService
 {
     private readonly IContractRepository contractRepository;
-    private readonly IContractMapperFactory mapperFactory;
+    private readonly IContractMapper contractMapper;
 
     public ContractService(
         IContractRepository contractRepository,
-        IContractMapperFactory mapperFactory)
+        IContractMapper contractMapper)
     {
         this.contractRepository = contractRepository;
-        this.mapperFactory = mapperFactory;
+        this.contractMapper = contractMapper;
     }
 
     public async Task<IContract> GetByOpportunityIdAsync(int opportunityId)
@@ -24,14 +24,12 @@ public class ContractService : IContractService
         var entity = await contractRepository.GetByOpportunityIdAsync<ContractEntity>(opportunityId)
             ?? throw new NotFoundException("Contract not found for this opportunity");
 
-        var mapper = mapperFactory.Create(entity.ContractType);
-        return mapper.ToDto(entity);
+        return contractMapper.ToDto(entity);
     }
 
     public async Task AddAsync(IContract contract, int opportunityId)
     {
-        var mapper = mapperFactory.Create(contract.ContractType);
-        var entity = mapper.ToEntity(contract);
+        var entity = contractMapper.ToEntity(contract);
         entity.Id = opportunityId;
         await contractRepository.AddAsync(entity);
     }
@@ -50,9 +48,8 @@ public class ContractService : IContractService
         if (existing.ContractType != contract.ContractType)
             throw new BadRequestException("Contract type cannot be changed when updating an opportunity");
 
-        var mapper = mapperFactory.Create(contract.ContractType);
         var normalized = NormalizeContractId(contract, opportunityId);
-        var mapped = mapper.ToEntity(normalized);
+        var mapped = contractMapper.ToEntity(normalized);
 
         existing.PaymentMethod = mapped.PaymentMethod;
         switch (existing, mapped)

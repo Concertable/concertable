@@ -7,11 +7,11 @@ namespace Concertable.Application.Mappers;
 
 public class OpportunityMapper : IOpportunityMapper
 {
-    private readonly IContractMapperFactory contractMapperFactory;
+    private readonly IContractMapper contractMapper;
 
-    public OpportunityMapper(IContractMapperFactory contractMapperFactory)
+    public OpportunityMapper(IContractMapper contractMapper)
     {
-        this.contractMapperFactory = contractMapperFactory;
+        this.contractMapper = contractMapper;
     }
 
     public OpportunityDto ToDto(OpportunityEntity opportunity) => new()
@@ -21,7 +21,7 @@ public class OpportunityMapper : IOpportunityMapper
         StartDate = opportunity.StartDate,
         EndDate = opportunity.EndDate,
         Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto()),
-        Contract = contractMapperFactory.Create(opportunity.Contract.ContractType).ToDto(opportunity.Contract)
+        Contract = contractMapper.ToDto(opportunity.Contract)
     };
 
     public IPagination<OpportunityDto> ToDtos(IPagination<OpportunityEntity> opportunities) =>
