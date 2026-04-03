@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import qs from "qs";
+import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const api = axios.create({
@@ -28,6 +29,21 @@ api.interceptors.response.use(
       if (error.config && token) {
         error.config.headers.Authorization = `Bearer ${token}`;
         return api(error.config);
+      }
+    }
+
+    if (error instanceof AxiosError && error.response) {
+      const { title, detail, errors } = error.response.data ?? {};
+      if (errors?.length) {
+        toast.error(title ?? "Error", {
+          description: (
+            <ul className="list-disc pl-4 space-y-1">
+              {errors.map((e: string, i: number) => <li key={i}>{e}</li>)}
+            </ul>
+          ),
+        });
+      } else {
+        toast.error(detail ?? "Something went wrong");
       }
     }
 
