@@ -1,10 +1,18 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { requireRole } from "@/lib/guards";
 import { useVenueNotifications } from "@/hooks/useNotifications";
+import { AppLayout } from "@/components/AppLayout";
+
+const links = [
+  { label: "Dashboard", to: "/venue" },
+  { label: "My Venue", to: "/venue/my" },
+  { label: "My Concerts", to: "/venue/my/concerts" },
+  { label: "Find Artists", to: "/venue/find" },
+];
 
 function VenueLayout() {
   useVenueNotifications();
-  return <Outlet />;
+  return <AppLayout links={links} />;
 }
 
 export const Route = createFileRoute("/venue")({

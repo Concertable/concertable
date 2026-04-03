@@ -1,0 +1,7 @@
+<div class="container" *ngIf="item">
+    <span class="label">{{ displayProperty ? item[displayProperty] : item }}</span>
+    <button *ngIf="editMode" (click)="removeBadge()" class="btn-remove">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  

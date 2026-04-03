@@ -1,0 +1,23 @@
+<div class="slider-container">
+    <div class="wrapper">
+        <mat-label>{{ label }}</mat-label>
+  
+        <mat-slider
+        discrete
+        [min]="min"
+        [max]="max"
+        [step]="step"
+        [disabled]="disabled"
+        thumbLabel>
+    
+        <input
+            matSliderThumb
+            [(ngModel)]="value"
+            [disabled]="disabled"
+            (ngModelChange)="valueChange.emit($event)" />
+        </mat-slider>
+    
+        <span *ngIf="!disabled">{{ value }} km</span>
+    </div>
+</div>
+  

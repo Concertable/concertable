@@ -1,0 +1,31 @@
+.config-header-container {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    padding: 5px 16px;
+    background-color: white;
+}
+
+.config-header-content > ul {
+    display: flex;
+    gap: 12px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.btn-save {
+    background-color: var(--secondary-color);
+}
+
+.btn-edit {
+    background-color: var(--tertiary-color);
+}
+
+.btn-cancel {
+    background-color: var(--tertiary-color);
+}
+

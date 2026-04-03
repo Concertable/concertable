@@ -1,0 +1,24 @@
+<app-hero [title]="'Purchase your Ticket'" [titleStyle]="titleStyle"></app-hero>
+<div class="container-wrapper" *ngIf="event">
+  <div class="container">
+    <!-- Event Summary Section -->
+     <div class="wrapper">
+      <app-event-summary [event]="event"></app-event-summary>
+      <app-event-payment-summary
+        [price]="event.price"
+        (quantityChange)="quantity = $event">
+      </app-event-payment-summary>
+     </div>
+  
+  
+  
+    <!-- Checkout Payment Section -->
+    <div class="card-details">
+      <app-card-details
+        buttonName="Buy Ticket"
+        [isProcessing]="isProcessing"
+        (paymentMethodChange)="updatePaymentMethodId($event)">
+      </app-card-details>
+    </div>
+  </div>
+</div>

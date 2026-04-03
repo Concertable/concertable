@@ -1,0 +1,59 @@
+
+  
+  h4 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 24px;
+  }
+  
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 1.1rem;
+  }
+  
+  .summary-item:last-child {
+    border-bottom: none;
+  }
+  
+  .label {
+    font-weight: 500;
+    color: #555;
+    margin-right: 10px;
+  }
+  
+  .value {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-item, .value {
+    word-break: break-word;
+  }
+  
+  
+  .empty-message {
+    text-align: center;
+    color: #777;
+    font-size: 1rem;
+    padding: 20px;
+  }
+  
+  .empty-message mat-icon {
+    font-size: 24px;
+    margin-right: 8px;
+    color: #aaa;
+  }
+
+  .btn-quantity {
+    border-radius: 100%;
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+  }
+  

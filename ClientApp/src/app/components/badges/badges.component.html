@@ -1,0 +1,10 @@
+<div class="badges-wrapper" *ngIf="items?.length">
+    <app-badge
+      *ngFor="let item of items"
+      [item]="item"
+      [displayProperty]="displayProperty"
+      [editMode]="editMode"
+      (remove)="removeItem(item)">
+    </app-badge>
+  </div>
+  

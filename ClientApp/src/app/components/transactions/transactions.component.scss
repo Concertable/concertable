@@ -1,0 +1,9 @@
+.transaction {
+    padding-bottom: 1rem;
+  
+    &:not(:last-child) {
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+  }
+  

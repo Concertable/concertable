@@ -4,6 +4,15 @@ import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { OpportunitySection } from "@/components/opportunities/OpportunitySection";
+import { ScrollspyNav } from "@/components/ScrollspyNav";
+
+const SECTIONS = [
+  { id: "about", label: "About" },
+  { id: "location", label: "Location" },
+  { id: "concerts", label: "Concerts" },
+  { id: "opportunities", label: "Opportunities" },
+  { id: "reviews", label: "Reviews" },
+];
 
 interface Props {
   venue: Venue;
@@ -23,9 +32,10 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
         onNameChange={onNameChange}
       />
 
-      {/* Sections */}
+      <ScrollspyNav sections={SECTIONS} />
+
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">
-        <section className="space-y-2">
+        <section id="about" className="space-y-2 scroll-mt-24">
           <h2 className="text-xl font-semibold">About</h2>
           <EditableTextarea
             onChange={onAboutChange}
@@ -37,7 +47,7 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
 
         <div className="border-t border-border" />
 
-        <section className="space-y-2">
+        <section id="location" className="space-y-2 scroll-mt-24">
           <h2 className="text-xl font-semibold">Location</h2>
           <p className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="size-4" />
@@ -47,21 +57,23 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
 
         <div className="border-t border-border" />
 
-        <section className="space-y-2">
+        <section id="concerts" className="space-y-2 scroll-mt-24">
           <h2 className="text-xl font-semibold">Concerts</h2>
           <p className="text-muted-foreground">No upcoming concerts.</p>
         </section>
 
         <div className="border-t border-border" />
 
-        <section className="space-y-2">
+        <section id="opportunities" className="space-y-2 scroll-mt-24">
           <h2 className="text-xl font-semibold">Opportunities</h2>
           <OpportunitySection venueId={venue.id} />
         </section>
 
         <div className="border-t border-border" />
 
-        <ReviewSection type="venue" id={venue.id} />
+        <section id="reviews" className="scroll-mt-24">
+          <ReviewSection type="venue" id={venue.id} />
+        </section>
       </div>
     </div>
   );

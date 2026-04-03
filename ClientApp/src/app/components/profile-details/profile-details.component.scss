@@ -1,0 +1,17 @@
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  label {
+    min-width: 80px;
+    font-weight: 500;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+}

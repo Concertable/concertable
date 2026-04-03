@@ -1,0 +1,38 @@
+<div class="container">
+    <h2 mat-dialog-title>Add a Review</h2>
+
+    <form mat-dialog-content class="form">
+    <label class="label">Your Rating</label>
+    <div class="star-rating">
+        <mat-icon
+        *ngFor="let star of [1,2,3,4,5]"
+        (click)="review.stars = star"
+        [style.cursor]="'pointer'"
+        [style.color]="star <= review.stars ? 'gold' : 'lightgray'">
+        {{ star <= review.stars ? 'star' : 'star_border' }}
+        </mat-icon>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Your Review</mat-label>
+        <textarea
+        matInput
+        [(ngModel)]="review.details"
+        name="comment"
+        rows="4"
+        ></textarea>
+    </mat-form-field>
+    </form>
+
+    <div align="end">
+        <button mat-button mat-dialog-close color="secondary mr-2" (click)="onCancel()">Cancel</button>
+        <button
+            mat-flat-button
+            color="primary"
+            [disabled]="review.stars === 0"
+            (click)="onSubmit()"
+        >
+            Submit
+        </button>
+    </div>
+</div>

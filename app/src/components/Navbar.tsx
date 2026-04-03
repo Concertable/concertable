@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
@@ -11,13 +12,19 @@ export interface NavLink {
 
 interface NavbarProps {
   links: NavLink[];
+  onHeightChange: (height: number) => void;
 }
 
-export function Navbar({ links }: Readonly<NavbarProps>) {
+export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
   const role = useRole();
+  const ref = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    if (ref.current) onHeightChange(ref.current.offsetHeight);
+  }, []);
 
   return (
-    <nav className="flex items-center justify-between border-b border-border px-6 py-3">
+    <nav ref={ref} className="sticky top-0 z-20 bg-background flex items-center justify-between border-b border-border px-6 py-3">
       <div className="flex items-center gap-8">
         <Link to="/">
           <img

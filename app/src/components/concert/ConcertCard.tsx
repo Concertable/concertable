@@ -8,11 +8,11 @@ interface Props {
   concert: Concert;
 }
 
-export function ConcertStickyCard({ concert }: Readonly<Props>) {
+export function ConcertCard({ concert }: Readonly<Props>) {
   const navigate = useNavigate();
 
   return (
-    <div className="sticky top-24 rounded-xl border border-border bg-card p-4 space-y-4">
+    <div className="rounded-xl border border-border bg-card p-4 space-y-4">
       <img
         src={concert.artist.imageUrl}
         alt={concert.artist.name}

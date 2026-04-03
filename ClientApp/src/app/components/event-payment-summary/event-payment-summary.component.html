@@ -1,0 +1,26 @@
+<app-card class="payment-summary">
+    <div>
+      <h4>Ticket Summary</h4>
+  
+      <div class="summary-item">
+        <span class="label">Price per ticket:</span>
+        <span class="value">{{ price | currency: 'GBP':'symbol':'1.2-2' }}</span>
+      </div>
+  
+      <!-- Quantity Row (Split Layout) -->
+      <div class="summary-item quantity-row">
+        <div class="label">Quantity:</div>
+        <div class="quantity-controls">
+          <button (click)="decreaseQuantity()" [disabled]="quantity <= 1" class="btn-quantity">–</button>
+          <span>{{ quantity }}</span>
+          <button (click)="increaseQuantity()" class="btn-quantity">+</button>
+        </div>
+      </div>
+  
+      <div class="summary-item total">
+        <span class="label"><strong>Total:</strong></span>
+        <span class="value"><strong>{{ total | currency: 'GBP':'symbol':'1.2-2' }}</strong></span>
+      </div>
+    </div>
+  </app-card>
+  

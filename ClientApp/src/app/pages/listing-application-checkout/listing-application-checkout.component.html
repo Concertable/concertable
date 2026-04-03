@@ -1,0 +1,20 @@
+<app-hero [title]="'Pay your chosen Artist'" [titleStyle]="titleStyle"></app-hero>
+<div class="container">
+  <div class="wrapper">
+    <app-artist-summary [artist]="application?.artist"></app-artist-summary>
+
+    <app-listing-application-payment-summary
+      [artistName]="application?.artist?.name || 'Unknown Artist'"
+      [amount]="application?.listing?.pay || 0">
+  </app-listing-application-payment-summary>
+
+  </div>
+
+  <div class="card-details">
+    <app-card-details
+      buttonName="Pay Artist"
+      [isProcessing]="isProcessing"
+      (paymentMethodChange)="updatePaymentMethodId($event)">
+    </app-card-details>
+  </div>
+</div>
