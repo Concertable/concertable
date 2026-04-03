@@ -18,6 +18,14 @@ public record VenueDto : IDetails, IAddress, ILatLong
     public required string Email { get; set; }
 }
 
+public record VenueSummaryDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string ImageUrl { get; set; }
+    public double Rating { get; set; }
+}
+
 public record VenueHeaderDto : IHeader, IAddress, ILatLong
 {
     public int Id { get; set; }

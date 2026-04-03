@@ -18,6 +18,15 @@ public record ArtistDto : IDetails, IAddress, ILatLong
     public required string Email { get; set; }
 }
 
+public record ArtistSummaryDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string ImageUrl { get; set; }
+    public double Rating { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
+}
+
 public record ArtistHeaderDto : IHeader, IAddress, ILatLong
 {
     public int Id { get; set; }

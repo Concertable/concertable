@@ -14,7 +14,7 @@ public class ConcertApplicationMapper : IConcertApplicationMapper
     }
 
     public ConcertApplicationDto ToDto(ConcertApplicationEntity application) =>
-        new(application.Id, application.Artist.ToDto(), opportunityMapper.ToDto(application.Opportunity), application.Opportunity.Contract.ContractType, application.Status);
+        new(application.Id, application.Artist.ToSummaryDto(), opportunityMapper.ToDto(application.Opportunity), application.Opportunity.Contract.ContractType, application.Status);
 
     public IEnumerable<ConcertApplicationDto> ToDtos(IEnumerable<ConcertApplicationEntity> applications) =>
         applications.Select(ToDto);

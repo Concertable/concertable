@@ -20,6 +20,20 @@ public record ConcertDto : IDetails
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
 
+public record ConcertSummaryDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public decimal Price { get; set; }
+    public int TotalTickets { get; set; }
+    public int AvailableTickets { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public DateTime? DatePosted { get; set; }
+    public required VenueSummaryDto Venue { get; set; }
+    public required ArtistSummaryDto Artist { get; set; }
+}
+
 public record TicketConcertDto
 {
     public int Id { get; set; }

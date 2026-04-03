@@ -21,6 +21,14 @@ public static class ArtistMappers
         Longitude = artist.User.Location?.X ?? throw new InternalServerException($"Artist {artist.Id} user has no location set.")
     };
 
+    public static ArtistSummaryDto ToSummaryDto(this ArtistEntity artist) => new()
+    {
+        Id = artist.Id,
+        Name = artist.Name,
+        ImageUrl = artist.ImageUrl,
+        Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
+    };
+
     public static ArtistHeaderDto ToHeaderDto(this ArtistEntity artist) => new()
     {
         Id = artist.Id,

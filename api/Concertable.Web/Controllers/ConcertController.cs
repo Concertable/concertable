@@ -23,49 +23,49 @@ public class ConcertController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<VenueDto>> GetDetailsById(int id)
+    public async Task<ActionResult<ConcertDto>> GetDetailsById(int id)
     {
         return Ok(await concertService.GetDetailsByIdAsync(id));
     }
 
     [HttpGet("application/{applicationId}")]
-    public async Task<ActionResult<VenueDto>> GetDetailsByApplicationId(int applicationId)
+    public async Task<ActionResult<ConcertDto>> GetDetailsByApplicationId(int applicationId)
     {
         return Ok(await concertService.GetDetailsByApplicationIdAsync(applicationId));
     }
 
     [HttpGet("upcoming/venue/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertDto>>> GetUpcomingByVenueId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertSummaryDto>>> GetUpcomingByVenueId(int id)
     {
         return Ok(await concertService.GetUpcomingByVenueIdAsync(id));
     }
 
     [HttpGet("upcoming/artist/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertDto>>> GetUpcomingByArtistId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertSummaryDto>>> GetUpcomingByArtistId(int id)
     {
         return Ok(await concertService.GetUpcomingByArtistIdAsync(id));
     }
 
     [HttpGet("history/venue/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertDto>>> GetHistoryByVenueId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertSummaryDto>>> GetHistoryByVenueId(int id)
     {
         return Ok(await concertService.GetHistoryByVenueIdAsync(id));
     }
 
     [HttpGet("history/artist/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertDto>>> GetHistoryByArtistId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertSummaryDto>>> GetHistoryByArtistId(int id)
     {
         return Ok(await concertService.GetHistoryByArtistIdAsync(id));
     }
 
     [HttpGet("unposted/venue/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertDto>>> GetUnpostedByVenueId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertSummaryDto>>> GetUnpostedByVenueId(int id)
     {
         return Ok(await concertService.GetUnpostedByVenueIdAsync(id));
     }
 
     [HttpGet("unposted/artist/{id}")]
-    public async Task<ActionResult<IEnumerable<ConcertDto>>> GetUnpostedByArtistId(int id)
+    public async Task<ActionResult<IEnumerable<ConcertSummaryDto>>> GetUnpostedByArtistId(int id)
     {
         return Ok(await concertService.GetUnpostedByArtistIdAsync(id));
     }

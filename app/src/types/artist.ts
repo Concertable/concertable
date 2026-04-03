@@ -3,6 +3,14 @@ export interface Genre {
   name: string;
 }
 
+export interface ArtistSummary {
+  id: number;
+  name: string;
+  imageUrl: string;
+  rating: number;
+  genres: Genre[];
+}
+
 export interface Artist {
   id: number;
   name: string;

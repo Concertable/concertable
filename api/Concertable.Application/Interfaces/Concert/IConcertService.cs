@@ -10,14 +10,14 @@ public interface IConcertService
 {
     Task<ConcertDto> GetDetailsByIdAsync(int id);
     Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId);
-    Task<IEnumerable<ConcertDto>> GetUpcomingByVenueIdAsync(int id);
-    Task<IEnumerable<ConcertDto>> GetUpcomingByArtistIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id);
     Task<ConcertDto> CreateDraftAsync(int applicationId);
     Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request);
     Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request);
     Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync();
-    Task<IEnumerable<ConcertDto>> GetHistoryByArtistIdAsync(int id);
-    Task<IEnumerable<ConcertDto>> GetHistoryByVenueIdAsync(int id);
-    Task<IEnumerable<ConcertDto>> GetUnpostedByArtistIdAsync(int id);
-    Task<IEnumerable<ConcertDto>> GetUnpostedByVenueIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByVenueIdAsync(int id);
 }
