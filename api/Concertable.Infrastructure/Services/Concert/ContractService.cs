@@ -1,7 +1,5 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
-using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Concert;
@@ -10,13 +8,16 @@ public class ContractService : IContractService
 {
     private readonly IContractRepository contractRepository;
     private readonly IContractMapper contractMapper;
+    private readonly IContractServiceStrategy contractServiceStrategy;
 
     public ContractService(
         IContractRepository contractRepository,
-        IContractMapper contractMapper)
+        IContractMapper contractMapper,
+        IContractServiceStrategy contractServiceStrategy)
     {
         this.contractRepository = contractRepository;
         this.contractMapper = contractMapper;
+        this.contractServiceStrategy = contractServiceStrategy;
     }
 
     public async Task<IContract> GetByOpportunityIdAsync(int opportunityId)
@@ -48,36 +49,8 @@ public class ContractService : IContractService
         if (existing.ContractType != contract.ContractType)
             throw new BadRequestException("Contract type cannot be changed when updating an opportunity");
 
-        var normalized = NormalizeContractId(contract, opportunityId);
-        var mapped = contractMapper.ToEntity(normalized);
-
-        existing.PaymentMethod = mapped.PaymentMethod;
-        switch (existing, mapped)
-        {
-            case (FlatFeeContractEntity e, FlatFeeContractEntity m):
-                e.Fee = m.Fee;
-                break;
-            case (DoorSplitContractEntity e, DoorSplitContractEntity m):
-                e.ArtistDoorPercent = m.ArtistDoorPercent;
-                break;
-            case (VersusContractEntity e, VersusContractEntity m):
-                e.Guarantee = m.Guarantee;
-                e.ArtistDoorPercent = m.ArtistDoorPercent;
-                break;
-            case (VenueHireContractEntity e, VenueHireContractEntity m):
-                e.HireFee = m.HireFee;
-                break;
-            default:
-                throw new BadRequestException("Contract payload does not match the existing contract type");
-        }
+        contractServiceStrategy.ApplyChanges(existing, contract);
     }
 
-    private static IContract NormalizeContractId(IContract contract, int opportunityId) => contract switch
-    {
-        FlatFeeContractDto f => f with { Id = opportunityId },
-        DoorSplitContractDto d => d with { Id = opportunityId },
-        VersusContractDto v => v with { Id = opportunityId },
-        VenueHireContractDto h => h with { Id = opportunityId },
-        _ => throw new BadRequestException("Unsupported contract type")
-    };
+
 }

@@ -231,6 +231,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContractService, ContractService>();
 
         services.AddSingleton<IContractMapper, ContractMapper>();
+        services.AddSingleton<IContractServiceStrategy, ContractServiceStrategy>();
         services.AddSingleton<IUserMapper, UserMapper>();
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
