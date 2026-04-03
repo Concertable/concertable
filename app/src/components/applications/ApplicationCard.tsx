@@ -1,11 +1,11 @@
-import type { ConcertApplication } from "@/types/application";
+import type { OpportunityApplication } from "@/types/application";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 
 interface Props {
-  application: ConcertApplication;
+  application: OpportunityApplication;
   onDeny?: (applicationId: number) => void;
 }
 

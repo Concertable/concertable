@@ -15,9 +15,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ConcertGenreEntity> ConcertGenres { get; set; }
     public DbSet<ConcertImageEntity> ConcertImages { get; set; }
     public DbSet<GenreEntity> Genres { get; set; }
-    public DbSet<ConcertOpportunityEntity> ConcertOpportunities { get; set; }
+    public DbSet<OpportunityEntity> Opportunities { get; set; }
     public DbSet<OpportunityGenreEntity> OpportunityGenres { get; set; }
-    public DbSet<ConcertApplicationEntity> ConcertApplications { get; set; }
+    public DbSet<OpportunityApplicationEntity> OpportunityApplications { get; set; }
     public DbSet<ReviewEntity> Reviews { get; set; }
     public DbSet<SocialMediaEntity> SocialMedias { get; set; }
     public DbSet<TicketEntity> Tickets { get; set; }
@@ -56,7 +56,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<StripeEventEntity>()
             .HasKey(e => e.EventId);
 
-        modelBuilder.Entity<ConcertApplicationEntity>(e =>
+        modelBuilder.Entity<OpportunityApplicationEntity>(e =>
         {
             e.HasIndex(ca => new { ca.OpportunityId, ca.ArtistId }).IsUnique();
         });
@@ -126,21 +126,21 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
-        modelBuilder.Entity<ConcertOpportunityEntity>()
+        modelBuilder.Entity<OpportunityEntity>()
             .HasOne(o => o.Venue)
             .WithMany(v => v.Opportunities)
             .HasForeignKey(o => o.VenueId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<ConcertApplicationEntity>()
+        modelBuilder.Entity<OpportunityApplicationEntity>()
             .HasOne(ca => ca.Opportunity)
             .WithMany(o => o.Applications)
             .HasForeignKey(ca => ca.OpportunityId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        modelBuilder.Entity<ConcertApplicationEntity>()
+        modelBuilder.Entity<OpportunityApplicationEntity>()
             .HasOne(ca => ca.Artist)
             .WithMany(a => a.Applications)
             .HasForeignKey(ca => ca.ArtistId)

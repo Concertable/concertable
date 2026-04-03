@@ -11,7 +11,7 @@ public class UserRepository : GuidRepository<UserEntity>, IUserRepository
 
     public async Task<UserEntity> GetByApplicationIdAsync(int applicationId)
     {
-        var query = context.ConcertApplications
+        var query = context.OpportunityApplications
             .Where(a => a.Id == applicationId)
             .Select(a => a.Artist.User);
 
@@ -29,7 +29,7 @@ public class UserRepository : GuidRepository<UserEntity>, IUserRepository
 
     public async Task<Guid> GetIdByApplicationIdAsync(int applicationId)
     {
-        var query = context.ConcertApplications
+        var query = context.OpportunityApplications
             .Where(a => a.Id == applicationId)
             .Select(a => a.Artist.UserId);
 

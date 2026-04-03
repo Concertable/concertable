@@ -10,7 +10,7 @@ export type ApplicationStatus =
   | "Complete"
   | "Settled";
 
-export interface ConcertApplication {
+export interface OpportunityApplication {
   id: number;
   artist: ArtistSummary;
   opportunity: Opportunity;

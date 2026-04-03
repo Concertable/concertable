@@ -26,7 +26,7 @@ public class ArtistManagerRepository : GuidRepository<ArtistManagerEntity>, IArt
     {
         return await context.Users
             .OfType<ArtistManagerEntity>()
-            .Where(u => u.Id == context.ConcertApplications
+            .Where(u => u.Id == context.OpportunityApplications
                 .Where(a => a.Id == applicationId)
                 .Select(a => a.Artist.UserId)
                 .First())

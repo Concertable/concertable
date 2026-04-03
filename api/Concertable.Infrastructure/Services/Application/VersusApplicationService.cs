@@ -12,8 +12,8 @@ namespace Concertable.Infrastructure.Services.Application;
 
 public class VersusApplicationService : IApplicationStrategy
 {
-    private readonly IConcertApplicationValidator applicationValidator;
-    private readonly IConcertApplicationRepository applicationRepository;
+    private readonly IOpportunityApplicationValidator applicationValidator;
+    private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IContractRepository contractRepository;
     private readonly IArtistManagerRepository artistManagerRepository;
     private readonly IVenueManagerRepository venueManagerRepository;
@@ -26,8 +26,8 @@ public class VersusApplicationService : IApplicationStrategy
     private readonly TimeProvider timeProvider;
 
     public VersusApplicationService(
-        IConcertApplicationValidator applicationValidator,
-        IConcertApplicationRepository applicationRepository,
+        IOpportunityApplicationValidator applicationValidator,
+        IOpportunityApplicationRepository applicationRepository,
         IContractRepository contractRepository,
         IArtistManagerRepository artistManagerRepository,
         IVenueManagerRepository venueManagerRepository,

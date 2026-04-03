@@ -6,5 +6,5 @@ public class SettlementTransactionEntity : TransactionEntity
 {
     public override TransactionType TransactionType => TransactionType.Settlement;
     public int ApplicationId { get; set; }
-    public ConcertApplicationEntity Application { get; set; } = null!;
+    public OpportunityApplicationEntity Application { get; set; } = null!;
 }

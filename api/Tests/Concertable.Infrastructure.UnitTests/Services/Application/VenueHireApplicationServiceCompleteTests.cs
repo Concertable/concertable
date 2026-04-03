@@ -11,14 +11,14 @@ namespace Concertable.Infrastructure.UnitTests.Services.Application;
 
 public class VenueHireApplicationServiceCompleteTests
 {
-    private readonly Mock<IConcertApplicationRepository> applicationRepository;
+    private readonly Mock<IOpportunityApplicationRepository> applicationRepository;
     private readonly VenueHireApplicationService sut;
 
     public VenueHireApplicationServiceCompleteTests()
     {
-        applicationRepository = new Mock<IConcertApplicationRepository>();
+        applicationRepository = new Mock<IOpportunityApplicationRepository>();
         sut = new VenueHireApplicationService(
-            new Mock<IConcertApplicationValidator>().Object,
+            new Mock<IOpportunityApplicationValidator>().Object,
             applicationRepository.Object,
             new Mock<IContractRepository>().Object,
             new Mock<IVenueManagerRepository>().Object,
@@ -35,7 +35,7 @@ public class VenueHireApplicationServiceCompleteTests
     public async Task CompleteAsync_ShouldSetStatusToComplete()
     {
         // Arrange
-        var application = new ConcertApplicationEntity { Id = 1, Status = ApplicationStatus.Settled };
+        var application = new OpportunityApplicationEntity { Id = 1, Status = ApplicationStatus.Settled };
         applicationRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(application);
 
         // Act

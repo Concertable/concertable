@@ -26,7 +26,7 @@ public class VenueManagerRepository : GuidRepository<VenueManagerEntity>, IVenue
     {
         return await context.Users
             .OfType<VenueManagerEntity>()
-            .Where(u => u.Id == context.ConcertApplications
+            .Where(u => u.Id == context.OpportunityApplications
                 .Where(a => a.Id == applicationId)
                 .Select(a => a.Opportunity.Venue.UserId)
                 .First())

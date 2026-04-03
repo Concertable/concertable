@@ -19,14 +19,14 @@ public class ConcertService : IConcertService
     private readonly IConcertHeaderService concertHeaderService;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
-    private readonly IConcertApplicationValidator applicationValidator;
+    private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
     private readonly IReviewService reviewService;
     private readonly IPreferenceService preferenceService;
-    private readonly IConcertOpportunityRepository opportunityRepository;
+    private readonly IOpportunityRepository opportunityRepository;
     private readonly IGeometryCalculator geometryCalculator;
-    private readonly IConcertApplicationRepository applicationRepository;
+    private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IGenreRepository genreRepository;
     private readonly TimeProvider timeProvider;
 
@@ -35,14 +35,14 @@ public class ConcertService : IConcertService
         IConcertHeaderService concertHeaderService,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
-        IConcertApplicationValidator applicationValidator,
+        IOpportunityApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
         IReviewService reviewService,
         IPreferenceService preferenceService,
         IGeometryCalculator geometryCalculator,
-        IConcertOpportunityRepository opportunityRepository,
-        IConcertApplicationRepository applicationRepository,
+        IOpportunityRepository opportunityRepository,
+        IOpportunityApplicationRepository applicationRepository,
         IGenreRepository genreRepository,
         TimeProvider timeProvider)
     {

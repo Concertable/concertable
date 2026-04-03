@@ -386,66 +386,66 @@ public class ApplicationDbInitializer : IDbInitializer
         }
 
         // ConcertEntity Opportunities
-        if (!context.ConcertOpportunities.Any())
+        if (!context.Opportunities.Any())
         {
-            var opportunities = new ConcertOpportunityEntity[]
+            var opportunities = new OpportunityEntity[]
             {
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //1
-            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //2
-            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 180, PaymentMethod = PaymentMethod.Cash } }, //3
-            new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //4
-            new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //5
-            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 220, PaymentMethod = PaymentMethod.Cash } }, //6
-            new ConcertOpportunityEntity { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //7
-            new ConcertOpportunityEntity { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //8
-            new ConcertOpportunityEntity { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //9
-            new ConcertOpportunityEntity { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 250, PaymentMethod = PaymentMethod.Cash } }, //10
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //11
-            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 300, PaymentMethod = PaymentMethod.Cash } }, //12
-            new ConcertOpportunityEntity { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Contract = new FlatFeeContractEntity { Fee = 280, PaymentMethod = PaymentMethod.Cash } }, //13
-            new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 270, PaymentMethod = PaymentMethod.Transfer } }, //14
-            new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //15
-            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 65, PaymentMethod = PaymentMethod.Cash } }, //16
-            new ConcertOpportunityEntity { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Contract = new VersusContractEntity { Guarantee = 150, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //17
-            new ConcertOpportunityEntity { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //18
-            new ConcertOpportunityEntity { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 245, PaymentMethod = PaymentMethod.Transfer } }, //19
-            new ConcertOpportunityEntity { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //20
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 300, PaymentMethod = PaymentMethod.Transfer } }, //21
-            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //22
-            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 225, PaymentMethod = PaymentMethod.Cash } }, //23
-            new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //24
-            new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 215, PaymentMethod = PaymentMethod.Cash } }, //25
-            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //26
-            new ConcertOpportunityEntity { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 205, PaymentMethod = PaymentMethod.Cash } }, //27
-            new ConcertOpportunityEntity { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //28
-            new ConcertOpportunityEntity { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 195, PaymentMethod = PaymentMethod.Cash } }, //29
-            new ConcertOpportunityEntity { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //30
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //31
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //32
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //33
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //34
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //35
-            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //36
-            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //37
-            new ConcertOpportunityEntity { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //38
-            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //39
-            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //40
-            new ConcertOpportunityEntity { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //41
-            new ConcertOpportunityEntity { VenueId = 4, StartDate = now.AddDays(22), EndDate = now.AddDays(22).AddHours(3) }, //42 - no contract
-            new ConcertOpportunityEntity { VenueId = 5, StartDate = now.AddDays(24), EndDate = now.AddDays(24).AddHours(3) }, //43 - no contract
-            new ConcertOpportunityEntity { VenueId = 6, StartDate = now.AddDays(26), EndDate = now.AddDays(26).AddHours(3) }, //44 - no contract
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //1
+            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //2
+            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 180, PaymentMethod = PaymentMethod.Cash } }, //3
+            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //4
+            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //5
+            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 220, PaymentMethod = PaymentMethod.Cash } }, //6
+            new OpportunityEntity { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //7
+            new OpportunityEntity { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //8
+            new OpportunityEntity { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //9
+            new OpportunityEntity { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 250, PaymentMethod = PaymentMethod.Cash } }, //10
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //11
+            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 300, PaymentMethod = PaymentMethod.Cash } }, //12
+            new OpportunityEntity { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Contract = new FlatFeeContractEntity { Fee = 280, PaymentMethod = PaymentMethod.Cash } }, //13
+            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 270, PaymentMethod = PaymentMethod.Transfer } }, //14
+            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //15
+            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 65, PaymentMethod = PaymentMethod.Cash } }, //16
+            new OpportunityEntity { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Contract = new VersusContractEntity { Guarantee = 150, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //17
+            new OpportunityEntity { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //18
+            new OpportunityEntity { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 245, PaymentMethod = PaymentMethod.Transfer } }, //19
+            new OpportunityEntity { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //20
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 300, PaymentMethod = PaymentMethod.Transfer } }, //21
+            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //22
+            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 225, PaymentMethod = PaymentMethod.Cash } }, //23
+            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //24
+            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 215, PaymentMethod = PaymentMethod.Cash } }, //25
+            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //26
+            new OpportunityEntity { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 205, PaymentMethod = PaymentMethod.Cash } }, //27
+            new OpportunityEntity { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //28
+            new OpportunityEntity { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 195, PaymentMethod = PaymentMethod.Cash } }, //29
+            new OpportunityEntity { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //30
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //31
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //32
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //33
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //34
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //35
+            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //36
+            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //37
+            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //38
+            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //39
+            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //40
+            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //41
+            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(22), EndDate = now.AddDays(22).AddHours(3) }, //42 - no contract
+            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(24), EndDate = now.AddDays(24).AddHours(3) }, //43 - no contract
+            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(26), EndDate = now.AddDays(26).AddHours(3) }, //44 - no contract
 
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //45
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(32), EndDate = now.AddDays(32).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //46
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(34), EndDate = now.AddDays(34).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //47
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(36), EndDate = now.AddDays(36).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //48
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(38), EndDate = now.AddDays(38).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //49
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(90), EndDate = now.AddDays(90).AddHours(3), Contract = new VersusContractEntity { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
-            new ConcertOpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250, PaymentMethod = PaymentMethod.Transfer } }, //52
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //45
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(32), EndDate = now.AddDays(32).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //46
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(34), EndDate = now.AddDays(34).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //47
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(36), EndDate = now.AddDays(36).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //48
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(38), EndDate = now.AddDays(38).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //49
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(90), EndDate = now.AddDays(90).AddHours(3), Contract = new VersusContractEntity { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250, PaymentMethod = PaymentMethod.Transfer } }, //52
 
             };
-            context.ConcertOpportunities.AddRange(opportunities);
+            context.Opportunities.AddRange(opportunities);
             await context.SaveChangesAsync();
         }
 
@@ -514,103 +514,103 @@ public class ApplicationDbInitializer : IDbInitializer
         }
 
         // ConcertEntity Applications
-        if (!context.ConcertApplications.Any())
+        if (!context.OpportunityApplications.Any())
         {
-            var applications = new ConcertApplicationEntity[]
+            var applications = new OpportunityApplicationEntity[]
             {
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 1 }, //1
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 1 }, //2
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 1 }, //3
-                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 1 }, //4
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 1 }, //1
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 1 }, //2
+                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 1 }, //3
+                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 1 }, //4
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 2 }, //5
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 2 }, //6
-                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 2 }, //7
-                new ConcertApplicationEntity { ArtistId = 6, OpportunityId = 2 }, //8
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 2 }, //5
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 2 }, //6
+                new OpportunityApplicationEntity { ArtistId = 5, OpportunityId = 2 }, //7
+                new OpportunityApplicationEntity { ArtistId = 6, OpportunityId = 2 }, //8
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 3 }, //9
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 3 }, //10
-                new ConcertApplicationEntity { ArtistId = 7, OpportunityId = 3 }, //11
-                new ConcertApplicationEntity { ArtistId = 8, OpportunityId = 3 }, //12
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 3 }, //9
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 3 }, //10
+                new OpportunityApplicationEntity { ArtistId = 7, OpportunityId = 3 }, //11
+                new OpportunityApplicationEntity { ArtistId = 8, OpportunityId = 3 }, //12
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 4 }, //13
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 4 }, //14
-                new ConcertApplicationEntity { ArtistId = 9, OpportunityId = 4 }, //15
-                new ConcertApplicationEntity { ArtistId = 10, OpportunityId = 4 }, //16
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 4 }, //13
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 4 }, //14
+                new OpportunityApplicationEntity { ArtistId = 9, OpportunityId = 4 }, //15
+                new OpportunityApplicationEntity { ArtistId = 10, OpportunityId = 4 }, //16
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 5 }, //17
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 5 }, //18
-                new ConcertApplicationEntity { ArtistId = 11, OpportunityId = 5 }, //19
-                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 5 }, //20
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 5 }, //17
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 5 }, //18
+                new OpportunityApplicationEntity { ArtistId = 11, OpportunityId = 5 }, //19
+                new OpportunityApplicationEntity { ArtistId = 12, OpportunityId = 5 }, //20
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 6 }, //21
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 6 }, //22
-                new ConcertApplicationEntity { ArtistId = 13, OpportunityId = 6 }, //23
-                new ConcertApplicationEntity { ArtistId = 14, OpportunityId = 6 }, //24
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 6 }, //21
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 6 }, //22
+                new OpportunityApplicationEntity { ArtistId = 13, OpportunityId = 6 }, //23
+                new OpportunityApplicationEntity { ArtistId = 14, OpportunityId = 6 }, //24
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 7 }, //25
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 7 }, //26
-                new ConcertApplicationEntity { ArtistId = 15, OpportunityId = 7 }, //27
-                new ConcertApplicationEntity { ArtistId = 16, OpportunityId = 7 }, //28
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 7 }, //25
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 7 }, //26
+                new OpportunityApplicationEntity { ArtistId = 15, OpportunityId = 7 }, //27
+                new OpportunityApplicationEntity { ArtistId = 16, OpportunityId = 7 }, //28
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 8 }, //29
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 8 }, //30
-                new ConcertApplicationEntity { ArtistId = 17, OpportunityId = 8 }, //31
-                new ConcertApplicationEntity { ArtistId = 18, OpportunityId = 8 }, //32
-                new ConcertApplicationEntity { ArtistId = 17, OpportunityId = 40 }, //33
-                new ConcertApplicationEntity { ArtistId = 18, OpportunityId = 41 }, //34
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 8 }, //29
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 8 }, //30
+                new OpportunityApplicationEntity { ArtistId = 17, OpportunityId = 8 }, //31
+                new OpportunityApplicationEntity { ArtistId = 18, OpportunityId = 8 }, //32
+                new OpportunityApplicationEntity { ArtistId = 17, OpportunityId = 40 }, //33
+                new OpportunityApplicationEntity { ArtistId = 18, OpportunityId = 41 }, //34
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 14 }, //35
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 14 }, //36
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 14 }, //37
-                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 14 }, //38
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 14 }, //35
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 14 }, //36
+                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 14 }, //37
+                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 14 }, //38
 
-                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 15 }, //39
-                new ConcertApplicationEntity { ArtistId = 6, OpportunityId = 15 }, //40
-                new ConcertApplicationEntity { ArtistId = 7, OpportunityId = 15 }, //41
-                new ConcertApplicationEntity { ArtistId = 8, OpportunityId = 15 }, //42
+                new OpportunityApplicationEntity { ArtistId = 5, OpportunityId = 15 }, //39
+                new OpportunityApplicationEntity { ArtistId = 6, OpportunityId = 15 }, //40
+                new OpportunityApplicationEntity { ArtistId = 7, OpportunityId = 15 }, //41
+                new OpportunityApplicationEntity { ArtistId = 8, OpportunityId = 15 }, //42
 
-                new ConcertApplicationEntity { ArtistId = 9, OpportunityId = 16 }, //43
-                new ConcertApplicationEntity { ArtistId = 10, OpportunityId = 16 }, //44
-                new ConcertApplicationEntity { ArtistId = 11, OpportunityId = 16 }, //45
-                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 16 }, //46
+                new OpportunityApplicationEntity { ArtistId = 9, OpportunityId = 16 }, //43
+                new OpportunityApplicationEntity { ArtistId = 10, OpportunityId = 16 }, //44
+                new OpportunityApplicationEntity { ArtistId = 11, OpportunityId = 16 }, //45
+                new OpportunityApplicationEntity { ArtistId = 12, OpportunityId = 16 }, //46
 
-                new ConcertApplicationEntity { ArtistId = 13, OpportunityId = 17 }, //47
-                new ConcertApplicationEntity { ArtistId = 14, OpportunityId = 17 }, //48
-                new ConcertApplicationEntity { ArtistId = 15, OpportunityId = 17 }, //49
-                new ConcertApplicationEntity { ArtistId = 16, OpportunityId = 17 }, //50
+                new OpportunityApplicationEntity { ArtistId = 13, OpportunityId = 17 }, //47
+                new OpportunityApplicationEntity { ArtistId = 14, OpportunityId = 17 }, //48
+                new OpportunityApplicationEntity { ArtistId = 15, OpportunityId = 17 }, //49
+                new OpportunityApplicationEntity { ArtistId = 16, OpportunityId = 17 }, //50
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 34 }, //51
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 34 }, //52
-                new ConcertApplicationEntity { ArtistId = 19, OpportunityId = 34 }, //53
-                new ConcertApplicationEntity { ArtistId = 20, OpportunityId = 34 }, //54
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 34 }, //51
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 34 }, //52
+                new OpportunityApplicationEntity { ArtistId = 19, OpportunityId = 34 }, //53
+                new OpportunityApplicationEntity { ArtistId = 20, OpportunityId = 34 }, //54
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 38 }, //55
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 38 }, //56
-                new ConcertApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //57
-                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //58
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 33, Status = ApplicationStatus.Confirmed }, //59 - Confirmed, for settle/complete testing
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 38 }, //55
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 38 }, //56
+                new OpportunityApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //57
+                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //58
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 33, Status = ApplicationStatus.Confirmed }, //59 - Confirmed, for settle/complete testing
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 45 }, //60 - FlatFee test
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 46 }, //61 - FlatFee test
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 47 }, //62 - FlatFee test
-                new ConcertApplicationEntity { ArtistId = 4, OpportunityId = 48 }, //63 - FlatFee test
-                new ConcertApplicationEntity { ArtistId = 5, OpportunityId = 49 }, //64 - FlatFee test
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 50 }, //65 - DoorSplit test
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 50 }, //66 - DoorSplit test
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 51 }, //67 - Versus test
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 51 }, //68 - Versus test
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 52 }, //69 - VenueHire test
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 52 }, //70 - VenueHire test
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 45 }, //60 - FlatFee test
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 46 }, //61 - FlatFee test
+                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 47 }, //62 - FlatFee test
+                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 48 }, //63 - FlatFee test
+                new OpportunityApplicationEntity { ArtistId = 5, OpportunityId = 49 }, //64 - FlatFee test
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 50 }, //65 - DoorSplit test
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 50 }, //66 - DoorSplit test
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 51 }, //67 - Versus test
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 51 }, //68 - Versus test
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 52 }, //69 - VenueHire test
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 52 }, //70 - VenueHire test
 
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 31 }, //71
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 31 }, //72
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 31 }, //73
-                new ConcertApplicationEntity { ArtistId = 1, OpportunityId = 32 }, //74
-                new ConcertApplicationEntity { ArtistId = 2, OpportunityId = 32 }, //75
-                new ConcertApplicationEntity { ArtistId = 3, OpportunityId = 32 }, //76
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 31 }, //71
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 31 }, //72
+                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 31 }, //73
+                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 32 }, //74
+                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 32 }, //75
+                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 32 }, //76
             };
-            context.ConcertApplications.AddRange(applications);
+            context.OpportunityApplications.AddRange(applications);
             await context.SaveChangesAsync();
         }
 

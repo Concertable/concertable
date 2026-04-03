@@ -16,7 +16,7 @@ public class ConcertEntity : IEntity, IHasName, IHasLocation
     public int AvailableTickets { get; set; }
     public DateTime? DatePosted { get; set; }
     public Point? Location => Application.Opportunity.Venue.User.Location;
-    public ConcertApplicationEntity Application { get; set; } = null!;
+    public OpportunityApplicationEntity Application { get; set; } = null!;
     public ICollection<TicketEntity> Tickets { get; } = new List<TicketEntity>();
     public ICollection<ConcertGenreEntity> ConcertGenres { get; set; } = new List<ConcertGenreEntity>();
     public ICollection<ConcertImageEntity> Images { get; set; } = new List<ConcertImageEntity>();

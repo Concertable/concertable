@@ -114,70 +114,70 @@ public class TestDbInitializer : IDbInitializer
                 ImageUrl = "test.jpg",
                 Opportunities =
                 [
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(2),
                         EndDate = DateTime.UtcNow.AddMonths(2).AddHours(3),
                         Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(3),
                         EndDate = DateTime.UtcNow.AddMonths(3).AddHours(3),
                         Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(4),
                         EndDate = DateTime.UtcNow.AddMonths(4).AddHours(3),
                         Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(5),
                         EndDate = DateTime.UtcNow.AddMonths(5).AddHours(3),
                         Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 50 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(6),
                         EndDate = DateTime.UtcNow.AddMonths(6).AddHours(3),
                         Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(7),
                         EndDate = DateTime.UtcNow.AddMonths(7).AddHours(3),
                         Contract = new VenueHireContractEntity { HireFee = 300 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(8),
                         EndDate = DateTime.UtcNow.AddMonths(8).AddHours(3),
                         Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(9),
                         EndDate = DateTime.UtcNow.AddMonths(9).AddHours(3),
                         Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(10),
                         EndDate = DateTime.UtcNow.AddMonths(10).AddHours(3),
                         Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 50 },
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
-                    new ConcertOpportunityEntity
+                    new OpportunityEntity
                     {
                         StartDate = DateTime.UtcNow.AddMonths(11),
                         EndDate = DateTime.UtcNow.AddMonths(11).AddHours(3),
@@ -191,16 +191,16 @@ public class TestDbInitializer : IDbInitializer
             await context.SaveChangesAsync();
         }
 
-        if (!await context.ConcertApplications.AnyAsync())
+        if (!await context.OpportunityApplications.AnyAsync())
         {
-            context.ConcertApplications.AddRange(
-                new ConcertApplicationEntity
+            context.OpportunityApplications.AddRange(
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.FlatFee.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Pending
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.Settled.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
@@ -214,7 +214,7 @@ public class TestDbInitializer : IDbInitializer
                         AvailableTickets = 0
                     }
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.AwaitingPayment.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
@@ -228,25 +228,25 @@ public class TestDbInitializer : IDbInitializer
                         AvailableTickets = 0
                     }
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.Versus.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Pending
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.DoorSplit.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Pending
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.VenueHire.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Pending
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.PostedFlatFee.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
@@ -261,7 +261,7 @@ public class TestDbInitializer : IDbInitializer
                         DatePosted = DateTime.UtcNow
                     }
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.PostedDoorSplit.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
@@ -276,7 +276,7 @@ public class TestDbInitializer : IDbInitializer
                         DatePosted = DateTime.UtcNow
                     }
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.PostedVersus.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
@@ -291,7 +291,7 @@ public class TestDbInitializer : IDbInitializer
                         DatePosted = DateTime.UtcNow
                     }
                 },
-                new ConcertApplicationEntity
+                new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.PostedVenueHire.OpportunityId,
                     ArtistId = TestConstants.ArtistId,

@@ -60,7 +60,16 @@
       "Bash(dotnet-ildasm /c/Users/TommySeery/.nuget/packages/nettopologysuite/2.6.0/lib/netstandard2.0/NetTopologySuite.dll)",
       "Bash(powershell -Command \"[System.Reflection.Assembly]::LoadFrom\\(''''C:\\\\Users\\\\TommySeery\\\\.nuget\\\\packages\\\\nettopologysuite\\\\2.6.0\\\\lib\\\\netstandard2.0\\\\NetTopologySuite.dll''''\\).GetTypes\\(\\) | Where-Object { $_ame -like ''''*GeometryCalculator*'''' } | Select-Object FullName\")",
       "Bash(cp:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(npm install:*)",
+      "Bash(find C:UsersTommySeerysourcereposConcertableapiConcertable.ApplicationInterfaces -name *.cs)",
+      "Bash(find C:UsersTommySeerysourcereposConcertableapi -type f -name *Dto*)",
+      "Bash(find C:UsersTommySeerysourcereposConcertableapi -type f -name *DTO*)",
+      "Bash(find /c/Users/TommySeery/source/repos/Concertable/app/src/hooks/query -type f -name *.ts)",
+      "Bash(find /c/Users/TommySeery/source/repos/Concertable/app/src/components -type f -name *.tsx)",
+      "Bash(npx shadcn@latest add badge)",
+      "Bash(npx tsr:*)",
+      "Bash(npx @tanstack/router-cli generate)"
     ]
   }
 }

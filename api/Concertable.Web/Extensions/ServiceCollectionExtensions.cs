@@ -152,9 +152,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertService, ConcertService>();
-        services.AddScoped<IConcertApplicationService, ConcertApplicationService>();
+        services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
         services.AddScoped<IMessageService, MessageService>();
-        services.AddScoped<IConcertOpportunityService, ConcertOpportunityService>();
+        services.AddScoped<IOpportunityService, OpportunityService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddSingleton<ITransactionMapperFactory, TransactionMapperFactory>();
@@ -181,7 +181,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
-        services.AddScoped<IConcertApplicationValidator, ConcertApplicationValidator>();
+        services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
         services.AddScoped<IStripeValidator, StripeValidator>();
         services.AddScoped<IUserValidator, UserValidator>();
         services.AddScoped<IReviewValidator, ReviewValidator>();
@@ -194,9 +194,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IArtistRepository, ArtistRepository>();
         services.AddScoped<IConcertRepository, ConcertRepository>();
-        services.AddScoped<IConcertApplicationRepository, ConcertApplicationRepository>();
+        services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
-        services.AddScoped<IConcertOpportunityRepository, ConcertOpportunityRepository>();
+        services.AddScoped<IOpportunityRepository, OpportunityRepository>();
         services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -235,8 +235,8 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IContractMapper, VersusContractMapper>(ContractType.Versus);
         services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
         services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
-        services.AddSingleton<IConcertOpportunityMapper, ConcertOpportunityMapper>();
-        services.AddSingleton<IConcertApplicationMapper, ConcertApplicationMapper>();
+        services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
+        services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();

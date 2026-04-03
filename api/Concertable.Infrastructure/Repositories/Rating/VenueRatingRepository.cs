@@ -35,7 +35,7 @@ public class VenueRatingRepository : IRatingRepository
             FROM Reviews r
             JOIN Tickets t ON t.Id = r.TicketId
             JOIN Concerts c ON c.Id = t.ConcertId
-            JOIN ConcertApplications ca ON ca.Id = c.ApplicationId
+            JOIN OpportunityApplications ca ON ca.Id = c.ApplicationId
             JOIN ConcertOpportunities co ON co.Id = ca.OpportunityId
             WHERE co.VenueId IN @Ids
             GROUP BY co.VenueId", new { Ids = ids });

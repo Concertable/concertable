@@ -13,7 +13,7 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
 
     public async Task<T?> GetByOpportunityIdAsync<T>(int opportunityId) where T : ContractEntity
     {
-        return await context.ConcertOpportunities
+        return await context.Opportunities
             .Where(o => o.Id == opportunityId)
             .Select(o => o.Contract)
             .OfType<T>()
@@ -31,7 +31,7 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
 
     public async Task<T?> GetByApplicationIdAsync<T>(int applicationId) where T : ContractEntity
     {
-        return await context.ConcertApplications
+        return await context.OpportunityApplications
             .Where(a => a.Id == applicationId)
             .Select(a => a.Opportunity.Contract)
             .OfType<T>()
@@ -56,7 +56,7 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
 
     public async Task<ContractType?> GetTypeByApplicationIdAsync(int applicationId)
     {
-        var opportunityId = await context.ConcertApplications
+        var opportunityId = await context.OpportunityApplications
             .Where(a => a.Id == applicationId)
             .Select(a => (int?)a.OpportunityId)
             .FirstOrDefaultAsync();

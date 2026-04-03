@@ -15,13 +15,13 @@ public class OwnershipService : IOwnershipService
     private readonly ICurrentUser currentUser;
     private readonly IVenueService venueService;
     private readonly IArtistService artistService;
-    private readonly IConcertOpportunityRepository opportunityRepository;
+    private readonly IOpportunityRepository opportunityRepository;
 
     public OwnershipService(
         ICurrentUser currentUser,
         IVenueService venueService,
         IArtistService artistService,
-        IConcertOpportunityRepository opportunityRepository)
+        IOpportunityRepository opportunityRepository)
     {
         this.currentUser = currentUser;
         this.venueService = venueService;

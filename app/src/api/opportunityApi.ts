@@ -4,6 +4,6 @@ import type { Pagination } from "@/types/common";
 import type { PaginationParams } from "@/hooks/usePagination";
 
 export async function getOpportunitiesByVenueId(venueId: number, params: PaginationParams): Promise<Pagination<Opportunity>> {
-  const { data } = await api.get<Pagination<Opportunity>>(`/concertopportunity/active/venue/${venueId}`, { params });
+  const { data } = await api.get<Pagination<Opportunity>>(`/opportunity/active/venue/${venueId}`, { params });
   return data;
 }

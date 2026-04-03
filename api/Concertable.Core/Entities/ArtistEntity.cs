@@ -15,6 +15,6 @@ public class ArtistEntity : IEntity, IHasName, IHasLocation
     public Point? Location => User.Location;
     public ICollection<ArtistGenreEntity> ArtistGenres { get; set; } = new List<ArtistGenreEntity>();
     public ICollection<SocialMediaEntity> SocialMedias { get; } = new List<SocialMediaEntity>();
-    public ICollection<ConcertApplicationEntity> Applications { get; } = new List<ConcertApplicationEntity>();
+    public ICollection<OpportunityApplicationEntity> Applications { get; } = new List<OpportunityApplicationEntity>();
     public ICollection<VideoEntity> Videos { get; } = new List<VideoEntity>();
 }

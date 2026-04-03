@@ -15,7 +15,7 @@ namespace Concertable.Infrastructure.UnitTests.Services.Application;
 
 public class DoorSplitApplicationServiceCompleteTests
 {
-    private readonly Mock<IConcertApplicationRepository> applicationRepository;
+    private readonly Mock<IOpportunityApplicationRepository> applicationRepository;
     private readonly Mock<IContractRepository> contractRepository;
     private readonly Mock<IVenueManagerRepository> venueManagerRepository;
     private readonly Mock<IArtistManagerRepository> artistManagerRepository;
@@ -25,14 +25,14 @@ public class DoorSplitApplicationServiceCompleteTests
     private readonly Mock<ITransactionService> transactionService;
     private readonly DoorSplitApplicationService sut;
 
-    private readonly ConcertApplicationEntity application = new() { Id = 5, Status = ApplicationStatus.Settled };
+    private readonly OpportunityApplicationEntity application = new() { Id = 5, Status = ApplicationStatus.Settled };
     private readonly DoorSplitContractEntity contract = new() { ArtistDoorPercent = 50 };
     private readonly VenueManagerEntity venueManager = new() { Id = Guid.NewGuid(), Email = "venue@test.com", StripeId = "acct_venue", Role = Role.VenueManager };
     private readonly ArtistManagerEntity artistManager = new() { Id = Guid.NewGuid(), Email = "artist@test.com", StripeId = "acct_artist", Role = Role.ArtistManager };
 
     public DoorSplitApplicationServiceCompleteTests()
     {
-        applicationRepository = new Mock<IConcertApplicationRepository>();
+        applicationRepository = new Mock<IOpportunityApplicationRepository>();
         contractRepository = new Mock<IContractRepository>();
         venueManagerRepository = new Mock<IVenueManagerRepository>();
         artistManagerRepository = new Mock<IArtistManagerRepository>();
@@ -42,7 +42,7 @@ public class DoorSplitApplicationServiceCompleteTests
         transactionService = new Mock<ITransactionService>();
 
         sut = new DoorSplitApplicationService(
-            new Mock<IConcertApplicationValidator>().Object,
+            new Mock<IOpportunityApplicationValidator>().Object,
             applicationRepository.Object,
             contractRepository.Object,
             artistManagerRepository.Object,

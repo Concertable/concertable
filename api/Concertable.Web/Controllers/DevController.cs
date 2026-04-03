@@ -21,7 +21,7 @@ public class DevController : ControllerBase
         [FromQuery] int applicationId,
         [FromServices] ApplicationDbContext context)
     {
-        var app = await context.ConcertApplications
+        var app = await context.OpportunityApplications
             .Where(a => a.Id == applicationId)
             .Select(a => new { a.Id, a.OpportunityId, a.Status })
             .FirstOrDefaultAsync();

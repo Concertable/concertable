@@ -38,7 +38,7 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IConcertRepository, ConcertRepository>();
-        services.AddScoped<IConcertApplicationRepository, ConcertApplicationRepository>();
+        services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
         services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<IVenueManagerRepository, VenueManagerRepository>();
         services.AddScoped<IArtistManagerRepository, ArtistManagerRepository>();

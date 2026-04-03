@@ -9,5 +9,5 @@ public abstract class ContractEntity : IEntity
     public int Id { get; set; }
     public PaymentMethod PaymentMethod { get; set; }
     public abstract ContractType ContractType { get; }
-    public ConcertOpportunityEntity Opportunity { get; set; } = null!;
+    public OpportunityEntity Opportunity { get; set; } = null!;
 }

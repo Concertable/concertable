@@ -34,7 +34,9 @@ public async Task InitializeAsync()
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     ["ConnectionStrings:DefaultConnection"] = sqlFixture.ConnectionString,
-                    ["UseFakeExternalServices"] = "true",
+                    ["ExternalServices:UseRealStripe"] = "false",
+                    ["ExternalServices:UseRealBlob"] = "false",
+                    ["ExternalServices:UseRealEmail"] = "false",
                     ["Auth:JwtSigningKeyBase64"] = Convert.ToBase64String(new byte[32]),
                     ["Auth:Issuer"] = "test",
                     ["Auth:Audience"] = "test",
