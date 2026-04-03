@@ -447,6 +447,8 @@ public class ApplicationDbInitializer : IDbInitializer
             new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
             new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(90), EndDate = now.AddDays(90).AddHours(3), Contract = new VersusContractEntity { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
             new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250, PaymentMethod = PaymentMethod.Transfer } }, //52
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(150), EndDate = now.AddDays(150).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 65, PaymentMethod = PaymentMethod.Cash } }, //53 - DoorSplit, no applications
+            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(180), EndDate = now.AddDays(180).AddHours(3), Contract = new VersusContractEntity { Guarantee = 150, ArtistDoorPercent = 60, PaymentMethod = PaymentMethod.Cash } }, //54 - Versus, no applications
 
             };
             context.Opportunities.AddRange(opportunities);

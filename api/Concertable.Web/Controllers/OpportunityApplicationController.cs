@@ -32,7 +32,7 @@ public class OpportunityApplicationController : ControllerBase
     }
 
     [Authorize(Roles = "VenueManager")]
-    [HttpGet("all/{id}")]
+    [HttpGet("opportunity/{id}")]
     public async Task<ActionResult<IEnumerable<OpportunityApplicationDto>>> GetAllByOpportunityId(int id)
     {
         return Ok(await applicationService.GetByOpportunityIdAsync(id));

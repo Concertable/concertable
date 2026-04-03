@@ -1,6 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Mappers;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
@@ -13,14 +12,16 @@ namespace Concertable.Infrastructure.UnitTests.Services;
 public class ContractServiceTests
 {
     private readonly Mock<IContractRepository> contractRepository;
-    private readonly Mock<IContractMapperFactory> mapperFactory;
+    private readonly Mock<IContractMapper> contractMapper;
+    private readonly Mock<IContractServiceStrategy> contractServiceStrategy;
     private readonly ContractService sut;
 
     public ContractServiceTests()
     {
         contractRepository = new Mock<IContractRepository>();
-        mapperFactory = new Mock<IContractMapperFactory>();
-        sut = new ContractService(contractRepository.Object, mapperFactory.Object);
+        contractMapper = new Mock<IContractMapper>();
+        contractServiceStrategy = new Mock<IContractServiceStrategy>();
+        sut = new ContractService(contractRepository.Object, contractMapper.Object, contractServiceStrategy.Object);
     }
 
     #region GetByOpportunityIdAsync
@@ -43,9 +44,9 @@ public class ContractServiceTests
         contractRepository
             .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))
             .ReturnsAsync(entity);
-        mapperFactory
-            .Setup(f => f.Create(ContractType.FlatFee))
-            .Returns(new FlatFeeContractMapper());
+        contractMapper
+            .Setup(m => m.ToDto(entity))
+            .Returns(expected);
 
         var result = (FlatFeeContractDto)await sut.GetByOpportunityIdAsync(1);
 
@@ -81,69 +82,17 @@ public class ContractServiceTests
     }
 
     [Fact]
-    public async Task UpdateAsync_ShouldUpdateFields_ForFlatFee()
+    public async Task UpdateAsync_ShouldCallApplyChanges_WhenContractTypeMatches()
     {
         var existing = new FlatFeeContractEntity { Id = 1, PaymentMethod = PaymentMethod.Cash, Fee = 500 };
+        var dto = new FlatFeeContractDto { Id = 1, PaymentMethod = PaymentMethod.Transfer, Fee = 750 };
         contractRepository
             .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))
             .ReturnsAsync(existing);
-        mapperFactory
-            .Setup(f => f.Create(ContractType.FlatFee))
-            .Returns(new FlatFeeContractMapper());
 
-        await sut.UpdateAsync(new FlatFeeContractDto { Id = 1, PaymentMethod = PaymentMethod.Transfer, Fee = 750 }, 1);
+        await sut.UpdateAsync(dto, 1);
 
-        Assert.Equal(PaymentMethod.Transfer, existing.PaymentMethod);
-        Assert.Equal(750, existing.Fee);
-    }
-
-    [Fact]
-    public async Task UpdateAsync_ShouldUpdateFields_ForDoorSplit()
-    {
-        var existing = new DoorSplitContractEntity { Id = 1, ArtistDoorPercent = 50 };
-        contractRepository
-            .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))
-            .ReturnsAsync(existing);
-        mapperFactory
-            .Setup(f => f.Create(ContractType.DoorSplit))
-            .Returns(new DoorSplitContractMapper());
-
-        await sut.UpdateAsync(new DoorSplitContractDto { Id = 1, ArtistDoorPercent = 70 }, 1);
-
-        Assert.Equal(70, existing.ArtistDoorPercent);
-    }
-
-    [Fact]
-    public async Task UpdateAsync_ShouldUpdateFields_ForVersus()
-    {
-        var existing = new VersusContractEntity { Id = 1, Guarantee = 100, ArtistDoorPercent = 50 };
-        contractRepository
-            .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))
-            .ReturnsAsync(existing);
-        mapperFactory
-            .Setup(f => f.Create(ContractType.Versus))
-            .Returns(new VersusContractMapper());
-
-        await sut.UpdateAsync(new VersusContractDto { Id = 1, Guarantee = 200, ArtistDoorPercent = 60 }, 1);
-
-        Assert.Equal(200, existing.Guarantee);
-        Assert.Equal(60, existing.ArtistDoorPercent);
-    }
-
-    [Fact]
-    public async Task UpdateAsync_ShouldUpdateFields_ForVenueHire()
-    {
-        var existing = new VenueHireContractEntity { Id = 1, HireFee = 300 };
-        contractRepository
-            .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))
-            .ReturnsAsync(existing);
-        mapperFactory
-            .Setup(f => f.Create(ContractType.VenueHire))
-            .Returns(new VenueHireContractMapper());
-
-        await sut.UpdateAsync(new VenueHireContractDto { Id = 1, HireFee = 500 }, 1);
-
-        Assert.Equal(500, existing.HireFee);
+        contractServiceStrategy.Verify(s => s.ApplyChanges(existing, dto), Times.Once);
     }
 
     #endregion
