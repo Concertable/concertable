@@ -1,65 +1,61 @@
 using Concertable.Application.Interfaces;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Interfaces.Rating;
-using Concertable.Core.Enums;
-using Concertable.Application.Validators;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Concertable.Application.Interfaces.Search;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Application.Mappers;
+using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
+using Concertable.Application.Validators;
 using Concertable.Core.Entities;
-using Infrastructure;
+using Concertable.Core.Enums;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Factories;
+using Concertable.Infrastructure.Interfaces;
+using Concertable.Infrastructure.Mappers;
 using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Repositories.Concert;
 using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Repositories.Search;
 using Concertable.Infrastructure.Services;
-using Concertable.Infrastructure.Services.Auth;
-using Concertable.Infrastructure.Services.Blob;
-using Concertable.Infrastructure.Services.Concert;
-using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
+using Concertable.Infrastructure.Services.Auth;
+using Concertable.Infrastructure.Services.Blob;
 using Concertable.Infrastructure.Services.Complete;
+using Concertable.Infrastructure.Services.Concert;
+using Concertable.Infrastructure.Services.Email;
+using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Infrastructure.Services.Payment;
+using Concertable.Infrastructure.Services.Rating;
+using Concertable.Infrastructure.Services.Search;
 using Concertable.Infrastructure.Services.Settlement;
 using Concertable.Infrastructure.Services.Webhook;
-using Concertable.Infrastructure.Services.Rating;
-using Concertable.Infrastructure.Validators;
-using Concertable.Infrastructure.Services.Search;
 using Concertable.Infrastructure.Settings;
-using Concertable.Application.Mappers;
-using Concertable.Infrastructure.Factories;
-using Concertable.Infrastructure.Mappers;
 using Concertable.Infrastructure.Specifications;
-using System.Text;
+using Concertable.Infrastructure.Validators;
+using Concertable.Web.Authorization;
+using Concertable.Web.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using QuestPDF.Infrastructure;
-using Concertable.Web.Authorization;
-using Concertable.Web.Services;
-using Concertable.Application.DTOs;
-using Concertable.Application.Requests;
-using Concertable.Core.Parameters;
-using Microsoft.AspNetCore.Http;
 using QRCoder;
-using Concertable.Infrastructure.Data;
+using QuestPDF.Infrastructure;
+using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Concertable.Web.Extensions;
 
@@ -70,6 +66,21 @@ public static class ServiceCollectionExtensions
         QuestPDF.Settings.License = LicenseType.Community;
 
         services.AddSingleton(TimeProvider.System);
+
+        services.AddKeyedSingleton<IGeometryProvider, GeographicGeometryProvider>(GeometryProviderType.Geographic, (_, _) =>
+            new GeographicGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326)));
+        services.AddKeyedSingleton<IGeometryProvider, MetricGeometryProvider>(GeometryProviderType.Metric, (_, _) =>
+            new MetricGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857)));
+
+        services.AddDatabase(configuration);
+        services.AddExternalServices(configuration);
+        services.AddBackgroundServices();
+
+        return services;
+    }
+
+    private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
+    {
         services.AddScoped<AuditInterceptor>();
 
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
@@ -81,33 +92,39 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDbConnection>(_ =>
             new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
 
+        return services;
+    }
+
+    private static IServiceCollection AddExternalServices(this IServiceCollection services, IConfiguration configuration)
+    {
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
 
-        if (configuration.GetValue<bool>("UseFakeExternalServices"))
+        var external = configuration.GetSection("ExternalServices");
+
+        if (external.GetValue<bool>("UseRealStripe"))
         {
-            services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
-            services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
-            services.AddScoped<IPaymentService, FakePaymentService>();
-            services.AddScoped<IWebhookService, FakeWebhookService>();
-        }
-        else
-        {
-            services.AddScoped<IBlobStorageService, BlobStorageService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
             services.AddScoped<IStripePaymentClient, StripePaymentClient>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IWebhookService, WebhookService>();
         }
+        else
+        {
+            services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
+            services.AddScoped<IPaymentService, FakePaymentService>();
+            services.AddScoped<IWebhookService, FakeWebhookService>();
+        }
 
-        services.AddKeyedSingleton<IGeometryProvider, GeographicGeometryProvider>(GeometryProviderType.Geographic, (_, _) =>
-            new GeographicGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326)));
-        services.AddKeyedSingleton<IGeometryProvider, MetricGeometryProvider>(GeometryProviderType.Metric, (_, _) =>
-            new MetricGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857)));
+        if (external.GetValue<bool>("UseRealBlob"))
+            services.AddScoped<IBlobStorageService, BlobStorageService>();
+        else
+            services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
 
-
-        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-        services.AddHostedService<QueueHostedService>();
+        if (external.GetValue<bool>("UseRealEmail"))
+            services.AddScoped<IEmailService, EmailService>();
+        else
+            services.AddScoped<IEmailService, FakeEmailService>();
 
         services.AddHttpClient("Geocoding", client =>
         {
@@ -115,9 +132,14 @@ public static class ServiceCollectionExtensions
         });
         services.AddScoped<IGeocodingService, GeocodingService>();
 
-        services.AddSignalR();
+        return services;
+    }
 
-        services.AddSingleton(TimeProvider.System);
+    private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+    {
+        services.AddSignalR();
+        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+        services.AddHostedService<QueueHostedService>();
 
         return services;
     }
@@ -140,7 +162,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<IReviewService, ReviewService>();
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
-        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfService, PdfService>();
         services.AddSingleton<QRCodeGenerator>();
         services.AddScoped<IQrCodeService, QrCodeService>();
@@ -151,12 +172,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICollectionDiffer, CollectionDiffer>();
         services.AddScoped<IGenreSyncService, GenreSyncService>();
         services.AddContracts();
-        services.AddValidators();
+        services.AddServiceValidators();
 
         return services;
     }
 
-    public static IServiceCollection AddValidators(this IServiceCollection services)
+    public static IServiceCollection AddServiceValidators(this IServiceCollection services)
     {
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
@@ -291,11 +312,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        // Settings
         var authSettings = configuration.GetSection("Auth").Get<AuthSettings>()!;
         services.Configure<AuthSettings>(configuration.GetSection("Auth"));
 
-        // Services
         services.AddScoped<IAuthService, AuthService>();
         services.AddSingleton<JwtSecurityTokenHandler>();
         services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
@@ -304,7 +323,6 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserAccessor>();
 
-        // JWT Bearer
         var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);
         var signingKey = new SymmetricSecurityKey(keyBytes);
 
