@@ -1,16 +1,19 @@
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { useApplicationQuery, useAcceptApplicationMutation } from "@/hooks/query/useApplicationQuery";
+import { useStripeVerifiedQuery } from "@/hooks/query/useStripeAccountQuery";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
+import { StripeOnboardingBanner } from "@/components/stripe/StripeOnboardingBanner";
 import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
 
 export default function AcceptApplicationPage() {
   const { applicationId } = useParams({ from: "/venue/accept/$applicationId" });
   const navigate = useNavigate();
-  const { data: application, isLoading } = useApplicationQuery(Number(applicationId));
+  const { data: application, isLoading } = useApplicationQuery(applicationId);
   const { mutate: accept, isPending } = useAcceptApplicationMutation(
     application?.opportunity.id ?? 0
   );
+  const { data: isStripeVerified } = useStripeVerifiedQuery();
 
   if (isLoading || !application) return null;
 
@@ -18,7 +21,7 @@ export default function AcceptApplicationPage() {
 
   function handleConfirm() {
     accept(application!.id, {
-      onSuccess: () => navigate({ to: "/venue/my/applications/$id", params: { id: String(opportunity.id) } }),
+      onSuccess: () => navigate({ to: "/venue/my/applications/$id", params: { id: opportunity.id } }),
     });
   }
 
@@ -31,15 +34,17 @@ export default function AcceptApplicationPage() {
         </p>
       </div>
 
+      <StripeOnboardingBanner />
+
       <div className="rounded-xl border border-border bg-card p-4">
         <AcceptContractSummary contract={opportunity.contract} />
       </div>
 
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => navigate({ to: "/venue/my/applications/$id", params: { id: String(opportunity.id) } })}>
+        <Button variant="outline" onClick={() => navigate({ to: "/venue/my/applications/$id", params: { id: opportunity.id } })}>
           Cancel
         </Button>
-        <Button disabled={isPending} onClick={handleConfirm}>
+        <Button disabled={isPending || !isStripeVerified} onClick={handleConfirm}>
           {isPending ? "Confirming..." : "Confirm"}
         </Button>
       </div>
