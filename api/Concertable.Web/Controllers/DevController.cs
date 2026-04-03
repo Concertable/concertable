@@ -1,4 +1,3 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Concert;
@@ -16,6 +15,16 @@ namespace Concertable.Web.Controllers;
 [Route("api/[controller]")]
 public class DevController : ControllerBase
 {
+    [HttpGet("user")]
+    public async Task<ActionResult<IUser>> GetUser(
+        [FromQuery] Guid id,
+        [FromServices] IUserService userService)
+    {
+        var user = await userService.GetUserByIdAsync(id);
+        if (user is null) return NotFound();
+        return Ok(user);
+    }
+
     [HttpGet("debug")]
     public async Task<IActionResult> Debug(
         [FromQuery] int applicationId,

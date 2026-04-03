@@ -235,6 +235,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IContractMapper, VersusContractMapper>(ContractType.Versus);
         services.AddKeyedSingleton<IContractMapper, VenueHireContractMapper>(ContractType.VenueHire);
         services.AddSingleton<IContractMapperFactory, ContractMapperFactory>();
+        services.AddSingleton<IUserMapper, UserMapper>();
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 

@@ -1,4 +1,3 @@
-using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 
@@ -8,8 +7,8 @@ public interface ICurrentUser
 {
     Guid? Id { get; }
     Guid GetId();
-    UserDto Get();
-    UserDto? GetOrDefault();
+    IUser Get();
+    IUser? GetOrDefault();
     UserEntity GetEntity();
     Role GetRole();
 }

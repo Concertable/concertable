@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
-using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Infrastructure.Data;
@@ -21,19 +20,22 @@ public class AuthService : IAuthService
     private readonly ITokenService tokenService;
     private readonly AuthSettings authSettings;
     private readonly IUserValidator userValidator;
+    private readonly IUserMapper userMapper;
 
     public AuthService(
         ApplicationDbContext context,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
         IOptions<AuthSettings> authSettings,
-        IUserValidator userValidator)
+        IUserValidator userValidator,
+        IUserMapper userMapper)
     {
         this.context = context;
         this.passwordHasher = passwordHasher;
         this.tokenService = tokenService;
         this.authSettings = authSettings.Value;
         this.userValidator = userValidator;
+        this.userMapper = userMapper;
     }
 
     public async Task RegisterAsync(RegisterRequest request)
@@ -59,6 +61,8 @@ public class AuthService : IAuthService
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = await context.Users
+            .Include(u => (u as VenueManagerEntity)!.Venue)
+            .Include(u => (u as ArtistManagerEntity)!.Artist)
             .FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
@@ -91,12 +95,17 @@ public class AuthService : IAuthService
         token.IsRevoked = true;
         await context.SaveChangesAsync();
 
-        return await IssueTokensAsync(token.User);
+        var user = await context.Users
+            .Include(u => (u as VenueManagerEntity)!.Venue)
+            .Include(u => (u as ArtistManagerEntity)!.Artist)
+            .FirstAsync(u => u.Id == token.User.Id);
+
+        return await IssueTokensAsync(user);
     }
 
     private async Task<LoginResponse> IssueTokensAsync(UserEntity user)
     {
-        var dto = user.ToDto();
+        var dto = userMapper.ToDto(user);
         var baseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var url) ? url : "/";
 
         var accessToken = tokenService.CreateAccessToken(user.Id, user.Email, user.Role);

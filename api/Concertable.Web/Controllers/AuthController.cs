@@ -1,4 +1,3 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
@@ -49,7 +48,7 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<UserDto> Me()
+    public ActionResult<IUser> Me()
     {
         return Ok(currentUser.Get());
     }

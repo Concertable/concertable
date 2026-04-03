@@ -1,5 +1,4 @@
-﻿using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
+﻿using Concertable.Application.Interfaces;
 using Concertable.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +18,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}/location")]
-    public async Task<ActionResult<UserDto>> UpdateLocation(int id, [FromBody] UpdateLocationRequest request)
+    public async Task<ActionResult<IUser>> UpdateLocation(int id, [FromBody] UpdateLocationRequest request)
     {
         var updatedUser = await userService.UpdateLocationAsync(request.Latitude, request.Longitude);
         return Ok(updatedUser);

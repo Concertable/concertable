@@ -1,4 +1,3 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
@@ -21,8 +20,8 @@ public class CurrentUserAccessor : ICurrentUser
 
     public Guid? Id => Current.Id;
     public Guid GetId() => Current.GetId();
-    public UserDto Get() => Current.Get();
-    public UserDto? GetOrDefault() => Current.GetOrDefault();
+    public IUser Get() => Current.Get();
+    public IUser? GetOrDefault() => Current.GetOrDefault();
     public UserEntity GetEntity() => Current.GetEntity();
     public Role GetRole() => Current.GetRole();
 }

@@ -11,6 +11,9 @@ import {
 import { ContractDetails } from "@/components/opportunities/ContractDetails";
 import { ContractSummaryLabel } from "@/components/opportunities/ContractSummaryLabel";
 import { useApply } from "@/hooks/useApply";
+import { useNavigate } from "@tanstack/react-router";
+import { useAuthStore } from "@/store/useAuthStore";
+import { isVenueManager } from "@/types/auth";
 import dayjs from "dayjs";
 
 interface Props {
@@ -20,6 +23,8 @@ interface Props {
 export function OpportunityCard({ opportunity }: Readonly<Props>) {
   const [open, setOpen] = useState(false);
   const { apply, isPending, error, canApply } = useApply(opportunity.id);
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
 
   return (
     <>
@@ -35,10 +40,16 @@ export function OpportunityCard({ opportunity }: Readonly<Props>) {
             <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
               View Contract
             </Button>
-            {canApply && (
-              <Button size="sm" disabled={isPending} onClick={() => apply()}>
-                {isPending ? "Applying..." : "Apply"}
+            {user && isVenueManager(user) && user.venueId === opportunity.venueId ? (
+              <Button size="sm" onClick={() => navigate({ to: "/venue/my/applications/$id", params: { id: opportunity.id } })}>
+                View Applications
               </Button>
+            ) : (
+              canApply && (
+                <Button size="sm" disabled={isPending} onClick={() => apply()}>
+                  {isPending ? "Applying..." : "Apply"}
+                </Button>
+              )
             )}
           </div>
         </div>

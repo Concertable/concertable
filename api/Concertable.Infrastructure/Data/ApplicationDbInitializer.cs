@@ -46,6 +46,7 @@ public class ApplicationDbInitializer : IDbInitializer
 
             context.Users.Add(new UserEntity
             {
+                Id = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"),
                 Email = "admin1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 Role = Role.Admin,
@@ -56,6 +57,7 @@ public class ApplicationDbInitializer : IDbInitializer
 
             customerIds.Add(context.Users.Add(new CustomerEntity
             {
+                Id = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000001"),
                 Email = "customer1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 Role = Role.Customer,
@@ -81,6 +83,7 @@ public class ApplicationDbInitializer : IDbInitializer
 
             artistManagerIds.Add(context.Users.Add(new ArtistManagerEntity
             {
+                Id = Guid.Parse("cccccccc-0000-0000-0000-000000000001"),
                 Email = "artistmanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 Role = Role.ArtistManager,
@@ -115,6 +118,7 @@ public class ApplicationDbInitializer : IDbInitializer
 
             venueManagerIds.Add(context.Users.Add(new VenueManagerEntity
             {
+                Id = Guid.Parse("dddddddd-0000-0000-0000-000000000001"),
                 Email = "venuemanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 Role = Role.VenueManager,

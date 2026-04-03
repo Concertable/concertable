@@ -1,7 +1,5 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.Mappers;
 using Concertable.Core.Entities;
 using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,17 +12,20 @@ public class UserService : IUserService
     private readonly ICurrentUser currentUser;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
+    private readonly IUserMapper userMapper;
 
     public UserService(
         IUserRepository userRepsitory,
         ICurrentUser currentUser,
         IGeocodingService geocodingService,
-        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
+        IUserMapper userMapper)
     {
         this.userRepsitory = userRepsitory;
         this.currentUser = currentUser;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
+        this.userMapper = userMapper;
     }
 
     public async Task<Guid> GetIdByApplicationIdAsync(int applicationId)
@@ -47,7 +48,7 @@ public class UserService : IUserService
         return await userRepsitory.GetByConcertIdAsync(concertId);
     }
 
-    public async Task<UserDto> UpdateLocationAsync(double latitude, double longitude)
+    public async Task<IUser> UpdateLocationAsync(double latitude, double longitude)
     {
         var user = currentUser.GetEntity();
 
@@ -61,13 +62,13 @@ public class UserService : IUserService
         userRepsitory.Update(user);
         await userRepsitory.SaveChangesAsync();
 
-        return user.ToDto();
+        return userMapper.ToDto(user);
     }
 
-    public async Task<UserDto?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var user = await userRepsitory.GetByIdAsync(userId, cancellationToken);
-        return user?.ToDto();
+        return user is null ? null : userMapper.ToDto(user);
     }
 
     public async Task<UserEntity?> GetUserEntityByIdAsync(Guid userId, CancellationToken cancellationToken = default)

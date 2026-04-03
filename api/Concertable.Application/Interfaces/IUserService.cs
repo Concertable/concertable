@@ -1,4 +1,3 @@
-using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
 
 namespace Concertable.Application.Interfaces;
@@ -9,10 +8,10 @@ public interface IUserService
     Task<UserEntity> GetByConcertIdAsync(int id);
     Task<Guid> GetIdByApplicationIdAsync(int id);
     Task<Guid> GetIdByConcertIdAsync(int id);
-    Task<UserDto> UpdateLocationAsync(double latitude, double longitude);
+    Task<IUser> UpdateLocationAsync(double latitude, double longitude);
 
     /// <summary>Gets user DTO by id. Returns null if not found.</summary>
-    Task<UserDto?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>Gets user entity by id. Returns null if not found.</summary>
     Task<UserEntity?> GetUserEntityByIdAsync(Guid userId, CancellationToken cancellationToken = default);

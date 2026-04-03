@@ -2,7 +2,7 @@ import { useParams } from "@tanstack/react-router";
 import { useApplicationsByOpportunityQuery } from "@/hooks/query/useApplicationQuery";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
 
-export default function ListingApplicationsPage() {
+export default function OpportunityApplicationsPage() {
   const { id } = useParams({ from: "/venue/my/applications/$id" });
   const { data: applications, isLoading } = useApplicationsByOpportunityQuery(Number(id));
 

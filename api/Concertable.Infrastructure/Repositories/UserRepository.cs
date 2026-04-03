@@ -52,6 +52,9 @@ public class UserRepository : GuidRepository<UserEntity>, IUserRepository
 
     public Task<UserEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        return context.Users
+            .Include(u => (u as VenueManagerEntity)!.Venue)
+            .Include(u => (u as ArtistManagerEntity)!.Artist)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
 }

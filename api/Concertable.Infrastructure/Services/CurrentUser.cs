@@ -1,4 +1,3 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
@@ -10,12 +9,12 @@ public class CurrentUser : ICurrentUser
 {
     public static readonly CurrentUser Unauthenticated = new();
 
-    private readonly UserDto? dto;
+    private readonly IUser? dto;
     private readonly UserEntity? entity;
 
     private CurrentUser() { }
 
-    public CurrentUser(UserDto dto, UserEntity? entity = null)
+    public CurrentUser(IUser dto, UserEntity? entity = null)
     {
         this.dto = dto;
         this.entity = entity;
@@ -25,10 +24,10 @@ public class CurrentUser : ICurrentUser
 
     public Guid GetId() => Id ?? throw new UnauthorizedException("User not authenticated");
 
-    public UserDto Get() =>
+    public IUser Get() =>
         dto ?? throw new UnauthorizedException("User not authenticated");
 
-    public UserDto? GetOrDefault() => dto;
+    public IUser? GetOrDefault() => dto;
 
     public UserEntity GetEntity() =>
         entity ?? throw new UnauthorizedException("User not authenticated");
