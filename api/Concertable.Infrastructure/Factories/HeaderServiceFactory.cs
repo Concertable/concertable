@@ -13,6 +13,6 @@ public class HeaderServiceFactory : IHeaderServiceFactory
         this.serviceProvider = serviceProvider;
     }
 
-    public IHeaderService? Create(HeaderType type)
-        => serviceProvider.GetKeyedService<IHeaderService>(type);
+    public IHeaderService Create(HeaderType type)
+        => serviceProvider.GetRequiredKeyedService<IHeaderService>(type);
 }

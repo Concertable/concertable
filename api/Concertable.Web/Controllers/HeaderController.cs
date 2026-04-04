@@ -21,14 +21,7 @@ public class HeaderController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Search([FromQuery] SearchParams searchParams)
     {
-        if (searchParams.HeaderType is null)
-            return BadRequest("Search type is required.");
-
-        var service = headerServiceFactory.Create(searchParams.HeaderType.Value);
-
-        if (service is null)
-            return BadRequest($"Invalid header type '{searchParams.HeaderType}'.");
-
+        var service = headerServiceFactory.Create(searchParams.HeaderType!.Value);
         return Ok(await service.SearchAsync(searchParams));
     }
 
@@ -39,10 +32,6 @@ public class HeaderController : ControllerBase
             return BadRequest("Header type is required.");
 
         var service = headerServiceFactory.Create(headerType.Value);
-
-        if (service is null)
-            return BadRequest($"Invalid header type '{headerType}'.");
-
         return Ok(await service.GetByAmountAsync(amount));
     }
 

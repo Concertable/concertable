@@ -4,5 +4,5 @@ namespace Concertable.Application.Interfaces.Search;
 
 public interface IHeaderServiceFactory
 {
-    IHeaderService? Create(HeaderType type);
+    IHeaderService Create(HeaderType type);
 }
