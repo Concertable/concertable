@@ -38,7 +38,7 @@ export function ConcertDetails({
 
       <ScrollspyNav sections={SECTIONS} />
 
-      <div className="mx-auto max-w-6xl px-6 py-10">
+      <div className="@container mx-auto max-w-6xl px-6 py-10">
         <div className="flex gap-10">
           <div className="flex-1 space-y-10">
             <section id="about" className="scroll-mt-24 space-y-2">
@@ -104,7 +104,7 @@ export function ConcertDetails({
             </section>
           </div>
 
-          <div className="w-72 shrink-0">
+          <div className="hidden w-72 shrink-0 @3xl:block">
             <div className="sticky top-28">
               <ConcertCard concert={concert} />
             </div>
