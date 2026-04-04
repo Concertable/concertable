@@ -12,6 +12,7 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
+  isAuthenticated: boolean;
   login: (request: LoginRequest) => Promise<string>;
   register: (request: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -24,6 +25,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       refreshToken: null,
+      isAuthenticated: false,
 
       login: async (request) => {
         const { data } = await api.post<LoginResponse>("/auth/login", request);
@@ -31,6 +33,7 @@ export const useAuthStore = create<AuthState>()(
           user: data.user,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
+          isAuthenticated: true,
         });
         return data.user.baseUrl;
       },
@@ -42,7 +45,12 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         const { refreshToken } = get();
         await api.post("/auth/logout", { refreshToken });
-        set({ user: null, accessToken: null, refreshToken: null });
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        });
       },
 
       refresh: async () => {
@@ -55,9 +63,15 @@ export const useAuthStore = create<AuthState>()(
             user: data.user,
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
+            isAuthenticated: true,
           });
         } catch {
-          set({ user: null, accessToken: null, refreshToken: null });
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+          });
         }
       },
     }),
