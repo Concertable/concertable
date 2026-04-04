@@ -12,7 +12,7 @@ interface Props {
 
 export function ScrollspyNav({ sections }: Readonly<Props>) {
   const [activeId, setActiveId] = useState(sections[0]?.id);
-  const navbarHeight = useNavbarHeight();
+  const { totalHeight } = useNavbarHeight();
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function ScrollspyNav({ sections }: Readonly<Props>) {
   }
 
   return (
-    <nav className="sticky z-10 bg-background border-b border-border" style={{ top: navbarHeight }}>
+    <nav className="sticky z-10 bg-background border-b border-border" style={{ top: totalHeight }}>
       <div className="max-w-6xl mx-auto px-6">
         <ul className="flex justify-center gap-6">
           {sections.map(({ id, label }) => (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Outlet } from "@tanstack/react-router";
 import { Navbar, type NavLink } from "@/components/Navbar";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -11,9 +11,14 @@ interface Props {
 
 export function AppLayout({ links }: Readonly<Props>) {
   const [navbarHeight, setNavbarHeight] = useState(0);
+  const [configHeight, setConfigHeight] = useState(0);
+
+  const handleSetConfigHeight = useCallback((height: number) => {
+    setConfigHeight(height);
+  }, []);
 
   return (
-    <NavbarHeightContext.Provider value={navbarHeight}>
+    <NavbarHeightContext.Provider value={{ navbarHeight, totalHeight: navbarHeight + configHeight, setConfigHeight: handleSetConfigHeight }}>
       <Navbar links={links} onHeightChange={setNavbarHeight} />
       <Breadcrumbs />
       <Outlet />

@@ -1,9 +1,10 @@
-import { useLayoutEffect, useRef } from "react";
+import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { Mailbox } from "@/components/Mailbox";
 import { useRole } from "@/hooks/useRole";
+import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 
 export interface NavLink {
   label: string;
@@ -19,9 +20,9 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
   const role = useRole();
   const ref = useRef<HTMLElement>(null);
 
-  useLayoutEffect(() => {
+  useMountLayoutEffect(() => {
     if (ref.current) onHeightChange(ref.current.offsetHeight);
-  }, []);
+  });
 
   return (
     <nav ref={ref} className="sticky top-0 z-20 bg-background flex items-center justify-between border-b border-border px-6 py-3">
