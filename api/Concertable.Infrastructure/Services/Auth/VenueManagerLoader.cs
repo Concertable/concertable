@@ -5,13 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Services.Auth;
 
-public class VenueManagerLoader(ApplicationDbContext context) : IUserLoader
+public class VenueManagerLoader : IUserLoader
 {
-    public Task<UserEntity> LoadAsync(Guid id) =>
-        context.Users
-            .OfType<VenueManagerEntity>()
-            .Include(u => u.Venue)
-            .Where(u => u.Id == id)
-            .Cast<UserEntity>()
-            .FirstAsync();
+    private readonly ApplicationDbContext context;
+
+    public VenueManagerLoader(ApplicationDbContext context)
+    {
+        this.context = context;
+    }
+
+    public Task<UserEntity> LoadAsync(UserEntity user) =>
+        context.Users.OfType<VenueManagerEntity>().Include(u => u.Venue).Where(u => u.Id == user.Id).Cast<UserEntity>().FirstAsync();
 }

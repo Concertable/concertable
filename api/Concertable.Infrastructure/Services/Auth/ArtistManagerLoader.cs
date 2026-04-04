@@ -5,13 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Services.Auth;
 
-public class ArtistManagerLoader(ApplicationDbContext context) : IUserLoader
+public class ArtistManagerLoader : IUserLoader
 {
-    public Task<UserEntity> LoadAsync(Guid id) =>
-        context.Users
-            .OfType<ArtistManagerEntity>()
-            .Include(u => u.Artist)
-            .Where(u => u.Id == id)
-            .Cast<UserEntity>()
-            .FirstAsync();
+    private readonly ApplicationDbContext context;
+
+    public ArtistManagerLoader(ApplicationDbContext context)
+    {
+        this.context = context;
+    }
+
+    public Task<UserEntity> LoadAsync(UserEntity user) =>
+        context.Users.OfType<ArtistManagerEntity>().Include(u => u.Artist).Where(u => u.Id == user.Id).Cast<UserEntity>().FirstAsync();
 }

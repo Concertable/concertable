@@ -4,5 +4,5 @@ namespace Concertable.Application.Interfaces.Auth;
 
 public interface IUserLoader
 {
-    Task<UserEntity> LoadAsync(Guid id);
+    Task<UserEntity> LoadAsync(UserEntity user);
 }

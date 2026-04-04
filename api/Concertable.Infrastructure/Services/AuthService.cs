@@ -8,7 +8,6 @@ using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Concertable.Infrastructure.Services;
@@ -21,7 +20,7 @@ public class AuthService : IAuthService
     private readonly AuthSettings authSettings;
     private readonly IUserValidator userValidator;
     private readonly IUserMapper userMapper;
-    private readonly IServiceProvider serviceProvider;
+    private readonly IUserLoader userLoader;
 
     public AuthService(
         ApplicationDbContext context,
@@ -30,7 +29,7 @@ public class AuthService : IAuthService
         IOptions<AuthSettings> authSettings,
         IUserValidator userValidator,
         IUserMapper userMapper,
-        IServiceProvider serviceProvider)
+        IUserLoader userLoader)
     {
         this.context = context;
         this.passwordHasher = passwordHasher;
@@ -38,7 +37,7 @@ public class AuthService : IAuthService
         this.authSettings = authSettings.Value;
         this.userValidator = userValidator;
         this.userMapper = userMapper;
-        this.serviceProvider = serviceProvider;
+        this.userLoader = userLoader;
     }
 
     public async Task RegisterAsync(RegisterRequest request)
@@ -70,8 +69,7 @@ public class AuthService : IAuthService
         if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new BadRequestException("Invalid email or password.");
 
-        var loader = serviceProvider.GetRequiredKeyedService<IUserLoader>(user.GetType());
-        var fullUser = await loader.LoadAsync(user.Id);
+        var fullUser = await userLoader.LoadAsync(user);
 
         return await IssueTokensAsync(fullUser);
     }
@@ -100,8 +98,7 @@ public class AuthService : IAuthService
         token.IsRevoked = true;
         await context.SaveChangesAsync();
 
-        var loader = serviceProvider.GetRequiredKeyedService<IUserLoader>(token.User.GetType());
-        var user = await loader.LoadAsync(token.User.Id);
+        var user = await userLoader.LoadAsync(token.User);
 
         return await IssueTokensAsync(user);
     }
