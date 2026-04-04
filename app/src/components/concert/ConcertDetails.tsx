@@ -5,6 +5,7 @@ import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { ConcertCard } from "@/components/concert/ConcertCard";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SECTIONS = [
   { id: "about", label: "About" },
@@ -72,7 +73,34 @@ export function ConcertDetails({
             <div className="border-border border-t" />
 
             <section id="reviews" className="scroll-mt-24">
-              <ReviewSection type="concert" id={concert.id} />
+              <Tabs defaultValue="artist">
+                <TabsList>
+                  <TabsTrigger value="artist">Artist Reviews</TabsTrigger>
+                  <TabsTrigger value="venue">Venue Reviews</TabsTrigger>
+                  <TabsTrigger value="concert">Concert Reviews</TabsTrigger>
+                </TabsList>
+                <TabsContent value="artist">
+                  <ReviewSection
+                    type="artist"
+                    id={concert.artist.id}
+                    title="Artist Reviews"
+                  />
+                </TabsContent>
+                <TabsContent value="venue">
+                  <ReviewSection
+                    type="venue"
+                    id={concert.venue.id}
+                    title="Venue Reviews"
+                  />
+                </TabsContent>
+                <TabsContent value="concert">
+                  <ReviewSection
+                    type="concert"
+                    id={concert.id}
+                    title="Concert Reviews"
+                  />
+                </TabsContent>
+              </Tabs>
             </section>
           </div>
 
