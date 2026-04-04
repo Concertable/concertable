@@ -6,7 +6,6 @@ using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
-using Concertable.Infrastructure.Constants;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -106,8 +105,6 @@ public class AuthService : IAuthService
     private async Task<LoginResponse> IssueTokensAsync(UserEntity user)
     {
         var dto = userMapper.ToDto(user);
-        var baseUrl = RoleRoutes.BaseUrls.TryGetValue(user.Role, out var url) ? url : "/";
-
         var accessToken = tokenService.CreateAccessToken(user.Id, user.Email, user.Role);
         var refreshTokenValue = tokenService.CreateRefreshToken();
 
@@ -121,6 +118,6 @@ public class AuthService : IAuthService
         await context.SaveChangesAsync();
 
         var expiresInSeconds = authSettings.AccessTokenExpirationMinutes * 60;
-        return new LoginResponse(dto, accessToken, refreshTokenValue, expiresInSeconds, baseUrl);
+        return new LoginResponse(dto, accessToken, refreshTokenValue, expiresInSeconds);
     }
 }

@@ -17,4 +17,5 @@ public interface IUser
     double? Longitude { get; set; }
     string? County { get; set; }
     string? Town { get; set; }
+    string BaseUrl { get; set; }
 }

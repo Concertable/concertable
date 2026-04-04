@@ -27,11 +27,8 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      await login(data);
-      const role = useAuthStore.getState().user?.role;
-      if (role === "VenueManager") await navigate({ to: "/venue" });
-      else if (role === "ArtistManager") await navigate({ to: "/artist" });
-      else await navigate({ to: "/" });
+      const baseUrl = await login(data);
+      await navigate({ to: baseUrl });
     } catch {
       toast.error("Invalid email or password");
     }

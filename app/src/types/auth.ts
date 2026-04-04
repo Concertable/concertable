@@ -5,6 +5,7 @@ interface BaseUser {
   id: string;
   email: string;
   role?: Role;
+  baseUrl: string;
   latitude?: number;
   longitude?: number;
   county?: string;
@@ -55,7 +56,6 @@ export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   expiresInSeconds: number;
-  baseUrl: string;
 }
 
 export interface ResetPasswordRequest {

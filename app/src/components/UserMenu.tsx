@@ -42,7 +42,6 @@ export function UserMenu() {
   const isCustomer = user.role === "Customer";
   const section = useNavSection();
   const inCustomerView = section === "Customer";
-  const managerHome = user.role === "VenueManager" ? "/venue" : "/artist";
 
   return (
     <DropdownMenu>
@@ -87,7 +86,7 @@ export function UserMenu() {
             <DropdownMenuSeparator />
             {inCustomerView ? (
               <DropdownMenuItem asChild>
-                <Link to={managerHome}>Manager View</Link>
+                <Link to={user.baseUrl}>Manager View</Link>
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem asChild>
