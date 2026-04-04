@@ -13,7 +13,10 @@ export async function getConcert(id: number): Promise<Concert> {
   return data;
 }
 
-export async function updateConcert(id: number, request: UpdateConcertRequest): Promise<Concert> {
+export async function updateConcert(
+  id: number,
+  request: UpdateConcertRequest,
+): Promise<Concert> {
   const { data } = await api.put<Concert>(`/concert/${id}`, request);
   return data;
 }

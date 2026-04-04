@@ -20,7 +20,11 @@ interface Props {
   onAboutChange?: (value: string) => void;
 }
 
-export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Props>) {
+export function VenueDetails({
+  venue,
+  onNameChange,
+  onAboutChange,
+}: Readonly<Props>) {
   return (
     <div>
       <Hero
@@ -34,8 +38,8 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
 
       <ScrollspyNav sections={SECTIONS} />
 
-      <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">
-        <section id="about" className="space-y-2 scroll-mt-24">
+      <div className="mx-auto max-w-4xl space-y-10 px-6 py-10">
+        <section id="about" className="scroll-mt-24 space-y-2">
           <h2 className="text-xl font-semibold">About</h2>
           <EditableTextarea
             onChange={onAboutChange}
@@ -45,31 +49,32 @@ export function VenueDetails({ venue, onNameChange, onAboutChange }: Readonly<Pr
           </EditableTextarea>
         </section>
 
-        <div className="border-t border-border" />
+        <div className="border-border border-t" />
 
-        <section id="location" className="space-y-2 scroll-mt-24">
+        <section id="location" className="scroll-mt-24 space-y-2">
           <h2 className="text-xl font-semibold">Location</h2>
-          <p className="flex items-center gap-2 text-muted-foreground">
+          <p className="text-muted-foreground flex items-center gap-2">
             <MapPin className="size-4" />
-            {[venue.town, venue.county].filter(Boolean).join(", ") || "No location set."}
+            {[venue.town, venue.county].filter(Boolean).join(", ") ||
+              "No location set."}
           </p>
         </section>
 
-        <div className="border-t border-border" />
+        <div className="border-border border-t" />
 
-        <section id="concerts" className="space-y-2 scroll-mt-24">
+        <section id="concerts" className="scroll-mt-24 space-y-2">
           <h2 className="text-xl font-semibold">Concerts</h2>
           <p className="text-muted-foreground">No upcoming concerts.</p>
         </section>
 
-        <div className="border-t border-border" />
+        <div className="border-border border-t" />
 
-        <section id="opportunities" className="space-y-2 scroll-mt-24">
+        <section id="opportunities" className="scroll-mt-24 space-y-2">
           <h2 className="text-xl font-semibold">Opportunities</h2>
           <OpportunitySection venueId={venue.id} />
         </section>
 
-        <div className="border-t border-border" />
+        <div className="border-border border-t" />
 
         <section id="reviews" className="scroll-mt-24">
           <ReviewSection type="venue" id={venue.id} />

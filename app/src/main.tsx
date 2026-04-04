@@ -1,7 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { serializeSearch, deserializeSearch } from "@/utils/serializers/searchSerializer";
+import {
+  serializeSearch,
+  deserializeSearch,
+} from "@/utils/serializers/searchSerializer";
 import { APIProvider as MapsProvider } from "@vis.gl/react-google-maps";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
@@ -17,7 +20,12 @@ const queryClient = new QueryClient({
   },
 });
 
-const router = createRouter({ routeTree, stringifySearch: serializeSearch, parseSearch: deserializeSearch, defaultStructuralSharing: true });
+const router = createRouter({
+  routeTree,
+  stringifySearch: serializeSearch,
+  parseSearch: deserializeSearch,
+  defaultStructuralSharing: true,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -32,13 +40,16 @@ async function init() {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <MapsProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places"]}>
+        <MapsProvider
+          apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+          libraries={["places"]}
+        >
           <ThemeProvider>
             <RouterProvider router={router} />
           </ThemeProvider>
         </MapsProvider>
       </QueryClientProvider>
-    </StrictMode>
+    </StrictMode>,
   );
 }
 

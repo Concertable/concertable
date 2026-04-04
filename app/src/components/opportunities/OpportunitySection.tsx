@@ -9,11 +9,17 @@ interface Props {
 
 export function OpportunitySection({ venueId }: Readonly<Props>) {
   const { params, nextPage, prevPage } = usePagination();
-  const { data, isLoading, isError } = useOpportunitiesByVenueQuery(venueId, params);
+  const { data, isLoading, isError } = useOpportunitiesByVenueQuery(
+    venueId,
+    params,
+  );
 
-  if (isLoading) return <p className="text-muted-foreground">Loading opportunities...</p>;
-  if (isError) return <p className="text-destructive">Failed to load opportunities.</p>;
-  if (!data?.data.length) return <p className="text-muted-foreground">No opportunities yet.</p>;
+  if (isLoading)
+    return <p className="text-muted-foreground">Loading opportunities...</p>;
+  if (isError)
+    return <p className="text-destructive">Failed to load opportunities.</p>;
+  if (!data?.data.length)
+    return <p className="text-muted-foreground">No opportunities yet.</p>;
 
   return (
     <div className="space-y-3">

@@ -13,16 +13,33 @@ export function useVenueNotifications() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("[SignalR] useVenueNotifications mounted, connection state:", notificationConnection.state);
+    console.log(
+      "[SignalR] useVenueNotifications mounted, connection state:",
+      notificationConnection.state,
+    );
 
-    notificationConnection.on("MessageReceived", (payload: MessageReceivedPayload) => {
-      console.log("[SignalR] MessageReceived:", payload);
-    });
+    notificationConnection.on(
+      "MessageReceived",
+      (payload: MessageReceivedPayload) => {
+        console.log("[SignalR] MessageReceived:", payload);
+      },
+    );
 
-    notificationConnection.on("ConcertDraftCreated", (payload: ConcertDraftCreatedPayload) => {
-      console.log("[SignalR] ConcertDraftCreated received, payload:", payload, "type:", typeof payload);
-      void router.navigate({ to: "/venue/my/concerts/concert/$id", params: { id: payload } });
-    });
+    notificationConnection.on(
+      "ConcertDraftCreated",
+      (payload: ConcertDraftCreatedPayload) => {
+        console.log(
+          "[SignalR] ConcertDraftCreated received, payload:",
+          payload,
+          "type:",
+          typeof payload,
+        );
+        void router.navigate({
+          to: "/venue/my/concerts/concert/$id",
+          params: { id: payload },
+        });
+      },
+    );
 
     return () => {
       console.log("[SignalR] useVenueNotifications unmounted");
@@ -36,14 +53,23 @@ export function useArtistNotifications() {
   const router = useRouter();
 
   useEffect(() => {
-    notificationConnection.on("MessageReceived", (payload: MessageReceivedPayload) => {
-      console.log("[SignalR] MessageReceived:", payload);
-    });
+    notificationConnection.on(
+      "MessageReceived",
+      (payload: MessageReceivedPayload) => {
+        console.log("[SignalR] MessageReceived:", payload);
+      },
+    );
 
-    notificationConnection.on("ApplicationAccepted", (payload: ApplicationAcceptedPayload) => {
-      console.log("[SignalR] ApplicationAccepted:", payload);
-      void router.navigate({ to: "/artist/my/concerts/concert/$id", params: { id: payload } });
-    });
+    notificationConnection.on(
+      "ApplicationAccepted",
+      (payload: ApplicationAcceptedPayload) => {
+        console.log("[SignalR] ApplicationAccepted:", payload);
+        void router.navigate({
+          to: "/artist/my/concerts/concert/$id",
+          params: { id: payload },
+        });
+      },
+    );
 
     return () => {
       notificationConnection.off("MessageReceived");
@@ -54,13 +80,19 @@ export function useArtistNotifications() {
 
 export function useCustomerNotifications() {
   useEffect(() => {
-    notificationConnection.on("TicketPurchased", (payload: TicketPurchasedPayload) => {
-      console.log("[SignalR] TicketPurchased:", payload);
-    });
+    notificationConnection.on(
+      "TicketPurchased",
+      (payload: TicketPurchasedPayload) => {
+        console.log("[SignalR] TicketPurchased:", payload);
+      },
+    );
 
-    notificationConnection.on("ConcertPosted", (payload: ConcertPostedPayload) => {
-      console.log("[SignalR] ConcertPosted:", payload);
-    });
+    notificationConnection.on(
+      "ConcertPosted",
+      (payload: ConcertPostedPayload) => {
+        console.log("[SignalR] ConcertPosted:", payload);
+      },
+    );
 
     return () => {
       notificationConnection.off("TicketPurchased");

@@ -1,4 +1,10 @@
-import type { Contract, FlatFeeContract, DoorSplitContract, VersusContract, VenueHireContract } from "@/types/contract";
+import type {
+  Contract,
+  FlatFeeContract,
+  DoorSplitContract,
+  VersusContract,
+  VenueHireContract,
+} from "@/types/contract";
 
 const contractTypeLabel: Record<Contract["$type"], string> = {
   flatFee: "Flat Fee",
@@ -22,7 +28,7 @@ export function ContractSummaryLabel({ contract }: Readonly<Props>) {
   return (
     <p className="font-medium">
       {contractTypeLabel[contract.$type]}{" "}
-      <span className="text-muted-foreground font-normal text-sm">
+      <span className="text-muted-foreground text-sm font-normal">
         · {contractSummaryRegistry[contract.$type](contract)}
       </span>
     </p>

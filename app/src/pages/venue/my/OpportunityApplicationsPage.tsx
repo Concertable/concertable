@@ -4,15 +4,17 @@ import { ApplicationCard } from "@/components/applications/ApplicationCard";
 
 export default function OpportunityApplicationsPage() {
   const { id } = useParams({ from: "/venue/my/applications/$id" });
-  const { data: applications, isLoading } = useApplicationsByOpportunityQuery(Number(id));
+  const { data: applications, isLoading } = useApplicationsByOpportunityQuery(
+    Number(id),
+  );
 
   if (isLoading) return null;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-4">
+    <div className="mx-auto max-w-3xl space-y-4 p-6">
       <h1 className="text-xl font-semibold">Applications</h1>
       {applications?.length === 0 && (
-        <p className="text-sm text-muted-foreground">No applications yet.</p>
+        <p className="text-muted-foreground text-sm">No applications yet.</p>
       )}
       {applications?.map((application) => (
         <ApplicationCard key={application.id} application={application} />

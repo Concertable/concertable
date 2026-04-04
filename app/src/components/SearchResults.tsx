@@ -17,14 +17,17 @@ export function SearchResults() {
   const filters = useSearch({ strict: false }) as SearchFilters;
   const { data, isLoading, isError } = useHeaderQuery(filters);
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Loading...</p>;
-  if (isError) return <p className="text-destructive text-sm">Something went wrong.</p>;
-  if (!data?.data.length) return <p className="text-muted-foreground text-sm">No results found.</p>;
+  if (isLoading)
+    return <p className="text-muted-foreground text-sm">Loading...</p>;
+  if (isError)
+    return <p className="text-destructive text-sm">Something went wrong.</p>;
+  if (!data?.data.length)
+    return <p className="text-muted-foreground text-sm">No results found.</p>;
 
   const Card = cardRegistry[filters.headerType];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
       {data.data.map((header: Header) => (
         <Card key={header.id} data={header} />
       ))}

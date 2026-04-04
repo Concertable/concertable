@@ -7,7 +7,6 @@ import { DateRangePicker } from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-
 export function SearchBar() {
   const mapsLoaded = useApiIsLoaded();
   const { filters, setFilters } = useSearchFiltersStore();
@@ -26,13 +25,17 @@ export function SearchBar() {
   }
 
   return (
-    <div className="flex items-stretch w-full bg-background rounded-full shadow-md overflow-visible border border-border">
-      <div className="flex items-center gap-2 px-4 py-3 min-w-48">
+    <div className="bg-background border-border flex w-full items-stretch overflow-visible rounded-full border shadow-md">
+      <div className="flex min-w-48 items-center gap-2 px-4 py-3">
         <MapPin className="text-muted-foreground shrink-0" size={18} />
         {mapsLoaded && (
           <LocationPicker
             onSelect={setLocation}
-            latLng={filters.lat && filters.lng ? { lat: filters.lat, lng: filters.lng } : undefined}
+            latLng={
+              filters.lat && filters.lng
+                ? { lat: filters.lat, lng: filters.lng }
+                : undefined
+            }
           />
         )}
       </div>
@@ -44,17 +47,17 @@ export function SearchBar() {
         onChange={(e) => setFilters({ ...filters, query: e.target.value })}
         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         placeholder="Search"
-        className="flex-1 px-4 py-3 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+        className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent px-4 py-3 text-sm outline-none"
       />
 
       <Separator orientation="vertical" />
 
-      <div className="flex items-center gap-2 px-4 py-3 min-w-44">
+      <div className="flex min-w-44 items-center gap-2 px-4 py-3">
         <CalendarIcon className="text-muted-foreground shrink-0" size={18} />
         <DateRangePicker onChange={setDates} />
       </div>
 
-      <div className="pr-2 flex items-center">
+      <div className="flex items-center pr-2">
         <Button onClick={handleSearch} size="icon" className="rounded-full">
           <Search size={16} />
         </Button>

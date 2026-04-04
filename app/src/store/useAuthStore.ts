@@ -1,7 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "@/lib/axios";
-import type { LoginRequest, LoginResponse, RegisterRequest, User } from "@/types/auth";
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  User,
+} from "@/types/auth";
 
 interface AuthState {
   user: User | null;
@@ -22,7 +27,11 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (request) => {
         const { data } = await api.post<LoginResponse>("/auth/login", request);
-        set({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
+        set({
+          user: data.user,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        });
         return data.user.baseUrl;
       },
 
@@ -39,8 +48,14 @@ export const useAuthStore = create<AuthState>()(
       refresh: async () => {
         const { refreshToken } = get();
         try {
-          const { data } = await api.post<LoginResponse>("/auth/refresh", { refreshToken });
-          set({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
+          const { data } = await api.post<LoginResponse>("/auth/refresh", {
+            refreshToken,
+          });
+          set({
+            user: data.user,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          });
         } catch {
           set({ user: null, accessToken: null, refreshToken: null });
         }
@@ -49,6 +64,6 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "auth",
       partialize: (state) => ({ refreshToken: state.refreshToken }),
-    }
-  )
+    },
+  ),
 );

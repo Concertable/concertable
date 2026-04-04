@@ -1,4 +1,7 @@
-export type MessageAction = "ApplicationReceived" | "ApplicationAccepted" | "ConcertPosted";
+export type MessageAction =
+  | "ApplicationReceived"
+  | "ApplicationAccepted"
+  | "ConcertPosted";
 
 export interface MessageSender {
   id: string;

@@ -28,7 +28,7 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         if (state.editMode) {
           state.draft = state.draft ?? { ...concert };
         }
-      })
+      }),
     ),
 
   resetDraft: (concert) =>
@@ -37,7 +37,7 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         state.draft = { ...concert };
         state.editMode = false;
         state.isDirty = false;
-      })
+      }),
     ),
 
   setName: (name) =>
@@ -46,7 +46,7 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         if (!state.draft) return;
         state.draft.name = name;
         state.isDirty = true;
-      })
+      }),
     ),
 
   setAbout: (about) =>
@@ -55,7 +55,7 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         if (!state.draft) return;
         state.draft.about = about;
         state.isDirty = true;
-      })
+      }),
     ),
 
   setPrice: (price) =>
@@ -64,7 +64,7 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         if (!state.draft) return;
         state.draft.price = price;
         state.isDirty = true;
-      })
+      }),
     ),
 
   setTotalTickets: (totalTickets) =>
@@ -73,6 +73,6 @@ export const useConcertStore = create<ConcertStore>((set) => ({
         if (!state.draft) return;
         state.draft.totalTickets = totalTickets;
         state.isDirty = true;
-      })
+      }),
     ),
 }));

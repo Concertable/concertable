@@ -5,13 +5,15 @@ import { VenueDetails } from "@/components/venue/VenueDetails";
 import { EditableProvider } from "@/providers/EditableProvider";
 
 export default function MyVenuePage() {
-  const { venue, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } = useMyVenue();
+  const { venue, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
+    useMyVenue();
 
   const draft = useVenueStore((state) => state.draft);
   const setName = useVenueStore((state) => state.setName);
   const setAbout = useVenueStore((state) => state.setAbout);
 
-  if (!venue) return <div className="p-6 text-muted-foreground">Loading...</div>;
+  if (!venue)
+    return <div className="text-muted-foreground p-6">Loading...</div>;
 
   const display = draft ?? venue;
 

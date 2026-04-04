@@ -12,7 +12,14 @@ interface ConfigBarProps {
   onCancel: () => void;
 }
 
-export function ConfigBar({ editMode, isDirty, isSaving, onToggleEdit, onSave, onCancel }: Readonly<ConfigBarProps>) {
+export function ConfigBar({
+  editMode,
+  isDirty,
+  isSaving,
+  onToggleEdit,
+  onSave,
+  onCancel,
+}: Readonly<ConfigBarProps>) {
   const ref = useRef<HTMLDivElement>(null);
   const { navbarHeight, setConfigHeight } = useNavbarHeight();
 
@@ -24,10 +31,13 @@ export function ConfigBar({ editMode, isDirty, isSaving, onToggleEdit, onSave, o
   return (
     <div
       ref={ref}
-      className="sticky z-10 bg-background border-b border-border flex items-center justify-end gap-2 px-6 py-3"
+      className="bg-background border-border sticky z-10 flex items-center justify-end gap-2 border-b px-6 py-3"
       style={{ top: navbarHeight }}
     >
-      <Button variant={editMode ? "secondary" : "outline"} onClick={onToggleEdit}>
+      <Button
+        variant={editMode ? "secondary" : "outline"}
+        onClick={onToggleEdit}
+      >
         {editMode ? "Editing" : "Edit"}
       </Button>
       <Button variant="outline" onClick={onCancel} disabled={!isDirty}>

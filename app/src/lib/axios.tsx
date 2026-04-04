@@ -6,7 +6,12 @@ import { useAuthStore } from "@/store/useAuthStore";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
-  paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "comma", encode: false, skipNulls: true }),
+  paramsSerializer: (params) =>
+    qs.stringify(params, {
+      arrayFormat: "comma",
+      encode: false,
+      skipNulls: true,
+    }),
 });
 
 api.interceptors.request.use((config) => {
@@ -37,8 +42,10 @@ api.interceptors.response.use(
       if (errors?.length) {
         toast.error(title ?? "Error", {
           description: (
-            <ul className="list-disc pl-4 space-y-1">
-              {errors.map((e: string, i: number) => <li key={i}>{e}</li>)}
+            <ul className="list-disc space-y-1 pl-4">
+              {errors.map((e: string, i: number) => (
+                <li key={i}>{e}</li>
+              ))}
             </ul>
           ),
         });
@@ -47,8 +54,10 @@ api.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
-  }
+    return Promise.reject(
+      error instanceof Error ? error : new Error(String(error)),
+    );
+  },
 );
 
 export default api;

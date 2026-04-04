@@ -5,13 +5,15 @@ import { ArtistDetails } from "@/components/artist/ArtistDetails";
 import { EditableProvider } from "@/providers/EditableProvider";
 
 export default function MyArtistPage() {
-  const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } = useMyArtist();
+  const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
+    useMyArtist();
 
   const draft = useArtistStore((state) => state.draft);
   const setName = useArtistStore((state) => state.setName);
   const setAbout = useArtistStore((state) => state.setAbout);
 
-  if (!artist) return <div className="p-6 text-muted-foreground">Loading...</div>;
+  if (!artist)
+    return <div className="text-muted-foreground p-6">Loading...</div>;
 
   const display = draft ?? artist;
 

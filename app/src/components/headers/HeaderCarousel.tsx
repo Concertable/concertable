@@ -8,13 +8,20 @@ interface Props<T> {
   renderItem: (item: T) => ReactNode;
 }
 
-export function HeaderCarousel<T>({ title, items, renderItem }: Readonly<Props<T>>) {
+export function HeaderCarousel<T>({
+  title,
+  items,
+  renderItem,
+}: Readonly<Props<T>>) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   if (items.length === 0) return null;
 
   function scroll(dir: "left" | "right") {
-    scrollRef.current?.scrollBy({ left: dir === "left" ? -600 : 600, behavior: "smooth" });
+    scrollRef.current?.scrollBy({
+      left: dir === "left" ? -600 : 600,
+      behavior: "smooth",
+    });
   }
 
   return (
@@ -26,10 +33,10 @@ export function HeaderCarousel<T>({ title, items, renderItem }: Readonly<Props<T
         </Button>
         <div
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="flex gap-4 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {items.map((item, i) => (
-            <div key={i} className="shrink-0 w-[220px]">
+            <div key={i} className="w-[220px] shrink-0">
               {renderItem(item)}
             </div>
           ))}

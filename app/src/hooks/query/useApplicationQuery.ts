@@ -19,9 +19,12 @@ export function useAcceptApplicationMutation(opportunityId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (applicationId: number) => applicationApi.acceptApplication(applicationId),
+    mutationFn: (applicationId: number) =>
+      applicationApi.acceptApplication(applicationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["applications", "opportunity", opportunityId] });
+      queryClient.invalidateQueries({
+        queryKey: ["applications", "opportunity", opportunityId],
+      });
     },
   });
 }

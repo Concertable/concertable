@@ -72,7 +72,8 @@
       "Bash(npx @tanstack/router-cli generate)",
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add carousel)",
-      "Bash(npx husky:*)"
+      "Bash(npx husky:*)",
+      "Bash(bash app/.husky/pre-commit)"
     ]
   }
 }

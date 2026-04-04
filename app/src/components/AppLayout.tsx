@@ -18,7 +18,13 @@ export function AppLayout({ links }: Readonly<Props>) {
   }, []);
 
   return (
-    <NavbarHeightContext.Provider value={{ navbarHeight, totalHeight: navbarHeight + configHeight, setConfigHeight: handleSetConfigHeight }}>
+    <NavbarHeightContext.Provider
+      value={{
+        navbarHeight,
+        totalHeight: navbarHeight + configHeight,
+        setConfigHeight: handleSetConfigHeight,
+      }}
+    >
       <Navbar links={links} onHeightChange={setNavbarHeight} />
       <Breadcrumbs />
       <Outlet />

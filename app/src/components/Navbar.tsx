@@ -27,11 +27,22 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
   });
 
   return (
-    <nav ref={ref} className="sticky top-0 z-20 bg-background flex items-center justify-between border-b border-border px-6 py-3">
+    <nav
+      ref={ref}
+      className="bg-background border-border sticky top-0 z-20 flex items-center justify-between border-b px-6 py-3"
+    >
       <div className="flex items-center gap-8">
         <Link to={baseUrl}>
-          <img src="/logo-long.png" alt="Concertable" className="h-8 dark:invert-0 invert hidden sm:block" />
-          <img src="/logo.png" alt="Concertable" className="h-8 dark:invert-0 invert block sm:hidden" />
+          <img
+            src="/logo-long.png"
+            alt="Concertable"
+            className="hidden h-8 invert sm:block dark:invert-0"
+          />
+          <img
+            src="/logo.png"
+            alt="Concertable"
+            className="block h-8 invert sm:hidden dark:invert-0"
+          />
         </Link>
 
         <div className="flex items-center gap-6">
@@ -40,7 +51,7 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
               key={link.to}
               to={link.to}
               activeOptions={{ exact: true }}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground [&.active]:font-medium"
+              className="text-muted-foreground hover:text-foreground [&.active]:text-foreground text-sm transition-colors [&.active]:font-medium"
             >
               {link.label}
             </Link>

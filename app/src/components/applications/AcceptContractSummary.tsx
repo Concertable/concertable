@@ -10,9 +10,13 @@ import type {
 function FlatFeeSummary({ contract }: { contract: FlatFeeContract }) {
   return (
     <div className="space-y-1">
-      <p className="text-sm text-muted-foreground">You agree to pay the artist</p>
+      <p className="text-muted-foreground text-sm">
+        You agree to pay the artist
+      </p>
       <p className="text-2xl font-semibold">£{contract.fee}</p>
-      <p className="text-sm text-muted-foreground">via {contract.paymentMethod}</p>
+      <p className="text-muted-foreground text-sm">
+        via {contract.paymentMethod}
+      </p>
     </div>
   );
 }
@@ -20,9 +24,13 @@ function FlatFeeSummary({ contract }: { contract: FlatFeeContract }) {
 function DoorSplitSummary({ contract }: { contract: DoorSplitContract }) {
   return (
     <div className="space-y-1">
-      <p className="text-sm text-muted-foreground">Artist receives</p>
-      <p className="text-2xl font-semibold">{contract.artistDoorPercent}% of door revenue</p>
-      <p className="text-sm text-muted-foreground">settled after the event via {contract.paymentMethod}</p>
+      <p className="text-muted-foreground text-sm">Artist receives</p>
+      <p className="text-2xl font-semibold">
+        {contract.artistDoorPercent}% of door revenue
+      </p>
+      <p className="text-muted-foreground text-sm">
+        settled after the event via {contract.paymentMethod}
+      </p>
     </div>
   );
 }
@@ -30,10 +38,11 @@ function DoorSplitSummary({ contract }: { contract: DoorSplitContract }) {
 function VersusSummary({ contract }: { contract: VersusContract }) {
   return (
     <div className="space-y-1">
-      <p className="text-sm text-muted-foreground">Artist guaranteed</p>
+      <p className="text-muted-foreground text-sm">Artist guaranteed</p>
       <p className="text-2xl font-semibold">£{contract.guarantee}</p>
-      <p className="text-sm text-muted-foreground">
-        or {contract.artistDoorPercent}% of door — whichever is greater, settled via {contract.paymentMethod}
+      <p className="text-muted-foreground text-sm">
+        or {contract.artistDoorPercent}% of door — whichever is greater, settled
+        via {contract.paymentMethod}
       </p>
     </div>
   );
@@ -42,9 +51,13 @@ function VersusSummary({ contract }: { contract: VersusContract }) {
 function VenueHireSummary({ contract }: { contract: VenueHireContract }) {
   return (
     <div className="space-y-1">
-      <p className="text-sm text-muted-foreground">Artist pays you a hire fee of</p>
+      <p className="text-muted-foreground text-sm">
+        Artist pays you a hire fee of
+      </p>
       <p className="text-2xl font-semibold">£{contract.hireFee}</p>
-      <p className="text-sm text-muted-foreground">via {contract.paymentMethod}</p>
+      <p className="text-muted-foreground text-sm">
+        via {contract.paymentMethod}
+      </p>
     </div>
   );
 }

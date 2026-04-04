@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { useUnreadCountQuery, useMessagesQuery } from "@/hooks/query/useMessageQuery";
+import {
+  useUnreadCountQuery,
+  useMessagesQuery,
+} from "@/hooks/query/useMessageQuery";
 import { usePagination } from "@/hooks/usePagination";
 
 export function useMailbox() {

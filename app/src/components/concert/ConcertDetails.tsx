@@ -18,7 +18,11 @@ interface Props {
   onAboutChange?: (value: string) => void;
 }
 
-export function ConcertDetails({ concert, onNameChange, onAboutChange }: Readonly<Props>) {
+export function ConcertDetails({
+  concert,
+  onNameChange,
+  onAboutChange,
+}: Readonly<Props>) {
   return (
     <div>
       <Hero
@@ -32,46 +36,79 @@ export function ConcertDetails({ concert, onNameChange, onAboutChange }: Readonl
 
       <ScrollspyNav sections={SECTIONS} />
 
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="flex gap-10">
           <div className="flex-1 space-y-10">
-            <section id="about" className="space-y-2 scroll-mt-24">
+            <section id="about" className="scroll-mt-24 space-y-2">
               <h2 className="text-xl font-semibold">About</h2>
-              <EditableTextarea onChange={onAboutChange} placeholder="Tell people about this concert...">
+              <EditableTextarea
+                onChange={onAboutChange}
+                placeholder="Tell people about this concert..."
+              >
                 {concert.about}
               </EditableTextarea>
               {Array.from({ length: 6 }).map((_, i) => (
-                <p key={i} className="text-muted-foreground text-sm leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                <p
+                  key={i}
+                  className="text-muted-foreground text-sm leading-relaxed"
+                >
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                  irure dolor in reprehenderit in voluptate velit esse cillum
+                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+                  cupidatat non proident, sunt in culpa qui officia deserunt
+                  mollit anim id est laborum.
                 </p>
               ))}
             </section>
 
-            <div className="border-t border-border" />
+            <div className="border-border border-t" />
 
-            <section id="artist" className="space-y-2 scroll-mt-24">
+            <section id="artist" className="scroll-mt-24 space-y-2">
               <h2 className="text-xl font-semibold">Artist</h2>
               <p className="text-muted-foreground">{concert.artist.name}</p>
               {Array.from({ length: 6 }).map((_, i) => (
-                <p key={i} className="text-muted-foreground text-sm leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                <p
+                  key={i}
+                  className="text-muted-foreground text-sm leading-relaxed"
+                >
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                  irure dolor in reprehenderit in voluptate velit esse cillum
+                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+                  cupidatat non proident, sunt in culpa qui officia deserunt
+                  mollit anim id est laborum.
                 </p>
               ))}
             </section>
 
-            <div className="border-t border-border" />
+            <div className="border-border border-t" />
 
-            <section id="venue" className="space-y-2 scroll-mt-24">
+            <section id="venue" className="scroll-mt-24 space-y-2">
               <h2 className="text-xl font-semibold">Venue</h2>
               <p className="text-muted-foreground">{concert.venue.name}</p>
               {Array.from({ length: 6 }).map((_, i) => (
-                <p key={i} className="text-muted-foreground text-sm leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                <p
+                  key={i}
+                  className="text-muted-foreground text-sm leading-relaxed"
+                >
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                  irure dolor in reprehenderit in voluptate velit esse cillum
+                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+                  cupidatat non proident, sunt in culpa qui officia deserunt
+                  mollit anim id est laborum.
                 </p>
               ))}
             </section>
 
-            <div className="border-t border-border" />
+            <div className="border-border border-t" />
 
             <section id="reviews" className="scroll-mt-24">
               <ReviewSection type="concert" id={concert.id} />

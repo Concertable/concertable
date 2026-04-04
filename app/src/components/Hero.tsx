@@ -10,17 +10,24 @@ interface Props {
   onNameChange?: (value: string) => void;
 }
 
-export function Hero({ imageUrl, name, town, county, namePlaceholder, onNameChange }: Readonly<Props>) {
+export function Hero({
+  imageUrl,
+  name,
+  town,
+  county,
+  namePlaceholder,
+  onNameChange,
+}: Readonly<Props>) {
   return (
-    <div className="relative bg-muted h-72 flex items-end">
+    <div className="bg-muted relative flex h-72 items-end">
       {imageUrl && (
         <img
           src={imageUrl}
           alt={name}
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          className="absolute inset-0 h-full w-full object-cover opacity-60"
         />
       )}
-      <div className="relative z-10 flex items-end justify-between w-full px-8 pb-6">
+      <div className="relative z-10 flex w-full items-end justify-between px-8 pb-6">
         <div className="space-y-1">
           <EditableText
             onChange={onNameChange}
@@ -31,13 +38,13 @@ export function Hero({ imageUrl, name, town, county, namePlaceholder, onNameChan
             {name}
           </EditableText>
           {(town || county) && (
-            <p className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
+            <p className="flex items-center gap-1 text-sm text-white/80 drop-shadow">
               <MapPin className="size-4" />
               {[town, county].filter(Boolean).join(", ")}
             </p>
           )}
         </div>
-        <div className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
+        <div className="flex items-center gap-1 text-sm text-white/80 drop-shadow">
           <Star className="size-4 fill-yellow-400 text-yellow-400" />
           <span>No reviews yet</span>
         </div>

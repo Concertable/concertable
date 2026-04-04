@@ -30,7 +30,7 @@ export const useVenueStore = create<VenueStore>((set) => ({
         if (state.editMode) {
           state.draft = state.draft ?? { ...venue };
         }
-      })
+      }),
     ),
 
   resetDraft: (venue) =>
@@ -40,7 +40,7 @@ export const useVenueStore = create<VenueStore>((set) => ({
         state.editMode = false;
         state.isDirty = false;
         state.image = undefined;
-      })
+      }),
     ),
 
   setName: (name) =>
@@ -49,7 +49,7 @@ export const useVenueStore = create<VenueStore>((set) => ({
         if (!state.draft) return;
         state.draft.name = name;
         state.isDirty = true;
-      })
+      }),
     ),
 
   setAbout: (about) =>
@@ -58,7 +58,7 @@ export const useVenueStore = create<VenueStore>((set) => ({
         if (!state.draft) return;
         state.draft.about = about;
         state.isDirty = true;
-      })
+      }),
     ),
 
   setLocation: (latitude, longitude, county, town) =>
@@ -70,7 +70,7 @@ export const useVenueStore = create<VenueStore>((set) => ({
         state.draft.county = county;
         state.draft.town = town;
         state.isDirty = true;
-      })
+      }),
     ),
 
   setImage: (file) =>
@@ -80,6 +80,6 @@ export const useVenueStore = create<VenueStore>((set) => ({
         state.draft.imageUrl = URL.createObjectURL(file);
         state.image = file;
         state.isDirty = true;
-      })
+      }),
     ),
 }));

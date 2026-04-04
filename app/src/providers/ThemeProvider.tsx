@@ -19,7 +19,7 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem("theme") as Theme) ?? "system"
+    () => (localStorage.getItem("theme") as Theme) ?? "system",
   );
 
   useEffect(() => {
@@ -38,11 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(theme);
   }
 
-  return (
-    <ThemeContext value={{ theme, setTheme }}>
-      {children}
-    </ThemeContext>
-  );
+  return <ThemeContext value={{ theme, setTheme }}>{children}</ThemeContext>;
 }
 
 export function useTheme() {

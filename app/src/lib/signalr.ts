@@ -1,4 +1,8 @@
-import { HubConnectionBuilder, HubConnectionState, LogLevel } from "@microsoft/signalr";
+import {
+  HubConnectionBuilder,
+  HubConnectionState,
+  LogLevel,
+} from "@microsoft/signalr";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export const notificationConnection = new HubConnectionBuilder()
@@ -10,9 +14,15 @@ export const notificationConnection = new HubConnectionBuilder()
   .build();
 
 useAuthStore.subscribe((state) => {
-  if (state.accessToken && notificationConnection.state === HubConnectionState.Disconnected) {
+  if (
+    state.accessToken &&
+    notificationConnection.state === HubConnectionState.Disconnected
+  ) {
     notificationConnection.start().catch(console.error);
-  } else if (!state.accessToken && notificationConnection.state === HubConnectionState.Connected) {
+  } else if (
+    !state.accessToken &&
+    notificationConnection.state === HubConnectionState.Connected
+  ) {
     notificationConnection.stop().catch(console.error);
   }
 });

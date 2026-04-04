@@ -8,5 +8,7 @@ const prefixMap: [string, UserRole][] = [
 
 export function useNavSection(): UserRole {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  return prefixMap.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? "Customer";
+  return (
+    prefixMap.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? "Customer"
+  );
 }

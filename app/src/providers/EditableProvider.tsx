@@ -3,19 +3,19 @@ import { createContext, useContext } from "react";
 const EditableContext = createContext(false);
 
 export function EditableProvider({
-    editMode,
-    children,
+  editMode,
+  children,
 }: {
-    editMode: boolean;
-    children: React.ReactNode;
+  editMode: boolean;
+  children: React.ReactNode;
 }) {
-    return (
-        <EditableContext.Provider value={editMode}>
-            {children}
-        </EditableContext.Provider>
-    );
+  return (
+    <EditableContext.Provider value={editMode}>
+      {children}
+    </EditableContext.Provider>
+  );
 }
 
 export function useEditableContext() {
-    return useContext(EditableContext);
+  return useContext(EditableContext);
 }

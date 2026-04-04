@@ -9,14 +9,15 @@ interface Props {
 }
 
 export function ReviewSection({ type, id }: Readonly<Props>) {
-  const { reviews, summary, isLoading, params, nextPage, prevPage } = useReviews(type, id);
+  const { reviews, summary, isLoading, params, nextPage, prevPage } =
+    useReviews(type, id);
 
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Reviews</h2>
         {summary && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-1 text-sm">
             <Star className="size-4 fill-yellow-400 text-yellow-400" />
             {summary.averageRating != null
               ? `${summary.averageRating.toFixed(1)} · ${summary.totalReviews} review${summary.totalReviews !== 1 ? "s" : ""}`
@@ -25,7 +26,9 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
         )}
       </div>
 
-      {isLoading && <p className="text-muted-foreground text-sm">Loading reviews...</p>}
+      {isLoading && (
+        <p className="text-muted-foreground text-sm">Loading reviews...</p>
+      )}
 
       {reviews && reviews.data.length === 0 && (
         <p className="text-muted-foreground text-sm">No reviews yet.</p>
@@ -33,7 +36,10 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
 
       <ul className="space-y-4">
         {reviews?.data.map((review) => (
-          <li key={review.id} className="border border-border rounded-lg p-4 space-y-1">
+          <li
+            key={review.id}
+            className="border-border space-y-1 rounded-lg border p-4"
+          >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{review.email}</span>
               <div className="flex items-center gap-0.5">
@@ -45,7 +51,9 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
                 ))}
               </div>
             </div>
-            {review.details && <p className="text-sm text-muted-foreground">{review.details}</p>}
+            {review.details && (
+              <p className="text-muted-foreground text-sm">{review.details}</p>
+            )}
           </li>
         ))}
       </ul>

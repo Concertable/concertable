@@ -3,7 +3,11 @@ import * as reviewApi from "@/api/reviewApi";
 import type { ReviewEntityType } from "@/api/reviewApi";
 import type { PaginationParams } from "@/hooks/usePagination";
 
-export function useReviewsQuery(type: ReviewEntityType, id: number, params: PaginationParams) {
+export function useReviewsQuery(
+  type: ReviewEntityType,
+  id: number,
+  params: PaginationParams,
+) {
   return useQuery({
     queryKey: ["reviews", type, id, params],
     queryFn: () => reviewApi.getReviews(type, id, params),

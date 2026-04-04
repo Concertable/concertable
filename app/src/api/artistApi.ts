@@ -11,7 +11,10 @@ export async function getMyArtist(): Promise<Artist> {
   return data;
 }
 
-export async function updateArtist(artist: Artist, image?: File): Promise<Artist> {
+export async function updateArtist(
+  artist: Artist,
+  image?: File,
+): Promise<Artist> {
   const formData = new FormData();
   formData.append("artist", JSON.stringify(artist));
   if (image) formData.append("image", image);

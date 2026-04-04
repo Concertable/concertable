@@ -1,7 +1,19 @@
 import { useState } from "react";
 import { FunnelIcon, PlusIcon, XIcon } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
@@ -37,13 +49,15 @@ export function FilterSlider() {
     updateFilters(filters);
   }
 
-  const selectedGenres = genres?.filter((g) => filters.genreIds?.includes(g.id)) ?? [];
-  const availableGenres = genres?.filter((g) => !filters.genreIds?.includes(g.id)) ?? [];
+  const selectedGenres =
+    genres?.filter((g) => filters.genreIds?.includes(g.id)) ?? [];
+  const availableGenres =
+    genres?.filter((g) => !filters.genreIds?.includes(g.id)) ?? [];
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full shrink-0">
+        <Button variant="outline" size="icon" className="shrink-0 rounded-full">
           <FunnelIcon />
         </Button>
       </SheetTrigger>
@@ -53,10 +67,15 @@ export function FilterSlider() {
           <SheetTitle>Filter</SheetTitle>
         </SheetHeader>
 
-        <div className="px-4 space-y-6 pt-2">
+        <div className="space-y-6 px-4 pt-2">
           <div className="space-y-1.5">
-            <p className="text-xs text-muted-foreground">Header Type</p>
-            <Select value={filters.headerType} onValueChange={(v) => update({ headerType: v as SearchFilters["headerType"] })}>
+            <p className="text-muted-foreground text-xs">Header Type</p>
+            <Select
+              value={filters.headerType}
+              onValueChange={(v) =>
+                update({ headerType: v as SearchFilters["headerType"] })
+              }
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -69,7 +88,7 @@ export function FilterSlider() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Genre</p>
+            <p className="text-muted-foreground text-xs">Genre</p>
             <div className="flex gap-2">
               <Select value={pendingGenre} onValueChange={setPendingGenre}>
                 <SelectTrigger className="flex-1">
@@ -77,7 +96,9 @@ export function FilterSlider() {
                 </SelectTrigger>
                 <SelectContent>
                   {availableGenres.map((g) => (
-                    <SelectItem key={g.id} value={String(g.id)}>{g.name}</SelectItem>
+                    <SelectItem key={g.id} value={String(g.id)}>
+                      {g.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -88,9 +109,21 @@ export function FilterSlider() {
             {selectedGenres.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {selectedGenres.map((g) => (
-                  <span key={g.id} className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs">
+                  <span
+                    key={g.id}
+                    className="bg-muted flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs"
+                  >
                     {g.name}
-                    <button onClick={() => update({ genreIds: filters.genreIds?.filter((id) => id !== g.id) })} className="text-muted-foreground hover:text-foreground">
+                    <button
+                      onClick={() =>
+                        update({
+                          genreIds: filters.genreIds?.filter(
+                            (id) => id !== g.id,
+                          ),
+                        })
+                      }
+                      className="text-muted-foreground hover:text-foreground"
+                    >
                       <XIcon size={12} />
                     </button>
                   </span>
@@ -101,8 +134,12 @@ export function FilterSlider() {
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <p className="text-xs text-muted-foreground">Distance Radius (km)</p>
-              <span className="text-xs font-medium">{filters.radius ?? 50} km</span>
+              <p className="text-muted-foreground text-xs">
+                Distance Radius (km)
+              </p>
+              <span className="text-xs font-medium">
+                {filters.radius ?? 50} km
+              </span>
             </div>
             <Slider
               min={1}
@@ -114,17 +151,25 @@ export function FilterSlider() {
           </div>
 
           <div className="flex gap-2">
-            <Select value={filters.orderBy ?? ""} onValueChange={(v) => update({ orderBy: v })}>
+            <Select
+              value={filters.orderBy ?? ""}
+              onValueChange={(v) => update({ orderBy: v })}
+            >
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder="Order By" />
               </SelectTrigger>
               <SelectContent>
                 {ORDER_BY_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={filters.sortOrder ?? ""} onValueChange={(v) => update({ sortOrder: v as "asc" | "desc" })}>
+            <Select
+              value={filters.sortOrder ?? ""}
+              onValueChange={(v) => update({ sortOrder: v as "asc" | "desc" })}
+            >
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder="Sort Order" />
               </SelectTrigger>
@@ -136,7 +181,7 @@ export function FilterSlider() {
           </div>
 
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={filters.showHistory ?? false}
@@ -144,7 +189,7 @@ export function FilterSlider() {
               />
               Show History
             </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={filters.showSold ?? false}
@@ -154,7 +199,9 @@ export function FilterSlider() {
             </label>
           </div>
 
-          <Button className="w-full" onClick={apply}>Apply</Button>
+          <Button className="w-full" onClick={apply}>
+            Apply
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

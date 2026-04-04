@@ -8,8 +8,12 @@ export async function getUnreadCount(): Promise<number> {
   return data;
 }
 
-export async function getMessages(params: PaginationParams): Promise<Pagination<Message>> {
-  const { data } = await api.get<Pagination<Message>>("/message/user", { params });
+export async function getMessages(
+  params: PaginationParams,
+): Promise<Pagination<Message>> {
+  const { data } = await api.get<Pagination<Message>>("/message/user", {
+    params,
+  });
   return data;
 }
 

@@ -17,7 +17,11 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-const roles: Exclude<Role, "Admin">[] = ["Customer", "ArtistManager", "VenueManager"];
+const roles: Exclude<Role, "Admin">[] = [
+  "Customer",
+  "ArtistManager",
+  "VenueManager",
+];
 
 export default function RegisterPage() {
   const register_ = useAuthStore((s) => s.register);
@@ -41,39 +45,55 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-sm px-6">
-        <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(onSubmit)(e);
+          }}
+          className="space-y-4"
+        >
           <h1>Register</h1>
 
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" {...register("email")} />
-            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" {...register("password")} />
-            {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
           </div>
 
           <div className="space-y-1">
             <Label>I am a:</Label>
             <Select
               options={roles}
-              onChange={(val: Exclude<Role, "Admin">) => { setValue("role", val); }}
+              onChange={(val: Exclude<Role, "Admin">) => {
+                setValue("role", val);
+              }}
               getLabel={(r) => r.replace(/([A-Z])/g, " $1").trim()}
               getValue={(r) => r}
             />
-            {errors.role && <p className="text-sm text-red-500">{errors.role.message}</p>}
+            {errors.role && (
+              <p className="text-sm text-red-500">{errors.role.message}</p>
+            )}
           </div>
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? "Registering..." : "Register"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-center text-sm">
             Already have an account?{" "}
-            <Link to="/login" className="text-foreground underline underline-offset-4 hover:opacity-70">
+            <Link
+              to="/login"
+              className="text-foreground underline underline-offset-4 hover:opacity-70"
+            >
               Login
             </Link>
           </p>

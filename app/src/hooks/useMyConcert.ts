@@ -19,15 +19,17 @@ export function useMyConcert(id: number): UseMyConcertResult {
   const query = useConcertQuery(id);
   const queryClient = useQueryClient();
 
-  const { toggleEdit, resetDraft, draft, isDirty, editMode } = useConcertStore();
+  const { toggleEdit, resetDraft, draft, isDirty, editMode } =
+    useConcertStore();
 
   const mutation = useMutation({
-    mutationFn: () => updateConcert(id, {
-      name: draft!.name,
-      about: draft!.about,
-      price: draft!.price,
-      totalTickets: draft!.totalTickets,
-    }),
+    mutationFn: () =>
+      updateConcert(id, {
+        name: draft!.name,
+        about: draft!.about,
+        price: draft!.price,
+        totalTickets: draft!.totalTickets,
+      }),
     onSuccess: (saved) => {
       queryClient.setQueryData(["concert", id], saved);
       resetDraft(saved);

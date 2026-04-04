@@ -13,7 +13,7 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
     >
       <Sun className="size-4 dark:hidden" />
-      <Moon className="size-4 hidden dark:block" />
+      <Moon className="hidden size-4 dark:block" />
     </Button>
   );
 }

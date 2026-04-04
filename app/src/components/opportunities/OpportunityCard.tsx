@@ -28,20 +28,31 @@ export function OpportunityCard({ opportunity }: Readonly<Props>) {
 
   return (
     <>
-      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+      <div className="border-border bg-card space-y-3 rounded-xl border p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">
-              {dayjs(opportunity.startDate).format("D MMM YYYY")} — {dayjs(opportunity.endDate).format("D MMM YYYY")}
+            <p className="text-muted-foreground text-sm">
+              {dayjs(opportunity.startDate).format("D MMM YYYY")} —{" "}
+              {dayjs(opportunity.endDate).format("D MMM YYYY")}
             </p>
             <ContractSummaryLabel contract={opportunity.contract} />
           </div>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex shrink-0 gap-2">
             <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
               View Contract
             </Button>
-            {user && isVenueManager(user) && user.venueId === opportunity.venueId ? (
-              <Button size="sm" onClick={() => navigate({ to: "/venue/my/applications/$id", params: { id: opportunity.id } })}>
+            {user &&
+            isVenueManager(user) &&
+            user.venueId === opportunity.venueId ? (
+              <Button
+                size="sm"
+                onClick={() =>
+                  navigate({
+                    to: "/venue/my/applications/$id",
+                    params: { id: opportunity.id },
+                  })
+                }
+              >
                 View Applications
               </Button>
             ) : (
@@ -54,16 +65,14 @@ export function OpportunityCard({ opportunity }: Readonly<Props>) {
           </div>
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error.message}</p>
-        )}
+        {error && <p className="text-destructive text-sm">{error.message}</p>}
 
         {opportunity.genres.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {opportunity.genres.map((genre) => (
               <span
                 key={genre.id}
-                className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"
+                className="bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-xs"
               >
                 {genre.name}
               </span>

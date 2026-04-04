@@ -7,7 +7,11 @@ export function useApply(opportunityId: number) {
 
   const canApply = role === "ArtistManager";
 
-  const { mutate: apply, isPending, error } = useMutation({
+  const {
+    mutate: apply,
+    isPending,
+    error,
+  } = useMutation({
     mutationFn: () => applyToOpportunity(opportunityId),
   });
 

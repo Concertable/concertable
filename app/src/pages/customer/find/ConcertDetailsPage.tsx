@@ -8,8 +8,10 @@ export default function ConcertDetailsPage() {
   const { id } = routeApi.useParams();
   const { concert, isLoading, isError } = useConcert(Number(id));
 
-  if (isLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
-  if (isError || !concert) return <div className="p-6 text-destructive">Concert not found.</div>;
+  if (isLoading)
+    return <div className="text-muted-foreground p-6">Loading...</div>;
+  if (isError || !concert)
+    return <div className="text-destructive p-6">Concert not found.</div>;
 
   return <ConcertDetails concert={concert} />;
 }

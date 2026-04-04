@@ -14,31 +14,45 @@ export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
   const { artist, opportunity, status } = application;
 
   function handleAccept() {
-    navigate({ to: "/venue/accept/$applicationId", params: { applicationId: application.id } });
+    navigate({
+      to: "/venue/accept/$applicationId",
+      params: { applicationId: application.id },
+    });
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+    <div className="border-border bg-card space-y-3 rounded-xl border p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           {artist.imageUrl && (
-            <img src={artist.imageUrl} alt={artist.name} className="w-10 h-10 rounded-full object-cover" />
+            <img
+              src={artist.imageUrl}
+              alt={artist.name}
+              className="h-10 w-10 rounded-full object-cover"
+            />
           )}
           <div className="space-y-0.5">
             <p className="font-medium">{artist.name}</p>
-            <p className="text-sm text-muted-foreground">
-              {dayjs(opportunity.startDate).format("D MMM YYYY")} — {dayjs(opportunity.endDate).format("D MMM YYYY")}
+            <p className="text-muted-foreground text-sm">
+              {dayjs(opportunity.startDate).format("D MMM YYYY")} —{" "}
+              {dayjs(opportunity.endDate).format("D MMM YYYY")}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <Badge variant="outline">{status}</Badge>
           {status === "Pending" && (
             <>
-              <Button size="sm" onClick={handleAccept}>Accept</Button>
+              <Button size="sm" onClick={handleAccept}>
+                Accept
+              </Button>
               {onDeny && (
-                <Button size="sm" variant="destructive" onClick={() => onDeny(application.id)}>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onDeny(application.id)}
+                >
                   Deny
                 </Button>
               )}

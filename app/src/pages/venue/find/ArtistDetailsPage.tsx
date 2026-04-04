@@ -8,8 +8,10 @@ export default function ArtistDetailsPage() {
   const { id } = routeApi.useParams();
   const { data: artist, isLoading, isError } = useArtistQuery(Number(id));
 
-  if (isLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
-  if (isError || !artist) return <div className="p-6 text-destructive">Artist not found.</div>;
+  if (isLoading)
+    return <div className="text-muted-foreground p-6">Loading...</div>;
+  if (isError || !artist)
+    return <div className="text-destructive p-6">Artist not found.</div>;
 
   return <ArtistDetails artist={artist} />;
 }
