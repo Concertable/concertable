@@ -29,19 +29,19 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
   return (
     <nav
       ref={ref}
-      className="bg-background border-border sticky top-0 z-20 flex items-center justify-between border-b px-6 py-3"
+      className="bg-primary border-primary sticky top-0 z-20 flex items-center justify-between border-b px-6 py-3"
     >
       <div className="flex items-center gap-8">
         <Link to={baseUrl}>
           <img
             src="/logo-long.png"
             alt="Concertable"
-            className="hidden h-8 invert sm:block dark:invert-0"
+            className="hidden h-8 invert-0 sm:block"
           />
           <img
             src="/logo.png"
             alt="Concertable"
-            className="block h-8 invert sm:hidden dark:invert-0"
+            className="block h-8 invert-0 sm:hidden"
           />
         </Link>
 
@@ -51,7 +51,7 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
               key={link.to}
               to={link.to}
               activeOptions={{ exact: true }}
-              className="text-muted-foreground hover:text-foreground [&.active]:text-foreground text-sm transition-colors [&.active]:font-medium"
+              className="text-primary-foreground/70 hover:text-primary-foreground [&.active]:text-primary-foreground text-sm transition-colors [&.active]:font-medium"
             >
               {link.label}
             </Link>
@@ -59,7 +59,7 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="text-primary-foreground flex items-center gap-2 [&_button]:hover:bg-white/10">
         {role && <Mailbox />}
         <ThemeToggle />
         <UserMenu />

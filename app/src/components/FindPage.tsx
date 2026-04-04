@@ -4,14 +4,14 @@ import { FilterSlider } from "@/components/FilterSlider";
 
 export function FindPage() {
   return (
-    <div className="relative w-full">
-      <div className="mx-auto max-w-7xl space-y-6 p-6">
-        <SearchBar />
-        <SearchResults />
-      </div>
-      <div className="absolute top-6 right-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <SearchBar />
+        </div>
         <FilterSlider />
       </div>
+      <SearchResults />
     </div>
   );
 }

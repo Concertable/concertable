@@ -57,7 +57,11 @@ export function FilterSlider() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="shrink-0 rounded-full">
+        <Button
+          variant="secondary"
+          size="icon"
+          className="shrink-0 rounded-full"
+        >
           <FunnelIcon />
         </Button>
       </SheetTrigger>

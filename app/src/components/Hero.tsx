@@ -27,6 +27,7 @@ export function Hero({
           className="absolute inset-0 h-full w-full object-cover opacity-60"
         />
       )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       <div className="relative z-10 flex w-full items-end justify-between px-8 pb-6">
         <div className="space-y-1">
           <EditableText
@@ -45,7 +46,7 @@ export function Hero({
           )}
         </div>
         <div className="flex items-center gap-1 text-sm text-white/80 drop-shadow">
-          <Star className="size-4 fill-yellow-400 text-yellow-400" />
+          <Star className="fill-gold text-gold size-4" />
           <span>No reviews yet</span>
         </div>
       </div>

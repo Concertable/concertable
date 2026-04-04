@@ -19,8 +19,8 @@ export function HeaderCard<T extends Header>({
       <div className="flex items-center gap-1 text-sm font-semibold">
         <span className="line-clamp-1">{data.name}</span>
         {data.rating && (
-          <span className="flex shrink-0 items-center gap-0.5 text-yellow-400">
-            <Star className="size-3 fill-yellow-400" />
+          <span className="text-gold flex shrink-0 items-center gap-0.5">
+            <Star className="fill-gold size-3" />
             {data.rating}
           </span>
         )}

@@ -26,7 +26,7 @@ export function SearchBar() {
 
   return (
     <div className="bg-background border-border flex w-full items-stretch overflow-visible rounded-full border shadow-md">
-      <div className="flex min-w-48 items-center gap-2 px-4 py-3">
+      <div className="flex flex-1 items-center gap-2 px-4 py-3">
         <MapPin className="text-muted-foreground shrink-0" size={18} />
         {mapsLoaded && (
           <LocationPicker
@@ -52,7 +52,7 @@ export function SearchBar() {
 
       <Separator orientation="vertical" />
 
-      <div className="flex min-w-44 items-center gap-2 px-4 py-3">
+      <div className="flex flex-1 items-center gap-2 px-4 py-3">
         <CalendarIcon className="text-muted-foreground shrink-0" size={18} />
         <DateRangePicker onChange={setDates} />
       </div>

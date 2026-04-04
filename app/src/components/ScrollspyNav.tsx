@@ -54,8 +54,8 @@ export function ScrollspyNav({ sections }: Readonly<Props>) {
                 onClick={() => scrollTo(id)}
                 className={`border-b-2 py-3 text-sm font-medium transition-colors ${
                   activeId === id
-                    ? "border-foreground text-foreground"
-                    : "text-muted-foreground hover:text-foreground border-transparent"
+                    ? "border-primary text-primary"
+                    : "text-muted-foreground hover:text-primary border-transparent"
                 }`}
               >
                 {label}

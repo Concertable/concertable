@@ -57,7 +57,7 @@ export default function RegisterPage() {
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" {...register("email")} />
             {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
+              <p className="text-destructive text-sm">{errors.email.message}</p>
             )}
           </div>
 
@@ -65,7 +65,9 @@ export default function RegisterPage() {
             <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" {...register("password")} />
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-destructive text-sm">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -80,7 +82,7 @@ export default function RegisterPage() {
               getValue={(r) => r}
             />
             {errors.role && (
-              <p className="text-sm text-red-500">{errors.role.message}</p>
+              <p className="text-destructive text-sm">{errors.role.message}</p>
             )}
           </div>
 

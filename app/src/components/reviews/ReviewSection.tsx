@@ -18,7 +18,7 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
         <h2 className="text-xl font-semibold">Reviews</h2>
         {summary && (
           <div className="text-muted-foreground flex items-center gap-1 text-sm">
-            <Star className="size-4 fill-yellow-400 text-yellow-400" />
+            <Star className="fill-gold text-gold size-4" />
             {summary.averageRating != null
               ? `${summary.averageRating.toFixed(1)} · ${summary.totalReviews} review${summary.totalReviews !== 1 ? "s" : ""}`
               : "No reviews yet"}
@@ -46,7 +46,7 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`size-3.5 ${i < review.stars ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
+                    className={`size-3.5 ${i < review.stars ? "fill-gold text-gold" : "text-muted-foreground"}`}
                   />
                 ))}
               </div>

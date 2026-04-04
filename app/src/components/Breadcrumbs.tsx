@@ -21,7 +21,7 @@ export function Breadcrumbs() {
 
   return (
     <div className="text-muted-foreground flex items-center gap-1 px-6 py-2 text-sm">
-      <Link to="/" className="hover:text-foreground transition-colors">
+      <Link to="/" className="hover:text-secondary transition-colors">
         Home
       </Link>
       {crumbs.map((crumb) => (
@@ -29,7 +29,7 @@ export function Breadcrumbs() {
           <span>/</span>
           <Link
             to={crumb.to}
-            className="hover:text-foreground [&.active]:text-foreground transition-colors [&.active]:font-medium"
+            className="hover:text-secondary [&.active]:text-secondary transition-colors [&.active]:font-medium"
           >
             {crumb.label}
           </Link>
