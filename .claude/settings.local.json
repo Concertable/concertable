@@ -70,7 +70,8 @@
       "Bash(npx shadcn@latest add badge)",
       "Bash(npx tsr:*)",
       "Bash(npx @tanstack/router-cli generate)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx shadcn@latest add carousel)"
     ]
   }
 }
