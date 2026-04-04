@@ -71,7 +71,8 @@
       "Bash(npx tsr:*)",
       "Bash(npx @tanstack/router-cli generate)",
       "Bash(npx tsc:*)",
-      "Bash(npx shadcn@latest add carousel)"
+      "Bash(npx shadcn@latest add carousel)",
+      "Bash(npx husky:*)"
     ]
   }
 }
