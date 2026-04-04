@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useGenresQuery } from "@/hooks/query/useGenreQuery";
@@ -186,18 +187,16 @@ export function FilterSlider() {
 
           <div className="flex items-center gap-4">
             <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={filters.showHistory ?? false}
-                onChange={(e) => update({ showHistory: e.target.checked })}
+                onCheckedChange={(v) => update({ showHistory: !!v })}
               />
               Show History
             </label>
             <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={filters.showSold ?? false}
-                onChange={(e) => update({ showSold: e.target.checked })}
+                onCheckedChange={(v) => update({ showSold: !!v })}
               />
               Show Sold
             </label>

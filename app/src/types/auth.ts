@@ -6,6 +6,7 @@ interface BaseUser {
   email: string;
   role?: Role;
   baseUrl: string;
+  isEmailVerified: boolean;
   latitude?: number;
   longitude?: number;
   county?: string;

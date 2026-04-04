@@ -79,7 +79,8 @@
       "Bash(npx shadcn@latest add sidebar --yes)",
       "Bash(printf 'N\\\\nN\\\\nN\\\\nN\\\\nN\\\\n')",
       "Bash(npx shadcn@latest add sidebar)",
-      "Bash(yes N)"
+      "Bash(yes N)",
+      "Bash(npx shadcn@latest add checkbox)"
     ]
   }
 }

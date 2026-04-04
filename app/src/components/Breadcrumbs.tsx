@@ -20,7 +20,7 @@ export function Breadcrumbs() {
   if (crumbs.length === 0) return null;
 
   return (
-    <div className="text-muted-foreground flex items-center gap-1 px-6 py-2 text-sm">
+    <div className="text-muted-foreground flex items-center gap-1 border-b px-6 py-2 text-sm">
       <Link to="/" className="hover:text-secondary transition-colors">
         Home
       </Link>

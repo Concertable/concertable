@@ -34,6 +34,12 @@ public record ResetPasswordRequest
     public required string ConfirmPassword { get; set; }
 }
 
+public record ChangePasswordRequest
+{
+    public required string CurrentPassword { get; set; }
+    public required string NewPassword { get; set; }
+}
+
 public record ChangeEmailRequest
 {
     public required string NewEmail { get; set; }

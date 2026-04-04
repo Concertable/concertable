@@ -80,4 +80,12 @@ public class AuthController : ControllerBase
         await authService.ResetPasswordAsync(request);
         return NoContent();
     }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        await authService.ChangePasswordAsync(currentUser.GetId(), request);
+        return NoContent();
+    }
 }

@@ -13,6 +13,7 @@ public record AdminDto : IUser
     public string? County { get; set; }
     public string? Town { get; set; }
     public string BaseUrl { get; set; } = "/admin";
+    public bool IsEmailVerified { get; set; }
 }
 
 public record VenueManagerDto : IUser
@@ -26,6 +27,7 @@ public record VenueManagerDto : IUser
     public string? Town { get; set; }
     public int? VenueId { get; set; }
     public string BaseUrl { get; set; } = "/venue";
+    public bool IsEmailVerified { get; set; }
 }
 
 public record ArtistManagerDto : IUser
@@ -39,6 +41,7 @@ public record ArtistManagerDto : IUser
     public string? Town { get; set; }
     public int? ArtistId { get; set; }
     public string BaseUrl { get; set; } = "/artist";
+    public bool IsEmailVerified { get; set; }
 }
 
 public record CustomerDto : IUser
@@ -51,4 +54,5 @@ public record CustomerDto : IUser
     public string? County { get; set; }
     public string? Town { get; set; }
     public string BaseUrl { get; set; } = "/";
+    public bool IsEmailVerified { get; set; }
 }

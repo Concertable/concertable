@@ -34,7 +34,7 @@ function SettingsLayout() {
       style={{ "--sidebar-width": "220px" } as React.CSSProperties}
       className="min-h-screen"
     >
-      <Sidebar collapsible="none" className="min-h-screen">
+      <Sidebar collapsible="none" className="bg-muted min-h-screen">
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Settings</SidebarGroupLabel>
@@ -46,7 +46,11 @@ function SettingsLayout() {
                       <Link
                         to={to}
                         activeOptions={{ exact: to === "/settings" }}
-                        activeProps={{ "data-active": true }}
+                        activeProps={{
+                          "data-active": true,
+                          className:
+                            "bg-primary! text-primary-foreground! hover:bg-primary! hover:text-primary-foreground!",
+                        }}
                       >
                         {label}
                       </Link>

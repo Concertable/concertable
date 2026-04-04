@@ -14,6 +14,7 @@ public class AdminMapper : IUserMapper
         Latitude = entity.Location.ToLatitude(),
         Longitude = entity.Location.ToLongitude(),
         County = entity.County,
-        Town = entity.Town
+        Town = entity.Town,
+        IsEmailVerified = entity.IsEmailVerified
     };
 }

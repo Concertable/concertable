@@ -18,4 +18,5 @@ public interface IUser
     string? County { get; set; }
     string? Town { get; set; }
     string BaseUrl { get; set; }
+    bool IsEmailVerified { get; set; }
 }

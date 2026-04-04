@@ -5,7 +5,6 @@ import { AppLayout } from "@/components/AppLayout";
 const links = [
   { label: "Home", to: "/" },
   { label: "Find", to: "/find" },
-  { label: "Settings", to: "/settings" },
 ];
 
 function CustomerLayout() {

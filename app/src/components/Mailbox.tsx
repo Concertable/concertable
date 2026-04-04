@@ -35,8 +35,8 @@ export function Mailbox() {
       </PopoverTrigger>
 
       <PopoverContent align="end" className="w-80 p-0">
-        <div className="border-border border-b px-3 py-2">
-          <p className="text-sm font-medium">Inbox</p>
+        <div className="bg-secondary border-border border-b px-3 py-2">
+          <p className="text-secondary-foreground text-sm font-medium">Inbox</p>
         </div>
 
         <div className="divide-border max-h-96 divide-y overflow-y-auto">

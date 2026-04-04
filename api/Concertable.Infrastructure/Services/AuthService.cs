@@ -189,6 +189,17 @@ public class AuthService : IAuthService
         await context.SaveChangesAsync();
     }
 
+    public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null || !passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+            throw new BadRequestException("Current password is incorrect.");
+
+        user.PasswordHash = passwordHasher.Hash(request.NewPassword);
+        await context.SaveChangesAsync();
+    }
+
     private async Task<LoginResponse> IssueTokensAsync(UserEntity user)
     {
         var dto = userMapper.ToDto(user);
