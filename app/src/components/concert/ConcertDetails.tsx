@@ -1,5 +1,6 @@
 import type { Concert } from "@/types/concert";
 import { Hero } from "@/components/Hero";
+import { GoogleMap } from "@/components/GoogleMap";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { ConcertCard } from "@/components/concert/ConcertCard";
@@ -88,9 +89,14 @@ export function ConcertDetails({
 
             <div className="border-border border-t" />
 
-            <section id="venue" className="scroll-mt-24 space-y-2">
+            <section id="venue" className="scroll-mt-24 space-y-3">
               <h2 className="text-xl font-semibold">Venue</h2>
               <p className="text-muted-foreground">{concert.venue.name}</p>
+              <GoogleMap
+                className="mt-3"
+                lat={concert.venue.latitude}
+                lng={concert.venue.longitude}
+              />
               {Array.from({ length: 6 }).map((_, i) => (
                 <p
                   key={i}
