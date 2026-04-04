@@ -16,6 +16,11 @@ public record RegisterRequest
     public required Role Role { get; set; }
 }
 
+public record VerifyEmailRequest
+{
+    public required string Token { get; set; }
+}
+
 public record ForgotPasswordRequest
 {
     public required string Email { get; set; }

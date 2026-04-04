@@ -18,10 +18,14 @@ public class UserEntity : IGuidEntity
     public Point? Location { get; set; }
     public string? StripeId { get; set; }
 
+    public bool IsEmailVerified { get; set; }
+
     public ICollection<MessageEntity> SentMessages { get; set; } = [];
     public ICollection<MessageEntity> ReceivedMessages { get; set; } = [];
     public PreferenceEntity? Preference { get; set; }
     public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = [];
+    public ICollection<EmailVerificationTokenEntity> EmailVerificationTokens { get; set; } = [];
+    public ICollection<PasswordResetTokenEntity> PasswordResetTokens { get; set; } = [];
 }
 
 public class VenueManagerEntity : UserEntity

@@ -52,4 +52,32 @@ public class AuthController : ControllerBase
     {
         return Ok(currentUser.Get());
     }
+
+    [HttpPost("send-verification")]
+    public async Task<IActionResult> SendVerification([FromBody] ForgotPasswordRequest request)
+    {
+        await authService.SendVerificationEmailAsync(request.Email);
+        return NoContent();
+    }
+
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+    {
+        await authService.VerifyEmailAsync(request.Token);
+        return NoContent();
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        await authService.ForgotPasswordAsync(request.Email);
+        return NoContent();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        await authService.ResetPasswordAsync(request);
+        return NoContent();
+    }
 }

@@ -1,12 +1,26 @@
 using Concertable.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Infrastructure.Services.Email;
 
 public class FakeEmailService : IEmailService
 {
-    public Task SendEmailAsync(string toEmail, string subject, string body) =>
-        Task.CompletedTask;
+    private readonly ILogger<FakeEmailService> logger;
 
-    public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds) =>
-        Task.CompletedTask;
+    public FakeEmailService(ILogger<FakeEmailService> logger)
+    {
+        this.logger = logger;
+    }
+
+    public Task SendEmailAsync(string toEmail, string subject, string body)
+    {
+        logger.LogInformation("[FakeEmail] To: {Email} | Subject: {Subject}\n{Body}", toEmail, subject, body);
+        return Task.CompletedTask;
+    }
+
+    public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds)
+    {
+        logger.LogInformation("[FakeEmail] Tickets to: {Email} | TicketIds: {Ids}", toEmail, string.Join(", ", ticketIds));
+        return Task.CompletedTask;
+    }
 }

@@ -33,6 +33,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
     public DbSet<StripeEventEntity> StripeEvents { get; set; }
     public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
+    public DbSet<EmailVerificationTokenEntity> EmailVerificationTokens => Set<EmailVerificationTokenEntity>();
+    public DbSet<PasswordResetTokenEntity> PasswordResetTokens => Set<PasswordResetTokenEntity>();
     public DbSet<ContractEntity> Contracts { get; set; }
     public DbSet<FlatFeeContractEntity> FlatFeeContracts { get; set; }
     public DbSet<DoorSplitContractEntity> DoorSplitContracts { get; set; }
@@ -182,6 +184,18 @@ public class ApplicationDbContext : DbContext
             .HasOne(rt => rt.User)
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EmailVerificationTokenEntity>()
+            .HasOne(t => t.User)
+            .WithMany(u => u.EmailVerificationTokens)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PasswordResetTokenEntity>()
+            .HasOne(t => t.User)
+            .WithMany(u => u.PasswordResetTokens)
+            .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ContractEntity>()

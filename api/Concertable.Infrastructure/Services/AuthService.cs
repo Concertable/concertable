@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
@@ -21,6 +20,8 @@ public class AuthService : IAuthService
     private readonly IUserValidator userValidator;
     private readonly IUserMapper userMapper;
     private readonly IUserLoader userLoader;
+    private readonly IEmailService emailService;
+    private readonly IAuthUriService authUriService;
 
     public AuthService(
         ApplicationDbContext context,
@@ -29,7 +30,9 @@ public class AuthService : IAuthService
         IOptions<AuthSettings> authSettings,
         IUserValidator userValidator,
         IUserMapper userMapper,
-        IUserLoader userLoader)
+        IUserLoader userLoader,
+        IEmailService emailService,
+        IAuthUriService authUriService)
     {
         this.context = context;
         this.passwordHasher = passwordHasher;
@@ -38,6 +41,8 @@ public class AuthService : IAuthService
         this.userValidator = userValidator;
         this.userMapper = userMapper;
         this.userLoader = userLoader;
+        this.emailService = emailService;
+        this.authUriService = authUriService;
     }
 
     public async Task RegisterAsync(RegisterRequest request)
@@ -59,6 +64,8 @@ public class AuthService : IAuthService
 
         context.Users.Add(user);
         await context.SaveChangesAsync();
+
+        await SendVerificationEmailAsync(request.Email);
     }
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -68,6 +75,9 @@ public class AuthService : IAuthService
 
         if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new BadRequestException("Invalid email or password.");
+
+        if (!user.IsEmailVerified)
+            throw new UnauthorizedException("Email not verified.");
 
         var fullUser = await userLoader.LoadAsync(user);
 
@@ -101,6 +111,82 @@ public class AuthService : IAuthService
         var user = await userLoader.LoadAsync(token.User);
 
         return await IssueTokensAsync(user);
+    }
+
+    public async Task SendVerificationEmailAsync(string email)
+    {
+        var user = await context.Users
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user is null)
+            return;
+
+        var tokenValue = tokenService.CreateRefreshToken();
+
+        context.EmailVerificationTokens.Add(new EmailVerificationTokenEntity
+        {
+            UserId = user.Id,
+            Token = tokenValue,
+            Expires = DateTime.UtcNow.AddHours(24)
+        });
+
+        await context.SaveChangesAsync();
+
+        var link = authUriService.GetEmailVerificationUri(tokenValue);
+        await emailService.SendEmailAsync(email, "Verify your email", $"Click the link to verify your email:\n{link}");
+    }
+
+    public async Task VerifyEmailAsync(string token)
+    {
+        var verificationToken = await context.EmailVerificationTokens
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.Token == token);
+
+        if (verificationToken is null || !verificationToken.IsActive)
+            throw new BadRequestException("Invalid or expired verification token.");
+
+        verificationToken.IsUsed = true;
+        verificationToken.User.IsEmailVerified = true;
+
+        await context.SaveChangesAsync();
+    }
+
+    public async Task ForgotPasswordAsync(string email)
+    {
+        var user = await context.Users
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user is null)
+            return;
+
+        var tokenValue = tokenService.CreateRefreshToken();
+
+        context.PasswordResetTokens.Add(new PasswordResetTokenEntity
+        {
+            UserId = user.Id,
+            Token = tokenValue,
+            Expires = DateTime.UtcNow.AddHours(1)
+        });
+
+        await context.SaveChangesAsync();
+
+        var link = authUriService.GetPasswordResetUri(tokenValue);
+        await emailService.SendEmailAsync(email, "Reset your password", $"Click the link to reset your password:\n{link}");
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var resetToken = await context.PasswordResetTokens
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.Token == request.Token);
+
+        if (resetToken is null || !resetToken.IsActive)
+            throw new BadRequestException("Invalid or expired password reset token.");
+
+        resetToken.User.PasswordHash = passwordHasher.Hash(request.NewPassword);
+        resetToken.IsUsed = true;
+
+        await context.SaveChangesAsync();
     }
 
     private async Task<LoginResponse> IssueTokensAsync(UserEntity user)

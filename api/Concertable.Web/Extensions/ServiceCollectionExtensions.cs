@@ -25,6 +25,7 @@ using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
 using Concertable.Infrastructure.Services.Auth;
+using Concertable.Application.Interfaces.Auth;
 using Concertable.Infrastructure.Services.Blob;
 using Concertable.Infrastructure.Services.Complete;
 using Concertable.Infrastructure.Services.Concert;
@@ -167,7 +168,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<QRCodeGenerator>();
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
+        services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();
+        services.AddScoped<IAuthUriService, AuthUriService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
         services.AddSingleton<ICollectionDiffer, CollectionDiffer>();

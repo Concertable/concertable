@@ -13,8 +13,8 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260404161053_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260404204411_EmailVerificationAndPasswordReset")]
+    partial class EmailVerificationAndPasswordReset
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -166,6 +166,34 @@ namespace Concertable.Infrastructure.Migrations
                     b.UseTptMappingStrategy();
                 });
 
+            modelBuilder.Entity("Concertable.Core.Entities.EmailVerificationTokenEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EmailVerificationTokens");
+                });
+
             modelBuilder.Entity("Concertable.Core.Entities.GenreEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -306,6 +334,34 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasIndex("GenreId");
 
                     b.ToTable("OpportunityGenres");
+                });
+
+            modelBuilder.Entity("Concertable.Core.Entities.PasswordResetTokenEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetTokens");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>
@@ -513,6 +569,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsEmailVerified")
+                        .HasColumnType("bit");
 
                     b.Property<Point>("Location")
                         .HasColumnType("geography");
@@ -790,6 +849,17 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Opportunity");
                 });
 
+            modelBuilder.Entity("Concertable.Core.Entities.EmailVerificationTokenEntity", b =>
+                {
+                    b.HasOne("Concertable.Core.Entities.UserEntity", "User")
+                        .WithMany("EmailVerificationTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Concertable.Core.Entities.GenrePreferenceEntity", b =>
                 {
                     b.HasOne("Concertable.Core.Entities.GenreEntity", "Genre")
@@ -875,6 +945,17 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Genre");
 
                     b.Navigation("Opportunity");
+                });
+
+            modelBuilder.Entity("Concertable.Core.Entities.PasswordResetTokenEntity", b =>
+                {
+                    b.HasOne("Concertable.Core.Entities.UserEntity", "User")
+                        .WithMany("PasswordResetTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>
@@ -1118,6 +1199,10 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Concertable.Core.Entities.UserEntity", b =>
                 {
+                    b.Navigation("EmailVerificationTokens");
+
+                    b.Navigation("PasswordResetTokens");
+
                     b.Navigation("Preference");
 
                     b.Navigation("ReceivedMessages");
