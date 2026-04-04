@@ -38,3 +38,5 @@ public class CustomerEntity : UserEntity
 {
     public ICollection<TicketEntity> Tickets { get; set; } = [];
 }
+
+public class AdminEntity : UserEntity { }

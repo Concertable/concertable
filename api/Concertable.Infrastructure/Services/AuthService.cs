@@ -8,6 +8,7 @@ using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Concertable.Infrastructure.Services;
@@ -20,6 +21,7 @@ public class AuthService : IAuthService
     private readonly AuthSettings authSettings;
     private readonly IUserValidator userValidator;
     private readonly IUserMapper userMapper;
+    private readonly IServiceProvider serviceProvider;
 
     public AuthService(
         ApplicationDbContext context,
@@ -27,7 +29,8 @@ public class AuthService : IAuthService
         ITokenService tokenService,
         IOptions<AuthSettings> authSettings,
         IUserValidator userValidator,
-        IUserMapper userMapper)
+        IUserMapper userMapper,
+        IServiceProvider serviceProvider)
     {
         this.context = context;
         this.passwordHasher = passwordHasher;
@@ -35,6 +38,7 @@ public class AuthService : IAuthService
         this.authSettings = authSettings.Value;
         this.userValidator = userValidator;
         this.userMapper = userMapper;
+        this.serviceProvider = serviceProvider;
     }
 
     public async Task RegisterAsync(RegisterRequest request)
@@ -50,6 +54,7 @@ public class AuthService : IAuthService
         {
             Role.VenueManager => new VenueManagerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
             Role.ArtistManager => new ArtistManagerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
+            Role.Admin => new AdminEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
             _ => new CustomerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash }
         };
 
@@ -60,14 +65,15 @@ public class AuthService : IAuthService
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = await context.Users
-            .Include(u => (u as VenueManagerEntity)!.Venue)
-            .Include(u => (u as ArtistManagerEntity)!.Artist)
             .FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new BadRequestException("Invalid email or password.");
 
-        return await IssueTokensAsync(user);
+        var loader = serviceProvider.GetRequiredKeyedService<IUserLoader>(user.GetType());
+        var fullUser = await loader.LoadAsync(user.Id);
+
+        return await IssueTokensAsync(fullUser);
     }
 
     public async Task LogoutAsync(string refreshToken)
@@ -94,10 +100,8 @@ public class AuthService : IAuthService
         token.IsRevoked = true;
         await context.SaveChangesAsync();
 
-        var user = await context.Users
-            .Include(u => (u as VenueManagerEntity)!.Venue)
-            .Include(u => (u as ArtistManagerEntity)!.Artist)
-            .FirstAsync(u => u.Id == token.User.Id);
+        var loader = serviceProvider.GetRequiredKeyedService<IUserLoader>(token.User.GetType());
+        var user = await loader.LoadAsync(token.User.Id);
 
         return await IssueTokensAsync(user);
     }

@@ -315,6 +315,10 @@ public static class ServiceCollectionExtensions
         services.Configure<AuthSettings>(configuration.GetSection("Auth"));
 
         services.AddScoped<IAuthService, AuthService>();
+        services.AddKeyedScoped<IUserLoader, VenueManagerLoader>(typeof(VenueManagerEntity));
+        services.AddKeyedScoped<IUserLoader, ArtistManagerLoader>(typeof(ArtistManagerEntity));
+        services.AddKeyedScoped<IUserLoader, CustomerLoader>(typeof(CustomerEntity));
+        services.AddKeyedScoped<IUserLoader, AdminLoader>(typeof(AdminEntity));
         services.AddSingleton<JwtSecurityTokenHandler>();
         services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
         services.AddSingleton<ITokenService, JwtTokenService>();
