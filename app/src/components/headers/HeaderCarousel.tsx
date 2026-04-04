@@ -1,6 +1,7 @@
-import { useRef, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import useEmblaCarousel from "embla-carousel-react";
 
 interface Props<T> {
   title: string;
@@ -13,35 +14,35 @@ export function HeaderCarousel<T>({
   items,
   renderItem,
 }: Readonly<Props<T>>) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ dragFree: true });
 
   if (items.length === 0) return null;
-
-  function scroll(dir: "left" | "right") {
-    scrollRef.current?.scrollBy({
-      left: dir === "left" ? -600 : 600,
-      behavior: "smooth",
-    });
-  }
 
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">{title}</h2>
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-        <Button variant="outline" size="icon" onClick={() => scroll("left")}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => emblaApi?.scrollPrev()}
+        >
           <ChevronLeft className="size-4" />
         </Button>
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {items.map((item, i) => (
-            <div key={i} className="w-[220px] shrink-0">
-              {renderItem(item)}
-            </div>
-          ))}
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex gap-4">
+            {items.map((item, i) => (
+              <div key={i} className="w-[220px] shrink-0">
+                {renderItem(item)}
+              </div>
+            ))}
+          </div>
         </div>
-        <Button variant="outline" size="icon" onClick={() => scroll("right")}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => emblaApi?.scrollNext()}
+        >
           <ChevronRight className="size-4" />
         </Button>
       </div>
