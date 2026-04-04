@@ -80,7 +80,9 @@
       "Bash(printf 'N\\\\nN\\\\nN\\\\nN\\\\nN\\\\n')",
       "Bash(npx shadcn@latest add sidebar)",
       "Bash(yes N)",
-      "Bash(npx shadcn@latest add checkbox)"
+      "Bash(npx shadcn@latest add checkbox)",
+      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && grep -E \"^\\\\s*\\(public\\\\s+async\\\\s+\\)?Task|^\\\\s*\\\\[Fact\\\\]|^\\\\s*\\\\[Theory\\\\]\" {} | head -50')",
+      "Bash(sed:*)"
     ]
   }
 }

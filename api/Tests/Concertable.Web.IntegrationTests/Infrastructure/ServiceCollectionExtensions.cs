@@ -8,10 +8,12 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddResettables(
         this IServiceCollection services,
         IMockNotificationService notificationService,
-        IMockStripePaymentClient stripePaymentClient)
+        IMockStripePaymentClient stripePaymentClient,
+        IMockEmailService emailService)
     {
         services.AddSingleton<IResettable>(notificationService);
         services.AddSingleton<IResettable>(stripePaymentClient);
+        services.AddSingleton<IResettable>(emailService);
         return services;
     }
 }

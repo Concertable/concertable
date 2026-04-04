@@ -21,6 +21,7 @@ public class ApiFixture : IAsyncLifetime
 
     public IMockNotificationService NotificationService { get; } = new MockNotificationService();
     public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
+    public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
 
 public async Task InitializeAsync()
@@ -40,6 +41,7 @@ public async Task InitializeAsync()
                     ["Auth:JwtSigningKeyBase64"] = Convert.ToBase64String(new byte[32]),
                     ["Auth:Issuer"] = "test",
                     ["Auth:Audience"] = "test",
+                    ["Urls:Frontend"] = "https://localhost:5173",
                 });
             });
 
@@ -50,8 +52,8 @@ public async Task InitializeAsync()
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
-                services.AddResettables(NotificationService, StripePaymentClient);
-                services.AddScoped<IEmailService, MockEmailService>();
+                services.AddResettables(NotificationService, StripePaymentClient, EmailService);
+                services.AddSingleton<IEmailService>(EmailService);
                 services.AddScoped<IPaymentService, PaymentService>();
                 services.AddScoped<IWebhookService, MockWebhookService>();
                 services.AddSingleton<IStripeClient, MockStripeClient>();

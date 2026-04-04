@@ -11,6 +11,7 @@ public record PostedConcert(int OpportunityId, int ApplicationId, int ConcertId)
 
 public static class TestConstants
 {
+    public const string TestPassword = "TestPassword123!";
     public const int ArtistId = 1;
     public const int GenreId = 1;
     public const int VenueId = 1;

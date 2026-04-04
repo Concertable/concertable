@@ -28,7 +28,6 @@ public record ForgotPasswordRequest
 
 public record ResetPasswordRequest
 {
-    public int UserId { get; set; }
     public required string Token { get; set; }
     public required string NewPassword { get; set; }
     public required string ConfirmPassword { get; set; }

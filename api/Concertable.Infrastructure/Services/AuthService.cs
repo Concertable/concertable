@@ -1,3 +1,4 @@
+using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;

@@ -25,7 +25,6 @@ using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
 using Concertable.Infrastructure.Services.Auth;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Infrastructure.Services.Blob;
 using Concertable.Infrastructure.Services.Complete;
 using Concertable.Infrastructure.Services.Concert;
@@ -145,7 +144,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddServices(this IServiceCollection services)
+    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IConcertNotificationService, SignalRConcertNotificationService>();
         services.AddScoped<IApplicationNotificationService, SignalRApplicationNotificationService>();

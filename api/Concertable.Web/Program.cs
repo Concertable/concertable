@@ -65,7 +65,7 @@ var services = builder.Services;
 services.AddInfrastructure(builder.Configuration);
 if (!builder.Environment.IsEnvironment("Testing"))
     services.AddScoped<IDbInitializer, ApplicationDbInitializer>();
-services.AddServices();
+services.AddServices(builder.Configuration);
 services.AddRepositories();
 services.AddSearch();
 services.AddAuth(builder.Configuration);

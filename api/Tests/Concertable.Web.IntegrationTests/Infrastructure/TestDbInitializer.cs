@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
@@ -15,12 +16,14 @@ public class TestDbInitializer : IDbInitializer
     private readonly ApplicationDbContext context;
     private readonly TimeProvider timeProvider;
     private readonly IGeometryProvider geometryProvider;
+    private readonly IPasswordHasher passwordHasher;
 
-    public TestDbInitializer(ApplicationDbContext context, TimeProvider timeProvider, [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
+    public TestDbInitializer(ApplicationDbContext context, TimeProvider timeProvider, [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider, IPasswordHasher passwordHasher)
     {
         this.context = context;
         this.timeProvider = timeProvider;
         this.geometryProvider = geometryProvider;
+        this.passwordHasher = passwordHasher;
     }
 
     public async Task InitializeAsync()
@@ -45,7 +48,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     Id = TestConstants.VenueManager.Id,
                     Email = "venuemanager1@test.com",
-                    PasswordHash = string.Empty,
+                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     Role = Role.VenueManager,
                     StripeId = "acct_test_venuemanager",
                     Location = geometryProvider.CreatePoint(51, 0)
@@ -54,7 +57,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     Id = TestConstants.VenueManager2.Id,
                     Email = "venuemanager2@test.com",
-                    PasswordHash = string.Empty,
+                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     Role = Role.VenueManager,
                     StripeId = "acct_test_venuemanager2",
                     Location = geometryProvider.CreatePoint(51, 0)
@@ -63,7 +66,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     Id = TestConstants.ArtistManager.Id,
                     Email = "artistmanager1@test.com",
-                    PasswordHash = string.Empty,
+                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     Role = Role.ArtistManager,
                     StripeId = "acct_test_artistmanager",
                     Location = geometryProvider.CreatePoint(51, 0)
@@ -72,7 +75,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     Id = TestConstants.Customer.Id,
                     Email = "customer@test.com",
-                    PasswordHash = string.Empty,
+                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     Role = Role.Customer,
                     Location = geometryProvider.CreatePoint(51, 0)
                 },
@@ -80,7 +83,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     Id = TestConstants.Admin.Id,
                     Email = "admin@test.com",
-                    PasswordHash = string.Empty,
+                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     Role = Role.Admin,
                     Location = geometryProvider.CreatePoint(51, 0)
                 }

@@ -18,7 +18,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Password).NotEmpty();
-        RuleFor(x => x.Role).NotEmpty();
+        RuleFor(x => x.Role).IsInEnum().NotEqual(Core.Enums.Role.Admin);
     }
 }
 
@@ -34,7 +34,6 @@ public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequ
 {
     public ResetPasswordRequestValidator()
     {
-        RuleFor(x => x.UserId).GreaterThan(0);
         RuleFor(x => x.Token).NotEmpty();
         RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6);
         RuleFor(x => x.ConfirmPassword).Equal(x => x.NewPassword).WithMessage("The confirmation password does not match.");
