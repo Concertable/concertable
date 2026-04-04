@@ -6,6 +6,7 @@ import { useHeaderQuery } from "@/hooks/query/useHeaderQuery";
 import { ArtistHeaderCard } from "@/components/headers/ArtistHeaderCard";
 import { VenueHeaderCard } from "@/components/headers/VenueHeaderCard";
 import { ConcertHeaderCard } from "@/components/headers/ConcertHeaderCard";
+import { HeaderCardSkeleton } from "@/components/skeletons/HeaderCardSkeleton";
 
 const cardRegistry = {
   artist: ArtistHeaderCard,
@@ -18,7 +19,13 @@ export function SearchResults() {
   const { data, isLoading, isError } = useHeaderQuery(filters);
 
   if (isLoading)
-    return <p className="text-muted-foreground text-sm">Loading...</p>;
+    return (
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <HeaderCardSkeleton key={i} />
+        ))}
+      </div>
+    );
   if (isError)
     return <p className="text-destructive text-sm">Something went wrong.</p>;
   if (!data?.data.length)

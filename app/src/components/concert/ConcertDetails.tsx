@@ -48,21 +48,6 @@ export function ConcertDetails({
               >
                 {concert.about}
               </EditableTextarea>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <p
-                  key={i}
-                  className="text-muted-foreground text-sm leading-relaxed"
-                >
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                  irure dolor in reprehenderit in voluptate velit esse cillum
-                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-                  cupidatat non proident, sunt in culpa qui officia deserunt
-                  mollit anim id est laborum.
-                </p>
-              ))}
             </section>
 
             <div className="border-border border-t" />
@@ -70,21 +55,6 @@ export function ConcertDetails({
             <section id="artist" className="scroll-mt-24 space-y-2">
               <h2 className="text-xl font-semibold">Artist</h2>
               <p className="text-muted-foreground">{concert.artist.name}</p>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <p
-                  key={i}
-                  className="text-muted-foreground text-sm leading-relaxed"
-                >
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                  irure dolor in reprehenderit in voluptate velit esse cillum
-                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-                  cupidatat non proident, sunt in culpa qui officia deserunt
-                  mollit anim id est laborum.
-                </p>
-              ))}
             </section>
 
             <div className="border-border border-t" />
@@ -97,21 +67,6 @@ export function ConcertDetails({
                 lat={concert.venue.latitude}
                 lng={concert.venue.longitude}
               />
-              {Array.from({ length: 6 }).map((_, i) => (
-                <p
-                  key={i}
-                  className="text-muted-foreground text-sm leading-relaxed"
-                >
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                  irure dolor in reprehenderit in voluptate velit esse cillum
-                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-                  cupidatat non proident, sunt in culpa qui officia deserunt
-                  mollit anim id est laborum.
-                </p>
-              ))}
             </section>
 
             <div className="border-border border-t" />

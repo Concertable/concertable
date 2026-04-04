@@ -2,6 +2,7 @@ import type { VenueHeader } from "@/types/header";
 import { HeaderCarousel } from "@/components/headers/HeaderCarousel";
 import { VenueHeaderCard } from "@/components/headers/VenueHeaderCard";
 import { useHeaderAmountQuery } from "@/hooks/query/useHeaderQuery";
+import { CarouselSkeleton } from "@/components/skeletons/CarouselSkeleton";
 
 interface Props {
   title: string;
@@ -9,7 +10,9 @@ interface Props {
 }
 
 export function VenueHeaderCarousel({ title, amount = 15 }: Readonly<Props>) {
-  const { data = [] } = useHeaderAmountQuery("venue", amount);
+  const { data = [], isLoading } = useHeaderAmountQuery("venue", amount);
+
+  if (isLoading) return <CarouselSkeleton title={title} />;
 
   return (
     <HeaderCarousel

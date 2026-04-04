@@ -3,6 +3,7 @@ import { useArtistStore } from "@/store/useArtistStore";
 import { ConfigBar } from "@/components/ConfigBar";
 import { ArtistDetails } from "@/components/artist/ArtistDetails";
 import { EditableProvider } from "@/providers/EditableProvider";
+import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 
 export default function MyArtistPage() {
   const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
@@ -12,8 +13,7 @@ export default function MyArtistPage() {
   const setName = useArtistStore((state) => state.setName);
   const setAbout = useArtistStore((state) => state.setAbout);
 
-  if (!artist)
-    return <div className="text-muted-foreground p-6">Loading...</div>;
+  if (!artist) return <DetailsPageSkeleton sections={5} />;
 
   const display = draft ?? artist;
 

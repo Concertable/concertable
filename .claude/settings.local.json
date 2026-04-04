@@ -73,7 +73,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add carousel)",
       "Bash(npx husky:*)",
-      "Bash(bash app/.husky/pre-commit)"
+      "Bash(bash app/.husky/pre-commit)",
+      "Bash(npx shadcn@latest add skeleton --yes)"
     ]
   }
 }

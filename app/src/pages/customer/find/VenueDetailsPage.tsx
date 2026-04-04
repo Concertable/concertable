@@ -1,6 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { useVenue } from "@/hooks/useVenue";
 import { VenueDetails } from "@/components/venue/VenueDetails";
+import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 
 const routeApi = getRouteApi("/_customer/find/venue/$id");
 
@@ -8,8 +9,7 @@ export default function VenueDetailsPage() {
   const { id } = routeApi.useParams();
   const { venue, isLoading, isError } = useVenue(Number(id));
 
-  if (isLoading)
-    return <div className="text-muted-foreground p-6">Loading...</div>;
+  if (isLoading) return <DetailsPageSkeleton sections={5} />;
   if (isError || !venue)
     return <div className="text-destructive p-6">Venue not found.</div>;
 

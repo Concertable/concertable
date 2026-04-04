@@ -2,6 +2,7 @@ import type { ConcertHeader } from "@/types/header";
 import { HeaderCarousel } from "@/components/headers/HeaderCarousel";
 import { ConcertHeaderCard } from "@/components/headers/ConcertHeaderCard";
 import { useHeaderAmountQuery } from "@/hooks/query/useHeaderQuery";
+import { CarouselSkeleton } from "@/components/skeletons/CarouselSkeleton";
 
 interface Props {
   title: string;
@@ -9,7 +10,9 @@ interface Props {
 }
 
 export function ConcertHeaderCarousel({ title, amount = 15 }: Readonly<Props>) {
-  const { data = [] } = useHeaderAmountQuery("Concert", amount);
+  const { data = [], isLoading } = useHeaderAmountQuery("Concert", amount);
+
+  if (isLoading) return <CarouselSkeleton title={title} />;
 
   return (
     <HeaderCarousel
