@@ -9,6 +9,7 @@ import { APIProvider as MapsProvider } from "@vis.gl/react-google-maps";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
 import { ThemeProvider } from "./providers/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuthStore } from "./store/useAuthStore";
 import "./index.css";
 
@@ -46,7 +47,9 @@ async function init() {
           libraries={["places"]}
         >
           <ThemeProvider>
-            <RouterProvider router={router} />
+            <TooltipProvider>
+              <RouterProvider router={router} />
+            </TooltipProvider>
           </ThemeProvider>
         </MapsProvider>
       </QueryClientProvider>

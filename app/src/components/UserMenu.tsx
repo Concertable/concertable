@@ -1,25 +1,27 @@
-import { useRouter } from "@tanstack/react-router";
+import { useRouter, Link } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavSection } from "@/hooks/useNavSection";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/IconButton";
+import { isArtistManager, isVenueManager } from "@/types/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "@tanstack/react-router";
 
 export function UserMenu() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
+  const section = useNavSection();
 
   async function handleLogout() {
     await logout();
@@ -40,7 +42,7 @@ export function UserMenu() {
   }
 
   const isCustomer = user.role === "Customer";
-  const section = useNavSection();
+  const isAdmin = user.role === "Admin";
   const inCustomerView = section === "Customer";
 
   return (
@@ -50,38 +52,62 @@ export function UserMenu() {
           <UserCircle className="size-7" />
         </IconButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuLabel className="text-muted-foreground truncate text-xs font-normal">
+          {user.email}
+        </DropdownMenuLabel>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem asChild>
-          <Link to="/profile">Profile Details</Link>
+          <Link to="/settings">Settings</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/settings/payment">Payment / Billing</Link>
         </DropdownMenuItem>
 
         {isCustomer && (
-          <DropdownMenuItem asChild>
-            <Link to="/profile/preferences">Preferences</Link>
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>My Tickets</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings/tickets/upcoming">Upcoming</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings/tickets/history">History</Link>
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuItem asChild>
+              <Link to="/settings/preferences">Preferences</Link>
+            </DropdownMenuItem>
+          </>
         )}
 
-        {!isCustomer && (
-          <DropdownMenuItem asChild>
-            <Link to="/profile/payment">Payment</Link>
-          </DropdownMenuItem>
+        {isArtistManager(user) && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link to="/artist/my">My Artist</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/artist">Dashboard</Link>
+            </DropdownMenuItem>
+          </>
         )}
 
-        {isCustomer && (
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Tickets</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem asChild>
-                <Link to="/profile/tickets/upcoming">Upcoming</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/profile/tickets/history">History</Link>
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+        {isVenueManager(user) && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link to="/venue/my">My Venue</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/venue">Dashboard</Link>
+            </DropdownMenuItem>
+          </>
         )}
 
-        {!isCustomer && (
+        {!isCustomer && !isAdmin && (
           <>
             <DropdownMenuSeparator />
             {inCustomerView ? (

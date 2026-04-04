@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import ProfilePage from "@/pages/customer/profile/ProfilePage";
 
-export const Route = createFileRoute("/_customer/profile/")({
+export const Route = createFileRoute("/_customer/settings/")({
   component: ProfilePage,
 });

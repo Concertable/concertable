@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ type FormData = z.infer<typeof schema>;
 export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
+  const { redirect } = useSearch({ strict: false }) as { redirect?: string };
 
   const {
     register,
@@ -28,7 +29,7 @@ export default function LoginPage() {
   const onSubmit = async (data: FormData) => {
     try {
       const baseUrl = await login(data);
-      await navigate({ to: baseUrl });
+      await navigate({ to: redirect || baseUrl });
     } catch {
       toast.error("Invalid email or password");
     }
