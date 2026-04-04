@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useConcertQuery } from "@/hooks/query/useConcertQuery";
+import { useConcert } from "@/hooks/useConcert";
 import { useConcertStore } from "@/store/useConcertStore";
 import { updateConcert } from "@/api/concertApi";
 import type { Concert } from "@/types/concert";
@@ -16,7 +16,7 @@ interface UseMyConcertResult extends UseConcertResult {
 }
 
 export function useMyConcert(id: number): UseMyConcertResult {
-  const query = useConcertQuery(id);
+  const { concert, isLoading, isError } = useConcert(id);
   const queryClient = useQueryClient();
 
   const { toggleEdit, resetDraft, draft, isDirty, editMode } =
@@ -37,15 +37,15 @@ export function useMyConcert(id: number): UseMyConcertResult {
   });
 
   return {
-    concert: query.data,
+    concert,
     draft,
-    isLoading: query.isLoading,
-    isError: query.isError,
+    isLoading,
+    isError,
     editMode,
     isDirty,
     save: mutation.mutate,
     isSaving: mutation.isPending,
-    toggleEdit: () => toggleEdit(query.data!),
-    resetDraft: () => resetDraft(query.data!),
+    toggleEdit: () => toggleEdit(concert!),
+    resetDraft: () => resetDraft(concert!),
   };
 }
