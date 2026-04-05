@@ -2,6 +2,35 @@ import { usePagination } from "@/hooks/usePagination";
 import { useOpportunitiesByVenueQuery } from "@/hooks/query/useOpportunityQuery";
 import { OpportunityCard } from "@/components/opportunities/OpportunityCard";
 import { PaginationControls } from "@/components/ui/PaginationControls";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function OpportunitySectionSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="border-border bg-card space-y-3 rounded-xl border p-4"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-28" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+          </div>
+          <div className="flex gap-1.5">
+            <Skeleton className="h-5 w-16 rounded-full" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface Props {
   venueId: number;
@@ -14,8 +43,7 @@ export function OpportunitySection({ venueId }: Readonly<Props>) {
     params,
   );
 
-  if (isLoading)
-    return <p className="text-muted-foreground">Loading opportunities...</p>;
+  if (isLoading) return <OpportunitySectionSkeleton />;
   if (isError)
     return <p className="text-destructive">Failed to load opportunities.</p>;
   if (!data?.data.length)

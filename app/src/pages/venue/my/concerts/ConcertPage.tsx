@@ -4,6 +4,7 @@ import { useConcertStore } from "@/store/useConcertStore";
 import { ConfigBar } from "@/components/ConfigBar";
 import { ConcertDetails } from "@/components/concert/ConcertDetails";
 import { EditableProvider } from "@/providers/EditableProvider";
+import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 
 const routeApi = getRouteApi("/venue/my/concerts/concert/$id");
 
@@ -16,8 +17,7 @@ export default function ConcertPage() {
   const setName = useConcertStore((state) => state.setName);
   const setAbout = useConcertStore((state) => state.setAbout);
 
-  if (!concert)
-    return <div className="text-muted-foreground p-6">Loading...</div>;
+  if (!concert) return <DetailsPageSkeleton sections={4} />;
 
   const display = draft ?? concert;
 
