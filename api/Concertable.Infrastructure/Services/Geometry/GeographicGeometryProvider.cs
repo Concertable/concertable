@@ -25,7 +25,7 @@ public class GeographicGeometryProvider : IGeometryProvider
     public Point? CreatePoint(double? latitude, double? longitude)
     {
         return (latitude.HasValue && longitude.HasValue)
-            ? CreatePoint(latitude, longitude)
+            ? CreatePoint(latitude.Value, longitude.Value)
             : null;
     }
 }

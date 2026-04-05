@@ -270,25 +270,25 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILocationSelector<VenueEntity>, VenueLocationSelector>();
         services.AddSingleton<ILocationSelector<ConcertEntity>, ConcertLocationSelector>();
 
-        services.AddScoped<IGeometrySpecification<ArtistEntity>, GeometrySpecification<ArtistEntity>>();
-        services.AddScoped<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
-        services.AddScoped<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
+        services.AddSingleton<IGeometrySpecification<ArtistEntity>, GeometrySpecification<ArtistEntity>>();
+        services.AddSingleton<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
+        services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
 
         services.AddSingleton<IReviewKeySelector<ArtistEntity>, ArtistReviewKeySelector>();
         services.AddSingleton<IReviewKeySelector<VenueEntity>, VenueReviewKeySelector>();
         services.AddSingleton<IReviewKeySelector<ConcertEntity>, ConcertReviewKeySelector>();
 
-        services.AddScoped<IRatingSpecification<ArtistEntity>, RatingSpecification<ArtistEntity>>();
-        services.AddScoped<IRatingSpecification<VenueEntity>, RatingSpecification<VenueEntity>>();
-        services.AddScoped<IRatingSpecification<ConcertEntity>, RatingSpecification<ConcertEntity>>();
+        services.AddSingleton<IRatingSpecification<ArtistEntity>, RatingSpecification<ArtistEntity>>();
+        services.AddSingleton<IRatingSpecification<VenueEntity>, RatingSpecification<VenueEntity>>();
+        services.AddSingleton<IRatingSpecification<ConcertEntity>, RatingSpecification<ConcertEntity>>();
 
-        services.AddScoped<ISearchSpecification<ArtistEntity>, SearchSpecification<ArtistEntity>>();
-        services.AddScoped<ISearchSpecification<VenueEntity>, SearchSpecification<VenueEntity>>();
-        services.AddScoped<ISearchSpecification<ConcertEntity>, SearchSpecification<ConcertEntity>>();
+        services.AddSingleton<ISearchSpecification<ArtistEntity>, SearchSpecification<ArtistEntity>>();
+        services.AddSingleton<ISearchSpecification<VenueEntity>, SearchSpecification<VenueEntity>>();
+        services.AddSingleton<ISearchSpecification<ConcertEntity>, SearchSpecification<ConcertEntity>>();
 
-        services.AddScoped<IArtistSearchSpecification, ArtistSearchSpecification>();
-        services.AddScoped<IVenueSearchSpecification, VenueSearchSpecification>();
-        services.AddScoped<IConcertSearchSpecification, ConcertSearchSpecification>();
+        services.AddSingleton<IArtistSearchSpecification, ArtistSearchSpecification>();
+        services.AddSingleton<IVenueSearchSpecification, VenueSearchSpecification>();
+        services.AddSingleton<IConcertSearchSpecification, ConcertSearchSpecification>();
 
         services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();

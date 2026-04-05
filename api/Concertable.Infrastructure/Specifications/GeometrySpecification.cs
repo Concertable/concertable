@@ -31,7 +31,10 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
         if (!geoParams.HasValidCoordinates())
             return query;
 
-        var center = geometryProvider.CreatePoint(geoParams.Latitude!.Value, geoParams.Longitude!.Value);
+        var center = geometryProvider.CreatePoint(geoParams.Latitude, geoParams.Longitude);
+        if (center is null)
+            return query;
+
         var radiusMeters = (geoParams.RadiusKm ?? 10) * 1000;
 
         return query.Where(BuildFilter(locationSelector, center, radiusMeters));
