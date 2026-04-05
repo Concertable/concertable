@@ -49,6 +49,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 Id = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"),
                 Email = "admin1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
+                IsEmailVerified = true,
                 Role = Role.Admin,
                 County = "Leicestershire",
                 Town = "Loughborough",
@@ -60,6 +61,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 Id = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000001"),
                 Email = "customer1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
+                IsEmailVerified = true,
                 Role = Role.Customer,
                 County = locations[0].County,
                 Town = locations[0].Town,
@@ -74,6 +76,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 {
                     Email = $"customer{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
+                    IsEmailVerified = true,
                     Role = Role.Customer,
                     County = loc.County,
                     Town = loc.Town,
@@ -86,6 +89,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 Id = Guid.Parse("cccccccc-0000-0000-0000-000000000001"),
                 Email = "artistmanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
+                IsEmailVerified = true,
                 Role = Role.ArtistManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
@@ -96,6 +100,7 @@ public class ApplicationDbInitializer : IDbInitializer
             {
                 Email = "artistmanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
+                IsEmailVerified = true,
                 Role = Role.ArtistManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
@@ -109,6 +114,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 {
                     Email = $"artistmanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
+                    IsEmailVerified = true,
                     Role = Role.ArtistManager,
                     County = loc.County,
                     Town = loc.Town,
@@ -121,6 +127,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 Id = Guid.Parse("dddddddd-0000-0000-0000-000000000001"),
                 Email = "venuemanager1@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
+                IsEmailVerified = true,
                 Role = Role.VenueManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
@@ -131,6 +138,7 @@ public class ApplicationDbInitializer : IDbInitializer
             {
                 Email = "venuemanager2@test.com",
                 PasswordHash = passwordHasher.Hash(SeedPassword),
+                IsEmailVerified = true,
                 Role = Role.VenueManager,
                 County = locations[0].County,
                 Town = locations[0].Town,
@@ -144,6 +152,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 {
                     Email = $"venuemanager{i}@test.com",
                     PasswordHash = passwordHasher.Hash(SeedPassword),
+                    IsEmailVerified = true,
                     Role = Role.VenueManager,
                     County = loc.County,
                     Town = loc.Town,

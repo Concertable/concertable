@@ -13,7 +13,7 @@ public class UriService : IUriService
         _urlSettings = urlSettings.Value;
     }
 
-    public Uri GetUri(string path, Dictionary<string, string>? query = null)
+    public Uri GetUri(string path, IDictionary<string, string>? query = null)
     {
         var builder = new UriBuilder(_urlSettings.Frontend) { Path = path };
 

@@ -49,6 +49,7 @@ public class TestDbInitializer : IDbInitializer
                     Id = TestConstants.VenueManager.Id,
                     Email = "venuemanager1@test.com",
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
+                    IsEmailVerified = true,
                     Role = Role.VenueManager,
                     StripeId = "acct_test_venuemanager",
                     Location = geometryProvider.CreatePoint(51, 0)
@@ -58,6 +59,7 @@ public class TestDbInitializer : IDbInitializer
                     Id = TestConstants.VenueManager2.Id,
                     Email = "venuemanager2@test.com",
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
+                    IsEmailVerified = true,
                     Role = Role.VenueManager,
                     StripeId = "acct_test_venuemanager2",
                     Location = geometryProvider.CreatePoint(51, 0)
@@ -67,6 +69,7 @@ public class TestDbInitializer : IDbInitializer
                     Id = TestConstants.ArtistManager.Id,
                     Email = "artistmanager1@test.com",
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
+                    IsEmailVerified = true,
                     Role = Role.ArtistManager,
                     StripeId = "acct_test_artistmanager",
                     Location = geometryProvider.CreatePoint(51, 0)
@@ -76,6 +79,7 @@ public class TestDbInitializer : IDbInitializer
                     Id = TestConstants.Customer.Id,
                     Email = "customer@test.com",
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
+                    IsEmailVerified = true,
                     Role = Role.Customer,
                     Location = geometryProvider.CreatePoint(51, 0)
                 },
@@ -84,6 +88,7 @@ public class TestDbInitializer : IDbInitializer
                     Id = TestConstants.Admin.Id,
                     Email = "admin@test.com",
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
+                    IsEmailVerified = true,
                     Role = Role.Admin,
                     Location = geometryProvider.CreatePoint(51, 0)
                 }

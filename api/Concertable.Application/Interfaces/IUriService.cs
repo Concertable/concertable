@@ -2,5 +2,5 @@ namespace Concertable.Application.Interfaces;
 
 public interface IUriService
 {
-    Uri GetUri(string path, Dictionary<string, string>? query = null);
+    Uri GetUri(string path, IDictionary<string, string>? query = null);
 }
