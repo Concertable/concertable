@@ -8,6 +8,7 @@ import { ConcertCard } from "@/components/concert/ConcertCard";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriangleAlertIcon } from "lucide-react";
+import { AddReview } from "@/components/reviews/AddReview";
 
 const SECTIONS = [
   { id: "about", label: "About" },
@@ -82,7 +83,10 @@ export function ConcertDetails({
             <div className="border-border border-t" />
 
             <section id="reviews" className="scroll-mt-24 space-y-4">
-              <h2 className="text-xl font-semibold">Reviews</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Reviews</h2>
+                <AddReview concertId={concert.id} />
+              </div>
               <Tabs defaultValue="artist">
                 <div className="flex items-center justify-between gap-6">
                   <TabsList>
