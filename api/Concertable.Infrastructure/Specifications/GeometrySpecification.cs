@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Interfaces.Search;
+using Concertable.Infrastructure.Expressions;
 using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
 using Concertable.Core.Extensions;
@@ -31,23 +32,22 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
             return query;
 
         var center = geometryProvider.CreatePoint(geoParams.Latitude!.Value, geoParams.Longitude!.Value);
-        var radiusKm = geoParams.RadiusKm ?? 10;
+        var radiusMeters = (geoParams.RadiusKm ?? 10) * 1000;
 
-        var entityParam = locationSelector.Parameters[0];
-        var locationExpr = locationSelector.Body;
+        return query.Where(BuildFilter(locationSelector, center, radiusMeters));
+    }
 
-        var distanceMethod = typeof(Geometry).GetMethod(nameof(Geometry.Distance), [typeof(Geometry)])!;
+    private static Expression<Func<TEntity, bool>> BuildFilter(
+        Expression<Func<TEntity, Point?>> locationSelector,
+        Point center,
+        double radiusMeters)
+    {
+        Expression<Func<Point?, bool>> pointCondition =
+            p => p != null && p.Distance(center) <= radiusMeters;
 
-        /* e => e.[LocationPath] != null
-               && e.[LocationPath].Distance(center) <= radiusKm * 1000 */
-        var filter = Expression.Lambda<Func<TEntity, bool>>(
-            Expression.AndAlso(
-                Expression.NotEqual(locationExpr, Expression.Constant(null, typeof(Point))),
-                Expression.LessThanOrEqual(
-                    Expression.Call(locationExpr, distanceMethod, Expression.Constant(center)),
-                    Expression.Constant((double)(radiusKm * 1000)))),
-            entityParam);
+        var condition = new ParameterReplacer(pointCondition.Parameters.Single(), locationSelector.Body)
+            .Visit(pointCondition.Body)!;
 
-        return query.Where(filter);
+        return Expression.Lambda<Func<TEntity, bool>>(condition, locationSelector.Parameters.Single());
     }
 }

@@ -3,7 +3,7 @@ using Concertable.Core.Entities;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
-namespace Concertable.Infrastructure.Specifications;
+namespace Concertable.Infrastructure.Expressions.Selectors;
 
 public class VenueLocationSelector : ILocationSelector<VenueEntity>
 {

@@ -2,7 +2,7 @@ using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
 using System.Linq.Expressions;
 
-namespace Concertable.Infrastructure.Specifications;
+namespace Concertable.Infrastructure.Expressions.Selectors;
 
 public class VenueReviewKeySelector : IReviewKeySelector<VenueEntity>
 {
