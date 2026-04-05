@@ -3,9 +3,11 @@ import { Hero } from "@/components/Hero";
 import { GoogleMap } from "@/components/GoogleMap";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
+import { ReviewSummaryBadge } from "@/components/reviews/ReviewSummaryBadge";
 import { ConcertCard } from "@/components/concert/ConcertCard";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TriangleAlertIcon } from "lucide-react";
 
 const SECTIONS = [
   { id: "about", label: "About" },
@@ -35,6 +37,13 @@ export function ConcertDetails({
         namePlaceholder="Concert name"
         onNameChange={onNameChange}
       />
+
+      {!concert.datePosted && (
+        <div className="bg-warning/15 text-warning flex items-center gap-3 px-6 py-3 text-sm">
+          <TriangleAlertIcon className="text-warning size-4 shrink-0" />
+          This concert has not been posted yet and is not visible to the public.
+        </div>
+      )}
 
       <ScrollspyNav sections={SECTIONS} />
 
@@ -72,33 +81,33 @@ export function ConcertDetails({
 
             <div className="border-border border-t" />
 
-            <section id="reviews" className="scroll-mt-24">
+            <section id="reviews" className="scroll-mt-24 space-y-4">
+              <h2 className="text-xl font-semibold">Reviews</h2>
               <Tabs defaultValue="artist">
-                <TabsList>
-                  <TabsTrigger value="artist">Artist Reviews</TabsTrigger>
-                  <TabsTrigger value="venue">Venue Reviews</TabsTrigger>
-                  <TabsTrigger value="concert">Concert Reviews</TabsTrigger>
-                </TabsList>
+                <div className="flex items-center justify-between gap-6">
+                  <TabsList>
+                    <TabsTrigger value="artist">Artist</TabsTrigger>
+                    <TabsTrigger value="venue">Venue</TabsTrigger>
+                    <TabsTrigger value="concert">Concert</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="artist">
+                    <ReviewSummaryBadge type="artist" id={concert.artist.id} />
+                  </TabsContent>
+                  <TabsContent value="venue">
+                    <ReviewSummaryBadge type="venue" id={concert.venue.id} />
+                  </TabsContent>
+                  <TabsContent value="concert">
+                    <ReviewSummaryBadge type="concert" id={concert.id} />
+                  </TabsContent>
+                </div>
                 <TabsContent value="artist">
-                  <ReviewSection
-                    type="artist"
-                    id={concert.artist.id}
-                    title="Artist Reviews"
-                  />
+                  <ReviewSection type="artist" id={concert.artist.id} />
                 </TabsContent>
                 <TabsContent value="venue">
-                  <ReviewSection
-                    type="venue"
-                    id={concert.venue.id}
-                    title="Venue Reviews"
-                  />
+                  <ReviewSection type="venue" id={concert.venue.id} />
                 </TabsContent>
                 <TabsContent value="concert">
-                  <ReviewSection
-                    type="concert"
-                    id={concert.id}
-                    title="Concert Reviews"
-                  />
+                  <ReviewSection type="concert" id={concert.id} />
                 </TabsContent>
               </Tabs>
             </section>

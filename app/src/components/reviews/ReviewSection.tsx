@@ -6,31 +6,16 @@ import { PaginationControls } from "@/components/ui/PaginationControls";
 interface Props {
   type: ReviewEntityType;
   id: number;
-  title?: string;
 }
 
-export function ReviewSection({
-  type,
-  id,
-  title = "Reviews",
-}: Readonly<Props>) {
-  const { reviews, summary, isLoading, params, nextPage, prevPage } =
-    useReviews(type, id);
+export function ReviewSection({ type, id }: Readonly<Props>) {
+  const { reviews, isLoading, params, nextPage, prevPage } = useReviews(
+    type,
+    id,
+  );
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        {summary && (
-          <div className="text-muted-foreground flex items-center gap-1 text-sm">
-            <Star className="fill-gold text-gold size-4" />
-            {summary.averageRating != null
-              ? `${summary.averageRating.toFixed(1)} · ${summary.totalReviews} review${summary.totalReviews !== 1 ? "s" : ""}`
-              : "No reviews yet"}
-          </div>
-        )}
-      </div>
-
       {isLoading && (
         <p className="text-muted-foreground text-sm">Loading reviews...</p>
       )}
