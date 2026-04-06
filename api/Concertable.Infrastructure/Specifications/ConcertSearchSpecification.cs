@@ -35,13 +35,6 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
         if (searchParams.ShowSold == false)
             query = query.Where(e => e.AvailableTickets > 0);
 
-        query = searchSpecification.Apply(query, searchParams);
-
-        return searchParams.Sort?.ToLower() switch
-        {
-            "date_asc" => query.OrderBy(e => e.Application.Opportunity.StartDate),
-            "date_desc" => query.OrderByDescending(e => e.Application.Opportunity.StartDate),
-            _ => query.OrderBy(e => e.Application.Opportunity.StartDate)
-        };
+        return searchSpecification.Apply(query, searchParams.SearchTerm);
     }
 }

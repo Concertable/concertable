@@ -18,6 +18,6 @@ public class ArtistSearchSpecification : IArtistSearchSpecification
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(a => a.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
 
-        return searchSpecification.Apply(query, searchParams);
+        return searchSpecification.Apply(query, searchParams.SearchTerm);
     }
 }

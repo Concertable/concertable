@@ -1,7 +1,6 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
-using Concertable.Core.Exceptions;
 
 namespace Concertable.Application.Mappers;
 
@@ -16,9 +15,7 @@ public static class ArtistMappers
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
         County = artist.User.County ?? string.Empty,
         Town = artist.User.Town ?? string.Empty,
-        Email = artist.User.Email ?? string.Empty,
-        Latitude = artist.User.Location?.Y ?? throw new InternalServerException($"Artist {artist.Id} user has no location set."),
-        Longitude = artist.User.Location?.X ?? throw new InternalServerException($"Artist {artist.Id} user has no location set.")
+        Email = artist.User.Email ?? string.Empty
     };
 
     public static ArtistSummaryDto ToSummaryDto(this ArtistEntity artist) => new()
@@ -35,9 +32,7 @@ public static class ArtistMappers
         Name = artist.Name,
         ImageUrl = artist.ImageUrl,
         County = artist.User.County ?? string.Empty,
-        Town = artist.User.Town ?? string.Empty,
-        Latitude = artist.User.Location?.Y ?? throw new InternalServerException($"Artist {artist.Id} user has no location set."),
-        Longitude = artist.User.Location?.X ?? throw new InternalServerException($"Artist {artist.Id} user has no location set.")
+        Town = artist.User.Town ?? string.Empty
     };
 
     public static ArtistHeaderDto ToHeaderDto(this ArtistDto artistDto) => new()
@@ -46,9 +41,7 @@ public static class ArtistMappers
         Name = artistDto.Name,
         ImageUrl = artistDto.ImageUrl,
         County = artistDto.County,
-        Town = artistDto.Town,
-        Latitude = artistDto.Latitude,
-        Longitude = artistDto.Longitude
+        Town = artistDto.Town
     };
 
     public static ArtistEntity ToEntity(this CreateArtistRequest request) => new()

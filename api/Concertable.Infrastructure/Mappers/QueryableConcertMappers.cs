@@ -22,8 +22,6 @@ public static class QueryableConcertMappers
             EndDate = c.Application.Opportunity.EndDate,
             DatePosted = c.DatePosted,
             County = c.Application.Opportunity.Venue.User.County ?? string.Empty,
-            Town = c.Application.Opportunity.Venue.User.Town ?? string.Empty,
-            Latitude = c.Application.Opportunity.Venue.User.Location != null ? c.Application.Opportunity.Venue.User.Location.Y : 0.0,
-            Longitude = c.Application.Opportunity.Venue.User.Location != null ? c.Application.Opportunity.Venue.User.Location.X : 0.0
+            Town = c.Application.Opportunity.Venue.User.Town ?? string.Empty
         };
 }

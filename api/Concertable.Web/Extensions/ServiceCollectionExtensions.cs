@@ -1,3 +1,4 @@
+using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Blob;
@@ -289,6 +290,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IArtistSearchSpecification, ArtistSearchSpecification>();
         services.AddSingleton<IVenueSearchSpecification, VenueSearchSpecification>();
         services.AddSingleton<IConcertSearchSpecification, ConcertSearchSpecification>();
+
+        services.AddSingleton<ISortSpecification<ArtistHeaderDto>, HeaderSortSpecification<ArtistHeaderDto>>();
+        services.AddSingleton<ISortSpecification<VenueHeaderDto>, HeaderSortSpecification<VenueHeaderDto>>();
+        services.AddSingleton<ISortSpecification<ConcertHeaderDto>, ConcertSortSpecification>();
+
+        services.AddScoped<IHeaderAutocompleteRepository, HeaderAutocompleteRepository>();
+        services.AddScoped<IHeaderAutocompleteService, HeaderAutocompleteService>();
 
         services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();

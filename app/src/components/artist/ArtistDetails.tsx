@@ -1,6 +1,5 @@
 import type { Artist } from "@/types/artist";
 import { MapPin } from "lucide-react";
-import { GoogleMap } from "@/components/GoogleMap";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
@@ -58,11 +57,6 @@ export function ArtistDetails({
             {[artist.town, artist.county].filter(Boolean).join(", ") ||
               "No location set."}
           </p>
-          <GoogleMap
-            className="mt-3"
-            lat={artist.latitude}
-            lng={artist.longitude}
-          />
         </section>
 
         <div className="border-border border-t" />

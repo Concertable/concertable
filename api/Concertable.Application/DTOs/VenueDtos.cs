@@ -26,7 +26,7 @@ public record VenueSummaryDto
     public double Rating { get; set; }
 }
 
-public record VenueHeaderDto : IHeader, IAddress, ILatLong
+public record VenueHeaderDto : IHeader, IAddress
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -34,6 +34,4 @@ public record VenueHeaderDto : IHeader, IAddress, ILatLong
     public double? Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
-    public required double Latitude { get; set; }
-    public required double Longitude { get; set; }
 }

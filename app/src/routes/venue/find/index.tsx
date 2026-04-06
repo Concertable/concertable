@@ -4,5 +4,5 @@ import { SearchSchema } from "@/schemas/searchSchema";
 
 export const Route = createFileRoute("/venue/find/")({
   component: FindArtistPage,
-  validateSearch: SearchSchema("artist"),
+  validateSearch: SearchSchema(),
 });

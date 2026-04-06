@@ -1,9 +1,12 @@
 import { useRef } from "react";
+
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { Mailbox } from "@/components/Mailbox";
+import { NavbarSearch } from "@/components/NavbarSearch";
 import { useRole } from "@/hooks/useRole";
+import { useRouteRole } from "@/hooks/useRouteRole";
 import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -20,6 +23,7 @@ interface NavbarProps {
 export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
   const role = useRole();
   const baseUrl = useAuthStore((s) => s.user?.baseUrl ?? "/");
+  const routeRole = useRouteRole();
   const ref = useRef<HTMLElement>(null);
 
   useMountLayoutEffect(() => {
@@ -60,6 +64,7 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
       </div>
 
       <div className="text-primary-foreground flex items-center gap-2 [&_button]:hover:bg-white/10">
+        {routeRole === "customer" && <NavbarSearch />}
         {role && <Mailbox />}
         <ThemeToggle />
         <UserMenu />

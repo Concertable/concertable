@@ -25,10 +25,14 @@ export function AppLayout({ links }: Readonly<Props>) {
         setConfigHeight: handleSetConfigHeight,
       }}
     >
-      <Navbar links={links} onHeightChange={setNavbarHeight} />
-      <Breadcrumbs />
-      <Outlet />
-      <Footer />
+      <div className="flex min-h-screen flex-col">
+        <Navbar links={links} onHeightChange={setNavbarHeight} />
+        <Breadcrumbs />
+        <main className="flex flex-1 flex-col">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
     </NavbarHeightContext.Provider>
   );
 }

@@ -14,5 +14,5 @@ public class VenueSearchSpecification : IVenueSearchSpecification
     }
 
     public IQueryable<VenueEntity> Apply(IQueryable<VenueEntity> query, SearchParams searchParams) =>
-        searchSpecification.Apply(query, searchParams);
+        searchSpecification.Apply(query, searchParams.SearchTerm);
 }

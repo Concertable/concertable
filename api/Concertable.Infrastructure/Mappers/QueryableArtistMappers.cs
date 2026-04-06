@@ -19,8 +19,6 @@ public static class QueryableArtistMappers
             ImageUrl = a.ImageUrl,
             Rating = rating.AverageRating,
             County = a.User.County ?? string.Empty,
-            Town = a.User.Town ?? string.Empty,
-            Latitude = a.User.Location != null ? a.User.Location.Y : 0.0,
-            Longitude = a.User.Location != null ? a.User.Location.X : 0.0
+            Town = a.User.Town ?? string.Empty
         };
 }

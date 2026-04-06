@@ -1,30 +1,44 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Geometry;
+using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Core.Exceptions;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services;
 
 public class ArtistService : IArtistService
 {
     private readonly IArtistRepository artistRepository;
+    private readonly IUserRepository userRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
     private readonly IGenreSyncService genreSyncService;
+    private readonly IGeocodingService geocodingService;
+    private readonly IGeometryProvider geometryService;
+    private readonly IUnitOfWork unitOfWork;
 
     public ArtistService(
         IArtistRepository artistRepository,
+        IUserRepository userRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        IGenreSyncService genreSyncService)
+        IGenreSyncService genreSyncService,
+        IGeocodingService geocodingService,
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryService,
+        IUnitOfWork unitOfWork)
     {
         this.artistRepository = artistRepository;
+        this.userRepository = userRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
         this.genreSyncService = genreSyncService;
+        this.geocodingService = geocodingService;
+        this.geometryService = geometryService;
+        this.unitOfWork = unitOfWork;
     }
 
     public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
@@ -44,12 +58,16 @@ public class ArtistService : IArtistService
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
     {
         var artist = request.ToEntity();
-        var user = currentUser.Get();
+        var user = currentUser.GetEntity();
         artist.UserId = user.Id;
         artist.ImageUrl = await imageService.UploadAsync(request.Image);
 
+        await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
+
         var createdArtist = await artistRepository.AddAsync(artist);
-        await artistRepository.SaveChangesAsync();
+        userRepository.Update(user);
+        await unitOfWork.SaveChangesAsync();
+
         return createdArtist.ToDto();
     }
 
@@ -67,10 +85,13 @@ public class ArtistService : IArtistService
 
         genreSyncService.Sync(artist.ArtistGenres, request.Genres.Select(g => g.Id));
 
+        await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
+
         if (request.Image is not null)
             artist.ImageUrl = await imageService.ReplaceAsync(request.Image.File, request.Image.Url);
 
-        await artistRepository.SaveChangesAsync();
+        userRepository.Update(user);
+        await unitOfWork.SaveChangesAsync();
 
         return artist.ToDto();
     }
@@ -86,4 +107,11 @@ public class ArtistService : IArtistService
         return id.Value;
     }
 
+    private async Task UpdateUserLocationAsync(UserEntity user, double latitude, double longitude)
+    {
+        var location = await geocodingService.GetLocationAsync(latitude, longitude);
+        user.County = location.County;
+        user.Town = location.Town;
+        user.Location = geometryService.CreatePoint(latitude, longitude);
+    }
 }

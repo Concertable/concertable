@@ -8,6 +8,7 @@ import { ConcertCard } from "@/components/concert/ConcertCard";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriangleAlertIcon } from "lucide-react";
+import { VenueLocation } from "@/components/VenueLocation";
 import { AddReview } from "@/components/reviews/AddReview";
 
 const SECTIONS = [
@@ -72,7 +73,11 @@ export function ConcertDetails({
 
             <section id="venue" className="scroll-mt-24 space-y-3">
               <h2 className="text-xl font-semibold">Venue</h2>
-              <p className="text-muted-foreground">{concert.venue.name}</p>
+              <VenueLocation
+                name={concert.venue.name}
+                county={concert.venue.county}
+                town={concert.venue.town}
+              />
               <GoogleMap
                 className="mt-3"
                 lat={concert.venue.latitude}

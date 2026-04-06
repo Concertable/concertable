@@ -4,5 +4,5 @@ import { SearchSchema } from "@/schemas/searchSchema";
 
 export const Route = createFileRoute("/_customer/find/")({
   component: FindPage,
-  validateSearch: SearchSchema("concert"),
+  validateSearch: SearchSchema(),
 });

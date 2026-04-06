@@ -34,9 +34,7 @@ public static class VenueMappers
         Name = venue.Name,
         ImageUrl = venue.ImageUrl,
         County = venue.User.County ?? string.Empty,
-        Town = venue.User.Town ?? string.Empty,
-        Latitude = venue.User.Location?.Y ?? throw new InternalServerException($"Venue {venue.Id} user has no location set."),
-        Longitude = venue.User.Location?.X ?? throw new InternalServerException($"Venue {venue.Id} user has no location set.")
+        Town = venue.User.Town ?? string.Empty
     };
 
     public static VenueHeaderDto ToHeaderDto(this VenueDto venueDto) => new()
@@ -45,9 +43,7 @@ public static class VenueMappers
         Name = venueDto.Name,
         ImageUrl = venueDto.ImageUrl,
         County = venueDto.County,
-        Town = venueDto.Town,
-        Latitude = venueDto.Latitude,
-        Longitude = venueDto.Longitude
+        Town = venueDto.Town
     };
 
     public static VenueEntity ToEntity(this CreateVenueRequest request) => new()

@@ -19,8 +19,6 @@ public static class QueryableVenueMappers
             ImageUrl = v.ImageUrl,
             Rating = rating.AverageRating,
             County = v.User.County ?? string.Empty,
-            Town = v.User.Town ?? string.Empty,
-            Latitude = v.User.Location != null ? v.User.Location.Y : 0.0,
-            Longitude = v.User.Location != null ? v.User.Location.X : 0.0
+            Town = v.User.Town ?? string.Empty
         };
 }

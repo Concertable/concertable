@@ -48,8 +48,6 @@ public static class ConcertMappers
         EndDate = concert.Application.Opportunity.EndDate,
         County = concert.Application.Opportunity.Venue.User.County ?? string.Empty,
         Town = concert.Application.Opportunity.Venue.User.Town ?? string.Empty,
-        Latitude = concert.Application.Opportunity.Venue.User.Location?.Y ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
-        Longitude = concert.Application.Opportunity.Venue.User.Location?.X ?? throw new InternalServerException($"Venue user has no location set for concert {concert.Id}."),
         DatePosted = concert.DatePosted
     };
 
@@ -62,8 +60,6 @@ public static class ConcertMappers
         EndDate = concertDto.EndDate,
         County = concertDto.Venue.County,
         Town = concertDto.Venue.Town,
-        Latitude = concertDto.Venue.Latitude,
-        Longitude = concertDto.Venue.Longitude,
         DatePosted = concertDto.DatePosted
     };
 

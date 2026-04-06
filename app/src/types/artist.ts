@@ -19,8 +19,6 @@ export interface Artist {
   rating?: number;
   genres: Genre[];
   email?: string;
-  latitude?: number;
-  longitude?: number;
   county?: string;
   town?: string;
 }

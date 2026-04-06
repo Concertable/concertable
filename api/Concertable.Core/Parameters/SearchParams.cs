@@ -3,7 +3,7 @@ using Concertable.Core.Interfaces;
 
 namespace Concertable.Core.Parameters;
 
-public class SearchParams : IPageParams, IGeoParams
+public class SearchParams : IPageParams, IGeoParams, ISortParams
 {
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;

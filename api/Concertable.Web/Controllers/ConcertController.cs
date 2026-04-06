@@ -108,8 +108,6 @@ public class ConcertController : ControllerBase
             ImageUrl = imageUrl ?? "rockers.jpg",
             County = "Surrey",
             Town = "Ashtead",
-            Latitude = 53.4808,
-            Longitude = -2.2426,
             Rating = 4.7,
             StartDate = new DateTime(2025, 8, 10, 17, 0, 0),
             EndDate = new DateTime(2025, 8, 10, 23, 30, 0),
