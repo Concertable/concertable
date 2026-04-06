@@ -10,7 +10,7 @@ public class VenueEntity : IEntity, IHasName, IHasLocation
     public Guid UserId { get; set; }
     public required string Name { get; set; }
     public required string About { get; set; }
-    public required string ImageUrl { get; set; }
+    public required string BannerUrl { get; set; }
     public bool Approved { get; set; }
     public VenueManagerEntity User { get; set; } = null!;
     public Point? Location => User.Location;

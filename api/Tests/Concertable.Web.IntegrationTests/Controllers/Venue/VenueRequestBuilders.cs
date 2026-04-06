@@ -25,7 +25,7 @@ public static class VenueRequestBuilders
             About = about,
             Latitude = latitude,
             Longitude = longitude,
-            Image = file
+            Banner = file
         };
     }
 

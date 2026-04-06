@@ -14,7 +14,7 @@ export function ConcertCard({ concert }: Readonly<Props>) {
   return (
     <div className="border-border bg-card space-y-4 rounded-xl border p-4">
       <img
-        src={concert.artist.imageUrl}
+        src={concert.artist.avatar}
         alt={concert.artist.name}
         className="aspect-square w-full rounded-lg object-cover"
       />

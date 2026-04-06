@@ -10,7 +10,7 @@ public class ArtistEntity : IEntity, IHasName, IHasLocation
     public Guid UserId { get; set; }
     public required string Name { get; set; }
     public required string About { get; set; }
-    public required string ImageUrl { get; set; }
+    public required string BannerUrl { get; set; }
     public ArtistManagerEntity User { get; set; } = null!;
     public Point? Location => User.Location;
     public ICollection<ArtistGenreEntity> ArtistGenres { get; set; } = new List<ArtistGenreEntity>();

@@ -16,7 +16,7 @@ public static class QueryableVenueMappers
         {
             Id = v.Id,
             Name = v.Name,
-            ImageUrl = v.ImageUrl,
+            ImageUrl = v.User.Avatar ?? string.Empty,
             Rating = rating.AverageRating,
             County = v.User.County ?? string.Empty,
             Town = v.User.Town ?? string.Empty

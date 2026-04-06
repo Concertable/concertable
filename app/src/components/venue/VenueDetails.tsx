@@ -29,7 +29,7 @@ export function VenueDetails({
   return (
     <div>
       <Hero
-        imageUrl={venue.imageUrl}
+        imageUrl={venue.bannerUrl}
         name={venue.name}
         town={venue.town}
         county={venue.county}

@@ -12,7 +12,8 @@ public static class VenueMappers
         Id = venue.Id,
         Name = venue.Name,
         About = venue.About,
-        ImageUrl = venue.ImageUrl,
+        BannerUrl = venue.BannerUrl,
+        Avatar = venue.User.Avatar,
         Approved = venue.Approved,
         County = venue.User.County ?? string.Empty,
         Town = venue.User.Town ?? string.Empty,
@@ -25,14 +26,14 @@ public static class VenueMappers
     {
         Id = venue.Id,
         Name = venue.Name,
-        ImageUrl = venue.ImageUrl,
+        Avatar = venue.User.Avatar,
     };
 
     public static VenueHeaderDto ToHeaderDto(this VenueEntity venue) => new()
     {
         Id = venue.Id,
         Name = venue.Name,
-        ImageUrl = venue.ImageUrl,
+        ImageUrl = venue.User.Avatar ?? string.Empty,
         County = venue.User.County ?? string.Empty,
         Town = venue.User.Town ?? string.Empty
     };
@@ -41,7 +42,7 @@ public static class VenueMappers
     {
         Id = venueDto.Id,
         Name = venueDto.Name,
-        ImageUrl = venueDto.ImageUrl,
+        ImageUrl = venueDto.Avatar ?? string.Empty,
         County = venueDto.County,
         Town = venueDto.Town
     };
@@ -50,7 +51,7 @@ public static class VenueMappers
     {
         Name = request.Name,
         About = request.About,
-        ImageUrl = string.Empty
+        BannerUrl = string.Empty
     };
 
     public static IEnumerable<VenueDto> ToDtos(this IEnumerable<VenueEntity> venues) =>

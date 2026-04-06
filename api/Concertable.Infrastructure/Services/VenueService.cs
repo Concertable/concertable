@@ -59,7 +59,7 @@ public class VenueService : IVenueService
         var user = currentUser.GetEntity();
 
         venue.UserId = user.Id;
-        venue.ImageUrl = await imageService.UploadAsync(request.Image);
+        venue.BannerUrl = await imageService.UploadAsync(request.Banner);
 
         await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
@@ -85,8 +85,8 @@ public class VenueService : IVenueService
 
         await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
-        if (request.Image is not null)
-            venue.ImageUrl = await imageService.ReplaceAsync(request.Image.File, request.Image.Url);
+        if (request.Banner is not null)
+            venue.BannerUrl = await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url);
 
         userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();

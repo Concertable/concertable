@@ -17,11 +17,11 @@ public static class VenueMappers
             { new StringContent(req.Longitude.ToString()), "Longitude" }
         };
 
-        var imageBytes = new byte[req.Image.Length];
-        req.Image.OpenReadStream().Read(imageBytes, 0, imageBytes.Length);
-        var imageContent = new ByteArrayContent(imageBytes);
-        imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse(req.Image.ContentType);
-        content.Add(imageContent, "Image", req.Image.FileName);
+        var bannerBytes = new byte[req.Banner.Length];
+        req.Banner.OpenReadStream().Read(bannerBytes, 0, bannerBytes.Length);
+        var bannerContent = new ByteArrayContent(bannerBytes);
+        bannerContent.Headers.ContentType = MediaTypeHeaderValue.Parse(req.Banner.ContentType);
+        content.Add(bannerContent, "Banner", req.Banner.FileName);
 
         return content;
     }
@@ -37,8 +37,8 @@ public static class VenueMappers
             { new StringContent(req.Approved.ToString()), "Approved" }
         };
 
-        if (req.Image is not null)
-            content.Add(req.Image.ToFormContent());
+        if (req.Banner is not null)
+            content.Add(req.Banner.ToFormContent());
 
         return content;
     }

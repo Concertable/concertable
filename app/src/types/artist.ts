@@ -6,7 +6,7 @@ export interface Genre {
 export interface ArtistSummary {
   id: number;
   name: string;
-  imageUrl: string;
+  avatar?: string;
   rating: number;
   genres: Genre[];
 }
@@ -15,7 +15,8 @@ export interface Artist {
   id: number;
   name: string;
   about?: string;
-  imageUrl?: string;
+  bannerUrl?: string;
+  avatar?: string;
   rating?: number;
   genres: Genre[];
   email?: string;

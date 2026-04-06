@@ -16,7 +16,7 @@ public static class QueryableConcertMappers
         {
             Id = c.Id,
             Name = c.Name,
-            ImageUrl = c.Application.Artist.ImageUrl,
+            ImageUrl = c.Application.Artist.User.Avatar ?? string.Empty,
             Rating = rating.AverageRating,
             StartDate = c.Application.Opportunity.StartDate,
             EndDate = c.Application.Opportunity.EndDate,

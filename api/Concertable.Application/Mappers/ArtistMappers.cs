@@ -11,7 +11,8 @@ public static class ArtistMappers
         Id = artist.Id,
         Name = artist.Name,
         About = artist.About,
-        ImageUrl = artist.ImageUrl,
+        BannerUrl = artist.BannerUrl,
+        Avatar = artist.User.Avatar,
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
         County = artist.User.County ?? string.Empty,
         Town = artist.User.Town ?? string.Empty,
@@ -22,7 +23,7 @@ public static class ArtistMappers
     {
         Id = artist.Id,
         Name = artist.Name,
-        ImageUrl = artist.ImageUrl,
+        Avatar = artist.User.Avatar,
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
     };
 
@@ -30,7 +31,7 @@ public static class ArtistMappers
     {
         Id = artist.Id,
         Name = artist.Name,
-        ImageUrl = artist.ImageUrl,
+        ImageUrl = artist.User.Avatar ?? string.Empty,
         County = artist.User.County ?? string.Empty,
         Town = artist.User.Town ?? string.Empty
     };
@@ -39,7 +40,7 @@ public static class ArtistMappers
     {
         Id = artistDto.Id,
         Name = artistDto.Name,
-        ImageUrl = artistDto.ImageUrl,
+        ImageUrl = artistDto.Avatar ?? string.Empty,
         County = artistDto.County,
         Town = artistDto.Town
     };
@@ -48,7 +49,7 @@ public static class ArtistMappers
     {
         Name = request.Name,
         About = request.About,
-        ImageUrl = string.Empty, // Set by caller after image upload
+        BannerUrl = string.Empty,
         ArtistGenres = request.Genres.Select(g => new ArtistGenreEntity { GenreId = g.Id }).ToList()
     };
 
@@ -57,7 +58,7 @@ public static class ArtistMappers
         Id = dto.Id,
         Name = dto.Name,
         About = dto.About,
-        ImageUrl = dto.ImageUrl,
+        BannerUrl = dto.BannerUrl,
         ArtistGenres = dto.Genres.Select(g => new ArtistGenreEntity { GenreId = g.Id }).ToList()
     };
 

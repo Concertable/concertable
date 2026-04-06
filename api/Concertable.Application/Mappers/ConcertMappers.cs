@@ -43,7 +43,7 @@ public static class ConcertMappers
     {
         Id = concert.Id,
         Name = concert.Name,
-        ImageUrl = concert.Application.Artist.ImageUrl,
+        ImageUrl = concert.Application.Artist.User.Avatar ?? string.Empty,
         StartDate = concert.Application.Opportunity.StartDate,
         EndDate = concert.Application.Opportunity.EndDate,
         County = concert.Application.Opportunity.Venue.User.County ?? string.Empty,
@@ -55,7 +55,7 @@ public static class ConcertMappers
     {
         Id = concertDto.Id,
         Name = concertDto.Name,
-        ImageUrl = concertDto.Artist.ImageUrl,
+        ImageUrl = concertDto.Artist.Avatar ?? string.Empty,
         StartDate = concertDto.StartDate,
         EndDate = concertDto.EndDate,
         County = concertDto.Venue.County,

@@ -20,7 +20,7 @@ public class CreateVenueRequestValidator : AbstractValidator<CreateVenueRequest>
         RuleFor(x => x.Longitude)
             .InclusiveBetween(-180, 180);
 
-        RuleFor(x => x.Image)
+        RuleFor(x => x.Banner)
             .NotNull()
             .SetValidator(new IFormFileValidator());
     }
@@ -43,9 +43,9 @@ public class UpdateVenueRequestValidator : AbstractValidator<UpdateVenueRequest>
         RuleFor(x => x.Longitude)
             .InclusiveBetween(-180, 180);
 
-        When(x => x.Image != null, () =>
+        When(x => x.Banner != null, () =>
         {
-            RuleFor(x => x.Image!.File)
+            RuleFor(x => x.Banner!.File)
                 .SetValidator(new IFormFileValidator());
         });
     }

@@ -27,7 +27,7 @@ export function ArtistDetails({
   return (
     <div>
       <Hero
-        imageUrl={artist.imageUrl}
+        imageUrl={artist.bannerUrl}
         name={artist.name}
         town={artist.town}
         county={artist.county}

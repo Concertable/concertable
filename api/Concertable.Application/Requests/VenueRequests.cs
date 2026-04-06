@@ -9,7 +9,7 @@ public record CreateVenueRequest
     public required string About { get; init; }
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
-    public required IFormFile Image { get; init; }
+    public required IFormFile Banner { get; init; }
 }
 
 public record UpdateVenueRequest
@@ -17,7 +17,7 @@ public record UpdateVenueRequest
     public required string Name { get; init; }
     public required string About { get; init; }
     public bool Approved { get; init; }
-    public ImageDto? Image { get; init; }
+    public ImageDto? Banner { get; init; }
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
 }

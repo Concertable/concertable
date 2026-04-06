@@ -60,7 +60,7 @@ public class ArtistService : IArtistService
         var artist = request.ToEntity();
         var user = currentUser.GetEntity();
         artist.UserId = user.Id;
-        artist.ImageUrl = await imageService.UploadAsync(request.Image);
+        artist.BannerUrl = await imageService.UploadAsync(request.Banner);
 
         await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
@@ -87,8 +87,8 @@ public class ArtistService : IArtistService
 
         await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
-        if (request.Image is not null)
-            artist.ImageUrl = await imageService.ReplaceAsync(request.Image.File, request.Image.Url);
+        if (request.Banner is not null)
+            artist.BannerUrl = await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url);
 
         userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();

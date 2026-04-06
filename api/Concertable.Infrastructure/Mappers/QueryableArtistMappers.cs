@@ -16,7 +16,7 @@ public static class QueryableArtistMappers
         {
             Id = a.Id,
             Name = a.Name,
-            ImageUrl = a.ImageUrl,
+            ImageUrl = a.User.Avatar ?? string.Empty,
             Rating = rating.AverageRating,
             County = a.User.County ?? string.Empty,
             Town = a.User.Town ?? string.Empty

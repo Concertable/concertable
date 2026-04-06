@@ -165,8 +165,8 @@ public class VenueApiTests : IAsyncLifetime
         Assert.Equal("Test Town", venue.Town);
         Assert.Equal("venuemanager2@test.com", venue.Email);
         Assert.False(venue.Approved);
-        Assert.EndsWith(".jpg", venue.ImageUrl);
-        Assert.True(Guid.TryParse(Path.GetFileNameWithoutExtension(venue.ImageUrl), out _));
+        Assert.EndsWith(".jpg", venue.BannerUrl);
+        Assert.True(Guid.TryParse(Path.GetFileNameWithoutExtension(venue.BannerUrl), out _));
     }
 
     [Fact]

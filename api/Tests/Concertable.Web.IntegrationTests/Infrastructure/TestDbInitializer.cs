@@ -103,7 +103,7 @@ public class TestDbInitializer : IDbInitializer
                 UserId = TestConstants.ArtistManager.Id,
                 Name = "Test Artist",
                 About = "Test Artist About",
-                ImageUrl = "artist.jpg",
+                BannerUrl = "artist.jpg",
                 ArtistGenres =
                 [
                     new ArtistGenreEntity { GenreId = TestConstants.GenreId }
@@ -119,7 +119,7 @@ public class TestDbInitializer : IDbInitializer
                 UserId = TestConstants.VenueManager.Id,
                 Name = "Test Venue",
                 About = "Test",
-                ImageUrl = "test.jpg",
+                BannerUrl = "test.jpg",
                 Opportunities =
                 [
                     new OpportunityEntity
