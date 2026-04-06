@@ -23,13 +23,16 @@ public class RatingSpecification<TEntity> : IRatingSpecification<TEntity>
                 AverageRating = Math.Round(g.Average(r => (double?)r.Stars) ?? 0.0, 1)
             });
 
-    public IQueryable<double> ApplyAverage(IQueryable<ReviewEntity> reviews, int id)
+    public IQueryable<double?> ApplyAverage(IQueryable<ReviewEntity> reviews, int id)
     {
         var param = keySelector.Parameters[0];
         var filter = Expression.Lambda<Func<ReviewEntity, bool>>(
             Expression.Equal(keySelector.Body, Expression.Constant(id)),
             param);
 
-        return reviews.Where(filter).GroupBy(_ => 0).Select(g => Math.Round(g.Average(r => (double?)r.Stars) ?? 0.0, 1));
+        return reviews
+            .Where(filter)
+            .GroupBy(_ => 1)
+            .Select(g => g.Average(r => (double?)r.Stars));
     }
 }

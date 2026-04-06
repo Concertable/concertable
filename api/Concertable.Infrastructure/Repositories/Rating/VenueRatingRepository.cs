@@ -22,7 +22,11 @@ public class VenueRatingRepository : IRatingRepository
 
     public async Task<double> GetRatingAsync(int id)
     {
-        return await ratingSpecification.ApplyAverage(context.Reviews, id).FirstOrDefaultAsync();
+        var avg = await ratingSpecification
+            .ApplyAverage(context.Reviews, id)
+            .FirstOrDefaultAsync();
+
+        return avg ?? 0.0;
     }
 
     public async Task<IDictionary<int, double>> GetRatingsAsync(IEnumerable<int> ids)
