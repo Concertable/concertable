@@ -36,7 +36,7 @@ export function Hero({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-      <div className="relative z-10 flex w-full items-end justify-between gap-4 px-8 pb-6">
+      <div className="relative z-[5] flex w-full items-end justify-between gap-4 px-8 pb-6">
         <div className="space-y-1">
           <EditableText
             onChange={onNameChange}

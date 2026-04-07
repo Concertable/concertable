@@ -19,18 +19,18 @@ export function AvatarUpload({
   const { data: src } = useImageUrl(avatar);
 
   return (
-    <div className="relative shrink-0">
+    <div className="relative z-0 shrink-0">
       <img
         src={src}
         alt={name}
-        className="h-20 w-20 rounded-lg border-2 border-white object-cover"
+        className="h-32 w-32 rounded-lg border-2 border-white object-cover"
       />
       {editMode && (
         <>
           <button
             type="button"
             onClick={open}
-            className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 text-white opacity-0 hover:opacity-100"
+            className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-lg bg-black/50 text-white opacity-0 hover:opacity-100"
           >
             <Camera className="size-4" />
           </button>

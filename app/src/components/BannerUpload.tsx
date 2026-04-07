@@ -1,4 +1,5 @@
 import { Camera } from "lucide-react";
+import { useScroll, useTransform, motion } from "framer-motion";
 import { useEditableContext } from "@/providers/EditableProvider";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useImageUrl } from "@/hooks/query/useImageUrl";
@@ -18,13 +19,23 @@ export function BannerUpload({
   const { inputRef, open, onChange } = useImageUpload(onBannerChange);
   const { data: src } = useImageUrl(bannerUrl);
 
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 300], ["0%", "-30%"]);
+
   return (
     <>
-      <img
-        src={src}
-        alt={name}
-        className="absolute inset-0 h-full w-full object-cover opacity-60"
-      />
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          style={{ y }}
+          className="absolute top-0 left-0 h-[150%] w-full"
+        >
+          <img
+            src={src}
+            alt={name}
+            className="h-full w-full object-cover opacity-60"
+          />
+        </motion.div>
+      </div>
       {editMode && (
         <>
           <button
