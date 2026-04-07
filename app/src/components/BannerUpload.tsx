@@ -10,6 +10,10 @@ interface Props {
   onBannerChange?: (file: File) => void;
 }
 
+function BannerSkeleton() {
+  return <div className="absolute inset-0 animate-pulse bg-white/10" />;
+}
+
 export function BannerUpload({
   bannerUrl,
   name,
@@ -17,25 +21,29 @@ export function BannerUpload({
 }: Readonly<Props>) {
   const editMode = useEditableContext();
   const { inputRef, open, onChange } = useImageUpload(onBannerChange);
-  const { data: src } = useImageUrl(bannerUrl);
+  const { data: src, isPending } = useImageUrl(bannerUrl);
 
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 300], ["0%", "-30%"]);
 
   return (
     <>
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          style={{ y }}
-          className="absolute top-0 left-0 h-[150%] w-full"
-        >
-          <img
-            src={src}
-            alt={name}
-            className="h-full w-full object-cover opacity-60"
-          />
-        </motion.div>
-      </div>
+      {isPending && bannerUrl ? (
+        <BannerSkeleton />
+      ) : (
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            style={{ y }}
+            className="absolute top-0 left-0 h-[150%] w-full"
+          >
+            <img
+              src={src}
+              alt={name}
+              className="h-full w-full object-cover opacity-60"
+            />
+          </motion.div>
+        </div>
+      )}
       {editMode && (
         <>
           <button

@@ -9,6 +9,12 @@ interface Props {
   onAvatarChange?: (file: File) => void;
 }
 
+function AvatarSkeleton() {
+  return (
+    <div className="h-32 w-32 animate-pulse rounded-lg border-2 border-white bg-white/20" />
+  );
+}
+
 export function AvatarUpload({
   avatar,
   name,
@@ -16,15 +22,19 @@ export function AvatarUpload({
 }: Readonly<Props>) {
   const editMode = useEditableContext();
   const { inputRef, open, onChange } = useImageUpload(onAvatarChange);
-  const { data: src } = useImageUrl(avatar);
+  const { data: src, isPending } = useImageUrl(avatar);
 
   return (
     <div className="relative z-0 shrink-0">
-      <img
-        src={src}
-        alt={name}
-        className="h-32 w-32 rounded-lg border-2 border-white object-cover"
-      />
+      {isPending && avatar ? (
+        <AvatarSkeleton />
+      ) : (
+        <img
+          src={src}
+          alt={name}
+          className="h-32 w-32 rounded-lg border-2 border-white object-cover"
+        />
+      )}
       {editMode && (
         <>
           <button
