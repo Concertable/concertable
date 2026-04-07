@@ -87,6 +87,12 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("AvailableTickets")
                         .HasColumnType("int");
 
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BannerUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("DatePosted")
                         .HasColumnType("datetime2");
 

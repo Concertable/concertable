@@ -32,7 +32,8 @@ export function ConcertDetails({
   return (
     <div>
       <Hero
-        bannerUrl={concert.artist.bannerUrl}
+        bannerUrl={concert.bannerUrl}
+        avatar={concert.avatar}
         name={concert.name}
         town={concert.venue.town}
         county={concert.venue.county}

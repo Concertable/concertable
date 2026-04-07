@@ -14,12 +14,12 @@ export interface ArtistSummary {
 export interface Artist {
   id: number;
   name: string;
-  about?: string;
-  bannerUrl?: string;
+  about: string;
+  bannerUrl: string;
   avatar?: string;
-  rating?: number;
+  rating: number;
   genres: Genre[];
-  email?: string;
-  county?: string;
-  town?: string;
+  email: string;
+  county: string;
+  town: string;
 }

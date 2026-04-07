@@ -11,7 +11,7 @@ interface Props {
 
 export function ConcertCard({ concert }: Readonly<Props>) {
   const navigate = useNavigate();
-  const { data: src } = useImageUrl(concert.artist.avatar);
+  const { data: src } = useImageUrl(concert.avatar);
 
   return (
     <div className="border-border bg-card space-y-4 rounded-xl border p-4">

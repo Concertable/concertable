@@ -11,6 +11,8 @@ public class ConcertEntity : IEntity, IHasName, IHasLocation
     public int ApplicationId { get; set; }
     public required string Name { get; set; }
     public required string About { get; set; }
+    public string? BannerUrl { get; set; }
+    public string? Avatar { get; set; }
     public decimal Price { get; set; }
     public int TotalTickets { get; set; }
     public int AvailableTickets { get; set; }

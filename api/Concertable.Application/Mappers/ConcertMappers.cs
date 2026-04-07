@@ -1,4 +1,5 @@
 using Concertable.Application.DTOs;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Exceptions;
 
@@ -11,6 +12,8 @@ public static class ConcertMappers
         Id = concert.Id,
         Name = concert.Name,
         About = concert.About,
+        BannerUrl = concert.BannerUrl,
+        Avatar = concert.Avatar,
         Price = concert.Price,
         TotalTickets = concert.TotalTickets,
         AvailableTickets = concert.AvailableTickets,
@@ -61,6 +64,42 @@ public static class ConcertMappers
         County = concertDto.Venue.County,
         Town = concertDto.Venue.Town,
         DatePosted = concertDto.DatePosted
+    };
+
+    public static ConcertDetailsResponse ToDetailsResponse(this ConcertDto dto) => new()
+    {
+        Id = dto.Id,
+        Name = dto.Name,
+        About = dto.About,
+        BannerUrl = dto.BannerUrl ?? dto.Artist.BannerUrl,
+        Avatar = dto.Avatar ?? dto.Artist.Avatar ?? string.Empty,
+        Rating = dto.Rating,
+        Price = dto.Price,
+        TotalTickets = dto.TotalTickets,
+        AvailableTickets = dto.AvailableTickets,
+        StartDate = dto.StartDate,
+        EndDate = dto.EndDate,
+        DatePosted = dto.DatePosted,
+        Genres = dto.Genres,
+        Artist = new ConcertArtistResponse
+        {
+            Id = dto.Artist.Id,
+            Name = dto.Artist.Name,
+            About = dto.Artist.About,
+            Rating = dto.Artist.Rating,
+            County = dto.Artist.County,
+            Town = dto.Artist.Town,
+            Genres = dto.Artist.Genres
+        },
+        Venue = new ConcertVenueResponse
+        {
+            Id = dto.Venue.Id,
+            Name = dto.Venue.Name,
+            County = dto.Venue.County,
+            Town = dto.Venue.Town,
+            Latitude = dto.Venue.Latitude,
+            Longitude = dto.Venue.Longitude
+        }
     };
 
     public static IEnumerable<ConcertDto> ToDtos(this IEnumerable<ConcertEntity> concerts) =>

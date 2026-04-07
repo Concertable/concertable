@@ -4,6 +4,7 @@ using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Concertable.Application.DTOs;
+using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 
@@ -23,15 +24,15 @@ public class ConcertController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ConcertDto>> GetDetailsById(int id)
+    public async Task<ActionResult<ConcertDetailsResponse>> GetDetailsById(int id)
     {
-        return Ok(await concertService.GetDetailsByIdAsync(id));
+        return Ok((await concertService.GetDetailsByIdAsync(id)).ToDetailsResponse());
     }
 
     [HttpGet("application/{applicationId}")]
-    public async Task<ActionResult<ConcertDto>> GetDetailsByApplicationId(int applicationId)
+    public async Task<ActionResult<ConcertDetailsResponse>> GetDetailsByApplicationId(int applicationId)
     {
-        return Ok(await concertService.GetDetailsByApplicationIdAsync(applicationId));
+        return Ok((await concertService.GetDetailsByApplicationIdAsync(applicationId)).ToDetailsResponse());
     }
 
     [HttpGet("upcoming/venue/{id}")]
