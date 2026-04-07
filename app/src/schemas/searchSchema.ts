@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const SearchSchema = () =>
   z.object({
-    headerType: z.enum(["concert", "artist", "venue"]),
+    headerType: z.enum(["concert", "artist", "venue"]).default("concert"),
     query: z.string().optional(),
     lat: z.number().optional(),
     lng: z.number().optional(),

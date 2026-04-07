@@ -6,7 +6,8 @@ interface ArtistStore {
   draft: Artist | undefined;
   editMode: boolean;
   isDirty: boolean;
-  image: File | undefined;
+  banner: File | undefined;
+  avatar: File | undefined;
 
   toggleEdit: (artist: Artist) => void;
   resetDraft: (artist: Artist) => void;
@@ -14,14 +15,16 @@ interface ArtistStore {
   setName: (name: string) => void;
   setAbout: (about: string) => void;
   setLocation: (lat: number, lng: number, county: string, town: string) => void;
-  setImage: (file: File) => void;
+  setBanner: (file: File) => void;
+  setAvatar: (file: File) => void;
 }
 
 export const useArtistStore = create<ArtistStore>((set) => ({
   draft: undefined,
   editMode: false,
   isDirty: false,
-  image: undefined,
+  banner: undefined,
+  avatar: undefined,
 
   toggleEdit: (artist) =>
     set(
@@ -39,7 +42,8 @@ export const useArtistStore = create<ArtistStore>((set) => ({
         state.draft = { ...artist };
         state.editMode = false;
         state.isDirty = false;
-        state.image = undefined;
+        state.banner = undefined;
+        state.avatar = undefined;
       }),
     ),
 
@@ -73,12 +77,22 @@ export const useArtistStore = create<ArtistStore>((set) => ({
       }),
     ),
 
-  setImage: (file) =>
+  setBanner: (file) =>
     set(
       produce((state: ArtistStore) => {
         if (!state.draft) return;
-        state.draft.imageUrl = URL.createObjectURL(file);
-        state.image = file;
+        state.draft.bannerUrl = URL.createObjectURL(file);
+        state.banner = file;
+        state.isDirty = true;
+      }),
+    ),
+
+  setAvatar: (file) =>
+    set(
+      produce((state: ArtistStore) => {
+        if (!state.draft) return;
+        state.draft.avatar = URL.createObjectURL(file);
+        state.avatar = file;
         state.isDirty = true;
       }),
     ),

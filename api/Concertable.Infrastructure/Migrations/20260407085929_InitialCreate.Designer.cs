@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260406192145_InitialCreate")]
+    [Migration("20260407085929_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -564,6 +564,7 @@ namespace Concertable.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Avatar")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("County")

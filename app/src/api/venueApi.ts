@@ -11,10 +11,15 @@ export async function getMyVenue(): Promise<Venue> {
   return data;
 }
 
-export async function updateVenue(venue: Venue, image?: File): Promise<Venue> {
+export async function updateVenue(
+  venue: Venue,
+  banner?: File,
+  avatar?: File,
+): Promise<Venue> {
   const formData = new FormData();
   formData.append("venue", JSON.stringify(venue));
-  if (image) formData.append("image", image);
+  if (banner) formData.append("Banner", banner);
+  if (avatar) formData.append("Avatar", avatar);
   const { data } = await api.put<Venue>(`/venue/${venue.id}`, formData);
   return data;
 }

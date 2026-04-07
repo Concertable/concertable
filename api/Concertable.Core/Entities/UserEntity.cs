@@ -17,7 +17,7 @@ public class UserEntity : IGuidEntity
     public string? Town { get; set; }
     public Point? Location { get; set; }
     public string? StripeId { get; set; }
-    public string? Avatar { get; set; }
+    public string Avatar { get; set; } = string.Empty;
 
     public bool IsEmailVerified { get; set; }
 

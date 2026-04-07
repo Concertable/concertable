@@ -4,6 +4,7 @@ import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
+import { useArtistStore } from "@/store/useArtistStore";
 
 const SECTIONS = [
   { id: "about", label: "About" },
@@ -24,15 +25,21 @@ export function ArtistDetails({
   onNameChange,
   onAboutChange,
 }: Readonly<Props>) {
+  const setBanner = useArtistStore((s) => s.setBanner);
+  const setAvatar = useArtistStore((s) => s.setAvatar);
+
   return (
     <div>
       <Hero
-        imageUrl={artist.bannerUrl}
+        bannerUrl={artist.bannerUrl}
+        avatar={artist.avatar}
         name={artist.name}
         town={artist.town}
         county={artist.county}
         namePlaceholder="Artist name"
         onNameChange={onNameChange}
+        onBannerChange={setBanner}
+        onAvatarChange={setAvatar}
       />
 
       <ScrollspyNav sections={SECTIONS} />

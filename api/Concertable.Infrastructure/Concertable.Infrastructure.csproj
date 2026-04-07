@@ -38,6 +38,8 @@
 
 	<ItemGroup>
 	  <Folder Include="Abstractions\" />
+	  <EmbeddedResource Include="Resources\avatar.png" />
+	  <EmbeddedResource Include="Resources\banner.png" />
 	</ItemGroup>
 
 </Project>

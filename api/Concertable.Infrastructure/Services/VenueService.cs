@@ -88,6 +88,9 @@ public class VenueService : IVenueService
         if (request.Banner is not null)
             venue.BannerUrl = await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url);
 
+        if (request.Avatar is not null)
+            user.Avatar = await imageService.ReplaceAsync(request.Avatar, user.Avatar);
+
         userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
 

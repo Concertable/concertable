@@ -1,9 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using SixLabors.ImageSharp;
 
 namespace Concertable.Application.Validators;
 
-public class IFormFileValidator : AbstractValidator<IFormFile>
+public class ImageValidator : AbstractValidator<IFormFile>
 {
     private static readonly string[] AllowedMimeTypes =
     [
@@ -16,7 +17,7 @@ public class IFormFileValidator : AbstractValidator<IFormFile>
 
     private const long MaxFileSize = 5 * 1024 * 1024;
 
-    public IFormFileValidator()
+    public ImageValidator()
     {
         RuleFor(x => x.ContentType)
             .Must(ct => AllowedMimeTypes.Contains(ct))
@@ -25,5 +26,52 @@ public class IFormFileValidator : AbstractValidator<IFormFile>
         RuleFor(x => x.Length)
             .LessThanOrEqualTo(MaxFileSize)
             .WithMessage("Image file exceeds the maximum size of 5MB.");
+    }
+}
+
+public class BannerImageValidator : ImageValidator
+{
+    private const int MinWidth = 800;
+    private const int MinHeight = 200;
+    private const double MinRatio = 2.5;
+    private const double MaxRatio = 4.0;
+
+    public BannerImageValidator()
+    {
+        RuleFor(x => x)
+            .CustomAsync(async (file, ctx, ct) =>
+            {
+                using var image = await Image.LoadAsync(file.OpenReadStream(), ct);
+                var ratio = (double)image.Width / image.Height;
+
+                if (image.Width < MinWidth || image.Height < MinHeight)
+                    ctx.AddFailure($"Banner must be at least {MinWidth}x{MinHeight}px.");
+
+                if (ratio < MinRatio || ratio > MaxRatio)
+                    ctx.AddFailure($"Banner aspect ratio must be between {MinRatio}:1 and {MaxRatio}:1 (landscape).");
+            });
+    }
+}
+
+public class AvatarImageValidator : ImageValidator
+{
+    private const int MinSize = 200;
+    private const double MinRatio = 0.8;
+    private const double MaxRatio = 1.25;
+
+    public AvatarImageValidator()
+    {
+        RuleFor(x => x)
+            .CustomAsync(async (file, ctx, ct) =>
+            {
+                using var image = await Image.LoadAsync(file.OpenReadStream(), ct);
+                var ratio = (double)image.Width / image.Height;
+
+                if (image.Width < MinSize || image.Height < MinSize)
+                    ctx.AddFailure($"Avatar must be at least {MinSize}x{MinSize}px.");
+
+                if (ratio < MinRatio || ratio > MaxRatio)
+                    ctx.AddFailure($"Avatar must be roughly square (ratio between {MinRatio}:1 and {MaxRatio}:1).");
+            });
     }
 }

@@ -1,6 +1,7 @@
 import type { Concert } from "@/types/concert";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
+import { useImageUrl } from "@/hooks/query/useImageUrl";
 import dayjs from "dayjs";
 import { CalendarDays, MapPin, Ticket } from "lucide-react";
 
@@ -10,11 +11,12 @@ interface Props {
 
 export function ConcertCard({ concert }: Readonly<Props>) {
   const navigate = useNavigate();
+  const { data: src } = useImageUrl(concert.artist.avatar);
 
   return (
     <div className="border-border bg-card space-y-4 rounded-xl border p-4">
       <img
-        src={concert.artist.avatar}
+        src={src}
         alt={concert.artist.name}
         className="aspect-square w-full rounded-lg object-cover"
       />

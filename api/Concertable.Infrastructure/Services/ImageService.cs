@@ -50,4 +50,7 @@ public class ImageService : IImageService
         if (!string.IsNullOrEmpty(imageUrl))
             await blobStorageService.DeleteAsync(imageUrl);
     }
+
+    public Task<Stream> DownloadAsync(string imageUrl) =>
+        blobStorageService.DownloadAsync(imageUrl);
 }

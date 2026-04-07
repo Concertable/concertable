@@ -7,11 +7,11 @@ export function useMyArtist() {
   const query = useMyArtistQuery();
   const queryClient = useQueryClient();
 
-  const { toggleEdit, resetDraft, draft, image, isDirty, editMode } =
+  const { toggleEdit, resetDraft, draft, banner, avatar, isDirty, editMode } =
     useArtistStore();
 
   const mutation = useMutation({
-    mutationFn: () => updateArtist(draft!, image),
+    mutationFn: () => updateArtist(draft!, banner, avatar),
     onSuccess: (saved) => {
       queryClient.setQueryData(["artist", "my"], saved);
     },

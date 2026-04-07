@@ -11,9 +11,12 @@ namespace Concertable.Web.Controllers;
 public class BlobController : ControllerBase
 {
     private readonly IBlobStorageService blobStorageService;
-    public BlobController(IBlobStorageService blobStorageService)
+    private readonly IImageService imageService;
+
+    public BlobController(IBlobStorageService blobStorageService, IImageService imageService)
     {
         this.blobStorageService = blobStorageService;
+        this.imageService = imageService;
     }
 
     [HttpPost("upload")]
@@ -31,7 +34,7 @@ public class BlobController : ControllerBase
     [HttpGet("download/{blobName}")]
     public async Task<IActionResult> Download(string blobName)
     {
-        var stream = await blobStorageService.DownloadAsync(blobName);
+        var stream = await imageService.DownloadAsync(blobName);
 
         if (stream == null)
             return NotFound("Blob not found");

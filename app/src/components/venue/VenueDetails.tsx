@@ -6,6 +6,7 @@ import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { OpportunitySection } from "@/components/opportunities/OpportunitySection";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
+import { useVenueStore } from "@/store/useVenueStore";
 
 const SECTIONS = [
   { id: "about", label: "About" },
@@ -26,15 +27,21 @@ export function VenueDetails({
   onNameChange,
   onAboutChange,
 }: Readonly<Props>) {
+  const setBanner = useVenueStore((s) => s.setBanner);
+  const setAvatar = useVenueStore((s) => s.setAvatar);
+
   return (
     <div>
       <Hero
-        imageUrl={venue.bannerUrl}
+        bannerUrl={venue.bannerUrl}
+        avatar={venue.avatar}
         name={venue.name}
         town={venue.town}
         county={venue.county}
         namePlaceholder="Venue name"
         onNameChange={onNameChange}
+        onBannerChange={setBanner}
+        onAvatarChange={setAvatar}
       />
 
       <ScrollspyNav sections={SECTIONS} />

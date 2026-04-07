@@ -22,6 +22,7 @@ public record ArtistSummaryDto
     public int Id { get; set; }
     public required string Name { get; set; }
     public string? Avatar { get; set; }
+    public required string BannerUrl { get; set; }
     public double Rating { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }

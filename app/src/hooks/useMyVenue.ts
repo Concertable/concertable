@@ -19,11 +19,11 @@ export function useMyVenue(): UseMyVenueResult {
   const query = useMyVenueQuery();
   const queryClient = useQueryClient();
 
-  const { toggleEdit, resetDraft, draft, image, isDirty, editMode } =
+  const { toggleEdit, resetDraft, draft, banner, avatar, isDirty, editMode } =
     useVenueStore();
 
   const mutation = useMutation({
-    mutationFn: () => updateVenue(draft!, image),
+    mutationFn: () => updateVenue(draft!, banner, avatar),
     onSuccess: (saved) => {
       queryClient.setQueryData(["venue", "my"], saved);
       resetDraft(saved);

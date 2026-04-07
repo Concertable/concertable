@@ -1,6 +1,7 @@
 import type { OpportunityApplication } from "@/types/application";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useImageUrl } from "@/hooks/query/useImageUrl";
 import { useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 
@@ -12,6 +13,7 @@ interface Props {
 export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
   const navigate = useNavigate();
   const { artist, opportunity, status } = application;
+  const { data: avatarSrc } = useImageUrl(artist.avatar);
 
   function handleAccept() {
     navigate({
@@ -24,9 +26,9 @@ export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
     <div className="border-border bg-card space-y-3 rounded-xl border p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          {artist.avatar && (
+          {avatarSrc && (
             <img
-              src={artist.avatar}
+              src={avatarSrc}
               alt={artist.name}
               className="h-10 w-10 rounded-full object-cover"
             />

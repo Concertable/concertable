@@ -2,6 +2,7 @@ import type { Header } from "@/types/header";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { MapPin, Star } from "lucide-react";
+import { useImageUrl } from "@/hooks/query/useImageUrl";
 
 interface Props<T extends Header> {
   data: T;
@@ -14,6 +15,8 @@ export function HeaderCard<T extends Header>({
   to,
   children,
 }: Readonly<Props<T>>) {
+  const { data: src } = useImageUrl(data.imageUrl);
+
   const content = (
     <div className="border-border bg-card flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl border p-4 text-center transition-shadow hover:shadow-lg">
       <div className="flex items-center gap-1 text-sm font-semibold">
@@ -26,7 +29,7 @@ export function HeaderCard<T extends Header>({
         )}
       </div>
       <img
-        src={data.imageUrl}
+        src={src}
         alt={data.name}
         className="h-[180px] w-[180px] rounded-lg object-cover"
       />

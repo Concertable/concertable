@@ -22,7 +22,7 @@ public class CreateVenueRequestValidator : AbstractValidator<CreateVenueRequest>
 
         RuleFor(x => x.Banner)
             .NotNull()
-            .SetValidator(new IFormFileValidator());
+            .SetValidator(new BannerImageValidator());
     }
 }
 
@@ -46,7 +46,13 @@ public class UpdateVenueRequestValidator : AbstractValidator<UpdateVenueRequest>
         When(x => x.Banner != null, () =>
         {
             RuleFor(x => x.Banner!.File)
-                .SetValidator(new IFormFileValidator());
+                .SetValidator(new BannerImageValidator());
+        });
+
+        When(x => x.Avatar != null, () =>
+        {
+            RuleFor(x => x.Avatar!)
+                .SetValidator(new AvatarImageValidator());
         });
     }
 }

@@ -20,5 +20,6 @@ public record UpdateArtistRequest
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
     public ImageDto? Banner { get; init; }
+    public IFormFile? Avatar { get; init; }
     public IEnumerable<GenreDto> Genres { get; init; } = [];
 }

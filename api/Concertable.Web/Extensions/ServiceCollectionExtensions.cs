@@ -128,6 +128,11 @@ public static class ServiceCollectionExtensions
         else
             services.AddScoped<IEmailService, FakeEmailService>();
 
+        if (external.GetValue<bool>("UseRealImages"))
+            services.AddScoped<IImageService, ImageService>();
+        else
+            services.AddScoped<IImageService, FakeImageService>();
+
         services.AddHttpClient("Geocoding", client =>
         {
             client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
@@ -172,7 +177,6 @@ public static class ServiceCollectionExtensions
         services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();
         services.AddScoped<IAuthUriService, AuthUriService>();
-        services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
         services.AddSingleton<ICollectionDiffer, CollectionDiffer>();
         services.AddScoped<IGenreSyncService, GenreSyncService>();

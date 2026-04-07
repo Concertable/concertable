@@ -16,7 +16,7 @@ public class CreateArtistRequestValidator : AbstractValidator<CreateArtistReques
 
         RuleFor(x => x.Banner)
             .NotNull()
-            .SetValidator(new IFormFileValidator());
+            .SetValidator(new BannerImageValidator());
     }
 }
 
@@ -34,7 +34,13 @@ public class UpdateArtistRequestValidator : AbstractValidator<UpdateArtistReques
         When(x => x.Banner != null, () =>
         {
             RuleFor(x => x.Banner!.File)
-                .SetValidator(new IFormFileValidator());
+                .SetValidator(new BannerImageValidator());
+        });
+
+        When(x => x.Avatar != null, () =>
+        {
+            RuleFor(x => x.Avatar!)
+                .SetValidator(new AvatarImageValidator());
         });
     }
 }

@@ -31,7 +31,7 @@ public static class ArtistMappers
     {
         Id = artist.Id,
         Name = artist.Name,
-        ImageUrl = artist.User.Avatar ?? string.Empty,
+        ImageUrl = artist.User.Avatar,
         County = artist.User.County ?? string.Empty,
         Town = artist.User.Town ?? string.Empty
     };

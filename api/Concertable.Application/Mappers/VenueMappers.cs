@@ -33,7 +33,7 @@ public static class VenueMappers
     {
         Id = venue.Id,
         Name = venue.Name,
-        ImageUrl = venue.User.Avatar ?? string.Empty,
+        ImageUrl = venue.User.Avatar,
         County = venue.User.County ?? string.Empty,
         Town = venue.User.Town ?? string.Empty
     };

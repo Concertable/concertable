@@ -13,11 +13,13 @@ export async function getMyArtist(): Promise<Artist> {
 
 export async function updateArtist(
   artist: Artist,
-  image?: File,
+  banner?: File,
+  avatar?: File,
 ): Promise<Artist> {
   const formData = new FormData();
   formData.append("artist", JSON.stringify(artist));
-  if (image) formData.append("image", image);
+  if (banner) formData.append("Banner", banner);
+  if (avatar) formData.append("Avatar", avatar);
   const { data } = await api.put<Artist>(`/artist/${artist.id}`, formData);
   return data;
 }

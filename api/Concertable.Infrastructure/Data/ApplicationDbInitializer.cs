@@ -53,7 +53,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 Role = Role.Admin,
                 County = "Leicestershire",
                 Town = "Loughborough",
-                Location = geometryProvider.CreatePoint(51.0, -0.5)
+                Location = geometryProvider.CreatePoint(51.0, -0.5),
+                Avatar = "avatar.jpg"
             });
 
             customerIds.Add(context.Users.Add(new CustomerEntity
@@ -66,7 +67,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71vrGWdDleGW3a"
+                StripeId = "acct_1R71vrGWdDleGW3a",
+                Avatar = "avatar.jpg"
             }).Entity.Id);
 
             for (int i = 2; i <= 6; i++)
@@ -80,7 +82,8 @@ public class ApplicationDbInitializer : IDbInitializer
                     Role = Role.Customer,
                     County = loc.County,
                     Town = loc.Town,
-                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
+                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
+                    Avatar = "avatar.jpg"
                 }).Entity.Id);
             }
 
@@ -94,7 +97,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71yoLnJh1ZDYF4"
+                StripeId = "acct_1R71yoLnJh1ZDYF4",
+                Avatar = "avatar.jpg"
             }).Entity.Id);
             artistManagerIds.Add(context.Users.Add(new ArtistManagerEntity
             {
@@ -105,7 +109,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71z6IBXwkKnqix"
+                StripeId = "acct_1R71z6IBXwkKnqix",
+                Avatar = "avatar.jpg"
             }).Entity.Id);
             for (int i = 3; i <= 35; i++)
             {
@@ -118,7 +123,8 @@ public class ApplicationDbInitializer : IDbInitializer
                     Role = Role.ArtistManager,
                     County = loc.County,
                     Town = loc.Town,
-                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
+                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
+                    Avatar = "avatar.jpg"
                 }).Entity.Id);
             }
 
@@ -132,7 +138,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71zKBsonWwC9oM"
+                StripeId = "acct_1R71zKBsonWwC9oM",
+                Avatar = "avatar.jpg"
             }).Entity.Id);
             venueManagerIds.Add(context.Users.Add(new VenueManagerEntity
             {
@@ -143,7 +150,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71zvLnLloN6AmB"
+                StripeId = "acct_1R71zvLnLloN6AmB",
+                Avatar = "avatar.jpg"
             }).Entity.Id);
             for (int i = 3; i <= 35; i++)
             {
@@ -156,7 +164,8 @@ public class ApplicationDbInitializer : IDbInitializer
                     Role = Role.VenueManager,
                     County = loc.County,
                     Town = loc.Town,
-                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude)
+                    Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
+                    Avatar = "avatar.jpg"
                 }).Entity.Id);
             }
 
