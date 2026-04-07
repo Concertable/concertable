@@ -14,7 +14,7 @@ namespace Concertable.Infrastructure.Services.Concert;
 public class OpportunityService : IOpportunityService
 {
     private readonly IOpportunityRepository opportunityRepository;
-    private readonly IStripeValidator stripeValidator;
+    private readonly IStripeValidationFactory stripeValidationFactory;
     private readonly IVenueService venueService;
     private readonly IContractService contractService;
     private readonly IUnitOfWork unitOfWork;
@@ -23,7 +23,7 @@ public class OpportunityService : IOpportunityService
 
     public OpportunityService(
         IOpportunityRepository opportunityRepository,
-        IStripeValidator stripeValidator,
+        IStripeValidationFactory stripeValidationFactory,
         IVenueService venueService,
         IContractService contractService,
         IUnitOfWork unitOfWork,
@@ -31,7 +31,7 @@ public class OpportunityService : IOpportunityService
         IOpportunityMapper mapper)
     {
         this.opportunityRepository = opportunityRepository;
-        this.stripeValidator = stripeValidator;
+        this.stripeValidationFactory = stripeValidationFactory;
         this.venueService = venueService;
         this.contractService = contractService;
         this.unitOfWork = unitOfWork;
@@ -41,9 +41,8 @@ public class OpportunityService : IOpportunityService
 
     public async Task<OpportunityDto> CreateAsync(OpportunityRequest request)
     {
-        var stripeResult = await stripeValidator.ValidateUserAsync();
-        if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.First());
+        if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
+            throw new ForbiddenException("You do not have the required Stripe account set up");
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");
@@ -77,9 +76,12 @@ public class OpportunityService : IOpportunityService
 
     public async Task CreateMultipleAsync(IEnumerable<OpportunityRequest> requests)
     {
-        var stripeResult = await stripeValidator.ValidateUserAsync();
-        if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.First());
+        var requestList = requests.ToList();
+        foreach (var request in requestList)
+        {
+            if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
+                throw new ForbiddenException("You do not have the required Stripe account set up");
+        }
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");
@@ -111,9 +113,8 @@ public class OpportunityService : IOpportunityService
 
     public async Task<OpportunityDto> UpdateAsync(int id, OpportunityRequest request)
     {
-        var stripeResult = await stripeValidator.ValidateUserAsync();
-        if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.First());
+        if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
+            throw new ForbiddenException("You do not have the required Stripe account set up");
 
         var venueDto = await venueService.GetDetailsForCurrentUserAsync()
             ?? throw new NotFoundException("Venue not found for current user");

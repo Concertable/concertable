@@ -67,7 +67,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71vrGWdDleGW3a",
+                StripeCustomerId = "cus_1R71vrGWdDleGW3a",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
 
@@ -97,7 +97,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71yoLnJh1ZDYF4",
+                StripeAccountId = "acct_1R71yoLnJh1ZDYF4",
+                StripeCustomerId = "cus_1R71yoLnJh1ZDYF4",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             artistManagerIds.Add(context.Users.Add(new ArtistManagerEntity
@@ -109,7 +110,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71z6IBXwkKnqix",
+                StripeAccountId = "acct_1R71z6IBXwkKnqix",
+                StripeCustomerId = "cus_1R71z6IBXwkKnqix",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             for (int i = 3; i <= 35; i++)
@@ -138,7 +140,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71zKBsonWwC9oM",
+                StripeAccountId = "acct_1R71zKBsonWwC9oM",
+                StripeCustomerId = "cus_1R71zKBsonWwC9oM",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             venueManagerIds.Add(context.Users.Add(new VenueManagerEntity
@@ -150,7 +153,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeId = "acct_1R71zvLnLloN6AmB",
+                StripeAccountId = "acct_1R71zvLnLloN6AmB",
+                StripeCustomerId = "cus_1R71zvLnLloN6AmB",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             for (int i = 3; i <= 35; i++)

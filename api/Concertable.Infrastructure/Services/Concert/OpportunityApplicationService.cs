@@ -80,9 +80,8 @@ public class OpportunityApplicationService : IOpportunityApplicationService
 
     public async Task<OpportunityApplicationDto> ApplyAsync(int opportunityId)
     {
-        var stripeResult = await stripeValidator.ValidateUserAsync();
-        if (!stripeResult.IsValid)
-            throw new ForbiddenException(stripeResult.Errors.First());
+        if (!await stripeValidator.ValidateAccountAsync())
+            throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
 
         var artistDto = await artistService.GetDetailsForCurrentUserAsync()
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");

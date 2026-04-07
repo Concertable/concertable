@@ -23,18 +23,22 @@ public class VenueTicketPaymentService : ITicketPaymentStrategy
         this.venueManagerRepository = venueManagerRepository;
     }
 
-    public async Task<PaymentResponse> PayAsync(int concertId, int quantity, string paymentMethodId, decimal price)
+    public async Task<PaymentResponse> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price)
     {
-        var user = currentUser.Get();
+        var user = currentUser.GetEntity();
         var recipient = await venueManagerRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Venue manager not found for this concert");
 
+        var resolvedPaymentMethodId = paymentMethodId
+            ?? user.StripeCustomerId
+            ?? throw new BadRequestException("No payment method provided and no saved payment method found");
+
         return await paymentService.ProcessAsync(new TransactionRequest
         {
-            PaymentMethodId = paymentMethodId,
+            PaymentMethodId = resolvedPaymentMethodId,
             FromUserEmail = user.Email,
             Amount = price * quantity,
-            DestinationStripeId = recipient.StripeId,
+            DestinationStripeId = recipient.StripeAccountId,
             Metadata = new Dictionary<string, string>
             {
                 { "fromUserId", user.Id.ToString() },

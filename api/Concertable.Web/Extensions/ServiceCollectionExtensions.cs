@@ -97,17 +97,25 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddExternalServices(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddStripeServices(this IServiceCollection services, bool useRealStripe)
     {
-        services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
-        services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
+        services.AddScoped<StripeAccountValidator>();
+        services.AddScoped<StripeCustomerValidator>();
+        services.AddScoped<IStripeValidator, StripeValidator>();
+        services.AddScoped<IStripeValidationFactory, StripeValidationFactory>();
+        services.AddKeyedScoped<IStripeValidationStrategy, StripeAccountValidator>(ContractType.VenueHire);
+        services.AddKeyedScoped<IStripeValidationStrategy, StripeCustomerValidator>(ContractType.FlatFee);
+        services.AddKeyedScoped<IStripeValidationStrategy, StripeCustomerValidator>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IStripeValidationStrategy, StripeCustomerValidator>(ContractType.Versus);
 
-        var external = configuration.GetSection("ExternalServices");
-
-        if (external.GetValue<bool>("UseRealStripe"))
+        if (useRealStripe)
         {
+            services.AddSingleton<Stripe.AccountService>();
+            services.AddSingleton<Stripe.AccountLinkService>();
+            services.AddSingleton<Stripe.CustomerService>();
+            services.AddSingleton<Stripe.PaymentMethodService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
-            services.AddScoped<IStripePaymentClient, StripePaymentClient>();
+            services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IWebhookService, WebhookService>();
         }
@@ -117,6 +125,18 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IPaymentService, FakePaymentService>();
             services.AddScoped<IWebhookService, FakeWebhookService>();
         }
+
+        return services;
+    }
+
+    private static IServiceCollection AddExternalServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
+        services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
+
+        var external = configuration.GetSection("ExternalServices");
+
+        services.AddStripeServices(external.GetValue<bool>("UseRealStripe"));
 
         if (external.GetValue<bool>("UseRealBlob"))
             services.AddScoped<IBlobStorageService, BlobStorageService>();
@@ -191,7 +211,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
         services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
-        services.AddScoped<IStripeValidator, StripeValidator>();
         services.AddScoped<IUserValidator, UserValidator>();
         services.AddScoped<IReviewValidator, ReviewValidator>();
 

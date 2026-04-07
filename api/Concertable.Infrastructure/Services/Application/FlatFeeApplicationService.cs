@@ -71,20 +71,20 @@ public class FlatFeeApplicationService : IApplicationStrategy
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
+        if (venueManager.StripeCustomerId is null)
+            throw new BadRequestException("Venue manager does not have a Stripe customer account set up");
+
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
-        if (venueManager.StripeId is null)
-            throw new BadRequestException("Venue manager does not have a Stripe account");
-
-        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(venueManager.StripeId);
+        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(venueManager.StripeCustomerId);
 
         var response = await paymentService.ProcessAsync(new TransactionRequest
         {
             PaymentMethodId = paymentMethodId,
             FromUserEmail = venueManager.Email!,
             Amount = contract.Fee,
-            DestinationStripeId = artistManager.StripeId,
+            DestinationStripeId = artistManager.StripeAccountId,
             Metadata = new Dictionary<string, string>
             {
                 { "fromUserId", venueManager.Id.ToString() },

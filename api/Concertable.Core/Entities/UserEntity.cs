@@ -16,7 +16,7 @@ public class UserEntity : IGuidEntity
     public string? County { get; set; }
     public string? Town { get; set; }
     public Point? Location { get; set; }
-    public string? StripeId { get; set; }
+    public string? StripeCustomerId { get; set; }
     public string Avatar { get; set; } = string.Empty;
 
     public bool IsEmailVerified { get; set; }
@@ -29,12 +29,17 @@ public class UserEntity : IGuidEntity
     public ICollection<PasswordResetTokenEntity> PasswordResetTokens { get; set; } = [];
 }
 
-public class VenueManagerEntity : UserEntity
+public abstract class ManagerEntity : UserEntity
+{
+    public string? StripeAccountId { get; set; }
+}
+
+public class VenueManagerEntity : ManagerEntity
 {
     public VenueEntity? Venue { get; set; }
 }
 
-public class ArtistManagerEntity : UserEntity
+public class ArtistManagerEntity : ManagerEntity
 {
     public ArtistEntity? Artist { get; set; }
 }

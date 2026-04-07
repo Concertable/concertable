@@ -51,7 +51,8 @@ public class TestDbInitializer : IDbInitializer
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     IsEmailVerified = true,
                     Role = Role.VenueManager,
-                    StripeId = "acct_test_venuemanager",
+                    StripeAccountId = "acct_test_venuemanager",
+                    StripeCustomerId = "cus_test_venuemanager",
                     Location = geometryProvider.CreatePoint(51, 0)
                 },
                 new VenueManagerEntity
@@ -61,7 +62,8 @@ public class TestDbInitializer : IDbInitializer
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     IsEmailVerified = true,
                     Role = Role.VenueManager,
-                    StripeId = "acct_test_venuemanager2",
+                    StripeAccountId = "acct_test_venuemanager2",
+                    StripeCustomerId = "cus_test_venuemanager2",
                     Location = geometryProvider.CreatePoint(51, 0)
                 },
                 new ArtistManagerEntity
@@ -71,7 +73,8 @@ public class TestDbInitializer : IDbInitializer
                     PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
                     IsEmailVerified = true,
                     Role = Role.ArtistManager,
-                    StripeId = "acct_test_artistmanager",
+                    StripeAccountId = "acct_test_artistmanager",
+                    StripeCustomerId = "cus_test_artistmanager",
                     Location = geometryProvider.CreatePoint(51, 0)
                 },
                 new CustomerEntity

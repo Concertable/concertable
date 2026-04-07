@@ -11,80 +11,94 @@ namespace Concertable.Infrastructure.Services.Payment;
 
 public class StripeAccountService : IStripeAccountService
 {
-    private readonly StripeSettings stripeSettings;
     private readonly IUserRepository userRepository;
     private readonly string baseUri;
+    private readonly AccountService accountService;
+    private readonly AccountLinkService accountLinkService;
+    private readonly CustomerService customerService;
+    private readonly PaymentMethodService paymentMethodService;
 
     public StripeAccountService(
         IUserRepository userRepository,
         IOptions<StripeSettings> stripeSettings,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        AccountService accountService,
+        AccountLinkService accountLinkService,
+        CustomerService customerService,
+        PaymentMethodService paymentMethodService)
     {
-        this.stripeSettings = stripeSettings.Value;
-        StripeConfiguration.ApiKey = this.stripeSettings.SecretKey;
+        StripeConfiguration.ApiKey = stripeSettings.Value.SecretKey;
         this.userRepository = userRepository;
         this.baseUri = configuration["BaseUri:http"]!;
+        this.accountService = accountService;
+        this.accountLinkService = accountLinkService;
+        this.customerService = customerService;
+        this.paymentMethodService = paymentMethodService;
     }
 
-    public async Task<string> CreateStripeAccountAsync(UserEntity user)
+    public async Task<string> CreateConnectAccountAsync(ManagerEntity manager)
     {
-        var accountService = new Stripe.AccountService();
-        var accountOptions = new AccountCreateOptions
+        var account = await accountService.CreateAsync(new AccountCreateOptions
         {
-            Type = "express", // Simplest form of account creation, where delegate the KYC to stripe entirely
-            Email = user.Email,
+            Type = "express",
+            Email = manager.Email,
             Country = "GB",
-            Capabilities = new AccountCapabilitiesOptions //Make sure user is capable of accepting payments and transferring funds
+            Capabilities = new AccountCapabilitiesOptions
             {
                 CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },
                 Transfers = new AccountCapabilitiesTransfersOptions { Requested = true }
             }
-        };
+        });
 
-        var account = await accountService.CreateAsync(accountOptions);
-
-        user.StripeId = account.Id;
-        userRepository.Update(user);
+        manager.StripeAccountId = account.Id;
+        userRepository.Update(manager);
         await userRepository.SaveChangesAsync();
 
         return account.Id;
     }
 
-    public async Task<string> GetOnboardingLinkAsync(string stripeId)
+    public async Task<string> CreateCustomerAsync(UserEntity user)
     {
-        var service = new AccountLinkService();
-
-        var options = new AccountLinkCreateOptions
+        var customer = await customerService.CreateAsync(new CustomerCreateOptions
         {
-            Account = stripeId,
+            Email = user.Email,
+        });
+
+        user.StripeCustomerId = customer.Id;
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
+        return customer.Id;
+    }
+
+    public async Task<string> GetOnboardingLinkAsync(string stripeAccountId)
+    {
+        var link = await accountLinkService.CreateAsync(new AccountLinkCreateOptions
+        {
+            Account = stripeAccountId,
             RefreshUrl = $"{baseUri}/fail",
             ReturnUrl = $"{baseUri}/success",
             Type = "account_onboarding"
-        };
+        });
 
-        var link = await service.CreateAsync(options);
         return link.Url;
     }
 
-    public async Task<bool> IsUserVerifiedAsync(string stripeId)
+    public async Task<bool> IsUserVerifiedAsync(string stripeAccountId)
     {
-        var service = new Stripe.AccountService();
-        var account = await service.GetAsync(stripeId);
+        var account = await accountService.GetAsync(stripeAccountId);
         return account.PayoutsEnabled && account.ChargesEnabled;
     }
 
-    public async Task<string> GetPaymentMethodAsync(string stripeId)
+    public async Task<string> GetPaymentMethodAsync(string stripeCustomerId)
     {
-        var service = new PaymentMethodService();
-        var paymentMethods = await service.ListAsync(new PaymentMethodListOptions
+        var paymentMethods = await paymentMethodService.ListAsync(new PaymentMethodListOptions
         {
-            Customer = stripeId,
+            Customer = stripeCustomerId,
             Type = "card"
         });
 
-        var paymentMethod = paymentMethods.FirstOrDefault()
-            ?? throw new NotFoundException($"No payment method found for Stripe account {stripeId}");
-
-        return paymentMethod.Id;
+        return paymentMethods.FirstOrDefault()?.Id
+            ?? throw new NotFoundException($"No payment method found for customer {stripeCustomerId}");
     }
 }

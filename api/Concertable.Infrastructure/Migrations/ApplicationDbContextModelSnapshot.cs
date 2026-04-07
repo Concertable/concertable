@@ -590,7 +590,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<string>("StripeId")
+                    b.Property<string>("StripeCustomerId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Town")
@@ -757,6 +757,10 @@ namespace Concertable.Infrastructure.Migrations
                 {
                     b.HasBaseType("Concertable.Core.Entities.UserEntity");
 
+                    b.Property<string>("StripeAccountId")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasDiscriminator().HasValue(2);
                 });
 
@@ -770,6 +774,10 @@ namespace Concertable.Infrastructure.Migrations
             modelBuilder.Entity("Concertable.Core.Entities.VenueManagerEntity", b =>
                 {
                     b.HasBaseType("Concertable.Core.Entities.UserEntity");
+
+                    b.Property<string>("StripeAccountId")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasDiscriminator().HasValue(1);
                 });

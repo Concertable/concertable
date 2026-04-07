@@ -23,5 +23,6 @@ public class CurrentUserAccessor : ICurrentUser
     public IUser Get() => Current.Get();
     public IUser? GetOrDefault() => Current.GetOrDefault();
     public UserEntity GetEntity() => Current.GetEntity();
+    public T GetEntity<T>() where T : UserEntity => Current.GetEntity<T>();
     public Role GetRole() => Current.GetRole();
 }

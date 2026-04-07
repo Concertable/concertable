@@ -10,5 +10,6 @@ public interface ICurrentUser
     IUser Get();
     IUser? GetOrDefault();
     UserEntity GetEntity();
+    T GetEntity<T>() where T : UserEntity;
     Role GetRole();
 }

@@ -27,8 +27,8 @@ public class VersusApplicationServiceCompleteTests
 
     private readonly OpportunityApplicationEntity application = new() { Id = 5, Status = ApplicationStatus.Settled };
     private readonly VersusContractEntity contract = new() { Guarantee = 200, ArtistDoorPercent = 50 };
-    private readonly VenueManagerEntity venueManager = new() { Id = Guid.NewGuid(), Email = "venue@test.com", StripeId = "acct_venue", Role = Role.VenueManager };
-    private readonly ArtistManagerEntity artistManager = new() { Id = Guid.NewGuid(), Email = "artist@test.com", StripeId = "acct_artist", Role = Role.ArtistManager };
+    private readonly VenueManagerEntity venueManager = new() { Id = Guid.NewGuid(), Email = "venue@test.com", StripeCustomerId = "cus_venue", Role = Role.VenueManager };
+    private readonly ArtistManagerEntity artistManager = new() { Id = Guid.NewGuid(), Email = "artist@test.com", StripeAccountId = "acct_artist", Role = Role.ArtistManager };
 
     public VersusApplicationServiceCompleteTests()
     {

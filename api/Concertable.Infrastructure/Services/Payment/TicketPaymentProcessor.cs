@@ -13,7 +13,7 @@ public class TicketPaymentProcessor : ITicketPaymentProcessor
         this.resolver = resolver;
     }
 
-    public async Task<PaymentResponse> PayAsync(int concertId, int quantity, string paymentMethodId, decimal price)
+    public async Task<PaymentResponse> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price)
     {
         var strategy = await resolver.ResolveForConcertAsync(concertId);
         return await strategy.PayAsync(concertId, quantity, paymentMethodId, price);

@@ -71,20 +71,23 @@ public class VenueHireApplicationService : IApplicationStrategy
         var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Venue manager not found");
 
+        if (artistManager.StripeCustomerId is null)
+            throw new BadRequestException("Artist manager does not have a Stripe customer account set up");
+
+        if (venueManager.StripeAccountId is null)
+            throw new BadRequestException("Venue manager does not have a verified Stripe account");
+
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
-        if (artistManager.StripeId is null)
-            throw new BadRequestException("Artist manager does not have a Stripe account");
-
-        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(artistManager.StripeId);
+        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(artistManager.StripeCustomerId);
 
         var response = await paymentService.ProcessAsync(new TransactionRequest
         {
             PaymentMethodId = paymentMethodId,
             FromUserEmail = artistManager.Email!,
             Amount = contract.HireFee,
-            DestinationStripeId = venueManager.StripeId,
+            DestinationStripeId = venueManager.StripeAccountId,
             Metadata = new Dictionary<string, string>
             {
                 { "fromUserId", artistManager.Id.ToString() },

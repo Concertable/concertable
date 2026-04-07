@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
+using Concertable.Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Concertable.Web.Controllers;
@@ -21,26 +22,23 @@ public class StripeAccountController : ControllerBase
     [HttpGet("onboarding-link")]
     public async Task<ActionResult<string>> GetOnboardingLink()
     {
-        var user = currentUser.GetEntity();
+        var manager = currentUser.GetEntity<ManagerEntity>();
 
-        if (string.IsNullOrWhiteSpace(user.StripeId))
-            return BadRequest("You must have a Stripe Id, contact support to get one");
+        if (string.IsNullOrWhiteSpace(manager.StripeAccountId))
+            return BadRequest("You do not have a Stripe account, contact support to get one");
 
-        var link = await stripeAccountService.GetOnboardingLinkAsync(user.StripeId);
+        var link = await stripeAccountService.GetOnboardingLinkAsync(manager.StripeAccountId);
         return Ok(link);
     }
-
 
     [HttpGet("verified")]
     public async Task<ActionResult<bool>> IsUserVerified()
     {
-        var user = currentUser.GetEntity();
+        var manager = currentUser.GetEntity<ManagerEntity>();
 
-        if (user.StripeId is null)
-        {
+        if (manager.StripeAccountId is null)
             return NotFound(false);
-        }
 
-        return Ok(await stripeAccountService.IsUserVerifiedAsync(user.StripeId));
+        return Ok(await stripeAccountService.IsUserVerifiedAsync(manager.StripeAccountId));
     }
 }

@@ -32,6 +32,9 @@ public class CurrentUser : ICurrentUser
     public UserEntity GetEntity() =>
         entity ?? throw new UnauthorizedException("User not authenticated");
 
+    public T GetEntity<T>() where T : UserEntity =>
+        GetEntity() as T ?? throw new UnauthorizedException("Unauthorized");
+
     public Role GetRole() =>
         Get().Role ?? throw new BadRequestException("User has no roles assigned.");
 }
