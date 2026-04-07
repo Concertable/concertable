@@ -2,10 +2,10 @@ import { Camera } from "lucide-react";
 import { useScroll, useTransform, motion } from "framer-motion";
 import { useEditableContext } from "@/providers/EditableProvider";
 import { useImageUpload } from "@/hooks/useImageUpload";
-import { useImageUrl } from "@/hooks/query/useImageUrl";
 
 interface Props {
-  bannerUrl?: string;
+  src?: string;
+  isPending?: boolean;
   name: string;
   onBannerChange?: (file: File) => void;
 }
@@ -15,20 +15,20 @@ function BannerSkeleton() {
 }
 
 export function BannerUpload({
-  bannerUrl,
+  src,
+  isPending,
   name,
   onBannerChange,
 }: Readonly<Props>) {
   const editMode = useEditableContext();
   const { inputRef, open, onChange } = useImageUpload(onBannerChange);
-  const { data: src, isPending } = useImageUrl(bannerUrl);
 
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 300], ["0%", "-30%"]);
 
   return (
     <>
-      {isPending && bannerUrl ? (
+      {isPending ? (
         <BannerSkeleton />
       ) : (
         <div className="absolute inset-0 overflow-hidden">
@@ -36,11 +36,7 @@ export function BannerUpload({
             style={{ y }}
             className="absolute top-0 left-0 h-[150%] w-full"
           >
-            <img
-              src={src}
-              alt={name}
-              className="h-full w-full object-cover opacity-60"
-            />
+            <img src={src} alt={name} className="h-full w-full object-cover" />
           </motion.div>
         </div>
       )}
