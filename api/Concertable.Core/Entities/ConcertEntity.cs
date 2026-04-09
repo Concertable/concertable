@@ -2,10 +2,11 @@ using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Interfaces;
 using NetTopologySuite.Geometries;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 
 namespace Concertable.Core.Entities;
 
-public class ConcertEntity : IIdEntity, IHasName, IHasLocation
+public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>
 {
     public int Id { get; set; }
     public int ApplicationId { get; set; }
@@ -17,7 +18,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation
     public int TotalTickets { get; set; }
     public int AvailableTickets { get; set; }
     public DateTime? DatePosted { get; set; }
-    public Point? Location => Application.Opportunity.Venue.User.Location;
+    public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Application.Opportunity.Venue.User.Location;
     public OpportunityApplicationEntity Application { get; set; } = null!;
     public ICollection<TicketEntity> Tickets { get; } = new List<TicketEntity>();
     public ICollection<ConcertGenreEntity> ConcertGenres { get; set; } = new List<ConcertGenreEntity>();

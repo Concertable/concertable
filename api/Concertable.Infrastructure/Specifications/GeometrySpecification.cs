@@ -1,9 +1,9 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Infrastructure.Expressions;
 using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
+using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Extensions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
@@ -13,17 +13,14 @@ using System.Linq.Expressions;
 namespace Concertable.Infrastructure.Specifications;
 
 public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
-    where TEntity : class, IHasLocation
+    where TEntity : class, IIdEntity, ILocatable<TEntity>
 {
     private readonly IGeometryProvider geometryProvider;
-    private readonly Expression<Func<TEntity, Point?>> locationSelector;
 
     public GeometrySpecification(
-        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        ILocationSelector<TEntity> locationSelector)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.geometryProvider = geometryProvider;
-        this.locationSelector = locationSelector.LocationSelector;
     }
 
     public IQueryable<TEntity> Apply(IQueryable<TEntity> query, IGeoParams geoParams)
@@ -37,7 +34,7 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
 
         var radiusMeters = (geoParams.RadiusKm ?? 10) * 1000;
 
-        return query.Where(BuildFilter(locationSelector, center, radiusMeters));
+        return query.Where(BuildFilter(TEntity.LocationExpression, center, radiusMeters));
     }
 
     private static Expression<Func<TEntity, bool>> BuildFilter(

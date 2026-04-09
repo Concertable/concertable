@@ -15,6 +15,7 @@ using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Expressions.Selectors;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Mappers;
@@ -37,7 +38,6 @@ using Concertable.Infrastructure.Services.Search;
 using Concertable.Infrastructure.Services.Settlement;
 using Concertable.Infrastructure.Services.Webhook;
 using Concertable.Infrastructure.Settings;
-using Concertable.Infrastructure.Expressions.Selectors;
 using Concertable.Infrastructure.Specifications;
 using Concertable.Infrastructure.Validators;
 using Concertable.Web.Authorization;
@@ -291,10 +291,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddSearch(this IServiceCollection services)
     {
-        services.AddSingleton<ILocationSelector<ArtistEntity>, ArtistLocationSelector>();
-        services.AddSingleton<ILocationSelector<VenueEntity>, VenueLocationSelector>();
-        services.AddSingleton<ILocationSelector<ConcertEntity>, ConcertLocationSelector>();
-
         services.AddSingleton<IGeometrySpecification<ArtistEntity>, GeometrySpecification<ArtistEntity>>();
         services.AddSingleton<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
         services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
