@@ -4,7 +4,6 @@ using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +20,7 @@ public class AuthService : IAuthService
     private readonly IUserValidator userValidator;
     private readonly IUserMapper userMapper;
     private readonly IUserLoader userLoader;
+    private readonly IUserRegister userRegister;
     private readonly IEmailService emailService;
     private readonly IAuthUriService authUriService;
 
@@ -32,6 +32,7 @@ public class AuthService : IAuthService
         IUserValidator userValidator,
         IUserMapper userMapper,
         IUserLoader userLoader,
+        IUserRegister userRegister,
         IEmailService emailService,
         IAuthUriService authUriService)
     {
@@ -42,6 +43,7 @@ public class AuthService : IAuthService
         this.userValidator = userValidator;
         this.userMapper = userMapper;
         this.userLoader = userLoader;
+        this.userRegister = userRegister;
         this.emailService = emailService;
         this.authUriService = authUriService;
     }
@@ -55,16 +57,7 @@ public class AuthService : IAuthService
 
         var passwordHash = passwordHasher.Hash(request.Password);
 
-        UserEntity user = request.Role switch
-        {
-            Role.VenueManager => new VenueManagerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
-            Role.ArtistManager => new ArtistManagerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
-            Role.Admin => new AdminEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash },
-            _ => new CustomerEntity { Email = request.Email, Role = request.Role, PasswordHash = passwordHash }
-        };
-
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+        await userRegister.RegisterAsync(request, passwordHash);
 
         await SendVerificationEmailAsync(request.Email);
     }

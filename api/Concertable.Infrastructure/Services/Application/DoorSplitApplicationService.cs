@@ -1,5 +1,4 @@
 using Concertable.Application.DTOs;
-using Concertable.Infrastructure.Validators;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
@@ -111,11 +110,8 @@ public class DoorSplitApplicationService : IApplicationStrategy
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = DoorSplitCalculator.ArtistShare(totalRevenue, contract.ArtistDoorPercent);
 
-        if (venueManager.StripeCustomerId is null)
-            throw new BadRequestException("Venue manager does not have a Stripe customer account set up");
-
-        if (artistManager.StripeAccountId is null)
-            throw new BadRequestException("Artist manager does not have a Stripe account");
+        if (!await stripeAccountService.IsUserVerifiedAsync(artistManager.StripeAccountId))
+            throw new BadRequestException("Artist manager has not completed Stripe verification");
 
         var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(venueManager.StripeCustomerId);
 

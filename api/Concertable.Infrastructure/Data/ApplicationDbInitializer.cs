@@ -67,7 +67,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeCustomerId = "cus_1R71vrGWdDleGW3a",
+                StripeCustomerId = "cus_UIIy9Gbwfr3uAP",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
 
@@ -97,8 +97,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeAccountId = "acct_1R71yoLnJh1ZDYF4",
-                StripeCustomerId = "cus_1R71yoLnJh1ZDYF4",
+                StripeAccountId = "acct_1TJiMePysoXmht10",
+                StripeCustomerId = "cus_UIIy5mCilBtJbR",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             artistManagerIds.Add(context.Users.Add(new ArtistManagerEntity
@@ -110,8 +110,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeAccountId = "acct_1R71z6IBXwkKnqix",
-                StripeCustomerId = "cus_1R71z6IBXwkKnqix",
+                StripeAccountId = "acct_1TJiMoPupFslP2qz",
+                StripeCustomerId = "cus_UIIy5415r69RmJ",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             for (int i = 3; i <= 35; i++)
@@ -140,8 +140,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeAccountId = "acct_1R71zKBsonWwC9oM",
-                StripeCustomerId = "cus_1R71zKBsonWwC9oM",
+                StripeAccountId = "acct_1TJiMjLxk4aCq1Ui",
+                StripeCustomerId = "cus_UIIymKfHijbNVO",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             venueManagerIds.Add(context.Users.Add(new VenueManagerEntity
@@ -153,8 +153,8 @@ public class ApplicationDbInitializer : IDbInitializer
                 County = locations[0].County,
                 Town = locations[0].Town,
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
-                StripeAccountId = "acct_1R71zvLnLloN6AmB",
-                StripeCustomerId = "cus_1R71zvLnLloN6AmB",
+                StripeAccountId = "acct_1TJiPJLLwGSDilbV",
+                StripeCustomerId = "cus_UIJ1qfgxYu624Q",
                 Avatar = "avatar.jpg"
             }).Entity.Id);
             for (int i = 3; i <= 35; i++)

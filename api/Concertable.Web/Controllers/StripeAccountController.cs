@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
 using Concertable.Core.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Concertable.Web.Controllers;
@@ -24,9 +24,6 @@ public class StripeAccountController : ControllerBase
     {
         var manager = currentUser.GetEntity<ManagerEntity>();
 
-        if (string.IsNullOrWhiteSpace(manager.StripeAccountId))
-            return BadRequest("You do not have a Stripe account, contact support to get one");
-
         var link = await stripeAccountService.GetOnboardingLinkAsync(manager.StripeAccountId);
         return Ok(link);
     }
@@ -36,9 +33,17 @@ public class StripeAccountController : ControllerBase
     {
         var manager = currentUser.GetEntity<ManagerEntity>();
 
-        if (manager.StripeAccountId is null)
-            return NotFound(false);
-
         return Ok(await stripeAccountService.IsUserVerifiedAsync(manager.StripeAccountId));
+    }
+
+    [HttpPost("setup-intent")]
+    public async Task<ActionResult<string>> CreateSetupIntent()
+    {
+        var user = currentUser.GetEntity<UserEntity>();
+
+        if (string.IsNullOrWhiteSpace(user.StripeCustomerId))
+            user.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(user);
+
+        return Ok(await stripeAccountService.CreateSetupIntentAsync(user.StripeCustomerId));
     }
 }

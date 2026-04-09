@@ -19,9 +19,6 @@ public class StripeAccountValidator : IStripeValidationStrategy
     {
         var manager = currentUser.GetEntity<ManagerEntity>();
 
-        if (manager.StripeAccountId is null)
-            return false;
-
         return await stripeAccountService.IsUserVerifiedAsync(manager.StripeAccountId);
     }
 }

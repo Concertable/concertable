@@ -9,4 +9,5 @@ public interface IStripeAccountService
     Task<string> GetOnboardingLinkAsync(string stripeAccountId);
     Task<bool> IsUserVerifiedAsync(string stripeAccountId);
     Task<string> GetPaymentMethodAsync(string stripeCustomerId);
+    Task<string> CreateSetupIntentAsync(string stripeCustomerId);
 }

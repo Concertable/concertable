@@ -114,6 +114,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.AccountLinkService>();
             services.AddSingleton<Stripe.CustomerService>();
             services.AddSingleton<Stripe.PaymentMethodService>();
+            services.AddSingleton<Stripe.SetupIntentService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
             services.AddScoped<IPaymentService, PaymentService>();
@@ -354,6 +355,12 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IUserLoader, ArtistManagerLoader>(Role.ArtistManager);
         services.AddKeyedScoped<IUserLoader, CustomerLoader>(Role.Customer);
         services.AddKeyedScoped<IUserLoader, AdminLoader>(Role.Admin);
+
+        services.AddScoped<IUserRegister, UserRegister>();
+        services.AddKeyedScoped<IUserRegister, VenueManagerRegister>(Role.VenueManager);
+        services.AddKeyedScoped<IUserRegister, ArtistManagerRegister>(Role.ArtistManager);
+        services.AddKeyedScoped<IUserRegister, CustomerRegister>(Role.Customer);
+        services.AddKeyedScoped<IUserRegister, AdminRegister>(Role.Admin);
         services.AddSingleton<JwtSecurityTokenHandler>();
         services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
         services.AddSingleton<ITokenService, JwtTokenService>();

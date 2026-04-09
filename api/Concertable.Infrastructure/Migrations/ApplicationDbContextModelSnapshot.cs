@@ -591,6 +591,7 @@ namespace Concertable.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("StripeCustomerId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Town")
@@ -753,17 +754,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("TicketTransactions");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.ArtistManagerEntity", b =>
-                {
-                    b.HasBaseType("Concertable.Core.Entities.UserEntity");
-
-                    b.Property<string>("StripeAccountId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue(2);
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.CustomerEntity", b =>
                 {
                     b.HasBaseType("Concertable.Core.Entities.UserEntity");
@@ -771,13 +761,25 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasDiscriminator().HasValue(0);
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.VenueManagerEntity", b =>
+            modelBuilder.Entity("Concertable.Core.Entities.ManagerEntity", b =>
                 {
                     b.HasBaseType("Concertable.Core.Entities.UserEntity");
 
                     b.Property<string>("StripeAccountId")
-                        .ValueGeneratedOnUpdateSometimes()
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+                });
+
+            modelBuilder.Entity("Concertable.Core.Entities.ArtistManagerEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Core.Entities.ManagerEntity");
+
+                    b.HasDiscriminator().HasValue(2);
+                });
+
+            modelBuilder.Entity("Concertable.Core.Entities.VenueManagerEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Core.Entities.ManagerEntity");
 
                     b.HasDiscriminator().HasValue(1);
                 });
@@ -1232,14 +1234,14 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Opportunities");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.ArtistManagerEntity", b =>
-                {
-                    b.Navigation("Artist");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.CustomerEntity", b =>
                 {
                     b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("Concertable.Core.Entities.ArtistManagerEntity", b =>
+                {
+                    b.Navigation("Artist");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.VenueManagerEntity", b =>

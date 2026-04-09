@@ -16,7 +16,7 @@ public class UserEntity : IGuidEntity
     public string? County { get; set; }
     public string? Town { get; set; }
     public Point? Location { get; set; }
-    public string? StripeCustomerId { get; set; }
+    public string StripeCustomerId { get; set; } = string.Empty;
     public string Avatar { get; set; } = string.Empty;
 
     public bool IsEmailVerified { get; set; }
@@ -31,7 +31,7 @@ public class UserEntity : IGuidEntity
 
 public abstract class ManagerEntity : UserEntity
 {
-    public string? StripeAccountId { get; set; }
+    public string StripeAccountId { get; set; } = string.Empty;
 }
 
 public class VenueManagerEntity : ManagerEntity

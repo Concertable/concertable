@@ -71,8 +71,8 @@ public class FlatFeeApplicationService : IApplicationStrategy
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
-        if (venueManager.StripeCustomerId is null)
-            throw new BadRequestException("Venue manager does not have a Stripe customer account set up");
+        if (!await stripeAccountService.IsUserVerifiedAsync(artistManager.StripeAccountId))
+            throw new BadRequestException("Artist manager has not completed Stripe verification");
 
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();

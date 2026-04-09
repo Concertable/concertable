@@ -55,6 +55,15 @@ public class ApplicationDbContext : DbContext
                 .HasValue<CustomerEntity>(Role.Customer);
         });
 
+        modelBuilder.Entity<CustomerEntity>()
+            .Property(u => u.StripeCustomerId).IsRequired();
+
+        modelBuilder.Entity<ManagerEntity>()
+            .Property(u => u.StripeCustomerId).IsRequired();
+
+        modelBuilder.Entity<ManagerEntity>()
+            .Property(u => u.StripeAccountId).IsRequired();
+
         modelBuilder.Entity<StripeEventEntity>()
             .HasKey(e => e.EventId);
 

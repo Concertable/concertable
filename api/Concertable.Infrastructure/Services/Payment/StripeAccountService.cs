@@ -17,6 +17,7 @@ public class StripeAccountService : IStripeAccountService
     private readonly AccountLinkService accountLinkService;
     private readonly CustomerService customerService;
     private readonly PaymentMethodService paymentMethodService;
+    private readonly SetupIntentService setupIntentService;
 
     public StripeAccountService(
         IUserRepository userRepository,
@@ -25,7 +26,8 @@ public class StripeAccountService : IStripeAccountService
         AccountService accountService,
         AccountLinkService accountLinkService,
         CustomerService customerService,
-        PaymentMethodService paymentMethodService)
+        PaymentMethodService paymentMethodService,
+        SetupIntentService setupIntentService)
     {
         StripeConfiguration.ApiKey = stripeSettings.Value.SecretKey;
         this.userRepository = userRepository;
@@ -34,6 +36,7 @@ public class StripeAccountService : IStripeAccountService
         this.accountLinkService = accountLinkService;
         this.customerService = customerService;
         this.paymentMethodService = paymentMethodService;
+        this.setupIntentService = setupIntentService;
     }
 
     public async Task<string> CreateConnectAccountAsync(ManagerEntity manager)
@@ -100,5 +103,16 @@ public class StripeAccountService : IStripeAccountService
 
         return paymentMethods.FirstOrDefault()?.Id
             ?? throw new NotFoundException($"No payment method found for customer {stripeCustomerId}");
+    }
+
+    public async Task<string> CreateSetupIntentAsync(string stripeCustomerId)
+    {
+        var intent = await setupIntentService.CreateAsync(new SetupIntentCreateOptions
+        {
+            Customer = stripeCustomerId,
+            PaymentMethodTypes = ["card"],
+        });
+
+        return intent.ClientSecret;
     }
 }

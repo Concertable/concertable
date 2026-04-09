@@ -1,23 +1,16 @@
-import { useState } from "react";
 import {
   useStripeVerifiedQuery,
-  useStripeOnboardingLinkQuery,
+  useStripeOnboardingQuery,
 } from "@/hooks/query/useStripeAccountQuery";
 
 export function useStripeAccount() {
   const { data: isVerified, isLoading } = useStripeVerifiedQuery();
-  const [fetchLink, setFetchLink] = useState(false);
-  const { data: onboardingLink, isLoading: isLoadingLink } =
-    useStripeOnboardingLinkQuery(fetchLink);
-
-  if (onboardingLink) {
-    window.location.href = onboardingLink;
-  }
+  const { refetch, isFetching: isLoadingLink } = useStripeOnboardingQuery();
 
   return {
     isVerified,
     isLoading,
     isLoadingLink,
-    beginOnboarding: () => setFetchLink(true),
+    beginOnboarding: refetch,
   };
 }
