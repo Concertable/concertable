@@ -5,7 +5,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { CheckCircle, XCircle } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { sendVerificationEmail, changePassword } from "@/api/authApi";
+import authApi from "@/api/authApi";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default function ProfilePage() {
     if (!user) return;
     setResending(true);
     try {
-      await sendVerificationEmail(user.email);
+      await authApi.sendVerificationEmail(user.email);
       toast.success("Verification email sent");
     } catch {
       toast.error("Failed to send verification email");
@@ -52,7 +52,7 @@ export default function ProfilePage() {
 
   async function onSubmit(data: ChangePasswordForm) {
     try {
-      await changePassword(data.currentPassword, data.newPassword);
+      await authApi.changePassword(data.currentPassword, data.newPassword);
       toast.success("Password changed successfully");
       reset();
     } catch {

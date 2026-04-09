@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import * as headerApi from "@/api/headerApi";
+import headerApi from "@/api/headerApi";
 import type { SearchFilters } from "@/schemas/searchSchema";
 import type { Header, HeaderType } from "@/types/header";
 import type { Pagination } from "@/types/common";

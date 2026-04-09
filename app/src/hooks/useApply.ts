@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { applyToOpportunity } from "@/api/applicationApi";
+import applicationApi from "@/api/applicationApi";
 import { useRole } from "@/hooks/useRole";
 
 export function useApply(opportunityId: number) {
@@ -12,7 +12,7 @@ export function useApply(opportunityId: number) {
     isPending,
     error,
   } = useMutation({
-    mutationFn: () => applyToOpportunity(opportunityId),
+    mutationFn: () => applicationApi.applyToOpportunity(opportunityId),
   });
 
   return { apply, isPending, error, canApply };

@@ -1,12 +1,16 @@
 import api from "@/lib/axios";
 
-export async function sendVerificationEmail(email: string) {
-  await api.post("/auth/send-verification", { email });
-}
+const authApi = {
+  sendVerificationEmail: async (email: string): Promise<void> => {
+    await api.post("/auth/send-verification", { email });
+  },
 
-export async function changePassword(
-  currentPassword: string,
-  newPassword: string,
-) {
-  await api.post("/auth/change-password", { currentPassword, newPassword });
-}
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> => {
+    await api.post("/auth/change-password", { currentPassword, newPassword });
+  },
+};
+
+export default authApi;

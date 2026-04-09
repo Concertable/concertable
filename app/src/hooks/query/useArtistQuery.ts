@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import * as artistApi from "@/api/artistApi";
+import artistApi from "@/api/artistApi";
 
 export function useArtistQuery(id: number) {
   return useQuery({

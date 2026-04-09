@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { createSetupIntent } from "@/api/stripeAccountApi";
+import stripeAccountApi from "@/api/stripeAccountApi";
 
 const stripe = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -74,7 +74,7 @@ export function AddPaymentMethodModal({
   async function handleOpenChange(isOpen: boolean) {
     if (isOpen) {
       setIsLoading(true);
-      const secret = await createSetupIntent();
+      const secret = await stripeAccountApi.createSetupIntent();
       setClientSecret(secret);
       setIsLoading(false);
     } else {

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMyVenueQuery } from "@/hooks/query/useVenueQuery";
 import { useVenueStore } from "@/store/useVenueStore";
-import { updateVenue } from "@/api/venueApi";
+import venueApi from "@/api/venueApi";
 import type { Venue } from "@/types/venue";
 import type { UseVenueResult } from "@/hooks/useVenue";
 
@@ -23,7 +23,7 @@ export function useMyVenue(): UseMyVenueResult {
     useVenueStore();
 
   const mutation = useMutation({
-    mutationFn: () => updateVenue(draft!, banner, avatar),
+    mutationFn: () => venueApi.updateVenue(draft!, banner, avatar),
     onSuccess: (saved) => {
       queryClient.setQueryData(["venue", "my"], saved);
       resetDraft(saved);

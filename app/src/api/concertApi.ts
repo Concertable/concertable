@@ -8,15 +8,19 @@ interface UpdateConcertRequest {
   totalTickets: number;
 }
 
-export async function getConcert(id: number): Promise<Concert> {
-  const { data } = await api.get<Concert>(`/concert/${id}`);
-  return data;
-}
+const concertApi = {
+  getConcert: async (id: number): Promise<Concert> => {
+    const { data } = await api.get<Concert>(`/concert/${id}`);
+    return data;
+  },
 
-export async function updateConcert(
-  id: number,
-  request: UpdateConcertRequest,
-): Promise<Concert> {
-  const { data } = await api.put<Concert>(`/concert/${id}`, request);
-  return data;
-}
+  updateConcert: async (
+    id: number,
+    request: UpdateConcertRequest,
+  ): Promise<Concert> => {
+    const { data } = await api.put<Concert>(`/concert/${id}`, request);
+    return data;
+  },
+};
+
+export default concertApi;

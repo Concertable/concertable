@@ -1,6 +1,5 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import * as reviewApi from "@/api/reviewApi";
-import type { ReviewEntityType } from "@/api/reviewApi";
+import reviewApi, { type ReviewEntityType } from "@/api/reviewApi";
 import type { PaginationParams } from "@/hooks/usePagination";
 import { useAuthStore } from "@/store/useAuthStore";
 

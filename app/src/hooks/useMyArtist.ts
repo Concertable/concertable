@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMyArtistQuery } from "@/hooks/query/useArtistQuery";
 import { useArtistStore } from "@/store/useArtistStore";
-import { updateArtist } from "@/api/artistApi";
+import artistApi from "@/api/artistApi";
 
 export function useMyArtist() {
   const query = useMyArtistQuery();
@@ -11,7 +11,7 @@ export function useMyArtist() {
     useArtistStore();
 
   const mutation = useMutation({
-    mutationFn: () => updateArtist(draft!, banner, avatar),
+    mutationFn: () => artistApi.updateArtist(draft!, banner, avatar),
     onSuccess: (saved) => {
       queryClient.setQueryData(["artist", "my"], saved);
     },

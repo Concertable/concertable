@@ -1,5 +1,5 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import * as opportunityApi from "@/api/opportunityApi";
+import opportunityApi from "@/api/opportunityApi";
 import type { PaginationParams } from "@/hooks/usePagination";
 
 export function useOpportunitiesByVenueQuery(

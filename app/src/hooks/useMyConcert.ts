@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConcert } from "@/hooks/useConcert";
 import { useConcertStore } from "@/store/useConcertStore";
-import { updateConcert } from "@/api/concertApi";
+import concertApi from "@/api/concertApi";
 import type { Concert } from "@/types/concert";
 import type { UseConcertResult } from "@/hooks/useConcert";
 
@@ -24,7 +24,7 @@ export function useMyConcert(id: number): UseMyConcertResult {
 
   const mutation = useMutation({
     mutationFn: () =>
-      updateConcert(id, {
+      concertApi.updateConcert(id, {
         name: draft!.name,
         about: draft!.about,
         price: draft!.price,

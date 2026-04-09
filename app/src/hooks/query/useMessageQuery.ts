@@ -4,7 +4,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import * as messageApi from "@/api/messageApi";
+import messageApi from "@/api/messageApi";
 import type { PaginationParams } from "@/hooks/usePagination";
 
 export function useUnreadCountQuery() {

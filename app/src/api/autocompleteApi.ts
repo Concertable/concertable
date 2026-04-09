@@ -7,14 +7,18 @@ export interface AutocompleteResult {
   $type: HeaderType;
 }
 
-export async function getHeaderAutocomplete(
-  searchTerm: string,
-): Promise<AutocompleteResult[]> {
-  const { data } = await api.get<AutocompleteResult[]>(
-    "/autocomplete/headers",
-    {
-      params: { searchTerm },
-    },
-  );
-  return data;
-}
+const autocompleteApi = {
+  getHeaderAutocomplete: async (
+    searchTerm: string,
+  ): Promise<AutocompleteResult[]> => {
+    const { data } = await api.get<AutocompleteResult[]>(
+      "/autocomplete/headers",
+      {
+        params: { searchTerm },
+      },
+    );
+    return data;
+  },
+};
+
+export default autocompleteApi;
