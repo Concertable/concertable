@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ExternalLink, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +12,6 @@ export default function PaymentPage() {
   const user = useAuthStore((s) => s.user);
   const isManager =
     user?.role === "VenueManager" || user?.role === "ArtistManager";
-
   const { data: isVerified } = useStripeVerifiedQuery(isManager);
   const { refetch: openOnboarding, isFetching } = useStripeOnboardingQuery();
 
@@ -38,7 +36,7 @@ export default function PaymentPage() {
           {paymentMethodDescription}
         </p>
         <div className="pt-2">
-          <Button>Add Payment Method</Button>
+          <AddPaymentMethodModal />
         </div>
       </div>
 

@@ -11,13 +11,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import stripeAccountApi from "@/api/stripeAccountApi";
+import { useTheme } from "@/providers/ThemeProvider";
 
 const stripe = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-function PaymentForm({ onSuccess }: { onSuccess: () => void }) {
+function PaymentForm() {
   const stripeInstance = useStripe();
   const elements = useElements();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,8 +41,6 @@ function PaymentForm({ onSuccess }: { onSuccess: () => void }) {
     if (stripeError) {
       setError(stripeError.message ?? "Something went wrong");
       setIsSubmitting(false);
-    } else {
-      onSuccess();
     }
   }
 
@@ -59,17 +59,13 @@ function PaymentForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
-interface AddPaymentMethodModalProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-export function AddPaymentMethodModal({
-  open,
-  onClose,
-}: AddPaymentMethodModalProps) {
+export function AddPaymentMethodModal() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { theme } = useTheme();
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
 
   async function handleOpenChange(isOpen: boolean) {
     if (isOpen) {
@@ -79,12 +75,14 @@ export function AddPaymentMethodModal({
       setIsLoading(false);
     } else {
       setClientSecret(null);
-      onClose();
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button>Add Payment Method</Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Payment Method</DialogTitle>
@@ -94,8 +92,14 @@ export function AddPaymentMethodModal({
             Loading...
           </div>
         ) : (
-          <Elements stripe={stripe} options={{ clientSecret }}>
-            <PaymentForm onSuccess={onClose} />
+          <Elements
+            stripe={stripe}
+            options={{
+              clientSecret,
+              appearance: { theme: isDark ? "night" : "stripe" },
+            }}
+          >
+            <PaymentForm />
           </Elements>
         )}
       </DialogContent>
