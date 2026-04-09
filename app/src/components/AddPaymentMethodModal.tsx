@@ -14,12 +14,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import stripeAccountApi from "@/api/stripeAccountApi";
 import { useTheme } from "@/providers/ThemeProvider";
 
 const stripe = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-function PaymentForm() {
+function PaymentForm({ onSuccess }: { onSuccess: () => void }) {
   const stripeInstance = useStripe();
   const elements = useElements();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +43,9 @@ function PaymentForm() {
     if (stripeError) {
       setError(stripeError.message ?? "Something went wrong");
       setIsSubmitting(false);
+    } else {
+      toast.success("Payment method saved");
+      onSuccess();
     }
   }
 
@@ -59,15 +64,22 @@ function PaymentForm() {
   );
 }
 
-export function AddPaymentMethodModal() {
+export function AddPaymentMethodModal({
+  replace = false,
+}: {
+  replace?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const { theme } = useTheme();
   const isDark =
     theme === "dark" ||
     (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
 
   async function handleOpenChange(isOpen: boolean) {
+    setOpen(isOpen);
     if (isOpen) {
       setIsLoading(true);
       const secret = await stripeAccountApi.createSetupIntent();
@@ -78,10 +90,17 @@ export function AddPaymentMethodModal() {
     }
   }
 
+  function handleSuccess() {
+    setOpen(false);
+    queryClient.invalidateQueries({ queryKey: ["stripe", "payment-method"] });
+  }
+
   return (
-    <Dialog onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>Add Payment Method</Button>
+        <Button variant={replace ? "outline" : "default"}>
+          {replace ? "Replace" : "Add Payment Method"}
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -99,7 +118,7 @@ export function AddPaymentMethodModal() {
               appearance: { theme: isDark ? "night" : "stripe" },
             }}
           >
-            <PaymentForm />
+            <PaymentForm onSuccess={handleSuccess} />
           </Elements>
         )}
       </DialogContent>

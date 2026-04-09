@@ -9,16 +9,18 @@ export function useStripeVerifiedQuery(enabled: boolean) {
   });
 }
 
+export function usePaymentMethodQuery() {
+  return useQuery({
+    queryKey: ["stripe", "payment-method"],
+    queryFn: stripeAccountApi.getPaymentMethod,
+  });
+}
+
 export function useStripeOnboardingQuery() {
   return useQuery({
     queryKey: ["stripe", "onboarding-link"],
     queryFn: stripeAccountApi.getOnboardingLink,
     enabled: false,
-    staleTime: Infinity,
     throwOnError: false,
-    select: (link) => {
-      window.location.href = link;
-      return link;
-    },
   });
 }

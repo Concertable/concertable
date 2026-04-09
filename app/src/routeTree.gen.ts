@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuccessRouteImport } from './routes/success'
+import { Route as StripeReturnRouteImport } from './routes/stripe-return'
+import { Route as StripeRefreshRouteImport } from './routes/stripe-refresh'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FailRouteImport } from './routes/fail'
@@ -50,6 +52,16 @@ import { Route as ArtistMyConcertsConcertIdRouteImport } from './routes/artist/m
 const SuccessRoute = SuccessRouteImport.update({
   id: '/success',
   path: '/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StripeReturnRoute = StripeReturnRouteImport.update({
+  id: '/stripe-return',
+  path: '/stripe-return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StripeRefreshRoute = StripeRefreshRouteImport.update({
+  id: '/stripe-refresh',
+  path: '/stripe-refresh',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -249,6 +261,8 @@ export interface FileRoutesByFullPath {
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/stripe-refresh': typeof StripeRefreshRoute
+  '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
   '/settings': typeof CustomerSettingsRouteRouteWithChildren
   '/artist/create': typeof ArtistCreateRoute
@@ -284,6 +298,8 @@ export interface FileRoutesByTo {
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/stripe-refresh': typeof StripeRefreshRoute
+  '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
   '/artist/create': typeof ArtistCreateRoute
   '/venue/create': typeof VenueCreateRoute
@@ -323,6 +339,8 @@ export interface FileRoutesById {
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/stripe-refresh': typeof StripeRefreshRoute
+  '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
   '/_customer/settings': typeof CustomerSettingsRouteRouteWithChildren
   '/artist/create': typeof ArtistCreateRoute
@@ -364,6 +382,8 @@ export interface FileRouteTypes {
     | '/fail'
     | '/login'
     | '/register'
+    | '/stripe-refresh'
+    | '/stripe-return'
     | '/success'
     | '/settings'
     | '/artist/create'
@@ -399,6 +419,8 @@ export interface FileRouteTypes {
     | '/fail'
     | '/login'
     | '/register'
+    | '/stripe-refresh'
+    | '/stripe-return'
     | '/success'
     | '/artist/create'
     | '/venue/create'
@@ -437,6 +459,8 @@ export interface FileRouteTypes {
     | '/fail'
     | '/login'
     | '/register'
+    | '/stripe-refresh'
+    | '/stripe-return'
     | '/success'
     | '/_customer/settings'
     | '/artist/create'
@@ -477,6 +501,8 @@ export interface RootRouteChildren {
   FailRoute: typeof FailRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  StripeRefreshRoute: typeof StripeRefreshRoute
+  StripeReturnRoute: typeof StripeReturnRoute
   SuccessRoute: typeof SuccessRoute
 }
 
@@ -487,6 +513,20 @@ declare module '@tanstack/react-router' {
       path: '/success'
       fullPath: '/success'
       preLoaderRoute: typeof SuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stripe-return': {
+      id: '/stripe-return'
+      path: '/stripe-return'
+      fullPath: '/stripe-return'
+      preLoaderRoute: typeof StripeReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stripe-refresh': {
+      id: '/stripe-refresh'
+      path: '/stripe-refresh'
+      fullPath: '/stripe-refresh'
+      preLoaderRoute: typeof StripeRefreshRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -853,6 +893,8 @@ const rootRouteChildren: RootRouteChildren = {
   FailRoute: FailRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  StripeRefreshRoute: StripeRefreshRoute,
+  StripeReturnRoute: StripeReturnRoute,
   SuccessRoute: SuccessRoute,
 }
 export const routeTree = rootRouteImport

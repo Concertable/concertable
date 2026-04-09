@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 
 namespace Concertable.Infrastructure.Services.Payment;
@@ -22,4 +23,7 @@ public class FakeStripeAccountService : IStripeAccountService
 
     public Task<string> CreateSetupIntentAsync(string stripeCustomerId) =>
         Task.FromResult("seti_fake_secret");
+
+    public Task<PaymentMethodResponse?> GetPaymentMethodDetailsAsync(string stripeCustomerId) =>
+        Task.FromResult<PaymentMethodResponse?>(new PaymentMethodResponse("visa", "4242", 12, 2030));
 }

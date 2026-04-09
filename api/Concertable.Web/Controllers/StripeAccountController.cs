@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +35,13 @@ public class StripeAccountController : ControllerBase
         var manager = currentUser.GetEntity<ManagerEntity>();
 
         return Ok(await stripeAccountService.IsUserVerifiedAsync(manager.StripeAccountId));
+    }
+
+    [HttpGet("payment-method")]
+    public async Task<ActionResult<PaymentMethodResponse?>> GetPaymentMethod()
+    {
+        var user = currentUser.GetEntity<UserEntity>();
+        return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(user.StripeCustomerId));
     }
 
     [HttpPost("setup-intent")]

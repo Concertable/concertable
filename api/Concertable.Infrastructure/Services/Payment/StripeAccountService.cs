@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Exceptions;
 using Concertable.Infrastructure.Settings;
@@ -79,8 +80,8 @@ public class StripeAccountService : IStripeAccountService
         var link = await accountLinkService.CreateAsync(new AccountLinkCreateOptions
         {
             Account = stripeAccountId,
-            RefreshUrl = $"{baseUri}/fail",
-            ReturnUrl = $"{baseUri}/success",
+            RefreshUrl = $"{baseUri}/stripe-refresh",
+            ReturnUrl = $"{baseUri}/stripe-return",
             Type = "account_onboarding"
         });
 
@@ -114,5 +115,19 @@ public class StripeAccountService : IStripeAccountService
         });
 
         return intent.ClientSecret;
+    }
+
+    public async Task<PaymentMethodResponse?> GetPaymentMethodDetailsAsync(string stripeCustomerId)
+    {
+        var paymentMethods = await paymentMethodService.ListAsync(new PaymentMethodListOptions
+        {
+            Customer = stripeCustomerId,
+            Type = "card"
+        });
+
+        var card = paymentMethods.FirstOrDefault()?.Card;
+        if (card is null) return null;
+
+        return new PaymentMethodResponse(card.Brand, card.Last4, (int)card.ExpMonth, (int)card.ExpYear);
     }
 }
