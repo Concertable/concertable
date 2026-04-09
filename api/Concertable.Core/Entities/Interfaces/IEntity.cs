@@ -1,6 +1,3 @@
 namespace Concertable.Core.Entities.Interfaces;
 
-public interface IEntity
-{
-    int Id { get; }
-}
+public interface IEntity;

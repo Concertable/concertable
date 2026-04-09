@@ -2,7 +2,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class EmailVerificationTokenEntity : IEntity
+public class EmailVerificationTokenEntity : IIdEntity
 {
     public int Id { get; set; }
     public Guid UserId { get; set; }

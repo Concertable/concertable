@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Concertable.Core.Entities;
 
-public class ConcertEntity : IEntity, IHasName, IHasLocation
+public class ConcertEntity : IIdEntity, IHasName, IHasLocation
 {
     public int Id { get; set; }
     public int ApplicationId { get; set; }

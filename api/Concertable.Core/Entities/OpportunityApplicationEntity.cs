@@ -3,7 +3,7 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities;
 
-public class OpportunityApplicationEntity : IEntity
+public class OpportunityApplicationEntity : IIdEntity
 {
     public int Id { get; set; }
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;

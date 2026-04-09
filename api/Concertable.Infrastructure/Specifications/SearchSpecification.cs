@@ -5,7 +5,7 @@ using Concertable.Core.Interfaces;
 namespace Concertable.Infrastructure.Specifications;
 
 public class SearchSpecification<TEntity> : ISearchSpecification<TEntity>
-    where TEntity : IEntity, IHasName
+    where TEntity : IIdEntity, IHasName
 {
     public IQueryable<TEntity> Apply(IQueryable<TEntity> query, string? searchTerm)
     {

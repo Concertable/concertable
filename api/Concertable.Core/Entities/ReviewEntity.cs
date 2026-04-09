@@ -2,7 +2,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class ReviewEntity : IEntity
+public class ReviewEntity : IIdEntity
 {
     public int Id { get; set; }
     public int TicketId { get; set; }

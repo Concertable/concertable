@@ -4,7 +4,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Infrastructure.Repositories;
 
-public class Repository<T> : BaseRepository<T>, IRepository<T> where T : class, IEntity
+public class Repository<T> : BaseRepository<T>, IRepository<T> where T : class, IIdEntity
 {
     public Repository(ApplicationDbContext context) : base(context) { }
 

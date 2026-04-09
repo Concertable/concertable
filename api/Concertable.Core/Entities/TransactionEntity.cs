@@ -3,7 +3,7 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities;
 
-public abstract class TransactionEntity : IEntity, IAuditable
+public abstract class TransactionEntity : IIdEntity, IAuditable
 {
     public int Id { get; set; }
     public abstract TransactionType TransactionType { get; }

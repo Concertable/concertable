@@ -3,7 +3,7 @@ using Concertable.Core.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class GenrePreferenceEntity : IEntity, IGenreJoin
+public class GenrePreferenceEntity : IIdEntity, IGenreJoin
 {
     public int Id { get; set; }
     public int PreferenceId { get; set; }

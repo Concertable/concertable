@@ -2,7 +2,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class VenueImageEntity : IEntity
+public class VenueImageEntity : IIdEntity
 {
     public int Id { get; set; }
     public int VenueId { get; set; }

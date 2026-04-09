@@ -2,7 +2,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class PasswordResetTokenEntity : IEntity
+public class PasswordResetTokenEntity : IIdEntity
 {
     public int Id { get; set; }
     public Guid UserId { get; set; }

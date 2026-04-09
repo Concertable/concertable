@@ -2,7 +2,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class SocialMediaEntity : IEntity
+public class SocialMediaEntity : IIdEntity
 {
     public int Id { get; set; }
     public int Site { get; set; }

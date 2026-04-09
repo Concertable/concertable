@@ -4,7 +4,7 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities.Contracts;
 
-public abstract class ContractEntity : IEntity
+public abstract class ContractEntity : IIdEntity
 {
     public int Id { get; set; }
     public PaymentMethod PaymentMethod { get; set; }

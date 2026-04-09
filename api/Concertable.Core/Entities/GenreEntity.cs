@@ -2,7 +2,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class GenreEntity : IEntity
+public class GenreEntity : IIdEntity
 {
     public int Id { get; set; }
     public required string Name { get; set; }

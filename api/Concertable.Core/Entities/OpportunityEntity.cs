@@ -3,7 +3,7 @@ using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Core.Entities;
 
-public class OpportunityEntity : IEntity
+public class OpportunityEntity : IIdEntity
 {
     public int Id { get; set; }
     public int VenueId { get; set; }

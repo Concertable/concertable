@@ -4,7 +4,7 @@ using NetTopologySuite.Geometries;
 
 namespace Concertable.Core.Entities;
 
-public class VenueEntity : IEntity, IHasName, IHasLocation
+public class VenueEntity : IIdEntity, IHasName, IHasLocation
 {
     public int Id { get; set; }
     public Guid UserId { get; set; }

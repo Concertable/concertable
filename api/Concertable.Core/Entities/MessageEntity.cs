@@ -3,7 +3,7 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities;
 
-public class MessageEntity : IEntity
+public class MessageEntity : IIdEntity
 {
     public int Id { get; set; }
     public required string Content { get; set; }
