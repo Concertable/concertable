@@ -34,20 +34,8 @@ public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
 
         var radiusMeters = (geoParams.RadiusKm ?? 10) * 1000;
 
-        return query.Where(BuildFilter(TEntity.LocationExpression, center, radiusMeters));
-    }
+        Expression<Func<Point?, bool>> condition = p => p != null && p.Distance(center) <= radiusMeters;
 
-    private static Expression<Func<TEntity, bool>> BuildFilter(
-        Expression<Func<TEntity, Point?>> locationSelector,
-        Point center,
-        double radiusMeters)
-    {
-        Expression<Func<Point?, bool>> pointCondition =
-            p => p != null && p.Distance(center) <= radiusMeters;
-
-        var condition = new ParameterReplacer(pointCondition.Parameters.Single(), locationSelector.Body)
-            .Visit(pointCondition.Body)!;
-
-        return Expression.Lambda<Func<TEntity, bool>>(condition, locationSelector.Parameters.Single());
+        return query.Where(TEntity.LocationExpression.Substitute(condition));
     }
 }
