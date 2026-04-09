@@ -171,9 +171,9 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(t => t.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<PreferenceEntity>()
-            .HasOne(p => p.User)
-            .WithOne(u => u.Preference)
+        modelBuilder.Entity<CustomerEntity>()
+            .HasOne(c => c.Preference)
+            .WithOne(p => p.User)
             .HasForeignKey<PreferenceEntity>(p => p.UserId)
             .IsRequired();
 

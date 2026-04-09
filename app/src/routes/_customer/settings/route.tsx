@@ -20,6 +20,7 @@ const baseLinks = [
 ];
 
 const customerLinks = [
+  { label: "Location", to: "/settings/location" },
   { label: "Preferences", to: "/settings/preferences" },
   { label: "My Tickets", to: "/settings/tickets" },
 ];

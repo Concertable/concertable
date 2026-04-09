@@ -33,6 +33,7 @@ import { Route as CustomerFindIndexRouteImport } from './routes/_customer/find/i
 import { Route as VenueAcceptApplicationIdRouteImport } from './routes/venue/accept/$applicationId'
 import { Route as CustomerSettingsPaymentRouteImport } from './routes/_customer/settings/payment'
 import { Route as CustomerSettingsMyRouteImport } from './routes/_customer/settings/my'
+import { Route as CustomerSettingsLocationRouteImport } from './routes/_customer/settings/location'
 import { Route as CustomerSettingsTicketsIndexRouteImport } from './routes/_customer/settings/tickets/index'
 import { Route as CustomerSettingsPreferencesIndexRouteImport } from './routes/_customer/settings/preferences/index'
 import { Route as VenueMyApplicationsIdRouteImport } from './routes/venue/my/applications.$id'
@@ -169,6 +170,12 @@ const CustomerSettingsMyRoute = CustomerSettingsMyRouteImport.update({
   path: '/my',
   getParentRoute: () => CustomerSettingsRouteRoute,
 } as any)
+const CustomerSettingsLocationRoute =
+  CustomerSettingsLocationRouteImport.update({
+    id: '/location',
+    path: '/location',
+    getParentRoute: () => CustomerSettingsRouteRoute,
+  } as any)
 const CustomerSettingsTicketsIndexRoute =
   CustomerSettingsTicketsIndexRouteImport.update({
     id: '/tickets/',
@@ -269,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/venue/create': typeof VenueCreateRoute
   '/artist/': typeof ArtistIndexRoute
   '/venue/': typeof VenueIndexRoute
+  '/settings/location': typeof CustomerSettingsLocationRoute
   '/settings/my': typeof CustomerSettingsMyRoute
   '/settings/payment': typeof CustomerSettingsPaymentRoute
   '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
@@ -306,6 +314,7 @@ export interface FileRoutesByTo {
   '/': typeof CustomerIndexRoute
   '/artist': typeof ArtistIndexRoute
   '/venue': typeof VenueIndexRoute
+  '/settings/location': typeof CustomerSettingsLocationRoute
   '/settings/my': typeof CustomerSettingsMyRoute
   '/settings/payment': typeof CustomerSettingsPaymentRoute
   '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
@@ -348,6 +357,7 @@ export interface FileRoutesById {
   '/_customer/': typeof CustomerIndexRoute
   '/artist/': typeof ArtistIndexRoute
   '/venue/': typeof VenueIndexRoute
+  '/_customer/settings/location': typeof CustomerSettingsLocationRoute
   '/_customer/settings/my': typeof CustomerSettingsMyRoute
   '/_customer/settings/payment': typeof CustomerSettingsPaymentRoute
   '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/venue/create'
     | '/artist/'
     | '/venue/'
+    | '/settings/location'
     | '/settings/my'
     | '/settings/payment'
     | '/venue/accept/$applicationId'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/'
     | '/artist'
     | '/venue'
+    | '/settings/location'
     | '/settings/my'
     | '/settings/payment'
     | '/venue/accept/$applicationId'
@@ -468,6 +480,7 @@ export interface FileRouteTypes {
     | '/_customer/'
     | '/artist/'
     | '/venue/'
+    | '/_customer/settings/location'
     | '/_customer/settings/my'
     | '/_customer/settings/payment'
     | '/venue/accept/$applicationId'
@@ -676,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerSettingsMyRouteImport
       parentRoute: typeof CustomerSettingsRouteRoute
     }
+    '/_customer/settings/location': {
+      id: '/_customer/settings/location'
+      path: '/location'
+      fullPath: '/settings/location'
+      preLoaderRoute: typeof CustomerSettingsLocationRouteImport
+      parentRoute: typeof CustomerSettingsRouteRoute
+    }
     '/_customer/settings/tickets/': {
       id: '/_customer/settings/tickets/'
       path: '/tickets'
@@ -785,6 +805,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface CustomerSettingsRouteRouteChildren {
+  CustomerSettingsLocationRoute: typeof CustomerSettingsLocationRoute
   CustomerSettingsMyRoute: typeof CustomerSettingsMyRoute
   CustomerSettingsPaymentRoute: typeof CustomerSettingsPaymentRoute
   CustomerSettingsIndexRoute: typeof CustomerSettingsIndexRoute
@@ -796,6 +817,7 @@ interface CustomerSettingsRouteRouteChildren {
 }
 
 const CustomerSettingsRouteRouteChildren: CustomerSettingsRouteRouteChildren = {
+  CustomerSettingsLocationRoute: CustomerSettingsLocationRoute,
   CustomerSettingsMyRoute: CustomerSettingsMyRoute,
   CustomerSettingsPaymentRoute: CustomerSettingsPaymentRoute,
   CustomerSettingsIndexRoute: CustomerSettingsIndexRoute,

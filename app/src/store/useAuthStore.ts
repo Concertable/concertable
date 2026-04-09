@@ -17,6 +17,7 @@ interface AuthState {
   register: (request: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  updateUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -52,6 +53,8 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
         });
       },
+
+      updateUser: (user) => set({ user }),
 
       refresh: async () => {
         const { refreshToken } = get();

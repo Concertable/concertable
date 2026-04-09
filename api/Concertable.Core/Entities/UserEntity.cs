@@ -23,11 +23,11 @@ public class UserEntity : IGuidEntity
 
     public ICollection<MessageEntity> SentMessages { get; set; } = [];
     public ICollection<MessageEntity> ReceivedMessages { get; set; } = [];
-    public PreferenceEntity? Preference { get; set; }
     public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = [];
     public ICollection<EmailVerificationTokenEntity> EmailVerificationTokens { get; set; } = [];
     public ICollection<PasswordResetTokenEntity> PasswordResetTokens { get; set; } = [];
 }
+
 
 public abstract class ManagerEntity : UserEntity
 {
@@ -46,6 +46,7 @@ public class ArtistManagerEntity : ManagerEntity
 
 public class CustomerEntity : UserEntity
 {
+    public PreferenceEntity? Preference { get; set; }
     public ICollection<TicketEntity> Tickets { get; set; } = [];
 }
 

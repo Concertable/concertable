@@ -17,8 +17,8 @@ public class UsersController : ControllerBase
         this.userService = userService;
     }
 
-    [HttpPut("{id}/location")]
-    public async Task<ActionResult<IUser>> UpdateLocation(int id, [FromBody] UpdateLocationRequest request)
+    [HttpPut("location")]
+    public async Task<ActionResult<IUser>> UpdateLocation([FromBody] UpdateLocationRequest request)
     {
         var updatedUser = await userService.UpdateLocationAsync(request.Latitude, request.Longitude);
         return Ok(updatedUser);
