@@ -67,7 +67,8 @@ public static class VenueMappers
         Town = dto.Town,
         Email = dto.Email,
         Latitude = dto.Latitude,
-        Longitude = dto.Longitude
+        Longitude = dto.Longitude,
+        Approved = dto.Approved
     };
 
     public static IEnumerable<VenueDto> ToDtos(this IEnumerable<VenueEntity> venues) =>

@@ -1,4 +1,5 @@
 using Concertable.Application.DTOs;
+using Concertable.Application.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
 
@@ -27,7 +28,7 @@ public class OpportunityApplicationVersusApiTests : IAsyncLifetime
         await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.Versus.ApplicationId}", (object?)null);
 
         // Assert
-        var concert = await client.GetAsync<ConcertDto>($"/api/Concert/application/{TestConstants.Versus.ApplicationId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.Versus.ApplicationId}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
         var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);

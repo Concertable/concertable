@@ -125,7 +125,7 @@ public class VenueHireApplicationService : IApplicationStrategy
 
         var concert = await concertService.CreateDraftAsync(applicationId);
         await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concert.Id);
-        await concertNotificationService.ConcertDraftCreatedAsync(venueManager.Id.ToString(), concert.Id);
+        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
     }
 
     public async Task CompleteAsync(int concertId)

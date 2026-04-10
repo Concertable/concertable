@@ -78,7 +78,7 @@ public class DoorSplitApplicationService : IApplicationStrategy
             ?? throw new NotFoundException("Venue manager not found");
 
         await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concert.Id);
-        await concertNotificationService.ConcertDraftCreatedAsync(venueManager.Id.ToString(), concert.Id);
+        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
     }
 
     public async Task SettleAsync(int applicationId)

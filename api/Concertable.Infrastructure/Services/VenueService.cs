@@ -56,7 +56,7 @@ public class VenueService : IVenueService
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
         var venue = request.ToEntity();
-        var user = currentUser.GetEntity();
+        var user = currentUser.GetEntity<VenueManagerEntity>();
 
         venue.UserId = user.Id;
         venue.BannerUrl = await imageService.UploadAsync(request.Banner);
@@ -64,6 +64,7 @@ public class VenueService : IVenueService
         await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
 
         var createdVenue = await venueRepository.AddAsync(venue);
+        createdVenue.User = user;
         userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
 

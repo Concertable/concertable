@@ -60,7 +60,8 @@ public class VersusApplicationServiceCompleteTests
         contractRepository.Setup(r => r.GetByApplicationIdAsync<VersusContractEntity>(5)).ReturnsAsync(contract);
         venueManagerRepository.Setup(r => r.GetByApplicationIdAsync(5)).ReturnsAsync(venueManager);
         artistManagerRepository.Setup(r => r.GetByApplicationIdAsync(5)).ReturnsAsync(artistManager);
-        stripeAccountService.Setup(s => s.GetPaymentMethodAsync("acct_venue")).ReturnsAsync("pm_test");
+        stripeAccountService.Setup(s => s.IsUserVerifiedAsync("acct_artist")).ReturnsAsync(true);
+        stripeAccountService.Setup(s => s.GetPaymentMethodAsync("cus_venue")).ReturnsAsync("pm_test");
         paymentService.Setup(s => s.ProcessAsync(It.IsAny<TransactionRequest>()))
             .ReturnsAsync(new PaymentResponse { Success = true, Message = "ok", TransactionId = "pi_test_123" });
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);

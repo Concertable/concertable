@@ -1,5 +1,6 @@
 using System.Net;
 using Concertable.Application.DTOs;
+using Concertable.Application.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Core.Enums;
 using Xunit;
@@ -47,7 +48,7 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         // Assert
         var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.FlatFee.ApplicationId}");
         Assert.Equal(ApplicationStatus.Settled, application!.Status);
-        var concert = await client.GetAsync<ConcertDto>($"/api/Concert/application/{TestConstants.FlatFee.ApplicationId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.FlatFee.ApplicationId}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
         var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);

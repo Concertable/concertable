@@ -82,7 +82,8 @@
       "Bash(yes N)",
       "Bash(npx shadcn@latest add checkbox)",
       "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && grep -E \"^\\\\s*\\(public\\\\s+async\\\\s+\\)?Task|^\\\\s*\\\\[Fact\\\\]|^\\\\s*\\\\[Theory\\\\]\" {} | head -50')",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(xargs -I{} echo {})"
     ]
   }
 }

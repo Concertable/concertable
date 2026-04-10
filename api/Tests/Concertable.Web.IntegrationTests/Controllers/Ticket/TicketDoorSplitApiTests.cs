@@ -1,6 +1,6 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
+using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Core.Enums;
 using Xunit;
@@ -38,7 +38,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
         Assert.NotNull(result.TransactionId);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Single(tickets!);
-        var concert = await client.GetAsync<ConcertDto>($"/api/Concert/{TestConstants.PostedDoorSplit.ConcertId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{TestConstants.PostedDoorSplit.ConcertId}");
         Assert.Equal(99, concert!.AvailableTickets);
         var (userId, _) = Assert.Single(fixture.NotificationService.TicketPurchased);
         Assert.Equal(TestConstants.Customer.Id.ToString(), userId);
@@ -85,7 +85,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
         Assert.Empty(fixture.NotificationService.TicketPurchased);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Empty(tickets!);
-        var concert = await client.GetAsync<ConcertDto>($"/api/Concert/{TestConstants.PostedDoorSplit.ConcertId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{TestConstants.PostedDoorSplit.ConcertId}");
         Assert.Equal(100, concert!.AvailableTickets);
         var transactions = await client.GetAsync<Pagination<ITransaction>>("/api/Transaction");
         Assert.Empty(transactions!.Data);
