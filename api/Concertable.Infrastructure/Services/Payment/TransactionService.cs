@@ -46,7 +46,7 @@ public class TransactionService : ITransactionService
     {
         var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
-        var dtos = result.Data.Select(e => transactionMapper.ToDto(e));
+        var dtos = transactionMapper.ToDtos(result.Data);
         return new Pagination<ITransaction>(dtos, result.TotalCount, result.PageNumber, result.PageSize);
     }
 }
