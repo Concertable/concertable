@@ -20,7 +20,7 @@ public class UsersController : ControllerBase
     [HttpPut("location")]
     public async Task<ActionResult<IUser>> UpdateLocation([FromBody] UpdateLocationRequest request)
     {
-        var updatedUser = await userService.UpdateLocationAsync(request.Latitude, request.Longitude);
+        var updatedUser = await userService.SaveLocationAsync(request.Latitude, request.Longitude);
         return Ok(updatedUser);
     }
 }

@@ -8,7 +8,8 @@ public interface IUserService
     Task<UserEntity> GetByConcertIdAsync(int id);
     Task<Guid> GetIdByApplicationIdAsync(int id);
     Task<Guid> GetIdByConcertIdAsync(int id);
-    Task<IUser> UpdateLocationAsync(double latitude, double longitude);
+    Task<IUser> SaveLocationAsync(double latitude, double longitude);
+    Task UpdateLocationAsync(UserEntity user, double latitude, double longitude);
 
     /// <summary>Gets user DTO by id. Returns null if not found.</summary>
     Task<IUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default);

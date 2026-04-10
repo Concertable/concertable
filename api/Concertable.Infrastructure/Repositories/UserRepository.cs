@@ -9,40 +9,36 @@ public class UserRepository : GuidRepository<UserEntity>, IUserRepository
 {
     public UserRepository(ApplicationDbContext context) : base(context) { }
 
-    public async Task<UserEntity> GetByApplicationIdAsync(int applicationId)
+    public async Task<UserEntity?> GetByApplicationIdAsync(int applicationId)
     {
-        var query = context.OpportunityApplications
+        return await context.OpportunityApplications
             .Where(a => a.Id == applicationId)
-            .Select(a => a.Artist.User);
-
-        return await query.FirstAsync();
+            .Select(a => a.Artist.User)
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<UserEntity> GetByConcertIdAsync(int concertId)
+    public async Task<UserEntity?> GetByConcertIdAsync(int concertId)
     {
-        var query = context.Concerts
-             .Where(e => e.Id == concertId)
-             .Select(e => e.Application.Artist.User);
-
-        return await query.FirstAsync();
-    }
-
-    public async Task<Guid> GetIdByApplicationIdAsync(int applicationId)
-    {
-        var query = context.OpportunityApplications
-            .Where(a => a.Id == applicationId)
-            .Select(a => a.Artist.UserId);
-
-        return await query.FirstAsync();
-    }
-
-    public async Task<Guid> GetIdByConcertIdAsync(int concertId)
-    {
-        var query = context.Concerts
+        return await context.Concerts
             .Where(e => e.Id == concertId)
-            .Select(e => e.Application.Artist.UserId);
+            .Select(e => e.Application.Artist.User)
+            .FirstOrDefaultAsync();
+    }
 
-        return await query.FirstAsync();
+    public async Task<Guid?> GetIdByApplicationIdAsync(int applicationId)
+    {
+        return await context.OpportunityApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => (Guid?)a.Artist.UserId)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<Guid?> GetIdByConcertIdAsync(int concertId)
+    {
+        return await context.Concerts
+            .Where(e => e.Id == concertId)
+            .Select(e => (Guid?)e.Application.Artist.UserId)
+            .FirstOrDefaultAsync();
     }
 
     public Task<bool> ExistsByEmailAsync(string email)

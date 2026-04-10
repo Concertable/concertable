@@ -1,14 +1,11 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Geometry;
-using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Application.Interfaces.Rating;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services;
@@ -20,8 +17,7 @@ public class VenueService : IVenueService
     private readonly IImageService imageService;
     private readonly IRatingRepository ratingRepository;
     private readonly ICurrentUser currentUser;
-    private readonly IGeocodingService geocodingService;
-    private readonly IGeometryProvider geometryService;
+    private readonly IUserService userService;
     private readonly IUnitOfWork unitOfWork;
 
     public VenueService(
@@ -30,18 +26,16 @@ public class VenueService : IVenueService
         IImageService imageService,
         [FromKeyedServices(HeaderType.Venue)] IRatingRepository ratingRepository,
         ICurrentUser currentUser,
-        IGeocodingService geocodingService,
-        IUnitOfWork unitOfWork,
-        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryService)
+        IUserService userService,
+        IUnitOfWork unitOfWork)
     {
         this.venueRepository = venueRepository;
         this.userRepository = userRepository;
         this.imageService = imageService;
         this.ratingRepository = ratingRepository;
         this.currentUser = currentUser;
-        this.geocodingService = geocodingService;
+        this.userService = userService;
         this.unitOfWork = unitOfWork;
-        this.geometryService = geometryService;
     }
 
     public async Task<VenueDto> GetDetailsByIdAsync(int id)
@@ -61,7 +55,7 @@ public class VenueService : IVenueService
         venue.UserId = user.Id;
         venue.BannerUrl = await imageService.UploadAsync(request.Banner);
 
-        await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
+        await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
 
         var createdVenue = await venueRepository.AddAsync(venue);
         createdVenue.User = user;
@@ -84,7 +78,7 @@ public class VenueService : IVenueService
         venue.About = request.About;
         venue.Approved = request.Approved;
 
-        await UpdateUserLocationAsync(user, request.Latitude, request.Longitude);
+        await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
 
         if (request.Banner is not null)
             venue.BannerUrl = await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url);
@@ -127,13 +121,5 @@ public class VenueService : IVenueService
 
         venue.Approved = true;
         await unitOfWork.SaveChangesAsync();
-    }
-
-    private async Task UpdateUserLocationAsync(UserEntity user, double latitude, double longitude)
-    {
-        var location = await geocodingService.GetLocationAsync(latitude, longitude);
-        user.County = location.County;
-        user.Town = location.Town;
-        user.Location = geometryService.CreatePoint(latitude, longitude);
     }
 }

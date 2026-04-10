@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
+using Concertable.Core.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,25 +31,29 @@ public class UserService : IUserService
 
     public async Task<Guid> GetIdByApplicationIdAsync(int applicationId)
     {
-        return await userRepsitory.GetIdByApplicationIdAsync(applicationId);
+        return await userRepsitory.GetIdByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("User not found for application");
     }
 
     public async Task<UserEntity> GetByApplicationIdAsync(int applicationId)
     {
-        return await userRepsitory.GetByApplicationIdAsync(applicationId);
+        return await userRepsitory.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException("User not found for application");
     }
 
     public async Task<Guid> GetIdByConcertIdAsync(int concertId)
     {
-        return await userRepsitory.GetIdByConcertIdAsync(concertId);
+        return await userRepsitory.GetIdByConcertIdAsync(concertId)
+            ?? throw new NotFoundException("User not found for concert");
     }
 
     public async Task<UserEntity> GetByConcertIdAsync(int concertId)
     {
-        return await userRepsitory.GetByConcertIdAsync(concertId);
+        return await userRepsitory.GetByConcertIdAsync(concertId)
+            ?? throw new NotFoundException("User not found for concert");
     }
 
-    public async Task<IUser> UpdateLocationAsync(double latitude, double longitude)
+    public async Task<IUser> SaveLocationAsync(double latitude, double longitude)
     {
         var user = currentUser.GetEntity();
 
@@ -63,6 +68,14 @@ public class UserService : IUserService
         await userRepsitory.SaveChangesAsync();
 
         return userMapper.ToDto(user);
+    }
+
+    public async Task UpdateLocationAsync(UserEntity user, double latitude, double longitude)
+    {
+        var location = await geocodingService.GetLocationAsync(latitude, longitude);
+        user.County = location.County;
+        user.Town = location.Town;
+        user.Location = geometryProvider.CreatePoint(latitude, longitude);
     }
 
     public async Task<IUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
