@@ -22,10 +22,8 @@ public class ArtistManagerRegister : IUserRegister
     {
         var manager = new ArtistManagerEntity { Email = request.Email, Role = Role.ArtistManager, PasswordHash = passwordHash };
         context.Users.Add(manager);
-        await context.SaveChangesAsync();
-
-        manager.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(manager);
-        manager.StripeAccountId = await stripeAccountService.CreateConnectAccountAsync(manager);
+        await stripeAccountService.AddCustomerAsync(manager);
+        await stripeAccountService.AddConnectAccountAsync(manager);
         await context.SaveChangesAsync();
     }
 }

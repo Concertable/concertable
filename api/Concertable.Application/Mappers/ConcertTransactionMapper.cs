@@ -1,14 +1,11 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 
 namespace Concertable.Application.Mappers;
 
 public class SettlementTransactionMapper : ITransactionMapper
 {
-    public TransactionType TransactionType => TransactionType.Settlement;
-
     public TransactionEntity ToEntity(ITransaction dto)
     {
         var d = (SettlementTransactionDto)dto;

@@ -6,11 +6,21 @@ namespace Concertable.Infrastructure.Services.Payment;
 
 public class FakeStripeAccountService : IStripeAccountService
 {
-    public Task<string> CreateConnectAccountAsync(ManagerEntity manager) =>
-        Task.FromResult($"acct_fake_{manager.Id}");
+    public Task AddCustomerAsync(UserEntity user)
+    {
+        user.StripeCustomerId = $"cus_fake_{user.Id}";
+        return Task.CompletedTask;
+    }
 
-    public Task<string> CreateCustomerAsync(UserEntity user) =>
-        Task.FromResult($"cus_fake_{user.Id}");
+    public Task CreateCustomerAsync(UserEntity user) => AddCustomerAsync(user);
+
+    public Task AddConnectAccountAsync(ManagerEntity manager)
+    {
+        manager.StripeAccountId = $"acct_fake_{manager.Id}";
+        return Task.CompletedTask;
+    }
+
+    public Task CreateConnectAccountAsync(ManagerEntity manager) => AddConnectAccountAsync(manager);
 
     public Task<string> GetOnboardingLinkAsync(string stripeId) =>
         Task.FromResult("https://fake-stripe-onboarding.local");

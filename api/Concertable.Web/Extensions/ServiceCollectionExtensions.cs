@@ -186,7 +186,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOpportunityService, OpportunityService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ITransactionService, TransactionService>();
-        services.AddSingleton<ITransactionMapperFactory, TransactionMapperFactory>();
+        services.AddSingleton<ITransactionMapper, TransactionMapper>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<IReviewService, ReviewService>();

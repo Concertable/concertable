@@ -41,7 +41,6 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         context.Set<TEntity>().Remove(entity);
     }
 
-
     public void Update(TEntity entity)
     {
         context.Set<TEntity>().Update(entity);

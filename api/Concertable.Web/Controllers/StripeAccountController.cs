@@ -50,7 +50,7 @@ public class StripeAccountController : ControllerBase
         var user = currentUser.GetEntity<UserEntity>();
 
         if (string.IsNullOrWhiteSpace(user.StripeCustomerId))
-            user.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(user);
+            await stripeAccountService.CreateCustomerAsync(user);
 
         return Ok(await stripeAccountService.CreateSetupIntentAsync(user.StripeCustomerId));
     }

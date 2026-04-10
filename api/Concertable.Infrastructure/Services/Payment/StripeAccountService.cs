@@ -40,7 +40,24 @@ public class StripeAccountService : IStripeAccountService
         this.setupIntentService = setupIntentService;
     }
 
-    public async Task<string> CreateConnectAccountAsync(ManagerEntity manager)
+    public async Task AddCustomerAsync(UserEntity user)
+    {
+        var customer = await customerService.CreateAsync(new CustomerCreateOptions
+        {
+            Email = user.Email,
+        });
+
+        user.StripeCustomerId = customer.Id;
+    }
+
+    public async Task CreateCustomerAsync(UserEntity user)
+    {
+        await AddCustomerAsync(user);
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+    }
+
+    public async Task AddConnectAccountAsync(ManagerEntity manager)
     {
         var account = await accountService.CreateAsync(new AccountCreateOptions
         {
@@ -55,24 +72,13 @@ public class StripeAccountService : IStripeAccountService
         });
 
         manager.StripeAccountId = account.Id;
-        userRepository.Update(manager);
-        await userRepository.SaveChangesAsync();
-
-        return account.Id;
     }
 
-    public async Task<string> CreateCustomerAsync(UserEntity user)
+    public async Task CreateConnectAccountAsync(ManagerEntity manager)
     {
-        var customer = await customerService.CreateAsync(new CustomerCreateOptions
-        {
-            Email = user.Email,
-        });
-
-        user.StripeCustomerId = customer.Id;
-        userRepository.Update(user);
+        await AddConnectAccountAsync(manager);
+        userRepository.Update(manager);
         await userRepository.SaveChangesAsync();
-
-        return customer.Id;
     }
 
     public async Task<string> GetOnboardingLinkAsync(string stripeAccountId)

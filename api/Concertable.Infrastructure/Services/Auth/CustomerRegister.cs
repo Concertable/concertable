@@ -22,9 +22,7 @@ public class CustomerRegister : IUserRegister
     {
         var user = new CustomerEntity { Email = request.Email, Role = Role.Customer, PasswordHash = passwordHash };
         context.Users.Add(user);
-        await context.SaveChangesAsync();
-
-        user.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(user);
+        await stripeAccountService.AddCustomerAsync(user);
         await context.SaveChangesAsync();
     }
 }

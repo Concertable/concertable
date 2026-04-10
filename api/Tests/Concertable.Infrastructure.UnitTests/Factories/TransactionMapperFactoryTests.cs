@@ -1,34 +1,51 @@
+using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
-using Concertable.Core.Enums;
-using Concertable.Infrastructure.Factories;
+using Concertable.Core.Entities;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Factories;
 
-public class TransactionMapperFactoryTests
+public class TransactionMapperTests
 {
-    private readonly TransactionMapperFactory sut = new();
+    private readonly TransactionMapper sut = new();
 
     [Fact]
-    public void Create_ShouldReturnTicketTransactionMapper_ForTicketType()
+    public void ToEntity_WithTicketDto_ReturnsTicketTransactionEntity()
     {
-        var result = sut.Create(TransactionType.Ticket);
+        var dto = new TicketTransactionDto { FromUserId = Guid.NewGuid(), ToUserId = Guid.NewGuid(), PaymentIntentId = "pi_test" };
 
-        Assert.IsType<TicketTransactionMapper>(result);
+        var result = sut.ToEntity(dto);
+
+        Assert.IsType<TicketTransactionEntity>(result);
     }
 
     [Fact]
-    public void Create_ShouldReturnSettlementTransactionMapper_ForSettlementType()
+    public void ToEntity_WithSettlementDto_ReturnsSettlementTransactionEntity()
     {
-        var result = sut.Create(TransactionType.Settlement);
+        var dto = new SettlementTransactionDto { FromUserId = Guid.NewGuid(), ToUserId = Guid.NewGuid(), PaymentIntentId = "pi_test" };
 
-        Assert.IsType<SettlementTransactionMapper>(result);
+        var result = sut.ToEntity(dto);
+
+        Assert.IsType<SettlementTransactionEntity>(result);
     }
 
     [Fact]
-    public void Create_ShouldHandleAllTransactionTypes()
+    public void ToDto_WithTicketEntity_ReturnsTicketTransactionDto()
     {
-        foreach (var type in Enum.GetValues<TransactionType>())
-            sut.Create(type);
+        var entity = new TicketTransactionEntity { PaymentIntentId = "pi_test", CreatedBy = "test" };
+
+        var result = sut.ToDto(entity);
+
+        Assert.IsType<TicketTransactionDto>(result);
+    }
+
+    [Fact]
+    public void ToDto_WithSettlementEntity_ReturnsSettlementTransactionDto()
+    {
+        var entity = new SettlementTransactionEntity { PaymentIntentId = "pi_test", CreatedBy = "test" };
+
+        var result = sut.ToDto(entity);
+
+        Assert.IsType<SettlementTransactionDto>(result);
     }
 }

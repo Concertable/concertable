@@ -13,21 +13,21 @@ public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository purchaseRepository;
     private readonly ICurrentUser currentUser;
-    private readonly ITransactionMapperFactory mapperFactory;
+    private readonly ITransactionMapper transactionMapper;
 
     public TransactionService(
         ICurrentUser currentUser,
         ITransactionRepository purchaseRepository,
-        ITransactionMapperFactory mapperFactory)
+        ITransactionMapper transactionMapper)
     {
         this.currentUser = currentUser;
         this.purchaseRepository = purchaseRepository;
-        this.mapperFactory = mapperFactory;
+        this.transactionMapper = transactionMapper;
     }
 
     public async Task LogAsync(ITransaction dto)
     {
-        var entity = mapperFactory.Create(dto.TransactionType).ToEntity(dto);
+        var entity = transactionMapper.ToEntity(dto);
         await purchaseRepository.CreateAsync(entity);
     }
 
@@ -46,7 +46,7 @@ public class TransactionService : ITransactionService
     {
         var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
-        var dtos = result.Data.Select(e => mapperFactory.Create(e.TransactionType).ToDto(e));
+        var dtos = result.Data.Select(e => transactionMapper.ToDto(e));
         return new Pagination<ITransaction>(dtos, result.TotalCount, result.PageNumber, result.PageSize);
     }
 }

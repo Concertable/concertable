@@ -43,31 +43,31 @@ public class DevController : ControllerBase
         return Ok(new { app, contractExists = contract != null, contractType = contract?.ContractType.ToString() });
     }
 
-    [HttpPost("seed-stripe")]
-    public async Task<IActionResult> SeedStripe(
-        [FromServices] ApplicationDbContext context,
-        [FromServices] IStripeAccountService stripeAccountService)
-    {
-        var results = new List<object>();
+    //[HttpPost("seed-stripe")]
+    //public async Task<IActionResult> SeedStripe(
+    //    [FromServices] ApplicationDbContext context,
+    //    [FromServices] IStripeAccountService stripeAccountService)
+    //{
+    //    var results = new List<object>();
 
-        var customers = await context.Users.OfType<CustomerEntity>().ToListAsync();
-        foreach (var customer in customers)
-        {
-            customer.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(customer);
-            results.Add(new { customer.Id, customer.Email, customer.StripeCustomerId });
-        }
+    //    var customers = await context.Users.OfType<CustomerEntity>().ToListAsync();
+    //    foreach (var customer in customers)
+    //    {
+    //        customer.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(customer);
+    //        results.Add(new { customer.Id, customer.Email, customer.StripeCustomerId });
+    //    }
 
-        var managers = await context.Users.OfType<ManagerEntity>().ToListAsync();
-        foreach (var manager in managers)
-        {
-            manager.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(manager);
-            manager.StripeAccountId = await stripeAccountService.CreateConnectAccountAsync(manager);
-            results.Add(new { manager.Id, manager.Email, manager.StripeCustomerId, manager.StripeAccountId });
-        }
+    //    var managers = await context.Users.OfType<ManagerEntity>().ToListAsync();
+    //    foreach (var manager in managers)
+    //    {
+    //        manager.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(manager);
+    //        manager.StripeAccountId = await stripeAccountService.CreateConnectAccountAsync(manager);
+    //        results.Add(new { manager.Id, manager.Email, manager.StripeCustomerId, manager.StripeAccountId });
+    //    }
 
-        await context.SaveChangesAsync();
-        return Ok(results);
-    }
+    //    await context.SaveChangesAsync();
+    //    return Ok(results);
+    //}
 
     [Authorize]
     [HttpPost("accept")]

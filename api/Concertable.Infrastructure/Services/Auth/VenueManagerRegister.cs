@@ -22,10 +22,8 @@ public class VenueManagerRegister : IUserRegister
     {
         var manager = new VenueManagerEntity { Email = request.Email, Role = Role.VenueManager, PasswordHash = passwordHash };
         context.Users.Add(manager);
-        await context.SaveChangesAsync();
-
-        manager.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(manager);
-        manager.StripeAccountId = await stripeAccountService.CreateConnectAccountAsync(manager);
+        await stripeAccountService.AddCustomerAsync(manager);
+        await stripeAccountService.AddConnectAccountAsync(manager);
         await context.SaveChangesAsync();
     }
 }
