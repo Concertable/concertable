@@ -1,5 +1,8 @@
+using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Search;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Mappers;
 using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,8 +10,11 @@ namespace Concertable.Infrastructure.Repositories;
 
 public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
 {
-    public ArtistRepository(ApplicationDbContext context) : base(context)
+    private readonly IRatingSpecification<ArtistEntity> ratingSpecification;
+
+    public ArtistRepository(ApplicationDbContext context, IRatingSpecification<ArtistEntity> ratingSpecification) : base(context)
     {
+        this.ratingSpecification = ratingSpecification;
     }
 
     public async Task<ArtistEntity?> GetByUserIdAsync(Guid id)
@@ -21,10 +27,10 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ArtistEntity?> GetDetailsByIdAsync(int id)
+    public new async Task<ArtistEntity?> GetByIdAsync(int id)
     {
         return await context.Artists
-            .Where(v => v.Id == id)
+            .Where(a => a.Id == id)
             .Include(a => a.ArtistGenres)
                 .ThenInclude(ag => ag.Genre)
             .Include(a => a.User)
@@ -39,4 +45,21 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<ArtistDto?> GetDetailsByIdAsync(int id)
+    {
+        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
+        return await context.Artists
+            .Where(a => a.Id == id)
+            .ToDto(ratings)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<ArtistDto?> GetDetailsByUserIdAsync(Guid userId)
+    {
+        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
+        return await context.Artists
+            .Where(a => a.UserId == userId)
+            .ToDto(ratings)
+            .FirstOrDefaultAsync();
+    }
 }

@@ -1,12 +1,11 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Rating;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services;
 
@@ -15,7 +14,6 @@ public class VenueService : IVenueService
     private readonly IVenueRepository venueRepository;
     private readonly IUserRepository userRepository;
     private readonly IImageService imageService;
-    private readonly IRatingRepository ratingRepository;
     private readonly ICurrentUser currentUser;
     private readonly IUserService userService;
     private readonly IUnitOfWork unitOfWork;
@@ -24,7 +22,6 @@ public class VenueService : IVenueService
         IVenueRepository venueRepository,
         IUserRepository userRepository,
         IImageService imageService,
-        [FromKeyedServices(HeaderType.Venue)] IRatingRepository ratingRepository,
         ICurrentUser currentUser,
         IUserService userService,
         IUnitOfWork unitOfWork)
@@ -32,19 +29,16 @@ public class VenueService : IVenueService
         this.venueRepository = venueRepository;
         this.userRepository = userRepository;
         this.imageService = imageService;
-        this.ratingRepository = ratingRepository;
         this.currentUser = currentUser;
         this.userService = userService;
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<VenueDto> GetDetailsByIdAsync(int id)
+    public async Task<VenueDetailsResponse> GetDetailsByIdAsync(int id)
     {
-        var venue = await venueRepository.GetByIdAsync(id)
+        var dto = await venueRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
-        var venueDto = venue.ToDto();
-        venueDto.Rating = await ratingRepository.GetRatingAsync(venueDto.Id);
-        return venueDto;
+        return dto.ToDetailsResponse();
     }
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
@@ -92,15 +86,12 @@ public class VenueService : IVenueService
         return venue.ToDto();
     }
 
-    public async Task<VenueDto?> GetDetailsForCurrentUserAsync()
+    public async Task<VenueDetailsResponse> GetDetailsForCurrentUserAsync()
     {
         var user = currentUser.Get();
-        var venue = await venueRepository.GetByUserIdAsync(user.Id);
-        if (venue is null)
-            return null;
-        var venueDto = venue.ToDto();
-        venueDto.Rating = await ratingRepository.GetRatingAsync(venueDto.Id);
-        return venueDto;
+        var dto = await venueRepository.GetDetailsByUserIdAsync(user.Id)
+            ?? throw new NotFoundException("Venue not found");
+        return dto.ToDetailsResponse();
     }
 
     public async Task<int> GetIdForCurrentUserAsync()

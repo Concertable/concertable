@@ -1,5 +1,8 @@
+using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Search;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Mappers;
 using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,8 +10,11 @@ namespace Concertable.Infrastructure.Repositories;
 
 public class VenueRepository : Repository<VenueEntity>, IVenueRepository
 {
-    public VenueRepository(ApplicationDbContext context) : base(context)
+    private readonly IRatingSpecification<VenueEntity> ratingSpecification;
+
+    public VenueRepository(ApplicationDbContext context, IRatingSpecification<VenueEntity> ratingSpecification) : base(context)
     {
+        this.ratingSpecification = ratingSpecification;
     }
 
     public new async Task<VenueEntity?> GetByIdAsync(int id)
@@ -35,4 +41,21 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<VenueDto?> GetDetailsByIdAsync(int id)
+    {
+        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
+        return await context.Venues
+            .Where(v => v.Id == id)
+            .ToDto(ratings)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<VenueDto?> GetDetailsByUserIdAsync(Guid userId)
+    {
+        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
+        return await context.Venues
+            .Where(v => v.UserId == userId)
+            .ToDto(ratings)
+            .FirstOrDefaultAsync();
+    }
 }

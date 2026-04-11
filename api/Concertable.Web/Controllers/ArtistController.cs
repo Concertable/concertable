@@ -1,7 +1,5 @@
 using Concertable.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Concertable.Application.DTOs;
-using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -22,15 +20,14 @@ public class ArtistController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ArtistDetailsResponse>> GetDetailsById(int id)
     {
-        return Ok((await artistService.GetDetailsByIdAsync(id)).ToDetailsResponse());
+        return Ok(await artistService.GetDetailsByIdAsync(id));
     }
 
     [Authorize(Roles = "ArtistManager")]
     [HttpGet("user")]
-    public async Task<ActionResult<ArtistDetailsResponse?>> GetDetailsForCurrentUser()
+    public async Task<ActionResult<ArtistDetailsResponse>> GetDetailsForCurrentUser()
     {
-        var dto = await artistService.GetDetailsForCurrentUserAsync();
-        return Ok(dto?.ToDetailsResponse());
+        return Ok(await artistService.GetDetailsForCurrentUserAsync());
     }
 
     [Authorize(Roles = "ArtistManager")]

@@ -3,6 +3,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
+using Concertable.Application.Responses;
 using Concertable.Core.Exceptions;
 
 namespace Concertable.Infrastructure.Services;
@@ -35,18 +36,19 @@ public class ArtistService : IArtistService
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<ArtistDto?> GetDetailsForCurrentUserAsync()
+    public async Task<ArtistDetailsResponse> GetDetailsForCurrentUserAsync()
     {
         var user = currentUser.Get();
-        var artist = await artistRepository.GetByUserIdAsync(user.Id);
-        return artist?.ToDto();
+        var dto = await artistRepository.GetDetailsByUserIdAsync(user.Id)
+            ?? throw new NotFoundException("Artist not found");
+        return dto.ToDetailsResponse();
     }
 
-    public async Task<ArtistDto> GetDetailsByIdAsync(int id)
+    public async Task<ArtistDetailsResponse> GetDetailsByIdAsync(int id)
     {
-        var artist = await artistRepository.GetDetailsByIdAsync(id)
+        var dto = await artistRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Artist not found");
-        return artist.ToDto();
+        return dto.ToDetailsResponse();
     }
 
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
@@ -67,7 +69,7 @@ public class ArtistService : IArtistService
 
     public async Task<ArtistDto> UpdateAsync(int id, UpdateArtistRequest request)
     {
-        var artist = await artistRepository.GetDetailsByIdAsync(id)
+        var artist = await artistRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Artist not found");
 
         var user = currentUser.GetEntity();

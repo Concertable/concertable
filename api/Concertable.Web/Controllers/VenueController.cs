@@ -1,8 +1,6 @@
 using Concertable.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Concertable.Application.DTOs;
-using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 
@@ -24,15 +22,14 @@ public class VenueController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<VenueDetailsResponse>> GetDetailsById(int id)
     {
-        return Ok((await venueService.GetDetailsByIdAsync(id)).ToDetailsResponse());
+        return Ok(await venueService.GetDetailsByIdAsync(id));
     }
 
     [Authorize(Roles = "VenueManager")]
     [HttpGet("user")]
-    public async Task<ActionResult<VenueDetailsResponse?>> GetDetailsForCurrentUser()
+    public async Task<ActionResult<VenueDetailsResponse>> GetDetailsForCurrentUser()
     {
-        var dto = await venueService.GetDetailsForCurrentUserAsync();
-        return Ok(dto?.ToDetailsResponse());
+        return Ok(await venueService.GetDetailsForCurrentUserAsync());
     }
 
     [Authorize(Roles = "VenueManager")]

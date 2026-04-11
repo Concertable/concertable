@@ -1,5 +1,6 @@
 using System.Net;
 using Concertable.Application.DTOs;
+using Concertable.Application.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Venue.VenueRequestBuilders;
@@ -22,7 +23,7 @@ public class VenueApiTests : IAsyncLifetime
     #region GetDetailsById
 
     [Fact]
-    public async Task GetDetailsById_ShouldReturn200_WithVenueDto()
+    public async Task GetDetailsById_ShouldReturn200_WithVenueDetails()
     {
         // Arrange
         var client = fixture.CreateClient();
@@ -32,7 +33,7 @@ public class VenueApiTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var venue = await response.Content.ReadAsync<VenueDto>();
+        var venue = await response.Content.ReadAsync<VenueDetailsResponse>();
         Assert.NotNull(venue);
         Assert.Equal(TestConstants.VenueId, venue.Id);
         Assert.Equal("Test Venue", venue.Name);
@@ -92,13 +93,13 @@ public class VenueApiTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var venue = await response.Content.ReadAsync<VenueDto>();
+        var venue = await response.Content.ReadAsync<VenueDetailsResponse>();
         Assert.NotNull(venue);
         Assert.Equal("Test Venue", venue.Name);
     }
 
     [Fact]
-    public async Task GetDetailsForCurrentUser_ShouldReturn204_WhenNoVenueExists()
+    public async Task GetDetailsForCurrentUser_ShouldReturn404_WhenNoVenueExists()
     {
         // Arrange
         var client = fixture.CreateClient(TestConstants.VenueManager2);
@@ -107,7 +108,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/Venue/user");
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     #endregion

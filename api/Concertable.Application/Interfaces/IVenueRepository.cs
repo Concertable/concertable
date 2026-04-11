@@ -1,3 +1,4 @@
+using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
 using Concertable.Core.Interfaces;
 
@@ -7,4 +8,6 @@ public interface IVenueRepository : IRepository<VenueEntity>
 {
     Task<VenueEntity?> GetByUserIdAsync(Guid id);
     Task<int?> GetIdByUserIdAsync(Guid userId);
+    Task<VenueDto?> GetDetailsByIdAsync(int id);
+    Task<VenueDto?> GetDetailsByUserIdAsync(Guid userId);
 }
