@@ -1,6 +1,6 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Search;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Data;

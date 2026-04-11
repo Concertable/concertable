@@ -8,7 +8,7 @@ using Concertable.Core.Parameters;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Core.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Concert;
@@ -86,11 +86,10 @@ public class ConcertService : IConcertService
         return concerts.ToSummaryDtos();
     }
 
-    public async Task<ConcertDetailsResponse> GetDetailsByIdAsync(int id)
+    public async Task<ConcertDto> GetDetailsByIdAsync(int id)
     {
-        var dto = await concertRepository.GetDetailsByIdAsync(id)
+        return await concertRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
-        return dto.ToDetailsResponse();
     }
 
     public async Task<ConcertDto> CreateDraftAsync(int applicationId)
@@ -133,11 +132,10 @@ public class ConcertService : IConcertService
         return concertEntity.ToDto();
     }
 
-    public async Task<ConcertDetailsResponse> GetDetailsByApplicationIdAsync(int applicationId)
+    public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
     {
-        var dto = await concertRepository.GetDetailsByApplicationIdAsync(applicationId)
+        return await concertRepository.GetDetailsByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException($"No concert found for Application ID {applicationId}");
-        return dto.ToDetailsResponse();
     }
 
     public async Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request)
@@ -162,7 +160,7 @@ public class ConcertService : IConcertService
         return concertEntity.ToDto();
     }
 
-    public async Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request)
+    public async Task<ConcertPostResult> PostAsync(int id, UpdateConcertRequest request)
     {
         var concertEntity = await concertRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
@@ -188,7 +186,7 @@ public class ConcertService : IConcertService
 
         if (location == null || location?.Y == null || location?.X == null)
         {
-            return new ConcertPostResponse
+            return new ConcertPostResult
             {
                 Concert = concertEntity.ToDto(),
                 ConcertHeader = concertHeaderDto,
@@ -220,7 +218,7 @@ public class ConcertService : IConcertService
             .Select(preference => preference.User.Id)
             .ToList();
 
-        return new ConcertPostResponse
+        return new ConcertPostResult
         {
             Concert = concertEntity.ToDto(),
             ConcertHeader = concertHeaderDto,

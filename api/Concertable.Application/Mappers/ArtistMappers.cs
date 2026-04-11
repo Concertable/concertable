@@ -1,6 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 
 namespace Concertable.Application.Mappers;
@@ -73,20 +72,6 @@ public static class ArtistMappers
         About = dto.About,
         BannerUrl = dto.BannerUrl,
         ArtistGenres = dto.Genres.Select(g => new ArtistGenreEntity { GenreId = g.Id }).ToList()
-    };
-
-    public static ArtistDetailsResponse ToDetailsResponse(this ArtistDto dto) => new()
-    {
-        Id = dto.Id,
-        Name = dto.Name,
-        About = dto.About,
-        BannerUrl = dto.BannerUrl,
-        Avatar = dto.Avatar,
-        Rating = dto.Rating,
-        Genres = dto.Genres,
-        County = dto.County,
-        Town = dto.Town,
-        Email = dto.Email
     };
 
     public static IEnumerable<ArtistDto> ToDtos(this IEnumerable<ArtistEntity> artists) =>

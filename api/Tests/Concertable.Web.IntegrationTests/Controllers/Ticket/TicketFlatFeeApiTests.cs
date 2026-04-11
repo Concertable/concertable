@@ -1,7 +1,7 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
+using Concertable.Web.Responses;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Core.Enums;
 using Xunit;
@@ -31,7 +31,7 @@ public class TicketFlatFeeApiTests : IAsyncLifetime
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
-        var result = await response.Content.ReadAsync<TicketPurchaseResponse>();
+        var result = await response.Content.ReadAsync<TicketPurchaseDto>();
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
@@ -81,7 +81,7 @@ public class TicketFlatFeeApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Ticket/purchase", request);
 
         // Assert
-        var result = await response.Content.ReadAsync<TicketPurchaseResponse>();
+        var result = await response.Content.ReadAsync<TicketPurchaseDto>();
         Assert.False(result!.Success);
         Assert.Empty(fixture.NotificationService.TicketPurchased);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");

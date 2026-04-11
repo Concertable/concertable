@@ -2,7 +2,7 @@ using Concertable.Core.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 
 namespace Concertable.Application.Interfaces;
 

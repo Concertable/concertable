@@ -1,6 +1,6 @@
 using System.Net;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
+using Concertable.Application.DTOs;
 using Concertable.Core.Enums;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
@@ -137,7 +137,7 @@ public class AuthApiTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var loginResponse = await response.Content.ReadAsync<LoginResponse>();
+        var loginResponse = await response.Content.ReadAsync<LoginDto>();
         Assert.NotNull(loginResponse);
         Assert.NotNull(loginResponse.AccessToken);
         Assert.NotNull(loginResponse.RefreshToken);
@@ -406,7 +406,7 @@ public class AuthApiTests : IAsyncLifetime
         await client.PostAsJsonEnsureSuccessAsync("/api/Auth/verify-email", new VerifyEmailRequest { Token = token! });
 
         var loginResponse = await (await client.PostAsync("/api/Auth/login", new LoginRequest { Email = email, Password = password }))
-            .Content.ReadAsync<LoginResponse>();
+            .Content.ReadAsync<LoginDto>();
 
         var authenticatedClient = fixture.CreateClient(new TestUser(loginResponse!.User.Id, Role.Customer));
 

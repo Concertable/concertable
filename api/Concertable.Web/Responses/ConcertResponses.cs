@@ -1,6 +1,6 @@
 using Concertable.Application.DTOs;
 
-namespace Concertable.Application.Responses;
+namespace Concertable.Web.Responses;
 
 public record ConcertDetailsResponse
 {

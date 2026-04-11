@@ -2,7 +2,6 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Mappers;
-using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
@@ -42,7 +41,7 @@ public class TicketService : ITicketService
         this.timeProvider = timeProvider;
     }
 
-    public async Task<TicketPurchaseResponse> PurchaseAsync(TicketPurchaseParams purchaseParams)
+    public async Task<TicketPurchaseDto> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
         var user = currentUser.Get();
 
@@ -58,7 +57,7 @@ public class TicketService : ITicketService
             ?? throw new NotFoundException("Concert not found");
         var paymentResponse = await ticketPaymentProcessor.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price);
 
-        return new TicketPurchaseResponse
+        return new TicketPurchaseDto
         {
             Success = paymentResponse.Success,
             RequiresAction = paymentResponse.RequiresAction,
@@ -69,7 +68,7 @@ public class TicketService : ITicketService
         };
     }
 
-    public async Task<TicketPurchaseResponse> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
+    public async Task<TicketPurchaseDto> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
     {
         var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId)
             ?? throw new NotFoundException("Concert not found");
@@ -108,7 +107,7 @@ public class TicketService : ITicketService
         catch (Exception)
         {
             await transaction.RollbackAsync();
-            return new TicketPurchaseResponse
+            return new TicketPurchaseDto
             {
                 Message = "Failed to Create Ticket. Please contact support",
                 ConcertId = purchaseCompleteDto.EntityId,
@@ -121,7 +120,7 @@ public class TicketService : ITicketService
         var ticketIds = tickets.Select(t => t.Id);
         await emailService.SendTicketsToEmailAsync(purchaseCompleteDto.FromEmail, ticketIds);
 
-        return new TicketPurchaseResponse
+        return new TicketPurchaseDto
         {
             Success = true,
             Message = "Ticket purchased successfully!",

@@ -83,7 +83,17 @@
       "Bash(npx shadcn@latest add checkbox)",
       "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && grep -E \"^\\\\s*\\(public\\\\s+async\\\\s+\\)?Task|^\\\\s*\\\\[Fact\\\\]|^\\\\s*\\\\[Theory\\\\]\" {} | head -50')",
       "Bash(sed:*)",
-      "Bash(xargs -I{} echo {})"
+      "Bash(xargs -I{} echo {})",
+      "WebSearch",
+      "WebFetch(domain:martinfowler.com)",
+      "WebFetch(domain:blog.cleancoder.com)",
+      "Bash(find . -name \"*.cs\" -exec grep -l \"PaymentResponse\" {} \\\\;)",
+      "Bash(find . -name \"*.cs\" -exec grep -l \"ConcertPostResponse\" {} \\\\;)",
+      "Bash(find .:*)",
+      "Bash(mv Concertable.Application/Responses/Pagination.cs Concertable.Application/Results/Pagination.cs)",
+      "Bash(mv Concertable.Application/Responses/IPagination.cs Concertable.Application/Results/IPagination.cs)",
+      "Bash(mv Concertable.Application/Responses/ValidationResult.cs Concertable.Application/Results/ValidationResult.cs)",
+      "Bash(rmdir Concertable.Application/Responses)"
     ]
   }
 }

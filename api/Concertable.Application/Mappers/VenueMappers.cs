@@ -1,6 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Exceptions;
 
@@ -63,22 +62,6 @@ public static class VenueMappers
         Name = request.Name,
         About = request.About,
         BannerUrl = string.Empty
-    };
-
-    public static VenueDetailsResponse ToDetailsResponse(this VenueDto dto) => new()
-    {
-        Id = dto.Id,
-        Name = dto.Name,
-        About = dto.About,
-        BannerUrl = dto.BannerUrl,
-        Avatar = dto.Avatar,
-        Rating = dto.Rating,
-        County = dto.County,
-        Town = dto.Town,
-        Email = dto.Email,
-        Latitude = dto.Latitude,
-        Longitude = dto.Longitude,
-        Approved = dto.Approved
     };
 
     public static IEnumerable<VenueDto> ToDtos(this IEnumerable<VenueEntity> venues) =>

@@ -1,4 +1,6 @@
-namespace Concertable.Application.Responses;
+using Concertable.Application.Interfaces;
+
+namespace Concertable.Application.Results;
 
 public class Pagination<T> : IPagination<T>
 {

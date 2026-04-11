@@ -1,11 +1,12 @@
+using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Requests;
 using Concertable.Core.Parameters;
+using Concertable.Web.Mappers;
+using Concertable.Web.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Concertable.Application.DTOs;
-using Concertable.Application.Requests;
-using Concertable.Application.Responses;
 
 namespace Concertable.Web.Controllers;
 
@@ -25,13 +26,13 @@ public class ConcertController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ConcertDetailsResponse>> GetDetailsById(int id)
     {
-        return Ok(await concertService.GetDetailsByIdAsync(id));
+        return Ok((await concertService.GetDetailsByIdAsync(id)).ToDetailsResponse());
     }
 
     [HttpGet("application/{applicationId}")]
     public async Task<ActionResult<ConcertDetailsResponse>> GetDetailsByApplicationId(int applicationId)
     {
-        return Ok(await concertService.GetDetailsByApplicationIdAsync(applicationId));
+        return Ok((await concertService.GetDetailsByApplicationIdAsync(applicationId)).ToDetailsResponse());
     }
 
     [HttpGet("upcoming/venue/{id}")]

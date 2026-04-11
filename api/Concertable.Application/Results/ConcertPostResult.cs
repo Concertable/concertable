@@ -1,8 +1,8 @@
 using Concertable.Application.DTOs;
 
-namespace Concertable.Application.Responses;
+namespace Concertable.Application.Results;
 
-public record ConcertPostResponse
+public record ConcertPostResult
 {
     public required ConcertDto Concert { get; set; }
     public required ConcertHeaderDto ConcertHeader { get; set; }

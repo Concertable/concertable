@@ -2,7 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Concertable.Core.Interfaces;

@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
@@ -17,15 +17,15 @@ public class PaymentService : IPaymentService
         this.stripeAccountService = stripeAccountService;
     }
 
-    public async Task<PaymentResponse> ProcessAsync(TransactionRequest request)
+    public async Task<PaymentResult> ProcessAsync(TransactionRequest request)
     {
         try
         {
             if (string.IsNullOrEmpty(request.DestinationStripeId))
-                return new PaymentResponse { Success = false, Message = "Recipient does not have a Stripe account" };
+                return new PaymentResult { Success = false, Message = "Recipient does not have a Stripe account" };
 
             if (!await stripeAccountService.IsUserVerifiedAsync(request.DestinationStripeId))
-                return new PaymentResponse { Success = false, Message = "Recipient is not eligible for payouts" };
+                return new PaymentResult { Success = false, Message = "Recipient is not eligible for payouts" };
 
             var options = new PaymentIntentCreateOptions
             {
@@ -46,7 +46,7 @@ public class PaymentService : IPaymentService
 
             var paymentIntent = await stripeClient.CreatePaymentIntentAsync(options);
 
-            return new PaymentResponse
+            return new PaymentResult
             {
                 Success = paymentIntent.Status == "succeeded",
                 RequiresAction = paymentIntent.Status == "requires_action" || paymentIntent.Status == "requires_confirmation",
@@ -57,11 +57,11 @@ public class PaymentService : IPaymentService
         }
         catch (StripeException ex)
         {
-            return new PaymentResponse { Success = false, Message = $"Stripe Error: {ex.Message}" };
+            return new PaymentResult { Success = false, Message = $"Stripe Error: {ex.Message}" };
         }
         catch (Exception ex)
         {
-            return new PaymentResponse { Success = false, Message = $"General Error: {ex.Message}" };
+            return new PaymentResult { Success = false, Message = $"General Error: {ex.Message}" };
         }
     }
 }

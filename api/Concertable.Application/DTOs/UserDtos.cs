@@ -3,6 +3,8 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Application.DTOs;
 
+public record LoginDto(IUser User, string AccessToken, string RefreshToken, int ExpiresInSeconds);
+
 public record AdminDto : IUser
 {
     public Guid Id { get; set; }

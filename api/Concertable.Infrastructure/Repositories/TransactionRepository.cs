@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Core.Entities;

@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
@@ -15,7 +15,7 @@ public class FakePaymentService : IPaymentService
         this.webhookQueue = webhookQueue;
     }
 
-    public async Task<PaymentResponse> ProcessAsync(TransactionRequest request)
+    public async Task<PaymentResult> ProcessAsync(TransactionRequest request)
     {
         var transactionId = $"pi_fake_{Guid.NewGuid():N}";
 
@@ -35,7 +35,7 @@ public class FakePaymentService : IPaymentService
             }
         });
 
-        return new PaymentResponse
+        return new PaymentResult
         {
             Success = true,
             RequiresAction = false,

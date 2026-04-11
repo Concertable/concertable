@@ -2,7 +2,7 @@ using Concertable.Core.Interfaces;
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;

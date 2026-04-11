@@ -3,6 +3,27 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Application.DTOs;
 
+public record PaymentMethodDto(string Brand, string Last4, int ExpMonth, int ExpYear);
+
+public record PurchaseDto
+{
+    public bool Success { get; set; }
+    public bool RequiresAction { get; set; }
+    public required string Message { get; set; }
+    public decimal Amount { get; set; }
+    public string? Currency { get; set; }
+    public DateTime PurchaseDate { get; set; }
+    public string? TransactionId { get; set; }
+    public string? ClientSecret { get; set; }
+    public string? UserEmail { get; set; }
+}
+
+public record TicketPurchaseDto : PurchaseDto
+{
+    public IEnumerable<int> TicketIds { get; set; } = [];
+    public int ConcertId { get; set; }
+}
+
 public record PaymentDto
 {
     public decimal Amount { get; set; }

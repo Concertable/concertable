@@ -1,4 +1,4 @@
-namespace Concertable.Application.Responses;
+namespace Concertable.Application.Interfaces;
 
 public interface IPagination<out T>
 {

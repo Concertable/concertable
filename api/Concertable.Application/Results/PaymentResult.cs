@@ -1,6 +1,6 @@
-namespace Concertable.Application.Responses;
+namespace Concertable.Application.Results;
 
-public record PaymentResponse
+public record PaymentResult
 {
     public bool Success { get; set; }
     public bool RequiresAction { get; set; }

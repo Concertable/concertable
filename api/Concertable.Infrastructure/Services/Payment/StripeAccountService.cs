@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
+using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
 using Concertable.Core.Exceptions;
 using Concertable.Infrastructure.Settings;
@@ -123,7 +123,7 @@ public class StripeAccountService : IStripeAccountService
         return intent.ClientSecret;
     }
 
-    public async Task<PaymentMethodResponse?> GetPaymentMethodDetailsAsync(string stripeCustomerId)
+    public async Task<PaymentMethodDto?> GetPaymentMethodDetailsAsync(string stripeCustomerId)
     {
         var paymentMethods = await paymentMethodService.ListAsync(new PaymentMethodListOptions
         {
@@ -134,6 +134,6 @@ public class StripeAccountService : IStripeAccountService
         var card = paymentMethods.FirstOrDefault()?.Card;
         if (card is null) return null;
 
-        return new PaymentMethodResponse(card.Brand, card.Last4, (int)card.ExpMonth, (int)card.ExpYear);
+        return new PaymentMethodDto(card.Brand, card.Last4, (int)card.ExpMonth, (int)card.ExpYear);
     }
 }

@@ -1,6 +1,6 @@
 using Concertable.Application.DTOs;
 using Concertable.Core.Parameters;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Application.Requests;
 using Concertable.Core.Interfaces;
 

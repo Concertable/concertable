@@ -1,8 +1,7 @@
-﻿using Concertable.Application.Interfaces;
+﻿using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
 using Concertable.Core.Parameters;
-using Concertable.Application.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Concertable.Application.DTOs;
 using System;
 using Microsoft.AspNetCore.Authorization;
 
@@ -23,7 +22,7 @@ public class TicketController : ControllerBase
     }
 
     [HttpPost("purchase")]
-    public async Task<ActionResult<TicketPurchaseResponse>> Purchase([FromBody] TicketPurchaseParams purchaseParams)
+    public async Task<ActionResult<TicketPurchaseDto>> Purchase([FromBody] TicketPurchaseParams purchaseParams)
     {
         return Ok(await ticketService.PurchaseAsync(purchaseParams));
     }

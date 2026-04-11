@@ -1,0 +1,4 @@
+{
+  "dotnet.defaultSolution": "Concertable.sln",
+  "omnisharp.defaultLaunchSolution": "Concertable.sln"
+}

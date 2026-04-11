@@ -1,8 +1,9 @@
 using Concertable.Application.Interfaces;
+using Concertable.Web.Mappers;
+using Concertable.Web.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Concertable.Web.Controllers;
 
@@ -20,14 +21,14 @@ public class ArtistController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ArtistDetailsResponse>> GetDetailsById(int id)
     {
-        return Ok(await artistService.GetDetailsByIdAsync(id));
+        return Ok((await artistService.GetDetailsByIdAsync(id)).ToDetailsResponse());
     }
 
     [Authorize(Roles = "ArtistManager")]
     [HttpGet("user")]
     public async Task<ActionResult<ArtistDetailsResponse>> GetDetailsForCurrentUser()
     {
-        return Ok(await artistService.GetDetailsForCurrentUserAsync());
+        return Ok((await artistService.GetDetailsForCurrentUserAsync()).ToDetailsResponse());
     }
 
     [Authorize(Roles = "ArtistManager")]

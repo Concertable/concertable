@@ -4,7 +4,7 @@ using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Core.Exceptions;
 using Concertable.Core.Parameters;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Core.Interfaces;
 
 namespace Concertable.Infrastructure.Services;

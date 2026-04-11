@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 

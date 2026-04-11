@@ -3,7 +3,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
@@ -63,7 +63,7 @@ public class VersusApplicationServiceCompleteTests
         stripeAccountService.Setup(s => s.IsUserVerifiedAsync("acct_artist")).ReturnsAsync(true);
         stripeAccountService.Setup(s => s.GetPaymentMethodAsync("cus_venue")).ReturnsAsync("pm_test");
         paymentService.Setup(s => s.ProcessAsync(It.IsAny<TransactionRequest>()))
-            .ReturnsAsync(new PaymentResponse { Success = true, Message = "ok", TransactionId = "pi_test_123" });
+            .ReturnsAsync(new PaymentResult { Success = true, Message = "ok", TransactionId = "pi_test_123" });
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
     }
 
@@ -85,7 +85,7 @@ public class VersusApplicationServiceCompleteTests
         TransactionRequest? captured = null;
         paymentService.Setup(s => s.ProcessAsync(It.IsAny<TransactionRequest>()))
             .Callback<TransactionRequest>(r => captured = r)
-            .ReturnsAsync(new PaymentResponse { Success = true, Message = "ok", TransactionId = "pi_test_123" });
+            .ReturnsAsync(new PaymentResult { Success = true, Message = "ok", TransactionId = "pi_test_123" });
 
         // Act
         await sut.CompleteAsync(10);

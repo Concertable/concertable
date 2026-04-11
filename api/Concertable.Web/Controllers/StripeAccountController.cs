@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
+using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +38,7 @@ public class StripeAccountController : ControllerBase
     }
 
     [HttpGet("payment-method")]
-    public async Task<ActionResult<PaymentMethodResponse?>> GetPaymentMethod()
+    public async Task<ActionResult<PaymentMethodDto?>> GetPaymentMethod()
     {
         var user = currentUser.GetEntity<UserEntity>();
         return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(user.StripeCustomerId));

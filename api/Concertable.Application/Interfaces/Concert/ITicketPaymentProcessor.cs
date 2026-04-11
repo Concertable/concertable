@@ -1,8 +1,8 @@
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 
 namespace Concertable.Application.Interfaces.Concert;
 
 public interface ITicketPaymentProcessor
 {
-    Task<PaymentResponse> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price);
+    Task<PaymentResult> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price);
 }

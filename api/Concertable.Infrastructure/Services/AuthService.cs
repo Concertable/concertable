@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
+using Concertable.Application.DTOs;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Concertable.Core.Exceptions;
@@ -62,7 +62,7 @@ public class AuthService : IAuthService
         await SendVerificationEmailAsync(request.Email);
     }
 
-    public async Task<LoginResponse> LoginAsync(LoginRequest request)
+    public async Task<LoginDto> LoginAsync(LoginRequest request)
     {
         var user = await context.Users
             .FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -90,7 +90,7 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<LoginResponse> RefreshTokenAsync(string refreshToken)
+    public async Task<LoginDto> RefreshTokenAsync(string refreshToken)
     {
         var token = await context.RefreshTokens
             .Include(rt => rt.User)
@@ -194,7 +194,7 @@ public class AuthService : IAuthService
         await context.SaveChangesAsync();
     }
 
-    private async Task<LoginResponse> IssueTokensAsync(UserEntity user)
+    private async Task<LoginDto> IssueTokensAsync(UserEntity user)
     {
         var dto = userMapper.ToDto(user);
         var accessToken = tokenService.CreateAccessToken(user.Id, user.Email, user.Role);
@@ -210,6 +210,6 @@ public class AuthService : IAuthService
         await context.SaveChangesAsync();
 
         var expiresInSeconds = authSettings.AccessTokenExpirationMinutes * 60;
-        return new LoginResponse(dto, accessToken, refreshTokenValue, expiresInSeconds);
+        return new LoginDto(dto, accessToken, refreshTokenValue, expiresInSeconds);
     }
 }

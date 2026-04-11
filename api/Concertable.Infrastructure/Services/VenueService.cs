@@ -3,7 +3,6 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
 
@@ -34,11 +33,10 @@ public class VenueService : IVenueService
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<VenueDetailsResponse> GetDetailsByIdAsync(int id)
+    public async Task<VenueDto> GetDetailsByIdAsync(int id)
     {
-        var dto = await venueRepository.GetDetailsByIdAsync(id)
+        return await venueRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
-        return dto.ToDetailsResponse();
     }
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
@@ -86,12 +84,11 @@ public class VenueService : IVenueService
         return venue.ToDto();
     }
 
-    public async Task<VenueDetailsResponse> GetDetailsForCurrentUserAsync()
+    public async Task<VenueDto> GetDetailsForCurrentUserAsync()
     {
         var user = currentUser.Get();
-        var dto = await venueRepository.GetDetailsByUserIdAsync(user.Id)
+        return await venueRepository.GetDetailsByUserIdAsync(user.Id)
             ?? throw new NotFoundException("Venue not found");
-        return dto.ToDetailsResponse();
     }
 
     public async Task<int> GetIdForCurrentUserAsync()

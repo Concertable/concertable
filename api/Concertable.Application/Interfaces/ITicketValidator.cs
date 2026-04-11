@@ -1,4 +1,4 @@
-using Concertable.Application.Responses;
+using Concertable.Application.Results;
 
 namespace Concertable.Application.Interfaces;
 
