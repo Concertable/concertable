@@ -15,7 +15,6 @@ using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
-using Concertable.Infrastructure.Expressions.Selectors;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Mappers;
@@ -295,9 +294,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
         services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
 
-        services.AddSingleton<IReviewKeySelector<ArtistEntity>, ArtistReviewKeySelector>();
-        services.AddSingleton<IReviewKeySelector<VenueEntity>, VenueReviewKeySelector>();
-        services.AddSingleton<IReviewKeySelector<ConcertEntity>, ConcertReviewKeySelector>();
+        services.AddSingleton<IReviewSpecification<ArtistEntity>, ReviewSpecification<ArtistEntity>>();
+        services.AddSingleton<IReviewSpecification<VenueEntity>, ReviewSpecification<VenueEntity>>();
+        services.AddSingleton<IReviewSpecification<ConcertEntity>, ReviewSpecification<ConcertEntity>>();
 
         services.AddSingleton<IRatingSpecification<ArtistEntity>, RatingSpecification<ArtistEntity>>();
         services.AddSingleton<IRatingSpecification<VenueEntity>, RatingSpecification<VenueEntity>>();

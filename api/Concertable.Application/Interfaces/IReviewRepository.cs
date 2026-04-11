@@ -12,9 +12,9 @@ public interface IReviewRepository : IRepository<ReviewEntity>
     Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id);
     Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
 
-    Task<IPagination<ReviewEntity>> GetByConcertIdAsync(int concertId, IPageParams pageParams);
-    Task<IPagination<ReviewEntity>> GetByArtistIdAsync(int artistId, IPageParams pageParams);
-    Task<IPagination<ReviewEntity>> GetByVenueIdAsync(int venueId, IPageParams pageParams);
+    Task<IPagination<ReviewDto>> GetByConcertIdAsync(int concertId, IPageParams pageParams);
+    Task<IPagination<ReviewDto>> GetByArtistIdAsync(int artistId, IPageParams pageParams);
+    Task<IPagination<ReviewDto>> GetByVenueIdAsync(int venueId, IPageParams pageParams);
 
     Task<bool> CanUserIdReviewConcertIdAsync(Guid userId, int concertId);
     Task<bool> CanUserIdReviewArtistIdAsync(Guid userId, int artistId);

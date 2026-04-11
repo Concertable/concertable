@@ -3,9 +3,8 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Core.Exceptions;
-using Concertable.Core.Parameters;
-using Concertable.Application.Results;
 using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 
 namespace Concertable.Infrastructure.Services;
 
@@ -41,23 +40,14 @@ public class ReviewService : IReviewService
         return review.ToDto();
     }
 
-    public async Task<IPagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams)
-    {
-        var reviews = await reviewRepository.GetByArtistIdAsync(id, pageParams);
-        return new Pagination<ReviewDto>(reviews.Data.ToDtos(), reviews.TotalCount, reviews.PageNumber, reviews.PageSize);
-    }
+    public Task<IPagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams) =>
+        reviewRepository.GetByArtistIdAsync(id, pageParams);
 
-    public async Task<IPagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams)
-    {
-        var reviews = await reviewRepository.GetByConcertIdAsync(id, pageParams);
-        return new Pagination<ReviewDto>(reviews.Data.ToDtos(), reviews.TotalCount, reviews.PageNumber, reviews.PageSize);
-    }
+    public Task<IPagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams) =>
+        reviewRepository.GetByConcertIdAsync(id, pageParams);
 
-    public async Task<IPagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams)
-    {
-        var reviews = await reviewRepository.GetByVenueIdAsync(id, pageParams);
-        return new Pagination<ReviewDto>(reviews.Data.ToDtos(), reviews.TotalCount, reviews.PageNumber, reviews.PageSize);
-    }
+    public Task<IPagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams) =>
+        reviewRepository.GetByVenueIdAsync(id, pageParams);
 
     public async Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id) =>
         await reviewRepository.GetSummaryByArtistIdAsync(id);

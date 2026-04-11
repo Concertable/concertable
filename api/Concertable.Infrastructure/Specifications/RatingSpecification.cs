@@ -1,22 +1,19 @@
 using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Entities.Interfaces;
+using Concertable.Core.Interfaces;
 using Concertable.Core.Projections;
 using Concertable.Core.Entities;
+using Concertable.Infrastructure.Expressions;
 using System.Linq.Expressions;
 
 namespace Concertable.Infrastructure.Specifications;
 
 public class RatingSpecification<TEntity> : IRatingSpecification<TEntity>
+    where TEntity : class, IIdEntity, IReviewable<TEntity>
 {
-    private readonly Expression<Func<ReviewEntity, int>> keySelector;
-
-    public RatingSpecification(IReviewKeySelector<TEntity> keySelector)
-    {
-        this.keySelector = keySelector.KeySelector;
-    }
-
     public IQueryable<RatingAggregate> ApplyAggregate(IQueryable<ReviewEntity> reviews) =>
         reviews
-            .GroupBy(keySelector)
+            .GroupBy(TEntity.ReviewIdSelector)
             .Select(g => new RatingAggregate
             {
                 EntityId = g.Key,
@@ -25,13 +22,9 @@ public class RatingSpecification<TEntity> : IRatingSpecification<TEntity>
 
     public IQueryable<double?> ApplyAverage(IQueryable<ReviewEntity> reviews, int id)
     {
-        var param = keySelector.Parameters[0];
-        var filter = Expression.Lambda<Func<ReviewEntity, bool>>(
-            Expression.Equal(keySelector.Body, Expression.Constant(id)),
-            param);
-
+        Expression<Func<int, bool>> condition = reviewId => reviewId == id;
         return reviews
-            .Where(filter)
+            .Where(TEntity.ReviewIdSelector.Substitute(condition))
             .GroupBy(_ => 1)
             .Select(g => g.Average(r => (double?)r.Stars));
     }

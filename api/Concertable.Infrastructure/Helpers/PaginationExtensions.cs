@@ -18,4 +18,15 @@ public static class PaginationExtensions
 
         return new Pagination<T>(data, totalCount, pageParams.PageNumber, pageParams.PageSize);
     }
+
+    public static IPagination<TDestination> Select<TSource, TDestination>(
+        this IPagination<TSource> source,
+        Func<TSource, TDestination> selector)
+    {
+        return new Pagination<TDestination>(
+            source.Data.Select(selector),
+            source.TotalCount,
+            source.PageNumber,
+            source.PageSize);
+    }
 }

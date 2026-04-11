@@ -1,81 +1,74 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
-using Concertable.Core.Parameters;
-using Concertable.Application.Results;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Interfaces;
+using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Helpers;
+using Concertable.Infrastructure.Mappers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories;
 
 public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
 {
     private readonly TimeProvider timeProvider;
+    private readonly IReviewSpecification<ArtistEntity> artistReviewSpecification;
+    private readonly IReviewSpecification<VenueEntity> venueReviewSpecification;
+    private readonly IReviewSpecification<ConcertEntity> concertReviewSpecification;
 
-    public ReviewRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context)
+    public ReviewRepository(
+        ApplicationDbContext context,
+        TimeProvider timeProvider,
+        IReviewSpecification<ArtistEntity> artistReviewSpecification,
+        IReviewSpecification<VenueEntity> venueReviewSpecification,
+        IReviewSpecification<ConcertEntity> concertReviewSpecification) : base(context)
     {
         this.timeProvider = timeProvider;
+        this.artistReviewSpecification = artistReviewSpecification;
+        this.venueReviewSpecification = venueReviewSpecification;
+        this.concertReviewSpecification = concertReviewSpecification;
     }
 
-    public Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id)
+    public Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id) =>
+        GetSummaryAsync(artistReviewSpecification, id);
+
+    public Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id) =>
+        GetSummaryAsync(concertReviewSpecification, id);
+
+    public Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id) =>
+        GetSummaryAsync(venueReviewSpecification, id);
+
+    public Task<IPagination<ReviewDto>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>
+        GetAsync(concertReviewSpecification, concertId, pageParams);
+
+    public Task<IPagination<ReviewDto>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
+        GetAsync(artistReviewSpecification, artistId, pageParams);
+
+    public Task<IPagination<ReviewDto>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
+        GetAsync(venueReviewSpecification, venueId, pageParams);
+
+    private async Task<ReviewSummaryDto> GetSummaryAsync<TEntity>(
+        IReviewSpecification<TEntity> spec, int id)
+        where TEntity : class, IIdEntity, IReviewable<TEntity>
     {
-        return GetSummaryAsync(r => r.Ticket.Concert.Application.ArtistId == id);
+        return await spec.Apply(context.Reviews, id)
+            .ToSummaryDto()
+            .FirstOrDefaultAsync()
+            ?? new ReviewSummaryDto(0, null);
     }
 
-    public Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id)
+    private Task<IPagination<ReviewDto>> GetAsync<TEntity>(
+        IReviewSpecification<TEntity> spec, int id, IPageParams pageParams)
+        where TEntity : class, IIdEntity, IReviewable<TEntity>
     {
-        return GetSummaryAsync(r => r.Ticket.ConcertId == id);
+        return spec.Apply(context.Reviews, id)
+            .OrderByDescending(r => r.Id)
+            .ToDto()
+            .ToPaginationAsync(pageParams);
     }
-
-    public Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id)
-    {
-        return GetSummaryAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == id);
-    }
-
-
-    private async Task<ReviewSummaryDto> GetSummaryAsync(Expression<Func<ReviewEntity, bool>> filter)
-    {
-        var result = await context.Reviews
-            .Where(filter)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                AverageRating = g.Average(r => (double?)r.Stars),
-                TotalReviews = g.Count()
-            })
-            .FirstOrDefaultAsync();
-
-        return new ReviewSummaryDto(
-            result?.TotalReviews ?? 0,
-            result?.AverageRating is double avg ? Math.Round(avg, 1) : null
-        );
-    }
-
-    private async Task<IPagination<ReviewEntity>> GetAsync(
-        Expression<Func<ReviewEntity, bool>> predicate,
-        IPageParams pageParams)
-    {
-        var query = context.Reviews
-            .Include(r => r.Ticket)
-                .ThenInclude(t => t.User)
-            .Where(predicate)
-            .OrderByDescending(r => r.Id);
-
-        return await query.ToPaginationAsync(pageParams);
-    }
-
-    public Task<IPagination<ReviewEntity>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>
-        GetAsync(r => r.Ticket.ConcertId == concertId, pageParams);
-
-    public Task<IPagination<ReviewEntity>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
-        GetAsync(r => r.Ticket.Concert.Application.ArtistId == artistId, pageParams);
-
-    public Task<IPagination<ReviewEntity>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
-        GetAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == venueId, pageParams);
-
 
     private IQueryable<TicketEntity> GetUnreviewedTicketsByUser(Guid userId)
     {
@@ -83,13 +76,11 @@ public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
             .Where(t => t.UserId == userId && t.Review == null);
     }
 
-
     public Task<bool> CanUserIdReviewConcertIdAsync(Guid userId, int concertId)
     {
         return GetUnreviewedTicketsByUser(userId)
             .AnyAsync(t => t.ConcertId == concertId && t.Concert.Application.Opportunity.StartDate <= timeProvider.GetUtcNow());
     }
-
 
     public Task<bool> CanUserIdReviewArtistIdAsync(Guid userId, int artistId)
     {
@@ -97,11 +88,9 @@ public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
             .AnyAsync(t => t.Concert.Application.Artist.Id == artistId);
     }
 
-
     public Task<bool> CanUserIdReviewVenueIdAsync(Guid userId, int venueId)
     {
         return GetUnreviewedTicketsByUser(userId)
             .AnyAsync(t => t.Concert.Application.Opportunity.Venue.Id == venueId);
     }
-
 }
