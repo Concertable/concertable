@@ -27,13 +27,22 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public new async Task<ArtistEntity?> GetByIdAsync(int id)
+    public async Task<ArtistEntity?> GetAggregateByIdAsync(int id)
     {
         return await context.Artists
             .Where(a => a.Id == id)
             .Include(a => a.ArtistGenres)
                 .ThenInclude(ag => ag.Genre)
             .Include(a => a.User)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<ArtistSummaryDto?> GetSummaryAsync(int id)
+    {
+        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
+        return await context.Artists
+            .Where(a => a.Id == id)
+            .ToSummaryDto(ratings)
             .FirstOrDefaultAsync();
     }
 
@@ -45,7 +54,7 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ArtistDto?> GetDetailsByIdAsync(int id)
+    public async Task<ArtistDto?> GetDtoByIdAsync(int id)
     {
         var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Artists
@@ -54,7 +63,7 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ArtistDto?> GetDetailsByUserIdAsync(Guid userId)
+    public async Task<ArtistDto?> GetDtoByUserIdAsync(Guid userId)
     {
         var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Artists

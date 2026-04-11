@@ -18,7 +18,7 @@ public class TicketValidator : ITicketValidator
     public async Task<ValidationResult> CanPurchaseTicketAsync(int concertId, int? quantity = null)
     {
         var result = new ValidationResult();
-        var concert = await concertRepository.GetDetailsByIdAsync(concertId);
+        var concert = await concertRepository.GetDtoByIdAsync(concertId);
 
         if (concert is null)
         {

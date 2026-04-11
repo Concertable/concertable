@@ -15,8 +15,8 @@ public class ArtistEntity : IIdEntity, IHasName, ILocatable<ArtistEntity>, IRevi
     public ArtistManagerEntity User { get; set; } = null!;
     public static Expression<Func<ArtistEntity, Point?>> LocationExpression => a => a.User.Location;
     public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Application.ArtistId;
-    public ICollection<ArtistGenreEntity> ArtistGenres { get; set; } = new List<ArtistGenreEntity>();
-    public ICollection<SocialMediaEntity> SocialMedias { get; } = new List<SocialMediaEntity>();
-    public ICollection<OpportunityApplicationEntity> Applications { get; } = new List<OpportunityApplicationEntity>();
-    public ICollection<VideoEntity> Videos { get; } = new List<VideoEntity>();
+    public ICollection<ArtistGenreEntity> ArtistGenres { get; set; } = [];
+    public ICollection<SocialMediaEntity> SocialMedias { get; } = [];
+    public ICollection<OpportunityApplicationEntity> Applications { get; } = [];
+    public ICollection<VideoEntity> Videos { get; } = [];
 }

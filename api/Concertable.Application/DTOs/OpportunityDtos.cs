@@ -11,7 +11,7 @@ public record OpportunityDto
     public int VenueId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
     public required IContract Contract { get; set; }
 }
 

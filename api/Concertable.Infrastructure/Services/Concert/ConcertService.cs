@@ -76,7 +76,7 @@ public class ConcertService : IConcertService
 
     public async Task<ConcertDto> GetDetailsByIdAsync(int id)
     {
-        return await concertRepository.GetDetailsByIdAsync(id)
+        return await concertRepository.GetDtoByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
     }
 
@@ -122,13 +122,13 @@ public class ConcertService : IConcertService
 
     public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
     {
-        return await concertRepository.GetDetailsByApplicationIdAsync(applicationId)
+        return await concertRepository.GetDtoByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException($"No concert found for Application ID {applicationId}");
     }
 
     public async Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request)
     {
-        var concertEntity = await concertRepository.GetByIdAsync(id)
+        var concertEntity = await concertRepository.GetAggregateByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
         var result = await concertValidator.CanUpdateAsync(concertEntity, request.TotalTickets);
@@ -150,7 +150,7 @@ public class ConcertService : IConcertService
 
     public async Task<ConcertPostResult> PostAsync(int id, UpdateConcertRequest request)
     {
-        var concertEntity = await concertRepository.GetByIdAsync(id)
+        var concertEntity = await concertRepository.GetAggregateByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
         var result = await concertValidator.CanPostAsync(concertEntity);
@@ -178,7 +178,7 @@ public class ConcertService : IConcertService
             {
                 Concert = concertEntity.ToDto(),
                 ConcertHeader = concertHeaderDto,
-                UserIds = Enumerable.Empty<Guid>()
+                UserIds = []
             };
         }
 
@@ -219,12 +219,12 @@ public class ConcertService : IConcertService
         var user = currentUser.GetOrDefault();
 
         if (user is null)
-            return Enumerable.Empty<ConcertHeaderDto>();
+            return [];
 
         var preferences = await preferenceService.GetByUserIdAsync(user.Id);
 
         if (preferences is null)
-            return Enumerable.Empty<ConcertHeaderDto>();
+            return [];
 
         var concertParams = new ConcertParams
         {

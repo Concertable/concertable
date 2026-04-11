@@ -22,6 +22,21 @@ public static class QueryableArtistMappers
             Town = a.User.Town ?? string.Empty
         };
 
+    public static IQueryable<ArtistSummaryDto> ToSummaryDto(
+        this IQueryable<ArtistEntity> query,
+        IQueryable<RatingAggregate> ratings) =>
+        from a in query
+        join r in ratings on a.Id equals r.EntityId into rg
+        from rating in rg.DefaultIfEmpty()
+        select new ArtistSummaryDto
+        {
+            Id = a.Id,
+            Name = a.Name,
+            Avatar = a.User.Avatar,
+            Rating = (double?)rating.AverageRating ?? 0.0,
+            Genres = a.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
+        };
+
     public static IQueryable<ArtistDto> ToDto(
         this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>

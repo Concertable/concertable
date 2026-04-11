@@ -32,7 +32,7 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
         this.venueRatingSpecification = venueRatingSpecification;
     }
 
-    public new async Task<ConcertEntity?> GetByIdAsync(int id)
+    public async Task<ConcertEntity?> GetAggregateByIdAsync(int id)
     {
         return await context.Concerts
             .Where(e => e.Id == id)
@@ -51,7 +51,17 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ConcertDto?> GetDetailsByIdAsync(int id)
+    public async Task<ConcertSummaryDto?> GetSummaryAsync(int id)
+    {
+        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
+        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
+        return await context.Concerts
+            .Where(e => e.Id == id)
+            .ToSummaryDto(artistRatings, venueRatings)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<ConcertDto?> GetDtoByIdAsync(int id)
     {
         var concertRatings = concertRatingSpecification.ApplyAggregate(context.Reviews);
         var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
@@ -85,7 +95,7 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
             .ToListAsync();
     }
 
-    public async Task<ConcertDto?> GetDetailsByApplicationIdAsync(int applicationId)
+    public async Task<ConcertDto?> GetDtoByApplicationIdAsync(int applicationId)
     {
         var concertRatings = concertRatingSpecification.ApplyAggregate(context.Reviews);
         var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);

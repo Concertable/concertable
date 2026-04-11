@@ -17,11 +17,20 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
         this.ratingSpecification = ratingSpecification;
     }
 
-    public new async Task<VenueEntity?> GetByIdAsync(int id)
+    public async Task<VenueEntity?> GetAggregateByIdAsync(int id)
     {
         return await context.Venues
             .Where(v => v.Id == id)
             .Include(v => v.User)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<VenueSummaryDto?> GetSummaryAsync(int id)
+    {
+        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
+        return await context.Venues
+            .Where(v => v.Id == id)
+            .ToSummaryDto(ratings)
             .FirstOrDefaultAsync();
     }
 
@@ -41,7 +50,7 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<VenueDto?> GetDetailsByIdAsync(int id)
+    public async Task<VenueDto?> GetDtoByIdAsync(int id)
     {
         var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Venues
@@ -50,7 +59,7 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<VenueDto?> GetDetailsByUserIdAsync(Guid userId)
+    public async Task<VenueDto?> GetDtoByUserIdAsync(Guid userId)
     {
         var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Venues

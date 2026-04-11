@@ -22,6 +22,20 @@ public static class QueryableVenueMappers
             Town = v.User.Town ?? string.Empty
         };
 
+    public static IQueryable<VenueSummaryDto> ToSummaryDto(
+        this IQueryable<VenueEntity> query,
+        IQueryable<RatingAggregate> ratings) =>
+        from v in query
+        join r in ratings on v.Id equals r.EntityId into rg
+        from rating in rg.DefaultIfEmpty()
+        select new VenueSummaryDto
+        {
+            Id = v.Id,
+            Name = v.Name,
+            Avatar = v.User.Avatar,
+            Rating = (double?)rating.AverageRating ?? 0.0
+        };
+
     public static IQueryable<VenueDto> ToDto(
         this IQueryable<VenueEntity> query,
         IQueryable<RatingAggregate> ratings) =>

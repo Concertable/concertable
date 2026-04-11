@@ -21,7 +21,7 @@ public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>, IRe
     public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Application.Opportunity.Venue.User.Location;
     public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.ConcertId;
     public OpportunityApplicationEntity Application { get; set; } = null!;
-    public ICollection<TicketEntity> Tickets { get; } = new List<TicketEntity>();
-    public ICollection<ConcertGenreEntity> ConcertGenres { get; set; } = new List<ConcertGenreEntity>();
-    public ICollection<ConcertImageEntity> Images { get; set; } = new List<ConcertImageEntity>();
+    public ICollection<TicketEntity> Tickets { get; } = [];
+    public ICollection<ConcertGenreEntity> ConcertGenres { get; set; } = [];
+    public ICollection<ConcertImageEntity> Images { get; set; } = [];
 }

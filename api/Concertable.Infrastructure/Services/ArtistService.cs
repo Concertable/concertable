@@ -38,13 +38,13 @@ public class ArtistService : IArtistService
     public async Task<ArtistDto> GetDetailsForCurrentUserAsync()
     {
         var user = currentUser.Get();
-        return await artistRepository.GetDetailsByUserIdAsync(user.Id)
+        return await artistRepository.GetDtoByUserIdAsync(user.Id)
             ?? throw new NotFoundException("Artist not found");
     }
 
     public async Task<ArtistDto> GetDetailsByIdAsync(int id)
     {
-        return await artistRepository.GetDetailsByIdAsync(id)
+        return await artistRepository.GetDtoByIdAsync(id)
             ?? throw new NotFoundException("Artist not found");
     }
 
@@ -66,7 +66,7 @@ public class ArtistService : IArtistService
 
     public async Task<ArtistDto> UpdateAsync(int id, UpdateArtistRequest request)
     {
-        var artist = await artistRepository.GetByIdAsync(id)
+        var artist = await artistRepository.GetAggregateByIdAsync(id)
             ?? throw new NotFoundException("Artist not found");
 
         var user = currentUser.GetEntity();

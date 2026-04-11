@@ -35,7 +35,7 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> GetDetailsByIdAsync(int id)
     {
-        return await venueRepository.GetDetailsByIdAsync(id)
+        return await venueRepository.GetDtoByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
     }
 
@@ -59,7 +59,7 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> UpdateAsync(int id, UpdateVenueRequest request)
     {
-        var venue = await venueRepository.GetByIdAsync(id)
+        var venue = await venueRepository.GetAggregateByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
         var user = currentUser.GetEntity();
 
@@ -87,7 +87,7 @@ public class VenueService : IVenueService
     public async Task<VenueDto> GetDetailsForCurrentUserAsync()
     {
         var user = currentUser.Get();
-        return await venueRepository.GetDetailsByUserIdAsync(user.Id)
+        return await venueRepository.GetDtoByUserIdAsync(user.Id)
             ?? throw new NotFoundException("Venue not found");
     }
 
@@ -109,5 +109,6 @@ public class VenueService : IVenueService
 
         venue.Approved = true;
         await unitOfWork.SaveChangesAsync();
+
     }
 }

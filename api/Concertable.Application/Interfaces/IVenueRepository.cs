@@ -8,6 +8,8 @@ public interface IVenueRepository : IRepository<VenueEntity>
 {
     Task<VenueEntity?> GetByUserIdAsync(Guid id);
     Task<int?> GetIdByUserIdAsync(Guid userId);
-    Task<VenueDto?> GetDetailsByIdAsync(int id);
-    Task<VenueDto?> GetDetailsByUserIdAsync(Guid userId);
+    Task<VenueEntity?> GetAggregateByIdAsync(int id);
+    Task<VenueSummaryDto?> GetSummaryAsync(int id);
+    Task<VenueDto?> GetDtoByIdAsync(int id);
+    Task<VenueDto?> GetDtoByUserIdAsync(Guid userId);
 }
