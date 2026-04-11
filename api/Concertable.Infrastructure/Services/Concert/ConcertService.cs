@@ -22,7 +22,7 @@ public class ConcertService : IConcertService
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
-    private readonly IReviewService reviewService;
+    private readonly IConcertReviewRepository concertReviewRepository;
     private readonly IPreferenceService preferenceService;
     private readonly IOpportunityRepository opportunityRepository;
     private readonly IGeometryCalculator geometryCalculator;
@@ -38,7 +38,7 @@ public class ConcertService : IConcertService
         IOpportunityApplicationValidator applicationValidator,
         IMessageService messageService,
         IEmailService emailService,
-        IReviewService reviewService,
+        IConcertReviewRepository concertReviewRepository,
         IPreferenceService preferenceService,
         IGeometryCalculator geometryCalculator,
         IOpportunityRepository opportunityRepository,
@@ -53,7 +53,7 @@ public class ConcertService : IConcertService
         this.applicationValidator = applicationValidator;
         this.messageService = messageService;
         this.emailService = emailService;
-        this.reviewService = reviewService;
+        this.concertReviewRepository = concertReviewRepository;
         this.applicationRepository = applicationRepository;
         this.preferenceService = preferenceService;
         this.opportunityRepository = opportunityRepository;
@@ -167,7 +167,7 @@ public class ConcertService : IConcertService
         await concertRepository.SaveChangesAsync();
 
         var concertHeaderDto = concertEntity.ToDto().ToHeaderDto();
-        var averageRating = (await reviewService.GetSummaryByConcertIdAsync(id)).AverageRating;
+        var averageRating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating;
         concertHeaderDto.Rating = averageRating;
 
         var location = concertEntity.Application.Opportunity.Venue.User.Location;

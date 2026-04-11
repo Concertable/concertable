@@ -5,21 +5,29 @@ namespace Concertable.Infrastructure.Validators;
 
 public class ReviewValidator : IReviewValidator
 {
-    private readonly IReviewRepository reviewRepository;
+    private readonly IArtistReviewRepository artistReviewRepository;
+    private readonly IVenueReviewRepository venueReviewRepository;
+    private readonly IConcertReviewRepository concertReviewRepository;
     private readonly ICurrentUser currentUser;
 
-    public ReviewValidator(IReviewRepository reviewRepository, ICurrentUser currentUser)
+    public ReviewValidator(
+        IArtistReviewRepository artistReviewRepository,
+        IVenueReviewRepository venueReviewRepository,
+        IConcertReviewRepository concertReviewRepository,
+        ICurrentUser currentUser)
     {
-        this.reviewRepository = reviewRepository;
+        this.artistReviewRepository = artistReviewRepository;
+        this.venueReviewRepository = venueReviewRepository;
+        this.concertReviewRepository = concertReviewRepository;
         this.currentUser = currentUser;
     }
 
-    public async Task<bool> CanUserReviewConcertAsync(int concertId) =>
-        await reviewRepository.CanUserIdReviewConcertIdAsync(currentUser.GetId(), concertId);
+    public Task<bool> CanUserReviewConcertAsync(int concertId) =>
+        concertReviewRepository.CanReviewAsync(currentUser.GetId(), concertId);
 
-    public async Task<bool> CanUserReviewVenueAsync(int venueId) =>
-        await reviewRepository.CanUserIdReviewVenueIdAsync(currentUser.GetId(), venueId);
+    public Task<bool> CanUserReviewVenueAsync(int venueId) =>
+        venueReviewRepository.CanReviewAsync(currentUser.GetId(), venueId);
 
-    public async Task<bool> CanUserReviewArtistAsync(int artistId) =>
-        await reviewRepository.CanUserIdReviewArtistIdAsync(currentUser.GetId(), artistId);
+    public Task<bool> CanUserReviewArtistAsync(int artistId) =>
+        artistReviewRepository.CanReviewAsync(currentUser.GetId(), artistId);
 }

@@ -2,20 +2,21 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
+using Concertable.Application.Results;
 using Concertable.Core.Exceptions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Infrastructure.Services.Review;
 
-public class ReviewService : IReviewService
+public class ConcertReviewService : IReviewService
 {
-    private readonly IReviewRepository reviewRepository;
+    private readonly IConcertReviewRepository reviewRepository;
     private readonly ITicketRepository ticketRepository;
     private readonly ICurrentUser currentUser;
 
-    public ReviewService(
-        IReviewRepository reviewRepository,
+    public ConcertReviewService(
+        IConcertReviewRepository reviewRepository,
         ITicketRepository ticketRepository,
         ICurrentUser currentUser)
     {
@@ -23,6 +24,12 @@ public class ReviewService : IReviewService
         this.ticketRepository = ticketRepository;
         this.currentUser = currentUser;
     }
+
+    public Task<IPagination<ReviewDto>> GetAsync(int id, IPageParams pageParams) =>
+        reviewRepository.GetAsync(id, pageParams);
+
+    public Task<ReviewSummaryDto> GetSummaryAsync(int id) =>
+        reviewRepository.GetSummaryAsync(id);
 
     public async Task<ReviewDto> CreateAsync(CreateReviewRequest request)
     {
@@ -39,22 +46,4 @@ public class ReviewService : IReviewService
 
         return review.ToDto();
     }
-
-    public Task<IPagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams) =>
-        reviewRepository.GetByArtistIdAsync(id, pageParams);
-
-    public Task<IPagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams) =>
-        reviewRepository.GetByConcertIdAsync(id, pageParams);
-
-    public Task<IPagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams) =>
-        reviewRepository.GetByVenueIdAsync(id, pageParams);
-
-    public async Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id) =>
-        await reviewRepository.GetSummaryByArtistIdAsync(id);
-
-    public async Task<ReviewSummaryDto> GetSummaryByConcertIdAsync(int id) =>
-        await reviewRepository.GetSummaryByConcertIdAsync(id);
-
-    public async Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id) =>
-        await reviewRepository.GetSummaryByVenueIdAsync(id);
 }
