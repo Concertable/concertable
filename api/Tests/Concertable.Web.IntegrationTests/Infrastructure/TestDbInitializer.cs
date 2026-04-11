@@ -3,6 +3,7 @@ using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Data.SeedData;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Services.Geometry;
@@ -53,7 +54,9 @@ public class TestDbInitializer : IDbInitializer
                     Role = Role.VenueManager,
                     StripeAccountId = "acct_test_venuemanager",
                     StripeCustomerId = "cus_test_venuemanager",
-                    Location = geometryProvider.CreatePoint(51, 0)
+                    County = LocationList.GetLocations()[0].County,
+                    Town = LocationList.GetLocations()[0].Town,
+                    Location = geometryProvider.CreatePoint(LocationList.GetLocations()[0].Latitude, LocationList.GetLocations()[0].Longitude)
                 },
                 new VenueManagerEntity
                 {
@@ -64,7 +67,9 @@ public class TestDbInitializer : IDbInitializer
                     Role = Role.VenueManager,
                     StripeAccountId = "acct_test_venuemanager2",
                     StripeCustomerId = "cus_test_venuemanager2",
-                    Location = geometryProvider.CreatePoint(51, 0)
+                    County = LocationList.GetLocations()[1].County,
+                    Town = LocationList.GetLocations()[1].Town,
+                    Location = geometryProvider.CreatePoint(LocationList.GetLocations()[1].Latitude, LocationList.GetLocations()[1].Longitude)
                 },
                 new ArtistManagerEntity
                 {

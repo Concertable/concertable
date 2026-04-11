@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Concertable.Infrastructure.Data.SeedData;
 
-internal static class LocationList
+public static class LocationList
 {
     private static readonly List<Location> Locations = new List<Location>
     {

@@ -1,5 +1,4 @@
 using System.Net;
-using Concertable.Application.DTOs;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Concert.ConcertRequestBuilders;
@@ -64,7 +63,7 @@ public class ConcertApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Post_ShouldReturn200_WithPostedConcert()
+    public async Task Post_ShouldReturn204_WhenPostedSuccessfully()
     {
         // Arrange
         var client = fixture.CreateClient(TestConstants.VenueManager);
@@ -74,14 +73,7 @@ public class ConcertApiTests : IAsyncLifetime
         var response = await client.PutAsync($"/api/Concert/post/{TestConstants.Settled.ConcertId}", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var concert = await response.Content.ReadAsync<ConcertDto>();
-        Assert.NotNull(concert);
-        Assert.Equal(request.Name, concert.Name);
-        Assert.Equal(request.About, concert.About);
-        Assert.Equal(request.Price, concert.Price);
-        Assert.Equal(request.TotalTickets, concert.TotalTickets);
-        Assert.NotNull(concert.DatePosted);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]

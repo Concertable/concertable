@@ -11,7 +11,9 @@ public static class QueryableConcertMappers
         IQueryable<RatingAggregate> concertRatings,
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
-        from c in query
+        from c in query.Where(c => c.Application.Opportunity.Venue.User.Location != null
+                                 && c.Application.Opportunity.Venue.User.County != null
+                                 && c.Application.Opportunity.Venue.User.Town != null)
         join cr in concertRatings on c.Id equals cr.EntityId into crg
         from concertRating in crg.DefaultIfEmpty()
         join ar in artistRatings on c.Application.ArtistId equals ar.EntityId into arg
@@ -38,8 +40,8 @@ public static class QueryableConcertMappers
                 Id = c.Application.Opportunity.Venue.Id,
                 Name = c.Application.Opportunity.Venue.Name,
                 Rating = (double?)venueRating.AverageRating ?? 0.0,
-                County = c.Application.Opportunity.Venue.User.County ?? string.Empty,
-                Town = c.Application.Opportunity.Venue.User.Town ?? string.Empty,
+                County = c.Application.Opportunity.Venue.User.County!,
+                Town = c.Application.Opportunity.Venue.User.Town!,
                 Latitude = c.Application.Opportunity.Venue.User.Location!.Y,
                 Longitude = c.Application.Opportunity.Venue.User.Location!.X
             },
@@ -59,7 +61,9 @@ public static class QueryableConcertMappers
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
-        from c in query
+        from c in query.Where(c => c.Application.Opportunity.Venue.User.Location != null
+                                 && c.Application.Opportunity.Venue.User.County != null
+                                 && c.Application.Opportunity.Venue.User.Town != null)
         join ar in artistRatings on c.Application.ArtistId equals ar.EntityId into arg
         from artistRating in arg.DefaultIfEmpty()
         join vr in venueRatings on c.Application.Opportunity.VenueId equals vr.EntityId into vrg
@@ -93,7 +97,9 @@ public static class QueryableConcertMappers
     public static IQueryable<ConcertHeaderDto> ToHeaderDtos(
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from c in query
+        from c in query.Where(c => c.Application.Opportunity.Venue.User.Location != null
+                                 && c.Application.Opportunity.Venue.User.County != null
+                                 && c.Application.Opportunity.Venue.User.Town != null)
         join r in ratings on c.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ConcertHeaderDto
