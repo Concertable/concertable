@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Requests;
 using Concertable.Application.Results;
 using Concertable.Core.Parameters;
+using Concertable.Web.Handlers;
 using Concertable.Web.Mappers;
 using Concertable.Web.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -17,11 +18,16 @@ public class ConcertController : ControllerBase
 {
     private readonly IConcertService concertService;
     private readonly IConcertNotificationService notificationService;
+    private readonly IPostConcertHandler postConcertHandler;
 
-    public ConcertController(IConcertService concertService, IConcertNotificationService notificationService)
+    public ConcertController(
+        IConcertService concertService,
+        IConcertNotificationService notificationService,
+        IPostConcertHandler postConcertHandler)
     {
         this.concertService = concertService;
         this.notificationService = notificationService;
+        this.postConcertHandler = postConcertHandler;
     }
 
     [HttpGet("{id}")]
@@ -89,11 +95,8 @@ public class ConcertController : ControllerBase
     [HttpPut("post/{id}")]
     public async Task<IActionResult> Post(int id, [FromBody] UpdateConcertRequest request)
     {
-        var concertResponse = await concertService.PostAsync(id, request);
-
-        foreach (var userId in concertResponse.UserIds)
-            await notificationService.ConcertPostedAsync(userId.ToString(), concertResponse.ConcertHeader);
-
+        var result = await concertService.PostAsync(id, request);
+        await postConcertHandler.HandleAsync(result);
         return NoContent();
     }
 

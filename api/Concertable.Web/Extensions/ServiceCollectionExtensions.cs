@@ -42,6 +42,7 @@ using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Specifications;
 using Concertable.Infrastructure.Validators;
 using Concertable.Web.Authorization;
+using Concertable.Web.Handlers;
 using Concertable.Web.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -176,6 +177,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IConcertNotificationService, SignalRConcertNotificationService>();
+        services.AddScoped<IPostConcertHandler, PostConcertHandler>();
         services.AddScoped<IApplicationNotificationService, SignalRApplicationNotificationService>();
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
