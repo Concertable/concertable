@@ -12,7 +12,7 @@ using Concertable.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
 
-public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConcertRepository
+public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
 {
     private readonly TimeProvider timeProvider;
     private readonly IRatingSpecification<ConcertEntity> concertRatingSpecification;
@@ -32,7 +32,7 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
         this.venueRatingSpecification = venueRatingSpecification;
     }
 
-    public async Task<ConcertEntity?> GetAggregateByIdAsync(int id)
+    public async Task<ConcertEntity?> GetFullByIdAsync(int id)
     {
         return await context.Concerts
             .Where(e => e.Id == id)
@@ -65,9 +65,10 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
     {
         var concertRatings = concertRatingSpecification.ApplyAggregate(context.Reviews);
         var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
+        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Id == id)
-            .ToDto(concertRatings, artistRatings)
+            .ToDto(concertRatings, artistRatings, venueRatings)
             .FirstOrDefaultAsync();
     }
 
@@ -99,9 +100,10 @@ public class ConcertRepository : Repository<Core.Entities.ConcertEntity>, IConce
     {
         var concertRatings = concertRatingSpecification.ApplyAggregate(context.Reviews);
         var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
+        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.ApplicationId == applicationId)
-            .ToDto(concertRatings, artistRatings)
+            .ToDto(concertRatings, artistRatings, venueRatings)
             .FirstOrDefaultAsync();
     }
 

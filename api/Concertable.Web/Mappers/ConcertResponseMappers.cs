@@ -39,7 +39,7 @@ public static class ConcertResponseMappers
         Id = dto.Id,
         Name = dto.Name,
         About = dto.About,
-        BannerUrl = dto.BannerUrl ?? dto.Artist.BannerUrl ?? string.Empty,
+        BannerUrl = dto.BannerUrl ?? string.Empty,
         Avatar = dto.Avatar ?? dto.Artist.Avatar ?? string.Empty,
         Rating = dto.Rating,
         Price = dto.Price,
@@ -53,7 +53,6 @@ public static class ConcertResponseMappers
         {
             Id = dto.Artist.Id,
             Name = dto.Artist.Name,
-            About = dto.Artist.About,
             Rating = dto.Artist.Rating,
             County = dto.Artist.County,
             Town = dto.Artist.Town,

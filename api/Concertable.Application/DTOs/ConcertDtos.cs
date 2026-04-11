@@ -26,6 +26,7 @@ public record ConcertVenueDto
 {
     public int Id { get; set; }
     public required string Name { get; set; }
+    public double Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
     public double Latitude { get; set; }
@@ -36,9 +37,7 @@ public record ConcertArtistDto
 {
     public int Id { get; set; }
     public required string Name { get; set; }
-    public string? About { get; set; }
     public string? Avatar { get; set; }
-    public string? BannerUrl { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
     public double Rating { get; set; }

@@ -7,7 +7,7 @@ namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertRepository : IRepository<Core.Entities.ConcertEntity>
 {
-    Task<ConcertEntity?> GetAggregateByIdAsync(int id);
+    Task<ConcertEntity?> GetFullByIdAsync(int id);
     Task<ConcertDto?> GetDtoByIdAsync(int id);
     Task<ConcertSummaryDto?> GetSummaryAsync(int id);
     Task<ConcertDto?> GetDtoByApplicationIdAsync(int applicationId);

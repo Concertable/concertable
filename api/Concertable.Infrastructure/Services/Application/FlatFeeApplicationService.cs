@@ -123,9 +123,9 @@ public class FlatFeeApplicationService : IApplicationStrategy
         application.Status = ApplicationStatus.Settled;
         await applicationRepository.SaveChangesAsync();
 
-        var concert = await concertService.CreateDraftAsync(applicationId);
-        await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concert.Id);
-        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
+        var concertId = await concertService.CreateDraftAsync(applicationId);
+        await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);
+        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concertId);
     }
 
     public async Task CompleteAsync(int concertId)

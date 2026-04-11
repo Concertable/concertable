@@ -1,15 +1,16 @@
 
-using Concertable.Core.Entities;
+using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Interfaces.Search;
-using Concertable.Core.Parameters;
-using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Results;
+using Concertable.Core.Entities;
 using Concertable.Core.Exceptions;
+using Concertable.Core.Parameters;
+using Org.BouncyCastle.Asn1.Cmp;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -80,7 +81,7 @@ public class ConcertService : IConcertService
             ?? throw new NotFoundException("Concert not found");
     }
 
-    public async Task<ConcertDto> CreateDraftAsync(int applicationId)
+    public async Task<int> CreateDraftAsync(int applicationId)
     {
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");
@@ -117,7 +118,7 @@ public class ConcertService : IConcertService
         await concertRepository.AddAsync(concertEntity);
         await concertRepository.SaveChangesAsync();
 
-        return concertEntity.ToDto();
+        return concertEntity.Id;
     }
 
     public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
@@ -126,9 +127,9 @@ public class ConcertService : IConcertService
             ?? throw new NotFoundException($"No concert found for Application ID {applicationId}");
     }
 
-    public async Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request)
+    public async Task<ConcertUpdateResult> UpdateAsync(int id, UpdateConcertRequest request)
     {
-        var concertEntity = await concertRepository.GetAggregateByIdAsync(id)
+        var concertEntity = await concertRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
         var result = await concertValidator.CanUpdateAsync(concertEntity, request.TotalTickets);
@@ -145,12 +146,20 @@ public class ConcertService : IConcertService
 
         await concertRepository.SaveChangesAsync();
 
-        return concertEntity.ToDto();
+        return new ConcertUpdateResult
+        {
+            Id = concertEntity.Id,
+            Name = concertEntity.Name,
+            About = concertEntity.About,
+            Price = concertEntity.Price,
+            TotalTickets = concertEntity.TotalTickets,
+            AvailableTickets = concertEntity.AvailableTickets
+        };
     }
 
     public async Task<ConcertPostResult> PostAsync(int id, UpdateConcertRequest request)
     {
-        var concertEntity = await concertRepository.GetAggregateByIdAsync(id)
+        var concertEntity = await concertRepository.GetFullByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
         var result = await concertValidator.CanPostAsync(concertEntity);
@@ -166,24 +175,16 @@ public class ConcertService : IConcertService
 
         await concertRepository.SaveChangesAsync();
 
-        var concertHeaderDto = concertEntity.ToDto().ToHeaderDto();
-        var averageRating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating;
-        concertHeaderDto.Rating = averageRating;
+        var concertHeaderDto = concertEntity.ToHeaderDto();
+        concertHeaderDto.Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating;
 
         var location = concertEntity.Application.Opportunity.Venue.User.Location;
 
-        if (location == null || location?.Y == null || location?.X == null)
-        {
-            return new ConcertPostResult
-            {
-                Concert = concertEntity.ToDto(),
-                ConcertHeader = concertHeaderDto,
-                UserIds = []
-            };
-        }
+        if (location is null)
+            return new ConcertPostResult { ConcertHeader = concertHeaderDto, UserIds = [] };
 
         var preferences = await preferenceService.GetAsync();
-        var concertDto = concertEntity.ToDto();
+        var genreIds = concertEntity.ConcertGenres.Select(cg => cg.GenreId).ToHashSet();
 
         var userIdsToNotify = preferences
             .Where(preference =>
@@ -198,20 +199,14 @@ public class ConcertService : IConcertService
                     location.X,
                     preference.RadiusKm);
 
-                var hasMatchingGenre = preference.Genres.Any(userGenre =>
-                    concertDto.Genres.Any(concertGenre => concertGenre.Id == userGenre.Id));
+                var hasMatchingGenre = preference.Genres.Any(g => genreIds.Contains(g.Id));
 
                 return inRange && hasMatchingGenre;
             })
             .Select(preference => preference.User.Id)
             .ToList();
 
-        return new ConcertPostResult
-        {
-            Concert = concertEntity.ToDto(),
-            ConcertHeader = concertHeaderDto,
-            UserIds = userIdsToNotify
-        };
+        return new ConcertPostResult { ConcertHeader = concertHeaderDto, UserIds = userIdsToNotify };
     }
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync()

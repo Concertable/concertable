@@ -1,17 +1,38 @@
 using Concertable.Application.DTOs;
+using Concertable.Application.Results;
 using Concertable.Core.Entities;
 
 namespace Concertable.Application.Mappers;
 
 public static class ConcertMappers
 {
+    private static ConcertArtistDto ToConcertArtistDto(this ArtistEntity artist) => new()
+    {
+        Id = artist.Id,
+        Name = artist.Name,
+        Avatar = artist.User.Avatar,
+        County = artist.User.County ?? string.Empty,
+        Town = artist.User.Town ?? string.Empty,
+        Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto())
+    };
+
+    private static ConcertVenueDto ToConcertVenueDto(this VenueEntity venue) => new()
+    {
+        Id = venue.Id,
+        Name = venue.Name,
+        County = venue.User.County ?? string.Empty,
+        Town = venue.User.Town ?? string.Empty,
+        Latitude = venue.User.Location?.Y ?? 0.0,
+        Longitude = venue.User.Location?.X ?? 0.0
+    };
+
     public static ConcertDto ToDto(this ConcertEntity concert) => new()
     {
         Id = concert.Id,
         Name = concert.Name,
         About = concert.About,
-        BannerUrl = concert.BannerUrl,
-        Avatar = concert.Avatar,
+        BannerUrl = concert.BannerUrl ?? concert.Application.Artist.BannerUrl,
+        Avatar = concert.Avatar ?? concert.Application.Artist.User.Avatar,
         Price = concert.Price,
         TotalTickets = concert.TotalTickets,
         AvailableTickets = concert.AvailableTickets,
@@ -49,7 +70,4 @@ public static class ConcertMappers
 
     public static IEnumerable<ConcertDto> ToDtos(this IEnumerable<ConcertEntity> concerts) =>
         concerts.Select(e => e.ToDto());
-
-    public static IEnumerable<ConcertHeaderDto> ToHeaderDtos(this IEnumerable<ConcertEntity> concerts) =>
-        concerts.Select(e => e.ToHeaderDto());
 }

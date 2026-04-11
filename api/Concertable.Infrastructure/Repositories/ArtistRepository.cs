@@ -27,7 +27,7 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ArtistEntity?> GetAggregateByIdAsync(int id)
+    public async Task<ArtistEntity?> GetFullByIdAsync(int id)
     {
         return await context.Artists
             .Where(a => a.Id == id)

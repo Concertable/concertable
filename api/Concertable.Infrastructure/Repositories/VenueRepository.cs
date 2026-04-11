@@ -17,7 +17,7 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
         this.ratingSpecification = ratingSpecification;
     }
 
-    public async Task<VenueEntity?> GetAggregateByIdAsync(int id)
+    public async Task<VenueEntity?> GetFullByIdAsync(int id)
     {
         return await context.Venues
             .Where(v => v.Id == id)

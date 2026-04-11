@@ -2,6 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Requests;
+using Concertable.Application.Results;
 using Concertable.Core.Parameters;
 using Concertable.Web.Mappers;
 using Concertable.Web.Responses;
@@ -79,21 +80,21 @@ public class ConcertController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPut("{id}")]
-    public async Task<ActionResult<ConcertDto>> Update(int id, [FromBody] UpdateConcertRequest request)
+    public async Task<ActionResult<ConcertUpdateResult>> Update(int id, [FromBody] UpdateConcertRequest request)
     {
         return Ok(await concertService.UpdateAsync(id, request));
     }
 
     [Authorize(Roles = "VenueManager")]
     [HttpPut("post/{id}")]
-    public async Task<ActionResult<ConcertDto>> Post(int id, [FromBody] UpdateConcertRequest request)
+    public async Task<IActionResult> Post(int id, [FromBody] UpdateConcertRequest request)
     {
         var concertResponse = await concertService.PostAsync(id, request);
 
         foreach (var userId in concertResponse.UserIds)
             await notificationService.ConcertPostedAsync(userId.ToString(), concertResponse.ConcertHeader);
 
-        return Ok(concertResponse.Concert);
+        return NoContent();
     }
 
     [HttpGet("test-signalr")]

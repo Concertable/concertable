@@ -12,8 +12,8 @@ public interface IConcertService
     Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId);
     Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id);
     Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id);
-    Task<ConcertDto> CreateDraftAsync(int applicationId);
-    Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request);
+    Task<int> CreateDraftAsync(int applicationId);
+    Task<ConcertUpdateResult> UpdateAsync(int id, UpdateConcertRequest request);
     Task<ConcertPostResult> PostAsync(int id, UpdateConcertRequest request);
     Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync();
     Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id);

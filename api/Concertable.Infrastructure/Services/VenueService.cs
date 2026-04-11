@@ -59,7 +59,7 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> UpdateAsync(int id, UpdateVenueRequest request)
     {
-        var venue = await venueRepository.GetAggregateByIdAsync(id)
+        var venue = await venueRepository.GetFullByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
         var user = currentUser.GetEntity();
 
@@ -109,6 +109,5 @@ public class VenueService : IVenueService
 
         venue.Approved = true;
         await unitOfWork.SaveChangesAsync();
-
     }
 }

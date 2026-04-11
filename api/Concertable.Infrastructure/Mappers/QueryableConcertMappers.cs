@@ -9,19 +9,22 @@ public static class QueryableConcertMappers
     public static IQueryable<ConcertDto> ToDto(
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> concertRatings,
-        IQueryable<RatingAggregate> artistRatings) =>
+        IQueryable<RatingAggregate> artistRatings,
+        IQueryable<RatingAggregate> venueRatings) =>
         from c in query
         join cr in concertRatings on c.Id equals cr.EntityId into crg
         from concertRating in crg.DefaultIfEmpty()
         join ar in artistRatings on c.Application.ArtistId equals ar.EntityId into arg
         from artistRating in arg.DefaultIfEmpty()
+        join vr in venueRatings on c.Application.Opportunity.VenueId equals vr.EntityId into vrg
+        from venueRating in vrg.DefaultIfEmpty()
         select new ConcertDto
         {
             Id = c.Id,
             Name = c.Name,
             About = c.About,
-            BannerUrl = c.BannerUrl,
-            Avatar = c.Avatar,
+            BannerUrl = c.BannerUrl ?? c.Application.Artist.BannerUrl,
+            Avatar = c.Avatar ?? c.Application.Artist.User.Avatar,
             Rating = (double?)concertRating.AverageRating ?? 0.0,
             Price = c.Price,
             TotalTickets = c.TotalTickets,
@@ -34,6 +37,7 @@ public static class QueryableConcertMappers
             {
                 Id = c.Application.Opportunity.Venue.Id,
                 Name = c.Application.Opportunity.Venue.Name,
+                Rating = (double?)venueRating.AverageRating ?? 0.0,
                 County = c.Application.Opportunity.Venue.User.County ?? string.Empty,
                 Town = c.Application.Opportunity.Venue.User.Town ?? string.Empty,
                 Latitude = c.Application.Opportunity.Venue.User.Location!.Y,
@@ -43,9 +47,7 @@ public static class QueryableConcertMappers
             {
                 Id = c.Application.Artist.Id,
                 Name = c.Application.Artist.Name,
-                About = c.Application.Artist.About,
                 Avatar = c.Application.Artist.User.Avatar,
-                BannerUrl = c.Application.Artist.BannerUrl,
                 County = c.Application.Artist.User.County ?? string.Empty,
                 Town = c.Application.Artist.User.Town ?? string.Empty,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,

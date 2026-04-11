@@ -69,7 +69,7 @@ public class VersusApplicationService : IApplicationStrategy
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
-        var concert = await concertService.CreateDraftAsync(applicationId);
+        var concertId = await concertService.CreateDraftAsync(applicationId);
 
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
@@ -77,8 +77,8 @@ public class VersusApplicationService : IApplicationStrategy
         var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Venue manager not found");
 
-        await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concert.Id);
-        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concert.Id);
+        await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);
+        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concertId);
     }
 
     public async Task SettleAsync(int applicationId)

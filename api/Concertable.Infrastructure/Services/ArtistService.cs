@@ -66,7 +66,7 @@ public class ArtistService : IArtistService
 
     public async Task<ArtistDto> UpdateAsync(int id, UpdateArtistRequest request)
     {
-        var artist = await artistRepository.GetAggregateByIdAsync(id)
+        var artist = await artistRepository.GetFullByIdAsync(id)
             ?? throw new NotFoundException("Artist not found");
 
         var user = currentUser.GetEntity();

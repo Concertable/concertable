@@ -25,7 +25,6 @@ public record ConcertArtistResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }
-    public string? About { get; set; }
     public double Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
