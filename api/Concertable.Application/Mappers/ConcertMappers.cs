@@ -20,8 +20,8 @@ public static class ConcertMappers
         DatePosted = concert.DatePosted,
         StartDate = concert.Application.Opportunity.StartDate,
         EndDate = concert.Application.Opportunity.EndDate,
-        Venue = concert.Application.Opportunity.Venue.ToDto(),
-        Artist = concert.Application.Artist.ToDto(),
+        Venue = concert.Application.Opportunity.Venue.ToConcertVenueDto(),
+        Artist = concert.Application.Artist.ToConcertArtistDto(),
         Genres = concert.ConcertGenres.Select(eg => eg.Genre.ToDto())
     };
 
@@ -71,7 +71,7 @@ public static class ConcertMappers
         Id = dto.Id,
         Name = dto.Name,
         About = dto.About,
-        BannerUrl = dto.BannerUrl ?? dto.Artist.BannerUrl,
+        BannerUrl = dto.BannerUrl ?? dto.Artist.BannerUrl ?? string.Empty,
         Avatar = dto.Avatar ?? dto.Artist.Avatar ?? string.Empty,
         Rating = dto.Rating,
         Price = dto.Price,

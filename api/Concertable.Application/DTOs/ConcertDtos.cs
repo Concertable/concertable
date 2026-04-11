@@ -17,8 +17,31 @@ public record ConcertDto : IDetails
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime? DatePosted { get; set; }
-    public required VenueDto Venue { get; set; }
-    public required ArtistDto Artist { get; set; }
+    public required ConcertVenueDto Venue { get; set; }
+    public required ConcertArtistDto Artist { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
+}
+
+public record ConcertVenueDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string County { get; set; }
+    public required string Town { get; set; }
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+}
+
+public record ConcertArtistDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public string? About { get; set; }
+    public string? Avatar { get; set; }
+    public string? BannerUrl { get; set; }
+    public required string County { get; set; }
+    public required string Town { get; set; }
+    public double Rating { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
 

@@ -86,11 +86,11 @@ public class ConcertService : IConcertService
         return concerts.ToSummaryDtos();
     }
 
-    public async Task<ConcertDto> GetDetailsByIdAsync(int id)
+    public async Task<ConcertDetailsResponse> GetDetailsByIdAsync(int id)
     {
-        var concertEntity = await concertRepository.GetDetailsByIdAsync(id)
+        var dto = await concertRepository.GetDetailsByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
-        return concertEntity.ToDto();
+        return dto.ToDetailsResponse();
     }
 
     public async Task<ConcertDto> CreateDraftAsync(int applicationId)
@@ -133,14 +133,11 @@ public class ConcertService : IConcertService
         return concertEntity.ToDto();
     }
 
-    public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
+    public async Task<ConcertDetailsResponse> GetDetailsByApplicationIdAsync(int applicationId)
     {
-        var concertEntity = await concertRepository.GetByApplicationIdAsync(applicationId);
-
-        if (concertEntity is null)
-            throw new NotFoundException($"No concert found for Application ID {applicationId}");
-
-        return concertEntity.ToDto();
+        var dto = await concertRepository.GetDetailsByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException($"No concert found for Application ID {applicationId}");
+        return dto.ToDetailsResponse();
     }
 
     public async Task<ConcertDto> UpdateAsync(int id, UpdateConcertRequest request)
@@ -167,7 +164,7 @@ public class ConcertService : IConcertService
 
     public async Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request)
     {
-        var concertEntity = await concertRepository.GetDetailsByIdAsync(id)
+        var concertEntity = await concertRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
         var result = await concertValidator.CanPostAsync(concertEntity);

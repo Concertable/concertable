@@ -1,8 +1,10 @@
+using Concertable.Application.Interfaces.Search;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Repositories;
@@ -10,6 +12,7 @@ namespace Concertable.Infrastructure.UnitTests.Repositories;
 public class VenueRepositoryTests : IDisposable
 {
     private readonly ApplicationDbContext context;
+    private readonly Mock<IRatingSpecification<VenueEntity>> ratingSpecification;
     private readonly VenueRepository sut;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -22,7 +25,8 @@ public class VenueRepositoryTests : IDisposable
             .Options;
 
         context = new ApplicationDbContext(options);
-        sut = new VenueRepository(context);
+        ratingSpecification = new Mock<IRatingSpecification<VenueEntity>>();
+        sut = new VenueRepository(context, ratingSpecification.Object);
 
         SeedData();
     }

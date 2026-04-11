@@ -20,6 +20,18 @@ public static class ArtistMappers
         Email = artist.User.Email ?? string.Empty
     };
 
+    public static ConcertArtistDto ToConcertArtistDto(this ArtistEntity artist) => new()
+    {
+        Id = artist.Id,
+        Name = artist.Name,
+        About = artist.About,
+        Avatar = artist.User.Avatar,
+        BannerUrl = artist.BannerUrl,
+        County = artist.User.County ?? string.Empty,
+        Town = artist.User.Town ?? string.Empty,
+        Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto())
+    };
+
     public static ArtistSummaryDto ToSummaryDto(this ArtistEntity artist) => new()
     {
         Id = artist.Id,

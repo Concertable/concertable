@@ -23,6 +23,16 @@ public static class VenueMappers
         Longitude = venue.User.Location?.X ?? throw new InternalServerException($"Venue {venue.Id} user has no location set.")
     };
 
+    public static ConcertVenueDto ToConcertVenueDto(this VenueEntity venue) => new()
+    {
+        Id = venue.Id,
+        Name = venue.Name,
+        County = venue.User.County ?? string.Empty,
+        Town = venue.User.Town ?? string.Empty,
+        Latitude = venue.User.Location?.Y ?? 0.0,
+        Longitude = venue.User.Location?.X ?? 0.0
+    };
+
     public static VenueSummaryDto ToSummaryDto(this VenueEntity venue) => new()
     {
         Id = venue.Id,

@@ -8,8 +8,8 @@ namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertService
 {
-    Task<ConcertDto> GetDetailsByIdAsync(int id);
-    Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId);
+    Task<ConcertDetailsResponse> GetDetailsByIdAsync(int id);
+    Task<ConcertDetailsResponse> GetDetailsByApplicationIdAsync(int applicationId);
     Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id);
     Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id);
     Task<ConcertDto> CreateDraftAsync(int applicationId);
