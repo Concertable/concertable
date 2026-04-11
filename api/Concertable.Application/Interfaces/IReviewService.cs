@@ -8,9 +8,9 @@ namespace Concertable.Application.Interfaces;
 
 public interface IReviewService
 {
-    Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams);
-    Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams);
-    Task<Pagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams);
+    Task<IPagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams);
+    Task<IPagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams);
+    Task<IPagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams);
 
     Task<ReviewSummaryDto> GetSummaryByVenueIdAsync(int id);
     Task<ReviewSummaryDto> GetSummaryByArtistIdAsync(int id);

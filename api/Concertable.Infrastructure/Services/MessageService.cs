@@ -60,7 +60,7 @@ public class MessageService : IMessageService
         await notificationService.MessageReceivedAsync(toUserId.ToString(), message.ToDto());
     }
 
-    public async Task<Pagination<MessageDto>> GetForUserAsync(IPageParams pageParams)
+    public async Task<IPagination<MessageDto>> GetForUserAsync(IPageParams pageParams)
     {
         var user = currentUser.Get();
         var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);

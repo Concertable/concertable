@@ -62,29 +62,17 @@ public class ConcertService : IConcertService
         this.timeProvider = timeProvider;
     }
 
-    public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id)
-    {
-        var concerts = await concertRepository.GetUpcomingByVenueIdAsync(id);
-        return concerts.ToSummaryDtos();
-    }
+    public Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id) =>
+        concertRepository.GetUpcomingByVenueIdAsync(id);
 
-    public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id)
-    {
-        var concerts = await concertRepository.GetUpcomingByArtistIdAsync(id);
-        return concerts.ToSummaryDtos();
-    }
+    public Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id) =>
+        concertRepository.GetUpcomingByArtistIdAsync(id);
 
-    public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id)
-    {
-        var concerts = await concertRepository.GetHistoryByArtistIdAsync(id);
-        return concerts.ToSummaryDtos();
-    }
+    public Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id) =>
+        concertRepository.GetHistoryByArtistIdAsync(id);
 
-    public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id)
-    {
-        var concerts = await concertRepository.GetHistoryByVenueIdAsync(id);
-        return concerts.ToSummaryDtos();
-    }
+    public Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id) =>
+        concertRepository.GetHistoryByVenueIdAsync(id);
 
     public async Task<ConcertDto> GetDetailsByIdAsync(int id)
     {
@@ -251,16 +239,10 @@ public class ConcertService : IConcertService
         return await concertHeaderService.GetRecommendedAsync(concertParams);
     }
 
-    public async Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id)
-    {
-        var concerts = await concertRepository.GetUnpostedByArtistIdAsync(id);
-        return concerts.ToSummaryDtos();
-    }
+    public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id) =>
+        concertRepository.GetUnpostedByArtistIdAsync(id);
 
-    public async Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByVenueIdAsync(int id)
-    {
-        var concerts = await concertRepository.GetUnpostedByVenueIdAsync(id);
-        return concerts.ToSummaryDtos();
-    }
+    public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByVenueIdAsync(int id) =>
+        concertRepository.GetUnpostedByVenueIdAsync(id);
 
 }

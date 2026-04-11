@@ -14,7 +14,7 @@ public class TransactionRepository : Repository<TransactionEntity>, ITransaction
 {
     public TransactionRepository(ApplicationDbContext context) : base(context) { }
 
-    public Task<Pagination<TransactionEntity>> GetAsync(IPageParams pageParams, Guid userId)
+    public Task<IPagination<TransactionEntity>> GetAsync(IPageParams pageParams, Guid userId)
     {
         var query = context.Transactions
             .Where(t => t.FromUserId == userId || t.ToUserId == userId)

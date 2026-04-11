@@ -54,7 +54,7 @@ public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
         );
     }
 
-    private async Task<Pagination<ReviewEntity>> GetAsync(
+    private async Task<IPagination<ReviewEntity>> GetAsync(
         Expression<Func<ReviewEntity, bool>> predicate,
         IPageParams pageParams)
     {
@@ -67,13 +67,13 @@ public class ReviewRepository : Repository<ReviewEntity>, IReviewRepository
         return await query.ToPaginationAsync(pageParams);
     }
 
-    public Task<Pagination<ReviewEntity>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>
+    public Task<IPagination<ReviewEntity>> GetByConcertIdAsync(int concertId, IPageParams pageParams) =>
         GetAsync(r => r.Ticket.ConcertId == concertId, pageParams);
 
-    public Task<Pagination<ReviewEntity>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
+    public Task<IPagination<ReviewEntity>> GetByArtistIdAsync(int artistId, IPageParams pageParams) =>
         GetAsync(r => r.Ticket.Concert.Application.ArtistId == artistId, pageParams);
 
-    public Task<Pagination<ReviewEntity>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
+    public Task<IPagination<ReviewEntity>> GetByVenueIdAsync(int venueId, IPageParams pageParams) =>
         GetAsync(r => r.Ticket.Concert.Application.Opportunity.VenueId == venueId, pageParams);
 
 

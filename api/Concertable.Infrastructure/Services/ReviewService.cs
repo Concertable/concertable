@@ -41,19 +41,19 @@ public class ReviewService : IReviewService
         return review.ToDto();
     }
 
-    public async Task<Pagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams)
+    public async Task<IPagination<ReviewDto>> GetByArtistIdAsync(int id, IPageParams pageParams)
     {
         var reviews = await reviewRepository.GetByArtistIdAsync(id, pageParams);
         return new Pagination<ReviewDto>(reviews.Data.ToDtos(), reviews.TotalCount, reviews.PageNumber, reviews.PageSize);
     }
 
-    public async Task<Pagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams)
+    public async Task<IPagination<ReviewDto>> GetByConcertIdAsync(int id, IPageParams pageParams)
     {
         var reviews = await reviewRepository.GetByConcertIdAsync(id, pageParams);
         return new Pagination<ReviewDto>(reviews.Data.ToDtos(), reviews.TotalCount, reviews.PageNumber, reviews.PageSize);
     }
 
-    public async Task<Pagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams)
+    public async Task<IPagination<ReviewDto>> GetByVenueIdAsync(int id, IPageParams pageParams)
     {
         var reviews = await reviewRepository.GetByVenueIdAsync(id, pageParams);
         return new Pagination<ReviewDto>(reviews.Data.ToDtos(), reviews.TotalCount, reviews.PageNumber, reviews.PageSize);

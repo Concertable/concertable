@@ -5,5 +5,5 @@ namespace Concertable.Application.Interfaces.Search;
 
 public interface IHeaderRepository<TEntity>
 {
-    Task<Pagination<TEntity>> SearchAsync(SearchParams searchParams);
+    Task<IPagination<TEntity>> SearchAsync(SearchParams searchParams);
 }

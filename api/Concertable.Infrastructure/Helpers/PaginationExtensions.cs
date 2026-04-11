@@ -1,12 +1,13 @@
-using Concertable.Core.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Application.Results;
+using Concertable.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Helpers;
 
 public static class PaginationExtensions
 {
-    public static async Task<Pagination<T>> ToPaginationAsync<T>(
+    public static async Task<IPagination<T>> ToPaginationAsync<T>(
         this IQueryable<T> query, IPageParams pageParams)
     {
         int totalCount = await query.CountAsync();

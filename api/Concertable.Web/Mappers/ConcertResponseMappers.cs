@@ -5,6 +5,35 @@ namespace Concertable.Web.Mappers;
 
 public static class ConcertResponseMappers
 {
+    public static ConcertSummaryResponse ToSummaryResponse(this ConcertSummaryDto dto) => new()
+    {
+        Id = dto.Id,
+        Name = dto.Name,
+        ImageUrl = dto.ImageUrl,
+        Price = dto.Price,
+        TotalTickets = dto.TotalTickets,
+        AvailableTickets = dto.AvailableTickets,
+        StartDate = dto.StartDate,
+        EndDate = dto.EndDate,
+        DatePosted = dto.DatePosted,
+        Venue = new ConcertVenueSummaryResponse
+        {
+            Id = dto.Venue.Id,
+            Name = dto.Venue.Name,
+            Rating = dto.Venue.Rating
+        },
+        Artist = new ConcertArtistSummaryResponse
+        {
+            Id = dto.Artist.Id,
+            Name = dto.Artist.Name,
+            Rating = dto.Artist.Rating,
+            Genres = dto.Artist.Genres
+        }
+    };
+
+    public static IEnumerable<ConcertSummaryResponse> ToSummaryResponses(this IEnumerable<ConcertSummaryDto> dtos) =>
+        dtos.Select(d => d.ToSummaryResponse());
+
     public static ConcertDetailsResponse ToDetailsResponse(this ConcertDto dto) => new()
     {
         Id = dto.Id,

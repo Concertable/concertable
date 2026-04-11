@@ -12,7 +12,7 @@ namespace Concertable.Application.Interfaces;
 
 public interface IMessageRepository : IRepository<MessageEntity>
 {
-    Task<Pagination<MessageEntity>> GetByUserIdAsync(Guid id, IPageParams pageParams);
+    Task<IPagination<MessageEntity>> GetByUserIdAsync(Guid id, IPageParams pageParams);
     Task<int> GetUnreadCountByUserIdAsync(Guid id);
     Task MarkAsReadAsync(List<int> ids);
 }

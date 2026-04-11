@@ -41,3 +41,33 @@ public record ConcertVenueResponse
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 }
+
+public record ConcertSummaryResponse
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public string? ImageUrl { get; set; }
+    public decimal Price { get; set; }
+    public int TotalTickets { get; set; }
+    public int AvailableTickets { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public DateTime? DatePosted { get; set; }
+    public required ConcertVenueSummaryResponse Venue { get; set; }
+    public required ConcertArtistSummaryResponse Artist { get; set; }
+}
+
+public record ConcertVenueSummaryResponse
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public double Rating { get; set; }
+}
+
+public record ConcertArtistSummaryResponse
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public double Rating { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
+}

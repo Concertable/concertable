@@ -7,7 +7,7 @@ namespace Concertable.Web.IntegrationTests.Controllers.Venue;
 
 public static class VenueMappers
 {
-    public static MultipartFormDataContent ToFormContent(this CreateVenueRequest req)
+    public static async Task<MultipartFormDataContent> ToFormContent(this CreateVenueRequest req)
     {
         var content = new MultipartFormDataContent
         {
@@ -17,16 +17,16 @@ public static class VenueMappers
             { new StringContent(req.Longitude.ToString()), "Longitude" }
         };
 
-        var bannerBytes = new byte[req.Banner.Length];
-        req.Banner.OpenReadStream().Read(bannerBytes, 0, bannerBytes.Length);
-        var bannerContent = new ByteArrayContent(bannerBytes);
+        using var bannerStream = new MemoryStream();
+        await req.Banner.CopyToAsync(bannerStream);
+        var bannerContent = new ByteArrayContent(bannerStream.ToArray());
         bannerContent.Headers.ContentType = MediaTypeHeaderValue.Parse(req.Banner.ContentType);
         content.Add(bannerContent, "Banner", req.Banner.FileName);
 
         return content;
     }
 
-    public static MultipartFormDataContent ToFormContent(this UpdateVenueRequest req)
+    public static async Task<MultipartFormDataContent> ToFormContent(this UpdateVenueRequest req)
     {
         var content = new MultipartFormDataContent
         {
@@ -38,7 +38,7 @@ public static class VenueMappers
         };
 
         if (req.Banner is not null)
-            content.Add(req.Banner.ToFormContent());
+            content.Add(await req.Banner.ToFormContent());
 
         return content;
     }

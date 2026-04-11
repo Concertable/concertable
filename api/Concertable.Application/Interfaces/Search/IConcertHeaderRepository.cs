@@ -6,7 +6,7 @@ namespace Concertable.Application.Interfaces.Search;
 
 public interface IConcertHeaderRepository
 {
-    Task<Pagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams);
+    Task<IPagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams);
     Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount);
     Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync();
     Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync();

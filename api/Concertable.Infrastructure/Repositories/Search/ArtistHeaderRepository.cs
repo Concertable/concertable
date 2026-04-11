@@ -1,4 +1,5 @@
 using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Application.Results;
 using Concertable.Core.Entities;
@@ -32,7 +33,7 @@ public class ArtistHeaderRepository : IArtistHeaderRepository
         this.sortSpecification = sortSpecification;
     }
 
-    public async Task<Pagination<ArtistHeaderDto>> SearchAsync(SearchParams searchParams)
+    public async Task<IPagination<ArtistHeaderDto>> SearchAsync(SearchParams searchParams)
     {
         var query = searchSpecification.Apply(context.Artists.AsNoTracking(), searchParams);
         query = geometrySpecification.Apply(query, searchParams);

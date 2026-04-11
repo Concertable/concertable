@@ -23,23 +23,6 @@ public static class ConcertMappers
         Genres = concert.ConcertGenres.Select(eg => eg.Genre.ToDto())
     };
 
-    public static ConcertSummaryDto ToSummaryDto(this ConcertEntity concert) => new()
-    {
-        Id = concert.Id,
-        Name = concert.Name,
-        Price = concert.Price,
-        TotalTickets = concert.TotalTickets,
-        AvailableTickets = concert.AvailableTickets,
-        DatePosted = concert.DatePosted,
-        StartDate = concert.Application.Opportunity.StartDate,
-        EndDate = concert.Application.Opportunity.EndDate,
-        Venue = concert.Application.Opportunity.Venue.ToSummaryDto(),
-        Artist = concert.Application.Artist.ToSummaryDto(),
-    };
-
-    public static IEnumerable<ConcertSummaryDto> ToSummaryDtos(this IEnumerable<ConcertEntity> concerts) =>
-        concerts.Select(c => c.ToSummaryDto());
-
     public static ConcertHeaderDto ToHeaderDto(this ConcertEntity concert) => new()
     {
         Id = concert.Id,

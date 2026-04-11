@@ -49,14 +49,30 @@ public record ConcertSummaryDto
 {
     public int Id { get; set; }
     public required string Name { get; set; }
+    public string? ImageUrl { get; set; }
     public decimal Price { get; set; }
     public int TotalTickets { get; set; }
     public int AvailableTickets { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime? DatePosted { get; set; }
-    public required VenueSummaryDto Venue { get; set; }
-    public required ArtistSummaryDto Artist { get; set; }
+    public required ConcertVenueSummaryDto Venue { get; set; }
+    public required ConcertArtistSummaryDto Artist { get; set; }
+}
+
+public record ConcertVenueSummaryDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public double Rating { get; set; }
+}
+
+public record ConcertArtistSummaryDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public double Rating { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
 
 public record TicketConcertDto

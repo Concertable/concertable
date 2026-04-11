@@ -1,4 +1,5 @@
 using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Application.Results;
 using Concertable.Infrastructure.Data;
@@ -36,7 +37,7 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
         this.timeProvider = timeProvider;
     }
 
-    public async Task<Pagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams)
+    public async Task<IPagination<ConcertHeaderDto>> SearchAsync(SearchParams searchParams)
     {
         var query = searchSpecification.Apply(context.Concerts.AsNoTracking(), searchParams);
         query = geometrySpecification.Apply(query, searchParams);

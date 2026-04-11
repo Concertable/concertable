@@ -5,11 +5,11 @@ namespace Concertable.Web.IntegrationTests.Controllers;
 
 public static class ImageMappers
 {
-    public static MultipartFormDataContent ToFormContent(this ImageDto image)
+    public static async Task<MultipartFormDataContent> ToFormContent(this ImageDto image)
     {
-        var imageBytes = new byte[image.File.Length];
-        image.File.OpenReadStream().Read(imageBytes, 0, imageBytes.Length);
-        var fileContent = new ByteArrayContent(imageBytes);
+        using var imageStream = new MemoryStream();
+        await image.File.CopyToAsync(imageStream);
+        var fileContent = new ByteArrayContent(imageStream.ToArray());
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(image.File.ContentType);
 
         return new MultipartFormDataContent

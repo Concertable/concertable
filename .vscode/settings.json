@@ -1,4 +1,6 @@
 {
   "dotnet.defaultSolution": "Concertable.sln",
-  "omnisharp.defaultLaunchSolution": "Concertable.sln"
+  "omnisharp.defaultLaunchSolution": "Concertable.sln",
+  "workbench.sideBar.location": "left",
+  "workbench.activityBar.location": "side"
 }

@@ -9,12 +9,12 @@ public interface IConcertRepository : IRepository<Core.Entities.ConcertEntity>
 {
     Task<ConcertDto?> GetDetailsByIdAsync(int id);
     Task<ConcertDto?> GetDetailsByApplicationIdAsync(int applicationId);
-    Task<IEnumerable<Core.Entities.ConcertEntity>> GetUpcomingByVenueIdAsync(int id);
-    Task<IEnumerable<Core.Entities.ConcertEntity>> GetUpcomingByArtistIdAsync(int id);
-    Task<IEnumerable<Core.Entities.ConcertEntity>> GetHistoryByVenueIdAsync(int id);
-    Task<IEnumerable<Core.Entities.ConcertEntity>> GetHistoryByArtistIdAsync(int id);
-    Task<IEnumerable<Core.Entities.ConcertEntity>> GetUnpostedByArtistIdAsync(int id);
-    Task<IEnumerable<Core.Entities.ConcertEntity>> GetUnpostedByVenueIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id);
+    Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByVenueIdAsync(int id);
     Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date);
     Task<bool> OpportunityHasConcertAsync(int opportunityId);
     Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date);

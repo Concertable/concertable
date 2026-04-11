@@ -53,6 +53,41 @@ public static class QueryableConcertMappers
             }
         };
 
+    public static IQueryable<ConcertSummaryDto> ToSummaryDto(
+        this IQueryable<ConcertEntity> query,
+        IQueryable<RatingAggregate> artistRatings,
+        IQueryable<RatingAggregate> venueRatings) =>
+        from c in query
+        join ar in artistRatings on c.Application.ArtistId equals ar.EntityId into arg
+        from artistRating in arg.DefaultIfEmpty()
+        join vr in venueRatings on c.Application.Opportunity.VenueId equals vr.EntityId into vrg
+        from venueRating in vrg.DefaultIfEmpty()
+        select new ConcertSummaryDto
+        {
+            Id = c.Id,
+            Name = c.Name,
+            ImageUrl = c.Avatar ?? c.Application.Artist.User.Avatar,
+            Price = c.Price,
+            TotalTickets = c.TotalTickets,
+            AvailableTickets = c.AvailableTickets,
+            DatePosted = c.DatePosted,
+            StartDate = c.Application.Opportunity.StartDate,
+            EndDate = c.Application.Opportunity.EndDate,
+            Venue = new ConcertVenueSummaryDto
+            {
+                Id = c.Application.Opportunity.Venue.Id,
+                Name = c.Application.Opportunity.Venue.Name,
+                Rating = (double?)venueRating.AverageRating ?? 0.0
+            },
+            Artist = new ConcertArtistSummaryDto
+            {
+                Id = c.Application.Artist.Id,
+                Name = c.Application.Artist.Name,
+                Rating = (double?)artistRating.AverageRating ?? 0.0,
+                Genres = c.Application.Artist.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
+            }
+        };
+
     public static IQueryable<ConcertHeaderDto> ToHeaderDtos(
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> ratings) =>

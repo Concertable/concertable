@@ -19,7 +19,7 @@ public class MessageRepository : Repository<MessageEntity>, IMessageRepository
 {
     public MessageRepository(ApplicationDbContext context) : base(context) { }
 
-    public async Task<Pagination<MessageEntity>> GetByUserIdAsync(Guid id, IPageParams pageParams)
+    public async Task<IPagination<MessageEntity>> GetByUserIdAsync(Guid id, IPageParams pageParams)
     {
         var query = context.Messages
             .Include(m => m.FromUser)

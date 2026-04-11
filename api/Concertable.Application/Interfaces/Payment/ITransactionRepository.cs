@@ -8,7 +8,7 @@ namespace Concertable.Application.Interfaces.Payment;
 
 public interface ITransactionRepository : IRepository<TransactionEntity>
 {
-    Task<Pagination<TransactionEntity>> GetAsync(IPageParams pageParams, Guid userId);
+    Task<IPagination<TransactionEntity>> GetAsync(IPageParams pageParams, Guid userId);
     Task<TransactionEntity?> GetByPaymentIntentIdAsync(string paymentIntentId);
     Task CreateAsync(TransactionEntity entity);
 }

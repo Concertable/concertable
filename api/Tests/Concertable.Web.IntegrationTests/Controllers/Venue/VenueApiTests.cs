@@ -123,7 +123,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildCreateRequest();
 
         // Act
-        var response = await client.PostAsync("/api/Venue", request.ToFormContent());
+        var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -137,7 +137,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildCreateRequest();
 
         // Act
-        var response = await client.PostAsync("/api/Venue", request.ToFormContent());
+        var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -151,7 +151,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildCreateRequest();
 
         // Act
-        var response = await client.PostAsync("/api/Venue", request.ToFormContent());
+        var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -178,7 +178,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildCreateRequest();
 
         // Act
-        var response = await client.PostAsync("/api/Venue", request.ToFormContent());
+        var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -192,7 +192,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildCreateRequest(name: "");
 
         // Act
-        var response = await client.PostAsync("/api/Venue", request.ToFormContent());
+        var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -210,7 +210,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -224,7 +224,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -238,7 +238,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -252,7 +252,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync("/api/Venue/99999", request.ToFormContent());
+        var response = await client.PutAsync("/api/Venue/99999", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -266,7 +266,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -286,7 +286,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildUpdateRequest(name: "");
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

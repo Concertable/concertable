@@ -42,7 +42,7 @@ public class TransactionService : ITransactionService
         await purchaseRepository.SaveChangesAsync();
     }
 
-    public async Task<Pagination<ITransaction>> GetAsync(IPageParams pageParams)
+    public async Task<IPagination<ITransaction>> GetAsync(IPageParams pageParams)
     {
         var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
