@@ -40,8 +40,8 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
         services.AddScoped<IContractRepository, ContractRepository>();
-        services.AddScoped<IVenueManagerRepository, VenueManagerRepository>();
-        services.AddScoped<IArtistManagerRepository, ArtistManagerRepository>();
+        services.AddScoped<IManagerRepository<VenueManagerEntity>, VenueManagerRepository>();
+        services.AddScoped<IManagerRepository<ArtistManagerEntity>, ArtistManagerRepository>();
 
         return services;
     }
@@ -56,10 +56,10 @@ internal static class ServiceCollectionExtensions
 
         services.AddScoped<ICompleteProcessor, CompleteProcessor>();
         services.AddScoped<ISettlementProcessor, SettlementProcessor>();
-        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationService>(ContractType.FlatFee);
-        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationService>(ContractType.Versus);
-        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationService>(ContractType.VenueHire);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, FlatFeeConcertWorkflow>(ContractType.FlatFee);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
 
 
         return services;

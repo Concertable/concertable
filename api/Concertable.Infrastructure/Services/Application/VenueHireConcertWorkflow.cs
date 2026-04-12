@@ -1,55 +1,41 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Requests;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Application;
 
-public class VenueHireApplicationService : IApplicationStrategy
+public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IContractRepository contractRepository;
-    private readonly IVenueManagerRepository venueManagerRepository;
-    private readonly IArtistManagerRepository artistManagerRepository;
-    private readonly IStripeAccountService stripeAccountService;
-    private readonly IPaymentService paymentService;
+    private readonly IManagerRepository<ArtistManagerEntity> artistManagerRepository;
+    private readonly IManagerRepository<VenueManagerEntity> venueManagerRepository;
+    private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertService concertService;
-    private readonly IConcertNotificationService concertNotificationService;
     private readonly IApplicationNotificationService applicationNotificationService;
-    private readonly ITransactionService transactionService;
-    private readonly TimeProvider timeProvider;
 
-    public VenueHireApplicationService(
+    public VenueHireConcertWorkflow(
         IOpportunityApplicationValidator applicationValidator,
         IOpportunityApplicationRepository applicationRepository,
         IContractRepository contractRepository,
-        IVenueManagerRepository venueManagerRepository,
-        IArtistManagerRepository artistManagerRepository,
-        IStripeAccountService stripeAccountService,
-        IPaymentService paymentService,
+        IManagerRepository<ArtistManagerEntity> artistManagerRepository,
+        IManagerRepository<VenueManagerEntity> venueManagerRepository,
+        IManagerPaymentService managerPaymentService,
         IConcertService concertService,
-        IConcertNotificationService concertNotificationService,
-        IApplicationNotificationService applicationNotificationService,
-        ITransactionService transactionService,
-        TimeProvider timeProvider)
+        IApplicationNotificationService applicationNotificationService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
         this.contractRepository = contractRepository;
-        this.venueManagerRepository = venueManagerRepository;
         this.artistManagerRepository = artistManagerRepository;
-        this.stripeAccountService = stripeAccountService;
-        this.paymentService = paymentService;
+        this.venueManagerRepository = venueManagerRepository;
+        this.managerPaymentService = managerPaymentService;
         this.concertService = concertService;
-        this.concertNotificationService = concertNotificationService;
         this.applicationNotificationService = applicationNotificationService;
-        this.transactionService = transactionService;
-        this.timeProvider = timeProvider;
     }
 
     public async Task AcceptAsync(int applicationId)
@@ -71,42 +57,10 @@ public class VenueHireApplicationService : IApplicationStrategy
         var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Venue manager not found");
 
-        if (!await stripeAccountService.IsUserVerifiedAsync(venueManager.StripeAccountId))
-            throw new BadRequestException("Venue manager has not completed Stripe verification");
-
         application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
-        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(artistManager.StripeCustomerId);
-
-        var response = await paymentService.ProcessAsync(new TransactionRequest
-        {
-            PaymentMethodId = paymentMethodId,
-            FromUserEmail = artistManager.Email!,
-            Amount = contract.HireFee,
-            DestinationStripeId = venueManager.StripeAccountId,
-            Metadata = new Dictionary<string, string>
-            {
-                { "fromUserId", artistManager.Id.ToString() },
-                { "toUserId", venueManager.Id.ToString() },
-                { "type", "settlement" },
-                { "applicationId", applicationId.ToString() }
-            }
-        });
-
-        if (response.TransactionId is null)
-            throw new InternalServerException("Payment did not return a valid PaymentIntent ID");
-
-        await transactionService.LogAsync(new SettlementTransactionDto
-        {
-            ApplicationId = applicationId,
-            FromUserId = artistManager.Id,
-            ToUserId = venueManager.Id,
-            PaymentIntentId = response.TransactionId,
-            Amount = (long)(contract.HireFee * 100),
-            Status = TransactionStatus.Pending,
-            CreatedAt = timeProvider.GetUtcNow().DateTime
-        });
+        await managerPaymentService.PayAsync(artistManager, venueManager, contract.HireFee, applicationId);
     }
 
     public async Task SettleAsync(int applicationId)
@@ -117,15 +71,11 @@ public class VenueHireApplicationService : IApplicationStrategy
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
-        var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Venue manager not found");
-
         application.Status = ApplicationStatus.Settled;
         await applicationRepository.SaveChangesAsync();
 
         var concertId = await concertService.CreateDraftAsync(applicationId);
         await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);
-        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concertId);
     }
 
     public async Task CompleteAsync(int concertId)

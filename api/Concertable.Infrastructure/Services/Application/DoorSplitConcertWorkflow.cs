@@ -1,8 +1,6 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Requests;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
@@ -10,36 +8,28 @@ using Concertable.Infrastructure.Calculators;
 
 namespace Concertable.Infrastructure.Services.Application;
 
-public class DoorSplitApplicationService : IApplicationStrategy
+public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IContractRepository contractRepository;
-    private readonly IArtistManagerRepository artistManagerRepository;
-    private readonly IVenueManagerRepository venueManagerRepository;
+    private readonly IManagerRepository<ArtistManagerEntity> artistManagerRepository;
+    private readonly IManagerRepository<VenueManagerEntity> venueManagerRepository;
     private readonly IConcertRepository concertRepository;
-    private readonly IStripeAccountService stripeAccountService;
-    private readonly IPaymentService paymentService;
+    private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertService concertService;
-    private readonly IConcertNotificationService concertNotificationService;
     private readonly IApplicationNotificationService applicationNotificationService;
-    private readonly ITransactionService transactionService;
-    private readonly TimeProvider timeProvider;
 
-    public DoorSplitApplicationService(
+    public DoorSplitConcertWorkflow(
         IOpportunityApplicationValidator applicationValidator,
         IOpportunityApplicationRepository applicationRepository,
         IContractRepository contractRepository,
-        IArtistManagerRepository artistManagerRepository,
-        IVenueManagerRepository venueManagerRepository,
+        IManagerRepository<ArtistManagerEntity> artistManagerRepository,
+        IManagerRepository<VenueManagerEntity> venueManagerRepository,
         IConcertRepository concertRepository,
-        IStripeAccountService stripeAccountService,
-        IPaymentService paymentService,
+        IManagerPaymentService managerPaymentService,
         IConcertService concertService,
-        IConcertNotificationService concertNotificationService,
-        IApplicationNotificationService applicationNotificationService,
-        ITransactionService transactionService,
-        TimeProvider timeProvider)
+        IApplicationNotificationService applicationNotificationService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
@@ -47,13 +37,9 @@ public class DoorSplitApplicationService : IApplicationStrategy
         this.artistManagerRepository = artistManagerRepository;
         this.venueManagerRepository = venueManagerRepository;
         this.concertRepository = concertRepository;
-        this.stripeAccountService = stripeAccountService;
-        this.paymentService = paymentService;
+        this.managerPaymentService = managerPaymentService;
         this.concertService = concertService;
-        this.concertNotificationService = concertNotificationService;
         this.applicationNotificationService = applicationNotificationService;
-        this.transactionService = transactionService;
-        this.timeProvider = timeProvider;
     }
 
     public async Task AcceptAsync(int applicationId)
@@ -74,11 +60,7 @@ public class DoorSplitApplicationService : IApplicationStrategy
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
-        var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Venue manager not found");
-
         await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);
-        await concertNotificationService.ConcertDraftCreatedAsync(artistManager.Id.ToString(), concertId);
     }
 
     public async Task SettleAsync(int applicationId)
@@ -95,13 +77,13 @@ public class DoorSplitApplicationService : IApplicationStrategy
         var application = await applicationRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Application not found");
 
-        var contract = await contractRepository.GetByApplicationIdAsync<DoorSplitContractEntity>(application.Id)
+        var contract = await contractRepository.GetByConcertIdAsync<DoorSplitContractEntity>(concertId)
             ?? throw new NotFoundException("DoorSplit contract not found");
 
-        var venueManager = await venueManagerRepository.GetByApplicationIdAsync(application.Id)
+        var venueManager = await venueManagerRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Venue manager not found");
 
-        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(application.Id)
+        var artistManager = await artistManagerRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Artist manager not found");
 
         application.Status = ApplicationStatus.Complete;
@@ -110,38 +92,6 @@ public class DoorSplitApplicationService : IApplicationStrategy
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = DoorSplitCalculator.ArtistShare(totalRevenue, contract.ArtistDoorPercent);
 
-        if (!await stripeAccountService.IsUserVerifiedAsync(artistManager.StripeAccountId))
-            throw new BadRequestException("Artist manager has not completed Stripe verification");
-
-        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(venueManager.StripeCustomerId);
-
-        var response = await paymentService.ProcessAsync(new TransactionRequest
-        {
-            PaymentMethodId = paymentMethodId,
-            FromUserEmail = venueManager.Email!,
-            Amount = artistShare,
-            DestinationStripeId = artistManager.StripeAccountId,
-            Metadata = new Dictionary<string, string>
-            {
-                { "fromUserId", venueManager.Id.ToString() },
-                { "toUserId", artistManager.Id.ToString() },
-                { "type", "settlement" },
-                { "applicationId", application.Id.ToString() }
-            }
-        });
-
-        if (response.TransactionId is null)
-            throw new InternalServerException("Payment did not return a valid PaymentIntent ID");
-
-        await transactionService.LogAsync(new SettlementTransactionDto
-        {
-            ApplicationId = application.Id,
-            FromUserId = venueManager.Id,
-            ToUserId = artistManager.Id,
-            PaymentIntentId = response.TransactionId,
-            Amount = (long)(artistShare * 100),
-            Status = TransactionStatus.Pending,
-            CreatedAt = timeProvider.GetUtcNow().DateTime
-        });
+        await managerPaymentService.PayAsync(venueManager, artistManager, artistShare, application.Id);
     }
 }

@@ -5,9 +5,9 @@ namespace Concertable.Infrastructure.Services.Complete;
 
 public class CompleteProcessor : ICompleteProcessor
 {
-    private readonly IContractStrategyResolver<IApplicationStrategy> resolver;
+    private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 
-    public CompleteProcessor(IContractStrategyResolver<IApplicationStrategy> resolver)
+    public CompleteProcessor(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
     {
         this.resolver = resolver;
     }

@@ -1,6 +1,6 @@
 namespace Concertable.Application.Interfaces.Concert;
 
-public interface IApplicationStrategy : IContractStrategy
+public interface IConcertWorkflowStrategy : IContractStrategy
 {
     Task AcceptAsync(int applicationId);
     Task SettleAsync(int applicationId);

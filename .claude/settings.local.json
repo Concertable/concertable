@@ -94,7 +94,8 @@
       "Bash(mv Concertable.Application/Responses/IPagination.cs Concertable.Application/Results/IPagination.cs)",
       "Bash(mv Concertable.Application/Responses/ValidationResult.cs Concertable.Application/Results/ValidationResult.cs)",
       "Bash(rmdir Concertable.Application/Responses)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(find:*)"
     ]
   }
 }

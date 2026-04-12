@@ -243,8 +243,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
         services.AddScoped<IVenueReviewRepository, VenueReviewRepository>();
         services.AddScoped<IConcertReviewRepository, ConcertReviewRepository>();
-        services.AddScoped<IVenueManagerRepository, VenueManagerRepository>();
-        services.AddScoped<IArtistManagerRepository, ArtistManagerRepository>();
+        services.AddScoped<IManagerRepository<VenueManagerEntity>, VenueManagerRepository>();
+        services.AddScoped<IManagerRepository<ArtistManagerEntity>, ArtistManagerRepository>();
         services.AddRatingRepositories();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
@@ -286,10 +286,10 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
         services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
 
-        services.AddKeyedScoped<IApplicationStrategy, FlatFeeApplicationService>(ContractType.FlatFee);
-        services.AddKeyedScoped<IApplicationStrategy, DoorSplitApplicationService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IApplicationStrategy, VersusApplicationService>(ContractType.Versus);
-        services.AddKeyedScoped<IApplicationStrategy, VenueHireApplicationService>(ContractType.VenueHire);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, FlatFeeConcertWorkflow>(ContractType.FlatFee);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
+        services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
 
         services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();

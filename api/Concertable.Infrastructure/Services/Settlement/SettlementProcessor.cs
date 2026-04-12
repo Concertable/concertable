@@ -5,9 +5,9 @@ namespace Concertable.Infrastructure.Services.Settlement;
 
 public class SettlementProcessor : ISettlementProcessor
 {
-    private readonly IContractStrategyResolver<IApplicationStrategy> resolver;
+    private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 
-    public SettlementProcessor(IContractStrategyResolver<IApplicationStrategy> resolver)
+    public SettlementProcessor(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
     {
         this.resolver = resolver;
     }

@@ -29,6 +29,7 @@ public class ConcertService : IConcertService
     private readonly IGeometryCalculator geometryCalculator;
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IGenreRepository genreRepository;
+    private readonly IConcertNotificationService concertNotificationService;
     private readonly TimeProvider timeProvider;
 
     public ConcertService(
@@ -45,6 +46,7 @@ public class ConcertService : IConcertService
         IOpportunityRepository opportunityRepository,
         IOpportunityApplicationRepository applicationRepository,
         IGenreRepository genreRepository,
+        IConcertNotificationService concertNotificationService,
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
@@ -60,6 +62,7 @@ public class ConcertService : IConcertService
         this.opportunityRepository = opportunityRepository;
         this.geometryCalculator = geometryCalculator;
         this.genreRepository = genreRepository;
+        this.concertNotificationService = concertNotificationService;
         this.timeProvider = timeProvider;
     }
 
@@ -117,6 +120,8 @@ public class ConcertService : IConcertService
 
         await concertRepository.AddAsync(concertEntity);
         await concertRepository.SaveChangesAsync();
+
+        await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concertEntity.Id);
 
         return concertEntity.Id;
     }

@@ -1,11 +1,12 @@
 using Concertable.Application.Interfaces;
+using Concertable.Core.Entities;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories;
 
-public class ArtistManagerRepository : GuidRepository<ArtistManagerEntity>, IArtistManagerRepository
+public class ArtistManagerRepository : GuidRepository<ArtistManagerEntity>, IManagerRepository<ArtistManagerEntity>
 {
     public ArtistManagerRepository(ApplicationDbContext context) : base(context)
     {

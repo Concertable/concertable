@@ -8,19 +8,19 @@ namespace Concertable.Infrastructure.UnitTests.Services.Accept;
 
 public class AcceptProcessorTests
 {
-    private readonly Mock<IContractStrategyResolver<IApplicationStrategy>> resolver;
+    private readonly Mock<IContractStrategyResolver<IConcertWorkflowStrategy>> resolver;
     private readonly AcceptProcessor sut;
 
     public AcceptProcessorTests()
     {
-        resolver = new Mock<IContractStrategyResolver<IApplicationStrategy>>();
+        resolver = new Mock<IContractStrategyResolver<IConcertWorkflowStrategy>>();
         sut = new AcceptProcessor(resolver.Object);
     }
 
     [Fact]
     public async Task AcceptAsync_ShouldResolveStrategyAndDelegate()
     {
-        var strategy = new Mock<IApplicationStrategy>();
+        var strategy = new Mock<IConcertWorkflowStrategy>();
         resolver.Setup(r => r.ResolveForApplicationAsync(1)).ReturnsAsync(strategy.Object);
 
         await sut.AcceptAsync(1);

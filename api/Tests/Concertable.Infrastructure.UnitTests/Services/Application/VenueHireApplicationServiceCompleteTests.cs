@@ -9,27 +9,23 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Application;
 
-public class VenueHireApplicationServiceCompleteTests
+public class VenueHireConcertWorkflowCompleteTests
 {
     private readonly Mock<IOpportunityApplicationRepository> applicationRepository;
-    private readonly VenueHireApplicationService sut;
+    private readonly VenueHireConcertWorkflow sut;
 
-    public VenueHireApplicationServiceCompleteTests()
+    public VenueHireConcertWorkflowCompleteTests()
     {
         applicationRepository = new Mock<IOpportunityApplicationRepository>();
-        sut = new VenueHireApplicationService(
+        sut = new VenueHireConcertWorkflow(
             new Mock<IOpportunityApplicationValidator>().Object,
             applicationRepository.Object,
             new Mock<IContractRepository>().Object,
-            new Mock<IVenueManagerRepository>().Object,
-            new Mock<IArtistManagerRepository>().Object,
-            new Mock<IStripeAccountService>().Object,
-            new Mock<IPaymentService>().Object,
+            new Mock<IManagerRepository<ArtistManagerEntity>>().Object,
+            new Mock<IManagerRepository<VenueManagerEntity>>().Object,
+            new Mock<IManagerPaymentService>().Object,
             new Mock<IConcertService>().Object,
-            new Mock<IConcertNotificationService>().Object,
-            new Mock<IApplicationNotificationService>().Object,
-            new Mock<ITransactionService>().Object,
-            TimeProvider.System);
+            new Mock<IApplicationNotificationService>().Object);
     }
 
     [Fact]

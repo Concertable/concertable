@@ -11,12 +11,12 @@ public class VenueTicketPaymentService : ITicketPaymentStrategy
 {
     private readonly ICustomerPaymentService customerPaymentService;
     private readonly ICurrentUser currentUser;
-    private readonly IVenueManagerRepository venueManagerRepository;
+    private readonly IManagerRepository<VenueManagerEntity> venueManagerRepository;
 
     public VenueTicketPaymentService(
         ICustomerPaymentService customerPaymentService,
         ICurrentUser currentUser,
-        IVenueManagerRepository venueManagerRepository)
+        IManagerRepository<VenueManagerEntity> venueManagerRepository)
     {
         this.customerPaymentService = customerPaymentService;
         this.currentUser = currentUser;

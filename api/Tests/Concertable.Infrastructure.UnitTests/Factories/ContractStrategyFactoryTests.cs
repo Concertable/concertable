@@ -9,24 +9,24 @@ namespace Concertable.Infrastructure.UnitTests.Factories;
 
 public class ContractStrategyFactoryTests
 {
-    private static readonly IApplicationStrategy flatFeeStrategy = new Mock<IApplicationStrategy>().Object;
-    private static readonly IApplicationStrategy doorSplitStrategy = new Mock<IApplicationStrategy>().Object;
-    private static readonly IApplicationStrategy versusStrategy = new Mock<IApplicationStrategy>().Object;
-    private static readonly IApplicationStrategy venueHireStrategy = new Mock<IApplicationStrategy>().Object;
-    private readonly ContractStrategyFactory<IApplicationStrategy> sut;
+    private static readonly IConcertWorkflowStrategy flatFeeStrategy = new Mock<IConcertWorkflowStrategy>().Object;
+    private static readonly IConcertWorkflowStrategy doorSplitStrategy = new Mock<IConcertWorkflowStrategy>().Object;
+    private static readonly IConcertWorkflowStrategy versusStrategy = new Mock<IConcertWorkflowStrategy>().Object;
+    private static readonly IConcertWorkflowStrategy venueHireStrategy = new Mock<IConcertWorkflowStrategy>().Object;
+    private readonly ContractStrategyFactory<IConcertWorkflowStrategy> sut;
 
     public ContractStrategyFactoryTests()
     {
         var services = new ServiceCollection();
-        services.AddKeyedSingleton<IApplicationStrategy>(ContractType.FlatFee, flatFeeStrategy);
-        services.AddKeyedSingleton<IApplicationStrategy>(ContractType.DoorSplit, doorSplitStrategy);
-        services.AddKeyedSingleton<IApplicationStrategy>(ContractType.Versus, versusStrategy);
-        services.AddKeyedSingleton<IApplicationStrategy>(ContractType.VenueHire, venueHireStrategy);
+        services.AddKeyedSingleton<IConcertWorkflowStrategy>(ContractType.FlatFee, flatFeeStrategy);
+        services.AddKeyedSingleton<IConcertWorkflowStrategy>(ContractType.DoorSplit, doorSplitStrategy);
+        services.AddKeyedSingleton<IConcertWorkflowStrategy>(ContractType.Versus, versusStrategy);
+        services.AddKeyedSingleton<IConcertWorkflowStrategy>(ContractType.VenueHire, venueHireStrategy);
 
-        sut = new ContractStrategyFactory<IApplicationStrategy>(services.BuildServiceProvider());
+        sut = new ContractStrategyFactory<IConcertWorkflowStrategy>(services.BuildServiceProvider());
     }
 
-    public static TheoryData<ContractType, IApplicationStrategy> ContractTypeStrategies => new()
+    public static TheoryData<ContractType, IConcertWorkflowStrategy> ContractTypeStrategies => new()
     {
         { ContractType.FlatFee, flatFeeStrategy },
         { ContractType.DoorSplit, doorSplitStrategy },
@@ -36,7 +36,7 @@ public class ContractStrategyFactoryTests
 
     [Theory]
     [MemberData(nameof(ContractTypeStrategies))]
-    public void Create_ShouldReturnCorrectStrategy(ContractType contractType, IApplicationStrategy expected)
+    public void Create_ShouldReturnCorrectStrategy(ContractType contractType, IConcertWorkflowStrategy expected)
     {
         Assert.Same(expected, sut.Create(contractType));
     }

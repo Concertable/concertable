@@ -11,14 +11,14 @@ namespace Concertable.Infrastructure.UnitTests.Factories;
 public class ContractStrategyResolverTests
 {
     private readonly Mock<IContractRepository> contractRepository;
-    private readonly Mock<IContractStrategyFactory<IApplicationStrategy>> factory;
-    private readonly ContractStrategyResolver<IApplicationStrategy> sut;
+    private readonly Mock<IContractStrategyFactory<IConcertWorkflowStrategy>> factory;
+    private readonly ContractStrategyResolver<IConcertWorkflowStrategy> sut;
 
     public ContractStrategyResolverTests()
     {
         contractRepository = new Mock<IContractRepository>();
-        factory = new Mock<IContractStrategyFactory<IApplicationStrategy>>();
-        sut = new ContractStrategyResolver<IApplicationStrategy>(contractRepository.Object, factory.Object);
+        factory = new Mock<IContractStrategyFactory<IConcertWorkflowStrategy>>();
+        sut = new ContractStrategyResolver<IConcertWorkflowStrategy>(contractRepository.Object, factory.Object);
     }
 
     #region ResolveForApplicationAsync
@@ -26,7 +26,7 @@ public class ContractStrategyResolverTests
     [Fact]
     public async Task ResolveForApplicationAsync_ShouldReturnCorrectStrategy()
     {
-        var strategy = new Mock<IApplicationStrategy>().Object;
+        var strategy = new Mock<IConcertWorkflowStrategy>().Object;
         contractRepository.Setup(x => x.GetTypeByApplicationIdAsync(1)).ReturnsAsync(ContractType.FlatFee);
         factory.Setup(x => x.Create(ContractType.FlatFee)).Returns(strategy);
 
@@ -50,7 +50,7 @@ public class ContractStrategyResolverTests
     [Fact]
     public async Task ResolveForConcertAsync_ShouldReturnCorrectStrategy()
     {
-        var strategy = new Mock<IApplicationStrategy>().Object;
+        var strategy = new Mock<IConcertWorkflowStrategy>().Object;
         contractRepository.Setup(x => x.GetTypeByConcertIdAsync(1)).ReturnsAsync(ContractType.DoorSplit);
         factory.Setup(x => x.Create(ContractType.DoorSplit)).Returns(strategy);
 

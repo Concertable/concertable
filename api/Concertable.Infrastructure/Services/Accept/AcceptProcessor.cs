@@ -5,9 +5,9 @@ namespace Concertable.Infrastructure.Services.Accept;
 
 public class AcceptProcessor : IAcceptProcessor
 {
-    private readonly IContractStrategyResolver<IApplicationStrategy> resolver;
+    private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 
-    public AcceptProcessor(IContractStrategyResolver<IApplicationStrategy> resolver)
+    public AcceptProcessor(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
     {
         this.resolver = resolver;
     }
