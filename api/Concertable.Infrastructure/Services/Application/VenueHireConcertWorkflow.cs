@@ -18,6 +18,7 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
     private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertService concertService;
     private readonly IApplicationNotificationService applicationNotificationService;
+    private readonly IApplicationAcceptHandler acceptHandler;
 
     public VenueHireConcertWorkflow(
         IOpportunityApplicationValidator applicationValidator,
@@ -27,7 +28,8 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         IManagerRepository<VenueManagerEntity> venueManagerRepository,
         IManagerPaymentService managerPaymentService,
         IConcertService concertService,
-        IApplicationNotificationService applicationNotificationService)
+        IApplicationNotificationService applicationNotificationService,
+        IApplicationAcceptHandler acceptHandler)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
@@ -37,6 +39,7 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         this.managerPaymentService = managerPaymentService;
         this.concertService = concertService;
         this.applicationNotificationService = applicationNotificationService;
+        this.acceptHandler = acceptHandler;
     }
 
     public async Task InitiateAsync(int applicationId)
@@ -66,14 +69,10 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
 
     public async Task SettleAsync(int applicationId)
     {
-        var application = await applicationRepository.GetByIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
+        await acceptHandler.HandleAsync(applicationId);
 
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
-
-        application.Status = ApplicationStatus.Accepted;
-        await applicationRepository.SaveChangesAsync();
 
         var concertId = await concertService.CreateDraftAsync(applicationId);
         await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);

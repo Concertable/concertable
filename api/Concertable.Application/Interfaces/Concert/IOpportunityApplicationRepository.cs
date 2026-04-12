@@ -16,4 +16,5 @@ public interface IOpportunityApplicationRepository : IRepository<OpportunityAppl
     Task<IEnumerable<OpportunityApplicationEntity>> GetRecentDeniedByArtistIdAsync(int id);
     Task<(ArtistEntity, VenueEntity)?> GetArtistAndVenueByIdAsync(int id);
     Task<OpportunityApplicationEntity?> GetByConcertIdAsync(int concertId);
+    Task RejectAllExceptAsync(int opportunityId, int applicationId);
 }

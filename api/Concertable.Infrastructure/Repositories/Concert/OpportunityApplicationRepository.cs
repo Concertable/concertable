@@ -1,6 +1,7 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -93,6 +94,13 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
             .Where(c => c.Id == concertId)
             .Select(c => c.Application)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task RejectAllExceptAsync(int opportunityId, int applicationId)
+    {
+        await context.OpportunityApplications
+            .Where(a => a.OpportunityId == opportunityId && a.Id != applicationId && a.Status == ApplicationStatus.Pending)
+            .ExecuteUpdateAsync(s => s.SetProperty(a => a.Status, ApplicationStatus.Rejected));
     }
 
     public async Task<IEnumerable<OpportunityApplicationEntity>> GetRecentDeniedByArtistIdAsync(int artistId)

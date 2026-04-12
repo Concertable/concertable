@@ -25,7 +25,8 @@ public class VenueHireConcertWorkflowCompleteTests
             new Mock<IManagerRepository<VenueManagerEntity>>().Object,
             new Mock<IManagerPaymentService>().Object,
             new Mock<IConcertService>().Object,
-            new Mock<IApplicationNotificationService>().Object);
+            new Mock<IApplicationNotificationService>().Object,
+            new Mock<IApplicationAcceptHandler>().Object);
     }
 
     [Fact]

@@ -51,6 +51,7 @@ internal static class ServiceCollectionExtensions
     {
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IStripeAccountService, StripeAccountService>();
+        services.AddScoped<IManagerPaymentService, ManagerPaymentService>();
 
         services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
         services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));

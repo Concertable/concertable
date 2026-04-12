@@ -20,6 +20,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertService concertService;
     private readonly IApplicationNotificationService applicationNotificationService;
+    private readonly IApplicationAcceptHandler acceptHandler;
 
     public DoorSplitConcertWorkflow(
         IOpportunityApplicationValidator applicationValidator,
@@ -30,7 +31,8 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         IConcertRepository concertRepository,
         IManagerPaymentService managerPaymentService,
         IConcertService concertService,
-        IApplicationNotificationService applicationNotificationService)
+        IApplicationNotificationService applicationNotificationService,
+        IApplicationAcceptHandler acceptHandler)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
@@ -41,6 +43,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         this.managerPaymentService = managerPaymentService;
         this.concertService = concertService;
         this.applicationNotificationService = applicationNotificationService;
+        this.acceptHandler = acceptHandler;
     }
 
     public async Task InitiateAsync(int applicationId)
@@ -50,11 +53,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         if (!result.IsValid)
             throw new BadRequestException(result.Errors);
 
-        var application = await applicationRepository.GetByIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
-
-        application.Status = ApplicationStatus.Accepted;
-        await applicationRepository.SaveChangesAsync();
+        await acceptHandler.HandleAsync(applicationId);
 
         var concertId = await concertService.CreateDraftAsync(applicationId);
 

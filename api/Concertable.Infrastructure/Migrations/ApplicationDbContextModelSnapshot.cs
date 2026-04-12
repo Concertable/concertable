@@ -977,7 +977,7 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.UserEntity", "User")
+                    b.HasOne("Concertable.Core.Entities.CustomerEntity", "User")
                         .WithOne("Preference")
                         .HasForeignKey("Concertable.Core.Entities.PreferenceEntity", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1220,8 +1220,6 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.Navigation("PasswordResetTokens");
 
-                    b.Navigation("Preference");
-
                     b.Navigation("ReceivedMessages");
 
                     b.Navigation("RefreshTokens");
@@ -1236,6 +1234,8 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Concertable.Core.Entities.CustomerEntity", b =>
                 {
+                    b.Navigation("Preference");
+
                     b.Navigation("Tickets");
                 });
 

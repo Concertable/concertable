@@ -43,7 +43,8 @@ public class VersusConcertWorkflowCompleteTests
             concertRepository.Object,
             managerPaymentService.Object,
             new Mock<IConcertService>().Object,
-            new Mock<IApplicationNotificationService>().Object);
+            new Mock<IApplicationNotificationService>().Object,
+            new Mock<IApplicationAcceptHandler>().Object);
 
         applicationRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(application);
         contractRepository.Setup(r => r.GetByConcertIdAsync<VersusContractEntity>(10)).ReturnsAsync(contract);

@@ -24,6 +24,7 @@ using Concertable.Infrastructure.Repositories.Review;
 using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Repositories.Search;
 using Concertable.Infrastructure.Services;
+using Concertable.Infrastructure.Handlers;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
 using Concertable.Infrastructure.Services.Auth;
@@ -276,7 +277,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 
+        services.AddScoped<IManagerPaymentService, ManagerPaymentService>();
+        services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
+        services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();
         services.AddScoped<IFinishedProcessor, FinishedProcessor>();
         services.AddScoped<ISettlementProcessor, SettlementProcessor>();
