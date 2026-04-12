@@ -27,12 +27,20 @@ public class HeaderAutocompleteRepository : IHeaderAutocompleteRepository
     }
 
     public async Task<IEnumerable<AutocompleteDto>> GetAsync(string? searchTerm) =>
-        await artistSearchSpecification.Apply(context.Artists, searchTerm)
+        await artistSearchSpecification
+            .Apply(context.Artists.AsNoTracking(), searchTerm)
             .ToAutocompleteDtos()
-            .Concat(venueSearchSpecification.Apply(context.Venues, searchTerm)
-                .ToAutocompleteDtos())
-            .Concat(concertSearchSpecification.Apply(context.Concerts, searchTerm)
-                .ToAutocompleteDtos())
+            .Take(20)
+            .Concat(
+                venueSearchSpecification
+                    .Apply(context.Venues.AsNoTracking(), searchTerm)
+                    .ToAutocompleteDtos()
+                    .Take(20))
+            .Concat(
+                concertSearchSpecification
+                    .Apply(context.Concerts.AsNoTracking(), searchTerm)
+                    .ToAutocompleteDtos()
+                    .Take(20))
             .OrderBy(r => r.Name)
             .Take(10)
             .ToListAsync();
