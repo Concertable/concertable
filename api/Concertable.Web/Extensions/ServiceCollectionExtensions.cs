@@ -170,6 +170,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSignalR();
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+        services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
         services.AddHostedService<QueueHostedService>();
 
         return services;

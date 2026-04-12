@@ -2,24 +2,20 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Handlers;
 
 public class ApplicationAcceptHandler : IApplicationAcceptHandler
 {
     private readonly IOpportunityApplicationRepository applicationRepository;
-    private readonly IBackgroundTaskQueue taskQueue;
-    private readonly IServiceScopeFactory scopeFactory;
+    private readonly IBackgroundTaskRunner taskRunner;
 
     public ApplicationAcceptHandler(
         IOpportunityApplicationRepository applicationRepository,
-        IBackgroundTaskQueue taskQueue,
-        IServiceScopeFactory scopeFactory)
+        IBackgroundTaskRunner taskRunner)
     {
         this.applicationRepository = applicationRepository;
-        this.taskQueue = taskQueue;
-        this.scopeFactory = scopeFactory;
+        this.taskRunner = taskRunner;
     }
 
     public async Task HandleAsync(int applicationId)
@@ -32,11 +28,7 @@ public class ApplicationAcceptHandler : IApplicationAcceptHandler
         application.Status = ApplicationStatus.Accepted;
         await applicationRepository.SaveChangesAsync();
 
-        await taskQueue.EnqueueAsync(async ct =>
-        {
-            await using var scope = scopeFactory.CreateAsyncScope();
-            var repo = scope.ServiceProvider.GetRequiredService<IOpportunityApplicationRepository>();
-            await repo.RejectAllExceptAsync(opportunityId, applicationId);
-        });
+        await taskRunner.RunAsync<IOpportunityApplicationRepository>(
+            (repo, ct) => repo.RejectAllExceptAsync(opportunityId, applicationId));
     }
 }

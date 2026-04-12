@@ -5,18 +5,18 @@ namespace Concertable.Web.Handlers;
 
 public class PostConcertHandler : IPostConcertHandler
 {
-    private readonly IBackgroundTaskQueue queue;
+    private readonly IBackgroundTaskRunner taskRunner;
     private readonly IConcertNotificationService notificationService;
 
-    public PostConcertHandler(IBackgroundTaskQueue queue, IConcertNotificationService notificationService)
+    public PostConcertHandler(IBackgroundTaskRunner taskRunner, IConcertNotificationService notificationService)
     {
-        this.queue = queue;
+        this.taskRunner = taskRunner;
         this.notificationService = notificationService;
     }
 
     public async Task HandleAsync(ConcertPostResult result)
     {
-        await queue.EnqueueAsync(async ct =>
+        await taskRunner.RunAsync(async ct =>
         {
             var tasks = result.UserIds.Select(userId =>
                 notificationService.ConcertPostedAsync(userId.ToString(), result.ConcertHeader));
