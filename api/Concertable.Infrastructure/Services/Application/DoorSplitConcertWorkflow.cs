@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
@@ -42,7 +43,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         this.applicationNotificationService = applicationNotificationService;
     }
 
-    public async Task AcceptAsync(int applicationId)
+    public async Task InitiateAsync(int applicationId)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
@@ -52,7 +53,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        application.Status = ApplicationStatus.AwaitingPayment;
+        application.Status = ApplicationStatus.Accepted;
         await applicationRepository.SaveChangesAsync();
 
         var concertId = await concertService.CreateDraftAsync(applicationId);
@@ -68,11 +69,11 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        application.Status = ApplicationStatus.Settled;
+        application.Status = ApplicationStatus.Complete;
         await applicationRepository.SaveChangesAsync();
     }
 
-    public async Task CompleteAsync(int concertId)
+    public async Task FinishedAsync(int concertId)
     {
         var application = await applicationRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Application not found");
@@ -86,7 +87,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         var artistManager = await artistManagerRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Artist manager not found");
 
-        application.Status = ApplicationStatus.Complete;
+        application.Status = ApplicationStatus.AwaitingPayment;
         await applicationRepository.SaveChangesAsync();
 
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);

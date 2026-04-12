@@ -4,23 +4,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Workers.Functions;
 
-public class ConcertCompleteFunction
+public class ConcertFinishedFunction
 {
     private readonly IConcertRepository concertRepository;
-    private readonly ICompleteProcessor completeProcessor;
-    private readonly ILogger<ConcertCompleteFunction> logger;
+    private readonly IFinishedProcessor finishedProcessor;
+    private readonly ILogger<ConcertFinishedFunction> logger;
 
-    public ConcertCompleteFunction(
+    public ConcertFinishedFunction(
         IConcertRepository concertRepository,
-        ICompleteProcessor completeProcessor,
-        ILogger<ConcertCompleteFunction> logger)
+        IFinishedProcessor finishedProcessor,
+        ILogger<ConcertFinishedFunction> logger)
     {
         this.concertRepository = concertRepository;
-        this.completeProcessor = completeProcessor;
+        this.finishedProcessor = finishedProcessor;
         this.logger = logger;
     }
 
-    [Function(nameof(ConcertCompleteFunction))]
+    [Function(nameof(ConcertFinishedFunction))]
     public async Task Run([TimerTrigger("0 0 * * * *")] TimerInfo timer)
     {
         var concertIds = await concertRepository.GetEndedConfirmedIdsAsync();
@@ -29,12 +29,12 @@ public class ConcertCompleteFunction
         {
             try
             {
-                await completeProcessor.CompleteAsync(concertId);
-                logger.LogInformation("Completed concert {ConcertId}", concertId);
+                await finishedProcessor.FinishedAsync(concertId);
+                logger.LogInformation("Finished concert {ConcertId}", concertId);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to complete concert {ConcertId}", concertId);
+                logger.LogError(ex, "Failed to finish concert {ConcertId}", concertId);
             }
         }
     }

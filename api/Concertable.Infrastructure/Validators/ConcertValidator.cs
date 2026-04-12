@@ -23,8 +23,8 @@ public class ConcertValidator : IConcertValidator
     {
         var result = new ValidationResult();
 
-        if (concert.Application.Status != ApplicationStatus.Settled)
-            result.AddError("Concert cannot be posted until the application is settled");
+        if (concert.Application.Status != ApplicationStatus.Accepted)
+            result.AddError("Concert cannot be posted until the application is accepted");
 
         if (concert.DatePosted is not null)
             result.AddError("Concert has already been posted");

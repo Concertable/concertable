@@ -15,6 +15,6 @@ public class AcceptProcessor : IAcceptProcessor
     public async Task AcceptAsync(int applicationId)
     {
         var strategy = await resolver.ResolveForApplicationAsync(applicationId);
-        await strategy.AcceptAsync(applicationId);
+        await strategy.InitiateAsync(applicationId);
     }
 }

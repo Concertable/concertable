@@ -20,7 +20,7 @@ public class VersusConcertWorkflowCompleteTests
     private readonly Mock<IManagerPaymentService> managerPaymentService;
     private readonly VersusConcertWorkflow sut;
 
-    private readonly OpportunityApplicationEntity application = new() { Id = 5, Status = ApplicationStatus.Settled };
+    private readonly OpportunityApplicationEntity application = new() { Id = 5, Status = ApplicationStatus.Confirmed };
     private readonly VersusContractEntity contract = new() { Guarantee = 200, ArtistDoorPercent = 50 };
     private readonly VenueManagerEntity venueManager = new() { Id = Guid.NewGuid(), Email = "venue@test.com", StripeCustomerId = "cus_venue", Role = Role.VenueManager };
     private readonly ArtistManagerEntity artistManager = new() { Id = Guid.NewGuid(), Email = "artist@test.com", StripeAccountId = "acct_artist", Role = Role.ArtistManager };
@@ -53,19 +53,19 @@ public class VersusConcertWorkflowCompleteTests
     }
 
     [Fact]
-    public async Task CompleteAsync_ShouldSetStatusToComplete()
+    public async Task FinishedAsync_ShouldSetStatusToAwaitingPayment()
     {
-        await sut.CompleteAsync(10);
+        await sut.FinishedAsync(10);
 
-        Assert.Equal(ApplicationStatus.Complete, application.Status);
+        Assert.Equal(ApplicationStatus.AwaitingPayment, application.Status);
         applicationRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
-    public async Task CompleteAsync_ShouldPayCorrectArtistShare()
+    public async Task FinishedAsync_ShouldPayCorrectArtistShare()
     {
         // guarantee 200 + 50% of 1000 = 700
-        await sut.CompleteAsync(10);
+        await sut.FinishedAsync(10);
 
         managerPaymentService.Verify(p => p.PayAsync(venueManager, artistManager, 700m, application.Id), Times.Once);
     }

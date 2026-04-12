@@ -83,9 +83,9 @@ public class DevController : ControllerBase
     [HttpPost("complete")]
     public async Task<IActionResult> Complete(
         [FromQuery] int concertId,
-        [FromServices] ICompleteProcessor completeProcessor)
+        [FromServices] IFinishedProcessor finishedProcessor)
     {
-        await completeProcessor.CompleteAsync(concertId);
+        await finishedProcessor.FinishedAsync(concertId);
         return Ok();
     }
 }

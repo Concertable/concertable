@@ -220,7 +220,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     OpportunityId = TestConstants.Settled.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Settled,
+                    Status = ApplicationStatus.Accepted,
                     Concert = new ConcertEntity
                     {
                         Name = "Draft Concert",
@@ -266,7 +266,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     OpportunityId = TestConstants.PostedFlatFee.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Settled,
+                    Status = ApplicationStatus.Accepted,
                     Concert = new ConcertEntity
                     {
                         Name = "Posted FlatFee Concert",
@@ -281,7 +281,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     OpportunityId = TestConstants.PostedDoorSplit.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Settled,
+                    Status = ApplicationStatus.Accepted,
                     Concert = new ConcertEntity
                     {
                         Name = "Posted DoorSplit Concert",
@@ -296,7 +296,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     OpportunityId = TestConstants.PostedVersus.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Settled,
+                    Status = ApplicationStatus.Accepted,
                     Concert = new ConcertEntity
                     {
                         Name = "Posted Versus Concert",
@@ -311,7 +311,7 @@ public class TestDbInitializer : IDbInitializer
                 {
                     OpportunityId = TestConstants.PostedVenueHire.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Settled,
+                    Status = ApplicationStatus.Accepted,
                     Concert = new ConcertEntity
                     {
                         Name = "Posted VenueHire Concert",

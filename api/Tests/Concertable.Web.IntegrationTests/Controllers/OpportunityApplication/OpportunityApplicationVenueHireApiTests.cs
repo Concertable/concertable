@@ -47,7 +47,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
 
         // Assert
         var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.VenueHire.ApplicationId}");
-        Assert.Equal(ApplicationStatus.Settled, application!.Status);
+        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
         var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.VenueHire.ApplicationId}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);

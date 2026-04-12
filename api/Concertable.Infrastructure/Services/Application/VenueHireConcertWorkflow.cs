@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Core.Exceptions;
@@ -38,7 +39,7 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         this.applicationNotificationService = applicationNotificationService;
     }
 
-    public async Task AcceptAsync(int applicationId)
+    public async Task InitiateAsync(int applicationId)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
@@ -71,14 +72,14 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
-        application.Status = ApplicationStatus.Settled;
+        application.Status = ApplicationStatus.Accepted;
         await applicationRepository.SaveChangesAsync();
 
         var concertId = await concertService.CreateDraftAsync(applicationId);
         await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);
     }
 
-    public async Task CompleteAsync(int concertId)
+    public async Task FinishedAsync(int concertId)
     {
         var application = await applicationRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Application not found");

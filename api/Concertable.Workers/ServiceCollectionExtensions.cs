@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Concertable.Infrastructure.Data;
+using Concertable.Core.Entities;
 
 namespace Workers;
 
@@ -54,7 +55,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
         services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
 
-        services.AddScoped<ICompleteProcessor, CompleteProcessor>();
+        services.AddScoped<IFinishedProcessor, FinishedProcessor>();
         services.AddScoped<ISettlementProcessor, SettlementProcessor>();
         services.AddKeyedScoped<IConcertWorkflowStrategy, FlatFeeConcertWorkflow>(ContractType.FlatFee);
         services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);

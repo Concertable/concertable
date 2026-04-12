@@ -278,7 +278,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
         services.AddScoped<IAcceptProcessor, AcceptProcessor>();
-        services.AddScoped<ICompleteProcessor, CompleteProcessor>();
+        services.AddScoped<IFinishedProcessor, FinishedProcessor>();
         services.AddScoped<ISettlementProcessor, SettlementProcessor>();
 
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);

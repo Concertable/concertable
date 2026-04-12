@@ -47,7 +47,7 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
 
         // Assert
         var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.FlatFee.ApplicationId}");
-        Assert.Equal(ApplicationStatus.Settled, application!.Status);
+        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
         var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.FlatFee.ApplicationId}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);

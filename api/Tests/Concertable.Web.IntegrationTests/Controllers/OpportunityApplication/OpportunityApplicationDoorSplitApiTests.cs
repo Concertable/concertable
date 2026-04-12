@@ -45,7 +45,7 @@ public class OpportunityApplicationDoorSplitApiTests : IAsyncLifetime
 
         // Assert
         var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.DoorSplit.ApplicationId}");
-        Assert.Equal(ApplicationStatus.AwaitingPayment, application!.Status);
+        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
         var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.DoorSplit.ApplicationId}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);

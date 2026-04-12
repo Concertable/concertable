@@ -3,18 +3,18 @@ using Concertable.Application.Interfaces.Concert;
 
 namespace Concertable.Infrastructure.Services.Complete;
 
-public class CompleteProcessor : ICompleteProcessor
+public class FinishedProcessor : IFinishedProcessor
 {
     private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 
-    public CompleteProcessor(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
+    public FinishedProcessor(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
     {
         this.resolver = resolver;
     }
 
-    public async Task CompleteAsync(int concertId)
+    public async Task FinishedAsync(int concertId)
     {
         var strategy = await resolver.ResolveForConcertAsync(concertId);
-        await strategy.CompleteAsync(concertId);
+        await strategy.FinishedAsync(concertId);
     }
 }

@@ -9,22 +9,22 @@ namespace Concertable.Infrastructure.UnitTests.Services.Complete;
 public class CompleteProcessorTests
 {
     private readonly Mock<IContractStrategyResolver<IConcertWorkflowStrategy>> resolver;
-    private readonly CompleteProcessor sut;
+    private readonly FinishedProcessor sut;
 
     public CompleteProcessorTests()
     {
         resolver = new Mock<IContractStrategyResolver<IConcertWorkflowStrategy>>();
-        sut = new CompleteProcessor(resolver.Object);
+        sut = new FinishedProcessor(resolver.Object);
     }
 
     [Fact]
-    public async Task CompleteAsync_ShouldResolveStrategyAndDelegate()
+    public async Task FinishedAsync_ShouldResolveStrategyAndDelegate()
     {
         var strategy = new Mock<IConcertWorkflowStrategy>();
         resolver.Setup(r => r.ResolveForConcertAsync(1)).ReturnsAsync(strategy.Object);
 
-        await sut.CompleteAsync(1);
+        await sut.FinishedAsync(1);
 
-        strategy.Verify(s => s.CompleteAsync(1), Times.Once);
+        strategy.Verify(s => s.FinishedAsync(1), Times.Once);
     }
 }

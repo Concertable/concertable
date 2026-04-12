@@ -9,7 +9,8 @@ public enum ApplicationStatus
     Rejected,
     Withdrawn,
     AwaitingPayment,
+    Accepted,
     Confirmed,
-    Complete,
-    Settled
+    PaymentFailed,
+    Complete
 }

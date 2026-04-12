@@ -29,14 +29,14 @@ public class VenueHireConcertWorkflowCompleteTests
     }
 
     [Fact]
-    public async Task CompleteAsync_ShouldSetStatusToComplete()
+    public async Task FinishedAsync_ShouldSetStatusToComplete()
     {
         // Arrange
-        var application = new OpportunityApplicationEntity { Id = 1, Status = ApplicationStatus.Settled };
+        var application = new OpportunityApplicationEntity { Id = 1, Status = ApplicationStatus.Confirmed };
         applicationRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(application);
 
         // Act
-        await sut.CompleteAsync(10);
+        await sut.FinishedAsync(10);
 
         // Assert
         Assert.Equal(ApplicationStatus.Complete, application.Status);
