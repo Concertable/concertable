@@ -20,6 +20,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Concertable.Web\Concertable.Web.csproj" />
+    <ProjectReference Include="..\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Concertable.Tests.Common" />
   </ItemGroup>
 
 </Project>

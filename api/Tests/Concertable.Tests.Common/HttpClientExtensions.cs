@@ -1,10 +1,9 @@
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.Tests.Common;
 
 public static class HttpClientExtensions
 {
@@ -41,11 +40,6 @@ public static class HttpClientExtensions
     public static async Task<HttpResponseMessage> PutAsync<T>(this HttpClient client, string url, T body)
     {
         return await client.PutAsJsonAsync(url, body, JsonOptions);
-    }
-
-    public static async Task<HttpResponseMessage> GetAsync(this HttpClient client, string url)
-    {
-        return await client.GetAsync(url);
     }
 
     public static async Task<T?> GetAsync<T>(this HttpClient client, string url)

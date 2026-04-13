@@ -16,7 +16,7 @@ namespace Concertable.Web.IntegrationTests.Infrastructure;
 
 public class ApiFixture : IAsyncLifetime
 {
-    private readonly SqlFixture sqlFixture = new();
+    private SqlFixture sqlFixture = null!;
     private WebApplicationFactory<Program> factory = null!;
 
     public IMockNotificationService NotificationService { get; } = new MockNotificationService();
@@ -26,6 +26,7 @@ public class ApiFixture : IAsyncLifetime
 
 public async Task InitializeAsync()
     {
+        sqlFixture = new SqlFixture();
         await sqlFixture.InitializeAsync();
         factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {

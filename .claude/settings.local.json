@@ -95,7 +95,25 @@
       "Bash(mv Concertable.Application/Responses/ValidationResult.cs Concertable.Application/Results/ValidationResult.cs)",
       "Bash(rmdir Concertable.Application/Responses)",
       "Bash(del:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:wrapt.dev)",
+      "Bash(dotnet new classlib:*)",
+      "Bash(dotnet-dump)",
+      "Bash(powershell -command 'Add-Type -Path '\\\\''C:/Users/TommySeery/.nuget/packages/aspire.hosting.sqlserver/13.2.2/lib/net10.0/Aspire.Hosting.SqlServer.dll'\\\\''; [System.AppDomain]::CurrentDomain.GetAssemblies\\(\\) | Where-Object { $_.GetName\\(\\).Name -eq '\\\\''Aspire.Hosting.SqlServer'\\\\'' } | ForEach-Object { $_.GetTypes\\(\\) | Select-Object FullName }')",
+      "Read(//c/Users/TommySeery/.nuget/packages/**)",
+      "Read(//c/Users/TommySeery/.nuget/packages/aspire.hosting/**)",
+      "Bash(powershell:*)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/dotnet/aspire/main/src/Aspire.Hosting/ApplicationModel/SqlServerServerResource.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/dotnet/aspire/main/src/Aspire.Hosting/ApplicationModel/VolumeMountAnnotation.cs\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/dotnet/aspire/main/src/Aspire.Hosting/ApplicationModel/ProjectResource.cs\")",
+      "Bash(curl -s \"https://api.github.com/search/code?q=VolumeMountAnnotation+repo:dotnet/aspire+extension:cs&per_page=5\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(i['path']\\) for i in d.get\\('items',[]\\)]\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/dotnet/aspire/main/src/Aspire.Hosting/ApplicationModel/ContainerMountAnnotation.cs\")",
+      "Bash(curl -s \"https://learn.microsoft.com/en-us/dotnet/api/aspire.hosting.applicationmodel.volumemountannotation?view=dotnet-aspire-13.0\")",
+      "Bash(curl -s \"https://learn.microsoft.com/en-us/dotnet/api/aspire.hosting.applicationmodel.containermountannotation?view=dotnet-aspire-13.0\")",
+      "Bash(curl:*)",
+      "Bash(dotnet --version)",
+      "WebFetch(domain:aspire.dev)"
     ]
   }
 }

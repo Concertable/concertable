@@ -86,6 +86,8 @@ app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<NotificationHub>("/hub/notifications");
+app.MapGet("/health", () => Results.Ok());
+
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api"))
