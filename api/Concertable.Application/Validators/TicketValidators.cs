@@ -12,10 +12,6 @@ public class TicketPurchaseParamsValidator : AbstractValidator<TicketPurchasePar
 {
     public TicketPurchaseParamsValidator()
     {
-        RuleFor(x => x.PaymentMethodId)
-            .NotEmpty()
-            .WithMessage("Payment method ID is required");
-
         RuleFor(x => x.ConcertId)
             .GreaterThan(0)
             .WithMessage("Concert ID is required");

@@ -32,6 +32,7 @@ public class PaymentService : IPaymentService
                 Amount = (long)(request.Amount * 100),
                 Currency = "GBP",
                 PaymentMethod = request.PaymentMethodId,
+                Customer = request.StripeCustomerId,
                 Confirm = true,
                 ConfirmationMethod = "automatic",
                 CaptureMethod = "automatic",

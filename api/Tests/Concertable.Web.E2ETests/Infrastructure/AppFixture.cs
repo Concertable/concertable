@@ -14,9 +14,6 @@ public class AppFixture : IAsyncLifetime
     internal const string ApiBaseUrl = "http://localhost:7001";
 
     public HttpClient Client { get; private set; } = null!;
-    public HttpClient ArtistManagerClient { get; private set; } = null!;
-    public HttpClient VenueManagerClient { get; private set; } = null!;
-    public HttpClient CustomerClient { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
@@ -37,19 +34,26 @@ public class AppFixture : IAsyncLifetime
 
         sqlFixture = new SqlFixture();
         await sqlFixture.InitializeAsync(app);
-
-        ArtistManagerClient = await CreateAuthenticatedClientAsync("artistmanager1@test.com", "Password11!");
-        VenueManagerClient = await CreateAuthenticatedClientAsync("venuemanager1@test.com", "Password11!");
-        CustomerClient = await CreateAuthenticatedClientAsync("customer1@test.com", "Password11!");
     }
 
-    public async Task ResetAsync() => await sqlFixture.ResetAsync();
+    public async Task ResetAsync()
+    {
+        await sqlFixture.ResetAsync();
+        await Client.PostAsync("/e2e/reseed");
+    }
+
+    public async Task<HttpClient> CreateAuthenticatedClientAsync(string email, string password)
+    {
+        var response = await Client.PostAsJsonEnsureSuccessAsync("/api/Auth/login", new { Email = email, Password = password, RememberMe = false });
+        var login = await response.Content.ReadAsync<LoginResponse>();
+
+        var httpClient = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login!.AccessToken);
+        return httpClient;
+    }
 
     public async Task DisposeAsync()
     {
-        ArtistManagerClient?.Dispose();
-        VenueManagerClient?.Dispose();
-        CustomerClient?.Dispose();
         Client.Dispose();
         await sqlFixture.DisposeAsync();
         await app.DisposeAsync();
@@ -70,15 +74,5 @@ public class AppFixture : IAsyncLifetime
                 return false;
             }
         }, timeout: TimeSpan.FromSeconds(60), interval: TimeSpan.FromSeconds(1));
-    }
-
-    private async Task<HttpClient> CreateAuthenticatedClientAsync(string email, string password)
-    {
-        var response = await Client.PostAsJsonEnsureSuccessAsync("/api/Auth/login", new { Email = email, Password = password, RememberMe = false });
-        var login = await response.Content.ReadAsync<LoginResponse>();
-
-        var httpClient = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login!.AccessToken);
-        return httpClient;
     }
 }

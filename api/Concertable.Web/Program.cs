@@ -88,6 +88,15 @@ app.MapControllers();
 app.MapHub<NotificationHub>("/hub/notifications");
 app.MapGet("/health", () => Results.Ok());
 
+if (app.Environment.IsEnvironment("E2E"))
+{
+    app.MapPost("/e2e/reseed", async (IDbInitializer dbInitializer) =>
+    {
+        await dbInitializer.InitializeAsync();
+        return Results.Ok();
+    });
+}
+
 app.MapFallback(async context =>
 {
     if (context.Request.Path.StartsWithSegments("/api"))

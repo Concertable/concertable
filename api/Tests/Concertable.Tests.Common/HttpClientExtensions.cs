@@ -18,16 +18,9 @@ public static class HttpClientExtensions
         return await client.PostAsJsonAsync(url, body, JsonOptions);
     }
 
-    public static async Task<HttpResponseMessage> PostAsJsonEnsureSuccessAsync(this HttpClient client, string url)
+    public static async Task<HttpResponseMessage> PostAsync(this HttpClient client, string url)
     {
-        using var content = new StringContent("{}", Encoding.UTF8, "application/json");
-        var response = await client.PostAsync(url, content);
-        if (!response.IsSuccessStatusCode)
-        {
-            var body = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"{(int)response.StatusCode} {response.StatusCode} from {url}: {body}");
-        }
-        return response;
+        return await client.PostAsync(url, new StringContent("{}", Encoding.UTF8, "application/json"));
     }
 
     public static async Task<HttpResponseMessage> PostAsJsonEnsureSuccessAsync<T>(this HttpClient client, string url, T body)
