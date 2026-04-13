@@ -20,11 +20,11 @@ public class AppFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        stripeCli = new StripeCliFixture(ApiBaseUrl);
-        await stripeCli.InitializeAsync();
-
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
+
+        stripeCli = builder.AddStripe(ApiBaseUrl);
+        await stripeCli.InitializeAsync();
 
         builder.AddE2E(stripeCli.WebhookSecret);
 
@@ -33,10 +33,10 @@ public class AppFixture : IAsyncLifetime
 
         Client = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
 
+        await WaitForAppAsync();
+
         sqlFixture = new SqlFixture();
         await sqlFixture.InitializeAsync(app);
-
-        await WaitForAppAsync();
 
         ArtistManagerClient = await CreateAuthenticatedClientAsync("artistmanager1@test.com", "Password11!");
         VenueManagerClient = await CreateAuthenticatedClientAsync("venuemanager1@test.com", "Password11!");

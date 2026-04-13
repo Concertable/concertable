@@ -1,6 +1,7 @@
 import { CreditCard, ExternalLink, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import {
@@ -15,8 +16,11 @@ export default function PaymentPage() {
   const user = useAuthStore((s) => s.user);
   const isManager =
     user?.role === "VenueManager" || user?.role === "ArtistManager";
-  const { data: isVerified, refetch: refetchVerified } =
-    useStripeVerifiedQuery(isManager);
+  const {
+    data: isVerified,
+    refetch: refetchVerified,
+    isLoading: isVerifiedLoading,
+  } = useStripeVerifiedQuery(isManager);
   const { refetch: openOnboarding, isFetching } = useStripeOnboardingQuery();
 
   useMountEffect(() => {
@@ -39,7 +43,8 @@ export default function PaymentPage() {
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   });
-  const { data: paymentMethod } = usePaymentMethodQuery();
+  const { data: paymentMethod, isLoading: isPaymentMethodLoading } =
+    usePaymentMethodQuery();
 
   return (
     <div className="max-w-lg space-y-8">
@@ -54,7 +59,9 @@ export default function PaymentPage() {
 
       <div className="space-y-4">
         <h3 className="font-medium">Payment Method</h3>
-        {paymentMethod ? (
+        {isPaymentMethodLoading ? (
+          <Skeleton className="h-[66px] w-full rounded-lg" />
+        ) : paymentMethod ? (
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="flex items-center gap-3">
               <CreditCard className="text-muted-foreground size-5" />
@@ -94,7 +101,10 @@ export default function PaymentPage() {
               bookings.
             </p>
             <div className="flex items-center gap-3 pt-2">
-              {isVerified !== undefined &&
+              {isVerifiedLoading ? (
+                <div className="text-muted-foreground size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                isVerified !== undefined &&
                 (isVerified ? (
                   <span className="flex items-center gap-1 text-sm text-green-600">
                     <CheckCircle className="size-4" /> Verified
@@ -103,7 +113,8 @@ export default function PaymentPage() {
                   <span className="text-destructive flex items-center gap-1 text-sm">
                     <XCircle className="size-4" /> Not verified
                   </span>
-                ))}
+                ))
+              )}
               <Button
                 onClick={() =>
                   openOnboarding().then(({ data: link }) => {

@@ -113,7 +113,9 @@
       "Bash(curl -s \"https://learn.microsoft.com/en-us/dotnet/api/aspire.hosting.applicationmodel.containermountannotation?view=dotnet-aspire-13.0\")",
       "Bash(curl:*)",
       "Bash(dotnet --version)",
-      "WebFetch(domain:aspire.dev)"
+      "WebFetch(domain:aspire.dev)",
+      "Bash(cmd.exe:*)",
+      "Bash(dotnet user-secrets:*)"
     ]
   }
 }

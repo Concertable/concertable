@@ -6,12 +6,14 @@ namespace Concertable.Web.E2ETests.Infrastructure;
 public class StripeCliFixture : IAsyncLifetime
 {
     private Process? process;
+    private readonly string apiKey;
     private readonly string forwardUrl;
 
     public string WebhookSecret { get; private set; } = null!;
 
-    public StripeCliFixture(string forwardUrl)
+    public StripeCliFixture(string apiKey, string forwardUrl)
     {
+        this.apiKey = apiKey;
         this.forwardUrl = forwardUrl;
     }
 
@@ -23,8 +25,8 @@ public class StripeCliFixture : IAsyncLifetime
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "stripe",
-                Arguments = $"listen --forward-to {forwardUrl}/api/Webhook",
+                FileName = "docker",
+                Arguments = $"run --rm stripe/stripe-cli listen --api-key {apiKey} --forward-to {forwardUrl.Replace("localhost", "host.docker.internal")}/api/Webhook",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

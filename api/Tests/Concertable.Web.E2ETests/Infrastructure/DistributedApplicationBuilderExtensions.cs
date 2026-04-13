@@ -1,6 +1,7 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
+using Microsoft.Extensions.Configuration;
 
 namespace Concertable.Web.E2ETests.Infrastructure;
 
@@ -8,6 +9,20 @@ internal static class DistributedApplicationBuilderExtensions
 {
     private const string ApiResourceName = "api";
     private const string ApiBaseUrl = "http://localhost:7001";
+
+    public static StripeCliFixture AddStripe(
+        this IDistributedApplicationTestingBuilder builder,
+        string apiBaseUrl)
+    {
+        var config = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.E2E.json"))
+            .Build();
+
+        var apiKey = config["Stripe:SecretKey"]
+            ?? throw new InvalidOperationException("Stripe:SecretKey is not configured in appsettings.E2E.json.");
+
+        return new StripeCliFixture(apiKey, apiBaseUrl);
+    }
 
     public static IDistributedApplicationTestingBuilder AddE2E(
         this IDistributedApplicationTestingBuilder builder,
