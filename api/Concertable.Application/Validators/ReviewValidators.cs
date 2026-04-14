@@ -8,6 +8,6 @@ public class CreateReviewRequestValidator : AbstractValidator<CreateReviewReques
     public CreateReviewRequestValidator()
     {
         RuleFor(x => x.ConcertId).GreaterThan(0);
-        RuleFor(x => x.Stars).InclusiveBetween(1, 5);
+        RuleFor(x => x.Stars).InclusiveBetween((byte)1, (byte)5);
     }
 }

@@ -3,6 +3,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
+using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
@@ -33,13 +34,11 @@ public class ConcertReviewService : IReviewService
 
     public async Task<ReviewDto> CreateAsync(CreateReviewRequest request)
     {
-        var review = request.ToEntity();
-
         var userId = currentUser.GetId();
         var ticket = await ticketRepository.GetByUserIdAndConcertIdAsync(userId, request.ConcertId)
             ?? throw new NotFoundException("Cannot find ticket");
 
-        review.TicketId = ticket.Id;
+        var review = ReviewEntity.Create(ticket.Id, request.Stars, request.Details);
 
         await reviewRepository.AddAsync(review);
         await reviewRepository.SaveChangesAsync();
