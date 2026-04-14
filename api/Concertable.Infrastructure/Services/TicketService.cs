@@ -88,19 +88,8 @@ public class TicketService : ITicketService
         {
             for (int i = 0; i < quantity; i++)
             {
-                var ticket = new TicketEntity
-                {
-                    UserId = purchaseCompleteDto.FromUserId,
-                    ConcertId = purchaseCompleteDto.EntityId,
-                    PurchaseDate = timeProvider.GetUtcNow().DateTime
-                };
-
-                var ticketResponse = await ticketRepository.AddAsync(ticket);
-                await unitOfWork.SaveChangesAsync();
-
-                ticket.QrCode = qrCodeService.GenerateFromTicketId(ticketResponse.Id);
-                ticketRepository.Update(ticket);
-
+                var ticket = BuildTicket(purchaseCompleteDto.FromUserId, purchaseCompleteDto.EntityId);
+                await ticketRepository.AddAsync(ticket);
                 tickets.Add(ticket);
             }
 
@@ -143,5 +132,12 @@ public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
         var user = currentUser.Get();
         var tickets = await ticketRepository.GetHistoryByUserIdAsync(user.Id);
         return tickets.ToDtos();
+    }
+
+    private TicketEntity BuildTicket(Guid userId, int concertId)
+    {
+        var ticketId = Guid.CreateVersion7();
+        var qrCode = qrCodeService.GenerateFromTicketId(ticketId);
+        return TicketEntity.Create(ticketId, userId, concertId, qrCode, timeProvider.GetUtcNow().DateTime);
     }
 }

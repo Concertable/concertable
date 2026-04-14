@@ -24,6 +24,8 @@ public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>, IRe
     public HashSet<ConcertGenreEntity> ConcertGenres { get; private set; } = [];
     public ICollection<ConcertImageEntity> Images { get; private set; } = [];
 
+    private ConcertEntity() { }
+
     public static ConcertEntity CreateDraft(int applicationId, string name, string about, IEnumerable<int> genreIds) => new()
     {
         ApplicationId = applicationId,

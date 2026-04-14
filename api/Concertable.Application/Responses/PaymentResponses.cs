@@ -9,7 +9,7 @@ public record PaymentResponse
 
 public record TicketPaymentResponse : PaymentResponse
 {
-    public IEnumerable<int> TicketIds { get; set; } = [];
+    public IEnumerable<Guid> TicketIds { get; set; } = [];
     public int ConcertId { get; set; }
     public decimal Amount { get; set; }
     public string? Currency { get; set; }

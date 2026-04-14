@@ -14,7 +14,7 @@ public class PdfService : IPdfService
         this.qrCodeService = qrCodeService;
     }
 
-    public async Task<byte[]> GenerateTicketReciptAsync(string email, int ticketId)
+    public async Task<byte[]> GenerateTicketReciptAsync(string email, Guid ticketId)
     {
         byte[] qrCode = await qrCodeService.GetByTicketIdAsync(ticketId);
 

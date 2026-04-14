@@ -53,9 +53,9 @@ public record ImageDto
 
 public record TicketDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public DateTime PurchaseDate { get; set; }
-    public byte[]? QrCode { get; set; }
+    public byte[] QrCode { get; set; } = null!;
     public required TicketConcertDto Concert { get; set; }
     public required UserDto User { get; set; }
 }

@@ -77,7 +77,7 @@ public class EmailService : IEmailService
         await SendAsync(emailDto);
     }
 
-    public async Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds)
+    public async Task SendTicketsToEmailAsync(string toEmail, IEnumerable<Guid> ticketIds)
     {
         var attachments = new List<AttachmentDto>();
 

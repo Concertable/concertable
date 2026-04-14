@@ -18,7 +18,7 @@ public class FakeEmailService : IEmailService
         return Task.CompletedTask;
     }
 
-    public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds)
+    public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<Guid> ticketIds)
     {
         logger.LogInformation("[FakeEmail] Tickets to: {Email} | TicketIds: {Ids}", toEmail, string.Join(", ", ticketIds));
         return Task.CompletedTask;

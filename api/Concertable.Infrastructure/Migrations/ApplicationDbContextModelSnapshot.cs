@@ -425,8 +425,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("Stars")
                         .HasColumnType("int");
 
-                    b.Property<int>("TicketId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -476,11 +476,9 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Concertable.Core.Entities.TicketEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ConcertId")
                         .HasColumnType("int");
@@ -489,6 +487,7 @@ namespace Concertable.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<byte[]>("QrCode")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<Guid>("UserId")

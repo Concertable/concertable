@@ -15,14 +15,14 @@ public class QrCodeService : IQrCodeService
         this.ticketRepository = ticketRepository;
     }
 
-    public byte[] GenerateFromTicketId(int id)
+    public byte[] GenerateFromTicketId(Guid id)
     {
         QRCodeData qrCodeData = qrCodeGenerator.CreateQrCode(id.ToString(), QRCodeGenerator.ECCLevel.Q);
         PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
         return qrCode.GetGraphic(20);
     }
 
-    public async Task<byte[]> GetByTicketIdAsync(int ticketId)
+    public async Task<byte[]> GetByTicketIdAsync(Guid ticketId)
     {
         return await ticketRepository.GetQrCodeByIdAsync(ticketId)
             ?? throw new NotFoundException("QR Code not found");

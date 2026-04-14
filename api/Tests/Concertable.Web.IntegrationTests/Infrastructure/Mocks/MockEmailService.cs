@@ -15,7 +15,7 @@ public class MockEmailService : IMockEmailService
         return Task.CompletedTask;
     }
 
-    public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<int> ticketIds) => Task.CompletedTask;
+    public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<Guid> ticketIds) => Task.CompletedTask;
 
     public void Reset() => _sent.Clear();
 

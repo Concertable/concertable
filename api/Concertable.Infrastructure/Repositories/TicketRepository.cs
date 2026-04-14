@@ -2,16 +2,10 @@ using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Concertable.Infrastructure.Repositories;
 
-public class TicketRepository : Repository<TicketEntity>, ITicketRepository
+public class TicketRepository : GuidRepository<TicketEntity>, ITicketRepository
 {
     private readonly TimeProvider timeProvider;
 
@@ -20,13 +14,12 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
         this.timeProvider = timeProvider;
     }
 
-    public Task<byte[]?> GetQrCodeByIdAsync(int id)
+    public Task<byte[]?> GetQrCodeByIdAsync(Guid id)
     {
-        var query = context.Tickets
+        return context.Tickets
             .Where(t => t.Id == id)
-            .Select(t => t.QrCode);
-
-        return query.FirstOrDefaultAsync();
+            .Select(t => t.QrCode)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(Guid id)
@@ -55,5 +48,4 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
             .Include(t => t.Concert)
             .FirstOrDefaultAsync(t => t.UserId == userId && t.ConcertId == concertId);
     }
-
 }
