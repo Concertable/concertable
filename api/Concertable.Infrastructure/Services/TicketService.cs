@@ -104,7 +104,7 @@ public class TicketService : ITicketService
                 tickets.Add(ticket);
             }
 
-            concertEntity.AvailableTickets -= quantity;
+            concertEntity.SellTickets(quantity);
             concertRepository.Update(concertEntity);
 
             await unitOfWork.SaveChangesAsync();

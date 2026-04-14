@@ -198,6 +198,22 @@ public class TestDbInitializer : IDbInitializer
 
         if (!await context.OpportunityApplications.AnyAsync())
         {
+            var draftConcert = ConcertEntity.CreateDraft(0, "Draft Concert", "Draft Concert About", []);
+
+            var unsettledConcert = ConcertEntity.CreateDraft(0, "Unsettled Concert", "Unsettled Concert About", []);
+
+            var postedFlatFeeConcert = ConcertEntity.CreateDraft(0, "Posted FlatFee Concert", "Posted FlatFee Concert About", []);
+            postedFlatFeeConcert.Post("Posted FlatFee Concert", "Posted FlatFee Concert About", 10.00m, 100, DateTime.UtcNow);
+
+            var postedDoorSplitConcert = ConcertEntity.CreateDraft(0, "Posted DoorSplit Concert", "Posted DoorSplit Concert About", []);
+            postedDoorSplitConcert.Post("Posted DoorSplit Concert", "Posted DoorSplit Concert About", 10.00m, 100, DateTime.UtcNow);
+
+            var postedVersusConcert = ConcertEntity.CreateDraft(0, "Posted Versus Concert", "Posted Versus Concert About", []);
+            postedVersusConcert.Post("Posted Versus Concert", "Posted Versus Concert About", 10.00m, 100, DateTime.UtcNow);
+
+            var postedVenueHireConcert = ConcertEntity.CreateDraft(0, "Posted VenueHire Concert", "Posted VenueHire Concert About", []);
+            postedVenueHireConcert.Post("Posted VenueHire Concert", "Posted VenueHire Concert About", 10.00m, 100, DateTime.UtcNow);
+
             context.OpportunityApplications.AddRange(
                 new OpportunityApplicationEntity
                 {
@@ -210,28 +226,14 @@ public class TestDbInitializer : IDbInitializer
                     OpportunityId = TestConstants.Settled.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Accepted,
-                    Concert = new ConcertEntity
-                    {
-                        Name = "Draft Concert",
-                        About = "Draft Concert About",
-                        Price = 0,
-                        TotalTickets = 0,
-                        AvailableTickets = 0
-                    }
+                    Concert = draftConcert
                 },
                 new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.AwaitingPayment.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.AwaitingPayment,
-                    Concert = new ConcertEntity
-                    {
-                        Name = "Unsettled Concert",
-                        About = "Unsettled Concert About",
-                        Price = 0,
-                        TotalTickets = 0,
-                        AvailableTickets = 0
-                    }
+                    Concert = unsettledConcert
                 },
                 new OpportunityApplicationEntity
                 {
@@ -256,60 +258,28 @@ public class TestDbInitializer : IDbInitializer
                     OpportunityId = TestConstants.PostedFlatFee.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Accepted,
-                    Concert = new ConcertEntity
-                    {
-                        Name = "Posted FlatFee Concert",
-                        About = "Posted FlatFee Concert About",
-                        Price = 10.00m,
-                        TotalTickets = 100,
-                        AvailableTickets = 100,
-                        DatePosted = DateTime.UtcNow
-                    }
+                    Concert = postedFlatFeeConcert
                 },
                 new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.PostedDoorSplit.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Accepted,
-                    Concert = new ConcertEntity
-                    {
-                        Name = "Posted DoorSplit Concert",
-                        About = "Posted DoorSplit Concert About",
-                        Price = 10.00m,
-                        TotalTickets = 100,
-                        AvailableTickets = 100,
-                        DatePosted = DateTime.UtcNow
-                    }
+                    Concert = postedDoorSplitConcert
                 },
                 new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.PostedVersus.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Accepted,
-                    Concert = new ConcertEntity
-                    {
-                        Name = "Posted Versus Concert",
-                        About = "Posted Versus Concert About",
-                        Price = 10.00m,
-                        TotalTickets = 100,
-                        AvailableTickets = 100,
-                        DatePosted = DateTime.UtcNow
-                    }
+                    Concert = postedVersusConcert
                 },
                 new OpportunityApplicationEntity
                 {
                     OpportunityId = TestConstants.PostedVenueHire.OpportunityId,
                     ArtistId = TestConstants.ArtistId,
                     Status = ApplicationStatus.Accepted,
-                    Concert = new ConcertEntity
-                    {
-                        Name = "Posted VenueHire Concert",
-                        About = "Posted VenueHire Concert About",
-                        Price = 10.00m,
-                        TotalTickets = 100,
-                        AvailableTickets = 100,
-                        DatePosted = DateTime.UtcNow
-                    }
+                    Concert = postedVenueHireConcert
                 }
             );
 

@@ -1,27 +1,59 @@
 using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Interfaces;
 using NetTopologySuite.Geometries;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 
 namespace Concertable.Core.Entities;
 
 public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>, IReviewable<ConcertEntity>
 {
-    public int Id { get; set; }
-    public int ApplicationId { get; set; }
-    public required string Name { get; set; }
-    public required string About { get; set; }
-    public string? BannerUrl { get; set; }
-    public string? Avatar { get; set; }
-    public decimal Price { get; set; }
-    public int TotalTickets { get; set; }
-    public int AvailableTickets { get; set; }
-    public DateTime? DatePosted { get; set; }
+    public int Id { get; private set; }
+    public int ApplicationId { get; private set; }
+    public string Name { get; private set; } = null!;
+    public string About { get; private set; } = null!;
+    public string? BannerUrl { get; private set; }
+    public string? Avatar { get; private set; }
+    public decimal Price { get; private set; }
+    public int TotalTickets { get; private set; }
+    public int AvailableTickets { get; private set; }
+    public DateTime? DatePosted { get; private set; }
     public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Application.Opportunity.Venue.User.Location;
     public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.ConcertId;
     public OpportunityApplicationEntity Application { get; set; } = null!;
     public ICollection<TicketEntity> Tickets { get; } = [];
-    public ICollection<ConcertGenreEntity> ConcertGenres { get; set; } = [];
-    public ICollection<ConcertImageEntity> Images { get; set; } = [];
+    public HashSet<ConcertGenreEntity> ConcertGenres { get; private set; } = [];
+    public ICollection<ConcertImageEntity> Images { get; private set; } = [];
+
+    public static ConcertEntity CreateDraft(int applicationId, string name, string about, IEnumerable<int> genreIds) => new()
+    {
+        ApplicationId = applicationId,
+        Name = name,
+        About = about,
+        ConcertGenres = genreIds.Select(id => new ConcertGenreEntity { GenreId = id }).ToHashSet()
+    };
+
+    public void Update(string name, string about, decimal price, int totalTickets)
+    {
+        int ticketsSold = TotalTickets - AvailableTickets;
+        Name = name;
+        About = about;
+        Price = price;
+        TotalTickets = totalTickets;
+        AvailableTickets = totalTickets - ticketsSold;
+    }
+
+    public void Post(string name, string about, decimal price, int totalTickets, DateTime now)
+    {
+        Name = name;
+        About = about;
+        Price = price;
+        TotalTickets = totalTickets;
+        AvailableTickets = totalTickets;
+        DatePosted = now;
+    }
+
+    public void SellTickets(int quantity)
+    {
+        AvailableTickets -= quantity;
+    }
 }

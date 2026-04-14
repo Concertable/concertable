@@ -104,19 +104,11 @@ public class ConcertService : IConcertService
 
         var matchingGenres = await genreRepository.GetByIdsAsync(matchingGenreIds);
 
-        var concertEntity = new ConcertEntity
-        {
-            ApplicationId = applicationId,
-            Name = $"{artist.Name} performing at {venue.Name}",
-            About = venue.About,
-            Price = 0,
-            TotalTickets = 0,
-            AvailableTickets = 0,
-            DatePosted = null,
-            ConcertGenres = matchingGenres
-                .Select(g => new ConcertGenreEntity { GenreId = g.Id })
-                .ToList()
-        };
+        var concertEntity = ConcertEntity.CreateDraft(
+            applicationId,
+            $"{artist.Name} performing at {venue.Name}",
+            venue.About,
+            matchingGenres.Select(g => g.Id));
 
         await concertRepository.AddAsync(concertEntity);
         await concertRepository.SaveChangesAsync();
@@ -141,13 +133,7 @@ public class ConcertService : IConcertService
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        concertEntity.Name = request.Name;
-        concertEntity.About = request.About;
-        concertEntity.Price = request.Price;
-        concertEntity.TotalTickets = request.TotalTickets;
-
-        int ticketsSold = concertEntity.TotalTickets - concertEntity.AvailableTickets;
-        concertEntity.AvailableTickets = request.TotalTickets - ticketsSold;
+        concertEntity.Update(request.Name, request.About, request.Price, request.TotalTickets);
 
         await concertRepository.SaveChangesAsync();
 
@@ -171,12 +157,7 @@ public class ConcertService : IConcertService
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        concertEntity.Name = request.Name;
-        concertEntity.About = request.About;
-        concertEntity.Price = request.Price;
-        concertEntity.TotalTickets = request.TotalTickets;
-        concertEntity.DatePosted = timeProvider.GetUtcNow().DateTime;
-        concertEntity.AvailableTickets = request.TotalTickets;
+        concertEntity.Post(request.Name, request.About, request.Price, request.TotalTickets, timeProvider.GetUtcNow().DateTime);
 
         await concertRepository.SaveChangesAsync();
 
