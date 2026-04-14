@@ -25,7 +25,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task Purchase_ShouldIssueTicket_WhenPaymentSucceeds()
+    public async Task ShouldPayVenueManager_WhenFlatFeeContract()
     {
         // Act
         var response = await customerClient.PostAsync(
@@ -44,7 +44,11 @@ public class TicketPurchaseTests : IAsyncLifetime
             t => t.Any(ticket => ticket.Concert.Id == E2ETestConstants.PostedConcert.ConcertId),
             timeout: TimeSpan.FromSeconds(15));
 
-        // Assert
+        // Assert ticket issued
         Assert.Contains(tickets, t => t.Concert.Id == E2ETestConstants.PostedConcert.ConcertId);
+
+        // Assert payment routed to venue manager
+        var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);
+        Assert.Equal(E2ETestConstants.VenueManager1.StripeAccountId, intent.TransferData.Destination.Id);
     }
 }

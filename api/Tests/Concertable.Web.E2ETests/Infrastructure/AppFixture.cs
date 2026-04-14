@@ -1,6 +1,7 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Concertable.Tests.Common;
+using Stripe;
 using System.Net.Http.Headers;
 
 namespace Concertable.Web.E2ETests.Infrastructure;
@@ -14,6 +15,7 @@ public class AppFixture : IAsyncLifetime
     internal const string ApiBaseUrl = "http://localhost:7001";
 
     public HttpClient Client { get; private set; } = null!;
+    public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
@@ -24,6 +26,7 @@ public class AppFixture : IAsyncLifetime
         await stripeCli.InitializeAsync();
 
         builder.AddE2E(stripeCli.WebhookSecret);
+        StripePaymentIntents = new PaymentIntentService(new StripeClient(stripeCli.ApiKey));
 
         app = await builder.BuildAsync();
         await app.StartAsync();

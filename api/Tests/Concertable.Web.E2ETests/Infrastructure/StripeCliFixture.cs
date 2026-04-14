@@ -9,6 +9,7 @@ public class StripeCliFixture : IAsyncLifetime
     private readonly string apiKey;
     private readonly string forwardUrl;
 
+    public string ApiKey => apiKey;
     public string WebhookSecret { get; private set; } = null!;
 
     public StripeCliFixture(string apiKey, string forwardUrl)
