@@ -1,8 +1,10 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Concertable.Tests.Common;
+using Microsoft.Extensions.Logging;
 using Stripe;
 using System.Net.Http.Headers;
+using Xunit.Abstractions;
 
 namespace Concertable.Web.E2ETests.Infrastructure;
 
@@ -11,14 +13,29 @@ public class AppFixture : IAsyncLifetime
     private DistributedApplication app = null!;
     private StripeCliFixture stripeCli = null!;
     private SqlFixture sqlFixture = null!;
+    private readonly ILoggerFactory loggerFactory;
+    private readonly ILogger<AppFixture> logger;
 
     internal const string ApiBaseUrl = "http://localhost:7001";
 
     public HttpClient Client { get; private set; } = null!;
+    public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
+
+    public AppFixture(IMessageSink messageSink)
+    {
+        loggerFactory = LoggerFactory.Create(b => b
+            .AddProvider(new MessageSinkLoggerProvider(messageSink))
+            .SetMinimumLevel(LogLevel.Debug));
+
+        logger = loggerFactory.CreateLogger<AppFixture>();
+        Polling = new PollingService(loggerFactory.CreateLogger<PollingService>());
+    }
 
     public async Task InitializeAsync()
     {
+        logger.LogInformation("Initializing E2E test fixture");
+
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
@@ -37,6 +54,8 @@ public class AppFixture : IAsyncLifetime
 
         sqlFixture = new SqlFixture();
         await sqlFixture.InitializeAsync(app);
+
+        logger.LogInformation("E2E test fixture ready");
     }
 
     public async Task ResetAsync()
@@ -61,21 +80,22 @@ public class AppFixture : IAsyncLifetime
         await sqlFixture.DisposeAsync();
         await app.DisposeAsync();
         await stripeCli.DisposeAsync();
+        loggerFactory.Dispose();
     }
 
     private async Task WaitForAppAsync()
     {
-        await WaitHelper.UntilAsync(async () =>
+        logger.LogInformation("Waiting for app to become healthy at {Url}/health", ApiBaseUrl);
+
+        await Polling.UntilAsync(async () =>
         {
-            try
-            {
-                var response = await Client.GetAsync("/health");
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
-        }, timeout: TimeSpan.FromSeconds(60), interval: TimeSpan.FromSeconds(1));
+            var response = await Client.GetAsync("/health");
+            logger.LogDebug("Health check: {StatusCode}", response.StatusCode);
+            return response.IsSuccessStatusCode;
+        },
+        timeout: TimeSpan.FromSeconds(60),
+        interval: TimeSpan.FromSeconds(1));
+
+        logger.LogInformation("App is healthy");
     }
 }

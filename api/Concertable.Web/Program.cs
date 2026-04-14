@@ -9,6 +9,8 @@ using Concertable.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddControllers(opts =>
@@ -84,6 +86,7 @@ app.UseMiddleware<CurrentUserMiddleware>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+app.MapDefaultEndpoints();
 app.MapControllers();
 app.MapHub<NotificationHub>("/hub/notifications");
 app.MapGet("/health", () => Results.Ok());

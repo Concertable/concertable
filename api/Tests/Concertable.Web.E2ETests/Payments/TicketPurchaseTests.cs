@@ -2,6 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Responses;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Concertable.Web.E2ETests.Payments;
 
@@ -9,10 +10,12 @@ namespace Concertable.Web.E2ETests.Payments;
 public class TicketPurchaseTests : IAsyncLifetime
 {
     private readonly AppFixture fixture;
+    private readonly ITestOutputHelper output;
 
-    public TicketPurchaseTests(AppFixture fixture)
+    public TicketPurchaseTests(AppFixture fixture, ITestOutputHelper output)
     {
         this.fixture = fixture;
+        this.output = output;
     }
 
     private HttpClient customerClient = null!;
@@ -39,8 +42,8 @@ public class TicketPurchaseTests : IAsyncLifetime
         Assert.Empty(purchase!.TicketIds);
 
         // Wait for webhook to fire and complete the ticket
-        var tickets = await customerClient.PollUntilAsync<IEnumerable<TicketDto>>(
-            "/api/Ticket/upcoming/user",
+        var tickets = await fixture.Polling.UntilAsync(
+            async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
             t => t.Any(ticket => ticket.Concert.Id == E2ETestConstants.PostedConcert.ConcertId),
             timeout: TimeSpan.FromSeconds(15));
 
@@ -49,6 +52,6 @@ public class TicketPurchaseTests : IAsyncLifetime
 
         // Assert payment routed to venue manager
         var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);
-        Assert.Equal(E2ETestConstants.VenueManager1.StripeAccountId, intent.TransferData.Destination.Id);
+        Assert.Equal(E2ETestConstants.VenueManager1.StripeAccountId, intent.TransferData.DestinationId);
     }
 }
