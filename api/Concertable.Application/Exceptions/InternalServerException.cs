@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Concertable.Core.Exceptions;
+namespace Concertable.Application.Exceptions;
 
 public class InternalServerException : HttpException
 {

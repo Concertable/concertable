@@ -6,7 +6,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Results;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Core.Interfaces;
 
 namespace Concertable.Infrastructure.Services.Concert;

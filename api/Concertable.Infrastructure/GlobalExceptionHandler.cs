@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Diagnostics;
 

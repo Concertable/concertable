@@ -1,6 +1,6 @@
 ﻿using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.ApiModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;

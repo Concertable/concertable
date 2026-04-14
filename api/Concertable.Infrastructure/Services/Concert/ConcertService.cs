@@ -8,7 +8,7 @@ using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Results;
 using Concertable.Core.Entities;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Core.Parameters;
 using Org.BouncyCastle.Asn1.Cmp;
 

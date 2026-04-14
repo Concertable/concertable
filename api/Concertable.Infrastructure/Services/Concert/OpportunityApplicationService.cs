@@ -5,7 +5,7 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Concert;
 

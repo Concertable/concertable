@@ -3,7 +3,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Results;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 

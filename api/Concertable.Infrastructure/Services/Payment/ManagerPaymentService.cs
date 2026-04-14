@@ -3,7 +3,7 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Payment;
 

@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 
 namespace Concertable.Infrastructure.Services;
 

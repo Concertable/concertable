@@ -2,7 +2,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;

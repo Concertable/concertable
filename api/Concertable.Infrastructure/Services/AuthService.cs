@@ -4,7 +4,7 @@ using Concertable.Application.Requests;
 using Concertable.Application.DTOs;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

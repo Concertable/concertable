@@ -1,7 +1,7 @@
 using Concertable.Core.Enums;
 using System.Net;
 
-namespace Concertable.Core.Exceptions;
+namespace Concertable.Application.Exceptions;
 
 public class BadRequestException : HttpException
 {

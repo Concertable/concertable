@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;

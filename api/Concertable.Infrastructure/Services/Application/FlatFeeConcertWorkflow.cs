@@ -4,7 +4,7 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Application;
 

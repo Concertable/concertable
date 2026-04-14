@@ -2,7 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.Services.Concert;
 using Moq;
 using Xunit;

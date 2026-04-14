@@ -1,7 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 
 namespace Concertable.Application.Mappers;
 

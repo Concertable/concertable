@@ -3,7 +3,7 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Results;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 

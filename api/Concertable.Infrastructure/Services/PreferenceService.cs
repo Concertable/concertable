@@ -3,7 +3,7 @@ using Concertable.Application.Requests;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
 using Concertable.Core.Entities;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 
 namespace Concertable.Infrastructure.Services;
 

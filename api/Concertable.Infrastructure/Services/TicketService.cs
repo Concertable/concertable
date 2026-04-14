@@ -4,7 +4,7 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Mappers;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
+using Concertable.Application.Exceptions;
 using Concertable.Core.Parameters;
 
 public class TicketService : ITicketService
