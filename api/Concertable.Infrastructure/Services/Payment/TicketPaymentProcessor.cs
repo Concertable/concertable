@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
+using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
@@ -13,7 +14,7 @@ public class TicketPaymentProcessor : ITicketPaymentProcessor
         this.resolver = resolver;
     }
 
-    public async Task<PaymentResult> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price)
+    public async Task<Result<PaymentResponse>> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price)
     {
         var strategy = await resolver.ResolveForConcertAsync(concertId);
         return await strategy.PayAsync(concertId, quantity, paymentMethodId, price);

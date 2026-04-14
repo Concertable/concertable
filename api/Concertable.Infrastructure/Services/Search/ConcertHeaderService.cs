@@ -1,7 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Core.Parameters;
 
 namespace Concertable.Infrastructure.Services.Search;

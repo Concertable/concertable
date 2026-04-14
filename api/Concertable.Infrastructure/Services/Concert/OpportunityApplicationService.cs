@@ -98,7 +98,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
 
         var result = await applicationValidator.CanApplyAsync(opportunityId, artistDto.Id);
 
-        if (!result.IsValid)
+        if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
         var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();

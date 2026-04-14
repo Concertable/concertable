@@ -1,9 +1,9 @@
-using Concertable.Application.Results;
 using Concertable.Application.Requests;
+using FluentResults;
 
 namespace Concertable.Application.Interfaces;
 
 public interface IUserValidator
 {
-    Task<ValidationResult> CanRegisterAsync(RegisterRequest request);
+    Task<Result> CanRegisterAsync(RegisterRequest request);
 }

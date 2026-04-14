@@ -2,7 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Requests;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Core.Parameters;
 using Concertable.Web.Handlers;
 using Concertable.Web.Mappers;
@@ -86,7 +86,7 @@ public class ConcertController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPut("{id}")]
-    public async Task<ActionResult<ConcertUpdateResult>> Update(int id, [FromBody] UpdateConcertRequest request)
+    public async Task<ActionResult<ConcertUpdateResponse>> Update(int id, [FromBody] UpdateConcertRequest request)
     {
         return Ok(await concertService.UpdateAsync(id, request));
     }

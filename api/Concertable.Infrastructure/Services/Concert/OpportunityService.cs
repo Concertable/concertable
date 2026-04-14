@@ -5,7 +5,7 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Application.Exceptions;
 using Concertable.Core.Interfaces;
 

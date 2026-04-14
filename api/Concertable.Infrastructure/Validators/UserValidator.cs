@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Requests;
-using Concertable.Application.Results;
 using Concertable.Core.Enums;
+using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
 
@@ -14,16 +14,16 @@ public class UserValidator : IUserValidator
         this.userRepository = userRepository;
     }
 
-    public async Task<ValidationResult> CanRegisterAsync(RegisterRequest request)
+    public async Task<Result> CanRegisterAsync(RegisterRequest request)
     {
-        var result = new ValidationResult();
+        var errors = new List<string>();
 
         if (request.Role == Role.Admin)
-            result.AddError("You cannot make yourself an admin");
+            errors.Add("You cannot make yourself an admin");
 
         if (await userRepository.ExistsByEmailAsync(request.Email))
-            result.AddError("Email already exists");
+            errors.Add("Email already exists");
 
-        return result;
+        return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
     }
 }

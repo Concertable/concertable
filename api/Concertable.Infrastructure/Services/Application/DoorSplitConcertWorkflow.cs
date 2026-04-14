@@ -50,7 +50,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
-        if (!result.IsValid)
+        if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
         await acceptHandler.HandleAsync(applicationId);

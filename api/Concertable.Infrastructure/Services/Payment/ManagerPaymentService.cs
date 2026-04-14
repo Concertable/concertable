@@ -48,7 +48,10 @@ public class ManagerPaymentService : IManagerPaymentService
             }
         });
 
-        if (response.TransactionId is null)
+        if (response.IsFailed)
+            throw new InternalServerException(string.Join(", ", response.Errors.Select(e => e.Message)));
+
+        if (response.Value.TransactionId is null)
             throw new InternalServerException("Payment did not return a valid PaymentIntent ID");
 
         await transactionService.LogAsync(new SettlementTransactionDto
@@ -56,7 +59,7 @@ public class ManagerPaymentService : IManagerPaymentService
             ApplicationId = applicationId,
             FromUserId = payer.Id,
             ToUserId = payee.Id,
-            PaymentIntentId = response.TransactionId,
+            PaymentIntentId = response.Value.TransactionId,
             Amount = (long)(amount * 100),
             Status = TransactionStatus.Pending,
             CreatedAt = timeProvider.GetUtcNow().DateTime

@@ -27,15 +27,12 @@ public class ConcertFinishedFunction
 
         foreach (var concertId in concertIds)
         {
-            try
-            {
-                await finishedProcessor.FinishedAsync(concertId);
+            var result = await finishedProcessor.FinishedAsync(concertId);
+
+            if (result.IsFailed)
+                logger.LogError("Failed to finish concert {ConcertId}: {Errors}", concertId, result.Errors);
+            else
                 logger.LogInformation("Finished concert {ConcertId}", concertId);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to finish concert {ConcertId}", concertId);
-            }
         }
     }
 }

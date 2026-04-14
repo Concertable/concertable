@@ -1,7 +1,8 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Infrastructure.Services.Payment;
+using FluentResults;
 using Moq;
 using Xunit;
 
@@ -21,13 +22,14 @@ public class TicketPaymentProcessorTests
     [Fact]
     public async Task PayAsync_ShouldResolveStrategyAndDelegate()
     {
-        var expected = new PaymentResult { Success = true, TransactionId = "pi_test", Message = "OK" };
+        var expected = Result.Ok(new PaymentResponse { TransactionId = "pi_test" });
         var strategy = new Mock<ITicketPaymentStrategy>();
         strategy.Setup(s => s.PayAsync(1, 2, "pm_test", 9.99m)).ReturnsAsync(expected);
         resolver.Setup(r => r.ResolveForConcertAsync(1)).ReturnsAsync(strategy.Object);
 
         var result = await sut.PayAsync(1, 2, "pm_test", 9.99m);
 
-        Assert.Same(expected, result);
+        Assert.True(result.IsSuccess);
+        Assert.Equal("pi_test", result.Value.TransactionId);
     }
 }

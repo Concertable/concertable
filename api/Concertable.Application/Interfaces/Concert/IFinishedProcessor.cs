@@ -1,6 +1,8 @@
+using FluentResults;
+
 namespace Concertable.Application.Interfaces.Concert;
 
 public interface IFinishedProcessor
 {
-    Task FinishedAsync(int concertId);
+    Task<Result> FinishedAsync(int concertId);
 }

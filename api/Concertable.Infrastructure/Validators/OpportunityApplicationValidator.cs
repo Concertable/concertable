@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Results;
+using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
 
@@ -26,62 +26,55 @@ public class OpportunityApplicationValidator : IOpportunityApplicationValidator
         this.timeProvider = timeProvider;
     }
 
-    public async Task<ValidationResult> CanAcceptAsync(int applicationId)
+    public async Task<Result> CanAcceptAsync(int applicationId)
     {
-        var result = new ValidationResult();
         var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId);
         var application = await applicationRepository.GetByIdAsync(applicationId);
 
         if (opportunity is null)
-        {
-            result.AddError("Concert opportunity does not exist");
-            return result;
-        }
+            return Result.Fail("Concert opportunity does not exist");
 
         if (application is null)
-        {
-            result.AddError("Concert application does not exist");
-            return result;
-        }
+            return Result.Fail("Concert application does not exist");
+
+        var errors = new List<string>();
 
         if (opportunity.Venue.UserId != currentUser.Get().Id)
-            result.AddError("You do not own this concert opportunity");
+            errors.Add("You do not own this concert opportunity");
 
         if (opportunity.StartDate < timeProvider.GetUtcNow())
-            result.AddError("This concert opportunity has already passed");
+            errors.Add("This concert opportunity has already passed");
 
         if (await concertRepository.OpportunityHasConcertAsync(opportunity.Id))
-            result.AddError("This concert opportunity already has a concert booked");
+            errors.Add("This concert opportunity already has a concert booked");
 
         if (await concertRepository.ArtistHasConcertOnDateAsync(application.ArtistId, opportunity.StartDate))
-            result.AddError("This artist already has a concert on this day");
+            errors.Add("This artist already has a concert on this day");
 
         if (await concertRepository.VenueHasConcertOnDateAsync(opportunity.VenueId, opportunity.StartDate))
-            result.AddError("You already have a concert on this day");
+            errors.Add("You already have a concert on this day");
 
-        return result;
+        return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
     }
 
-    public async Task<ValidationResult> CanApplyAsync(int opportunityId, int artistId)
+    public async Task<Result> CanApplyAsync(int opportunityId, int artistId)
     {
-        var result = new ValidationResult();
         var opportunity = await opportunityRepository.GetByIdAsync(opportunityId);
 
         if (opportunity is null)
-        {
-            result.AddError("Concert opportunity does not exist");
-            return result;
-        }
+            return Result.Fail("Concert opportunity does not exist");
+
+        var errors = new List<string>();
 
         if (opportunity.StartDate < timeProvider.GetUtcNow())
-            result.AddError("This concert opportunity has already passed");
+            errors.Add("This concert opportunity has already passed");
 
         if (await concertRepository.OpportunityHasConcertAsync(opportunityId))
-            result.AddError("This concert opportunity has already been booked for a concert");
+            errors.Add("This concert opportunity has already been booked for a concert");
 
         if (await concertRepository.ArtistHasConcertOnDateAsync(artistId, opportunity.StartDate))
-            result.AddError("You already have a concert on this day");
+            errors.Add("You already have a concert on this day");
 
-        return result;
+        return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
     }
 }

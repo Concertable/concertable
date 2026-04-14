@@ -1,6 +1,6 @@
 using System.Net;
 using Concertable.Application.DTOs;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Web.Responses;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Web.IntegrationTests.Infrastructure;

@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Results;
+using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
 
@@ -15,29 +15,27 @@ public class TicketValidator : ITicketValidator
         this.timeProvider = timeProvider;
     }
 
-    public async Task<ValidationResult> CanPurchaseTicketAsync(int concertId, int? quantity = null)
+    public async Task<Result> CanPurchaseTicketAsync(int concertId, int? quantity = null)
     {
-        var result = new ValidationResult();
         var concert = await concertRepository.GetDtoByIdAsync(concertId);
 
         if (concert is null)
-        {
-            result.AddError("Concert does not exist.");
-            return result;
-        }
+            return Result.Fail("Concert does not exist.");
+
+        var errors = new List<string>();
 
         if (concert.DatePosted is null)
-            result.AddError("Concert is not posted yet");
+            errors.Add("Concert is not posted yet");
 
         if (concert.StartDate < timeProvider.GetUtcNow())
-            result.AddError("You cannot purchase a Ticket for a Concert that's already passed");
+            errors.Add("You cannot purchase a Ticket for a Concert that's already passed");
 
         if (concert.AvailableTickets <= 0)
-            result.AddError("No Tickets Available for Concert");
+            errors.Add("No Tickets Available for Concert");
 
         if (quantity.HasValue && concert.AvailableTickets - quantity.Value < 0)
-            result.AddError($"Not enough tickets available. Only {concert.AvailableTickets} tickets are available");
+            errors.Add($"Not enough tickets available. Only {concert.AvailableTickets} tickets are available");
 
-        return result;
+        return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
     }
 }

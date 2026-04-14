@@ -1,7 +1,8 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Infrastructure.Interfaces;
+using FluentResults;
 using Stripe;
 
 namespace Concertable.Infrastructure.Services.Payment;
@@ -17,15 +18,15 @@ public class PaymentService : IPaymentService
         this.stripeAccountService = stripeAccountService;
     }
 
-    public async Task<PaymentResult> ProcessAsync(TransactionRequest request)
+    public async Task<Result<PaymentResponse>> ProcessAsync(TransactionRequest request)
     {
         try
         {
             if (string.IsNullOrEmpty(request.DestinationStripeId))
-                return new PaymentResult { Success = false, Message = "Recipient does not have a Stripe account" };
+                return Result.Fail("Recipient does not have a Stripe account");
 
             if (!await stripeAccountService.IsUserVerifiedAsync(request.DestinationStripeId))
-                return new PaymentResult { Success = false, Message = "Recipient is not eligible for payouts" };
+                return Result.Fail("Recipient is not eligible for payouts");
 
             var options = new PaymentIntentCreateOptions
             {
@@ -47,22 +48,23 @@ public class PaymentService : IPaymentService
 
             var paymentIntent = await stripeClient.CreatePaymentIntentAsync(options);
 
-            return new PaymentResult
+            if (paymentIntent.Status != "succeeded" && paymentIntent.Status != "requires_action" && paymentIntent.Status != "requires_confirmation")
+                return Result.Fail($"Payment failed with status: {paymentIntent.Status}");
+
+            return Result.Ok(new PaymentResponse
             {
-                Success = paymentIntent.Status == "succeeded",
                 RequiresAction = paymentIntent.Status == "requires_action" || paymentIntent.Status == "requires_confirmation",
                 ClientSecret = paymentIntent.ClientSecret,
-                TransactionId = paymentIntent.Id,
-                Message = paymentIntent.Status == "succeeded" ? "Payment successful" : "Additional authentication required"
-            };
+                TransactionId = paymentIntent.Id
+            });
         }
         catch (StripeException ex)
         {
-            return new PaymentResult { Success = false, Message = $"Stripe Error: {ex.Message}" };
+            return Result.Fail($"Stripe Error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new PaymentResult { Success = false, Message = $"General Error: {ex.Message}" };
+            return Result.Fail($"General Error: {ex.Message}");
         }
     }
 }

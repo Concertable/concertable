@@ -1,4 +1,4 @@
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 
 namespace Concertable.Application.DTOs;

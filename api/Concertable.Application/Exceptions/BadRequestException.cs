@@ -1,4 +1,5 @@
 using Concertable.Core.Enums;
+using FluentResults;
 using System.Net;
 
 namespace Concertable.Application.Exceptions;
@@ -12,6 +13,13 @@ public class BadRequestException : HttpException
     {
         Title = "Bad Request";
         ValidationErrors = errors;
+    }
+
+    public BadRequestException(IEnumerable<IError> errors)
+        : base("One or more validation errors occurred.", HttpStatusCode.BadRequest)
+    {
+        Title = "Bad Request";
+        ValidationErrors = errors.Select(e => e.Message).ToList();
     }
 
     public BadRequestException(string detail)

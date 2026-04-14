@@ -1,34 +1,31 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Results;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
+using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
 
 public class ConcertValidator : IConcertValidator
 {
-    public Task<ValidationResult> CanUpdateAsync(ConcertEntity concert, int newTotalTickets)
+    public Task<Result> CanUpdateAsync(ConcertEntity concert, int newTotalTickets)
     {
-        var result = new ValidationResult();
         int ticketsSold = concert.TotalTickets - concert.AvailableTickets;
 
-        if (newTotalTickets < ticketsSold)
-            result.AddError("Cannot reduce TotalTickets below the number of tickets already sold");
-
-        return Task.FromResult(result);
+        return newTotalTickets < ticketsSold
+            ? Task.FromResult(Result.Fail("Cannot reduce TotalTickets below the number of tickets already sold"))
+            : Task.FromResult(Result.Ok());
     }
 
-    public Task<ValidationResult> CanPostAsync(ConcertEntity concert)
+    public Task<Result> CanPostAsync(ConcertEntity concert)
     {
-        var result = new ValidationResult();
+        var errors = new List<string>();
 
         if (concert.Application.Status != ApplicationStatus.Accepted)
-            result.AddError("Concert cannot be posted until the application is accepted");
+            errors.Add("Concert cannot be posted until the application is accepted");
 
         if (concert.DatePosted is not null)
-            result.AddError("Concert has already been posted");
+            errors.Add("Concert has already been posted");
 
-        return Task.FromResult(result);
+        return Task.FromResult(errors.Count > 0 ? Result.Fail(errors) : Result.Ok());
     }
 }

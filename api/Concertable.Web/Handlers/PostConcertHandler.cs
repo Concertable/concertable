@@ -1,5 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 
 namespace Concertable.Web.Handlers;
 
@@ -14,7 +14,7 @@ public class PostConcertHandler : IPostConcertHandler
         this.notificationService = notificationService;
     }
 
-    public async Task HandleAsync(ConcertPostResult result)
+    public async Task HandleAsync(ConcertPostResponse result)
     {
         await taskRunner.RunAsync(async ct =>
         {

@@ -52,7 +52,7 @@ public class AuthService : IAuthService
     {
         var result = await userValidator.CanRegisterAsync(request);
 
-        if (!result.IsValid)
+        if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
         var passwordHash = passwordHasher.Hash(request.Password);

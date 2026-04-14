@@ -1,5 +1,6 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
+using Concertable.Application.Responses;
 using Concertable.Web.Responses;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure;
@@ -31,12 +32,12 @@ public class TicketFlatFeeApiTests : IAsyncLifetime
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
-        var result = await response.Content.ReadAsync<TicketPurchaseDto>();
+        var result = await response.Content.ReadAsync<TicketPaymentResponse>();
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
-        Assert.True(result!.Success);
-        Assert.NotNull(result.TransactionId);
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(result!.TransactionId);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Single(tickets!);
         var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{TestConstants.PostedFlatFee.ConcertId}");
@@ -71,7 +72,7 @@ public class TicketFlatFeeApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Purchase_ShouldReturn200_WithFailureResponse_WhenPaymentFails()
+    public async Task Purchase_ShouldReturnError_WhenPaymentFails()
     {
         // Arrange
         var client = fixture.CreateClient(TestConstants.Customer, o => o.UseFailingPayment());
@@ -81,8 +82,7 @@ public class TicketFlatFeeApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Ticket/purchase", request);
 
         // Assert
-        var result = await response.Content.ReadAsync<TicketPurchaseDto>();
-        Assert.False(result!.Success);
+        Assert.False(response.IsSuccessStatusCode);
         Assert.Empty(fixture.NotificationService.TicketPurchased);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Empty(tickets!);

@@ -77,8 +77,8 @@ public class OpportunityApplicationController : ControllerBase
 
         var result = await applicationValidator.CanApplyAsync(opportunityId, artist.Id);
 
-        if (!result.IsValid)
-            return BadRequest(result.Errors);
+        if (result.IsFailed)
+            return BadRequest(result.Errors.Select(e => e.Message));
 
         return Ok(true);
     }
@@ -89,8 +89,8 @@ public class OpportunityApplicationController : ControllerBase
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
-        if (!result.IsValid)
-            return BadRequest(result.Errors);
+        if (result.IsFailed)
+            return BadRequest(result.Errors.Select(e => e.Message));
 
         return Ok(true);
     }

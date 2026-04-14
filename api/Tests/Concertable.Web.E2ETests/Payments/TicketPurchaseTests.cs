@@ -1,4 +1,5 @@
 using Concertable.Application.DTOs;
+using Concertable.Application.Responses;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
 
@@ -34,9 +35,8 @@ public class TicketPurchaseTests : IAsyncLifetime
 
         var body = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
-        var purchase = await response.Content.ReadAsync<TicketPurchaseDto>();
-        Assert.True(purchase!.Success, $"Purchase failed: {body}");
-        Assert.Empty(purchase.TicketIds);
+        var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
+        Assert.Empty(purchase!.TicketIds);
 
         // Wait for webhook to fire and complete the ticket
         var tickets = await customerClient.PollUntilAsync<IEnumerable<TicketDto>>(

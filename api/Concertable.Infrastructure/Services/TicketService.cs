@@ -2,10 +2,12 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Mappers;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Application.Exceptions;
 using Concertable.Core.Parameters;
+using FluentResults;
 
 public class TicketService : ITicketService
 {
@@ -41,37 +43,41 @@ public class TicketService : ITicketService
         this.timeProvider = timeProvider;
     }
 
-    public async Task<TicketPurchaseDto> PurchaseAsync(TicketPurchaseParams purchaseParams)
+    public async Task<Result<TicketPaymentResponse>> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
         var user = currentUser.Get();
 
         if (user.Role != Role.Customer)
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var result = await ticketValidator.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
+        var validationResult = await ticketValidator.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
 
-        if (!result.IsValid)
-            throw new BadRequestException(result.Errors);
+        if (validationResult.IsFailed)
+            throw new BadRequestException(validationResult.Errors);
 
         var concert = await concertRepository.GetByIdAsync(purchaseParams.ConcertId)
             ?? throw new NotFoundException("Concert not found");
-        var paymentResponse = await ticketPaymentProcessor.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price);
 
-        return new TicketPurchaseDto
+        var paymentResult = await ticketPaymentProcessor.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price);
+
+        if (paymentResult.IsFailed)
+            return Result.Fail(paymentResult.Errors);
+
+        return Result.Ok(new TicketPaymentResponse
         {
-            Success = paymentResponse.Success,
-            RequiresAction = paymentResponse.RequiresAction,
-            Message = paymentResponse.Message ?? (paymentResponse.Success ? "Payment successful" : "Payment failed"),
-            TransactionId = paymentResponse.TransactionId,
-            UserEmail = user.Email,
-            ClientSecret = paymentResponse.ClientSecret
-        };
+            RequiresAction = paymentResult.Value.RequiresAction,
+            TransactionId = paymentResult.Value.TransactionId,
+            ClientSecret = paymentResult.Value.ClientSecret,
+            UserEmail = user.Email
+        });
     }
 
-    public async Task<TicketPurchaseDto> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
+    public async Task<Result<TicketPaymentResponse>> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto)
     {
-        var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId)
-            ?? throw new NotFoundException("Concert not found");
+        var concertEntity = await concertRepository.GetByIdAsync(purchaseCompleteDto.EntityId);
+
+        if (concertEntity is null)
+            return Result.Fail("Concert not found");
 
         using var transaction = await unitOfWork.BeginTransactionAsync();
 
@@ -107,23 +113,14 @@ public class TicketService : ITicketService
         catch (Exception)
         {
             await transaction.RollbackAsync();
-            return new TicketPurchaseDto
-            {
-                Message = "Failed to Create Ticket. Please contact support",
-                ConcertId = purchaseCompleteDto.EntityId,
-            };
+            return Result.Fail("Failed to create ticket. Please contact support.");
         }
-
-        if (!tickets.Any())
-            throw new NotFoundException("No Tickets found");
 
         var ticketIds = tickets.Select(t => t.Id);
         await emailService.SendTicketsToEmailAsync(purchaseCompleteDto.FromEmail, ticketIds);
 
-        return new TicketPurchaseDto
+        return Result.Ok(new TicketPaymentResponse
         {
-            Success = true,
-            Message = "Ticket purchased successfully!",
             TicketIds = ticketIds,
             ConcertId = purchaseCompleteDto.EntityId,
             PurchaseDate = tickets[0].PurchaseDate,
@@ -131,7 +128,7 @@ public class TicketService : ITicketService
             Currency = "GBP",
             TransactionId = purchaseCompleteDto.TransactionId,
             UserEmail = purchaseCompleteDto.FromEmail
-        };
+        });
     }
 
 public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()

@@ -1,7 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

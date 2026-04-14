@@ -1,4 +1,4 @@
-using Concertable.Application.Results;
+using FluentResults;
 
 namespace Concertable.Application.Interfaces.Concert;
 
@@ -13,10 +13,10 @@ public interface IOpportunityApplicationValidator
     /// <summary>
     /// Checks whether an artist can apply for a given opportunity, based on conflicts and constraints.
     /// </summary>
-    Task<ValidationResult> CanApplyAsync(int opportunityId, int artistId);
+    Task<Result> CanApplyAsync(int opportunityId, int artistId);
 
     /// <summary>
     /// Checks whether a venue manager can accept a concert application, based on availability.
     /// </summary>
-    Task<ValidationResult> CanAcceptAsync(int applicationId);
+    Task<Result> CanAcceptAsync(int applicationId);
 }

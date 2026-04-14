@@ -1,5 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

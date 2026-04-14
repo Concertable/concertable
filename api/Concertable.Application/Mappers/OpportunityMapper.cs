@@ -1,7 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 
 namespace Concertable.Application.Mappers;

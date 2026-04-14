@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 
-namespace Concertable.Application.Results;
+namespace Concertable.Application.Responses;
 
 public class Pagination<T> : IPagination<T>
 {

@@ -1,8 +1,8 @@
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 
 namespace Concertable.Web.Handlers;
 
 public interface IPostConcertHandler
 {
-    Task HandleAsync(ConcertPostResult result);
+    Task HandleAsync(ConcertPostResponse result);
 }

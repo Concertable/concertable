@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Complete;
 
@@ -12,9 +13,17 @@ public class FinishedProcessor : IFinishedProcessor
         this.resolver = resolver;
     }
 
-    public async Task FinishedAsync(int concertId)
+    public async Task<Result> FinishedAsync(int concertId)
     {
-        var strategy = await resolver.ResolveForConcertAsync(concertId);
-        await strategy.FinishedAsync(concertId);
+        try
+        {
+            var strategy = await resolver.ResolveForConcertAsync(concertId);
+            await strategy.FinishedAsync(concertId);
+            return Result.Ok();
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(ex.Message);
+        }
     }
 }

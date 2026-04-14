@@ -1,8 +1,8 @@
-using Concertable.Application.Results;
+using FluentResults;
 
 namespace Concertable.Application.Interfaces;
 
 public interface ITicketValidator
 {
-    Task<ValidationResult> CanPurchaseTicketAsync(int concertId, int? quantity = null);
+    Task<Result> CanPurchaseTicketAsync(int concertId, int? quantity = null);
 }

@@ -46,7 +46,7 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
-        if (!result.IsValid)
+        if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
         var application = await applicationRepository.GetByIdAsync(applicationId)

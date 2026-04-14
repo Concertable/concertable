@@ -1,7 +1,8 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
+using FluentResults;
 using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
 
@@ -23,7 +24,7 @@ public class VenueTicketPaymentService : ITicketPaymentStrategy
         this.venueManagerRepository = venueManagerRepository;
     }
 
-    public async Task<PaymentResult> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price)
+    public async Task<Result<PaymentResponse>> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price)
     {
         var payer = currentUser.GetEntity<CustomerEntity>();
         var payee = await venueManagerRepository.GetByConcertIdAsync(concertId)

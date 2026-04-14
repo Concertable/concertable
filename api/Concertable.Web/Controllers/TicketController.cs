@@ -1,8 +1,8 @@
 ﻿using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
+using Concertable.Application.Responses;
 using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Concertable.Web.Controllers;
@@ -22,9 +22,14 @@ public class TicketController : ControllerBase
     }
 
     [HttpPost("purchase")]
-    public async Task<ActionResult<TicketPurchaseDto>> Purchase([FromBody] TicketPurchaseParams purchaseParams)
+    public async Task<ActionResult<TicketPaymentResponse>> Purchase([FromBody] TicketPurchaseParams purchaseParams)
     {
-        return Ok(await ticketService.PurchaseAsync(purchaseParams));
+        var result = await ticketService.PurchaseAsync(purchaseParams);
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors.Select(e => e.Message));
+
+        return Ok(result.Value);
     }
 
     [HttpGet("upcoming/user")]
@@ -44,8 +49,8 @@ public class TicketController : ControllerBase
     {
         var result = await ticketValidator.CanPurchaseTicketAsync(eventId);
 
-        if (!result.IsValid)
-            return BadRequest(result.Errors);
+        if (result.IsFailed)
+            return BadRequest(result.Errors.Select(e => e.Message));
 
         return Ok(true);
     }

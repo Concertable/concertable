@@ -2,7 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
-using Concertable.Application.Results;
+using Concertable.Application.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
