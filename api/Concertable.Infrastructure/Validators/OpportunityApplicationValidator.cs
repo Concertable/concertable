@@ -42,16 +42,16 @@ public class OpportunityApplicationValidator : IOpportunityApplicationValidator
         if (opportunity.Venue.UserId != currentUser.Get().Id)
             errors.Add("You do not own this concert opportunity");
 
-        if (opportunity.StartDate < timeProvider.GetUtcNow())
+        if (opportunity.Period.Start < timeProvider.GetUtcNow())
             errors.Add("This concert opportunity has already passed");
 
         if (await concertRepository.OpportunityHasConcertAsync(opportunity.Id))
             errors.Add("This concert opportunity already has a concert booked");
 
-        if (await concertRepository.ArtistHasConcertOnDateAsync(application.ArtistId, opportunity.StartDate))
+        if (await concertRepository.ArtistHasConcertOnDateAsync(application.ArtistId, opportunity.Period.Start))
             errors.Add("This artist already has a concert on this day");
 
-        if (await concertRepository.VenueHasConcertOnDateAsync(opportunity.VenueId, opportunity.StartDate))
+        if (await concertRepository.VenueHasConcertOnDateAsync(opportunity.VenueId, opportunity.Period.Start))
             errors.Add("You already have a concert on this day");
 
         return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
@@ -66,13 +66,13 @@ public class OpportunityApplicationValidator : IOpportunityApplicationValidator
 
         var errors = new List<string>();
 
-        if (opportunity.StartDate < timeProvider.GetUtcNow())
+        if (opportunity.Period.Start < timeProvider.GetUtcNow())
             errors.Add("This concert opportunity has already passed");
 
         if (await concertRepository.OpportunityHasConcertAsync(opportunityId))
             errors.Add("This concert opportunity has already been booked for a concert");
 
-        if (await concertRepository.ArtistHasConcertOnDateAsync(artistId, opportunity.StartDate))
+        if (await concertRepository.ArtistHasConcertOnDateAsync(artistId, opportunity.Period.Start))
             errors.Add("You already have a concert on this day");
 
         return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();

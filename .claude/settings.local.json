@@ -115,7 +115,8 @@
       "Bash(dotnet --version)",
       "WebFetch(domain:aspire.dev)",
       "Bash(cmd.exe:*)",
-      "Bash(dotnet user-secrets:*)"
+      "Bash(dotnet user-secrets:*)",
+      "Bash(perl:*)"
     ]
   }
 }

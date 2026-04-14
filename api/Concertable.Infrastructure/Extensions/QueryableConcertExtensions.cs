@@ -5,5 +5,5 @@ namespace Concertable.Infrastructure.Extensions;
 public static class ConcertQueryableExtensions
 {
     public static IQueryable<ConcertEntity> Active(this IQueryable<ConcertEntity> query, DateTime now) =>
-        query.Where(c => c.DatePosted != null && c.Application.Opportunity.EndDate > now);
+        query.Where(c => c.DatePosted != null && c.Application.Opportunity.Period.End > now);
 }

@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Concertable.Application.Exceptions;
+using Concertable.Core.Exceptions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Diagnostics;
 
@@ -30,7 +31,14 @@ public class GlobalExceptionHandler : IExceptionHandler
             Instance = httpContext.Request.Path
         };
 
-        if (exception is HttpException httpEx)
+        if (exception is DomainException domainEx)
+        {
+            httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            problemDetails.Status = httpContext.Response.StatusCode;
+            problemDetails.Title = "Bad Request";
+            problemDetails.Detail = domainEx.Message;
+        }
+        else if (exception is HttpException httpEx)
         {
             httpContext.Response.StatusCode = (int)httpEx.StatusCode;
             problemDetails.Status = httpContext.Response.StatusCode;

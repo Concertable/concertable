@@ -21,7 +21,7 @@ public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunity
     public async Task<IPagination<OpportunityEntity>> GetActiveByVenueIdAsync(int id, IPageParams pageParams)
     {
         var query = context.Opportunities
-            .Where(o => o.VenueId == id && o.StartDate >= timeProvider.GetUtcNow())
+            .Where(o => o.VenueId == id && o.Period.Start >= timeProvider.GetUtcNow())
             .Where(o => !context.Concerts.Any(e => e.ApplicationId ==
                 context.OpportunityApplications
                     .Where(ca => ca.OpportunityId == o.Id)
@@ -30,7 +30,7 @@ public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunity
             .Include(o => o.Contract)
             .Include(o => o.OpportunityGenres)
             .ThenInclude(og => og.Genre)
-            .OrderBy(o => o.StartDate);
+            .OrderBy(o => o.Period.Start);
 
         return await query.ToPaginationAsync(pageParams);
     }

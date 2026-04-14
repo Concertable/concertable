@@ -19,8 +19,8 @@ public class OpportunityMapper : IOpportunityMapper
     {
         Id = opportunity.Id,
         VenueId = opportunity.VenueId,
-        StartDate = opportunity.StartDate,
-        EndDate = opportunity.EndDate,
+        StartDate = opportunity.Period.Start,
+        EndDate = opportunity.Period.End,
         Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto()),
         Contract = contractMapper.ToDto(opportunity.Contract)
     };

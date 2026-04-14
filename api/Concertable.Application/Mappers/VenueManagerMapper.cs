@@ -16,8 +16,8 @@ public class VenueManagerMapper : IUserMapper
             Role = vm.Role,
             Latitude = vm.Location.ToLatitude(),
             Longitude = vm.Location.ToLongitude(),
-            County = vm.County,
-            Town = vm.Town,
+            County = vm.Address?.County,
+            Town = vm.Address?.Town,
             VenueId = vm.Venue?.Id,
             IsEmailVerified = vm.IsEmailVerified
         };

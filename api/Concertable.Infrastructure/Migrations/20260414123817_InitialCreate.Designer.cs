@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260412223659_InitialCreate")]
+    [Migration("20260414123817_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -311,12 +311,6 @@ namespace Concertable.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("VenueId")
                         .HasColumnType("int");
 
@@ -573,9 +567,6 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("County")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -595,9 +586,6 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.Property<string>("StripeCustomerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Town")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -945,6 +933,30 @@ namespace Concertable.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.OwnsOne("Concertable.Core.ValueObjects.DateRange", "Period", b1 =>
+                        {
+                            b1.Property<int>("OpportunityEntityId")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTime>("End")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("EndDate");
+
+                            b1.Property<DateTime>("Start")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("StartDate");
+
+                            b1.HasKey("OpportunityEntityId");
+
+                            b1.ToTable("Opportunities");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OpportunityEntityId");
+                        });
+
+                    b.Navigation("Period")
+                        .IsRequired();
+
                     b.Navigation("Venue");
                 });
 
@@ -1058,6 +1070,34 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("FromUser");
 
                     b.Navigation("ToUser");
+                });
+
+            modelBuilder.Entity("Concertable.Core.Entities.UserEntity", b =>
+                {
+                    b.OwnsOne("Concertable.Core.ValueObjects.Address", "Address", b1 =>
+                        {
+                            b1.Property<Guid>("UserEntityId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("County")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("County");
+
+                            b1.Property<string>("Town")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Town");
+
+                            b1.HasKey("UserEntityId");
+
+                            b1.ToTable("Users");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserEntityId");
+                        });
+
+                    b.Navigation("Address");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.VenueEntity", b =>

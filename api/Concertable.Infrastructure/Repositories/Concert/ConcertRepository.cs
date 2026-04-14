@@ -78,7 +78,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Application.Opportunity.VenueId == id
-                        && e.Application.Opportunity.StartDate >= timeProvider.GetUtcNow()
+                        && e.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .ToSummaryDto(artistRatings, venueRatings)
             .ToListAsync();
@@ -90,7 +90,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Application.ArtistId == id
-                        && e.Application.Opportunity.StartDate >= timeProvider.GetUtcNow()
+                        && e.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .ToSummaryDto(artistRatings, venueRatings)
             .ToListAsync();
@@ -113,7 +113,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Application.ArtistId == id
-                        && e.Application.Opportunity.StartDate < timeProvider.GetUtcNow()
+                        && e.Application.Opportunity.Period.Start < timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .ToSummaryDto(artistRatings, venueRatings)
             .ToListAsync();
@@ -125,7 +125,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Application.Opportunity.VenueId == id
-                        && e.Application.Opportunity.StartDate < timeProvider.GetUtcNow()
+                        && e.Application.Opportunity.Period.Start < timeProvider.GetUtcNow()
                         && e.DatePosted != null)
             .ToSummaryDto(artistRatings, venueRatings)
             .ToListAsync();
@@ -155,7 +155,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
     {
         return await context.Concerts
             .Where(e => e.Application.ArtistId == artistId)
-            .AnyAsync(e => e.Application.Opportunity.StartDate.Date == date.Date);
+            .AnyAsync(e => e.Application.Opportunity.Period.Start.Date == date.Date);
     }
 
     public Task<bool> OpportunityHasConcertAsync(int opportunityId)
@@ -167,7 +167,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
     {
         return await context.Concerts
             .Where(e => e.Application.Opportunity.VenueId == venueId)
-            .AnyAsync(e => e.Application.Opportunity.StartDate.Date == date.Date);
+            .AnyAsync(e => e.Application.Opportunity.Period.Start.Date == date.Date);
     }
 
     public async Task<ContractType?> GetTypeByIdAsync(int id)
@@ -184,7 +184,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
     {
         return await context.Concerts
             .Where(c => c.Application.Status == ApplicationStatus.Confirmed
-                     && c.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
+                     && c.Application.Opportunity.Period.Start < timeProvider.GetUtcNow())
             .Select(c => c.Id)
             .ToListAsync();
     }

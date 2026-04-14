@@ -14,8 +14,8 @@ public static class ArtistMappers
         BannerUrl = artist.BannerUrl,
         Avatar = artist.User.Avatar,
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
-        County = artist.User.County ?? string.Empty,
-        Town = artist.User.Town ?? string.Empty,
+        County = artist.User.Address?.County ?? string.Empty,
+        Town = artist.User.Address?.Town ?? string.Empty,
         Email = artist.User.Email ?? string.Empty
     };
 
@@ -32,8 +32,8 @@ public static class ArtistMappers
         Id = artist.Id,
         Name = artist.Name,
         ImageUrl = artist.User.Avatar,
-        County = artist.User.County ?? string.Empty,
-        Town = artist.User.Town ?? string.Empty
+        County = artist.User.Address?.County ?? string.Empty,
+        Town = artist.User.Address?.Town ?? string.Empty
     };
 
     public static ArtistHeaderDto ToHeaderDto(this ArtistDto artistDto) => new()

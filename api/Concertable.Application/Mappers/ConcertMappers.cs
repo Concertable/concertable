@@ -11,8 +11,8 @@ public static class ConcertMappers
         Id = artist.Id,
         Name = artist.Name,
         Avatar = artist.User.Avatar,
-        County = artist.User.County ?? string.Empty,
-        Town = artist.User.Town ?? string.Empty,
+        County = artist.User.Address?.County ?? string.Empty,
+        Town = artist.User.Address?.Town ?? string.Empty,
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto())
     };
 
@@ -20,8 +20,8 @@ public static class ConcertMappers
     {
         Id = venue.Id,
         Name = venue.Name,
-        County = venue.User.County ?? string.Empty,
-        Town = venue.User.Town ?? string.Empty,
+        County = venue.User.Address?.County ?? string.Empty,
+        Town = venue.User.Address?.Town ?? string.Empty,
         Latitude = venue.User.Location?.Y ?? 0.0,
         Longitude = venue.User.Location?.X ?? 0.0
     };
@@ -37,8 +37,8 @@ public static class ConcertMappers
         TotalTickets = concert.TotalTickets,
         AvailableTickets = concert.AvailableTickets,
         DatePosted = concert.DatePosted,
-        StartDate = concert.Application.Opportunity.StartDate,
-        EndDate = concert.Application.Opportunity.EndDate,
+        StartDate = concert.Application.Opportunity.Period.Start,
+        EndDate = concert.Application.Opportunity.Period.End,
         Venue = concert.Application.Opportunity.Venue.ToConcertVenueDto(),
         Artist = concert.Application.Artist.ToConcertArtistDto(),
         Genres = concert.ConcertGenres.Select(eg => eg.Genre.ToDto())
@@ -49,10 +49,10 @@ public static class ConcertMappers
         Id = concert.Id,
         Name = concert.Name,
         ImageUrl = concert.Application.Artist.User.Avatar,
-        StartDate = concert.Application.Opportunity.StartDate,
-        EndDate = concert.Application.Opportunity.EndDate,
-        County = concert.Application.Opportunity.Venue.User.County ?? string.Empty,
-        Town = concert.Application.Opportunity.Venue.User.Town ?? string.Empty,
+        StartDate = concert.Application.Opportunity.Period.Start,
+        EndDate = concert.Application.Opportunity.Period.End,
+        County = concert.Application.Opportunity.Venue.User.Address?.County ?? string.Empty,
+        Town = concert.Application.Opportunity.Venue.User.Address?.Town ?? string.Empty,
         DatePosted = concert.DatePosted
     };
 

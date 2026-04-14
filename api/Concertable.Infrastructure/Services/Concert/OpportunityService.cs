@@ -1,5 +1,6 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
+using Concertable.Core.ValueObjects;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
@@ -129,8 +130,7 @@ public class OpportunityService : IOpportunityService
 
         try
         {
-            opportunity.StartDate = request.StartDate;
-            opportunity.EndDate = request.EndDate;
+            opportunity.Period = new DateRange(request.StartDate, request.EndDate);
             genreSyncService.Sync(opportunity.OpportunityGenres, request.GenreIds);
             await contractService.UpdateAsync(request.Contract, id);
             await unitOfWork.TrySaveChangesAsync();

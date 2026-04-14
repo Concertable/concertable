@@ -19,8 +19,8 @@ public static class TicketMappers
         Id = concert.Id,
         Name = concert.Name,
         Price = concert.Price,
-        StartDate = concert.Application.Opportunity.StartDate,
-        EndDate = concert.Application.Opportunity.EndDate,
+        StartDate = concert.Application.Opportunity.Period.Start,
+        EndDate = concert.Application.Opportunity.Period.End,
         VenueName = concert.Application.Opportunity.Venue.Name,
         ArtistName = concert.Application.Artist.Name
     };

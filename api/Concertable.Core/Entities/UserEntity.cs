@@ -1,5 +1,6 @@
 using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Enums;
+using Concertable.Core.ValueObjects;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Core.Entities;
@@ -13,8 +14,7 @@ public class UserEntity : IGuidEntity
     public required string Email { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
     public required Role Role { get; set; }
-    public string? County { get; set; }
-    public string? Town { get; set; }
+    public Address? Address { get; set; }
     public Point? Location { get; set; }
     public string StripeCustomerId { get; set; } = string.Empty;
     public string Avatar { get; set; } = string.Empty;

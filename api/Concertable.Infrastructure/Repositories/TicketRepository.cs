@@ -32,7 +32,7 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
     public async Task<IEnumerable<TicketEntity>> GetHistoryByUserIdAsync(Guid id)
     {
         return await context.Tickets
-            .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate < timeProvider.GetUtcNow())
+            .Where(t => t.UserId == id && t.Concert.Application.Opportunity.Period.Start < timeProvider.GetUtcNow())
             .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Opportunity).ThenInclude(o => o.Venue)
             .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Artist)
             .Include(t => t.User)
@@ -42,7 +42,7 @@ public class TicketRepository : Repository<TicketEntity>, ITicketRepository
     public async Task<IEnumerable<TicketEntity>> GetUpcomingByUserIdAsync(Guid id)
     {
         return await context.Tickets
-            .Where(t => t.UserId == id && t.Concert.Application.Opportunity.StartDate >= timeProvider.GetUtcNow())
+            .Where(t => t.UserId == id && t.Concert.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow())
             .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Opportunity).ThenInclude(o => o.Venue)
             .Include(t => t.Concert).ThenInclude(c => c.Application).ThenInclude(a => a.Artist)
             .Include(t => t.User)

@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
+using Concertable.Core.ValueObjects;
 using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,8 +62,7 @@ public class UserService : IUserService
 
         var locationDto = await geocodingService.GetLocationAsync(latitude, longitude);
 
-        user.County = locationDto.County;
-        user.Town = locationDto.Town;
+        user.Address = new Address(locationDto.County, locationDto.Town);
 
         userRepsitory.Update(user);
         await userRepsitory.SaveChangesAsync();
@@ -73,8 +73,7 @@ public class UserService : IUserService
     public async Task UpdateLocationAsync(UserEntity user, double latitude, double longitude)
     {
         var location = await geocodingService.GetLocationAsync(latitude, longitude);
-        user.County = location.County;
-        user.Town = location.Town;
+        user.Address = new Address(location.County, location.Town);
         user.Location = geometryProvider.CreatePoint(latitude, longitude);
     }
 

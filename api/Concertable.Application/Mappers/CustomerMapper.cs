@@ -13,8 +13,8 @@ public class CustomerMapper : IUserMapper
         Role = entity.Role,
         Latitude = entity.Location.ToLatitude(),
         Longitude = entity.Location.ToLongitude(),
-        County = entity.County,
-        Town = entity.Town,
+        County = entity.Address?.County,
+        Town = entity.Address?.Town,
         IsEmailVerified = entity.IsEmailVerified
     };
 }

@@ -9,7 +9,7 @@ public static class QueryableVenueMappers
     public static IQueryable<VenueHeaderDto> ToHeaderDtos(
         this IQueryable<VenueEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from v in query.Where(v => v.User.Location != null && v.User.County != null && v.User.Town != null)
+        from v in query.Where(v => v.User.Location != null && v.User.Address != null)
         join r in ratings on v.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new VenueHeaderDto
@@ -18,14 +18,14 @@ public static class QueryableVenueMappers
             Name = v.Name,
             ImageUrl = v.User.Avatar,
             Rating = rating.AverageRating,
-            County = v.User.County!,
-            Town = v.User.Town!
+            County = v.User.Address!.County,
+            Town = v.User.Address!.Town
         };
 
     public static IQueryable<VenueSummaryDto> ToSummaryDto(
         this IQueryable<VenueEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from v in query.Where(v => v.User.Location != null && v.User.County != null && v.User.Town != null)
+        from v in query.Where(v => v.User.Location != null && v.User.Address != null)
         join r in ratings on v.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new VenueSummaryDto
@@ -39,7 +39,7 @@ public static class QueryableVenueMappers
     public static IQueryable<VenueDto> ToDto(
         this IQueryable<VenueEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from v in query.Where(v => v.User.Location != null && v.User.County != null && v.User.Town != null)
+        from v in query.Where(v => v.User.Location != null && v.User.Address != null)
         join r in ratings on v.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new VenueDto
@@ -50,8 +50,8 @@ public static class QueryableVenueMappers
             BannerUrl = v.BannerUrl,
             Avatar = v.User.Avatar,
             Approved = v.Approved,
-            County = v.User.County!,
-            Town = v.User.Town!,
+            County = v.User.Address!.County,
+            Town = v.User.Address!.Town,
             Email = v.User.Email ?? string.Empty,
             Latitude = v.User.Location!.Y,
             Longitude = v.User.Location!.X,

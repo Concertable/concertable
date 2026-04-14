@@ -11,8 +11,8 @@ public static class UserMappers
         Email = user.Email ?? string.Empty,
         Latitude = user.Location.ToLatitude(),
         Longitude = user.Location.ToLongitude(),
-        County = user.County,
-        Town = user.Town,
+        County = user.Address?.County,
+        Town = user.Address?.Town,
         Role = user.Role
     };
 }

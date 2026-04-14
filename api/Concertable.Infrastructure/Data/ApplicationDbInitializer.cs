@@ -5,6 +5,7 @@ using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
+using Concertable.Core.ValueObjects;
 using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Data.SeedData;
 using Microsoft.EntityFrameworkCore;
@@ -51,8 +52,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 IsEmailVerified = true,
                 Role = Role.Admin,
-                County = "Leicestershire",
-                Town = "Loughborough",
+                Address = new Address("Leicestershire", "Loughborough"),
                 Location = geometryProvider.CreatePoint(51.0, -0.5),
                 Avatar = "avatar.jpg"
             });
@@ -64,8 +64,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 IsEmailVerified = true,
                 Role = Role.Customer,
-                County = locations[0].County,
-                Town = locations[0].Town,
+                Address = new Address(locations[0].County, locations[0].Town),
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeCustomerId = "cus_UIIy9Gbwfr3uAP",
                 Avatar = "avatar.jpg"
@@ -80,8 +79,7 @@ public class ApplicationDbInitializer : IDbInitializer
                     PasswordHash = passwordHasher.Hash(SeedPassword),
                     IsEmailVerified = true,
                     Role = Role.Customer,
-                    County = loc.County,
-                    Town = loc.Town,
+                    Address = new Address(loc.County, loc.Town),
                     Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
                     Avatar = "avatar.jpg"
                 }).Entity.Id);
@@ -94,8 +92,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 IsEmailVerified = true,
                 Role = Role.ArtistManager,
-                County = locations[0].County,
-                Town = locations[0].Town,
+                Address = new Address(locations[0].County, locations[0].Town),
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeAccountId = "acct_1TJiMePysoXmht10",
                 StripeCustomerId = "cus_UIIy5mCilBtJbR",
@@ -107,8 +104,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 IsEmailVerified = true,
                 Role = Role.ArtistManager,
-                County = locations[0].County,
-                Town = locations[0].Town,
+                Address = new Address(locations[0].County, locations[0].Town),
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeAccountId = "acct_1TJiMoPupFslP2qz",
                 StripeCustomerId = "cus_UIIy5415r69RmJ",
@@ -123,8 +119,7 @@ public class ApplicationDbInitializer : IDbInitializer
                     PasswordHash = passwordHasher.Hash(SeedPassword),
                     IsEmailVerified = true,
                     Role = Role.ArtistManager,
-                    County = loc.County,
-                    Town = loc.Town,
+                    Address = new Address(loc.County, loc.Town),
                     Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
                     Avatar = "avatar.jpg"
                 }).Entity.Id);
@@ -137,8 +132,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 IsEmailVerified = true,
                 Role = Role.VenueManager,
-                County = locations[0].County,
-                Town = locations[0].Town,
+                Address = new Address(locations[0].County, locations[0].Town),
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeAccountId = "acct_1TJiMjLxk4aCq1Ui",
                 StripeCustomerId = "cus_UIIymKfHijbNVO",
@@ -150,8 +144,7 @@ public class ApplicationDbInitializer : IDbInitializer
                 PasswordHash = passwordHasher.Hash(SeedPassword),
                 IsEmailVerified = true,
                 Role = Role.VenueManager,
-                County = locations[0].County,
-                Town = locations[0].Town,
+                Address = new Address(locations[0].County, locations[0].Town),
                 Location = geometryProvider.CreatePoint(locations[0].Latitude, locations[0].Longitude),
                 StripeAccountId = "acct_1TJiPJLLwGSDilbV",
                 StripeCustomerId = "cus_UIJ1qfgxYu624Q",
@@ -166,8 +159,7 @@ public class ApplicationDbInitializer : IDbInitializer
                     PasswordHash = passwordHasher.Hash(SeedPassword),
                     IsEmailVerified = true,
                     Role = Role.VenueManager,
-                    County = loc.County,
-                    Town = loc.Town,
+                    Address = new Address(loc.County, loc.Town),
                     Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
                     Avatar = "avatar.jpg"
                 }).Entity.Id);
@@ -416,61 +408,61 @@ public class ApplicationDbInitializer : IDbInitializer
         {
             var opportunities = new OpportunityEntity[]
             {
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(-60), EndDate = now.AddDays(-60).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //1
-            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(-55), EndDate = now.AddDays(-55).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //2
-            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(-50), EndDate = now.AddDays(-50).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 180, PaymentMethod = PaymentMethod.Cash } }, //3
-            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(-45), EndDate = now.AddDays(-45).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //4
-            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(-40), EndDate = now.AddDays(-40).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //5
-            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(-35), EndDate = now.AddDays(-35).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 220, PaymentMethod = PaymentMethod.Cash } }, //6
-            new OpportunityEntity { VenueId = 7, StartDate = now.AddDays(-30), EndDate = now.AddDays(-30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //7
-            new OpportunityEntity { VenueId = 8, StartDate = now.AddDays(-25), EndDate = now.AddDays(-25).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //8
-            new OpportunityEntity { VenueId = 9, StartDate = now.AddDays(-20), EndDate = now.AddDays(-20).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //9
-            new OpportunityEntity { VenueId = 10, StartDate = now.AddDays(-15), EndDate = now.AddDays(-15).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 250, PaymentMethod = PaymentMethod.Cash } }, //10
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(-10), EndDate = now.AddDays(-10).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //11
-            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(-5), EndDate = now.AddDays(-5).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 300, PaymentMethod = PaymentMethod.Cash } }, //12
-            new OpportunityEntity { VenueId = 3, StartDate = now, EndDate = now.AddHours(3), Contract = new FlatFeeContractEntity { Fee = 280, PaymentMethod = PaymentMethod.Cash } }, //13
-            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(5), EndDate = now.AddDays(5).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 270, PaymentMethod = PaymentMethod.Transfer } }, //14
-            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //15
-            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(15), EndDate = now.AddDays(15).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 65, PaymentMethod = PaymentMethod.Cash } }, //16
-            new OpportunityEntity { VenueId = 7, StartDate = now.AddDays(20), EndDate = now.AddDays(20).AddHours(3), Contract = new VersusContractEntity { Guarantee = 150, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //17
-            new OpportunityEntity { VenueId = 8, StartDate = now.AddDays(25), EndDate = now.AddDays(25).AddHours(3), Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //18
-            new OpportunityEntity { VenueId = 9, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 245, PaymentMethod = PaymentMethod.Transfer } }, //19
-            new OpportunityEntity { VenueId = 10, StartDate = now.AddDays(35), EndDate = now.AddDays(35).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //20
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(40), EndDate = now.AddDays(40).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 300, PaymentMethod = PaymentMethod.Transfer } }, //21
-            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(45), EndDate = now.AddDays(45).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //22
-            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(50), EndDate = now.AddDays(50).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 225, PaymentMethod = PaymentMethod.Cash } }, //23
-            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(55), EndDate = now.AddDays(55).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //24
-            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 215, PaymentMethod = PaymentMethod.Cash } }, //25
-            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(65), EndDate = now.AddDays(65).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //26
-            new OpportunityEntity { VenueId = 7, StartDate = now.AddDays(70), EndDate = now.AddDays(70).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 205, PaymentMethod = PaymentMethod.Cash } }, //27
-            new OpportunityEntity { VenueId = 8, StartDate = now.AddDays(75), EndDate = now.AddDays(75).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //28
-            new OpportunityEntity { VenueId = 9, StartDate = now.AddDays(80), EndDate = now.AddDays(80).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 195, PaymentMethod = PaymentMethod.Cash } }, //29
-            new OpportunityEntity { VenueId = 10, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //30
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //31
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(85), EndDate = now.AddDays(85).AddHours(5), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //32
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(2), EndDate = now.AddDays(2).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //33
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(4), EndDate = now.AddDays(4).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //34
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(6), EndDate = now.AddDays(6).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //35
-            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(8), EndDate = now.AddDays(8).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //36
-            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(10), EndDate = now.AddDays(10).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //37
-            new OpportunityEntity { VenueId = 2, StartDate = now.AddDays(12), EndDate = now.AddDays(12).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //38
-            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(14), EndDate = now.AddDays(14).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //39
-            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(16), EndDate = now.AddDays(16).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //40
-            new OpportunityEntity { VenueId = 3, StartDate = now.AddDays(18), EndDate = now.AddDays(18).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //41
-            new OpportunityEntity { VenueId = 4, StartDate = now.AddDays(22), EndDate = now.AddDays(22).AddHours(3) }, //42 - no contract
-            new OpportunityEntity { VenueId = 5, StartDate = now.AddDays(24), EndDate = now.AddDays(24).AddHours(3) }, //43 - no contract
-            new OpportunityEntity { VenueId = 6, StartDate = now.AddDays(26), EndDate = now.AddDays(26).AddHours(3) }, //44 - no contract
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(-60), now.AddDays(-60).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //1
+            new OpportunityEntity { VenueId = 2, Period = new DateRange(now.AddDays(-55), now.AddDays(-55).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //2
+            new OpportunityEntity { VenueId = 3, Period = new DateRange(now.AddDays(-50), now.AddDays(-50).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 180, PaymentMethod = PaymentMethod.Cash } }, //3
+            new OpportunityEntity { VenueId = 4, Period = new DateRange(now.AddDays(-45), now.AddDays(-45).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //4
+            new OpportunityEntity { VenueId = 5, Period = new DateRange(now.AddDays(-40), now.AddDays(-40).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //5
+            new OpportunityEntity { VenueId = 6, Period = new DateRange(now.AddDays(-35), now.AddDays(-35).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 220, PaymentMethod = PaymentMethod.Cash } }, //6
+            new OpportunityEntity { VenueId = 7, Period = new DateRange(now.AddDays(-30), now.AddDays(-30).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //7
+            new OpportunityEntity { VenueId = 8, Period = new DateRange(now.AddDays(-25), now.AddDays(-25).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //8
+            new OpportunityEntity { VenueId = 9, Period = new DateRange(now.AddDays(-20), now.AddDays(-20).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //9
+            new OpportunityEntity { VenueId = 10, Period = new DateRange(now.AddDays(-15), now.AddDays(-15).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 250, PaymentMethod = PaymentMethod.Cash } }, //10
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(-10), now.AddDays(-10).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 160, PaymentMethod = PaymentMethod.Cash } }, //11
+            new OpportunityEntity { VenueId = 2, Period = new DateRange(now.AddDays(-5), now.AddDays(-5).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 300, PaymentMethod = PaymentMethod.Cash } }, //12
+            new OpportunityEntity { VenueId = 3, Period = new DateRange(now, now.AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 280, PaymentMethod = PaymentMethod.Cash } }, //13
+            new OpportunityEntity { VenueId = 4, Period = new DateRange(now.AddDays(5), now.AddDays(5).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 270, PaymentMethod = PaymentMethod.Transfer } }, //14
+            new OpportunityEntity { VenueId = 5, Period = new DateRange(now.AddDays(10), now.AddDays(10).AddHours(3)), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //15
+            new OpportunityEntity { VenueId = 6, Period = new DateRange(now.AddDays(15), now.AddDays(15).AddHours(3)), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 65, PaymentMethod = PaymentMethod.Cash } }, //16
+            new OpportunityEntity { VenueId = 7, Period = new DateRange(now.AddDays(20), now.AddDays(20).AddHours(3)), Contract = new VersusContractEntity { Guarantee = 150, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //17
+            new OpportunityEntity { VenueId = 8, Period = new DateRange(now.AddDays(25), now.AddDays(25).AddHours(3)), Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //18
+            new OpportunityEntity { VenueId = 9, Period = new DateRange(now.AddDays(30), now.AddDays(30).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 245, PaymentMethod = PaymentMethod.Transfer } }, //19
+            new OpportunityEntity { VenueId = 10, Period = new DateRange(now.AddDays(35), now.AddDays(35).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 240, PaymentMethod = PaymentMethod.Cash } }, //20
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(40), now.AddDays(40).AddHours(3)), Contract = new VenueHireContractEntity { HireFee = 300, PaymentMethod = PaymentMethod.Transfer } }, //21
+            new OpportunityEntity { VenueId = 2, Period = new DateRange(now.AddDays(45), now.AddDays(45).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 230, PaymentMethod = PaymentMethod.Cash } }, //22
+            new OpportunityEntity { VenueId = 3, Period = new DateRange(now.AddDays(50), now.AddDays(50).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 225, PaymentMethod = PaymentMethod.Cash } }, //23
+            new OpportunityEntity { VenueId = 4, Period = new DateRange(now.AddDays(55), now.AddDays(55).AddHours(3)), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Cash } }, //24
+            new OpportunityEntity { VenueId = 5, Period = new DateRange(now.AddDays(60), now.AddDays(60).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 215, PaymentMethod = PaymentMethod.Cash } }, //25
+            new OpportunityEntity { VenueId = 6, Period = new DateRange(now.AddDays(65), now.AddDays(65).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 210, PaymentMethod = PaymentMethod.Cash } }, //26
+            new OpportunityEntity { VenueId = 7, Period = new DateRange(now.AddDays(70), now.AddDays(70).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 205, PaymentMethod = PaymentMethod.Cash } }, //27
+            new OpportunityEntity { VenueId = 8, Period = new DateRange(now.AddDays(75), now.AddDays(75).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //28
+            new OpportunityEntity { VenueId = 9, Period = new DateRange(now.AddDays(80), now.AddDays(80).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 195, PaymentMethod = PaymentMethod.Cash } }, //29
+            new OpportunityEntity { VenueId = 10, Period = new DateRange(now.AddDays(85), now.AddDays(85).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //30
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(85), now.AddDays(85).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //31
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(85), now.AddDays(85).AddHours(5)), Contract = new FlatFeeContractEntity { Fee = 190, PaymentMethod = PaymentMethod.Cash } }, //32
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(2), now.AddDays(2).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //33
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(4), now.AddDays(4).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //34
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(6), now.AddDays(6).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //35
+            new OpportunityEntity { VenueId = 2, Period = new DateRange(now.AddDays(8), now.AddDays(8).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //36
+            new OpportunityEntity { VenueId = 2, Period = new DateRange(now.AddDays(10), now.AddDays(10).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //37
+            new OpportunityEntity { VenueId = 2, Period = new DateRange(now.AddDays(12), now.AddDays(12).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //38
+            new OpportunityEntity { VenueId = 3, Period = new DateRange(now.AddDays(14), now.AddDays(14).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 150, PaymentMethod = PaymentMethod.Cash } }, //39
+            new OpportunityEntity { VenueId = 3, Period = new DateRange(now.AddDays(16), now.AddDays(16).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 175, PaymentMethod = PaymentMethod.Cash } }, //40
+            new OpportunityEntity { VenueId = 3, Period = new DateRange(now.AddDays(18), now.AddDays(18).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Cash } }, //41
+            new OpportunityEntity { VenueId = 4, Period = new DateRange(now.AddDays(22), now.AddDays(22).AddHours(3) )}, //42 - no contract
+            new OpportunityEntity { VenueId = 5, Period = new DateRange(now.AddDays(24), now.AddDays(24).AddHours(3) )}, //43 - no contract
+            new OpportunityEntity { VenueId = 6, Period = new DateRange(now.AddDays(26), now.AddDays(26).AddHours(3) )}, //44 - no contract
 
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(30), EndDate = now.AddDays(30).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //45
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(32), EndDate = now.AddDays(32).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //46
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(34), EndDate = now.AddDays(34).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //47
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(36), EndDate = now.AddDays(36).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //48
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(38), EndDate = now.AddDays(38).AddHours(3), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //49
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(60), EndDate = now.AddDays(60).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(90), EndDate = now.AddDays(90).AddHours(3), Contract = new VersusContractEntity { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(120), EndDate = now.AddDays(120).AddHours(3), Contract = new VenueHireContractEntity { HireFee = 250, PaymentMethod = PaymentMethod.Transfer } }, //52
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(150), EndDate = now.AddDays(150).AddHours(3), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 65, PaymentMethod = PaymentMethod.Cash } }, //53 - DoorSplit, no applications
-            new OpportunityEntity { VenueId = 1, StartDate = now.AddDays(180), EndDate = now.AddDays(180).AddHours(3), Contract = new VersusContractEntity { Guarantee = 150, ArtistDoorPercent = 60, PaymentMethod = PaymentMethod.Cash } }, //54 - Versus, no applications
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(30), now.AddDays(30).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //45
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(32), now.AddDays(32).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //46
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(34), now.AddDays(34).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //47
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(36), now.AddDays(36).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //48
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(38), now.AddDays(38).AddHours(3)), Contract = new FlatFeeContractEntity { Fee = 200, PaymentMethod = PaymentMethod.Transfer } }, //49
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(60), now.AddDays(60).AddHours(3)), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //50
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(90), now.AddDays(90).AddHours(3)), Contract = new VersusContractEntity { Guarantee = 100, ArtistDoorPercent = 70, PaymentMethod = PaymentMethod.Transfer } }, //51
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(120), now.AddDays(120).AddHours(3)), Contract = new VenueHireContractEntity { HireFee = 250, PaymentMethod = PaymentMethod.Transfer } }, //52
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(150), now.AddDays(150).AddHours(3)), Contract = new DoorSplitContractEntity { ArtistDoorPercent = 65, PaymentMethod = PaymentMethod.Cash } }, //53 - DoorSplit, no applications
+            new OpportunityEntity { VenueId = 1, Period = new DateRange(now.AddDays(180), now.AddDays(180).AddHours(3)), Contract = new VersusContractEntity { Guarantee = 150, ArtistDoorPercent = 60, PaymentMethod = PaymentMethod.Cash } }, //54 - Versus, no applications
 
             };
             context.Opportunities.AddRange(opportunities);

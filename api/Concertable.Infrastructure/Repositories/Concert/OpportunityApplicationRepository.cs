@@ -48,7 +48,7 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
         .Where(a =>
             a.ArtistId == artistId &&
             !context.Concerts.Any(e => e.ApplicationId == a.Id) &&
-            a.Opportunity.StartDate > timeProvider.GetUtcNow());
+            a.Opportunity.Period.Start > timeProvider.GetUtcNow());
 
         return await query.ToListAsync();
     }
@@ -113,7 +113,7 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
                 context.Concerts.Any(e =>
                     e.Application.OpportunityId == a.OpportunityId &&
                     e.ApplicationId != a.Id)) // someone else was accepted
-            .OrderByDescending(a => a.Opportunity.EndDate)
+            .OrderByDescending(a => a.Opportunity.Period.End)
             .Take(5);
 
         return await query.ToListAsync();

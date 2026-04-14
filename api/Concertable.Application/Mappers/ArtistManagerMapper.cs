@@ -16,8 +16,8 @@ public class ArtistManagerMapper : IUserMapper
             Role = am.Role,
             Latitude = am.Location.ToLatitude(),
             Longitude = am.Location.ToLongitude(),
-            County = am.County,
-            Town = am.Town,
+            County = am.Address?.County,
+            Town = am.Address?.Town,
             ArtistId = am.Artist?.Id,
             IsEmailVerified = am.IsEmailVerified
         };

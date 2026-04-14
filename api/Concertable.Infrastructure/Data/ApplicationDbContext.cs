@@ -53,6 +53,11 @@ public class ApplicationDbContext : DbContext
                 .HasValue<VenueManagerEntity>(Role.VenueManager)
                 .HasValue<ArtistManagerEntity>(Role.ArtistManager)
                 .HasValue<CustomerEntity>(Role.Customer);
+            e.OwnsOne(u => u.Address, a =>
+            {
+                a.Property(x => x.County).HasColumnName("County");
+                a.Property(x => x.Town).HasColumnName("Town");
+            });
         });
 
         modelBuilder.Entity<CustomerEntity>()
@@ -136,6 +141,13 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(ci => ci.ConcertId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
+
+        modelBuilder.Entity<OpportunityEntity>()
+            .OwnsOne(o => o.Period, p =>
+            {
+                p.Property(x => x.Start).HasColumnName("StartDate");
+                p.Property(x => x.End).HasColumnName("EndDate");
+            });
 
         modelBuilder.Entity<OpportunityEntity>()
             .HasOne(o => o.Venue)

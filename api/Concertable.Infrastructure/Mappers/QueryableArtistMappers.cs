@@ -18,8 +18,8 @@ public static class QueryableArtistMappers
             Name = a.Name,
             ImageUrl = a.User.Avatar,
             Rating = rating.AverageRating,
-            County = a.User.County ?? string.Empty,
-            Town = a.User.Town ?? string.Empty
+            County = a.User.Address.County ?? string.Empty,
+            Town = a.User.Address.Town ?? string.Empty
         };
 
     public static IQueryable<ArtistSummaryDto> ToSummaryDto(
@@ -50,8 +50,8 @@ public static class QueryableArtistMappers
             About = a.About,
             BannerUrl = a.BannerUrl,
             Avatar = a.User.Avatar,
-            County = a.User.County ?? string.Empty,
-            Town = a.User.Town ?? string.Empty,
+            County = a.User.Address.County ?? string.Empty,
+            Town = a.User.Address.Town ?? string.Empty,
             Email = a.User.Email ?? string.Empty,
             Rating = (double?)rating.AverageRating ?? 0.0,
             Genres = a.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
