@@ -45,22 +45,6 @@ public static class ArtistMappers
         Town = artistDto.Town
     };
 
-    public static ArtistEntity ToEntity(this CreateArtistRequest request) => new()
-    {
-        Name = request.Name,
-        About = request.About,
-        BannerUrl = string.Empty,
-        ArtistGenres = request.Genres.Select(g => new ArtistGenreEntity { GenreId = g.Id }).ToList()
-    };
-
-    public static ArtistEntity ToEntity(this ArtistDto dto) => new()
-    {
-        Id = dto.Id,
-        Name = dto.Name,
-        About = dto.About,
-        BannerUrl = dto.BannerUrl,
-        ArtistGenres = dto.Genres.Select(g => new ArtistGenreEntity { GenreId = g.Id }).ToList()
-    };
 
     public static IEnumerable<ArtistDto> ToDtos(this IEnumerable<ArtistEntity> artists) =>
         artists.Select(a => a.ToDto());

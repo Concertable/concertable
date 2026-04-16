@@ -17,26 +17,23 @@ public class OpportunityService : IOpportunityService
     private readonly IOpportunityRepository opportunityRepository;
     private readonly IStripeValidationFactory stripeValidationFactory;
     private readonly IVenueService venueService;
-    private readonly IContractService contractService;
+    private readonly IContractMapper contractMapper;
     private readonly IUnitOfWork unitOfWork;
-    private readonly IGenreSyncService genreSyncService;
     private readonly IOpportunityMapper mapper;
 
     public OpportunityService(
         IOpportunityRepository opportunityRepository,
         IStripeValidationFactory stripeValidationFactory,
         IVenueService venueService,
-        IContractService contractService,
+        IContractMapper contractMapper,
         IUnitOfWork unitOfWork,
-        IGenreSyncService genreSyncService,
         IOpportunityMapper mapper)
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidationFactory = stripeValidationFactory;
         this.venueService = venueService;
-        this.contractService = contractService;
+        this.contractMapper = contractMapper;
         this.unitOfWork = unitOfWork;
-        this.genreSyncService = genreSyncService;
         this.mapper = mapper;
     }
 
@@ -52,15 +49,15 @@ public class OpportunityService : IOpportunityService
 
         try
         {
-            var opportunity = request.ToEntity();
-            opportunity.VenueId = venueDto.Id;
+            var contract = contractMapper.ToEntity(request.Contract);
+            var opportunity = OpportunityEntity.Create(
+                venueDto.Id,
+                new DateRange(request.StartDate, request.EndDate),
+                contract,
+                request.GenreIds);
 
             await opportunityRepository.AddAsync(opportunity);
             await unitOfWork.TrySaveChangesAsync();
-
-            await contractService.AddAsync(request.Contract, opportunity.Id);
-            await unitOfWork.TrySaveChangesAsync();
-
             await transaction.CommitAsync();
 
             var saved = await opportunityRepository.GetByIdAsync(opportunity.Id)
@@ -93,13 +90,14 @@ public class OpportunityService : IOpportunityService
         {
             foreach (var request in requests)
             {
-                var opportunity = request.ToEntity();
-                opportunity.VenueId = venueDto.Id;
+                var contract = contractMapper.ToEntity(request.Contract);
+                var opportunity = OpportunityEntity.Create(
+                    venueDto.Id,
+                    new DateRange(request.StartDate, request.EndDate),
+                    contract,
+                    request.GenreIds);
 
                 await opportunityRepository.AddAsync(opportunity);
-                await unitOfWork.TrySaveChangesAsync();
-
-                await contractService.AddAsync(request.Contract, opportunity.Id);
             }
 
             await unitOfWork.TrySaveChangesAsync();
@@ -130,9 +128,8 @@ public class OpportunityService : IOpportunityService
 
         try
         {
-            opportunity.Period = new DateRange(request.StartDate, request.EndDate);
-            genreSyncService.Sync(opportunity.OpportunityGenres, request.GenreIds);
-            await contractService.UpdateAsync(request.Contract, id);
+            var contract = contractMapper.ToEntity(request.Contract);
+            opportunity.Update(new DateRange(request.StartDate, request.EndDate), contract, request.GenreIds);
             await unitOfWork.TrySaveChangesAsync();
             await transaction.CommitAsync();
         }

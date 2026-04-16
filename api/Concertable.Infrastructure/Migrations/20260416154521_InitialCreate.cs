@@ -275,47 +275,6 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SocialMedias",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Site = table.Column<int>(type: "int", nullable: false),
-                    Handle = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ArtistId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SocialMedias", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SocialMedias_Artists_ArtistId",
-                        column: x => x.ArtistId,
-                        principalTable: "Artists",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Videos",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ArtistId = table.Column<int>(type: "int", nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Videos", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Videos_Artists_ArtistId",
-                        column: x => x.ArtistId,
-                        principalTable: "Artists",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "GenrePreferences",
                 columns: table => new
                 {
@@ -786,11 +745,6 @@ namespace Concertable.Infrastructure.Migrations
                 column: "ApplicationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SocialMedias_ArtistId",
-                table: "SocialMedias",
-                column: "ArtistId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Tickets_ConcertId",
                 table: "Tickets",
                 column: "ConcertId");
@@ -837,11 +791,6 @@ namespace Concertable.Infrastructure.Migrations
                 table: "Venues",
                 column: "UserId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Videos_ArtistId",
-                table: "Videos",
-                column: "ArtistId");
         }
 
         /// <inheritdoc />
@@ -887,9 +836,6 @@ namespace Concertable.Infrastructure.Migrations
                 name: "SettlementTransactions");
 
             migrationBuilder.DropTable(
-                name: "SocialMedias");
-
-            migrationBuilder.DropTable(
                 name: "StripeEvents");
 
             migrationBuilder.DropTable(
@@ -903,9 +849,6 @@ namespace Concertable.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "VersusContracts");
-
-            migrationBuilder.DropTable(
-                name: "Videos");
 
             migrationBuilder.DropTable(
                 name: "Preferences");

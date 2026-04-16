@@ -39,8 +39,8 @@ public class VenueRepositoryTests : IDisposable
         );
 
         context.Venues.AddRange(
-            new VenueEntity { Id = 1, UserId = UserId, Name = "Venue A", About = "About A", BannerUrl = "a.jpg" },
-            new VenueEntity { Id = 2, UserId = OtherUserId, Name = "Venue B", About = "About B", BannerUrl = "b.jpg" }
+            VenueEntity.Create(UserId, "Venue A", "About A", "a.jpg"),
+            VenueEntity.Create(OtherUserId, "Venue B", "About B", "b.jpg")
         );
 
         context.SaveChanges();

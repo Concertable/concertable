@@ -41,11 +41,9 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
-        var venue = request.ToEntity();
         var user = currentUser.GetEntity<VenueManagerEntity>();
-
-        venue.UserId = user.Id;
-        venue.BannerUrl = await imageService.UploadAsync(request.Banner);
+        var bannerUrl = await imageService.UploadAsync(request.Banner);
+        var venue = VenueEntity.Create(user.Id, request.Name, request.About, bannerUrl);
 
         await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
 
@@ -66,14 +64,13 @@ public class VenueService : IVenueService
         if (venue.UserId != user.Id)
             throw new ForbiddenException("You do not own this venue");
 
-        venue.Name = request.Name;
-        venue.About = request.About;
-        venue.Approved = request.Approved;
+        var bannerUrl = request.Banner is not null
+            ? await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url)
+            : venue.BannerUrl;
+
+        venue.Update(request.Name, request.About, bannerUrl);
 
         await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
-
-        if (request.Banner is not null)
-            venue.BannerUrl = await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url);
 
         if (request.Avatar is not null)
             user.Avatar = await imageService.ReplaceAsync(request.Avatar, user.Avatar);
@@ -107,7 +104,7 @@ public class VenueService : IVenueService
         var venue = await venueRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
 
-        venue.Approved = true;
+        venue.Approve();
         await unitOfWork.SaveChangesAsync();
     }
 }

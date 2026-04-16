@@ -13,7 +13,6 @@ public class ArtistService : IArtistService
     private readonly IUserRepository userRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
-    private readonly IGenreSyncService genreSyncService;
     private readonly IUserService userService;
     private readonly IUnitOfWork unitOfWork;
 
@@ -22,7 +21,6 @@ public class ArtistService : IArtistService
         IUserRepository userRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        IGenreSyncService genreSyncService,
         IUserService userService,
         IUnitOfWork unitOfWork)
     {
@@ -30,7 +28,6 @@ public class ArtistService : IArtistService
         this.userRepository = userRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
-        this.genreSyncService = genreSyncService;
         this.userService = userService;
         this.unitOfWork = unitOfWork;
     }
@@ -50,10 +47,9 @@ public class ArtistService : IArtistService
 
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
     {
-        var artist = request.ToEntity();
         var user = currentUser.GetEntity();
-        artist.UserId = user.Id;
-        artist.BannerUrl = await imageService.UploadAsync(request.Banner);
+        var bannerUrl = await imageService.UploadAsync(request.Banner);
+        var artist = ArtistEntity.Create(user.Id, request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
 
         await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
 
@@ -73,15 +69,13 @@ public class ArtistService : IArtistService
         if (artist.UserId != user.Id)
             throw new ForbiddenException("You do not own this Artist");
 
-        artist.Name = request.Name;
-        artist.About = request.About;
+        var bannerUrl = request.Banner is not null
+            ? await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url)
+            : artist.BannerUrl;
 
-        genreSyncService.Sync(artist.ArtistGenres, request.Genres.Select(g => g.Id));
+        artist.Update(request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
 
         await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
-
-        if (request.Banner is not null)
-            artist.BannerUrl = await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url);
 
         if (request.Avatar is not null)
             user.Avatar = await imageService.ReplaceAsync(request.Avatar, user.Avatar);

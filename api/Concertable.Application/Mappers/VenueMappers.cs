@@ -47,12 +47,6 @@ public static class VenueMappers
         Town = venueDto.Town
     };
 
-    public static VenueEntity ToEntity(this CreateVenueRequest request) => new()
-    {
-        Name = request.Name,
-        About = request.About,
-        BannerUrl = string.Empty
-    };
 
     public static IEnumerable<VenueDto> ToDtos(this IEnumerable<VenueEntity> venues) =>
         venues.Select(v => v.ToDto());

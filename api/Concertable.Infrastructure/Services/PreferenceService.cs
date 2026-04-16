@@ -11,24 +11,19 @@ public class PreferenceService : IPreferenceService
 {
     private readonly IPreferenceRepository preferenceRepository;
     private readonly ICurrentUser currentUser;
-    private readonly IGenreSyncService genreSyncService;
 
     public PreferenceService(
         IPreferenceRepository preferenceRepository,
-        ICurrentUser currentUser,
-        IGenreSyncService genreSyncService)
+        ICurrentUser currentUser)
     {
         this.preferenceRepository = preferenceRepository;
         this.currentUser = currentUser;
-        this.genreSyncService = genreSyncService;
     }
 
     public async Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, Guid? userId = null)
     {
         var resolvedUserId = userId ?? currentUser.GetId();
-
-        var preference = request.ToEntity();
-        preference.UserId = resolvedUserId;
+        var preference = PreferenceEntity.Create(resolvedUserId, request.RadiusKm, request.Genres.Select(g => g.Id));
 
         preferenceRepository.Update(preference);
         await preferenceRepository.SaveChangesAsync();
@@ -63,11 +58,7 @@ public class PreferenceService : IPreferenceService
         if (userId != preference.User.Id)
             throw new UnauthorizedAccessException("You do not own this preference");
 
-        genreSyncService.Sync(
-            preference.GenrePreferences,
-            preferenceDto.Genres.Select(g => g.Id));
-
-        preference.RadiusKm = preferenceDto.RadiusKm;
+        preference.Update(preferenceDto.RadiusKm, preferenceDto.Genres.Select(g => g.Id));
 
         preferenceRepository.Update(preference);
         await preferenceRepository.SaveChangesAsync();

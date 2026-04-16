@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260415141212_InitialCreate")]
+    [Migration("20260416154521_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -439,31 +439,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.SocialMediaEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArtistId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Handle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Site")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArtistId");
-
-                    b.ToTable("SocialMedias");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.StripeEventEntity", b =>
                 {
                     b.Property<string>("EventId")
@@ -653,28 +628,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasIndex("VenueId");
 
                     b.ToTable("VenueImages");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.VideoEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArtistId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArtistId");
-
-                    b.ToTable("Videos");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
@@ -1022,17 +975,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Ticket");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.SocialMediaEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.ArtistEntity", "Artist")
-                        .WithMany("SocialMedias")
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Artist");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.TicketEntity", b =>
                 {
                     b.HasOne("Concertable.Core.Entities.ConcertEntity", "Concert")
@@ -1121,17 +1063,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.VideoEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.ArtistEntity", "Artist")
-                        .WithMany("Videos")
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Artist");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
                 {
                     b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
@@ -1207,10 +1138,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Applications");
 
                     b.Navigation("ArtistGenres");
-
-                    b.Navigation("SocialMedias");
-
-                    b.Navigation("Videos");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.ConcertEntity", b =>

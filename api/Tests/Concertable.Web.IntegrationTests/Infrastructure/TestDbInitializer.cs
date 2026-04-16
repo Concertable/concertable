@@ -105,92 +105,35 @@ public class TestDbInitializer : IDbInitializer
 
         if (!await context.Artists.AnyAsync())
         {
-            context.Artists.Add(new ArtistEntity
-            {
-                UserId = TestConstants.ArtistManager.Id,
-                Name = "Test Artist",
-                About = "Test Artist About",
-                BannerUrl = "artist.jpg",
-                ArtistGenres =
-                [
-                    new ArtistGenreEntity { GenreId = TestConstants.GenreId }
-                ]
-            });
+            context.Artists.Add(ArtistEntity.Create(
+                TestConstants.ArtistManager.Id,
+                "Test Artist",
+                "Test Artist About",
+                "artist.jpg",
+                [TestConstants.GenreId]));
             await context.SaveChangesAsync();
         }
 
         if (!await context.Venues.AnyAsync())
         {
-            var venue = new VenueEntity
+            var venue = VenueEntity.Create(TestConstants.VenueManager.Id, "Test Venue", "Test", "test.jpg");
+
+            var opportunities = new[]
             {
-                UserId = TestConstants.VenueManager.Id,
-                Name = "Test Venue",
-                About = "Test",
-                BannerUrl = "test.jpg",
-                Opportunities =
-                [
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(2), DateTime.UtcNow.AddMonths(2).AddHours(3)),
-                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(3), DateTime.UtcNow.AddMonths(3).AddHours(3)),
-                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(4), DateTime.UtcNow.AddMonths(4).AddHours(3)),
-                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(5), DateTime.UtcNow.AddMonths(5).AddHours(3)),
-                        Contract = VersusContractEntity.Create(200, 50, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(6), DateTime.UtcNow.AddMonths(6).AddHours(3)),
-                        Contract = DoorSplitContractEntity.Create(70, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(7), DateTime.UtcNow.AddMonths(7).AddHours(3)),
-                        Contract = VenueHireContractEntity.Create(300, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(8), DateTime.UtcNow.AddMonths(8).AddHours(3)),
-                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(9), DateTime.UtcNow.AddMonths(9).AddHours(3)),
-                        Contract = DoorSplitContractEntity.Create(70, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(10), DateTime.UtcNow.AddMonths(10).AddHours(3)),
-                        Contract = VersusContractEntity.Create(200, 50, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    },
-                    new OpportunityEntity
-                    {
-                        Period = new DateRange(DateTime.UtcNow.AddMonths(11), DateTime.UtcNow.AddMonths(11).AddHours(3)),
-                        Contract = VenueHireContractEntity.Create(300, PaymentMethod.Cash),
-                        OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
-                    }
-                ]
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(2), DateTime.UtcNow.AddMonths(2).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(3), DateTime.UtcNow.AddMonths(3).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(4), DateTime.UtcNow.AddMonths(4).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(5), DateTime.UtcNow.AddMonths(5).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(6), DateTime.UtcNow.AddMonths(6).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(7), DateTime.UtcNow.AddMonths(7).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(8), DateTime.UtcNow.AddMonths(8).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(9), DateTime.UtcNow.AddMonths(9).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(10), DateTime.UtcNow.AddMonths(10).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [TestConstants.GenreId]),
+                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(11), DateTime.UtcNow.AddMonths(11).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [TestConstants.GenreId]),
             };
+
+            foreach (var opportunity in opportunities)
+                venue.Opportunities.Add(opportunity);
 
             context.Venues.Add(venue);
             await context.SaveChangesAsync();

@@ -19,13 +19,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<OpportunityGenreEntity> OpportunityGenres { get; set; }
     public DbSet<OpportunityApplicationEntity> OpportunityApplications { get; set; }
     public DbSet<ReviewEntity> Reviews { get; set; }
-    public DbSet<SocialMediaEntity> SocialMedias { get; set; }
     public DbSet<TicketEntity> Tickets { get; set; }
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<MessageEntity> Messages { get; set; }
     public DbSet<VenueEntity> Venues { get; set; }
     public DbSet<VenueImageEntity> VenueImages { get; set; }
-    public DbSet<VideoEntity> Videos { get; set; }
     public DbSet<TransactionEntity> Transactions { get; set; }
     public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
     public DbSet<SettlementTransactionEntity> SettlementTransactions { get; set; }

@@ -207,8 +207,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUriService, UriService>();
         services.AddScoped<IAuthUriService, AuthUriService>();
         services.AddScoped<IOwnershipService, OwnershipService>();
-        services.AddSingleton<ICollectionDiffer, CollectionDiffer>();
-        services.AddScoped<IGenreSyncService, GenreSyncService>();
         services.AddContracts();
         services.AddServiceValidators();
 
