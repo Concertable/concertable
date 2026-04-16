@@ -422,8 +422,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Stars")
-                        .HasColumnType("int");
+                    b.Property<byte>("Stars")
+                        .HasColumnType("tinyint");
 
                     b.Property<Guid>("TicketId")
                         .HasColumnType("uniqueidentifier");

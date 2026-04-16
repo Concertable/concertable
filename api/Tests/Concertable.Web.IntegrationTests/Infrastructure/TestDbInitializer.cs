@@ -214,73 +214,44 @@ public class TestDbInitializer : IDbInitializer
             var postedVenueHireConcert = ConcertEntity.CreateDraft(0, "Posted VenueHire Concert", "Posted VenueHire Concert About", []);
             postedVenueHireConcert.Post("Posted VenueHire Concert", "Posted VenueHire Concert About", 10.00m, 100, DateTime.UtcNow);
 
+            var flatFeeApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.FlatFee.OpportunityId);
+
+            var settledApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.Settled.OpportunityId);
+            settledApp.Accept(draftConcert);
+
+            var awaitingPaymentApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.AwaitingPayment.OpportunityId);
+            awaitingPaymentApp.Accept(unsettledConcert);
+            awaitingPaymentApp.AwaitPayment();
+
+            var versusApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.Versus.OpportunityId);
+
+            var doorSplitApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.DoorSplit.OpportunityId);
+
+            var venueHireApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.VenueHire.OpportunityId);
+
+            var postedFlatFeeApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedFlatFee.OpportunityId);
+            postedFlatFeeApp.Accept(postedFlatFeeConcert);
+
+            var postedDoorSplitApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedDoorSplit.OpportunityId);
+            postedDoorSplitApp.Accept(postedDoorSplitConcert);
+
+            var postedVersusApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedVersus.OpportunityId);
+            postedVersusApp.Accept(postedVersusConcert);
+
+            var postedVenueHireApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedVenueHire.OpportunityId);
+            postedVenueHireApp.Accept(postedVenueHireConcert);
+
             context.OpportunityApplications.AddRange(
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.FlatFee.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Pending
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.Settled.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Accepted,
-                    Concert = draftConcert
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.AwaitingPayment.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.AwaitingPayment,
-                    Concert = unsettledConcert
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.Versus.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Pending
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.DoorSplit.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Pending
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.VenueHire.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Pending
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.PostedFlatFee.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Accepted,
-                    Concert = postedFlatFeeConcert
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.PostedDoorSplit.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Accepted,
-                    Concert = postedDoorSplitConcert
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.PostedVersus.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Accepted,
-                    Concert = postedVersusConcert
-                },
-                new OpportunityApplicationEntity
-                {
-                    OpportunityId = TestConstants.PostedVenueHire.OpportunityId,
-                    ArtistId = TestConstants.ArtistId,
-                    Status = ApplicationStatus.Accepted,
-                    Concert = postedVenueHireConcert
-                }
+                flatFeeApp,
+                settledApp,
+                awaitingPaymentApp,
+                versusApp,
+                doorSplitApp,
+                venueHireApp,
+                postedFlatFeeApp,
+                postedDoorSplitApp,
+                postedVersusApp,
+                postedVenueHireApp
             );
 
             await context.SaveChangesAsync();

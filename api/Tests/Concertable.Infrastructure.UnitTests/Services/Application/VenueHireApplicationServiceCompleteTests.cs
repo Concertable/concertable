@@ -25,15 +25,14 @@ public class VenueHireConcertWorkflowCompleteTests
             new Mock<IManagerRepository<VenueManagerEntity>>().Object,
             new Mock<IManagerPaymentService>().Object,
             new Mock<IConcertService>().Object,
-            new Mock<IApplicationNotificationService>().Object,
-            new Mock<IApplicationAcceptHandler>().Object);
+            new Mock<IApplicationNotificationService>().Object);
     }
 
     [Fact]
     public async Task FinishedAsync_ShouldSetStatusToComplete()
     {
         // Arrange
-        var application = new OpportunityApplicationEntity { Id = 1, Status = ApplicationStatus.Confirmed };
+        var application = ApplicationBuilders.BuildAccepted();
         applicationRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(application);
 
         // Act

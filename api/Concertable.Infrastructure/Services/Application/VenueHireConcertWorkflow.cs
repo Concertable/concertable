@@ -3,7 +3,6 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
-using Concertable.Core.Enums;
 using Concertable.Application.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Application;
@@ -18,7 +17,6 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
     private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertService concertService;
     private readonly IApplicationNotificationService applicationNotificationService;
-    private readonly IApplicationAcceptHandler acceptHandler;
 
     public VenueHireConcertWorkflow(
         IOpportunityApplicationValidator applicationValidator,
@@ -28,8 +26,7 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         IManagerRepository<VenueManagerEntity> venueManagerRepository,
         IManagerPaymentService managerPaymentService,
         IConcertService concertService,
-        IApplicationNotificationService applicationNotificationService,
-        IApplicationAcceptHandler acceptHandler)
+        IApplicationNotificationService applicationNotificationService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
@@ -39,7 +36,6 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         this.managerPaymentService = managerPaymentService;
         this.concertService = concertService;
         this.applicationNotificationService = applicationNotificationService;
-        this.acceptHandler = acceptHandler;
     }
 
     public async Task InitiateAsync(int applicationId)
@@ -61,7 +57,7 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Venue manager not found");
 
-        application.Status = ApplicationStatus.AwaitingPayment;
+        application.AwaitPayment();
         await applicationRepository.SaveChangesAsync();
 
         await managerPaymentService.PayAsync(artistManager, venueManager, contract.HireFee, applicationId);
@@ -69,12 +65,11 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
 
     public async Task SettleAsync(int applicationId)
     {
-        await acceptHandler.HandleAsync(applicationId);
+        var concertId = await concertService.CreateDraftAsync(applicationId);
 
         var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
-        var concertId = await concertService.CreateDraftAsync(applicationId);
         await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);
     }
 
@@ -83,7 +78,7 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         var application = await applicationRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Application not found");
 
-        application.Status = ApplicationStatus.Complete;
+        application.Complete();
         await applicationRepository.SaveChangesAsync();
     }
 }

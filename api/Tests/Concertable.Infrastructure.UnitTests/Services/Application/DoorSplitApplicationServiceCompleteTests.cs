@@ -21,13 +21,15 @@ public class DoorSplitConcertWorkflowCompleteTests
     private readonly Mock<IManagerPaymentService> managerPaymentService;
     private readonly DoorSplitConcertWorkflow sut;
 
-    private readonly OpportunityApplicationEntity application = new() { Id = 5, Status = ApplicationStatus.Confirmed };
+    private readonly OpportunityApplicationEntity application;
     private readonly DoorSplitContractEntity contract = new() { ArtistDoorPercent = 50 };
     private readonly VenueManagerEntity venueManager = new() { Id = Guid.NewGuid(), Email = "venue@test.com", StripeCustomerId = "cus_venue", Role = Role.VenueManager };
     private readonly ArtistManagerEntity artistManager = new() { Id = Guid.NewGuid(), Email = "artist@test.com", StripeAccountId = "acct_artist", Role = Role.ArtistManager };
 
     public DoorSplitConcertWorkflowCompleteTests()
     {
+        application = ApplicationBuilders.BuildAccepted();
+
         applicationRepository = new Mock<IOpportunityApplicationRepository>();
         contractRepository = new Mock<IContractRepository>();
         venueManagerRepository = new Mock<IManagerRepository<VenueManagerEntity>>();
@@ -44,8 +46,7 @@ public class DoorSplitConcertWorkflowCompleteTests
             concertRepository.Object,
             managerPaymentService.Object,
             new Mock<IConcertService>().Object,
-            new Mock<IApplicationNotificationService>().Object,
-            new Mock<IApplicationAcceptHandler>().Object);
+            new Mock<IApplicationNotificationService>().Object);
 
         applicationRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(application);
         contractRepository.Setup(r => r.GetByConcertIdAsync<DoorSplitContractEntity>(10)).ReturnsAsync(contract);

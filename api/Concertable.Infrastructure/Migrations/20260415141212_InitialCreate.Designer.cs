@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260414152424_InitialCreate")]
+    [Migration("20260415141212_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -425,8 +425,8 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Stars")
-                        .HasColumnType("int");
+                    b.Property<byte>("Stars")
+                        .HasColumnType("tinyint");
 
                     b.Property<Guid>("TicketId")
                         .HasColumnType("uniqueidentifier");

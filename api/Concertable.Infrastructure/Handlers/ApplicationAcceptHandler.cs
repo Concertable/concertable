@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Enums;
+using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
+using Concertable.Application.Interfaces.Concert;
 
 namespace Concertable.Infrastructure.Handlers;
 
@@ -18,17 +18,15 @@ public class ApplicationAcceptHandler : IApplicationAcceptHandler
         this.taskRunner = taskRunner;
     }
 
-    public async Task HandleAsync(int applicationId)
+    public async Task HandleAsync(int applicationId, ConcertEntity concert)
     {
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        var opportunityId = application.OpportunityId;
-
-        application.Status = ApplicationStatus.Accepted;
+        application.Accept(concert);
         await applicationRepository.SaveChangesAsync();
 
         await taskRunner.RunAsync<IOpportunityApplicationRepository>(
-            (repo, ct) => repo.RejectAllExceptAsync(opportunityId, applicationId));
+            (repo, ct) => repo.RejectAllExceptAsync(application.OpportunityId, applicationId));
     }
 }

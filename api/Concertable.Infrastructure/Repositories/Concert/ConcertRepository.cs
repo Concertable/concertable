@@ -183,7 +183,7 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
     public async Task<IEnumerable<int>> GetEndedConfirmedIdsAsync()
     {
         return await context.Concerts
-            .Where(c => c.Application.Status == ApplicationStatus.Confirmed
+            .Where(c => c.Application.Status == ApplicationStatus.Accepted
                      && c.Application.Opportunity.Period.Start < timeProvider.GetUtcNow())
             .Select(c => c.Id)
             .ToListAsync();

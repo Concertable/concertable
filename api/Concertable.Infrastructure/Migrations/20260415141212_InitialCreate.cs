@@ -671,7 +671,7 @@ namespace Concertable.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TicketId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Stars = table.Column<int>(type: "int", nullable: false),
+                    Stars = table.Column<byte>(type: "tinyint", nullable: false),
                     Details = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>

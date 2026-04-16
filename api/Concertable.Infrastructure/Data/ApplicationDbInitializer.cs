@@ -536,99 +536,102 @@ public class ApplicationDbInitializer : IDbInitializer
         // ConcertEntity Applications
         if (!context.OpportunityApplications.Any())
         {
+            var app59 = OpportunityApplicationEntity.Create(2, 33); // Accepted, for settle/complete testing
+            app59.Accept(ConcertEntity.CreateDraft(0, "Test Concert", "Test Concert About", []));
+
             var applications = new OpportunityApplicationEntity[]
             {
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 1 }, //1
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 1 }, //2
-                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 1 }, //3
-                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 1 }, //4
+                OpportunityApplicationEntity.Create(1, 1), //1
+                OpportunityApplicationEntity.Create(2, 1), //2
+                OpportunityApplicationEntity.Create(3, 1), //3
+                OpportunityApplicationEntity.Create(4, 1), //4
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 2 }, //5
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 2 }, //6
-                new OpportunityApplicationEntity { ArtistId = 5, OpportunityId = 2 }, //7
-                new OpportunityApplicationEntity { ArtistId = 6, OpportunityId = 2 }, //8
+                OpportunityApplicationEntity.Create(1, 2), //5
+                OpportunityApplicationEntity.Create(2, 2), //6
+                OpportunityApplicationEntity.Create(5, 2), //7
+                OpportunityApplicationEntity.Create(6, 2), //8
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 3 }, //9
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 3 }, //10
-                new OpportunityApplicationEntity { ArtistId = 7, OpportunityId = 3 }, //11
-                new OpportunityApplicationEntity { ArtistId = 8, OpportunityId = 3 }, //12
+                OpportunityApplicationEntity.Create(1, 3), //9
+                OpportunityApplicationEntity.Create(2, 3), //10
+                OpportunityApplicationEntity.Create(7, 3), //11
+                OpportunityApplicationEntity.Create(8, 3), //12
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 4 }, //13
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 4 }, //14
-                new OpportunityApplicationEntity { ArtistId = 9, OpportunityId = 4 }, //15
-                new OpportunityApplicationEntity { ArtistId = 10, OpportunityId = 4 }, //16
+                OpportunityApplicationEntity.Create(1, 4), //13
+                OpportunityApplicationEntity.Create(2, 4), //14
+                OpportunityApplicationEntity.Create(9, 4), //15
+                OpportunityApplicationEntity.Create(10, 4), //16
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 5 }, //17
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 5 }, //18
-                new OpportunityApplicationEntity { ArtistId = 11, OpportunityId = 5 }, //19
-                new OpportunityApplicationEntity { ArtistId = 12, OpportunityId = 5 }, //20
+                OpportunityApplicationEntity.Create(1, 5), //17
+                OpportunityApplicationEntity.Create(2, 5), //18
+                OpportunityApplicationEntity.Create(11, 5), //19
+                OpportunityApplicationEntity.Create(12, 5), //20
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 6 }, //21
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 6 }, //22
-                new OpportunityApplicationEntity { ArtistId = 13, OpportunityId = 6 }, //23
-                new OpportunityApplicationEntity { ArtistId = 14, OpportunityId = 6 }, //24
+                OpportunityApplicationEntity.Create(1, 6), //21
+                OpportunityApplicationEntity.Create(2, 6), //22
+                OpportunityApplicationEntity.Create(13, 6), //23
+                OpportunityApplicationEntity.Create(14, 6), //24
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 7 }, //25
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 7 }, //26
-                new OpportunityApplicationEntity { ArtistId = 15, OpportunityId = 7 }, //27
-                new OpportunityApplicationEntity { ArtistId = 16, OpportunityId = 7 }, //28
+                OpportunityApplicationEntity.Create(1, 7), //25
+                OpportunityApplicationEntity.Create(2, 7), //26
+                OpportunityApplicationEntity.Create(15, 7), //27
+                OpportunityApplicationEntity.Create(16, 7), //28
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 8 }, //29
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 8 }, //30
-                new OpportunityApplicationEntity { ArtistId = 17, OpportunityId = 8 }, //31
-                new OpportunityApplicationEntity { ArtistId = 18, OpportunityId = 8 }, //32
-                new OpportunityApplicationEntity { ArtistId = 17, OpportunityId = 40 }, //33
-                new OpportunityApplicationEntity { ArtistId = 18, OpportunityId = 41 }, //34
+                OpportunityApplicationEntity.Create(1, 8), //29
+                OpportunityApplicationEntity.Create(2, 8), //30
+                OpportunityApplicationEntity.Create(17, 8), //31
+                OpportunityApplicationEntity.Create(18, 8), //32
+                OpportunityApplicationEntity.Create(17, 40), //33
+                OpportunityApplicationEntity.Create(18, 41), //34
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 14 }, //35
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 14 }, //36
-                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 14 }, //37
-                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 14 }, //38
+                OpportunityApplicationEntity.Create(1, 14), //35
+                OpportunityApplicationEntity.Create(2, 14), //36
+                OpportunityApplicationEntity.Create(3, 14), //37
+                OpportunityApplicationEntity.Create(4, 14), //38
 
-                new OpportunityApplicationEntity { ArtistId = 5, OpportunityId = 15 }, //39
-                new OpportunityApplicationEntity { ArtistId = 6, OpportunityId = 15 }, //40
-                new OpportunityApplicationEntity { ArtistId = 7, OpportunityId = 15 }, //41
-                new OpportunityApplicationEntity { ArtistId = 8, OpportunityId = 15 }, //42
+                OpportunityApplicationEntity.Create(5, 15), //39
+                OpportunityApplicationEntity.Create(6, 15), //40
+                OpportunityApplicationEntity.Create(7, 15), //41
+                OpportunityApplicationEntity.Create(8, 15), //42
 
-                new OpportunityApplicationEntity { ArtistId = 9, OpportunityId = 16 }, //43
-                new OpportunityApplicationEntity { ArtistId = 10, OpportunityId = 16 }, //44
-                new OpportunityApplicationEntity { ArtistId = 11, OpportunityId = 16 }, //45
-                new OpportunityApplicationEntity { ArtistId = 12, OpportunityId = 16 }, //46
+                OpportunityApplicationEntity.Create(9, 16), //43
+                OpportunityApplicationEntity.Create(10, 16), //44
+                OpportunityApplicationEntity.Create(11, 16), //45
+                OpportunityApplicationEntity.Create(12, 16), //46
 
-                new OpportunityApplicationEntity { ArtistId = 13, OpportunityId = 17 }, //47
-                new OpportunityApplicationEntity { ArtistId = 14, OpportunityId = 17 }, //48
-                new OpportunityApplicationEntity { ArtistId = 15, OpportunityId = 17 }, //49
-                new OpportunityApplicationEntity { ArtistId = 16, OpportunityId = 17 }, //50
+                OpportunityApplicationEntity.Create(13, 17), //47
+                OpportunityApplicationEntity.Create(14, 17), //48
+                OpportunityApplicationEntity.Create(15, 17), //49
+                OpportunityApplicationEntity.Create(16, 17), //50
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 34 }, //51
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 34 }, //52
-                new OpportunityApplicationEntity { ArtistId = 19, OpportunityId = 34 }, //53
-                new OpportunityApplicationEntity { ArtistId = 20, OpportunityId = 34 }, //54
+                OpportunityApplicationEntity.Create(1, 34), //51
+                OpportunityApplicationEntity.Create(2, 34), //52
+                OpportunityApplicationEntity.Create(19, 34), //53
+                OpportunityApplicationEntity.Create(20, 34), //54
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 38 }, //55
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 38 }, //56
-                new OpportunityApplicationEntity { ArtistId = 12, OpportunityId = 38 }, //57
-                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 38 }, //58
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 33, Status = ApplicationStatus.Confirmed }, //59 - Confirmed, for settle/complete testing
+                OpportunityApplicationEntity.Create(1, 38), //55
+                OpportunityApplicationEntity.Create(2, 38), //56
+                OpportunityApplicationEntity.Create(12, 38), //57
+                OpportunityApplicationEntity.Create(4, 38), //58
+                app59,
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 45 }, //60 - FlatFee test
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 46 }, //61 - FlatFee test
-                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 47 }, //62 - FlatFee test
-                new OpportunityApplicationEntity { ArtistId = 4, OpportunityId = 48 }, //63 - FlatFee test
-                new OpportunityApplicationEntity { ArtistId = 5, OpportunityId = 49 }, //64 - FlatFee test
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 50 }, //65 - DoorSplit test
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 50 }, //66 - DoorSplit test
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 51 }, //67 - Versus test
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 51 }, //68 - Versus test
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 52 }, //69 - VenueHire test
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 52 }, //70 - VenueHire test
+                OpportunityApplicationEntity.Create(1, 45), //60 - FlatFee test
+                OpportunityApplicationEntity.Create(2, 46), //61 - FlatFee test
+                OpportunityApplicationEntity.Create(3, 47), //62 - FlatFee test
+                OpportunityApplicationEntity.Create(4, 48), //63 - FlatFee test
+                OpportunityApplicationEntity.Create(5, 49), //64 - FlatFee test
+                OpportunityApplicationEntity.Create(1, 50), //65 - DoorSplit test
+                OpportunityApplicationEntity.Create(2, 50), //66 - DoorSplit test
+                OpportunityApplicationEntity.Create(1, 51), //67 - Versus test
+                OpportunityApplicationEntity.Create(2, 51), //68 - Versus test
+                OpportunityApplicationEntity.Create(1, 52), //69 - VenueHire test
+                OpportunityApplicationEntity.Create(2, 52), //70 - VenueHire test
 
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 31 }, //71
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 31 }, //72
-                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 31 }, //73
-                new OpportunityApplicationEntity { ArtistId = 1, OpportunityId = 32 }, //74
-                new OpportunityApplicationEntity { ArtistId = 2, OpportunityId = 32 }, //75
-                new OpportunityApplicationEntity { ArtistId = 3, OpportunityId = 32 }, //76
+                OpportunityApplicationEntity.Create(1, 31), //71
+                OpportunityApplicationEntity.Create(2, 31), //72
+                OpportunityApplicationEntity.Create(3, 31), //73
+                OpportunityApplicationEntity.Create(1, 32), //74
+                OpportunityApplicationEntity.Create(2, 32), //75
+                OpportunityApplicationEntity.Create(3, 32), //76
             };
             context.OpportunityApplications.AddRange(applications);
             await context.SaveChangesAsync();

@@ -86,11 +86,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         var artistDto = await artistService.GetDetailsForCurrentUserAsync()
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
 
-        var application = new OpportunityApplicationEntity()
-        {
-            OpportunityId = opportunityId,
-            ArtistId = artistDto.Id,
-        };
+        var application = OpportunityApplicationEntity.Create(artistDto.Id, opportunityId);
 
         var user = currentUser.Get();
         var opportunityOwner = await opportunityService.GetOwnerByIdAsync(opportunityId);

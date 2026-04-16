@@ -1,5 +1,6 @@
 
 using Concertable.Application.DTOs;
+using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
@@ -8,9 +9,7 @@ using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
-using Concertable.Application.Exceptions;
 using Concertable.Core.Parameters;
-using Org.BouncyCastle.Asn1.Cmp;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -28,8 +27,8 @@ public class ConcertService : IConcertService
     private readonly IOpportunityRepository opportunityRepository;
     private readonly IGeometryCalculator geometryCalculator;
     private readonly IOpportunityApplicationRepository applicationRepository;
-    private readonly IGenreRepository genreRepository;
     private readonly IConcertNotificationService concertNotificationService;
+    private readonly IApplicationAcceptHandler acceptHandler;
     private readonly TimeProvider timeProvider;
 
     public ConcertService(
@@ -45,8 +44,8 @@ public class ConcertService : IConcertService
         IGeometryCalculator geometryCalculator,
         IOpportunityRepository opportunityRepository,
         IOpportunityApplicationRepository applicationRepository,
-        IGenreRepository genreRepository,
         IConcertNotificationService concertNotificationService,
+        IApplicationAcceptHandler acceptHandler,
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
@@ -61,8 +60,8 @@ public class ConcertService : IConcertService
         this.preferenceService = preferenceService;
         this.opportunityRepository = opportunityRepository;
         this.geometryCalculator = geometryCalculator;
-        this.genreRepository = genreRepository;
         this.concertNotificationService = concertNotificationService;
+        this.acceptHandler = acceptHandler;
         this.timeProvider = timeProvider;
     }
 
@@ -102,20 +101,17 @@ public class ConcertService : IConcertService
         if (!matchingGenreIds.Any())
             throw new BadRequestException("The artist does not match any genres required by the concert opportunity");
 
-        var matchingGenres = await genreRepository.GetByIdsAsync(matchingGenreIds);
-
-        var concertEntity = ConcertEntity.CreateDraft(
+        var concert = ConcertEntity.CreateDraft(
             applicationId,
             $"{artist.Name} performing at {venue.Name}",
             venue.About,
-            matchingGenres.Select(g => g.Id));
+            matchingGenreIds);
 
-        await concertRepository.AddAsync(concertEntity);
-        await concertRepository.SaveChangesAsync();
+        await acceptHandler.HandleAsync(applicationId, concert);
 
-        await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concertEntity.Id);
+        await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concert.Id);
 
-        return concertEntity.Id;
+        return concert.Id;
     }
 
     public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
