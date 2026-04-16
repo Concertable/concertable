@@ -8,13 +8,7 @@ public class VersusContractMapper : IContractMapper
     public ContractEntity ToEntity(IContract dto)
     {
         var d = (VersusContractDto)dto;
-        return new VersusContractEntity
-        {
-            Id = d.Id,
-            PaymentMethod = d.PaymentMethod,
-            Guarantee = d.Guarantee,
-            ArtistDoorPercent = d.ArtistDoorPercent
-        };
+        return VersusContractEntity.Create(d.Guarantee, d.ArtistDoorPercent, d.PaymentMethod);
     }
 
     public IContract ToDto(ContractEntity entity)

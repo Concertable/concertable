@@ -10,7 +10,6 @@ public class VenueHireContractService : IContractServiceStrategy
     {
         var e = (VenueHireContractEntity)existing;
         var d = (VenueHireContractDto)dto;
-        e.PaymentMethod = d.PaymentMethod;
-        e.HireFee = d.HireFee;
+        e.Update(d.HireFee, d.PaymentMethod);
     }
 }

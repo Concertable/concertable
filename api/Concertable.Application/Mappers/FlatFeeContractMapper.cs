@@ -8,12 +8,7 @@ public class FlatFeeContractMapper : IContractMapper
     public ContractEntity ToEntity(IContract dto)
     {
         var d = (FlatFeeContractDto)dto;
-        return new FlatFeeContractEntity
-        {
-            Id = d.Id,
-            PaymentMethod = d.PaymentMethod,
-            Fee = d.Fee
-        };
+        return FlatFeeContractEntity.Create(d.Fee, d.PaymentMethod);
     }
 
     public IContract ToDto(ContractEntity entity)

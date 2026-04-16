@@ -4,7 +4,6 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Application.Exceptions;
-using Concertable.Infrastructure.Calculators;
 
 namespace Concertable.Infrastructure.Services.Application;
 
@@ -84,7 +83,7 @@ public class VersusConcertWorkflow : IConcertWorkflowStrategy
         await applicationRepository.SaveChangesAsync();
 
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
-        var artistShare = VersusCalculator.ArtistShare(contract.Guarantee, totalRevenue, contract.ArtistDoorPercent);
+        var artistShare = contract.CalculateArtistShare(totalRevenue);
 
         await managerPaymentService.PayAsync(venueManager, artistManager, artistShare, application.Id);
     }

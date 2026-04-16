@@ -8,12 +8,7 @@ public class DoorSplitContractMapper : IContractMapper
     public ContractEntity ToEntity(IContract dto)
     {
         var d = (DoorSplitContractDto)dto;
-        return new DoorSplitContractEntity
-        {
-            Id = d.Id,
-            PaymentMethod = d.PaymentMethod,
-            ArtistDoorPercent = d.ArtistDoorPercent
-        };
+        return DoorSplitContractEntity.Create(d.ArtistDoorPercent, d.PaymentMethod);
     }
 
     public IContract ToDto(ContractEntity entity)

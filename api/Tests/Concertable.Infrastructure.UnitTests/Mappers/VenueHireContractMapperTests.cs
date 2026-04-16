@@ -13,16 +13,10 @@ public class VenueHireContractMapperTests
     [Fact]
     public void ToEntity_ShouldMapAllFields()
     {
-        var dto = new VenueHireContractDto
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            HireFee = 300
-        };
+        var dto = new VenueHireContractDto { Id = 1, PaymentMethod = PaymentMethod.Cash, HireFee = 300 };
 
         var result = (VenueHireContractEntity)sut.ToEntity(dto);
 
-        Assert.Equal(dto.Id, result.Id);
         Assert.Equal(dto.PaymentMethod, result.PaymentMethod);
         Assert.Equal(dto.HireFee, result.HireFee);
     }
@@ -30,12 +24,8 @@ public class VenueHireContractMapperTests
     [Fact]
     public void ToDto_ShouldMapAllFields()
     {
-        var entity = new VenueHireContractEntity
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            HireFee = 300
-        };
+        var entity = VenueHireContractEntity.Create(300, PaymentMethod.Cash);
+        entity.Id = 1;
 
         var result = (VenueHireContractDto)sut.ToDto(entity);
 

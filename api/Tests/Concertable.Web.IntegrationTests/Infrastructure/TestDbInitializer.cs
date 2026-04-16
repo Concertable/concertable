@@ -132,61 +132,61 @@ public class TestDbInitializer : IDbInitializer
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(2), DateTime.UtcNow.AddMonths(2).AddHours(3)),
-                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(3), DateTime.UtcNow.AddMonths(3).AddHours(3)),
-                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(4), DateTime.UtcNow.AddMonths(4).AddHours(3)),
-                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(5), DateTime.UtcNow.AddMonths(5).AddHours(3)),
-                        Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 50 },
+                        Contract = VersusContractEntity.Create(200, 50, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(6), DateTime.UtcNow.AddMonths(6).AddHours(3)),
-                        Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70 },
+                        Contract = DoorSplitContractEntity.Create(70, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(7), DateTime.UtcNow.AddMonths(7).AddHours(3)),
-                        Contract = new VenueHireContractEntity { HireFee = 300 },
+                        Contract = VenueHireContractEntity.Create(300, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(8), DateTime.UtcNow.AddMonths(8).AddHours(3)),
-                        Contract = new FlatFeeContractEntity { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+                        Contract = FlatFeeContractEntity.Create(500, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(9), DateTime.UtcNow.AddMonths(9).AddHours(3)),
-                        Contract = new DoorSplitContractEntity { ArtistDoorPercent = 70 },
+                        Contract = DoorSplitContractEntity.Create(70, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(10), DateTime.UtcNow.AddMonths(10).AddHours(3)),
-                        Contract = new VersusContractEntity { Guarantee = 200, ArtistDoorPercent = 50 },
+                        Contract = VersusContractEntity.Create(200, 50, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     },
                     new OpportunityEntity
                     {
                         Period = new DateRange(DateTime.UtcNow.AddMonths(11), DateTime.UtcNow.AddMonths(11).AddHours(3)),
-                        Contract = new VenueHireContractEntity { HireFee = 300 },
+                        Contract = VenueHireContractEntity.Create(300, PaymentMethod.Cash),
                         OpportunityGenres = [new OpportunityGenreEntity { GenreId = TestConstants.GenreId }]
                     }
                 ]

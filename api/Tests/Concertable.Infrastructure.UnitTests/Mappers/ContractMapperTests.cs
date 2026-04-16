@@ -15,7 +15,7 @@ public class ContractMapperTests
     [Fact]
     public void ToDto_ShouldReturnFlatFeeContractDto_WhenEntityIsFlatFee()
     {
-        var entity = new FlatFeeContractEntity { Id = 1, PaymentMethod = PaymentMethod.Cash, Fee = 500 };
+        var entity = FlatFeeContractEntity.Create(500, PaymentMethod.Cash);
 
         var result = sut.ToDto(entity);
 
@@ -25,7 +25,7 @@ public class ContractMapperTests
     [Fact]
     public void ToDto_ShouldReturnDoorSplitContractDto_WhenEntityIsDoorSplit()
     {
-        var entity = new DoorSplitContractEntity { Id = 1, PaymentMethod = PaymentMethod.Cash };
+        var entity = DoorSplitContractEntity.Create(50, PaymentMethod.Cash);
 
         var result = sut.ToDto(entity);
 
@@ -35,7 +35,7 @@ public class ContractMapperTests
     [Fact]
     public void ToDto_ShouldReturnVersusContractDto_WhenEntityIsVersus()
     {
-        var entity = new VersusContractEntity { Id = 1, PaymentMethod = PaymentMethod.Cash };
+        var entity = VersusContractEntity.Create(0, 50, PaymentMethod.Cash);
 
         var result = sut.ToDto(entity);
 
@@ -45,7 +45,7 @@ public class ContractMapperTests
     [Fact]
     public void ToDto_ShouldReturnVenueHireContractDto_WhenEntityIsVenueHire()
     {
-        var entity = new VenueHireContractEntity { Id = 1, PaymentMethod = PaymentMethod.Cash };
+        var entity = VenueHireContractEntity.Create(100, PaymentMethod.Cash);
 
         var result = sut.ToDto(entity);
 
@@ -89,7 +89,7 @@ public class ContractMapperTests
     [Fact]
     public void ToEntity_ShouldReturnVenueHireContractEntity_WhenDtoIsVenueHire()
     {
-        var dto = new VenueHireContractDto { Id = 1, PaymentMethod = PaymentMethod.Cash };
+        var dto = new VenueHireContractDto { Id = 1, PaymentMethod = PaymentMethod.Cash, HireFee = 100 };
 
         var result = sut.ToEntity(dto);
 

@@ -13,16 +13,10 @@ public class DoorSplitContractMapperTests
     [Fact]
     public void ToEntity_ShouldMapAllFields()
     {
-        var dto = new DoorSplitContractDto
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            ArtistDoorPercent = 70
-        };
+        var dto = new DoorSplitContractDto { Id = 1, PaymentMethod = PaymentMethod.Cash, ArtistDoorPercent = 70 };
 
         var result = (DoorSplitContractEntity)sut.ToEntity(dto);
 
-        Assert.Equal(dto.Id, result.Id);
         Assert.Equal(dto.PaymentMethod, result.PaymentMethod);
         Assert.Equal(dto.ArtistDoorPercent, result.ArtistDoorPercent);
     }
@@ -30,12 +24,8 @@ public class DoorSplitContractMapperTests
     [Fact]
     public void ToDto_ShouldMapAllFields()
     {
-        var entity = new DoorSplitContractEntity
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            ArtistDoorPercent = 70
-        };
+        var entity = DoorSplitContractEntity.Create(70, PaymentMethod.Cash);
+        entity.Id = 1;
 
         var result = (DoorSplitContractDto)sut.ToDto(entity);
 

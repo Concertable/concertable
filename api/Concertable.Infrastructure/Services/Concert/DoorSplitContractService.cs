@@ -10,7 +10,6 @@ public class DoorSplitContractService : IContractServiceStrategy
     {
         var e = (DoorSplitContractEntity)existing;
         var d = (DoorSplitContractDto)dto;
-        e.PaymentMethod = d.PaymentMethod;
-        e.ArtistDoorPercent = d.ArtistDoorPercent;
+        e.Update(d.ArtistDoorPercent, d.PaymentMethod);
     }
 }

@@ -39,7 +39,7 @@ public class ContractServiceTests
     [Fact]
     public async Task GetByOpportunityIdAsync_ShouldReturnMappedDto()
     {
-        var entity = new FlatFeeContractEntity { Id = 1, PaymentMethod = PaymentMethod.Cash, Fee = 500 };
+        var entity = FlatFeeContractEntity.Create(500, PaymentMethod.Cash);
         var expected = new FlatFeeContractDto { Id = 1, PaymentMethod = PaymentMethod.Cash, Fee = 500 };
         contractRepository
             .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))
@@ -75,7 +75,7 @@ public class ContractServiceTests
     {
         contractRepository
             .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))
-            .ReturnsAsync(new FlatFeeContractEntity { Id = 1 });
+            .ReturnsAsync(FlatFeeContractEntity.Create(1, PaymentMethod.Cash));
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             sut.UpdateAsync(new VersusContractDto { Id = 1 }, 1));
@@ -84,7 +84,7 @@ public class ContractServiceTests
     [Fact]
     public async Task UpdateAsync_ShouldCallApplyChanges_WhenContractTypeMatches()
     {
-        var existing = new FlatFeeContractEntity { Id = 1, PaymentMethod = PaymentMethod.Cash, Fee = 500 };
+        var existing = FlatFeeContractEntity.Create(500, PaymentMethod.Cash);
         var dto = new FlatFeeContractDto { Id = 1, PaymentMethod = PaymentMethod.Transfer, Fee = 750 };
         contractRepository
             .Setup(r => r.GetByOpportunityIdAsync<ContractEntity>(1))

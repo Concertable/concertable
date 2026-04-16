@@ -10,8 +10,6 @@ public class VersusContractService : IContractServiceStrategy
     {
         var e = (VersusContractEntity)existing;
         var d = (VersusContractDto)dto;
-        e.PaymentMethod = d.PaymentMethod;
-        e.Guarantee = d.Guarantee;
-        e.ArtistDoorPercent = d.ArtistDoorPercent;
+        e.Update(d.Guarantee, d.ArtistDoorPercent, d.PaymentMethod);
     }
 }

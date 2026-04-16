@@ -10,7 +10,6 @@ public class FlatFeeContractService : IContractServiceStrategy
     {
         var e = (FlatFeeContractEntity)existing;
         var d = (FlatFeeContractDto)dto;
-        e.PaymentMethod = d.PaymentMethod;
-        e.Fee = d.Fee;
+        e.Update(d.Fee, d.PaymentMethod);
     }
 }

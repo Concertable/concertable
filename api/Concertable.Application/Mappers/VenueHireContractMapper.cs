@@ -8,12 +8,7 @@ public class VenueHireContractMapper : IContractMapper
     public ContractEntity ToEntity(IContract dto)
     {
         var d = (VenueHireContractDto)dto;
-        return new VenueHireContractEntity
-        {
-            Id = d.Id,
-            PaymentMethod = d.PaymentMethod,
-            HireFee = d.HireFee
-        };
+        return VenueHireContractEntity.Create(d.HireFee, d.PaymentMethod);
     }
 
     public IContract ToDto(ContractEntity entity)

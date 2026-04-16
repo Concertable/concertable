@@ -4,8 +4,8 @@ namespace Concertable.Core.ValueObjects;
 
 public record DateRange
 {
-    public DateTime Start { get; init; }
-    public DateTime End { get; init; }
+    public DateTime Start { get; }
+    public DateTime End { get; }
 
     public DateRange(DateTime start, DateTime end)
     {
@@ -15,4 +15,8 @@ public record DateRange
         Start = start;
         End = end;
     }
+
+    public DateRange ChangeStart(DateTime start) => new(start, End);
+
+    public DateRange ChangeEnd(DateTime end) => new(Start, end);
 }

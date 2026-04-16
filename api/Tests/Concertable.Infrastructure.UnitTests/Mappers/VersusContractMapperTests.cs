@@ -13,17 +13,10 @@ public class VersusContractMapperTests
     [Fact]
     public void ToEntity_ShouldMapAllFields()
     {
-        var dto = new VersusContractDto
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            Guarantee = 200,
-            ArtistDoorPercent = 50
-        };
+        var dto = new VersusContractDto { Id = 1, PaymentMethod = PaymentMethod.Cash, Guarantee = 200, ArtistDoorPercent = 50 };
 
         var result = (VersusContractEntity)sut.ToEntity(dto);
 
-        Assert.Equal(dto.Id, result.Id);
         Assert.Equal(dto.PaymentMethod, result.PaymentMethod);
         Assert.Equal(dto.Guarantee, result.Guarantee);
         Assert.Equal(dto.ArtistDoorPercent, result.ArtistDoorPercent);
@@ -32,13 +25,8 @@ public class VersusContractMapperTests
     [Fact]
     public void ToDto_ShouldMapAllFields()
     {
-        var entity = new VersusContractEntity
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            Guarantee = 200,
-            ArtistDoorPercent = 50
-        };
+        var entity = VersusContractEntity.Create(200, 50, PaymentMethod.Cash);
+        entity.Id = 1;
 
         var result = (VersusContractDto)sut.ToDto(entity);
 

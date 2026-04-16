@@ -13,16 +13,10 @@ public class FlatFeeContractMapperTests
     [Fact]
     public void ToEntity_ShouldMapAllFields()
     {
-        var dto = new FlatFeeContractDto
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            Fee = 500
-        };
+        var dto = new FlatFeeContractDto { Id = 1, PaymentMethod = PaymentMethod.Cash, Fee = 500 };
 
         var result = (FlatFeeContractEntity)sut.ToEntity(dto);
 
-        Assert.Equal(dto.Id, result.Id);
         Assert.Equal(dto.PaymentMethod, result.PaymentMethod);
         Assert.Equal(dto.Fee, result.Fee);
     }
@@ -30,12 +24,8 @@ public class FlatFeeContractMapperTests
     [Fact]
     public void ToDto_ShouldMapAllFields()
     {
-        var entity = new FlatFeeContractEntity
-        {
-            Id = 1,
-            PaymentMethod = PaymentMethod.Cash,
-            Fee = 500
-        };
+        var entity = FlatFeeContractEntity.Create(500, PaymentMethod.Cash);
+        entity.Id = 1;
 
         var result = (FlatFeeContractDto)sut.ToDto(entity);
 
