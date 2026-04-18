@@ -38,7 +38,7 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
         this.applicationNotificationService = applicationNotificationService;
     }
 
-    public async Task InitiateAsync(int applicationId)
+    public async Task InitiateAsync(int applicationId, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
@@ -60,7 +60,7 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
         application.AwaitPayment();
         await applicationRepository.SaveChangesAsync();
 
-        await managerPaymentService.PayAsync(venueManager, artistManager, contract.Fee, applicationId);
+        await managerPaymentService.PayAsync(venueManager, artistManager, contract.Fee, applicationId, paymentMethodId);
     }
 
     public async Task SettleAsync(int applicationId)

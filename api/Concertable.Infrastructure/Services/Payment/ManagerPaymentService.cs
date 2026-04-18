@@ -26,12 +26,12 @@ public class ManagerPaymentService : IManagerPaymentService
         this.timeProvider = timeProvider;
     }
 
-    public async Task PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int applicationId)
+    public async Task PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int applicationId, string? paymentMethodId = null)
     {
         if (await stripeAccountService.GetAccountStatusAsync(payee.StripeAccountId) != PayoutAccountStatus.Verified)
             throw new BadRequestException("Payee has not completed Stripe verification");
 
-        var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(payer.StripeCustomerId);
+        paymentMethodId ??= await stripeAccountService.GetPaymentMethodAsync(payer.StripeCustomerId);
 
         var response = await paymentService.ProcessAsync(new TransactionRequest
         {

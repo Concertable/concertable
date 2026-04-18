@@ -25,6 +25,6 @@ public class AcceptProcessorTests
 
         await sut.AcceptAsync(1);
 
-        strategy.Verify(s => s.InitiateAsync(1), Times.Once);
+        strategy.Verify(s => s.InitiateAsync(1, null), Times.Once);
     }
 }

@@ -125,9 +125,9 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         return mapper.ToDto(application);
     }
 
-    public async Task AcceptAsync(int applicationId)
+    public async Task AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
-        await acceptProcessor.AcceptAsync(applicationId);
+        await acceptProcessor.AcceptAsync(applicationId, paymentMethodId);
 
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");

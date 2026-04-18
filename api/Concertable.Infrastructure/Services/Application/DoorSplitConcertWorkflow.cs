@@ -41,12 +41,18 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         this.applicationNotificationService = applicationNotificationService;
     }
 
-    public async Task InitiateAsync(int applicationId)
+    public async Task InitiateAsync(int applicationId, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
+
+        var application = await applicationRepository.GetByIdAsync(applicationId)
+            ?? throw new NotFoundException("Application not found");
+
+        application.StorePaymentMethod(paymentMethodId);
+        await applicationRepository.SaveChangesAsync();
 
         var concertId = await concertService.CreateDraftAsync(applicationId);
 
@@ -85,6 +91,6 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = contract.CalculateArtistShare(totalRevenue);
 
-        await managerPaymentService.PayAsync(venueManager, artistManager, artistShare, application.Id);
+        await managerPaymentService.PayAsync(venueManager, artistManager, artistShare, application.Id, application.PaymentMethodId);
     }
 }

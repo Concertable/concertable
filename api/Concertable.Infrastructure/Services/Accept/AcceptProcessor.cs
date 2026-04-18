@@ -12,9 +12,9 @@ public class AcceptProcessor : IAcceptProcessor
         this.resolver = resolver;
     }
 
-    public async Task AcceptAsync(int applicationId)
+    public async Task AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
         var strategy = await resolver.ResolveForApplicationAsync(applicationId);
-        await strategy.InitiateAsync(applicationId);
+        await strategy.InitiateAsync(applicationId, paymentMethodId);
     }
 }

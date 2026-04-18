@@ -9,6 +9,6 @@ public interface IOpportunityApplicationService
     Task<IEnumerable<OpportunityApplicationDto>> GetPendingForArtistAsync();
     Task<IEnumerable<OpportunityApplicationDto>> GetRecentDeniedForArtistAsync();
     Task<OpportunityApplicationDto> ApplyAsync(int opportunityId);
-    Task AcceptAsync(int applicationId);
+    Task AcceptAsync(int applicationId, string? paymentMethodId = null);
     Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id);
 }

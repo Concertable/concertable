@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces.Concert;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Concertable.Application.DTOs;
+using Concertable.Web.Requests;
 
 namespace Concertable.Web.Controllers;
 
@@ -97,9 +98,9 @@ public class OpportunityApplicationController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPost("accept/{applicationId}")]
-    public async Task<IActionResult> Accept(int applicationId)
+    public async Task<IActionResult> Accept(int applicationId, [FromBody] AcceptApplicationRequest? request = null)
     {
-        await applicationService.AcceptAsync(applicationId);
+        await applicationService.AcceptAsync(applicationId, request?.PaymentMethodId);
         return Ok();
     }
 

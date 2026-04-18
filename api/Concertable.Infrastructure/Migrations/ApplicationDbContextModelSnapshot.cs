@@ -287,6 +287,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("OpportunityId")
                         .HasColumnType("int");
 
+                    b.Property<string>("PaymentMethodId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
