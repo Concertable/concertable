@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Concert;
+using FluentResults;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Workers.Functions;
@@ -19,6 +20,8 @@ public class ConcertFinishedFunctionTests
         finishedProcessor = new Mock<IFinishedProcessor>();
         logger = new Mock<ILogger<ConcertFinishedFunction>>();
         sut = new ConcertFinishedFunction(concertRepository.Object, finishedProcessor.Object, logger.Object);
+
+        finishedProcessor.Setup(p => p.FinishedAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok());
     }
 
     [Fact]
@@ -41,7 +44,7 @@ public class ConcertFinishedFunctionTests
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([1, 2, 3]);
-        finishedProcessor.Setup(p => p.FinishedAsync(2)).ThrowsAsync(new Exception("Payment failed"));
+        finishedProcessor.Setup(p => p.FinishedAsync(2)).ReturnsAsync(Result.Fail("Payment failed"));
 
         // Act
         await sut.Run(null!);
