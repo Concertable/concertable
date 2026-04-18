@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriangleAlertIcon } from "lucide-react";
 import { VenueLocation } from "@/components/VenueLocation";
 import { AddReview } from "@/components/reviews/AddReview";
+import { ConcertArtistSummary } from "@/components/concert/ConcertArtistSummary";
 
 const SECTIONS = [
   { id: "about", label: "About" },
@@ -65,9 +66,9 @@ export function ConcertDetails({
 
             <div className="border-border border-t" />
 
-            <section id="artist" className="scroll-mt-24 space-y-2">
+            <section id="artist" className="scroll-mt-24 space-y-3">
               <h2 className="text-xl font-semibold">Artist</h2>
-              <p className="text-muted-foreground">{concert.artist.name}</p>
+              <ConcertArtistSummary artist={concert.artist} />
             </section>
 
             <div className="border-border border-t" />

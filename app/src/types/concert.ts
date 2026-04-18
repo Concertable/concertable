@@ -3,7 +3,7 @@ import type { Genre } from "@/types/artist";
 export interface ConcertArtist {
   id: number;
   name: string;
-  about?: string;
+  avatar?: string;
   rating: number;
   county: string;
   town: string;

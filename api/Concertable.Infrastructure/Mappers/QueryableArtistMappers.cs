@@ -11,6 +11,7 @@ public static class QueryableArtistMappers
         this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>
         from a in query.AsExpandable()
+        where a.User.Address != null
         join r in ratings on a.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ArtistHeaderDto
@@ -19,8 +20,8 @@ public static class QueryableArtistMappers
             Name = a.Name,
             ImageUrl = a.User.Avatar,
             Rating = rating.AverageRating,
-            County = a.User.Address.County ?? string.Empty,
-            Town = a.User.Address.Town ?? string.Empty,
+            County = a.User.Address!.County,
+            Town = a.User.Address!.Town,
             Genres = GenreSelectors.FromArtist.Invoke(a)
         };
 
@@ -43,6 +44,7 @@ public static class QueryableArtistMappers
         this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>
         from a in query.AsExpandable()
+        where a.User.Address != null
         join r in ratings on a.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ArtistDto
@@ -52,8 +54,8 @@ public static class QueryableArtistMappers
             About = a.About,
             BannerUrl = a.BannerUrl,
             Avatar = a.User.Avatar,
-            County = a.User.Address.County ?? string.Empty,
-            Town = a.User.Address.Town ?? string.Empty,
+            County = a.User.Address!.County,
+            Town = a.User.Address!.Town,
             Email = a.User.Email ?? string.Empty,
             Rating = (double?)rating.AverageRating ?? 0.0,
             Genres = GenreSelectors.FromArtist.Invoke(a)
