@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
+using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
 using Concertable.Infrastructure.Data;
@@ -107,11 +108,20 @@ if (app.Environment.IsEnvironment("E2E"))
             TestPassword = SeedData.TestPassword,
             Customer = new SeededUser { Email = seedData.Customer.Email },
             VenueManager1 = new SeededVenueManager { StripeAccountId = seedData.VenueManager1.StripeAccountId },
-            PostedFlatFeeApp = new SeededApplication
-            {
-                Concert = new SeededConcert { Id = seedData.PostedFlatFeeApp.Concert!.Id }
-            }
+            ArtistManager = new SeededArtistManager { StripeAccountId = seedData.ArtistManager.StripeAccountId },
+            PostedFlatFeeApp = new SeededApplication { ApplicationId = seedData.PostedFlatFeeApp.Id, Concert = new SeededConcert { Id = seedData.PostedFlatFeeApp.Concert!.Id } },
+            PostedDoorSplitApp = new SeededApplication { ApplicationId = seedData.PostedDoorSplitApp.Id, Concert = new SeededConcert { Id = seedData.PostedDoorSplitApp.Concert!.Id } },
+            PostedVersusApp = new SeededApplication { ApplicationId = seedData.PostedVersusApp.Id, Concert = new SeededConcert { Id = seedData.PostedVersusApp.Concert!.Id } },
+            PostedVenueHireApp = new SeededApplication { ApplicationId = seedData.PostedVenueHireApp.Id, Concert = new SeededConcert { Id = seedData.PostedVenueHireApp.Concert!.Id } },
+            FinishedDoorSplitApp = new SeededApplication { ApplicationId = seedData.FinishedDoorSplitApp.Id, Concert = new SeededConcert { Id = seedData.FinishedDoorSplitApp.Concert!.Id } },
+            FinishedVersusApp = new SeededApplication { ApplicationId = seedData.FinishedVersusApp.Id, Concert = new SeededConcert { Id = seedData.FinishedVersusApp.Concert!.Id } },
         });
+    });
+
+    app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, IFinishedProcessor finishedProcessor) =>
+    {
+        var result = await finishedProcessor.FinishedAsync(concertId);
+        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Errors.Select(e => e.Message));
     });
 }
 

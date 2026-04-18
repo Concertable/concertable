@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import type { ConcertHeader } from "@/types/header";
 import { HeaderCard } from "@/components/headers/HeaderCard";
+import { GenreTags } from "@/components/headers/GenreTags";
 
 interface Props {
   data: ConcertHeader;
@@ -13,6 +14,7 @@ export function ConcertHeaderCard({ data }: Readonly<Props>) {
         {dayjs(data.startDate).format("DD/MM/YYYY")} –{" "}
         {dayjs(data.endDate).format("DD/MM/YYYY")}
       </p>
+      <GenreTags genres={data.genres} />
     </HeaderCard>
   );
 }

@@ -460,6 +460,8 @@ public class DevDbInitializer : IDbInitializer
             seedData.VenueHireApp = OpportunityApplicationFactory.Create(1, 52);
             seedData.FlatFeeApp = OpportunityApplicationFactory.Create(1, 31);
             seedData.AwaitingPaymentApp = OpportunityApplicationFactory.AwaitingPayment(1, 33, ConcertFaker.GetFaker(0, "Awaiting Show", 15m, 100, 80, now.AddDays(3)).Generate());
+            seedData.FinishedDoorSplitApp = OpportunityApplicationFactory.Accepted(1, 50, ConcertFaker.GetFaker(0, "DoorSplit Settlement Show", 20m, 100, 100, now.AddDays(60)).Generate());
+            seedData.FinishedVersusApp = OpportunityApplicationFactory.Accepted(1, 51, ConcertFaker.GetFaker(0, "Versus Settlement Show", 20m, 100, 100, now.AddDays(90)).Generate());
 
             var applications = new OpportunityApplicationEntity[]
             {
@@ -557,6 +559,10 @@ public class DevDbInitializer : IDbInitializer
                 seedData.AwaitingPaymentApp,
                 // App 77: PostedVenueHireApp (concert 34)
                 seedData.PostedVenueHireApp,
+                // App 78: FinishedDoorSplitApp (concert 35) — VenueId=1, DoorSplit 70%
+                seedData.FinishedDoorSplitApp,
+                // App 79: FinishedVersusApp (concert 36) — VenueId=1, Versus 100+70%
+                seedData.FinishedVersusApp,
             };
             context.OpportunityApplications.AddRange(applications);
             await context.SaveChangesAsync();

@@ -32,4 +32,6 @@ public class SeedData
     public OpportunityApplicationEntity PostedDoorSplitApp { get; set; } = null!;
     public OpportunityApplicationEntity PostedVersusApp { get; set; } = null!;
     public OpportunityApplicationEntity PostedVenueHireApp { get; set; } = null!;
+    public OpportunityApplicationEntity FinishedDoorSplitApp { get; set; } = null!;
+    public OpportunityApplicationEntity FinishedVersusApp { get; set; } = null!;
 }

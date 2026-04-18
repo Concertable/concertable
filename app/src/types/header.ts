@@ -1,3 +1,5 @@
+import type { Genre } from "@/types/common";
+
 export type HeaderType = "artist" | "venue" | "concert";
 
 export interface Header {
@@ -10,7 +12,9 @@ export interface Header {
   town: string;
 }
 
-export interface ArtistHeader extends Header {}
+export interface ArtistHeader extends Header {
+  genres: Genre[];
+}
 
 export interface VenueHeader extends Header {}
 
@@ -18,4 +22,5 @@ export interface ConcertHeader extends Header {
   startDate: string;
   endDate: string;
   datePosted?: string;
+  genres: Genre[];
 }

@@ -34,4 +34,5 @@ public record ArtistHeaderDto : IHeader, IAddress
     public double? Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
+    public IEnumerable<GenreDto> Genres { get; set; } = [];
 }

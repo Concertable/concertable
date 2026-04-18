@@ -1,6 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Core.Projections;
 using Concertable.Core.Entities;
+using LinqKit;
 
 namespace Concertable.Infrastructure.Mappers;
 
@@ -12,7 +13,7 @@ public static class QueryableConcertMappers
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
         from c in query.Where(c => c.Application.Opportunity.Venue.User.Location != null
-                                 && c.Application.Opportunity.Venue.User.Address != null)
+                                 && c.Application.Opportunity.Venue.User.Address != null).AsExpandable()
         join cr in concertRatings on c.Id equals cr.EntityId into crg
         from concertRating in crg.DefaultIfEmpty()
         join ar in artistRatings on c.Application.ArtistId equals ar.EntityId into arg
@@ -33,7 +34,7 @@ public static class QueryableConcertMappers
             DatePosted = c.DatePosted,
             StartDate = c.Application.Opportunity.Period.Start,
             EndDate = c.Application.Opportunity.Period.End,
-            Genres = c.ConcertGenres.Select(cg => new GenreDto(cg.Genre.Id, cg.Genre.Name)),
+            Genres = GenreSelectors.FromConcert.Invoke(c),
             Venue = new ConcertVenueDto
             {
                 Id = c.Application.Opportunity.Venue.Id,
@@ -52,7 +53,7 @@ public static class QueryableConcertMappers
                 County = c.Application.Artist.User.Address.County ?? string.Empty,
                 Town = c.Application.Artist.User.Address.Town ?? string.Empty,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
-                Genres = c.Application.Artist.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
+                Genres = GenreSelectors.FromArtist.Invoke(c.Application.Artist)
             }
         };
 
@@ -61,7 +62,7 @@ public static class QueryableConcertMappers
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
         from c in query.Where(c => c.Application.Opportunity.Venue.User.Location != null
-                                 && c.Application.Opportunity.Venue.User.Address != null)
+                                 && c.Application.Opportunity.Venue.User.Address != null).AsExpandable()
         join ar in artistRatings on c.Application.ArtistId equals ar.EntityId into arg
         from artistRating in arg.DefaultIfEmpty()
         join vr in venueRatings on c.Application.Opportunity.VenueId equals vr.EntityId into vrg
@@ -88,7 +89,7 @@ public static class QueryableConcertMappers
                 Id = c.Application.Artist.Id,
                 Name = c.Application.Artist.Name,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
-                Genres = c.Application.Artist.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
+                Genres = GenreSelectors.FromArtist.Invoke(c.Application.Artist)
             }
         };
 
@@ -96,7 +97,7 @@ public static class QueryableConcertMappers
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> ratings) =>
         from c in query.Where(c => c.Application.Opportunity.Venue.User.Location != null
-                                 && c.Application.Opportunity.Venue.User.Address != null)
+                                 && c.Application.Opportunity.Venue.User.Address != null).AsExpandable()
         join r in ratings on c.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ConcertHeaderDto
@@ -109,6 +110,7 @@ public static class QueryableConcertMappers
             EndDate = c.Application.Opportunity.Period.End,
             DatePosted = c.DatePosted,
             County = c.Application.Opportunity.Venue.User.Address.County ?? string.Empty,
-            Town = c.Application.Opportunity.Venue.User.Address.Town ?? string.Empty
+            Town = c.Application.Opportunity.Venue.User.Address.Town ?? string.Empty,
+            Genres = GenreSelectors.FromConcert.Invoke(c)
         };
 }

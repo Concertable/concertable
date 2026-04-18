@@ -1,6 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Core.Projections;
 using Concertable.Core.Entities;
+using LinqKit;
 
 namespace Concertable.Infrastructure.Mappers;
 
@@ -9,7 +10,7 @@ public static class QueryableArtistMappers
     public static IQueryable<ArtistHeaderDto> ToHeaderDtos(
         this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from a in query
+        from a in query.AsExpandable()
         join r in ratings on a.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ArtistHeaderDto
@@ -19,13 +20,14 @@ public static class QueryableArtistMappers
             ImageUrl = a.User.Avatar,
             Rating = rating.AverageRating,
             County = a.User.Address.County ?? string.Empty,
-            Town = a.User.Address.Town ?? string.Empty
+            Town = a.User.Address.Town ?? string.Empty,
+            Genres = GenreSelectors.FromArtist.Invoke(a)
         };
 
     public static IQueryable<ArtistSummaryDto> ToSummaryDto(
         this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from a in query
+        from a in query.AsExpandable()
         join r in ratings on a.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ArtistSummaryDto
@@ -34,13 +36,13 @@ public static class QueryableArtistMappers
             Name = a.Name,
             Avatar = a.User.Avatar,
             Rating = (double?)rating.AverageRating ?? 0.0,
-            Genres = a.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
+            Genres = GenreSelectors.FromArtist.Invoke(a)
         };
 
     public static IQueryable<ArtistDto> ToDto(
         this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from a in query
+        from a in query.AsExpandable()
         join r in ratings on a.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ArtistDto
@@ -54,6 +56,6 @@ public static class QueryableArtistMappers
             Town = a.User.Address.Town ?? string.Empty,
             Email = a.User.Email ?? string.Empty,
             Rating = (double?)rating.AverageRating ?? 0.0,
-            Genres = a.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
+            Genres = GenreSelectors.FromArtist.Invoke(a)
         };
 }
