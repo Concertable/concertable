@@ -1,6 +1,7 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Concertable.Application.DTOs;
+using Concertable.Seeding;
 using Microsoft.Extensions.Logging;
 using Stripe;
 using System.Net.Http.Headers;
@@ -21,6 +22,7 @@ public class AppFixture : IAsyncLifetime
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
+    public SeedDataResponse SeedData { get; private set; } = null!;
 
     public AppFixture(IMessageSink messageSink)
     {
@@ -61,7 +63,8 @@ public class AppFixture : IAsyncLifetime
     public async Task ResetAsync()
     {
         await sqlFixture.ResetAsync();
-        await Client.PostAsync("/e2e/reseed");
+        var response = await Client.PostAsync("/e2e/reseed");
+        SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
     }
 
     public async Task<HttpClient> CreateAuthenticatedClientAsync(string email, string password)

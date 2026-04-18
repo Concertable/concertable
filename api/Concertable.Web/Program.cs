@@ -3,6 +3,7 @@ using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
 using Concertable.Infrastructure.Data;
+using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
 using Concertable.Web.Extensions;
 using Concertable.Web.Hubs;
@@ -98,10 +99,19 @@ app.MapGet("/health", () => Results.Ok());
 
 if (app.Environment.IsEnvironment("E2E"))
 {
-    app.MapPost("/e2e/reseed", async (IDbInitializer dbInitializer) =>
+    app.MapPost("/e2e/reseed", async (IDbInitializer dbInitializer, SeedData seedData) =>
     {
         await dbInitializer.InitializeAsync();
-        return Results.Ok();
+        return Results.Ok(new SeedDataResponse
+        {
+            TestPassword = SeedData.TestPassword,
+            Customer = new SeededUser { Email = seedData.Customer.Email },
+            VenueManager1 = new SeededVenueManager { StripeAccountId = seedData.VenueManager1.StripeAccountId },
+            PostedFlatFeeApp = new SeededApplication
+            {
+                Concert = new SeededConcert { Id = seedData.PostedFlatFeeApp.Concert!.Id }
+            }
+        });
     });
 }
 

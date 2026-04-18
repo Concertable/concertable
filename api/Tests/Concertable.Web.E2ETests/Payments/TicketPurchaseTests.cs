@@ -23,7 +23,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await fixture.ResetAsync();
-        customerClient = await fixture.CreateAuthenticatedClientAsync(E2ETestConstants.Customer1.Email, E2ETestConstants.TestPassword);
+        customerClient = await fixture.CreateAuthenticatedClientAsync(fixture.SeedData.Customer.Email, fixture.SeedData.TestPassword);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
@@ -34,7 +34,7 @@ public class TicketPurchaseTests : IAsyncLifetime
         // Act
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = E2ETestConstants.PostedConcert.ConcertId, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.PostedFlatFeeApp.Concert.Id, Quantity = 1 });
 
         var body = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
@@ -44,14 +44,14 @@ public class TicketPurchaseTests : IAsyncLifetime
         // Wait for webhook to fire and complete the ticket
         var tickets = await fixture.Polling.UntilAsync(
             async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
-            t => t.Any(ticket => ticket.Concert.Id == E2ETestConstants.PostedConcert.ConcertId),
+            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.PostedFlatFeeApp.Concert.Id),
             timeout: TimeSpan.FromSeconds(15));
 
         // Assert ticket issued
-        Assert.Contains(tickets, t => t.Concert.Id == E2ETestConstants.PostedConcert.ConcertId);
+        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.PostedFlatFeeApp.Concert.Id);
 
         // Assert payment routed to venue manager
         var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);
-        Assert.Equal(E2ETestConstants.VenueManager1.StripeAccountId, intent.TransferData.DestinationId);
+        Assert.Equal(fixture.SeedData.VenueManager1.StripeAccountId, intent.TransferData.DestinationId);
     }
 }

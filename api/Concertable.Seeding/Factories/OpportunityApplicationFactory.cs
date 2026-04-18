@@ -1,9 +1,42 @@
 using Concertable.Core.Entities;
+using Concertable.Core.Enums;
+using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Factories;
 
 public static class OpportunityApplicationFactory
 {
+    public static OpportunityApplicationEntity Accepted(int artistId, int opportunityId, ConcertEntity concert)
+    {
+        var app = New<OpportunityApplicationEntity>()
+            .With(nameof(OpportunityApplicationEntity.ArtistId), artistId)
+            .With(nameof(OpportunityApplicationEntity.OpportunityId), opportunityId)
+            .With(nameof(OpportunityApplicationEntity.Status), ApplicationStatus.Accepted);
+        app.Concert = concert;
+        return app;
+    }
+
+    public static OpportunityApplicationEntity Complete(int artistId, int opportunityId, ConcertEntity concert)
+    {
+        var app = New<OpportunityApplicationEntity>()
+            .With(nameof(OpportunityApplicationEntity.ArtistId), artistId)
+            .With(nameof(OpportunityApplicationEntity.OpportunityId), opportunityId)
+            .With(nameof(OpportunityApplicationEntity.Status), ApplicationStatus.Complete);
+        app.Concert = concert;
+        return app;
+    }
+
+    public static OpportunityApplicationEntity AwaitingPayment(int artistId, int opportunityId, ConcertEntity concert)
+    {
+        var app = New<OpportunityApplicationEntity>()
+            .With(nameof(OpportunityApplicationEntity.ArtistId), artistId)
+            .With(nameof(OpportunityApplicationEntity.OpportunityId), opportunityId)
+            .With(nameof(OpportunityApplicationEntity.Status), ApplicationStatus.AwaitingPayment);
+        app.Concert = concert;
+        return app;
+    }
+
+
     public static OpportunityApplicationEntity Create(int artistId, int opportunityId)
         => OpportunityApplicationEntity.Create(artistId, opportunityId);
 

@@ -1,20 +1,25 @@
 using Bogus;
 using Concertable.Core.Entities;
+using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Fakers;
 
 public static class ConcertFaker
 {
-    public static Faker<ConcertEntity> GetFaker(int applicationId, string name, decimal price, int totalTickets, int availableTickets, DateTime datePosted)
+    public static Faker<ConcertEntity> GetFaker(int applicationId, string name, decimal price, int totalTickets, int availableTickets, DateTime? datePosted = null)
     {
-        return new Faker<ConcertEntity>()
-            .CustomInstantiator(_ => (ConcertEntity)Activator.CreateInstance(typeof(ConcertEntity), nonPublic: true)!)
+        var faker = new Faker<ConcertEntity>()
+            .CustomInstantiator(_ => New<ConcertEntity>())
             .RuleFor(e => e.ApplicationId, applicationId)
             .RuleFor(e => e.Name, f => name)
             .RuleFor(e => e.About, f => f.Lorem.Paragraph(7))
             .RuleFor(e => e.Price, price)
             .RuleFor(e => e.TotalTickets, totalTickets)
-            .RuleFor(e => e.AvailableTickets, availableTickets)
-            .RuleFor(e => e.DatePosted, datePosted);
+            .RuleFor(e => e.AvailableTickets, availableTickets);
+
+        if (datePosted.HasValue)
+            faker.RuleFor(e => e.DatePosted, datePosted.Value);
+
+        return faker;
     }
 }

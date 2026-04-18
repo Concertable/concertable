@@ -1,5 +1,6 @@
 using Bogus;
 using Concertable.Core.Entities;
+using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Fakers;
 
@@ -8,7 +9,7 @@ public static class ArtistFaker
     public static Faker<ArtistEntity> GetFaker(Guid userId, string name, string bannerUrl)
     {
         return new Faker<ArtistEntity>()
-            .CustomInstantiator(_ => (ArtistEntity)Activator.CreateInstance(typeof(ArtistEntity), nonPublic: true)!)
+            .CustomInstantiator(_ => New<ArtistEntity>())
             .RuleFor(a => a.UserId, userId)
             .RuleFor(a => a.Name, name)
             .RuleFor(a => a.BannerUrl, bannerUrl)
