@@ -7,12 +7,12 @@ using Xunit.Abstractions;
 namespace Concertable.Web.E2ETests.Payments;
 
 [Collection("E2E")]
-public class ConcertInitiationTests : IAsyncLifetime
+public class ConcertDraftTests : IAsyncLifetime
 {
     private readonly AppFixture fixture;
     private readonly ITestOutputHelper output;
 
-    public ConcertInitiationTests(AppFixture fixture, ITestOutputHelper output)
+    public ConcertDraftTests(AppFixture fixture, ITestOutputHelper output)
     {
         this.fixture = fixture;
         this.output = output;
@@ -29,15 +29,12 @@ public class ConcertInitiationTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task ShouldPayArtistManager_WhenFlatFeeContractInitiated()
+    public async Task ShouldCreateDraftAndPayArtist_WhenFlatFeeApplicationAccepted()
     {
-        var response = await venueManagerClient.PostAsync(
+        await venueManagerClient.PostAsSuccessAsync(
             $"/api/OpportunityApplication/accept/{fixture.SeedData.PendingFlatFeeApp.ApplicationId}");
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
-
-        // Initiation creates a settlement PaymentIntent immediately (venue pays artist flat fee)
+        // Venue pays artist flat fee upfront — assert correct destination
         var paymentIntentId = await fixture.Polling.UntilAsync(
             async () => await fixture.Client.GetAsync<string>($"/e2e/payment-intent/{fixture.SeedData.PendingFlatFeeApp.ApplicationId}"),
             id => id is not null,
@@ -45,18 +42,22 @@ public class ConcertInitiationTests : IAsyncLifetime
 
         var intent = await fixture.StripePaymentIntents.GetAsync(paymentIntentId!.Trim('"'));
         Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
+
+        // Webhook fires SettleAsync → draft concert created
+        await fixture.Polling.UntilAsync(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+                $"/api/OpportunityApplication/{fixture.SeedData.PendingFlatFeeApp.ApplicationId}"),
+            app => app?.Status == ApplicationStatus.Accepted,
+            timeout: TimeSpan.FromSeconds(15));
     }
 
     [Fact]
-    public async Task ShouldPayVenueManager_WhenVenueHireContractInitiated()
+    public async Task ShouldCreateDraftAndPayVenue_WhenVenueHireApplicationAccepted()
     {
-        var response = await venueManagerClient.PostAsync(
+        await venueManagerClient.PostAsSuccessAsync(
             $"/api/OpportunityApplication/accept/{fixture.SeedData.PendingVenueHireApp.ApplicationId}");
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
-
-        // Initiation creates a settlement PaymentIntent immediately (artist pays venue hire fee)
+        // Artist pays venue hire fee upfront — assert correct destination
         var paymentIntentId = await fixture.Polling.UntilAsync(
             async () => await fixture.Client.GetAsync<string>($"/e2e/payment-intent/{fixture.SeedData.PendingVenueHireApp.ApplicationId}"),
             id => id is not null,
@@ -64,17 +65,22 @@ public class ConcertInitiationTests : IAsyncLifetime
 
         var intent = await fixture.StripePaymentIntents.GetAsync(paymentIntentId!.Trim('"'));
         Assert.Equal(fixture.SeedData.VenueManager1.StripeAccountId, intent.TransferData.DestinationId);
+
+        // Webhook fires SettleAsync → draft concert created
+        await fixture.Polling.UntilAsync(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+                $"/api/OpportunityApplication/{fixture.SeedData.PendingVenueHireApp.ApplicationId}"),
+            app => app?.Status == ApplicationStatus.Accepted,
+            timeout: TimeSpan.FromSeconds(15));
     }
 
     [Fact]
-    public async Task ShouldSetApplicationAwaitingPayment_WhenDoorSplitContractInitiated()
+    public async Task ShouldCreateDraft_WhenDoorSplitApplicationAccepted()
     {
-        var response = await venueManagerClient.PostAsync(
+        await venueManagerClient.PostAsSuccessAsync(
             $"/api/OpportunityApplication/accept/{fixture.SeedData.PendingDoorSplitApp.ApplicationId}");
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
-
+        // No upfront payment — draft created immediately
         var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
             $"/api/OpportunityApplication/{fixture.SeedData.PendingDoorSplitApp.ApplicationId}");
 
@@ -82,14 +88,12 @@ public class ConcertInitiationTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ShouldSetApplicationAwaitingPayment_WhenVersusContractInitiated()
+    public async Task ShouldCreateDraft_WhenVersusApplicationAccepted()
     {
-        var response = await venueManagerClient.PostAsync(
+        await venueManagerClient.PostAsSuccessAsync(
             $"/api/OpportunityApplication/accept/{fixture.SeedData.PendingVersusApp.ApplicationId}");
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
-
+        // No upfront payment — draft created immediately
         var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
             $"/api/OpportunityApplication/{fixture.SeedData.PendingVersusApp.ApplicationId}");
 

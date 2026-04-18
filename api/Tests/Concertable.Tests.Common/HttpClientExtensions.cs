@@ -30,6 +30,28 @@ public static class HttpClientExtensions
         return response;
     }
 
+    public static async Task<HttpResponseMessage> PostAsSuccessAsync(this HttpClient client, string url)
+    {
+        var response = await client.PostAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"{(int)response.StatusCode} {response.StatusCode}: {body}");
+        }
+        return response;
+    }
+
+    public static async Task<HttpResponseMessage> PostAsSuccessAsync<T>(this HttpClient client, string url, T body)
+    {
+        var response = await client.PostAsync(url, body);
+        if (!response.IsSuccessStatusCode)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"{(int)response.StatusCode} {response.StatusCode}: {responseBody}");
+        }
+        return response;
+    }
+
     public static async Task<HttpResponseMessage> PutAsync<T>(this HttpClient client, string url, T body)
     {
         return await client.PutAsJsonAsync(url, body, JsonOptions);

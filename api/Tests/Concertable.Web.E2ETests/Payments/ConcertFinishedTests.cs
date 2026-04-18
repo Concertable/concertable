@@ -31,9 +31,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     [Fact]
     public async Task ShouldCompleteApplication_WhenFlatFeeConcertFinishes()
     {
-        var finishResponse = await fixture.Client.PostAsync($"/e2e/finish/{fixture.SeedData.PostedFlatFeeApp.ConcertId!.Value}");
-        var finishBody = await finishResponse.Content.ReadAsStringAsync();
-        Assert.True(finishResponse.IsSuccessStatusCode, $"{(int)finishResponse.StatusCode} {finishResponse.StatusCode}: {finishBody}");
+        await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.PostedFlatFeeApp.ConcertId!.Value}");
 
         var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
             $"/api/OpportunityApplication/{fixture.SeedData.PostedFlatFeeApp.ApplicationId}");
@@ -44,9 +42,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     [Fact]
     public async Task ShouldCompleteApplication_WhenVenueHireConcertFinishes()
     {
-        var finishResponse = await fixture.Client.PostAsync($"/e2e/finish/{fixture.SeedData.PostedVenueHireApp.ConcertId!.Value}");
-        var finishBody = await finishResponse.Content.ReadAsStringAsync();
-        Assert.True(finishResponse.IsSuccessStatusCode, $"{(int)finishResponse.StatusCode} {finishResponse.StatusCode}: {finishBody}");
+        await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.PostedVenueHireApp.ConcertId!.Value}");
 
         var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
             $"/api/OpportunityApplication/{fixture.SeedData.PostedVenueHireApp.ApplicationId}");
@@ -55,14 +51,11 @@ public class ConcertFinishedTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ShouldPayArtistManager_WhenDoorSplitConcertFinishes()
+    public async Task ShouldCompleteApplicationAndPayArtist_WhenDoorSplitConcertFinishes()
     {
-        var purchaseResponse = await customerClient.PostAsync(
+        await customerClient.PostAsSuccessAsync(
             "/api/Ticket/purchase",
             new { ConcertId = fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value, Quantity = 1 });
-
-        var purchaseBody = await purchaseResponse.Content.ReadAsStringAsync();
-        Assert.True(purchaseResponse.IsSuccessStatusCode, $"{(int)purchaseResponse.StatusCode} {purchaseResponse.StatusCode}: {purchaseBody}");
 
         await fixture.Polling.UntilAsync(
             async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
@@ -70,23 +63,26 @@ public class ConcertFinishedTests : IAsyncLifetime
             timeout: TimeSpan.FromSeconds(15));
 
         // Op 50: DoorSplit 70% — 1 ticket at £20 = £20 revenue → artist share = £14 (1400 pence)
-        var finishBody = await fixture.Client.PostAsync($"/e2e/finish/{fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value}")
+        var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value}")
             .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
 
         var intent = await fixture.StripePaymentIntents.GetAsync(finishBody.Trim('"'));
         Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
         Assert.Equal(1400L, intent.Amount);
+
+        await fixture.Polling.UntilAsync(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+                $"/api/OpportunityApplication/{fixture.SeedData.FinishedDoorSplitApp.ApplicationId}"),
+            app => app?.Status == ApplicationStatus.Complete,
+            timeout: TimeSpan.FromSeconds(15));
     }
 
     [Fact]
-    public async Task ShouldPayArtistManager_WhenVersusConcertFinishes()
+    public async Task ShouldCompleteApplicationAndPayArtist_WhenVersusConcertFinishes()
     {
-        var purchaseResponse = await customerClient.PostAsync(
+        await customerClient.PostAsSuccessAsync(
             "/api/Ticket/purchase",
             new { ConcertId = fixture.SeedData.FinishedVersusApp.ConcertId!.Value, Quantity = 1 });
-
-        var purchaseBody = await purchaseResponse.Content.ReadAsStringAsync();
-        Assert.True(purchaseResponse.IsSuccessStatusCode, $"{(int)purchaseResponse.StatusCode} {purchaseResponse.StatusCode}: {purchaseBody}");
 
         await fixture.Polling.UntilAsync(
             async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
@@ -94,11 +90,17 @@ public class ConcertFinishedTests : IAsyncLifetime
             timeout: TimeSpan.FromSeconds(15));
 
         // Op 51: Versus — guarantee £100 + 70% of door — 1 ticket at £20 → artist share = £114 (11400 pence)
-        var finishBody = await fixture.Client.PostAsync($"/e2e/finish/{fixture.SeedData.FinishedVersusApp.ConcertId!.Value}")
+        var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedVersusApp.ConcertId!.Value}")
             .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
 
         var intent = await fixture.StripePaymentIntents.GetAsync(finishBody.Trim('"'));
         Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
         Assert.Equal(11400L, intent.Amount);
+
+        await fixture.Polling.UntilAsync(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+                $"/api/OpportunityApplication/{fixture.SeedData.FinishedVersusApp.ApplicationId}"),
+            app => app?.Status == ApplicationStatus.Complete,
+            timeout: TimeSpan.FromSeconds(15));
     }
 }
