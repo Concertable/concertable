@@ -2,6 +2,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,12 +30,12 @@ public class StripeAccountController : ControllerBase
         return Ok(link);
     }
 
-    [HttpGet("verified")]
-    public async Task<ActionResult<bool>> IsUserVerified()
+    [HttpGet("account-status")]
+    public async Task<ActionResult<PayoutAccountStatus>> GetAccountStatus()
     {
         var manager = currentUser.GetEntity<ManagerEntity>();
 
-        return Ok(await stripeAccountService.IsUserVerifiedAsync(manager.StripeAccountId));
+        return Ok(await stripeAccountService.GetAccountStatusAsync(manager.StripeAccountId));
     }
 
     [HttpGet("payment-method")]

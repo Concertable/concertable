@@ -28,7 +28,7 @@ public class ManagerPaymentService : IManagerPaymentService
 
     public async Task PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int applicationId)
     {
-        if (!await stripeAccountService.IsUserVerifiedAsync(payee.StripeAccountId))
+        if (await stripeAccountService.GetAccountStatusAsync(payee.StripeAccountId) != PayoutAccountStatus.Verified)
             throw new BadRequestException("Payee has not completed Stripe verification");
 
         var paymentMethodId = await stripeAccountService.GetPaymentMethodAsync(payer.StripeCustomerId);

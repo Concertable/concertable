@@ -116,7 +116,10 @@
       "WebFetch(domain:aspire.dev)",
       "Bash(cmd.exe:*)",
       "Bash(dotnet user-secrets:*)",
-      "Bash(perl:*)"
+      "Bash(perl:*)",
+      "Bash(dotnet new *)",
+      "WebFetch(domain:stripe.com)",
+      "WebFetch(domain:docs.stripe.com)"
     ]
   }
 }

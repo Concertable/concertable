@@ -7,10 +7,11 @@ import { ReviewSummaryBadge } from "@/components/reviews/ReviewSummaryBadge";
 import { ConcertCard } from "@/components/concert/ConcertCard";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TriangleAlertIcon } from "lucide-react";
+import { MapPin, Star, TriangleAlertIcon } from "lucide-react";
 import { VenueLocation } from "@/components/VenueLocation";
 import { AddReview } from "@/components/reviews/AddReview";
-import { ConcertArtistSummary } from "@/components/concert/ConcertArtistSummary";
+import { GenreTags } from "@/components/headers/GenreTags";
+import { useImageUrl } from "@/hooks/query/useImageUrl";
 
 const SECTIONS = [
   { id: "about", label: "About" },
@@ -23,6 +24,38 @@ interface Props {
   concert: Concert;
   onNameChange?: (value: string) => void;
   onAboutChange?: (value: string) => void;
+}
+
+function ArtistSection({ artist }: { artist: Concert["artist"] }) {
+  const { data: src } = useImageUrl(artist.avatar);
+
+  return (
+    <div className="flex gap-6">
+      {src && (
+        <img
+          src={src}
+          alt={artist.name}
+          className="size-24 rounded-xl object-cover"
+        />
+      )}
+      <div className="flex flex-col justify-center gap-2">
+        <div className="flex items-center gap-2 text-lg font-semibold">
+          <span>{artist.name}</span>
+          {artist.rating > 0 && (
+            <span className="text-gold flex items-center gap-1 text-sm">
+              <Star className="fill-gold size-3.5" />
+              {artist.rating}
+            </span>
+          )}
+        </div>
+        <span className="text-muted-foreground flex items-center gap-1 text-sm">
+          <MapPin className="size-3.5 shrink-0" />
+          {artist.county}, {artist.town}
+        </span>
+        <GenreTags genres={artist.genres} />
+      </div>
+    </div>
+  );
 }
 
 export function ConcertDetails({
@@ -66,9 +99,9 @@ export function ConcertDetails({
 
             <div className="border-border border-t" />
 
-            <section id="artist" className="scroll-mt-24 space-y-3">
+            <section id="artist" className="scroll-mt-24 space-y-4">
               <h2 className="text-xl font-semibold">Artist</h2>
-              <ConcertArtistSummary artist={concert.artist} />
+              <ArtistSection artist={concert.artist} />
             </section>
 
             <div className="border-border border-t" />

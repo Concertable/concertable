@@ -4,7 +4,7 @@ namespace Concertable.Seeding;
 
 public class SeedData
 {
-    public const string TestPassword = "TestPassword123!";
+    public const string TestPassword = "Password11!";
 
     public VenueManagerEntity VenueManager1 { get; set; } = null!;
     public VenueManagerEntity VenueManager2 { get; set; } = null!;

@@ -75,12 +75,6 @@ public class UserService : IUserService
         user.Address = new Address(location.County, location.Town);
     }
 
-    public async Task<IUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        var user = await userRepsitory.GetByIdAsync(userId, cancellationToken);
-        return user is null ? null : userMapper.ToDto(user);
-    }
-
     public async Task<UserEntity?> GetUserEntityByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await userRepsitory.GetByIdAsync(userId, cancellationToken);

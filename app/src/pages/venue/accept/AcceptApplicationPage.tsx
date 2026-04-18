@@ -3,7 +3,7 @@ import {
   useApplicationQuery,
   useAcceptApplicationMutation,
 } from "@/hooks/query/useApplicationQuery";
-import { useStripeVerifiedQuery } from "@/hooks/query/useStripeAccountQuery";
+import { usePayoutAccountStatusQuery } from "@/hooks/query/useStripeAccountQuery";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
 import { StripeOnboardingBanner } from "@/components/stripe/StripeOnboardingBanner";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ export default function AcceptApplicationPage() {
   const { mutate: accept, isPending } = useAcceptApplicationMutation(
     application?.opportunity.id ?? 0,
   );
-  const { data: isStripeVerified } = useStripeVerifiedQuery();
+  const { data: accountStatus } = usePayoutAccountStatusQuery(true);
 
   if (isLoading || !application) return null;
 
@@ -58,7 +58,7 @@ export default function AcceptApplicationPage() {
           Cancel
         </Button>
         <Button
-          disabled={isPending || !isStripeVerified}
+          disabled={isPending || accountStatus !== "Verified"}
           onClick={handleConfirm}
         >
           {isPending ? "Confirming..." : "Confirm"}

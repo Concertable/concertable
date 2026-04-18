@@ -1,5 +1,7 @@
 import api from "@/lib/axios";
 
+export type PayoutAccountStatus = "NotVerified" | "Pending" | "Verified";
+
 export interface PaymentMethod {
   brand: string;
   last4: string;
@@ -13,8 +15,10 @@ const stripeAccountApi = {
     return data;
   },
 
-  isVerified: async (): Promise<boolean> => {
-    const { data } = await api.get<boolean>("/stripeaccount/verified");
+  getAccountStatus: async (): Promise<StripeAccountStatus> => {
+    const { data } = await api.get<StripeAccountStatus>(
+      "/stripeaccount/account-status",
+    );
     return data;
   },
 

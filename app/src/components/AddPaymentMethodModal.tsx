@@ -51,7 +51,7 @@ function PaymentForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
+      <PaymentElement options={{ wallets: { link: "never" } }} />
       {error && <p className="text-destructive text-sm">{error}</p>}
       <Button
         type="submit"

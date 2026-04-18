@@ -5,36 +5,28 @@ using Concertable.Application.Exceptions;
 
 namespace Concertable.Infrastructure.Services;
 
-public class CurrentUser : ICurrentUser
+public class CurrentUser
 {
-    public static readonly CurrentUser Unauthenticated = new();
+    private readonly IUser dto;
+    private readonly UserEntity entity;
 
-    private readonly IUser? dto;
-    private readonly UserEntity? entity;
-
-    private CurrentUser() { }
-
-    public CurrentUser(IUser dto, UserEntity? entity = null)
+    public CurrentUser(UserEntity entity, IUserMapper mapper)
     {
-        this.dto = dto;
         this.entity = entity;
+        this.dto = mapper.ToDto(entity);
     }
 
-    public Guid? Id => dto?.Id;
+    public Guid Id => dto.Id;
 
-    public Guid GetId() => Id ?? throw new UnauthorizedException("User not authenticated");
-
-    public IUser Get() =>
-        dto ?? throw new UnauthorizedException("User not authenticated");
+    public IUser Get() => dto;
 
     public IUser? GetOrDefault() => dto;
 
-    public UserEntity GetEntity() =>
-        entity ?? throw new UnauthorizedException("User not authenticated");
+    public UserEntity GetEntity() => entity;
 
     public T GetEntity<T>() where T : UserEntity =>
-        GetEntity() as T ?? throw new UnauthorizedException("Unauthorized");
+        entity as T ?? throw new UnauthorizedException("Unauthorized");
 
     public Role GetRole() =>
-        Get().Role ?? throw new BadRequestException("User has no roles assigned.");
+        dto.Role ?? throw new BadRequestException("User has no roles assigned.");
 }

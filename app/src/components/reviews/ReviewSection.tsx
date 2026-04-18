@@ -39,7 +39,7 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
         <p className="text-muted-foreground text-sm">No reviews yet.</p>
       )}
 
-      <ul className="space-y-4">
+      <ul className="min-h-[420px] space-y-4">
         {reviews?.data.map((review) => (
           <li
             key={review.id}

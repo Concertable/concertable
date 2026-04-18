@@ -15,8 +15,8 @@ public class VenueRepositoryTests : IDisposable
     private readonly Mock<IRatingSpecification<VenueEntity>> ratingSpecification;
     private readonly VenueRepository sut;
 
-    private static readonly Guid UserId = Guid.NewGuid();
-    private static readonly Guid OtherUserId = Guid.NewGuid();
+    private Guid UserId;
+    private Guid OtherUserId;
 
     public VenueRepositoryTests()
     {
@@ -36,6 +36,10 @@ public class VenueRepositoryTests : IDisposable
         var vm1 = VenueManagerEntity.Create("a@test.com", string.Empty);
         var vm2 = VenueManagerEntity.Create("b@test.com", string.Empty);
         context.Users.AddRange(vm1, vm2);
+        context.SaveChanges();
+
+        UserId = vm1.Id;
+        OtherUserId = vm2.Id;
 
         context.Venues.AddRange(
             VenueEntity.Create(UserId, "Venue A", "About A", "a.jpg"),

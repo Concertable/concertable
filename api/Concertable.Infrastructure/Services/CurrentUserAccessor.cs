@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Application.Exceptions;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Microsoft.AspNetCore.Http;
@@ -14,15 +15,14 @@ public class CurrentUserAccessor : ICurrentUser
         this.httpContextAccessor = httpContextAccessor;
     }
 
-    private CurrentUser Current =>
-        httpContextAccessor.HttpContext?.Items[nameof(CurrentUser)] as CurrentUser
-        ?? CurrentUser.Unauthenticated;
+    private CurrentUser? Current =>
+        httpContextAccessor.HttpContext?.Items[nameof(CurrentUser)] as CurrentUser;
 
-    public Guid? Id => Current.Id;
-    public Guid GetId() => Current.GetId();
-    public IUser Get() => Current.Get();
-    public IUser? GetOrDefault() => Current.GetOrDefault();
-    public UserEntity GetEntity() => Current.GetEntity();
-    public T GetEntity<T>() where T : UserEntity => Current.GetEntity<T>();
-    public Role GetRole() => Current.GetRole();
+    public Guid? Id => Current?.Id;
+    public Guid GetId() => Current?.Id ?? throw new UnauthorizedException("User not authenticated");
+    public IUser Get() => Current?.Get() ?? throw new UnauthorizedException("User not authenticated");
+    public IUser? GetOrDefault() => Current?.GetOrDefault();
+    public UserEntity GetEntity() => Current?.GetEntity() ?? throw new UnauthorizedException("User not authenticated");
+    public T GetEntity<T>() where T : UserEntity => Current?.GetEntity<T>() ?? throw new UnauthorizedException("User not authenticated");
+    public Role GetRole() => Current?.GetRole() ?? throw new UnauthorizedException("User not authenticated");
 }

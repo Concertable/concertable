@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Core.Enums;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Infrastructure.Interfaces;
@@ -25,7 +26,7 @@ public class PaymentService : IPaymentService
             if (string.IsNullOrEmpty(request.DestinationStripeId))
                 return Result.Fail("Recipient does not have a Stripe account");
 
-            if (!await stripeAccountService.IsUserVerifiedAsync(request.DestinationStripeId))
+            if (await stripeAccountService.GetAccountStatusAsync(request.DestinationStripeId) != PayoutAccountStatus.Verified)
                 return Result.Fail("Recipient is not eligible for payouts");
 
             var options = new PaymentIntentCreateOptions

@@ -1,11 +1,17 @@
-import { CreditCard, ExternalLink, CheckCircle, XCircle } from "lucide-react";
+import {
+  CreditCard,
+  ExternalLink,
+  CheckCircle,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import {
-  useStripeVerifiedQuery,
+  usePayoutAccountStatusQuery,
   useStripeOnboardingQuery,
   usePaymentMethodQuery,
 } from "@/hooks/query/useStripeAccountQuery";
@@ -17,18 +23,18 @@ export default function PaymentPage() {
   const isManager =
     user?.role === "VenueManager" || user?.role === "ArtistManager";
   const {
-    data: isVerified,
-    refetch: refetchVerified,
-    isLoading: isVerifiedLoading,
-  } = useStripeVerifiedQuery(isManager);
+    data: accountStatus,
+    refetch: refetchStatus,
+    isLoading: isStatusLoading,
+  } = usePayoutAccountStatusQuery(isManager);
   const { refetch: openOnboarding, isFetching } = useStripeOnboardingQuery();
 
   useMountEffect(() => {
     function handleMessage(event: MessageEvent) {
       if (event.origin !== window.location.origin) return;
       if (event.data?.type === "stripe_return")
-        refetchVerified().then(({ data: verified }) => {
-          if (verified) toast.success("Payout account verified");
+        refetchStatus().then(({ data: status }) => {
+          if (status === "Verified") toast.success("Payout account verified");
           else
             toast.info(
               "Setup incomplete — finish the remaining steps to get verified",
@@ -101,32 +107,33 @@ export default function PaymentPage() {
               bookings.
             </p>
             <div className="flex items-center gap-3 pt-2">
-              {isVerifiedLoading ? (
+              {isStatusLoading ? (
                 <div className="text-muted-foreground size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                isVerified !== undefined &&
-                (isVerified ? (
-                  <span className="flex items-center gap-1 text-sm text-green-600">
-                    <CheckCircle className="size-4" /> Verified
-                  </span>
-                ) : (
-                  <span className="text-destructive flex items-center gap-1 text-sm">
-                    <XCircle className="size-4" /> Not verified
-                  </span>
-                ))
-              )}
+              ) : accountStatus === "Verified" ? (
+                <span className="flex items-center gap-1 text-sm text-green-600">
+                  <CheckCircle className="size-4" /> Verified
+                </span>
+              ) : accountStatus === "Pending" ? (
+                <span className="flex items-center gap-1 text-sm text-amber-500">
+                  <Clock className="size-4" /> Pending verification
+                </span>
+              ) : accountStatus === "NotVerified" ? (
+                <span className="text-destructive flex items-center gap-1 text-sm">
+                  <XCircle className="size-4" /> Not verified
+                </span>
+              ) : null}
               <Button
                 onClick={() =>
                   openOnboarding().then(({ data: link }) => {
                     if (link) window.open(link, "_blank");
                   })
                 }
-                disabled={isFetching}
+                disabled={isFetching || isStatusLoading}
               >
                 <ExternalLink className="size-4" />
-                {isFetching
+                {isFetching || isStatusLoading
                   ? "Loading..."
-                  : isVerified
+                  : accountStatus === "Verified"
                     ? "Manage Payout Account"
                     : "Set up Payout Account"}
               </Button>

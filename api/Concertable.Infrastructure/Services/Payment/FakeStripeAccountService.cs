@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
@@ -25,8 +26,8 @@ public class FakeStripeAccountService : IStripeAccountService
     public Task<string> GetOnboardingLinkAsync(string stripeId) =>
         Task.FromResult("https://fake-stripe-onboarding.local");
 
-    public Task<bool> IsUserVerifiedAsync(string stripeId) =>
-        Task.FromResult(true);
+    public Task<PayoutAccountStatus> GetAccountStatusAsync(string stripeId) =>
+        Task.FromResult(PayoutAccountStatus.Verified);
 
     public Task<string> GetPaymentMethodAsync(string stripeId) =>
         Task.FromResult("pm_fake_card");

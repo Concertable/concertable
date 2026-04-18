@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import stripeAccountApi from "@/api/stripeAccountApi";
 
-export function useStripeVerifiedQuery(enabled: boolean) {
+export function usePayoutAccountStatusQuery(enabled: boolean) {
   return useQuery({
-    queryKey: ["stripe", "verified"],
-    queryFn: stripeAccountApi.isVerified,
+    queryKey: ["stripe", "account-status"],
+    queryFn: stripeAccountApi.getAccountStatus,
     enabled,
+    staleTime: 0,
+    gcTime: 0,
   });
 }
 

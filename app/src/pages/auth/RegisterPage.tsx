@@ -7,6 +7,7 @@ import type { Role } from "@/types/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Select } from "@/components/Select";
 
 const schema = z.object({
@@ -63,7 +64,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" {...register("password")} />
+            <PasswordInput id="password" {...register("password")} />
             {errors.password && (
               <p className="text-destructive text-sm">
                 {errors.password.message}

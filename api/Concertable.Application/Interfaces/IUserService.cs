@@ -11,9 +11,5 @@ public interface IUserService
     Task<IUser> SaveLocationAsync(double latitude, double longitude);
     Task UpdateLocationAsync(UserEntity user, double latitude, double longitude);
 
-    /// <summary>Gets user DTO by id. Returns null if not found.</summary>
-    Task<IUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default);
-
-    /// <summary>Gets user entity by id. Returns null if not found.</summary>
     Task<UserEntity?> GetUserEntityByIdAsync(Guid userId, CancellationToken cancellationToken = default);
 }

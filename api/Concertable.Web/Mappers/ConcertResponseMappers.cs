@@ -53,6 +53,7 @@ public static class ConcertResponseMappers
         {
             Id = dto.Artist.Id,
             Name = dto.Artist.Name,
+            Avatar = dto.Artist.Avatar,
             Rating = dto.Artist.Rating,
             County = dto.Artist.County,
             Town = dto.Artist.Town,

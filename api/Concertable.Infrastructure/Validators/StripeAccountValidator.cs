@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Core.Enums;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Core.Entities;
 
@@ -19,6 +20,6 @@ public class StripeAccountValidator : IStripeValidationStrategy
     {
         var manager = currentUser.GetEntity<ManagerEntity>();
 
-        return await stripeAccountService.IsUserVerifiedAsync(manager.StripeAccountId);
+        return await stripeAccountService.GetAccountStatusAsync(manager.StripeAccountId) == PayoutAccountStatus.Verified;
     }
 }

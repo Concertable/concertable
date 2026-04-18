@@ -6,6 +6,7 @@ using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Concertable.Core.Enums;
 using Stripe;
 
 namespace Concertable.Infrastructure.Services.Payment;
@@ -94,10 +95,18 @@ public class StripeAccountService : IStripeAccountService
         return link.Url;
     }
 
-    public async Task<bool> IsUserVerifiedAsync(string stripeAccountId)
+    public async Task<PayoutAccountStatus> GetAccountStatusAsync(string stripeAccountId)
     {
         var account = await accountService.GetAsync(stripeAccountId);
-        return account.PayoutsEnabled && account.ChargesEnabled;
+
+        if (account.ChargesEnabled && account.PayoutsEnabled)
+            return PayoutAccountStatus.Verified;
+
+        if (account.Requirements?.CurrentlyDue?.Any() == true ||
+            account.Requirements?.PendingVerification?.Any() == true)
+            return PayoutAccountStatus.Pending;
+
+        return PayoutAccountStatus.NotVerified;
     }
 
     public async Task<string> GetPaymentMethodAsync(string stripeCustomerId)

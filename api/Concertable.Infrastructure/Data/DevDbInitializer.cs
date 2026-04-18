@@ -51,14 +51,14 @@ public class DevDbInitializer : IDbInitializer
         {
             var hash = passwordHasher.Hash(SeedData.TestPassword);
 
-            seedData.Admin = UserFactory.Admin("admin@concertable.com", hash);
+            seedData.Admin = UserFactory.Admin("admin@test.com", hash);
             seedData.Admin.Location = geometryProvider.CreatePoint(51.0, -0.5);
             seedData.Admin.Address = new Address("Leicestershire", "Loughborough");
             seedData.Admin.Avatar = "avatar.jpg";
             context.Users.Add(seedData.Admin);
 
             var customerLoc = locationFaker.Next();
-            seedData.Customer = UserFactory.Customer("customer@concertable.com", hash);
+            seedData.Customer = UserFactory.Customer("customer1@test.com", hash);
             seedData.Customer.StripeCustomerId = "cus_UIIy9Gbwfr3uAP";
             seedData.Customer.Location = geometryProvider.CreatePoint(customerLoc.Latitude, customerLoc.Longitude);
             seedData.Customer.Address = new Address(customerLoc.County, customerLoc.Town);
@@ -68,7 +68,7 @@ public class DevDbInitializer : IDbInitializer
             for (int i = 2; i <= 6; i++)
             {
                 var loc = locationFaker.Next();
-                var c = UserFactory.Customer($"customer{i}@concertable.com", hash);
+                var c = UserFactory.Customer($"customer{i}@test.com", hash);
                 c.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
                 c.Address = new Address(loc.County, loc.Town);
                 c.Avatar = "avatar.jpg";
@@ -76,7 +76,7 @@ public class DevDbInitializer : IDbInitializer
             }
 
             var am1Loc = locationFaker.Next();
-            seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@concertable.com", hash);
+            seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
             seedData.ArtistManager.StripeAccountId = "acct_1TJiMePysoXmht10";
             seedData.ArtistManager.StripeCustomerId = "cus_UIIy5mCilBtJbR";
             seedData.ArtistManager.Location = geometryProvider.CreatePoint(am1Loc.Latitude, am1Loc.Longitude);
@@ -85,7 +85,7 @@ public class DevDbInitializer : IDbInitializer
             context.Users.Add(seedData.ArtistManager);
 
             var am2Loc = locationFaker.Next();
-            var artistManager2 = UserFactory.ArtistManager("artistmanager2@concertable.com", hash);
+            var artistManager2 = UserFactory.ArtistManager("artistmanager2@test.com", hash);
             artistManager2.StripeAccountId = "acct_1TJiMoPupFslP2qz";
             artistManager2.StripeCustomerId = "cus_UIIy5415r69RmJ";
             artistManager2.Location = geometryProvider.CreatePoint(am2Loc.Latitude, am2Loc.Longitude);
@@ -96,7 +96,7 @@ public class DevDbInitializer : IDbInitializer
             for (int i = 3; i <= 35; i++)
             {
                 var loc = locationFaker.Next();
-                var am = UserFactory.ArtistManager($"artistmanager{i}@concertable.com", hash);
+                var am = UserFactory.ArtistManager($"artistmanager{i}@test.com", hash);
                 am.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
                 am.Address = new Address(loc.County, loc.Town);
                 am.Avatar = "avatar.jpg";
@@ -104,7 +104,7 @@ public class DevDbInitializer : IDbInitializer
             }
 
             var vm1Loc = locationFaker.Next();
-            seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@concertable.com", hash);
+            seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
             seedData.VenueManager1.StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
             seedData.VenueManager1.StripeCustomerId = "cus_UIIymKfHijbNVO";
             seedData.VenueManager1.Location = geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude);
@@ -113,7 +113,7 @@ public class DevDbInitializer : IDbInitializer
             context.Users.Add(seedData.VenueManager1);
 
             var vm2Loc = locationFaker.Next();
-            seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@concertable.com", hash);
+            seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
             seedData.VenueManager2.StripeAccountId = "acct_1TJiPJLLwGSDilbV";
             seedData.VenueManager2.StripeCustomerId = "cus_UIJ1qfgxYu624Q";
             seedData.VenueManager2.Location = geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude);
@@ -124,7 +124,7 @@ public class DevDbInitializer : IDbInitializer
             for (int i = 3; i <= 35; i++)
             {
                 var loc = locationFaker.Next();
-                var vm = UserFactory.VenueManager($"venuemanager{i}@concertable.com", hash);
+                var vm = UserFactory.VenueManager($"venuemanager{i}@test.com", hash);
                 vm.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
                 vm.Address = new Address(loc.County, loc.Town);
                 vm.Avatar = "avatar.jpg";
@@ -136,12 +136,12 @@ public class DevDbInitializer : IDbInitializer
 
         // Always resolve IDs from DB so subsequent blocks work on first run and restarts
         var usersByEmail = await context.Users.ToDictionaryAsync(u => u.Email, u => u.Id);
-        var customerIds = new List<Guid> { usersByEmail["customer@concertable.com"] };
-        for (int i = 2; i <= 6; i++) customerIds.Add(usersByEmail[$"customer{i}@concertable.com"]);
+        var customerIds = new List<Guid> { usersByEmail["customer1@test.com"] };
+        for (int i = 2; i <= 6; i++) customerIds.Add(usersByEmail[$"customer{i}@test.com"]);
         var artistManagerIds = new List<Guid>();
-        for (int i = 1; i <= 35; i++) artistManagerIds.Add(usersByEmail[$"artistmanager{i}@concertable.com"]);
-        var venueManagerIds = new List<Guid> { usersByEmail["venuemanager1@concertable.com"], usersByEmail["venuemanager2@concertable.com"] };
-        for (int i = 3; i <= 35; i++) venueManagerIds.Add(usersByEmail[$"venuemanager{i}@concertable.com"]);
+        for (int i = 1; i <= 35; i++) artistManagerIds.Add(usersByEmail[$"artistmanager{i}@test.com"]);
+        var venueManagerIds = new List<Guid> { usersByEmail["venuemanager1@test.com"], usersByEmail["venuemanager2@test.com"] };
+        for (int i = 3; i <= 35; i++) venueManagerIds.Add(usersByEmail[$"venuemanager{i}@test.com"]);
 
         await context.Genres.SeedIfEmptyAsync(async () =>
         {
@@ -541,9 +541,7 @@ public class DevDbInitializer : IDbInitializer
                 OpportunityApplicationFactory.Create(3, 47),
                 OpportunityApplicationFactory.Create(4, 48),
                 OpportunityApplicationFactory.Create(5, 49),
-                OpportunityApplicationFactory.Create(1, 50),
                 OpportunityApplicationFactory.Create(2, 50),
-                OpportunityApplicationFactory.Create(1, 51),
                 OpportunityApplicationFactory.Create(2, 51),
                 seedData.VenueHireApp,
                 OpportunityApplicationFactory.Create(2, 52),

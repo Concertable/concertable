@@ -16,32 +16,32 @@ namespace Concertable.Web.Controllers;
 [Route("api/[controller]")]
 public class DevController : ControllerBase
 {
-    [HttpGet("user")]
-    public async Task<ActionResult<IUser>> GetUser(
-        [FromQuery] Guid id,
-        [FromServices] IUserService userService)
-    {
-        var user = await userService.GetUserByIdAsync(id);
-        if (user is null) return NotFound();
-        return Ok(user);
-    }
+    //[HttpGet("user")]
+    //public async Task<ActionResult<IUser>> GetUser(
+    //    [FromQuery] Guid id,
+    //    [FromServices] IUserService userService)
+    //{
+    //    var user = await userService.GetUserByIdAsync(id);
+    //    if (user is null) return NotFound();
+    //    return Ok(user);
+    //}
 
-    [HttpGet("debug")]
-    public async Task<IActionResult> Debug(
-        [FromQuery] int applicationId,
-        [FromServices] ApplicationDbContext context)
-    {
-        var app = await context.OpportunityApplications
-            .Where(a => a.Id == applicationId)
-            .Select(a => new { a.Id, a.OpportunityId, a.Status })
-            .FirstOrDefaultAsync();
+    //[HttpGet("debug")]
+    //public async Task<IActionResult> Debug(
+    //    [FromQuery] int applicationId,
+    //    [FromServices] ApplicationDbContext context)
+    //{
+    //    var app = await context.OpportunityApplications
+    //        .Where(a => a.Id == applicationId)
+    //        .Select(a => new { a.Id, a.OpportunityId, a.Status })
+    //        .FirstOrDefaultAsync();
 
-        ContractEntity? contract = app != null
-            ? await context.Contracts.Where(c => c.Id == app.OpportunityId).FirstOrDefaultAsync()
-            : null;
+    //    ContractEntity? contract = app != null
+    //        ? await context.Contracts.Where(c => c.Id == app.OpportunityId).FirstOrDefaultAsync()
+    //        : null;
 
-        return Ok(new { app, contractExists = contract != null, contractType = contract?.ContractType.ToString() });
-    }
+    //    return Ok(new { app, contractExists = contract != null, contractType = contract?.ContractType.ToString() });
+    //}
 
     //[HttpPost("seed-stripe")]
     //public async Task<IActionResult> SeedStripe(
