@@ -37,6 +37,7 @@ public class ManagerPaymentService : IManagerPaymentService
         {
             PaymentMethodId = paymentMethodId,
             FromUserEmail = payer.Email,
+            StripeCustomerId = payer.StripeCustomerId,
             Amount = amount,
             DestinationStripeId = payee.StripeAccountId,
             Metadata = new Dictionary<string, string>

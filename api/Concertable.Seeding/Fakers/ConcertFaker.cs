@@ -6,11 +6,10 @@ namespace Concertable.Seeding.Fakers;
 
 public static class ConcertFaker
 {
-    public static Faker<ConcertEntity> GetFaker(int applicationId, string name, decimal price, int totalTickets, int availableTickets, DateTime? datePosted = null)
+    public static Faker<ConcertEntity> GetFaker(string name, decimal price, int totalTickets, int availableTickets, DateTime? datePosted = null)
     {
         var faker = new Faker<ConcertEntity>()
             .CustomInstantiator(_ => New<ConcertEntity>())
-            .RuleFor(e => e.ApplicationId, applicationId)
             .RuleFor(e => e.Name, f => name)
             .RuleFor(e => e.About, f => f.Lorem.Paragraph(7))
             .RuleFor(e => e.Price, price)

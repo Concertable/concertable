@@ -6,12 +6,16 @@ public class SeedDataResponse
     public SeededUser Customer { get; set; } = null!;
     public SeededVenueManager VenueManager1 { get; set; } = null!;
     public SeededArtistManager ArtistManager { get; set; } = null!;
-    public SeededApplication PostedFlatFeeApp { get; set; } = null!;
-    public SeededApplication PostedDoorSplitApp { get; set; } = null!;
-    public SeededApplication PostedVersusApp { get; set; } = null!;
-    public SeededApplication PostedVenueHireApp { get; set; } = null!;
-    public SeededApplication FinishedDoorSplitApp { get; set; } = null!;
-    public SeededApplication FinishedVersusApp { get; set; } = null!;
+    public SeededOpportunityApplication PendingFlatFeeApp { get; set; } = null!;
+    public SeededOpportunityApplication PendingVenueHireApp { get; set; } = null!;
+    public SeededOpportunityApplication PendingDoorSplitApp { get; set; } = null!;
+    public SeededOpportunityApplication PendingVersusApp { get; set; } = null!;
+    public SeededOpportunityApplication PostedFlatFeeApp { get; set; } = null!;
+    public SeededOpportunityApplication PostedDoorSplitApp { get; set; } = null!;
+    public SeededOpportunityApplication PostedVersusApp { get; set; } = null!;
+    public SeededOpportunityApplication PostedVenueHireApp { get; set; } = null!;
+    public SeededOpportunityApplication FinishedDoorSplitApp { get; set; } = null!;
+    public SeededOpportunityApplication FinishedVersusApp { get; set; } = null!;
 }
 
 public class SeededUser
@@ -21,21 +25,18 @@ public class SeededUser
 
 public class SeededVenueManager
 {
+    public string Email { get; set; } = null!;
     public string StripeAccountId { get; set; } = null!;
 }
 
 public class SeededArtistManager
 {
+    public string Email { get; set; } = null!;
     public string StripeAccountId { get; set; } = null!;
 }
 
-public class SeededApplication
+public class SeededOpportunityApplication
 {
     public int ApplicationId { get; set; }
-    public SeededConcert Concert { get; set; } = null!;
-}
-
-public class SeededConcert
-{
-    public int Id { get; set; }
+    public int? ConcertId { get; set; }
 }
