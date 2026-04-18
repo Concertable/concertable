@@ -1,7 +1,6 @@
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Concertable.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Services.Auth;
@@ -17,7 +16,7 @@ public class AdminRegister : IUserRegister
 
     public async Task RegisterAsync(RegisterRequest request, string passwordHash)
     {
-        var admin = new AdminEntity { Email = request.Email, Role = Role.Admin, PasswordHash = passwordHash };
+        var admin = AdminEntity.Create(request.Email, passwordHash);
         context.Users.Add(admin);
         await context.SaveChangesAsync();
     }

@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces.Search;
+using Concertable.Seeding;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Concertable.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -33,10 +33,9 @@ public class VenueRepositoryTests : IDisposable
 
     private void SeedData()
     {
-        context.Users.AddRange(
-            new VenueManagerEntity { Id = UserId, Email = "a@test.com", PasswordHash = string.Empty, Role = Role.VenueManager },
-            new VenueManagerEntity { Id = OtherUserId, Email = "b@test.com", PasswordHash = string.Empty, Role = Role.VenueManager }
-        );
+        var vm1 = VenueManagerEntity.Create("a@test.com", string.Empty);
+        var vm2 = VenueManagerEntity.Create("b@test.com", string.Empty);
+        context.Users.AddRange(vm1, vm2);
 
         context.Venues.AddRange(
             VenueEntity.Create(UserId, "Venue A", "About A", "a.jpg"),

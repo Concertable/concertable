@@ -2,6 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
+using Concertable.Seeding;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Mappers;
@@ -26,7 +27,6 @@ public class VersusContractMapperTests
     public void ToDto_ShouldMapAllFields()
     {
         var entity = VersusContractEntity.Create(200, 50, PaymentMethod.Cash);
-        entity.Id = 1;
 
         var result = (VersusContractDto)sut.ToDto(entity);
 

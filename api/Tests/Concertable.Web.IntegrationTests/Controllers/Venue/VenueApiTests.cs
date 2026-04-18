@@ -29,13 +29,13 @@ public class VenueApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         // Act
-        var response = await client.GetAsync($"/api/Venue/{TestConstants.VenueId}");
+        var response = await client.GetAsync($"/api/Venue/{fixture.SeedData.Venue.Id}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var venue = await response.Content.ReadAsync<VenueDetailsResponse>();
         Assert.NotNull(venue);
-        Assert.Equal(TestConstants.VenueId, venue.Id);
+        Assert.Equal(fixture.SeedData.Venue.Id, venue.Id);
         Assert.Equal("Test Venue", venue.Name);
     }
 
@@ -73,7 +73,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task GetDetailsForCurrentUser_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
 
         // Act
         var response = await client.GetAsync("/api/Venue/user");
@@ -86,7 +86,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task GetDetailsForCurrentUser_ShouldReturn200_WhenVenueExists()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
         var response = await client.GetAsync("/api/Venue/user");
@@ -102,7 +102,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task GetDetailsForCurrentUser_ShouldReturn404_WhenNoVenueExists()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager2);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager2);
 
         // Act
         var response = await client.GetAsync("/api/Venue/user");
@@ -133,7 +133,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Create_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
         var request = BuildCreateRequest();
 
         // Act
@@ -147,7 +147,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Create_ShouldReturn201_WithVenueDto_WhenValidRequest()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager2);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager2);
         var request = BuildCreateRequest();
 
         // Act
@@ -174,7 +174,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Create_ShouldReturn400_WhenGeocodingFails()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager2, o => o.UseFailingGeocoding());
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager2, o => o.UseFailingGeocoding());
         var request = BuildCreateRequest();
 
         // Act
@@ -188,7 +188,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Create_ShouldReturn400_WhenNameIsEmpty()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager2);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager2);
         var request = BuildCreateRequest(name: "");
 
         // Act
@@ -210,7 +210,7 @@ public class VenueApiTests : IAsyncLifetime
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -220,11 +220,11 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Update_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -234,11 +234,11 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Update_ShouldReturn403_WhenNotOwner()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager2);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager2);
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -248,7 +248,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Update_ShouldReturn404_WhenVenueDoesNotExist()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildUpdateRequest();
 
         // Act
@@ -262,11 +262,11 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Update_ShouldReturn200_WithUpdatedVenueDto_WhenValidRequest()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildUpdateRequest();
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -282,11 +282,11 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Update_ShouldReturn400_WhenNameIsEmpty()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildUpdateRequest(name: "");
 
         // Act
-        var response = await client.PutAsync($"/api/Venue/{TestConstants.VenueId}", await request.ToFormContent());
+        var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -303,7 +303,7 @@ public class VenueApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         // Act
-        var response = await client.PatchAsync($"/api/Venue/{TestConstants.VenueId}/approve", null);
+        var response = await client.PatchAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/approve", null);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -313,10 +313,10 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Approve_ShouldReturn403_WhenNotAdmin()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var response = await client.PatchAsync($"/api/Venue/{TestConstants.VenueId}/approve", null);
+        var response = await client.PatchAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/approve", null);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -326,7 +326,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Approve_ShouldReturn404_WhenVenueDoesNotExist()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.Admin);
+        var client = fixture.CreateClient(fixture.SeedData.Admin);
 
         // Act
         var response = await client.PatchAsync("/api/Venue/99999/approve", null);
@@ -339,14 +339,14 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Approve_ShouldReturn204_AndApproveVenue()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.Admin);
+        var client = fixture.CreateClient(fixture.SeedData.Admin);
 
         // Act
-        var response = await client.PatchAsync($"/api/Venue/{TestConstants.VenueId}/approve", null);
+        var response = await client.PatchAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/approve", null);
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var venue = await fixture.CreateClient().GetAsync<VenueDto>($"/api/Venue/{TestConstants.VenueId}");
+        var venue = await fixture.CreateClient().GetAsync<VenueDto>($"/api/Venue/{fixture.SeedData.Venue.Id}");
         Assert.True(venue!.Approved);
     }
 
@@ -358,10 +358,10 @@ public class VenueApiTests : IAsyncLifetime
     public async Task IsOwner_ShouldReturnTrue_WhenOwner()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var response = await client.GetAsync($"/api/Venue/is-owner/{TestConstants.VenueId}");
+        var response = await client.GetAsync($"/api/Venue/is-owner/{fixture.SeedData.Venue.Id}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -373,7 +373,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task IsOwner_ShouldReturnFalse_WhenNotOwner()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
         var response = await client.GetAsync("/api/Venue/is-owner/99999");

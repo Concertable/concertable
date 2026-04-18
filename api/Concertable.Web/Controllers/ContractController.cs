@@ -21,11 +21,4 @@ public class ContractController : ControllerBase
         return Ok(await contractService.GetByOpportunityIdAsync(opportunityId));
     }
 
-    [Authorize(Roles = "VenueManager")]
-    [HttpPost("{opportunityId}")]
-    public async Task<IActionResult> Create(int opportunityId, [FromBody] IContract contract)
-    {
-        await contractService.CreateAsync(contract, opportunityId);
-        return Created();
-    }
 }

@@ -1,6 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Core.Entities;
+using Concertable.Core.Enums;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Factories;
@@ -32,7 +33,7 @@ public class TransactionMapperTests
     [Fact]
     public void ToDto_WithTicketEntity_ReturnsTicketTransactionDto()
     {
-        var entity = new TicketTransactionEntity { PaymentIntentId = "pi_test", CreatedBy = "test" };
+        var entity = TicketTransactionEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "pi_test", 0, TransactionStatus.Complete, 1);
 
         var result = sut.ToDto(entity);
 
@@ -42,7 +43,7 @@ public class TransactionMapperTests
     [Fact]
     public void ToDto_WithSettlementEntity_ReturnsSettlementTransactionDto()
     {
-        var entity = new SettlementTransactionEntity { PaymentIntentId = "pi_test", CreatedBy = "test" };
+        var entity = SettlementTransactionEntity.Create(Guid.NewGuid(), Guid.NewGuid(), "pi_test", 0, TransactionStatus.Complete, 1);
 
         var result = sut.ToDto(entity);
 

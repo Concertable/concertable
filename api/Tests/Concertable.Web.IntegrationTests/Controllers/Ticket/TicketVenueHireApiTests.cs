@@ -27,8 +27,8 @@ public class TicketVenueHireApiTests : IAsyncLifetime
     public async Task Purchase_ShouldCreateTicketAndReduceAvailabilityAfterWebhook()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.Customer);
-        var request = BuildPurchaseRequest(TestConstants.PostedVenueHire.ConcertId);
+        var client = fixture.CreateClient(fixture.SeedData.Customer);
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedVenueHireApp.Concert!.Id);
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
@@ -40,25 +40,25 @@ public class TicketVenueHireApiTests : IAsyncLifetime
         Assert.NotNull(result!.TransactionId);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Single(tickets!);
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{TestConstants.PostedVenueHire.ConcertId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{fixture.SeedData.PostedVenueHireApp.Concert!.Id}");
         Assert.Equal(99, concert!.AvailableTickets);
         var (userId, _) = Assert.Single(fixture.NotificationService.TicketPurchased);
-        Assert.Equal(TestConstants.Customer.Id.ToString(), userId);
-        Assert.Equal(TestConstants.Customer.Id.ToString(), fixture.StripePaymentClient.LastMetadata["fromUserId"]);
-        Assert.Equal(TestConstants.ArtistManager.Id.ToString(), fixture.StripePaymentClient.LastMetadata["toUserId"]);
+        Assert.Equal(fixture.SeedData.Customer.Id.ToString(), userId);
+        Assert.Equal(fixture.SeedData.Customer.Id.ToString(), fixture.StripePaymentClient.LastMetadata["fromUserId"]);
+        Assert.Equal(fixture.SeedData.ArtistManager.Id.ToString(), fixture.StripePaymentClient.LastMetadata["toUserId"]);
         var transactions = await client.GetAsync<Pagination<ITransaction>>("/api/Transaction");
         var transaction = Assert.Single(transactions!.Data);
         Assert.Equal(TransactionStatus.Complete, transaction.Status);
-        Assert.Equal(TestConstants.Customer.Id, transaction.FromUserId);
-        Assert.Equal(TestConstants.ArtistManager.Id, transaction.ToUserId);
+        Assert.Equal(fixture.SeedData.Customer.Id, transaction.FromUserId);
+        Assert.Equal(fixture.SeedData.ArtistManager.Id, transaction.ToUserId);
     }
 
     [Fact]
     public async Task Purchase_ShouldIgnoreDuplicateWebhookEvent()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.Customer);
-        var request = BuildPurchaseRequest(TestConstants.PostedVenueHire.ConcertId);
+        var client = fixture.CreateClient(fixture.SeedData.Customer);
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedVenueHireApp.Concert!.Id);
 
         // Act
         await client.PostAsync("/api/Ticket/purchase", request);
@@ -75,8 +75,8 @@ public class TicketVenueHireApiTests : IAsyncLifetime
     public async Task Purchase_ShouldReturnError_WhenPaymentFails()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.Customer, o => o.UseFailingPayment());
-        var request = BuildPurchaseRequest(TestConstants.PostedVenueHire.ConcertId);
+        var client = fixture.CreateClient(fixture.SeedData.Customer, o => o.UseFailingPayment());
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedVenueHireApp.Concert!.Id);
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
@@ -86,7 +86,7 @@ public class TicketVenueHireApiTests : IAsyncLifetime
         Assert.Empty(fixture.NotificationService.TicketPurchased);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Empty(tickets!);
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{TestConstants.PostedVenueHire.ConcertId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{fixture.SeedData.PostedVenueHireApp.Concert!.Id}");
         Assert.Equal(100, concert!.AvailableTickets);
         var transactions = await client.GetAsync<Pagination<ITransaction>>("/api/Transaction");
         Assert.Empty(transactions!.Data);

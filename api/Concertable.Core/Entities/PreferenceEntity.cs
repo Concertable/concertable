@@ -8,7 +8,7 @@ public class PreferenceEntity : IIdEntity, IHasGenreJoins<GenrePreferenceEntity>
 {
     private PreferenceEntity() { }
 
-    public int Id { get; set; }
+    public int Id { get; private set; }
     public Guid UserId { get; private set; }
     public double RadiusKm { get; private set; }
     public CustomerEntity User { get; set; } = null!;

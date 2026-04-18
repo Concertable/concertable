@@ -44,7 +44,7 @@ public class MessageRepository : Repository<MessageEntity>, IMessageRepository
             .ToListAsync();
 
         foreach (var message in messages)
-            message.Read = true;
+            message.MarkAsRead();
 
         await context.SaveChangesAsync();
     }

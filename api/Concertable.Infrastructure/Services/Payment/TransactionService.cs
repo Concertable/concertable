@@ -38,7 +38,7 @@ public class TransactionService : ITransactionService
         if (entity is null)
             return;
 
-        entity.Status = TransactionStatus.Complete;
+        entity.Complete();
         await purchaseRepository.SaveChangesAsync();
     }
 

@@ -13,7 +13,6 @@ public class FlatFeeContractEntity : ContractEntity
     public static FlatFeeContractEntity Create(decimal fee, PaymentMethod paymentMethod)
     {
         ValidateFee(fee);
-
         return new() { Fee = fee, PaymentMethod = paymentMethod };
     }
 

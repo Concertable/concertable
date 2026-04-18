@@ -24,12 +24,12 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     public async Task Accept_ShouldReturn400_WhenAlreadyAccepted()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.VenueHire.ApplicationId}", (object?)null);
+        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
-        var response = await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.VenueHire.ApplicationId}", (object?)null);
+        var response = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -39,20 +39,20 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     public async Task Accept_ShouldSettleAndCreateDraftConcertAndNotifyArtist()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.VenueHire.ApplicationId}", (object?)null);
+        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
-        var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.VenueHire.ApplicationId}");
+        var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.VenueHireApp.Id}");
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.VenueHire.ApplicationId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.VenueHireApp.Id}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
         var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);
-        Assert.Equal(TestConstants.ArtistManager.Id.ToString(), userId);
+        Assert.Equal(fixture.SeedData.ArtistManager.Id.ToString(), userId);
         Assert.NotNull(payload);
     }
 
@@ -60,10 +60,10 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     public async Task Accept_ShouldIgnoreDuplicateWebhookEvent()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.VenueHire.ApplicationId}", (object?)null);
+        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
         await fixture.StripeClient.SendWebhookAsync();
 
@@ -75,15 +75,15 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     public async Task Accept_ShouldNotSettle_WhenWebhookFails()
     {
         // Arrange
-        fixture.CreateClient(TestConstants.VenueManager, o => o.UseFailingStripe());
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingStripe());
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.VenueHire.ApplicationId}", (object?)null);
+        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
-        var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.VenueHire.ApplicationId}");
+        var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.VenueHireApp.Id}");
         Assert.Equal(ApplicationStatus.AwaitingPayment, application!.Status);
         Assert.Empty(fixture.NotificationService.DraftCreated);
     }
@@ -92,14 +92,14 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     public async Task Accept_ShouldNotSettle_WhenPaymentFails()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager, o => o.UseFailingPayment());
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingPayment());
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.VenueHire.ApplicationId}", (object?)null);
+        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
 
         // Assert
-        var application = await fixture.CreateClient(TestConstants.VenueManager)
-            .GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.VenueHire.ApplicationId}");
+        var application = await fixture.CreateClient(fixture.SeedData.VenueManager1)
+            .GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.VenueHireApp.Id}");
         Assert.Equal(ApplicationStatus.AwaitingPayment, application!.Status);
         Assert.Empty(fixture.NotificationService.DraftCreated);
     }

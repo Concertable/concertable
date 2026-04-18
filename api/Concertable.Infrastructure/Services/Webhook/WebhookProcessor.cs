@@ -36,11 +36,7 @@ public class WebhookProcessor : IWebhookProcessor
             if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
                 return;
 
-            await stripeEventRepository.AddEventAsync(new StripeEventEntity
-            {
-                EventId = stripeEvent.Id,
-                EventProcessedAt = timeProvider.GetUtcNow().DateTime
-            });
+            await stripeEventRepository.AddEventAsync(StripeEventEntity.Create(stripeEvent.Id, timeProvider.GetUtcNow().DateTime));
 
             if (intent.Status != "succeeded")
                 return;

@@ -1,13 +1,16 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Core.Entities.Contracts;
-using Concertable.Infrastructure.Data;
-using Concertable.Infrastructure.Data.SeedData;
 using Concertable.Core.Entities;
+using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Core.ValueObjects;
+using Concertable.Infrastructure.Data;
+using Concertable.Seeding.Fakers;
 using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Seeding;
+using Concertable.Seeding.Extensions;
+using Concertable.Seeding.Factories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,189 +19,162 @@ namespace Concertable.Web.IntegrationTests.Infrastructure;
 public class TestDbInitializer : IDbInitializer
 {
     private readonly ApplicationDbContext context;
-    private readonly TimeProvider timeProvider;
     private readonly IGeometryProvider geometryProvider;
     private readonly IPasswordHasher passwordHasher;
+    private readonly SeedData seed;
+    private readonly ILocationFaker locationFaker;
+    private readonly TimeProvider timeProvider;
 
-    public TestDbInitializer(ApplicationDbContext context, TimeProvider timeProvider, [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider, IPasswordHasher passwordHasher)
+    public TestDbInitializer(
+        ApplicationDbContext context,
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
+        IPasswordHasher passwordHasher,
+        SeedData seed,
+        ILocationFaker locationFaker,
+        TimeProvider timeProvider)
     {
         this.context = context;
-        this.timeProvider = timeProvider;
         this.geometryProvider = geometryProvider;
         this.passwordHasher = passwordHasher;
+        this.seed = seed;
+        this.locationFaker = locationFaker;
+        this.timeProvider = timeProvider;
     }
 
     public async Task InitializeAsync()
     {
         await context.Database.MigrateAsync();
 
-        if (!await context.Genres.AnyAsync())
-        {
-            context.Genres.AddRange(
-                new GenreEntity { Name = "Rock" },
-                new GenreEntity { Name = "Jazz" },
-                new GenreEntity { Name = "Hip-Hop" },
-                new GenreEntity { Name = "Electronic" }
-            );
-            await context.SaveChangesAsync();
-        }
+        var now = timeProvider.GetUtcNow().UtcDateTime;
 
-        if (!await context.Users.AnyAsync())
+        await context.Genres.SeedIfEmptyAsync(async () =>
         {
+            seed.Rock = new GenreEntity { Name = "Rock" };
+            seed.Jazz = new GenreEntity { Name = "Jazz" };
+            seed.HipHop = new GenreEntity { Name = "Hip-Hop" };
+            seed.Electronic = new GenreEntity { Name = "Electronic" };
+
+            context.Genres.AddRange(seed.Rock, seed.Jazz, seed.HipHop, seed.Electronic);
+            await context.SaveChangesAsync();
+        });
+
+        await context.Users.SeedIfEmptyAsync(async () =>
+        {
+            var hash = passwordHasher.Hash(SeedData.TestPassword);
+
+            var vm1Loc = locationFaker.Next();
+            seed.VenueManager1 = VenueManagerEntity.Create("venuemanager1@test.com", hash);
+            seed.VenueManager1.VerifyEmail();
+            seed.VenueManager1.StripeAccountId = "acct_test_venuemanager";
+            seed.VenueManager1.StripeCustomerId = "cus_test_venuemanager";
+            seed.VenueManager1.Location = geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude);
+            seed.VenueManager1.Address = new Address(vm1Loc.County, vm1Loc.Town);
+
+            var vm2Loc = locationFaker.Next();
+            seed.VenueManager2 = VenueManagerEntity.Create("venuemanager2@test.com", hash);
+            seed.VenueManager2.VerifyEmail();
+            seed.VenueManager2.StripeAccountId = "acct_test_venuemanager2";
+            seed.VenueManager2.StripeCustomerId = "cus_test_venuemanager2";
+            seed.VenueManager2.Location = geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude);
+            seed.VenueManager2.Address = new Address(vm2Loc.County, vm2Loc.Town);
+
+            seed.ArtistManager = ArtistManagerEntity.Create("artistmanager1@test.com", hash);
+            seed.ArtistManager.VerifyEmail();
+            seed.ArtistManager.StripeAccountId = "acct_test_artistmanager";
+            seed.ArtistManager.StripeCustomerId = "cus_test_artistmanager";
+            seed.ArtistManager.Location = geometryProvider.CreatePoint(51, 0);
+
+            seed.Customer = CustomerEntity.Create("customer@test.com", hash);
+            seed.Customer.VerifyEmail();
+            seed.Customer.Location = geometryProvider.CreatePoint(51, 0);
+
+            seed.Admin = AdminEntity.Create("admin@test.com", hash);
+            seed.Admin.VerifyEmail();
+            seed.Admin.Location = geometryProvider.CreatePoint(51, 0);
+
             context.Users.AddRange(
-                new VenueManagerEntity
-                {
-                    Id = TestConstants.VenueManager.Id,
-                    Email = "venuemanager1@test.com",
-                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
-                    IsEmailVerified = true,
-                    Role = Role.VenueManager,
-                    StripeAccountId = "acct_test_venuemanager",
-                    StripeCustomerId = "cus_test_venuemanager",
-                    Address = new Address(LocationList.GetLocations()[0].County, LocationList.GetLocations()[0].Town),
-                    Location = geometryProvider.CreatePoint(LocationList.GetLocations()[0].Latitude, LocationList.GetLocations()[0].Longitude)
-                },
-                new VenueManagerEntity
-                {
-                    Id = TestConstants.VenueManager2.Id,
-                    Email = "venuemanager2@test.com",
-                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
-                    IsEmailVerified = true,
-                    Role = Role.VenueManager,
-                    StripeAccountId = "acct_test_venuemanager2",
-                    StripeCustomerId = "cus_test_venuemanager2",
-                    Address = new Address(LocationList.GetLocations()[1].County, LocationList.GetLocations()[1].Town),
-                    Location = geometryProvider.CreatePoint(LocationList.GetLocations()[1].Latitude, LocationList.GetLocations()[1].Longitude)
-                },
-                new ArtistManagerEntity
-                {
-                    Id = TestConstants.ArtistManager.Id,
-                    Email = "artistmanager1@test.com",
-                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
-                    IsEmailVerified = true,
-                    Role = Role.ArtistManager,
-                    StripeAccountId = "acct_test_artistmanager",
-                    StripeCustomerId = "cus_test_artistmanager",
-                    Location = geometryProvider.CreatePoint(51, 0)
-                },
-                new CustomerEntity
-                {
-                    Id = TestConstants.Customer.Id,
-                    Email = "customer@test.com",
-                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
-                    IsEmailVerified = true,
-                    Role = Role.Customer,
-                    Location = geometryProvider.CreatePoint(51, 0)
-                },
-                new UserEntity
-                {
-                    Id = TestConstants.Admin.Id,
-                    Email = "admin@test.com",
-                    PasswordHash = passwordHasher.Hash(TestConstants.TestPassword),
-                    IsEmailVerified = true,
-                    Role = Role.Admin,
-                    Location = geometryProvider.CreatePoint(51, 0)
-                }
-            );
-            await context.SaveChangesAsync();
-        }
+                seed.VenueManager1,
+                seed.VenueManager2,
+                seed.ArtistManager,
+                seed.Customer,
+                seed.Admin);
 
-        if (!await context.Artists.AnyAsync())
+            await context.SaveChangesAsync();
+        });
+
+        await context.Artists.SeedIfEmptyAsync(async () =>
         {
-            context.Artists.Add(ArtistEntity.Create(
-                TestConstants.ArtistManager.Id,
+            seed.Artist = ArtistEntity.Create(
+                seed.ArtistManager.Id,
                 "Test Artist",
                 "Test Artist About",
                 "artist.jpg",
-                [TestConstants.GenreId]));
+                [seed.Rock.Id]);
+
+            context.Artists.Add(seed.Artist);
             await context.SaveChangesAsync();
-        }
+        });
 
-        if (!await context.Venues.AnyAsync())
+        await context.Venues.SeedIfEmptyAsync(async () =>
         {
-            var venue = VenueEntity.Create(TestConstants.VenueManager.Id, "Test Venue", "Test", "test.jpg");
+            seed.Venue = VenueEntity.Create(
+                seed.VenueManager1.Id,
+                "Test Venue",
+                "Test Venue About",
+                "venue.jpg");
 
-            var opportunities = new[]
-            {
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(2), DateTime.UtcNow.AddMonths(2).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(3), DateTime.UtcNow.AddMonths(3).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(4), DateTime.UtcNow.AddMonths(4).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(5), DateTime.UtcNow.AddMonths(5).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(6), DateTime.UtcNow.AddMonths(6).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(7), DateTime.UtcNow.AddMonths(7).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(8), DateTime.UtcNow.AddMonths(8).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(9), DateTime.UtcNow.AddMonths(9).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(10), DateTime.UtcNow.AddMonths(10).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [TestConstants.GenreId]),
-                OpportunityEntity.Create(1, new DateRange(DateTime.UtcNow.AddMonths(11), DateTime.UtcNow.AddMonths(11).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [TestConstants.GenreId]),
-            };
-
-            foreach (var opportunity in opportunities)
-                venue.Opportunities.Add(opportunity);
-
-            context.Venues.Add(venue);
+            context.Venues.Add(seed.Venue);
             await context.SaveChangesAsync();
-        }
+        });
 
-        if (!await context.OpportunityApplications.AnyAsync())
+        await context.Opportunities.SeedIfEmptyAsync(async () =>
         {
-            var draftConcert = ConcertEntity.CreateDraft(0, "Draft Concert", "Draft Concert About", []);
+            seed.Opportunities =
+            [
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(2), now.AddMonths(2).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(3), now.AddMonths(3).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(4), now.AddMonths(4).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(5), now.AddMonths(5).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(6), now.AddMonths(6).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(7), now.AddMonths(7).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(8), now.AddMonths(8).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(9), now.AddMonths(9).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(10), now.AddMonths(10).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityEntity.Create(seed.Venue.Id, new DateRange(now.AddMonths(11), now.AddMonths(11).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [seed.Rock.Id]),
+            ];
 
-            var unsettledConcert = ConcertEntity.CreateDraft(0, "Unsettled Concert", "Unsettled Concert About", []);
+            context.Opportunities.AddRange(seed.Opportunities);
+            await context.SaveChangesAsync();
+        });
 
-            var postedFlatFeeConcert = ConcertEntity.CreateDraft(0, "Posted FlatFee Concert", "Posted FlatFee Concert About", []);
-            postedFlatFeeConcert.Post("Posted FlatFee Concert", "Posted FlatFee Concert About", 10.00m, 100, DateTime.UtcNow);
+        await context.OpportunityApplications.SeedIfEmptyAsync(async () =>
+        {
+            var opps = seed.Opportunities;
 
-            var postedDoorSplitConcert = ConcertEntity.CreateDraft(0, "Posted DoorSplit Concert", "Posted DoorSplit Concert About", []);
-            postedDoorSplitConcert.Post("Posted DoorSplit Concert", "Posted DoorSplit Concert About", 10.00m, 100, DateTime.UtcNow);
-
-            var postedVersusConcert = ConcertEntity.CreateDraft(0, "Posted Versus Concert", "Posted Versus Concert About", []);
-            postedVersusConcert.Post("Posted Versus Concert", "Posted Versus Concert About", 10.00m, 100, DateTime.UtcNow);
-
-            var postedVenueHireConcert = ConcertEntity.CreateDraft(0, "Posted VenueHire Concert", "Posted VenueHire Concert About", []);
-            postedVenueHireConcert.Post("Posted VenueHire Concert", "Posted VenueHire Concert About", 10.00m, 100, DateTime.UtcNow);
-
-            var flatFeeApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.FlatFee.OpportunityId);
-
-            var settledApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.Settled.OpportunityId);
-            settledApp.Accept(draftConcert);
-
-            var awaitingPaymentApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.AwaitingPayment.OpportunityId);
-            awaitingPaymentApp.Accept(unsettledConcert);
-            awaitingPaymentApp.AwaitPayment();
-
-            var versusApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.Versus.OpportunityId);
-
-            var doorSplitApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.DoorSplit.OpportunityId);
-
-            var venueHireApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.VenueHire.OpportunityId);
-
-            var postedFlatFeeApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedFlatFee.OpportunityId);
-            postedFlatFeeApp.Accept(postedFlatFeeConcert);
-
-            var postedDoorSplitApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedDoorSplit.OpportunityId);
-            postedDoorSplitApp.Accept(postedDoorSplitConcert);
-
-            var postedVersusApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedVersus.OpportunityId);
-            postedVersusApp.Accept(postedVersusConcert);
-
-            var postedVenueHireApp = OpportunityApplicationEntity.Create(TestConstants.ArtistId, TestConstants.PostedVenueHire.OpportunityId);
-            postedVenueHireApp.Accept(postedVenueHireConcert);
+            seed.FlatFeeApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[0].Id);
+            seed.SettledApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[1].Id, "Draft Concert", "Draft Concert About", []);
+            seed.AwaitingPaymentApp = OpportunityApplicationFactory.AwaitingPayment(seed.Artist.Id, opps[2].Id, "Unsettled Concert", "Unsettled Concert About", []);
+            seed.VersusApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[3].Id);
+            seed.DoorSplitApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[4].Id);
+            seed.VenueHireApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[5].Id);
+            seed.PostedFlatFeeApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[6].Id, "Posted FlatFee Concert", "Posted FlatFee Concert About", [], 10.00m, 100, now);
+            seed.PostedDoorSplitApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[7].Id, "Posted DoorSplit Concert", "Posted DoorSplit Concert About", [], 10.00m, 100, now);
+            seed.PostedVersusApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[8].Id, "Posted Versus Concert", "Posted Versus Concert About", [], 10.00m, 100, now);
+            seed.PostedVenueHireApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[9].Id, "Posted VenueHire Concert", "Posted VenueHire Concert About", [], 10.00m, 100, now);
 
             context.OpportunityApplications.AddRange(
-                flatFeeApp,
-                settledApp,
-                awaitingPaymentApp,
-                versusApp,
-                doorSplitApp,
-                venueHireApp,
-                postedFlatFeeApp,
-                postedDoorSplitApp,
-                postedVersusApp,
-                postedVenueHireApp
-            );
+                seed.FlatFeeApp,
+                seed.SettledApp,
+                seed.AwaitingPaymentApp,
+                seed.VersusApp,
+                seed.DoorSplitApp,
+                seed.VenueHireApp,
+                seed.PostedFlatFeeApp,
+                seed.PostedDoorSplitApp,
+                seed.PostedVersusApp,
+                seed.PostedVenueHireApp);
 
             await context.SaveChangesAsync();
-        }
+        });
     }
-
 }

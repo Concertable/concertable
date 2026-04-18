@@ -1,4 +1,3 @@
-using Concertable.Core.Exceptions;
 using Concertable.Core.Interfaces;
 
 namespace Concertable.Core.Extensions;
@@ -13,7 +12,10 @@ public static class GenreJoinExtensions
         var newGenreIds = genreIds.ToHashSet();
 
         if (newGenreIds.Count == 0)
-            throw new DomainException("At least one genre is required.");
+        {
+            entity.GenreJoins.Clear();
+            return;
+        }
 
         entity.GenreJoins.RemoveWhere(x => !newGenreIds.Contains(x.GenreId));
 

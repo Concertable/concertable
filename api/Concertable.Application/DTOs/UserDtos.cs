@@ -3,7 +3,7 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Application.DTOs;
 
-public record LoginDto(IUser User, string AccessToken, string RefreshToken, int ExpiresInSeconds);
+public record LoginResponse(IUser User, string AccessToken, string RefreshToken, int ExpiresInSeconds);
 
 public record AdminDto : IUser
 {

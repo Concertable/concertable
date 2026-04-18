@@ -9,17 +9,7 @@ public class TicketTransactionMapper : ITransactionMapper
     public TransactionEntity ToEntity(ITransaction dto)
     {
         var d = (TicketTransactionDto)dto;
-        return new TicketTransactionEntity
-        {
-            CreatedBy = d.FromUserId.ToString(),
-            ConcertId = d.ConcertId,
-            FromUserId = d.FromUserId,
-            ToUserId = d.ToUserId,
-            PaymentIntentId = d.PaymentIntentId,
-            Amount = d.Amount,
-            Status = d.Status,
-            CreatedAt = d.CreatedAt
-        };
+        return TicketTransactionEntity.Create(d.FromUserId, d.ToUserId, d.PaymentIntentId, d.Amount, d.Status, d.ConcertId);
     }
 
     public ITransaction ToDto(TransactionEntity entity)

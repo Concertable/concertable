@@ -10,7 +10,7 @@ public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntit
 {
     private OpportunityEntity() { }
 
-    public int Id { get; set; }
+    public int Id { get; private set; }
     public int VenueId { get; set; }
     public DateRange Period { get; private set; } = null!;
     public VenueEntity Venue { get; set; } = null!;

@@ -27,7 +27,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<LoginDto>> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         return Ok(await authService.LoginAsync(request));
     }
@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public async Task<ActionResult<LoginDto>> Refresh([FromBody] RefreshTokenRequest request)
+    public async Task<ActionResult<LoginResponse>> Refresh([FromBody] RefreshTokenRequest request)
     {
         return Ok(await authService.RefreshTokenAsync(request.RefreshToken));
     }

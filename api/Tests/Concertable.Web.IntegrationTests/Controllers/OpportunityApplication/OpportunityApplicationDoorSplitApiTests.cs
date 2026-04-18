@@ -23,34 +23,41 @@ public class OpportunityApplicationDoorSplitApiTests : IAsyncLifetime
     [Fact]
     public async Task Accept_ShouldReturn400_WhenAlreadyAccepted()
     {
-        // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
-        // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.DoorSplit.ApplicationId}", (object?)null);
-        var response = await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.DoorSplit.ApplicationId}", (object?)null);
+        await client.PostAsync(
+            $"/api/OpportunityApplication/accept/{fixture.SeedData.DoorSplitApp.Id}",
+            (object?)null);
 
-        // Assert
+        var response = await client.PostAsync(
+            $"/api/OpportunityApplication/accept/{fixture.SeedData.DoorSplitApp.Id}",
+            (object?)null);
+
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
     public async Task Accept_ShouldCreateDraftConcertAndNotifyArtist()
     {
-        // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
-        // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.DoorSplit.ApplicationId}", (object?)null);
+        await client.PostAsync(
+            $"/api/OpportunityApplication/accept/{fixture.SeedData.DoorSplitApp.Id}",
+            (object?)null);
 
-        // Assert
-        var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{TestConstants.DoorSplit.ApplicationId}");
+        var application = await client.GetAsync<OpportunityApplicationDto>(
+            $"/api/OpportunityApplication/{fixture.SeedData.DoorSplitApp.Id}");
+
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.DoorSplit.ApplicationId}");
+
+        var concert = await client.GetAsync<ConcertDetailsResponse>(
+            $"/api/Concert/application/{fixture.SeedData.DoorSplitApp.Id}");
+
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
+
         var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);
-        Assert.Equal(TestConstants.ArtistManager.Id.ToString(), userId);
+        Assert.Equal(fixture.SeedData.ArtistManager.Id.ToString(), userId);
         Assert.NotNull(payload);
     }
 }

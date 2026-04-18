@@ -38,8 +38,8 @@ public class OpportunityApiTests : IAsyncLifetime
     public async Task Create_ShouldReturnCreatedOpportunity(IContract contract)
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
-        var request = BuildRequest(contract);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        var request = BuildRequest(contract, fixture.SeedData.Rock.Id);
 
         // Act
         var response = await client.PostAsync("/api/Opportunity", request);
@@ -50,17 +50,17 @@ public class OpportunityApiTests : IAsyncLifetime
         Assert.NotNull(opportunity.Id);
         Assert.Equal(request.StartDate, opportunity.StartDate);
         Assert.Equal(request.EndDate, opportunity.EndDate);
-        Assert.Contains(opportunity.Genres, g => g.Id == TestConstants.GenreId);
+        Assert.Contains(opportunity.Genres, g => g.Id == fixture.SeedData.Rock.Id);
     }
 
     [Fact]
     public async Task Create_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
 
         // Act
-        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest());
+        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest(fixture.SeedData.Rock.Id));
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -73,7 +73,7 @@ public class OpportunityApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         // Act
-        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest());
+        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest(fixture.SeedData.Rock.Id));
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -91,11 +91,11 @@ public class OpportunityApiTests : IAsyncLifetime
 
         // Act
         var result = await client.GetAsync<Pagination<OpportunityDto>>(
-            $"/api/Opportunity/active/venue/{TestConstants.VenueId}");
+            $"/api/Opportunity/active/venue/{fixture.SeedData.Venue.Id}");
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains(result.Data, o => o.Id == TestConstants.FlatFee.OpportunityId);
+        Assert.Contains(result.Data, o => o.Id == fixture.SeedData.Opportunities[0].Id);
     }
 
     #endregion

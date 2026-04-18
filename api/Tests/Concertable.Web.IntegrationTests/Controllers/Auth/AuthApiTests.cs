@@ -137,7 +137,7 @@ public class AuthApiTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var loginResponse = await response.Content.ReadAsync<LoginDto>();
+        var loginResponse = await response.Content.ReadAsync<LoginResponse>();
         Assert.NotNull(loginResponse);
         Assert.NotNull(loginResponse.AccessToken);
         Assert.NotNull(loginResponse.RefreshToken);
@@ -374,7 +374,7 @@ public class AuthApiTests : IAsyncLifetime
     public async Task ChangePassword_ShouldReturn400_WhenCurrentPasswordIsWrong()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.Customer);
+        var client = fixture.CreateClient(fixture.SeedData.Customer);
 
         // Act
         var response = await client.PostAsync("/api/Auth/change-password", new ChangePasswordRequest
@@ -406,9 +406,9 @@ public class AuthApiTests : IAsyncLifetime
         await client.PostAsJsonEnsureSuccessAsync("/api/Auth/verify-email", new VerifyEmailRequest { Token = token! });
 
         var loginResponse = await (await client.PostAsync("/api/Auth/login", new LoginRequest { Email = email, Password = password }))
-            .Content.ReadAsync<LoginDto>();
+            .Content.ReadAsync<LoginResponse>();
 
-        var authenticatedClient = fixture.CreateClient(new TestUser(loginResponse!.User.Id, Role.Customer));
+        var authenticatedClient = fixture.CreateClient(loginResponse!.User.Id, Role.Customer);
 
         // Act
         var response = await authenticatedClient.PostAsync("/api/Auth/change-password", new ChangePasswordRequest

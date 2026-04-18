@@ -6,9 +6,9 @@ namespace Concertable.Application.Interfaces;
 public interface IAuthService
 {
     Task RegisterAsync(RegisterRequest request);
-    Task<LoginDto> LoginAsync(LoginRequest request);
+    Task<LoginResponse> LoginAsync(LoginRequest request);
     Task LogoutAsync(string refreshToken);
-    Task<LoginDto> RefreshTokenAsync(string refreshToken);
+    Task<LoginResponse> RefreshTokenAsync(string refreshToken);
     Task SendVerificationEmailAsync(string email);
     Task VerifyEmailAsync(string token);
     Task ForgotPasswordAsync(string email);

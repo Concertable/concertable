@@ -2,7 +2,6 @@ using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Concertable.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Services.Auth;
@@ -20,7 +19,7 @@ public class ArtistManagerRegister : IUserRegister
 
     public async Task RegisterAsync(RegisterRequest request, string passwordHash)
     {
-        var manager = new ArtistManagerEntity { Email = request.Email, Role = Role.ArtistManager, PasswordHash = passwordHash };
+        var manager = ArtistManagerEntity.Create(request.Email, passwordHash);
         context.Users.Add(manager);
         await stripeAccountService.AddCustomerAsync(manager);
         await stripeAccountService.AddConnectAccountAsync(manager);

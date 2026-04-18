@@ -62,7 +62,7 @@ public class AuthService : IAuthService
         await SendVerificationEmailAsync(request.Email);
     }
 
-    public async Task<LoginDto> LoginAsync(LoginRequest request)
+    public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = await context.Users
             .FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -85,12 +85,12 @@ public class AuthService : IAuthService
 
         if (token is not null)
         {
-            token.IsRevoked = true;
+            token.Revoke();
             await context.SaveChangesAsync();
         }
     }
 
-    public async Task<LoginDto> RefreshTokenAsync(string refreshToken)
+    public async Task<LoginResponse> RefreshTokenAsync(string refreshToken)
     {
         var token = await context.RefreshTokens
             .Include(rt => rt.User)
@@ -99,7 +99,7 @@ public class AuthService : IAuthService
         if (token is null || !token.IsActive)
             throw new UnauthorizedException("Invalid or expired refresh token.");
 
-        token.IsRevoked = true;
+        token.Revoke();
         await context.SaveChangesAsync();
 
         var user = await userLoader.LoadAsync(token.User);
@@ -117,12 +117,7 @@ public class AuthService : IAuthService
 
         var tokenValue = tokenService.CreateRefreshToken();
 
-        context.EmailVerificationTokens.Add(new EmailVerificationTokenEntity
-        {
-            UserId = user.Id,
-            Token = tokenValue,
-            Expires = DateTime.UtcNow.AddHours(24)
-        });
+        context.EmailVerificationTokens.Add(EmailVerificationTokenEntity.Create(user.Id, tokenValue, DateTime.UtcNow.AddHours(24)));
 
         await context.SaveChangesAsync();
 
@@ -139,8 +134,8 @@ public class AuthService : IAuthService
         if (verificationToken is null || !verificationToken.IsActive)
             throw new BadRequestException("Invalid or expired verification token.");
 
-        verificationToken.IsUsed = true;
-        verificationToken.User.IsEmailVerified = true;
+        verificationToken.Use();
+        verificationToken.User.VerifyEmail();
 
         await context.SaveChangesAsync();
     }
@@ -155,12 +150,7 @@ public class AuthService : IAuthService
 
         var tokenValue = tokenService.CreateRefreshToken();
 
-        context.PasswordResetTokens.Add(new PasswordResetTokenEntity
-        {
-            UserId = user.Id,
-            Token = tokenValue,
-            Expires = DateTime.UtcNow.AddHours(1)
-        });
+        context.PasswordResetTokens.Add(PasswordResetTokenEntity.Create(user.Id, tokenValue, DateTime.UtcNow.AddHours(1)));
 
         await context.SaveChangesAsync();
 
@@ -178,7 +168,7 @@ public class AuthService : IAuthService
             throw new BadRequestException("Invalid or expired password reset token.");
 
         resetToken.User.PasswordHash = passwordHasher.Hash(request.NewPassword);
-        resetToken.IsUsed = true;
+        resetToken.Use();
 
         await context.SaveChangesAsync();
     }
@@ -194,22 +184,17 @@ public class AuthService : IAuthService
         await context.SaveChangesAsync();
     }
 
-    private async Task<LoginDto> IssueTokensAsync(UserEntity user)
+    private async Task<LoginResponse> IssueTokensAsync(UserEntity user)
     {
         var dto = userMapper.ToDto(user);
         var accessToken = tokenService.CreateAccessToken(user.Id, user.Email, user.Role);
         var refreshTokenValue = tokenService.CreateRefreshToken();
 
-        context.RefreshTokens.Add(new RefreshTokenEntity
-        {
-            UserId = user.Id,
-            Token = refreshTokenValue,
-            Expires = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays)
-        });
+        context.RefreshTokens.Add(RefreshTokenEntity.Create(user.Id, refreshTokenValue, DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays)));
 
         await context.SaveChangesAsync();
 
         var expiresInSeconds = authSettings.AccessTokenExpirationMinutes * 60;
-        return new LoginDto(dto, accessToken, refreshTokenValue, expiresInSeconds);
+        return new LoginResponse(dto, accessToken, refreshTokenValue, expiresInSeconds);
     }
 }

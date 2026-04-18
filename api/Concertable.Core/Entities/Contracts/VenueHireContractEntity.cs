@@ -13,7 +13,6 @@ public class VenueHireContractEntity : ContractEntity
     public static VenueHireContractEntity Create(decimal hireFee, PaymentMethod paymentMethod)
     {
         ValidateFee(hireFee);
-
         return new() { HireFee = hireFee, PaymentMethod = paymentMethod };
     }
 

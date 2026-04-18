@@ -9,17 +9,7 @@ public class SettlementTransactionMapper : ITransactionMapper
     public TransactionEntity ToEntity(ITransaction dto)
     {
         var d = (SettlementTransactionDto)dto;
-        return new SettlementTransactionEntity
-        {
-            CreatedBy = d.FromUserId.ToString(),
-            ApplicationId = d.ApplicationId,
-            FromUserId = d.FromUserId,
-            ToUserId = d.ToUserId,
-            PaymentIntentId = d.PaymentIntentId,
-            Amount = d.Amount,
-            Status = d.Status,
-            CreatedAt = d.CreatedAt
-        };
+        return SettlementTransactionEntity.Create(d.FromUserId, d.ToUserId, d.PaymentIntentId, d.Amount, d.Status, d.ApplicationId);
     }
 
     public ITransaction ToDto(TransactionEntity entity)

@@ -30,30 +30,13 @@ public class MessageService : IMessageService
 
     public async Task SendAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null)
     {
-        var message = new MessageEntity
-        {
-            Content = content,
-            FromUserId = fromUserId,
-            ToUserId = toUserId,
-            Action = action,
-            SentDate = timeProvider.GetUtcNow().DateTime,
-            Read = false
-        };
-
+        var message = MessageEntity.Create(fromUserId, toUserId, content, timeProvider.GetUtcNow().DateTime, action);
         await messageRepository.AddAsync(message);
     }
 
     public async Task SendAndSaveAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null)
     {
-        var message = new MessageEntity
-        {
-            Content = content,
-            FromUserId = fromUserId,
-            ToUserId = toUserId,
-            Action = action,
-            SentDate = timeProvider.GetUtcNow().DateTime,
-            Read = false
-        };
+        var message = MessageEntity.Create(fromUserId, toUserId, content, timeProvider.GetUtcNow().DateTime, action);
 
         await messageRepository.AddAsync(message);
         await messageRepository.SaveChangesAsync();

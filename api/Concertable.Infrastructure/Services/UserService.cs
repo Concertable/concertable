@@ -58,10 +58,8 @@ public class UserService : IUserService
     {
         var user = currentUser.GetEntity();
 
-        user.Location = geometryProvider.CreatePoint(latitude, longitude);
-
         var locationDto = await geocodingService.GetLocationAsync(latitude, longitude);
-
+        user.Location = geometryProvider.CreatePoint(latitude, longitude);
         user.Address = new Address(locationDto.County, locationDto.Town);
 
         userRepsitory.Update(user);
@@ -73,8 +71,8 @@ public class UserService : IUserService
     public async Task UpdateLocationAsync(UserEntity user, double latitude, double longitude)
     {
         var location = await geocodingService.GetLocationAsync(latitude, longitude);
-        user.Address = new Address(location.County, location.Town);
         user.Location = geometryProvider.CreatePoint(latitude, longitude);
+        user.Address = new Address(location.County, location.Town);
     }
 
     public async Task<IUser?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)

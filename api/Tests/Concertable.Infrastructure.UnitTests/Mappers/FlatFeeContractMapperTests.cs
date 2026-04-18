@@ -25,7 +25,6 @@ public class FlatFeeContractMapperTests
     public void ToDto_ShouldMapAllFields()
     {
         var entity = FlatFeeContractEntity.Create(500, PaymentMethod.Cash);
-        entity.Id = 1;
 
         var result = (FlatFeeContractDto)sut.ToDto(entity);
 

@@ -3,6 +3,7 @@ using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
 using Concertable.Infrastructure.Data;
+using Concertable.Seeding.Fakers;
 using Concertable.Web.Extensions;
 using Concertable.Web.Hubs;
 using Concertable.Web.Middleware;
@@ -66,7 +67,11 @@ var services = builder.Services;
 
 services.AddInfrastructure(builder.Configuration);
 if (!builder.Environment.IsEnvironment("Testing"))
-    services.AddScoped<IDbInitializer, ApplicationDbInitializer>();
+{
+    services.AddScoped<IDbInitializer, DevDbInitializer>();
+    services.AddScoped<Concertable.Seeding.SeedData>();
+    services.AddScoped<ILocationFaker, LocationFaker>();
+}
 services.AddServices(builder.Configuration);
 services.AddRepositories();
 services.AddSearch();

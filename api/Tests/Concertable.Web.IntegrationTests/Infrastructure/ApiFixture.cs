@@ -1,8 +1,12 @@
 using Concertable.Application.Interfaces;
+using Concertable.Core.Enums;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+using Concertable.Core.Entities;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Services.Payment;
+using Concertable.Seeding;
+using Concertable.Seeding.Fakers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -23,6 +27,7 @@ public class ApiFixture : IAsyncLifetime
     public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
+    public SeedData SeedData { get; private set; } = null!;
 
 public async Task InitializeAsync()
     {
@@ -61,6 +66,8 @@ public async Task InitializeAsync()
                 services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));
                 services.AddScoped<IGeocodingService, MockGeocodingService>();
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
+                services.AddScoped<SeedData>();
+                services.AddScoped<ILocationFaker, LocationFaker>();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {
@@ -95,9 +102,10 @@ public async Task InitializeAsync()
         using var scope = factory.Services.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
         await initializer.InitializeAsync();
+        SeedData = scope.ServiceProvider.GetRequiredService<SeedData>();
     }
 
-    public HttpClient CreateClient(TestUser user)
+    public HttpClient CreateClient(UserEntity user)
     {
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, user.Id.ToString());
@@ -105,7 +113,7 @@ public async Task InitializeAsync()
         return client;
     }
 
-    public HttpClient CreateClient(TestUser user, Action<TestClientOptions> configure)
+    public HttpClient CreateClient(UserEntity user, Action<TestClientOptions> configure)
     {
         var options = new TestClientOptions();
         configure(options);
@@ -118,11 +126,19 @@ public async Task InitializeAsync()
                 b.ConfigureTestServices(options.Services);
         });
 
-        StripeClient =customFactory.Services.GetRequiredService<IStripeClient>();
+        StripeClient = customFactory.Services.GetRequiredService<IStripeClient>();
 
         var client = customFactory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, user.Id.ToString());
         client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, user.Role.ToString());
+        return client;
+    }
+
+    public HttpClient CreateClient(Guid userId, Role role)
+    {
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, userId.ToString());
+        client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, role.ToString());
         return client;
     }
 

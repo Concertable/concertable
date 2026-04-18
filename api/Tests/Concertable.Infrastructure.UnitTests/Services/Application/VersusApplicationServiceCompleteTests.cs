@@ -22,12 +22,18 @@ public class VersusConcertWorkflowCompleteTests
 
     private readonly OpportunityApplicationEntity application;
     private readonly VersusContractEntity contract = VersusContractEntity.Create(200, 50, PaymentMethod.Cash);
-    private readonly VenueManagerEntity venueManager = new() { Id = Guid.NewGuid(), Email = "venue@test.com", StripeCustomerId = "cus_venue", Role = Role.VenueManager };
-    private readonly ArtistManagerEntity artistManager = new() { Id = Guid.NewGuid(), Email = "artist@test.com", StripeAccountId = "acct_artist", Role = Role.ArtistManager };
+    private readonly VenueManagerEntity venueManager;
+    private readonly ArtistManagerEntity artistManager;
 
     public VersusConcertWorkflowCompleteTests()
     {
         application = ApplicationBuilders.BuildAccepted();
+
+        venueManager = VenueManagerEntity.Create("venue@test.com", string.Empty);
+        venueManager.StripeCustomerId = "cus_venue";
+
+        artistManager = ArtistManagerEntity.Create("artist@test.com", string.Empty);
+        artistManager.StripeAccountId = "acct_artist";
 
         applicationRepository = new Mock<IOpportunityApplicationRepository>();
         contractRepository = new Mock<IContractRepository>();

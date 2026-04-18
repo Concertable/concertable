@@ -8,15 +8,15 @@ namespace Concertable.Web.IntegrationTests.Controllers.Opportunity;
 
 public static class OpportunityRequestBuilders
 {
-    public static OpportunityRequest BuildRequest(IContract contract) =>
+    public static OpportunityRequest BuildRequest(IContract contract, int rockGenreId) =>
         new()
         {
             StartDate = DateTime.UtcNow.AddMonths(1),
             EndDate = DateTime.UtcNow.AddMonths(1).AddHours(3),
-            GenreIds = [TestConstants.GenreId],
+            GenreIds = [rockGenreId],
             Contract = contract
         };
 
-    public static OpportunityRequest BuildDefaultRequest() =>
-        BuildRequest(new FlatFeeContractDto { PaymentMethod = PaymentMethod.Cash, Fee = 500 });
+    public static OpportunityRequest BuildDefaultRequest(int rockGenreId) =>
+        BuildRequest(new FlatFeeContractDto { PaymentMethod = PaymentMethod.Cash, Fee = 500 }, rockGenreId);
 }

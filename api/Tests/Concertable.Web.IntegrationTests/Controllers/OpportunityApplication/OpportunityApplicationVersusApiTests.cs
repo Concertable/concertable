@@ -22,17 +22,17 @@ public class OpportunityApplicationVersusApiTests : IAsyncLifetime
     public async Task Accept_ShouldCreateDraftConcertAndNotifyArtist()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.Versus.ApplicationId}", (object?)null);
+        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VersusApp.Id}", (object?)null);
 
         // Assert
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{TestConstants.Versus.ApplicationId}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.VersusApp.Id}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
         var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);
-        Assert.Equal(TestConstants.ArtistManager.Id.ToString(), userId);
+        Assert.Equal(fixture.SeedData.ArtistManager.Id.ToString(), userId);
         Assert.NotNull(payload);
     }
 }

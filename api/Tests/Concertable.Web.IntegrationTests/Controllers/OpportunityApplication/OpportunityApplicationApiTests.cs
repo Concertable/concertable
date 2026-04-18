@@ -23,10 +23,10 @@ public class OpportunityApplicationApiTests : IAsyncLifetime
     public async Task Accept_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
 
         // Act
-        var response = await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.FlatFee.ApplicationId}", (object?)null);
+        var response = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -36,10 +36,10 @@ public class OpportunityApplicationApiTests : IAsyncLifetime
     public async Task Accept_ShouldReturn400_WhenCalledByDifferentVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager2);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager2);
 
         // Act
-        var response = await client.PostAsync($"/api/OpportunityApplication/accept/{TestConstants.FlatFee.ApplicationId}", (object?)null);
+        var response = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

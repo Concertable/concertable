@@ -23,71 +23,69 @@ public class ConcertApiTests : IAsyncLifetime
     [Fact]
     public async Task Post_ShouldReturn401_WhenUnauthenticated()
     {
-        // Arrange
         var client = fixture.CreateClient();
         var request = BuildPostRequest();
 
-        // Act
-        var response = await client.PutAsync($"/api/Concert/post/{TestConstants.Settled.ConcertId}", request);
+        var response = await client.PutAsync(
+            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            request);
 
-        // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
     public async Task Post_ShouldReturn403_WhenNotVenueManager()
     {
-        // Arrange
-        var client = fixture.CreateClient(TestConstants.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
         var request = BuildPostRequest();
 
-        // Act
-        var response = await client.PutAsync($"/api/Concert/post/{TestConstants.Settled.ConcertId}", request);
+        var response = await client.PutAsync(
+            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            request);
 
-        // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
     public async Task Post_ShouldReturn400_WhenApplicationNotSettled()
     {
-        // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildPostRequest();
 
-        // Act
-        var response = await client.PutAsync($"/api/Concert/post/{TestConstants.AwaitingPayment.ConcertId}", request);
+        var response = await client.PutAsync(
+            $"/api/Concert/post/{fixture.SeedData.AwaitingPaymentApp.Concert!.Id}",
+            request);
 
-        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
     public async Task Post_ShouldReturn204_WhenPostedSuccessfully()
     {
-        // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildPostRequest();
 
-        // Act
-        var response = await client.PutAsync($"/api/Concert/post/{TestConstants.Settled.ConcertId}", request);
+        var response = await client.PutAsync(
+            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            request);
 
-        // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]
     public async Task Post_ShouldReturn400_WhenAlreadyPosted()
     {
-        // Arrange
-        var client = fixture.CreateClient(TestConstants.VenueManager);
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildPostRequest();
-        await client.PutAsync($"/api/Concert/post/{TestConstants.Settled.ConcertId}", request);
 
-        // Act
-        var response = await client.PutAsync($"/api/Concert/post/{TestConstants.Settled.ConcertId}", request);
+        await client.PutAsync(
+            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            request);
 
-        // Assert
+        var response = await client.PutAsync(
+            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            request);
+
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 

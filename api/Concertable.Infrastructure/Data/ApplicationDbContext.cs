@@ -223,6 +223,5 @@ public class ApplicationDbContext : DbContext
             .WithOne(o => o.Contract)
             .HasForeignKey<ContractEntity>(c => c.Id)
             .OnDelete(DeleteBehavior.Cascade);
-
     }
 }
