@@ -3,6 +3,7 @@ using Concertable.Core.Enums;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Core.Entities;
+using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Infrastructure.Services.Payment;
@@ -23,12 +24,14 @@ public class ApiFixture : IAsyncLifetime
 {
     private SqlFixture sqlFixture = null!;
     private WebApplicationFactory<Program> factory = null!;
+    private IServiceScope? scope;
 
     public IMockNotificationService NotificationService { get; } = new MockNotificationService();
     public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
+    public ApplicationDbContext DbContext { get; private set; } = null!;
 
 public async Task InitializeAsync()
     {
@@ -91,6 +94,7 @@ public async Task InitializeAsync()
 
     public async Task DisposeAsync()
     {
+        scope?.Dispose();
         await factory.DisposeAsync();
         await sqlFixture.DisposeAsync();
     }
@@ -102,10 +106,12 @@ public async Task InitializeAsync()
             resettable.Reset();
         StripeClient = factory.Services.GetRequiredService<IStripeClient>();
 
-        using var scope = factory.Services.CreateScope();
+        scope?.Dispose();
+        scope = factory.Services.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
         await initializer.InitializeAsync();
         SeedData = scope.ServiceProvider.GetRequiredService<SeedData>();
+        DbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     }
 
     public HttpClient CreateClient(UserEntity user)

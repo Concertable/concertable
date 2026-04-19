@@ -3,6 +3,7 @@ using Concertable.Application.DTOs;
 using Concertable.Web.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Core.Enums;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Controllers.OpportunityApplication;
@@ -89,7 +90,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldNotConfirmBooking_WhenPaymentFails()
+    public async Task Accept_ShouldNotCreateDraft_WhenPaymentFails()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingPayment());
@@ -98,9 +99,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
         await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
 
         // Assert
-        var application = await fixture.CreateClient(fixture.SeedData.VenueManager1)
-            .GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.VenueHireApp.Id}");
-        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
-        Assert.Empty(fixture.NotificationService.DraftCreated);
+        var draft = await fixture.DbContext.Concerts.FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.VenueHireApp.Id);
+        Assert.Null(draft);
     }
 }
