@@ -124,8 +124,8 @@ public class ConcertService : IConcertService
 
         await concertRepository.SaveChangesAsync();
 
-        var concertHeaderDto = concertEntity.ToHeaderDto();
-        concertHeaderDto.Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating;
+        var concertHeaderDto = concertEntity.ToSnapshotDto();
+        concertHeaderDto = concertHeaderDto with { Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating };
 
         var location = concertEntity.Booking.Application.Opportunity.Venue.User.Location;
 
@@ -156,31 +156,6 @@ public class ConcertService : IConcertService
             .ToList();
 
         return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = userIdsToNotify };
-    }
-
-    public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync()
-    {
-        var user = currentUser.GetOrDefault();
-
-        if (user is null)
-            return [];
-
-        var preferences = await preferenceService.GetByUserIdAsync(user.Id);
-
-        if (preferences is null)
-            return [];
-
-        var concertParams = new ConcertParams
-        {
-            Latitude = user.Latitude,
-            Longitude = user.Longitude,
-            RadiusKm = preferences.RadiusKm,
-            GenreIds = preferences.Genres.Select(g => g.Id).ToArray(),
-            OrderByRecent = true,
-            Take = 10
-        };
-
-        return await concertHeaderModule.GetRecommendedAsync(concertParams);
     }
 
     public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id) =>

@@ -1,4 +1,4 @@
-namespace Concertable.Shared;
+namespace Concertable.Search.Application.Interfaces;
 
 public interface ISearchSpecification<TEntity>
 {

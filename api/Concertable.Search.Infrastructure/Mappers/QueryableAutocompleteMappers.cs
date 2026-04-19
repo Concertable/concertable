@@ -1,9 +1,8 @@
-using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
 
-namespace Concertable.Infrastructure.Mappers;
+namespace Concertable.Search.Infrastructure.Mappers;
 
-public static class QueryableAutocompleteMappers
+internal static class QueryableAutocompleteMappers
 {
     public static IQueryable<AutocompleteDto> ToAutocompleteDtos(this IQueryable<ArtistEntity> query) =>
         query.Select(a => new AutocompleteDto { Id = a.Id, Name = a.Name, Type = "artist" });

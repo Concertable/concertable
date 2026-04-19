@@ -1,7 +1,6 @@
-using Concertable.Core.Interfaces;
 using FluentValidation;
 
-namespace Concertable.Application.Validators.Parameters;
+namespace Concertable.Search.Application.Validators;
 
 public class GeoParamsValidator : AbstractValidator<IGeoParams>
 {

@@ -1,4 +1,5 @@
-using Concertable.Core.Interfaces;
+using Concertable.Search.Application;
+using Concertable.Search.Contracts;
 using Xunit;
 
 namespace Concertable.Core.UnitTests.Extensions;

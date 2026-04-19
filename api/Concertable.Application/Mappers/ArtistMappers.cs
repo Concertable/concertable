@@ -27,28 +27,6 @@ public static class ArtistMappers
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
     };
 
-    public static ArtistHeaderDto ToHeaderDto(this ArtistEntity artist) => new()
-    {
-        Id = artist.Id,
-        Name = artist.Name,
-        ImageUrl = artist.User.Avatar,
-        County = artist.User.Address?.County ?? string.Empty,
-        Town = artist.User.Address?.Town ?? string.Empty
-    };
-
-    public static ArtistHeaderDto ToHeaderDto(this ArtistDto artistDto) => new()
-    {
-        Id = artistDto.Id,
-        Name = artistDto.Name,
-        ImageUrl = artistDto.Avatar ?? string.Empty,
-        County = artistDto.County,
-        Town = artistDto.Town
-    };
-
-
     public static IEnumerable<ArtistDto> ToDtos(this IEnumerable<ArtistEntity> artists) =>
         artists.Select(a => a.ToDto());
-
-    public static IEnumerable<ArtistHeaderDto> ToHeaderDtos(this IEnumerable<ArtistEntity> artists) =>
-        artists.Select(a => a.ToHeaderDto());
 }

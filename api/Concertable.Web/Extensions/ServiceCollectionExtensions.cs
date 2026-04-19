@@ -39,7 +39,6 @@ using Concertable.Infrastructure.Services.Review;
 using Concertable.Infrastructure.Services.Settlement;
 using Concertable.Infrastructure.Services.Webhook;
 using Concertable.Infrastructure.Settings;
-using Concertable.Infrastructure.Specifications;
 using Concertable.Infrastructure.Validators;
 using Concertable.Search.Infrastructure.Extensions;
 using Concertable.Web.Authorization;

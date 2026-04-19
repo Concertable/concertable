@@ -1,7 +1,6 @@
 using Concertable.Core.Enums;
-using Concertable.Core.Interfaces;
 
-namespace Concertable.Core.Parameters;
+namespace Concertable.Search.Contracts;
 
 public class SearchParams : IPageParams, IGeoParams, ISortParams
 {

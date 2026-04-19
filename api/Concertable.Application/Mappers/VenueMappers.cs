@@ -29,28 +29,6 @@ public static class VenueMappers
         Avatar = venue.User.Avatar,
     };
 
-    public static VenueHeaderDto ToHeaderDto(this VenueEntity venue) => new()
-    {
-        Id = venue.Id,
-        Name = venue.Name,
-        ImageUrl = venue.User.Avatar,
-        County = venue.User.Address?.County ?? string.Empty,
-        Town = venue.User.Address?.Town ?? string.Empty
-    };
-
-    public static VenueHeaderDto ToHeaderDto(this VenueDto venueDto) => new()
-    {
-        Id = venueDto.Id,
-        Name = venueDto.Name,
-        ImageUrl = venueDto.Avatar ?? string.Empty,
-        County = venueDto.County,
-        Town = venueDto.Town
-    };
-
-
     public static IEnumerable<VenueDto> ToDtos(this IEnumerable<VenueEntity> venues) =>
         venues.Select(v => v.ToDto());
-
-    public static IEnumerable<VenueHeaderDto> ToHeaderDtos(this IEnumerable<VenueEntity> venues) =>
-        venues.Select(v => v.ToHeaderDto());
 }

@@ -1,10 +1,8 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
-using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Helpers;
-using Concertable.Infrastructure.Mappers;
 using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

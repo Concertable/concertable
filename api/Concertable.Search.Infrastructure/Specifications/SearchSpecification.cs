@@ -1,4 +1,4 @@
-namespace Concertable.Shared;
+namespace Concertable.Search.Infrastructure.Specifications;
 
 public class SearchSpecification<TEntity> : ISearchSpecification<TEntity>
     where TEntity : IEntity, IHasName

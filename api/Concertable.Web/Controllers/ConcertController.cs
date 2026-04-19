@@ -100,7 +100,7 @@ public class ConcertController : ControllerBase
         [FromQuery] string? name,
         [FromQuery] string? imageUrl)
     {
-        var concertHeaderDto = new ConcertHeaderDto
+        var concertSnapshot = new ConcertSnapshot
         {
             Id = 1,
             Name = name ?? "The Rockers performing at the Grand Venue",
@@ -113,7 +113,7 @@ public class ConcertController : ControllerBase
             DatePosted = DateTime.UtcNow
         };
 
-        await notificationService.ConcertPostedAsync(userId.ToString(), concertHeaderDto);
+        await notificationService.ConcertPostedAsync(userId.ToString(), concertSnapshot);
 
         return Ok($"SignalR test message sent to User {userId}");
     }

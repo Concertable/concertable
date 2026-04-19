@@ -7,24 +7,6 @@ namespace Concertable.Infrastructure.Mappers;
 
 public static class QueryableArtistMappers
 {
-    public static IQueryable<ArtistHeaderDto> ToHeaderDtos(
-        this IQueryable<ArtistEntity> query,
-        IQueryable<RatingAggregate> ratings) =>
-        from a in query.AsExpandable()
-        where a.User.Address != null
-        join r in ratings on a.Id equals r.EntityId into rg
-        from rating in rg.DefaultIfEmpty()
-        select new ArtistHeaderDto
-        {
-            Id = a.Id,
-            Name = a.Name,
-            ImageUrl = a.User.Avatar,
-            Rating = rating.AverageRating,
-            County = a.User.Address!.County,
-            Town = a.User.Address!.Town,
-            Genres = GenreSelectors.FromArtist.Invoke(a)
-        };
-
     public static IQueryable<ArtistSummaryDto> ToSummaryDto(
         this IQueryable<ArtistEntity> query,
         IQueryable<RatingAggregate> ratings) =>

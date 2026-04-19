@@ -1,14 +1,12 @@
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.Interfaces.Search;
 using Concertable.Infrastructure.Expressions;
 using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Search.Application;
 using Microsoft.Extensions.DependencyInjection;
-using Concertable.Core.Interfaces;
-using Concertable.Core.Parameters;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
-namespace Concertable.Infrastructure.Specifications;
+namespace Concertable.Search.Infrastructure.Specifications;
 
 public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
     where TEntity : class, IIdEntity, ILocatable<TEntity>

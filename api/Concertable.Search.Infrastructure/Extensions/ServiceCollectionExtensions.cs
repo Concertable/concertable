@@ -1,13 +1,13 @@
 using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Infrastructure.Specifications;
 using Concertable.Search.Application;
-using Concertable.Search.Contracts;
+using Concertable.Search.Application.Validators;
 using Concertable.Search.Application.Interfaces;
 using Concertable.Search.Infrastructure.Repositories;
 using Concertable.Search.Application.Services;
 using Concertable.Search.Infrastructure.Specifications;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Search.Infrastructure.Extensions;
@@ -56,6 +56,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IHeaderModule, SearchModule>();
         services.AddScoped<IAutocompleteModule, AutocompleteModule>();
+
+        services.AddValidatorsFromAssemblyContaining<SearchParamsValidator>();
 
         return services;
     }
