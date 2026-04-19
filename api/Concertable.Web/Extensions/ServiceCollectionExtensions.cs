@@ -185,6 +185,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
         services.AddScoped<IVenueService, VenueService>();
         services.AddScoped<IArtistService, ArtistService>();
+        services.AddScoped<IConcertDraftService, ConcertDraftService>();
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
         services.AddScoped<IMessageService, MessageService>();

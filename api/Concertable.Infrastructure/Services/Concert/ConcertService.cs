@@ -10,6 +10,7 @@ using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
+using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -24,11 +25,9 @@ public class ConcertService : IConcertService
     private readonly IEmailService emailService;
     private readonly IConcertReviewRepository concertReviewRepository;
     private readonly IPreferenceService preferenceService;
-    private readonly IOpportunityRepository opportunityRepository;
     private readonly IGeometryCalculator geometryCalculator;
-    private readonly IOpportunityApplicationRepository applicationRepository;
+    private readonly IConcertDraftService concertDraftService;
     private readonly IConcertNotificationService concertNotificationService;
-    private readonly IApplicationAcceptHandler acceptHandler;
     private readonly TimeProvider timeProvider;
 
     public ConcertService(
@@ -42,10 +41,8 @@ public class ConcertService : IConcertService
         IConcertReviewRepository concertReviewRepository,
         IPreferenceService preferenceService,
         IGeometryCalculator geometryCalculator,
-        IOpportunityRepository opportunityRepository,
-        IOpportunityApplicationRepository applicationRepository,
+        IConcertDraftService concertDraftService,
         IConcertNotificationService concertNotificationService,
-        IApplicationAcceptHandler acceptHandler,
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
@@ -56,12 +53,10 @@ public class ConcertService : IConcertService
         this.messageService = messageService;
         this.emailService = emailService;
         this.concertReviewRepository = concertReviewRepository;
-        this.applicationRepository = applicationRepository;
         this.preferenceService = preferenceService;
-        this.opportunityRepository = opportunityRepository;
         this.geometryCalculator = geometryCalculator;
+        this.concertDraftService = concertDraftService;
         this.concertNotificationService = concertNotificationService;
-        this.acceptHandler = acceptHandler;
         this.timeProvider = timeProvider;
     }
 
@@ -83,36 +78,8 @@ public class ConcertService : IConcertService
             ?? throw new NotFoundException("Concert not found");
     }
 
-    public async Task<int> CreateDraftAsync(int applicationId)
-    {
-        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
-            ?? throw new NotFoundException("Concert application not found");
-
-        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Opportunity not found");
-
-        var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
-        var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId);
-
-        var matchingGenreIds = opportunityGenreIds.Any()
-            ? artistGenreIds.Intersect(opportunityGenreIds)
-            : artistGenreIds;
-
-        if (!matchingGenreIds.Any())
-            throw new BadRequestException("The artist does not match any genres required by the concert opportunity");
-
-        var concert = ConcertEntity.CreateDraft(
-            applicationId,
-            $"{artist.Name} performing at {venue.Name}",
-            venue.About,
-            matchingGenreIds);
-
-        await acceptHandler.HandleAsync(applicationId, concert);
-
-        await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concert.Id);
-
-        return concert.Id;
-    }
+    public Task<Result<ConcertEntity>> CreateDraftAsync(int applicationId) =>
+        concertDraftService.CreateDraftAsync(applicationId);
 
     public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
     {

@@ -119,7 +119,8 @@
       "Bash(perl:*)",
       "Bash(dotnet new *)",
       "WebFetch(domain:stripe.com)",
-      "WebFetch(domain:docs.stripe.com)"
+      "WebFetch(domain:docs.stripe.com)",
+      "Bash(git -C \"C:/Users/TommySeery/source/repos/Concertable\" status --short)"
     ]
   }
 }

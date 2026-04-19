@@ -24,8 +24,7 @@ public class FlatFeeConcertWorkflowCompleteTests
             new Mock<IManagerRepository<VenueManagerEntity>>().Object,
             new Mock<IManagerRepository<ArtistManagerEntity>>().Object,
             new Mock<IManagerPaymentService>().Object,
-            new Mock<IConcertService>().Object,
-            new Mock<IApplicationNotificationService>().Object);
+            new Mock<IConcertService>().Object);
     }
 
     [Fact]

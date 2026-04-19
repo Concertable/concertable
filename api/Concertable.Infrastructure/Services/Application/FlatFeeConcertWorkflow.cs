@@ -16,7 +16,6 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
     private readonly IManagerRepository<ArtistManagerEntity> artistManagerRepository;
     private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertService concertService;
-    private readonly IApplicationNotificationService applicationNotificationService;
 
     public FlatFeeConcertWorkflow(
         IOpportunityApplicationValidator applicationValidator,
@@ -25,8 +24,7 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
         IManagerRepository<VenueManagerEntity> venueManagerRepository,
         IManagerRepository<ArtistManagerEntity> artistManagerRepository,
         IManagerPaymentService managerPaymentService,
-        IConcertService concertService,
-        IApplicationNotificationService applicationNotificationService)
+        IConcertService concertService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
@@ -35,7 +33,6 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
         this.artistManagerRepository = artistManagerRepository;
         this.managerPaymentService = managerPaymentService;
         this.concertService = concertService;
-        this.applicationNotificationService = applicationNotificationService;
     }
 
     public async Task InitiateAsync(int applicationId, string? paymentMethodId = null)
@@ -65,12 +62,10 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
 
     public async Task SettleAsync(int applicationId)
     {
-        var concertId = await concertService.CreateDraftAsync(applicationId);
+        var draftResult = await concertService.CreateDraftAsync(applicationId);
 
-        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Artist manager not found");
-
-        await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concertId);
+        if (draftResult.IsFailed)
+            throw new BadRequestException(draftResult.Errors);
     }
 
     public async Task FinishedAsync(int concertId)
