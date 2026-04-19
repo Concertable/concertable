@@ -276,6 +276,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 
+        services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
+        services.AddScoped<IDeferredConcertService, DeferredConcertService>();
         services.AddScoped<IManagerPaymentService, ManagerPaymentService>();
         services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
         services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
