@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Core.Events;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Events;

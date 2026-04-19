@@ -4,7 +4,6 @@ using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Mappers;
-using Concertable.Core.Extensions;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;

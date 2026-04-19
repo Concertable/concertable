@@ -4,8 +4,8 @@ using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.Interfaces.Search;
 using Concertable.Application.Mappers;
+using Concertable.Search.Contracts;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
@@ -17,7 +17,7 @@ namespace Concertable.Infrastructure.Services.Concert;
 public class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
-    private readonly IConcertHeaderService concertHeaderService;
+    private readonly IConcertHeaderModule concertHeaderModule;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IOpportunityApplicationValidator applicationValidator;
@@ -32,7 +32,7 @@ public class ConcertService : IConcertService
 
     public ConcertService(
         IConcertRepository concertRepository,
-        IConcertHeaderService concertHeaderService,
+        IConcertHeaderModule concertHeaderModule,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IOpportunityApplicationValidator applicationValidator,
@@ -46,7 +46,7 @@ public class ConcertService : IConcertService
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
-        this.concertHeaderService = concertHeaderService;
+        this.concertHeaderModule = concertHeaderModule;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
@@ -175,12 +175,12 @@ public class ConcertService : IConcertService
             Latitude = user.Latitude,
             Longitude = user.Longitude,
             RadiusKm = preferences.RadiusKm,
-            GenreIds = preferences.Genres.Select(g => g.Id).ToList(),
+            GenreIds = preferences.Genres.Select(g => g.Id).ToArray(),
             OrderByRecent = true,
             Take = 10
         };
 
-        return await concertHeaderService.GetRecommendedAsync(concertParams);
+        return await concertHeaderModule.GetRecommendedAsync(concertParams);
     }
 
     public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id) =>

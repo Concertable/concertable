@@ -1,6 +1,5 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Core.ValueObjects;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;

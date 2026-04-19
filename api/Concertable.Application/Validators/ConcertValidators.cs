@@ -21,7 +21,7 @@ public class ConcertParamsValidator : AbstractValidator<ConcertParams>
     public ConcertParamsValidator()
     {
         Include(new Parameters.GeoParamsValidator());
-        RuleFor(x => x.Take).GreaterThan(0);
+        RuleFor(x => x.Take).GreaterThan(0).When(x => x.Take != 0);
     }
 }
 

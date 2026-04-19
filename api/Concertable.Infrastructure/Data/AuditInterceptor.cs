@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Core.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 

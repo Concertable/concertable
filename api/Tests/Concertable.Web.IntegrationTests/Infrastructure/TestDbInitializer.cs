@@ -4,7 +4,6 @@ using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
-using Concertable.Core.ValueObjects;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding.Fakers;
 using Concertable.Infrastructure.Services.Geometry;
@@ -80,6 +79,7 @@ public class TestDbInitializer : IDbInitializer
             seed.ArtistManager.StripeAccountId = "acct_test_artistmanager";
             seed.ArtistManager.StripeCustomerId = "cus_test_artistmanager";
             seed.ArtistManager.Location = geometryProvider.CreatePoint(51, 0);
+            seed.ArtistManager.Address = new Address("Test County", "Test Town");
 
             seed.Customer = UserFactory.Customer("customer@test.com", hash);
             seed.Customer.Location = geometryProvider.CreatePoint(51, 0);
@@ -151,15 +151,19 @@ public class TestDbInitializer : IDbInitializer
             seed.VenueHireApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[5].Id);
 
             seed.PostedFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedFlatFeeBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedFlatFeeApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[6].Id, seed.PostedFlatFeeBooking);
 
             seed.PostedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted DoorSplit Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedDoorSplitBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedDoorSplitApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[7].Id, seed.PostedDoorSplitBooking);
 
             seed.PostedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted Versus Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedVersusBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedVersusApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[8].Id, seed.PostedVersusBooking);
 
             seed.PostedVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted VenueHire Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedVenueHireBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedVenueHireApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[9].Id, seed.PostedVenueHireBooking);
 
             context.OpportunityApplications.AddRange(

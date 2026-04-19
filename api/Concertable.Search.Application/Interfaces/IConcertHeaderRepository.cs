@@ -1,0 +1,12 @@
+using Concertable.Core.Parameters;
+
+
+namespace Concertable.Search.Application.Interfaces;
+
+public interface IConcertHeaderRepository : IHeaderRepository<ConcertHeaderDto>
+{
+    Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount);
+    Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync();
+    Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync();
+    Task<IEnumerable<ConcertHeaderDto>> GetRecommendedAsync(ConcertParams concertParams);
+}

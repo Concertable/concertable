@@ -1,6 +1,5 @@
 ﻿using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Data;
-using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Infrastructure.Repositories;
 

@@ -78,12 +78,6 @@ public class ConcertController : ControllerBase
         return Ok((await concertService.GetUnpostedByArtistIdAsync(id)).ToSummaryResponses());
     }
 
-    [HttpGet("headers/recommended")]
-    public async Task<ActionResult<IEnumerable<ConcertHeaderDto>>> GetRecommendedHeaders()
-    {
-        return Ok(await concertService.GetRecommendedHeadersAsync());
-    }
-
     [Authorize(Roles = "VenueManager")]
     [HttpPut("{id}")]
     public async Task<ActionResult<ConcertUpdateResponse>> Update(int id, [FromBody] UpdateConcertRequest request)

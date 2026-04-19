@@ -6,7 +6,6 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Interfaces.Rating;
-using Concertable.Application.Interfaces.Search;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
@@ -23,7 +22,6 @@ using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Repositories.Concert;
 using Concertable.Infrastructure.Repositories.Review;
 using Concertable.Infrastructure.Repositories.Rating;
-using Concertable.Infrastructure.Repositories.Search;
 using Concertable.Infrastructure.Services;
 using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Handlers;
@@ -37,13 +35,13 @@ using Concertable.Infrastructure.Services.Email;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Infrastructure.Services.Payment;
 using Concertable.Infrastructure.Services.Rating;
-using Concertable.Infrastructure.Services.Search;
 using Concertable.Infrastructure.Services.Review;
 using Concertable.Infrastructure.Services.Settlement;
 using Concertable.Infrastructure.Services.Webhook;
 using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Specifications;
 using Concertable.Infrastructure.Validators;
+using Concertable.Search.Infrastructure.Extensions;
 using Concertable.Web.Authorization;
 using Concertable.Web.Handlers;
 using Concertable.Web.Services;
@@ -96,6 +94,11 @@ public static class ServiceCollectionExtensions
                     configuration.GetConnectionString("DefaultConnection"),
                     sqlOpt => sqlOpt.UseNetTopologySuite())
                 .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
+
+        services.AddDbContext<ReadDbContext>(opt =>
+            opt.UseSqlServer(
+                    configuration.GetConnectionString("DefaultConnection"),
+                    sqlOpt => sqlOpt.UseNetTopologySuite()));
 
         services.AddScoped<IDbConnection>(_ =>
             new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
@@ -316,49 +319,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWebhookQueue, WebhookQueue>();
         services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>(WebhookType.Concert);
         services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>(WebhookType.Settlement);
-
-        return services;
-    }
-
-    public static IServiceCollection AddSearch(this IServiceCollection services)
-    {
-        services.AddSingleton<IGeometrySpecification<ArtistEntity>, GeometrySpecification<ArtistEntity>>();
-        services.AddSingleton<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
-        services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
-
-        services.AddSingleton<IReviewSpecification<ArtistEntity>, ReviewSpecification<ArtistEntity>>();
-        services.AddSingleton<IReviewSpecification<VenueEntity>, ReviewSpecification<VenueEntity>>();
-        services.AddSingleton<IReviewSpecification<ConcertEntity>, ReviewSpecification<ConcertEntity>>();
-
-        services.AddSingleton<IRatingSpecification<ArtistEntity>, RatingSpecification<ArtistEntity>>();
-        services.AddSingleton<IRatingSpecification<VenueEntity>, RatingSpecification<VenueEntity>>();
-        services.AddSingleton<IRatingSpecification<ConcertEntity>, RatingSpecification<ConcertEntity>>();
-
-        services.AddSingleton<ISearchSpecification<ArtistEntity>, SearchSpecification<ArtistEntity>>();
-        services.AddSingleton<ISearchSpecification<VenueEntity>, SearchSpecification<VenueEntity>>();
-        services.AddSingleton<ISearchSpecification<ConcertEntity>, SearchSpecification<ConcertEntity>>();
-
-        services.AddSingleton<IArtistSearchSpecification, ArtistSearchSpecification>();
-        services.AddSingleton<IVenueSearchSpecification, VenueSearchSpecification>();
-        services.AddSingleton<IConcertSearchSpecification, ConcertSearchSpecification>();
-
-        services.AddSingleton<ISortSpecification<ArtistHeaderDto>, HeaderSortSpecification<ArtistHeaderDto>>();
-        services.AddSingleton<ISortSpecification<VenueHeaderDto>, HeaderSortSpecification<VenueHeaderDto>>();
-        services.AddSingleton<ISortSpecification<ConcertHeaderDto>, ConcertSortSpecification>();
-
-        services.AddScoped<IHeaderAutocompleteRepository, HeaderAutocompleteRepository>();
-        services.AddScoped<IHeaderAutocompleteService, HeaderAutocompleteService>();
-
-        services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
-        services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();
-        services.AddScoped<IConcertHeaderRepository, ConcertHeaderRepository>();
-
-        services.AddKeyedScoped<IHeaderService, ArtistHeaderService>(HeaderType.Artist);
-        services.AddKeyedScoped<IHeaderService, VenueHeaderService>(HeaderType.Venue);
-        services.AddKeyedScoped<IHeaderService, ConcertHeaderService>(HeaderType.Concert);
-        services.AddScoped<IConcertHeaderService, ConcertHeaderService>();
-
-        services.AddScoped<IHeaderServiceFactory, HeaderServiceFactory>();
 
         return services;
     }

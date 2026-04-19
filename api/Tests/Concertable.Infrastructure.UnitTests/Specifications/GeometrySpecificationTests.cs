@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Specifications;

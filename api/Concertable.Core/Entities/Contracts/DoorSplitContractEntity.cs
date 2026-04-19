@@ -1,5 +1,4 @@
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
 
 namespace Concertable.Core.Entities.Contracts;
 

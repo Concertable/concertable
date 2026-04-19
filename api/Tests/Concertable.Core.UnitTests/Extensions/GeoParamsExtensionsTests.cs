@@ -1,4 +1,3 @@
-using Concertable.Core.Extensions;
 using Concertable.Core.Interfaces;
 using Xunit;
 

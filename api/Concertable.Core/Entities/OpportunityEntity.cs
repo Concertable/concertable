@@ -1,8 +1,5 @@
 using Concertable.Core.Entities.Contracts;
-using Concertable.Core.Entities.Interfaces;
-using Concertable.Core.Extensions;
 using Concertable.Core.Interfaces;
-using Concertable.Core.ValueObjects;
 
 namespace Concertable.Core.Entities;
 

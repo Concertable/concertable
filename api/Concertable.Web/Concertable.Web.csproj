@@ -33,6 +33,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Application\Concertable.Application.csproj" />
+    <ProjectReference Include="..\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj" />
+    <ProjectReference Include="..\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\Concertable.ServiceDefaults\Concertable.ServiceDefaults.csproj" />
   </ItemGroup>

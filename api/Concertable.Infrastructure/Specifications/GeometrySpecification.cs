@@ -3,8 +3,6 @@ using Concertable.Application.Interfaces.Search;
 using Concertable.Infrastructure.Expressions;
 using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
-using Concertable.Core.Entities.Interfaces;
-using Concertable.Core.Extensions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 using NetTopologySuite.Geometries;
