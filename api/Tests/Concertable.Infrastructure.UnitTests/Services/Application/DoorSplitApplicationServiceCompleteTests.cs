@@ -1,9 +1,7 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Interfaces.Payment;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Entities;
+using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Services.Application;
 using Moq;
@@ -13,47 +11,35 @@ namespace Concertable.Infrastructure.UnitTests.Services.Application;
 
 public class DoorSplitConcertWorkflowCompleteTests
 {
-    private readonly Mock<IOpportunityApplicationRepository> applicationRepository;
+    private readonly Mock<IDeferredConcertService> deferredConcertService;
     private readonly Mock<IContractRepository> contractRepository;
     private readonly Mock<IManagerRepository<VenueManagerEntity>> venueManagerRepository;
     private readonly Mock<IManagerRepository<ArtistManagerEntity>> artistManagerRepository;
     private readonly Mock<IConcertRepository> concertRepository;
-    private readonly Mock<IManagerPaymentService> managerPaymentService;
     private readonly DoorSplitConcertWorkflow sut;
 
-    private readonly OpportunityApplicationEntity application;
     private readonly DoorSplitContractEntity contract = DoorSplitContractEntity.Create(50, PaymentMethod.Cash);
     private readonly VenueManagerEntity venueManager;
     private readonly ArtistManagerEntity artistManager;
 
     public DoorSplitConcertWorkflowCompleteTests()
     {
-        application = ApplicationBuilders.BuildAccepted();
-
         venueManager = VenueManagerEntity.Create("venue@test.com", string.Empty);
-        venueManager.StripeCustomerId = "cus_venue";
-
         artistManager = ArtistManagerEntity.Create("artist@test.com", string.Empty);
-        artistManager.StripeAccountId = "acct_artist";
 
-        applicationRepository = new Mock<IOpportunityApplicationRepository>();
+        deferredConcertService = new Mock<IDeferredConcertService>();
         contractRepository = new Mock<IContractRepository>();
         venueManagerRepository = new Mock<IManagerRepository<VenueManagerEntity>>();
         artistManagerRepository = new Mock<IManagerRepository<ArtistManagerEntity>>();
         concertRepository = new Mock<IConcertRepository>();
-        managerPaymentService = new Mock<IManagerPaymentService>();
 
         sut = new DoorSplitConcertWorkflow(
-            new Mock<IOpportunityApplicationValidator>().Object,
-            applicationRepository.Object,
+            deferredConcertService.Object,
             contractRepository.Object,
-            artistManagerRepository.Object,
-            venueManagerRepository.Object,
             concertRepository.Object,
-            managerPaymentService.Object,
-            new Mock<IConcertService>().Object);
+            venueManagerRepository.Object,
+            artistManagerRepository.Object);
 
-        applicationRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(application);
         contractRepository.Setup(r => r.GetByConcertIdAsync<DoorSplitContractEntity>(10)).ReturnsAsync(contract);
         venueManagerRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(venueManager);
         artistManagerRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(artistManager);
@@ -61,20 +47,11 @@ public class DoorSplitConcertWorkflowCompleteTests
     }
 
     [Fact]
-    public async Task FinishedAsync_ShouldSetStatusToAwaitingPayment()
-    {
-        await sut.FinishedAsync(10);
-
-        Assert.Equal(ApplicationStatus.AwaitingPayment, application.Status);
-        applicationRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
-    }
-
-    [Fact]
-    public async Task FinishedAsync_ShouldPayCorrectArtistShare()
+    public async Task FinishedAsync_ShouldPassCorrectArtistShareToDeferredService()
     {
         // 50% of 1000 = 500
         await sut.FinishedAsync(10);
 
-        managerPaymentService.Verify(p => p.PayAsync(venueManager, artistManager, 500m, application.Id), Times.Once);
+        deferredConcertService.Verify(s => s.FinishedAsync(10, venueManager, artistManager, 500m), Times.Once);
     }
 }

@@ -37,11 +37,14 @@ export default function ApplicationCheckoutPage() {
 
   function handleAccept() {
     setError(null);
-    accept(application!.id, {
-      onSuccess: () => setIsSuccess(true),
-      onError: () =>
-        setError("Failed to accept application. Please try again."),
-    });
+    accept(
+      { applicationId: application!.id, paymentMethodId },
+      {
+        onSuccess: () => setIsSuccess(true),
+        onError: () =>
+          setError("Failed to accept application. Please try again."),
+      },
+    );
   }
 
   return (

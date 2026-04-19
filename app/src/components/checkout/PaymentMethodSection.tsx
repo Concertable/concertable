@@ -15,7 +15,10 @@ import type { PaymentMethod } from "@/api/stripeAccountApi";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-type Option = "saved" | "new";
+enum PaymentOption {
+  Saved = PaymentOption.Saved,
+  New = PaymentOption.New,
+}
 
 interface Props {
   savedCard: PaymentMethod | null | undefined;
@@ -73,34 +76,42 @@ export function PaymentMethodSection({
   isLoading,
   onChange,
 }: Props) {
-  const [selected, setSelected] = useState<Option>(savedCard ? "saved" : "new");
+  const [selected, setSelected] = useState<PaymentOption>(PaymentOption.Saved);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [isLoadingIntent, setIsLoadingIntent] = useState(false);
+  const [isLoadingIntent, setIsLoadingIntent] = useState(true);
   const { theme } = useTheme();
   const isDark =
     theme === "dark" ||
     (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
 
   useEffect(() => {
-    if (!isLoading) onChange(savedCard ? null : undefined);
-  }, [isLoading]);
-
-  if (isLoading) return <Skeleton className="h-[66px] w-full rounded-lg" />;
-
-  async function selectNew() {
-    setSelected("new");
-    onChange(undefined);
-    if (!clientSecret) {
-      setIsLoadingIntent(true);
-      const secret = await stripeAccountApi.createSetupIntent();
+    stripeAccountApi.createSetupIntent().then((secret) => {
       setClientSecret(secret);
       setIsLoadingIntent(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const initialOption: Option = savedCard
+        ? PaymentOption.Saved
+        : PaymentOption.New;
+      setSelected(initialOption);
+      onChange(savedCard ? null : undefined);
     }
-  }
+  }, [isLoading]);
+
+  if (isLoading || isLoadingIntent)
+    return <Skeleton className="h-[66px] w-full rounded-lg" />;
 
   function selectSaved() {
-    setSelected("saved");
+    setSelected(PaymentOption.Saved);
     onChange(null);
+  }
+
+  function selectNew() {
+    setSelected(PaymentOption.New);
+    onChange(undefined);
   }
 
   function handleConfirmed(paymentMethodId: string) {
@@ -114,7 +125,7 @@ export function PaymentMethodSection({
           <button
             onClick={selectSaved}
             className={`rounded-lg border p-3 text-left transition-colors ${
-              selected === "saved"
+              selected === PaymentOption.Saved
                 ? "border-primary bg-primary/5"
                 : "hover:border-muted-foreground/50"
             }`}
@@ -135,7 +146,7 @@ export function PaymentMethodSection({
         <button
           onClick={selectNew}
           className={`rounded-lg border p-3 text-left transition-colors ${
-            selected === "new"
+            selected === PaymentOption.New
               ? "border-primary bg-primary/5"
               : "hover:border-muted-foreground/50"
           } ${!savedCard ? "col-span-2" : ""}`}
@@ -145,23 +156,17 @@ export function PaymentMethodSection({
         </button>
       </div>
 
-      {selected === "new" && (
+      {selected === PaymentOption.New && (
         <div className="rounded-lg border p-4">
-          {isLoadingIntent || !clientSecret ? (
-            <div className="text-muted-foreground py-4 text-center text-sm">
-              Loading...
-            </div>
-          ) : (
-            <Elements
-              stripe={stripePromise}
-              options={{
-                clientSecret,
-                appearance: { theme: isDark ? "night" : "stripe" },
-              }}
-            >
-              <NewCardForm onConfirmed={handleConfirmed} />
-            </Elements>
-          )}
+          <Elements
+            stripe={stripePromise}
+            options={{
+              clientSecret,
+              appearance: { theme: isDark ? "night" : "stripe" },
+            }}
+          >
+            <NewCardForm onConfirmed={handleConfirmed} />
+          </Elements>
         </div>
       )}
     </div>

@@ -29,8 +29,13 @@ const applicationApi = {
     return data;
   },
 
-  acceptApplication: async (applicationId: number): Promise<void> => {
-    await api.post(`/opportunityapplication/accept/${applicationId}`);
+  acceptApplication: async (
+    applicationId: number,
+    paymentMethodId?: string | null,
+  ): Promise<void> => {
+    await api.post(`/opportunityapplication/accept/${applicationId}`, {
+      paymentMethodId,
+    });
   },
 
   canAcceptApplication: async (applicationId: number): Promise<boolean> => {

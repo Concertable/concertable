@@ -79,7 +79,7 @@ public class ConcertService : IConcertService
     }
 
     public Task<Result<ConcertEntity>> CreateDraftAsync(int applicationId) =>
-        concertDraftService.CreateDraftAsync(applicationId);
+        concertDraftService.CreateAsync(applicationId);
 
     public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
     {

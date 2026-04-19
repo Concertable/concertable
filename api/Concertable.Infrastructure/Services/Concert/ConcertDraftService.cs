@@ -31,7 +31,7 @@ public class ConcertDraftService : IConcertDraftService
         this.artistManagerRepository = artistManagerRepository;
     }
 
-    public async Task<Result<ConcertEntity>> CreateDraftAsync(int applicationId)
+    public async Task<Result<ConcertEntity>> CreateAsync(int applicationId)
     {
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");

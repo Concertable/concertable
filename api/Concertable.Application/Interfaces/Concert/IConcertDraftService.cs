@@ -6,5 +6,5 @@ namespace Concertable.Application.Interfaces.Concert;
 
 public interface IConcertDraftService
 {
-    Task<Result<ConcertBookingEntity>> CreateAsync(int applicationId, string? paymentMethodId);
+    Task<Result<ConcertEntity>> CreateAsync(int applicationId);
 }

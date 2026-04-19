@@ -38,7 +38,7 @@ public class DeferredConcertService : IDeferredConcertService
         application.StorePaymentMethod(paymentMethodId);
         await applicationRepository.SaveChangesAsync();
 
-        var draftResult = await concertDraftService.CreateDraftAsync(applicationId);
+        var draftResult = await concertDraftService.CreateAsync(applicationId);
 
         if (draftResult.IsFailed)
             throw new BadRequestException(draftResult.Errors);
