@@ -29,6 +29,12 @@ public static class E2EEndpointExtensions
                 PostedVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedVenueHireApp.Id, ConcertId = seedData.PostedVenueHireApp.Booking!.Concert!.Id },
                 FinishedDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedDoorSplitApp.Id, ConcertId = seedData.FinishedDoorSplitApp.Booking!.Concert!.Id },
                 FinishedVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedVersusApp.Id, ConcertId = seedData.FinishedVersusApp.Booking!.Concert!.Id },
+                UpcomingFlatFeeApp = new SeededOpportunityApplication { ApplicationId = seedData.UpcomingFlatFeeApp.Id, ConcertId = seedData.UpcomingFlatFeeApp.Booking!.Concert!.Id },
+                UpcomingVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.UpcomingVenueHireApp.Id, ConcertId = seedData.UpcomingVenueHireApp.Booking!.Concert!.Id },
+                FlatFeeUpcomingConcert = new SeededConcert { Id = seedData.UpcomingFlatFeeBooking.Concert!.Id },
+                VenueHireUpcomingConcert = new SeededConcert { Id = seedData.UpcomingVenueHireBooking.Concert!.Id },
+                DoorSplitUpcomingConcert = new SeededConcert { Id = seedData.PostedDoorSplitBooking.Concert!.Id },
+                VersusUpcomingConcert = new SeededConcert { Id = seedData.PostedVersusBooking.Concert!.Id },
             });
         });
 

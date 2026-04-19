@@ -52,4 +52,10 @@ public class SeedData
 
     public OpportunityApplicationEntity FinishedVersusApp { get; set; } = null!;
     public ConcertBookingEntity FinishedVersusBooking { get; set; } = null!;
+
+    public OpportunityApplicationEntity UpcomingFlatFeeApp { get; set; } = null!;
+    public ConcertBookingEntity UpcomingFlatFeeBooking { get; set; } = null!;
+
+    public OpportunityApplicationEntity UpcomingVenueHireApp { get; set; } = null!;
+    public ConcertBookingEntity UpcomingVenueHireBooking { get; set; } = null!;
 }

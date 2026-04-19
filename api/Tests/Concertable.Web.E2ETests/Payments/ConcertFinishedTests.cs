@@ -53,16 +53,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     [Fact]
     public async Task ShouldCompleteApplicationAndPayArtist_WhenDoorSplitConcertFinishes()
     {
-        await customerClient.PostAsSuccessAsync(
-            "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value, Quantity = 1 });
-
-        await fixture.Polling.UntilAsync(
-            async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
-            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value),
-            timeout: TimeSpan.FromSeconds(15));
-
-        // Op 50: DoorSplit 70% — 1 ticket at £20 = £20 revenue → artist share = £14 (1400 pence)
+        // Op 50: DoorSplit 70% — 1 ticket pre-seeded at £20 = £20 revenue → artist share = £14 (1400 pence)
         var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value}")
             .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
 
@@ -80,16 +71,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     [Fact]
     public async Task ShouldCompleteApplicationAndPayArtist_WhenVersusConcertFinishes()
     {
-        await customerClient.PostAsSuccessAsync(
-            "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.FinishedVersusApp.ConcertId!.Value, Quantity = 1 });
-
-        await fixture.Polling.UntilAsync(
-            async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
-            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.FinishedVersusApp.ConcertId!.Value),
-            timeout: TimeSpan.FromSeconds(15));
-
-        // Op 51: Versus — guarantee £100 + 70% of door — 1 ticket at £20 → artist share = £114 (11400 pence)
+        // Op 51: Versus — guarantee £100 + 70% of door — 1 ticket pre-seeded at £20 → artist share = £114 (11400 pence)
         var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedVersusApp.ConcertId!.Value}")
             .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
 

@@ -16,6 +16,12 @@ public class SeedDataResponse
     public SeededOpportunityApplication PostedVenueHireApp { get; set; } = null!;
     public SeededOpportunityApplication FinishedDoorSplitApp { get; set; } = null!;
     public SeededOpportunityApplication FinishedVersusApp { get; set; } = null!;
+    public SeededOpportunityApplication UpcomingFlatFeeApp { get; set; } = null!;
+    public SeededOpportunityApplication UpcomingVenueHireApp { get; set; } = null!;
+    public SeededConcert FlatFeeUpcomingConcert { get; set; } = null!;
+    public SeededConcert VenueHireUpcomingConcert { get; set; } = null!;
+    public SeededConcert DoorSplitUpcomingConcert { get; set; } = null!;
+    public SeededConcert VersusUpcomingConcert { get; set; } = null!;
 }
 
 public class SeededUser
@@ -39,4 +45,9 @@ public class SeededOpportunityApplication
 {
     public int ApplicationId { get; set; }
     public int? ConcertId { get; set; }
+}
+
+public class SeededConcert
+{
+    public int Id { get; set; }
 }

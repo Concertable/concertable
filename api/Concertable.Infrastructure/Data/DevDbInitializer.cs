@@ -356,7 +356,7 @@ public class DevDbInitializer : IDbInitializer
                 OpportunityFactory.Create(8, new DateRange(now.AddDays(75), now.AddDays(75).AddHours(3)), FlatFeeContractEntity.Create(200, PaymentMethod.Cash)),
                 OpportunityFactory.Create(9, new DateRange(now.AddDays(80), now.AddDays(80).AddHours(3)), FlatFeeContractEntity.Create(195, PaymentMethod.Cash)),
                 OpportunityFactory.Create(10, new DateRange(now.AddDays(85), now.AddDays(85).AddHours(3)), FlatFeeContractEntity.Create(190, PaymentMethod.Cash)),
-                OpportunityFactory.Create(1, new DateRange(now.AddDays(85), now.AddDays(85).AddHours(3)), FlatFeeContractEntity.Create(190, PaymentMethod.Cash)),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-85), now.AddDays(-85).AddHours(3)), FlatFeeContractEntity.Create(190, PaymentMethod.Cash)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(85), now.AddDays(85).AddHours(5)), FlatFeeContractEntity.Create(190, PaymentMethod.Cash)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(2), now.AddDays(2).AddHours(3)), FlatFeeContractEntity.Create(150, PaymentMethod.Cash)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(4), now.AddDays(4).AddHours(3)), FlatFeeContractEntity.Create(175, PaymentMethod.Cash)),
@@ -375,14 +375,16 @@ public class DevDbInitializer : IDbInitializer
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(34), now.AddDays(34).AddHours(3)), FlatFeeContractEntity.Create(200, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(36), now.AddDays(36).AddHours(3)), FlatFeeContractEntity.Create(200, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(38), now.AddDays(38).AddHours(3)), FlatFeeContractEntity.Create(200, PaymentMethod.Transfer)),
-                OpportunityFactory.Create(1, new DateRange(now.AddDays(60), now.AddDays(60).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Transfer)),
-                OpportunityFactory.Create(1, new DateRange(now.AddDays(90), now.AddDays(90).AddHours(3)), VersusContractEntity.Create(100, 70, PaymentMethod.Transfer)),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-60), now.AddDays(-60).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Transfer)),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-90), now.AddDays(-90).AddHours(3)), VersusContractEntity.Create(100, 70, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(120), now.AddDays(120).AddHours(3)), VenueHireContractEntity.Create(250, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(150), now.AddDays(150).AddHours(3)), DoorSplitContractEntity.Create(65, PaymentMethod.Cash)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(180), now.AddDays(180).AddHours(3)), VersusContractEntity.Create(150, 60, PaymentMethod.Cash)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(200), now.AddDays(200).AddHours(3)), FlatFeeContractEntity.Create(150, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(210), now.AddDays(210).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(220), now.AddDays(220).AddHours(3)), VersusContractEntity.Create(100, 70, PaymentMethod.Transfer)),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(15), now.AddDays(15).AddHours(3)), FlatFeeContractEntity.Create(200, PaymentMethod.Transfer)),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(20), now.AddDays(20).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Transfer)),
             };
             context.Opportunities.AddRange(opportunities);
             await context.SaveChangesAsync();
@@ -462,10 +464,10 @@ public class DevDbInitializer : IDbInitializer
             seedData.PostedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Funk it up", 20m, 150, 130, now.AddDays(180)).Generate());
             seedData.PostedVersusApp = OpportunityApplicationFactory.Accepted(2, 54, seedData.PostedVersusBooking);
 
-            seedData.PostedFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie it up!", 20m, 150, 130, now.AddDays(85)).Generate());
+            seedData.PostedFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie it up!", 20m, 150, 130, now.AddDays(-85)).Generate());
             seedData.PostedFlatFeeApp = OpportunityApplicationFactory.Accepted(2, 31, seedData.PostedFlatFeeBooking);
 
-            seedData.PostedVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("VenueHire Spectacular", 30m, 200, 180, now.AddDays(40)).Generate());
+            seedData.PostedVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("VenueHire Spectacular", 30m, 200, 180, now.AddDays(-40)).Generate());
             seedData.PostedVenueHireApp = OpportunityApplicationFactory.Accepted(1, 21, seedData.PostedVenueHireBooking);
 
             seedData.DoorSplitApp = OpportunityApplicationFactory.Create(1, 56);
@@ -476,11 +478,17 @@ public class DevDbInitializer : IDbInitializer
             seedData.AwaitingPaymentBooking = ConcertBookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Awaiting Show", 15m, 100, 80, now.AddDays(3)).Generate());
             seedData.AwaitingPaymentApp = OpportunityApplicationFactory.Accepted(1, 33, seedData.AwaitingPaymentBooking);
 
-            seedData.FinishedDoorSplitBooking = ConcertBookingFactory.Complete(ConcertFaker.GetFaker("DoorSplit Settlement Show", 20m, 100, 100, now.AddDays(60)).Generate());
+            seedData.FinishedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("DoorSplit Settlement Show", 20m, 100, 99, now.AddDays(-60)).Generate());
             seedData.FinishedDoorSplitApp = OpportunityApplicationFactory.Accepted(1, 50, seedData.FinishedDoorSplitBooking);
 
-            seedData.FinishedVersusBooking = ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Versus Settlement Show", 20m, 100, 100, now.AddDays(90)).Generate());
+            seedData.FinishedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Versus Settlement Show", 20m, 100, 99, now.AddDays(-90)).Generate());
             seedData.FinishedVersusApp = OpportunityApplicationFactory.Accepted(1, 51, seedData.FinishedVersusBooking);
+
+            seedData.UpcomingFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Upcoming FlatFee Show", 20m, 150, 150, now).Generate());
+            seedData.UpcomingFlatFeeApp = OpportunityApplicationFactory.Accepted(2, 58, seedData.UpcomingFlatFeeBooking);
+
+            seedData.UpcomingVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Upcoming VenueHire Show", 30m, 200, 200, now).Generate());
+            seedData.UpcomingVenueHireApp = OpportunityApplicationFactory.Accepted(1, 59, seedData.UpcomingVenueHireBooking);
 
             var applications = new OpportunityApplicationEntity[]
             {
@@ -580,6 +588,10 @@ public class DevDbInitializer : IDbInitializer
                 seedData.FinishedDoorSplitApp,
                 // App 79: FinishedVersusApp (concert 36) — VenueId=1, Versus 100+70%
                 seedData.FinishedVersusApp,
+                // App 80: UpcomingFlatFeeApp — VenueId=1, FlatFee (future)
+                seedData.UpcomingFlatFeeApp,
+                // App 81: UpcomingVenueHireApp — VenueId=1, VenueHire (future)
+                seedData.UpcomingVenueHireApp,
             };
             context.OpportunityApplications.AddRange(applications);
             await context.SaveChangesAsync();
@@ -757,7 +769,9 @@ public class DevDbInitializer : IDbInitializer
                 TicketFactory.Create(Guid.CreateVersion7(), artistManagerIds[1], 25, Array.Empty<byte>(), now.AddDays(-4)),
                 TicketFactory.Create(Guid.CreateVersion7(), customerIds[0], 26, Array.Empty<byte>(), now.AddDays(-2)),
                 TicketFactory.Create(Guid.CreateVersion7(), customerIds[1], 26, Array.Empty<byte>(), now.AddDays(-2)),
-                TicketFactory.Create(Guid.CreateVersion7(), customerIds[4], 26, Array.Empty<byte>(), now.AddDays(-2))
+                TicketFactory.Create(Guid.CreateVersion7(), customerIds[4], 26, Array.Empty<byte>(), now.AddDays(-2)),
+                TicketFactory.Create(Guid.CreateVersion7(), customerIds[0], seedData.FinishedDoorSplitBooking.Concert!.Id, Array.Empty<byte>(), now.AddDays(-60)),
+                TicketFactory.Create(Guid.CreateVersion7(), customerIds[0], seedData.FinishedVersusBooking.Concert!.Id, Array.Empty<byte>(), now.AddDays(-90)),
             };
             context.Tickets.AddRange(tickets);
             await context.SaveChangesAsync();
