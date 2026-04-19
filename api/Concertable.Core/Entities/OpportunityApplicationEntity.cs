@@ -68,6 +68,8 @@ public class OpportunityApplicationEntity : IIdEntity
     {
         if (Status != ApplicationStatus.AwaitingPayment && Status != ApplicationStatus.Accepted)
             throw new DomainException("Only awaiting payment or accepted applications can be completed.");
+        if (DateTime.UtcNow < Opportunity.Period.End)
+            throw new DomainException("Application cannot be completed before the concert has ended.");
         Status = ApplicationStatus.Complete;
     }
 }

@@ -90,9 +90,9 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
 
     public async Task<OpportunityApplicationEntity?> GetByConcertIdAsync(int concertId)
     {
-        return await context.Concerts
-            .Where(c => c.Id == concertId)
-            .Select(c => c.Application)
+        return await context.OpportunityApplications
+            .Where(a => a.Concert!.Id == concertId)
+            .Include(a => a.Opportunity)
             .FirstOrDefaultAsync();
     }
 

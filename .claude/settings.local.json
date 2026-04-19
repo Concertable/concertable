@@ -120,7 +120,9 @@
       "Bash(dotnet new *)",
       "WebFetch(domain:stripe.com)",
       "WebFetch(domain:docs.stripe.com)",
-      "Bash(git -C \"C:/Users/TommySeery/source/repos/Concertable\" status --short)"
+      "Bash(git -C \"C:/Users/TommySeery/source/repos/Concertable\" status --short)",
+      "WebFetch(domain:specification.ardalis.com)",
+      "WebFetch(domain:hellowahab.wordpress.com)"
     ]
   }
 }
