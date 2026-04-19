@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Core.Entities;
 using Concertable.Infrastructure.Interfaces;
+using Concertable.Application.Interfaces.Payment;
 using Concertable.Infrastructure.Services.Payment;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
@@ -58,6 +59,8 @@ public async Task InitializeAsync()
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
+                services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>("onSession");
+                services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>("offSession");
                 services.AddResettables(NotificationService, StripePaymentClient, EmailService);
                 services.AddSingleton<IEmailService>(EmailService);
 

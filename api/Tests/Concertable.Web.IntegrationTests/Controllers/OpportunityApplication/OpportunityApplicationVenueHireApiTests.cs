@@ -36,7 +36,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldSettleAndCreateDraftConcertAndNotifyArtist()
+    public async Task Accept_ShouldConfirmBookingAndCreateDraftConcertAndNotifyArtist()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
@@ -72,7 +72,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldNotSettle_WhenWebhookFails()
+    public async Task Accept_ShouldNotConfirmBooking_WhenWebhookFails()
     {
         // Arrange
         fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingStripe());
@@ -89,7 +89,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldNotSettle_WhenPaymentFails()
+    public async Task Accept_ShouldNotConfirmBooking_WhenPaymentFails()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingPayment());

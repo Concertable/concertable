@@ -23,6 +23,9 @@ public class ConcertValidator : IConcertValidator
         if (concert.Booking.Application.Status != ApplicationStatus.Accepted)
             errors.Add("Concert cannot be posted until the application is accepted");
 
+        if (concert.Booking.Status != BookingStatus.Confirmed && concert.Booking.Status != BookingStatus.Complete)
+            errors.Add("Concert cannot be posted until the booking is settled");
+
         if (concert.DatePosted is not null)
             errors.Add("Concert has already been posted");
 

@@ -47,7 +47,7 @@ public class ConcertApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Post_ShouldReturn400_WhenApplicationNotSettled()
+    public async Task Post_ShouldReturn400_WhenBookingNotConfirmed()
     {
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildPostRequest();
