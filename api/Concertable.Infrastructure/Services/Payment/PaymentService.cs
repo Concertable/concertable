@@ -1,19 +1,20 @@
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Core.Enums;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
+using Concertable.Core.Enums;
 using Concertable.Infrastructure.Interfaces;
+using Concertable.Infrastructure.Mappers;
 using FluentResults;
 using Stripe;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class PaymentService : IPaymentService
+public abstract class PaymentService : IPaymentService
 {
     private readonly IStripePaymentClient stripeClient;
     private readonly IStripeAccountService stripeAccountService;
 
-    public PaymentService(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService)
+    protected PaymentService(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService)
     {
         this.stripeClient = stripeClient;
         this.stripeAccountService = stripeAccountService;
@@ -36,8 +37,6 @@ public class PaymentService : IPaymentService
                 PaymentMethod = request.PaymentMethodId,
                 Customer = request.StripeCustomerId,
                 Confirm = true,
-                ConfirmationMethod = "automatic",
-                CaptureMethod = "automatic",
                 PaymentMethodTypes = ["card"],
                 ReceiptEmail = request.FromUserEmail,
                 Metadata = request.Metadata,
@@ -47,17 +46,11 @@ public class PaymentService : IPaymentService
                 }
             };
 
+            Configure(options);
+
             var paymentIntent = await stripeClient.CreatePaymentIntentAsync(options);
 
-            if (paymentIntent.Status != "succeeded" && paymentIntent.Status != "requires_action" && paymentIntent.Status != "requires_confirmation")
-                return Result.Fail($"Payment failed with status: {paymentIntent.Status}");
-
-            return Result.Ok(new PaymentResponse
-            {
-                RequiresAction = paymentIntent.Status == "requires_action" || paymentIntent.Status == "requires_confirmation",
-                ClientSecret = paymentIntent.ClientSecret,
-                TransactionId = paymentIntent.Id
-            });
+            return paymentIntent.ToPaymentResult();
         }
         catch (StripeException ex)
         {
@@ -68,4 +61,6 @@ public class PaymentService : IPaymentService
             return Result.Fail($"General Error: {ex.Message}");
         }
     }
+
+    protected abstract void Configure(PaymentIntentCreateOptions options);
 }

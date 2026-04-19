@@ -18,16 +18,16 @@ public class ConcertController : ControllerBase
 {
     private readonly IConcertService concertService;
     private readonly IConcertNotificationService notificationService;
-    private readonly IPostConcertHandler postConcertHandler;
+    private readonly IConcertPostedHandler concertPostedHandler;
 
     public ConcertController(
         IConcertService concertService,
         IConcertNotificationService notificationService,
-        IPostConcertHandler postConcertHandler)
+        IConcertPostedHandler concertPostedHandler)
     {
         this.concertService = concertService;
         this.notificationService = notificationService;
-        this.postConcertHandler = postConcertHandler;
+        this.concertPostedHandler = concertPostedHandler;
     }
 
     [HttpGet("{id}")]
@@ -96,7 +96,7 @@ public class ConcertController : ControllerBase
     public async Task<IActionResult> Post(int id, [FromBody] UpdateConcertRequest request)
     {
         var result = await concertService.PostAsync(id, request);
-        await postConcertHandler.HandleAsync(result);
+        await concertPostedHandler.HandleAsync(result);
         return NoContent();
     }
 

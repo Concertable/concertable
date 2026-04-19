@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services.Application;
 
@@ -17,7 +18,7 @@ public class DeferredConcertService : IDeferredConcertService
     public DeferredConcertService(
         IOpportunityApplicationValidator applicationValidator,
         IOpportunityApplicationRepository applicationRepository,
-        IManagerPaymentService managerPaymentService,
+        [FromKeyedServices("offSession")] IManagerPaymentService managerPaymentService,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
@@ -26,18 +27,12 @@ public class DeferredConcertService : IDeferredConcertService
         this.concertDraftService = concertDraftService;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
-
-        var application = await applicationRepository.GetByIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
-
-        application.StorePaymentMethod(paymentMethodId);
-        await applicationRepository.SaveChangesAsync();
 
         var draftResult = await concertDraftService.CreateAsync(applicationId);
 

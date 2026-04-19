@@ -120,13 +120,15 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.SetupIntentService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
-            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>("onSession");
+            services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>("offSession");
             services.AddScoped<IWebhookService, WebhookService>();
         }
         else
         {
             services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
-            services.AddScoped<IPaymentService, FakePaymentService>();
+            services.AddKeyedScoped<IPaymentService, FakePaymentService>("onSession");
+            services.AddKeyedScoped<IPaymentService, FakePaymentService>("offSession");
             services.AddScoped<IWebhookService, FakeWebhookService>();
         }
 
@@ -179,7 +181,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IConcertNotificationService, SignalRConcertNotificationService>();
-        services.AddScoped<IPostConcertHandler, PostConcertHandler>();
+        services.AddScoped<IConcertPostedHandler, ConcertPostedHandler>();
         services.AddScoped<IApplicationNotificationService, SignalRApplicationNotificationService>();
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
@@ -264,6 +266,14 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    private static void AddKeyedManagerPaymentService(this IServiceCollection services, string key) =>
+        services.AddKeyedScoped<IManagerPaymentService>(key, (sp, _) =>
+            new ManagerPaymentService(
+                sp.GetRequiredService<IStripeAccountService>(),
+                sp.GetRequiredKeyedService<IPaymentService>(key),
+                sp.GetRequiredService<ITransactionService>(),
+                sp.GetRequiredService<TimeProvider>()));
+
     private static IServiceCollection AddContracts(this IServiceCollection services)
     {
         services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
@@ -278,7 +288,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
-        services.AddScoped<IManagerPaymentService, ManagerPaymentService>();
+        services.AddKeyedManagerPaymentService("onSession");
+        services.AddKeyedManagerPaymentService("offSession");
         services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
         services.AddScoped<ITicketPaymentDispatcher, TicketPaymentDispatcher>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();

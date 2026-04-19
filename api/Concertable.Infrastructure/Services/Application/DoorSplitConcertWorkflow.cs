@@ -30,7 +30,7 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     }
 
     public Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null) =>
-        deferredConcertService.InitiateAsync(applicationId, paymentMethodId);
+        deferredConcertService.InitiateAsync(applicationId);
 
     public Task SettleAsync(int applicationId) =>
         deferredConcertService.SettleAsync(applicationId);

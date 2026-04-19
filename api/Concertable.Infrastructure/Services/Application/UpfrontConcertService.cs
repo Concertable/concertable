@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services.Application;
 
@@ -17,7 +18,7 @@ public class UpfrontConcertService : IUpfrontConcertService
     public UpfrontConcertService(
         IOpportunityApplicationValidator applicationValidator,
         IOpportunityApplicationRepository applicationRepository,
-        IManagerPaymentService managerPaymentService,
+        [FromKeyedServices("onSession")] IManagerPaymentService managerPaymentService,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;

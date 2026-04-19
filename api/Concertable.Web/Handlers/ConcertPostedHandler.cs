@@ -3,12 +3,12 @@ using Concertable.Application.Responses;
 
 namespace Concertable.Web.Handlers;
 
-public class PostConcertHandler : IPostConcertHandler
+public class ConcertPostedHandler : IConcertPostedHandler
 {
     private readonly IBackgroundTaskRunner taskRunner;
     private readonly IConcertNotificationService notificationService;
 
-    public PostConcertHandler(IBackgroundTaskRunner taskRunner, IConcertNotificationService notificationService)
+    public ConcertPostedHandler(IBackgroundTaskRunner taskRunner, IConcertNotificationService notificationService)
     {
         this.taskRunner = taskRunner;
         this.notificationService = notificationService;

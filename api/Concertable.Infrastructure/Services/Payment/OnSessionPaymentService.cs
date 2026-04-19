@@ -1,0 +1,16 @@
+using Concertable.Application.Interfaces.Payment;
+using Concertable.Infrastructure.Interfaces;
+
+namespace Concertable.Infrastructure.Services.Payment;
+
+public class OnSessionPaymentService : PaymentService
+{
+    public OnSessionPaymentService(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService)
+        : base(stripeClient, stripeAccountService) { }
+
+    protected override void Configure(Stripe.PaymentIntentCreateOptions options)
+    {
+        options.ConfirmationMethod = "automatic";
+        options.CaptureMethod = "automatic";
+    }
+}

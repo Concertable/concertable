@@ -127,6 +127,7 @@ public class StripeAccountService : IStripeAccountService
         {
             Customer = stripeCustomerId,
             PaymentMethodTypes = ["card"],
+            Usage = "off_session",
         });
 
         return intent.ClientSecret;

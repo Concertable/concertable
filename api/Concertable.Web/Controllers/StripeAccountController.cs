@@ -42,6 +42,8 @@ public class StripeAccountController : ControllerBase
     public async Task<ActionResult<PaymentMethodDto?>> GetPaymentMethod()
     {
         var user = currentUser.GetEntity<UserEntity>();
+        if (string.IsNullOrWhiteSpace(user.StripeCustomerId))
+            return Ok(null);
         return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(user.StripeCustomerId));
     }
 
