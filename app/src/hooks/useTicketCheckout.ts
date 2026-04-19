@@ -6,11 +6,18 @@ import ticketApi from "@/api/ticketApi";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-export type TicketCheckoutState = "idle" | "processing" | "pending" | "success" | "error";
+export type TicketCheckoutState =
+  | "idle"
+  | "processing"
+  | "pending"
+  | "success"
+  | "error";
 
 export function useTicketCheckout(concertId: number) {
   const [quantity, setQuantity] = useState(1);
-  const [paymentMethodId, setPaymentMethodId] = useState<string | null | undefined>(undefined);
+  const [paymentMethodId, setPaymentMethodId] = useState<
+    string | null | undefined
+  >(undefined);
   const [state, setState] = useState<TicketCheckoutState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TicketPurchasedPayload | null>(null);
@@ -28,7 +35,8 @@ export function useTicketCheckout(concertId: number) {
     }
 
     notificationConnection.on("TicketPurchased", handleTicketPurchased);
-    return () => notificationConnection.off("TicketPurchased", handleTicketPurchased);
+    return () =>
+      notificationConnection.off("TicketPurchased", handleTicketPurchased);
   }, [concertId]);
 
   async function purchase() {
@@ -66,5 +74,14 @@ export function useTicketCheckout(concertId: number) {
     }
   }
 
-  return { quantity, setQuantity, paymentMethodId, setPaymentMethodId, state, error, result, purchase };
+  return {
+    quantity,
+    setQuantity,
+    paymentMethodId,
+    setPaymentMethodId,
+    state,
+    error,
+    result,
+    purchase,
+  };
 }

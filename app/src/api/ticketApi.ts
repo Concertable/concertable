@@ -19,8 +19,13 @@ export interface TicketPurchaseResponse {
 }
 
 const ticketApi = {
-  purchase: async (request: TicketPurchaseRequest): Promise<TicketPurchaseResponse> => {
-    const { data } = await api.post<TicketPurchaseResponse>("/ticket/purchase", request);
+  purchase: async (
+    request: TicketPurchaseRequest,
+  ): Promise<TicketPurchaseResponse> => {
+    const { data } = await api.post<TicketPurchaseResponse>(
+      "/ticket/purchase",
+      request,
+    );
     return data;
   },
 };

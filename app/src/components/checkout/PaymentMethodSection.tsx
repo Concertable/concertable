@@ -68,7 +68,11 @@ function NewCardForm({ onConfirmed }: NewCardFormProps) {
   );
 }
 
-export function PaymentMethodSection({ savedCard, isLoading, onChange }: Props) {
+export function PaymentMethodSection({
+  savedCard,
+  isLoading,
+  onChange,
+}: Props) {
   const [selected, setSelected] = useState<Option>(savedCard ? "saved" : "new");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isLoadingIntent, setIsLoadingIntent] = useState(false);
