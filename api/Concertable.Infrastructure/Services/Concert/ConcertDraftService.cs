@@ -9,16 +9,13 @@ namespace Concertable.Infrastructure.Services.Concert;
 public class ConcertDraftService : IConcertDraftService
 {
     private readonly IConcertBookingRepository bookingRepository;
-    private readonly IConcertBookingConfirmHandler confirmHandler;
     private readonly IConcertNotificationService concertNotificationService;
 
     public ConcertDraftService(
         IConcertBookingRepository bookingRepository,
-        IConcertBookingConfirmHandler confirmHandler,
         IConcertNotificationService concertNotificationService)
     {
         this.bookingRepository = bookingRepository;
-        this.confirmHandler = confirmHandler;
         this.concertNotificationService = concertNotificationService;
     }
 
@@ -47,7 +44,8 @@ public class ConcertDraftService : IConcertDraftService
             venue.About,
             matchingGenreIds);
 
-        await confirmHandler.HandleAsync(bookingConcert, concert);
+        bookingConcert.Confirm(concert);
+        await bookingRepository.SaveChangesAsync();
 
         await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concert.Id);
 

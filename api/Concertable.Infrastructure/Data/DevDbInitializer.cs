@@ -346,7 +346,7 @@ public class DevDbInitializer : IDbInitializer
                 OpportunityFactory.Create(8, new DateRange(now.AddDays(25), now.AddDays(25).AddHours(3)), VersusContractEntity.Create(200, 70, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(9, new DateRange(now.AddDays(30), now.AddDays(30).AddHours(3)), FlatFeeContractEntity.Create(245, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(10, new DateRange(now.AddDays(35), now.AddDays(35).AddHours(3)), FlatFeeContractEntity.Create(240, PaymentMethod.Cash)),
-                OpportunityFactory.Create(1, new DateRange(now.AddDays(40), now.AddDays(40).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Transfer)),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-40), now.AddDays(-40).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(2, new DateRange(now.AddDays(45), now.AddDays(45).AddHours(3)), FlatFeeContractEntity.Create(230, PaymentMethod.Cash)),
                 OpportunityFactory.Create(3, new DateRange(now.AddDays(50), now.AddDays(50).AddHours(3)), FlatFeeContractEntity.Create(225, PaymentMethod.Cash)),
                 OpportunityFactory.Create(4, new DateRange(now.AddDays(55), now.AddDays(55).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash)),

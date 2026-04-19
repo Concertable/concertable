@@ -295,7 +295,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
         services.AddScoped<ITicketPaymentDispatcher, TicketPaymentDispatcher>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
-        services.AddScoped<IConcertBookingConfirmHandler, ConcertBookingConfirmHandler>();
         services.AddScoped<IAcceptDispatcher, AcceptDispatcher>();
         services.AddScoped<IFinishedDispatcher, FinishedDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();

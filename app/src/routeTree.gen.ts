@@ -38,7 +38,9 @@ import { Route as CustomerSettingsTicketsIndexRouteImport } from './routes/_cust
 import { Route as CustomerSettingsPreferencesIndexRouteImport } from './routes/_customer/settings/preferences/index'
 import { Route as VenueMyApplicationsIdRouteImport } from './routes/venue/my/applications.$id'
 import { Route as VenueFindArtistIdRouteImport } from './routes/venue/find/artist.$id'
+import { Route as VenueApplicationCheckoutApplicationIdRouteImport } from './routes/venue/application/checkout.$applicationId'
 import { Route as ArtistFindVenueIdRouteImport } from './routes/artist/find/venue.$id'
+import { Route as ArtistApplicationCheckoutApplicationIdRouteImport } from './routes/artist/application/checkout.$applicationId'
 import { Route as CustomerSettingsTicketsUpcomingRouteImport } from './routes/_customer/settings/tickets/upcoming'
 import { Route as CustomerSettingsTicketsHistoryRouteImport } from './routes/_customer/settings/tickets/history'
 import { Route as CustomerSettingsPreferencesCreateRouteImport } from './routes/_customer/settings/preferences/create'
@@ -46,7 +48,6 @@ import { Route as CustomerFindVenueIdRouteImport } from './routes/_customer/find
 import { Route as CustomerFindConcertIdRouteImport } from './routes/_customer/find/concert.$id'
 import { Route as CustomerFindArtistIdRouteImport } from './routes/_customer/find/artist.$id'
 import { Route as CustomerConcertCheckoutIdRouteImport } from './routes/_customer/concert/checkout.$id'
-import { Route as CustomerApplicationCheckoutIdRouteImport } from './routes/_customer/application/checkout.$id'
 import { Route as VenueMyConcertsConcertIdRouteImport } from './routes/venue/my/concerts/concert.$id'
 import { Route as ArtistMyConcertsConcertIdRouteImport } from './routes/artist/my/concerts/concert.$id'
 
@@ -198,11 +199,23 @@ const VenueFindArtistIdRoute = VenueFindArtistIdRouteImport.update({
   path: '/find/artist/$id',
   getParentRoute: () => VenueRouteRoute,
 } as any)
+const VenueApplicationCheckoutApplicationIdRoute =
+  VenueApplicationCheckoutApplicationIdRouteImport.update({
+    id: '/application/checkout/$applicationId',
+    path: '/application/checkout/$applicationId',
+    getParentRoute: () => VenueRouteRoute,
+  } as any)
 const ArtistFindVenueIdRoute = ArtistFindVenueIdRouteImport.update({
   id: '/find/venue/$id',
   path: '/find/venue/$id',
   getParentRoute: () => ArtistRouteRoute,
 } as any)
+const ArtistApplicationCheckoutApplicationIdRoute =
+  ArtistApplicationCheckoutApplicationIdRouteImport.update({
+    id: '/application/checkout/$applicationId',
+    path: '/application/checkout/$applicationId',
+    getParentRoute: () => ArtistRouteRoute,
+  } as any)
 const CustomerSettingsTicketsUpcomingRoute =
   CustomerSettingsTicketsUpcomingRouteImport.update({
     id: '/tickets/upcoming',
@@ -240,12 +253,6 @@ const CustomerConcertCheckoutIdRoute =
   CustomerConcertCheckoutIdRouteImport.update({
     id: '/concert/checkout/$id',
     path: '/concert/checkout/$id',
-    getParentRoute: () => CustomerRouteRoute,
-  } as any)
-const CustomerApplicationCheckoutIdRoute =
-  CustomerApplicationCheckoutIdRouteImport.update({
-    id: '/application/checkout/$id',
-    path: '/application/checkout/$id',
     getParentRoute: () => CustomerRouteRoute,
   } as any)
 const VenueMyConcertsConcertIdRoute =
@@ -286,7 +293,6 @@ export interface FileRoutesByFullPath {
   '/artist/my/': typeof ArtistMyIndexRoute
   '/venue/find/': typeof VenueFindIndexRoute
   '/venue/my/': typeof VenueMyIndexRoute
-  '/application/checkout/$id': typeof CustomerApplicationCheckoutIdRoute
   '/concert/checkout/$id': typeof CustomerConcertCheckoutIdRoute
   '/find/artist/$id': typeof CustomerFindArtistIdRoute
   '/find/concert/$id': typeof CustomerFindConcertIdRoute
@@ -294,7 +300,9 @@ export interface FileRoutesByFullPath {
   '/settings/preferences/create': typeof CustomerSettingsPreferencesCreateRoute
   '/settings/tickets/history': typeof CustomerSettingsTicketsHistoryRoute
   '/settings/tickets/upcoming': typeof CustomerSettingsTicketsUpcomingRoute
+  '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
   '/settings/preferences/': typeof CustomerSettingsPreferencesIndexRoute
@@ -324,7 +332,6 @@ export interface FileRoutesByTo {
   '/artist/my': typeof ArtistMyIndexRoute
   '/venue/find': typeof VenueFindIndexRoute
   '/venue/my': typeof VenueMyIndexRoute
-  '/application/checkout/$id': typeof CustomerApplicationCheckoutIdRoute
   '/concert/checkout/$id': typeof CustomerConcertCheckoutIdRoute
   '/find/artist/$id': typeof CustomerFindArtistIdRoute
   '/find/concert/$id': typeof CustomerFindConcertIdRoute
@@ -332,7 +339,9 @@ export interface FileRoutesByTo {
   '/settings/preferences/create': typeof CustomerSettingsPreferencesCreateRoute
   '/settings/tickets/history': typeof CustomerSettingsTicketsHistoryRoute
   '/settings/tickets/upcoming': typeof CustomerSettingsTicketsUpcomingRoute
+  '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
   '/settings/preferences': typeof CustomerSettingsPreferencesIndexRoute
@@ -367,7 +376,6 @@ export interface FileRoutesById {
   '/artist/my/': typeof ArtistMyIndexRoute
   '/venue/find/': typeof VenueFindIndexRoute
   '/venue/my/': typeof VenueMyIndexRoute
-  '/_customer/application/checkout/$id': typeof CustomerApplicationCheckoutIdRoute
   '/_customer/concert/checkout/$id': typeof CustomerConcertCheckoutIdRoute
   '/_customer/find/artist/$id': typeof CustomerFindArtistIdRoute
   '/_customer/find/concert/$id': typeof CustomerFindConcertIdRoute
@@ -375,7 +383,9 @@ export interface FileRoutesById {
   '/_customer/settings/preferences/create': typeof CustomerSettingsPreferencesCreateRoute
   '/_customer/settings/tickets/history': typeof CustomerSettingsTicketsHistoryRoute
   '/_customer/settings/tickets/upcoming': typeof CustomerSettingsTicketsUpcomingRoute
+  '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
   '/_customer/settings/preferences/': typeof CustomerSettingsPreferencesIndexRoute
@@ -410,7 +420,6 @@ export interface FileRouteTypes {
     | '/artist/my/'
     | '/venue/find/'
     | '/venue/my/'
-    | '/application/checkout/$id'
     | '/concert/checkout/$id'
     | '/find/artist/$id'
     | '/find/concert/$id'
@@ -418,7 +427,9 @@ export interface FileRouteTypes {
     | '/settings/preferences/create'
     | '/settings/tickets/history'
     | '/settings/tickets/upcoming'
+    | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
+    | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
     | '/settings/preferences/'
@@ -448,7 +459,6 @@ export interface FileRouteTypes {
     | '/artist/my'
     | '/venue/find'
     | '/venue/my'
-    | '/application/checkout/$id'
     | '/concert/checkout/$id'
     | '/find/artist/$id'
     | '/find/concert/$id'
@@ -456,7 +466,9 @@ export interface FileRouteTypes {
     | '/settings/preferences/create'
     | '/settings/tickets/history'
     | '/settings/tickets/upcoming'
+    | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
+    | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
     | '/settings/preferences'
@@ -490,7 +502,6 @@ export interface FileRouteTypes {
     | '/artist/my/'
     | '/venue/find/'
     | '/venue/my/'
-    | '/_customer/application/checkout/$id'
     | '/_customer/concert/checkout/$id'
     | '/_customer/find/artist/$id'
     | '/_customer/find/concert/$id'
@@ -498,7 +509,9 @@ export interface FileRouteTypes {
     | '/_customer/settings/preferences/create'
     | '/_customer/settings/tickets/history'
     | '/_customer/settings/tickets/upcoming'
+    | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
+    | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
     | '/_customer/settings/preferences/'
@@ -724,11 +737,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VenueFindArtistIdRouteImport
       parentRoute: typeof VenueRouteRoute
     }
+    '/venue/application/checkout/$applicationId': {
+      id: '/venue/application/checkout/$applicationId'
+      path: '/application/checkout/$applicationId'
+      fullPath: '/venue/application/checkout/$applicationId'
+      preLoaderRoute: typeof VenueApplicationCheckoutApplicationIdRouteImport
+      parentRoute: typeof VenueRouteRoute
+    }
     '/artist/find/venue/$id': {
       id: '/artist/find/venue/$id'
       path: '/find/venue/$id'
       fullPath: '/artist/find/venue/$id'
       preLoaderRoute: typeof ArtistFindVenueIdRouteImport
+      parentRoute: typeof ArtistRouteRoute
+    }
+    '/artist/application/checkout/$applicationId': {
+      id: '/artist/application/checkout/$applicationId'
+      path: '/application/checkout/$applicationId'
+      fullPath: '/artist/application/checkout/$applicationId'
+      preLoaderRoute: typeof ArtistApplicationCheckoutApplicationIdRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
     '/_customer/settings/tickets/upcoming': {
@@ -778,13 +805,6 @@ declare module '@tanstack/react-router' {
       path: '/concert/checkout/$id'
       fullPath: '/concert/checkout/$id'
       preLoaderRoute: typeof CustomerConcertCheckoutIdRouteImport
-      parentRoute: typeof CustomerRouteRoute
-    }
-    '/_customer/application/checkout/$id': {
-      id: '/_customer/application/checkout/$id'
-      path: '/application/checkout/$id'
-      fullPath: '/application/checkout/$id'
-      preLoaderRoute: typeof CustomerApplicationCheckoutIdRouteImport
       parentRoute: typeof CustomerRouteRoute
     }
     '/venue/my/concerts/concert/$id': {
@@ -838,7 +858,6 @@ interface CustomerRouteRouteChildren {
   CustomerSettingsRouteRoute: typeof CustomerSettingsRouteRouteWithChildren
   CustomerIndexRoute: typeof CustomerIndexRoute
   CustomerFindIndexRoute: typeof CustomerFindIndexRoute
-  CustomerApplicationCheckoutIdRoute: typeof CustomerApplicationCheckoutIdRoute
   CustomerConcertCheckoutIdRoute: typeof CustomerConcertCheckoutIdRoute
   CustomerFindArtistIdRoute: typeof CustomerFindArtistIdRoute
   CustomerFindConcertIdRoute: typeof CustomerFindConcertIdRoute
@@ -849,7 +868,6 @@ const CustomerRouteRouteChildren: CustomerRouteRouteChildren = {
   CustomerSettingsRouteRoute: CustomerSettingsRouteRouteWithChildren,
   CustomerIndexRoute: CustomerIndexRoute,
   CustomerFindIndexRoute: CustomerFindIndexRoute,
-  CustomerApplicationCheckoutIdRoute: CustomerApplicationCheckoutIdRoute,
   CustomerConcertCheckoutIdRoute: CustomerConcertCheckoutIdRoute,
   CustomerFindArtistIdRoute: CustomerFindArtistIdRoute,
   CustomerFindConcertIdRoute: CustomerFindConcertIdRoute,
@@ -865,6 +883,7 @@ interface ArtistRouteRouteChildren {
   ArtistIndexRoute: typeof ArtistIndexRoute
   ArtistFindIndexRoute: typeof ArtistFindIndexRoute
   ArtistMyIndexRoute: typeof ArtistMyIndexRoute
+  ArtistApplicationCheckoutApplicationIdRoute: typeof ArtistApplicationCheckoutApplicationIdRoute
   ArtistFindVenueIdRoute: typeof ArtistFindVenueIdRoute
   ArtistMyConcertsConcertIdRoute: typeof ArtistMyConcertsConcertIdRoute
 }
@@ -874,6 +893,8 @@ const ArtistRouteRouteChildren: ArtistRouteRouteChildren = {
   ArtistIndexRoute: ArtistIndexRoute,
   ArtistFindIndexRoute: ArtistFindIndexRoute,
   ArtistMyIndexRoute: ArtistMyIndexRoute,
+  ArtistApplicationCheckoutApplicationIdRoute:
+    ArtistApplicationCheckoutApplicationIdRoute,
   ArtistFindVenueIdRoute: ArtistFindVenueIdRoute,
   ArtistMyConcertsConcertIdRoute: ArtistMyConcertsConcertIdRoute,
 }
@@ -888,6 +909,7 @@ interface VenueRouteRouteChildren {
   VenueAcceptApplicationIdRoute: typeof VenueAcceptApplicationIdRoute
   VenueFindIndexRoute: typeof VenueFindIndexRoute
   VenueMyIndexRoute: typeof VenueMyIndexRoute
+  VenueApplicationCheckoutApplicationIdRoute: typeof VenueApplicationCheckoutApplicationIdRoute
   VenueFindArtistIdRoute: typeof VenueFindArtistIdRoute
   VenueMyApplicationsIdRoute: typeof VenueMyApplicationsIdRoute
   VenueMyConcertsConcertIdRoute: typeof VenueMyConcertsConcertIdRoute
@@ -899,6 +921,8 @@ const VenueRouteRouteChildren: VenueRouteRouteChildren = {
   VenueAcceptApplicationIdRoute: VenueAcceptApplicationIdRoute,
   VenueFindIndexRoute: VenueFindIndexRoute,
   VenueMyIndexRoute: VenueMyIndexRoute,
+  VenueApplicationCheckoutApplicationIdRoute:
+    VenueApplicationCheckoutApplicationIdRoute,
   VenueFindArtistIdRoute: VenueFindArtistIdRoute,
   VenueMyApplicationsIdRoute: VenueMyApplicationsIdRoute,
   VenueMyConcertsConcertIdRoute: VenueMyConcertsConcertIdRoute,
