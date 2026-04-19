@@ -34,7 +34,7 @@ public class ConcertReviewRepository : IConcertReviewRepository
     public Task<bool> CanReviewAsync(Guid userId, int id) =>
         context.Tickets
             .Where(t => t.UserId == userId && t.Review == null)
-            .AnyAsync(t => t.ConcertId == id && t.Concert.Application.Opportunity.Period.Start <= timeProvider.GetUtcNow());
+            .AnyAsync(t => t.ConcertId == id && t.Concert.Booking.Application.Opportunity.Period.Start <= timeProvider.GetUtcNow());
 
     public async Task<ReviewEntity> AddAsync(ReviewEntity review)
     {

@@ -21,6 +21,6 @@ public class SettlementWebhookHandler : ISettlementWebhookStrategy
     public async Task HandleAsync(PaymentIntent intent, CancellationToken cancellationToken)
     {
         await transactionService.CompleteAsync(intent.Id);
-        await settlementDispatcher.SettleAsync(int.Parse(intent.Metadata["applicationId"]));
+        await settlementDispatcher.SettleAsync(int.Parse(intent.Metadata["bookingId"]));
     }
 }

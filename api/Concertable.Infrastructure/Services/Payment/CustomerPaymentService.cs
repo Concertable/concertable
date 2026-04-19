@@ -4,6 +4,7 @@ using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
 using FluentResults;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
@@ -12,7 +13,7 @@ public class CustomerPaymentService : ICustomerPaymentService
     private readonly IPaymentService paymentService;
     private readonly IStripeAccountService stripeAccountService;
 
-    public CustomerPaymentService(IPaymentService paymentService, IStripeAccountService stripeAccountService)
+    public CustomerPaymentService([FromKeyedServices("onSession")] IPaymentService paymentService, IStripeAccountService stripeAccountService)
     {
         this.paymentService = paymentService;
         this.stripeAccountService = stripeAccountService;

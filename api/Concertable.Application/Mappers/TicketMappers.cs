@@ -19,10 +19,10 @@ public static class TicketMappers
         Id = concert.Id,
         Name = concert.Name,
         Price = concert.Price,
-        StartDate = concert.Application.Opportunity.Period.Start,
-        EndDate = concert.Application.Opportunity.Period.End,
-        VenueName = concert.Application.Opportunity.Venue.Name,
-        ArtistName = concert.Application.Artist.Name
+        StartDate = concert.Booking.Application.Opportunity.Period.Start,
+        EndDate = concert.Booking.Application.Opportunity.Period.End,
+        VenueName = concert.Booking.Application.Opportunity.Venue.Name,
+        ArtistName = concert.Booking.Application.Artist.Name
     };
 
     public static IEnumerable<TicketDto> ToDtos(this IEnumerable<TicketEntity> tickets) =>

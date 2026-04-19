@@ -5,5 +5,5 @@ namespace Concertable.Application.Interfaces.Payment;
 
 public interface IManagerPaymentService
 {
-    Task<PaymentResponse> PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int applicationId, string? paymentMethodId = null);
+    Task<PaymentResponse> PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int bookingId, string? paymentMethodId = null);
 }

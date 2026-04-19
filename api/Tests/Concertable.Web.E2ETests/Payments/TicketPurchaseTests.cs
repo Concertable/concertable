@@ -34,7 +34,7 @@ public class TicketPurchaseTests : IAsyncLifetime
         // Act
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.PostedFlatFeeApp.ConcertId!.Value, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.FlatFeeUpcomingConcert.Id, Quantity = 1 });
 
         var body = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
@@ -43,10 +43,10 @@ public class TicketPurchaseTests : IAsyncLifetime
 
         var tickets = await fixture.Polling.UntilAsync(
             async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
-            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.PostedFlatFeeApp.ConcertId!.Value),
+            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.FlatFeeUpcomingConcert.Id),
             timeout: TimeSpan.FromSeconds(15));
 
-        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.PostedFlatFeeApp.ConcertId!.Value);
+        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.FlatFeeUpcomingConcert.Id);
 
         var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);
         Assert.Equal(fixture.SeedData.VenueManager1.StripeAccountId, intent.TransferData.DestinationId);
@@ -57,7 +57,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     {
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.PostedDoorSplitApp.ConcertId!.Value, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.DoorSplitUpcomingConcert.Id, Quantity = 1 });
 
         var body = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
@@ -66,10 +66,10 @@ public class TicketPurchaseTests : IAsyncLifetime
 
         var tickets = await fixture.Polling.UntilAsync(
             async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
-            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.PostedDoorSplitApp.ConcertId!.Value),
+            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.DoorSplitUpcomingConcert.Id),
             timeout: TimeSpan.FromSeconds(15));
 
-        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.PostedDoorSplitApp.ConcertId!.Value);
+        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.DoorSplitUpcomingConcert.Id);
 
         var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);
         Assert.Equal(fixture.SeedData.VenueManager1.StripeAccountId, intent.TransferData.DestinationId);
@@ -80,7 +80,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     {
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.PostedVersusApp.ConcertId!.Value, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.VersusUpcomingConcert.Id, Quantity = 1 });
 
         var body = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
@@ -89,10 +89,10 @@ public class TicketPurchaseTests : IAsyncLifetime
 
         var tickets = await fixture.Polling.UntilAsync(
             async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
-            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.PostedVersusApp.ConcertId!.Value),
+            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.VersusUpcomingConcert.Id),
             timeout: TimeSpan.FromSeconds(15));
 
-        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.PostedVersusApp.ConcertId!.Value);
+        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.VersusUpcomingConcert.Id);
 
         var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);
         Assert.Equal(fixture.SeedData.VenueManager1.StripeAccountId, intent.TransferData.DestinationId);
@@ -103,7 +103,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     {
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.PostedVenueHireApp.ConcertId!.Value, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.VenueHireUpcomingConcert.Id, Quantity = 1 });
 
         var body = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
@@ -112,10 +112,10 @@ public class TicketPurchaseTests : IAsyncLifetime
 
         var tickets = await fixture.Polling.UntilAsync(
             async () => await customerClient.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user"),
-            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.PostedVenueHireApp.ConcertId!.Value),
+            t => t.Any(ticket => ticket.Concert.Id == fixture.SeedData.VenueHireUpcomingConcert.Id),
             timeout: TimeSpan.FromSeconds(15));
 
-        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.PostedVenueHireApp.ConcertId!.Value);
+        Assert.Contains(tickets, t => t.Concert.Id == fixture.SeedData.VenueHireUpcomingConcert.Id);
 
         // VenueHire: artist hired the venue, so ticket revenue routes to the artist manager
         var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);

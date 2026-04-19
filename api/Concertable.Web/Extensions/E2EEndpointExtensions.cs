@@ -23,12 +23,18 @@ public static class E2EEndpointExtensions
                 PendingVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.VenueHireApp.Id },
                 PendingDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.DoorSplitApp.Id },
                 PendingVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.VersusApp.Id },
-                PostedFlatFeeApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedFlatFeeApp.Id, ConcertId = seedData.PostedFlatFeeApp.Concert!.Id },
-                PostedDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedDoorSplitApp.Id, ConcertId = seedData.PostedDoorSplitApp.Concert!.Id },
-                PostedVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedVersusApp.Id, ConcertId = seedData.PostedVersusApp.Concert!.Id },
-                PostedVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedVenueHireApp.Id, ConcertId = seedData.PostedVenueHireApp.Concert!.Id },
-                FinishedDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedDoorSplitApp.Id, ConcertId = seedData.FinishedDoorSplitApp.Concert!.Id },
-                FinishedVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedVersusApp.Id, ConcertId = seedData.FinishedVersusApp.Concert!.Id },
+                PostedFlatFeeApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedFlatFeeApp.Id, ConcertId = seedData.PostedFlatFeeApp.Booking!.Concert!.Id },
+                PostedDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedDoorSplitApp.Id, ConcertId = seedData.PostedDoorSplitApp.Booking!.Concert!.Id },
+                PostedVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedVersusApp.Id, ConcertId = seedData.PostedVersusApp.Booking!.Concert!.Id },
+                PostedVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedVenueHireApp.Id, ConcertId = seedData.PostedVenueHireApp.Booking!.Concert!.Id },
+                FinishedDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedDoorSplitApp.Id, ConcertId = seedData.FinishedDoorSplitApp.Booking!.Concert!.Id },
+                FinishedVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedVersusApp.Id, ConcertId = seedData.FinishedVersusApp.Booking!.Concert!.Id },
+                UpcomingFlatFeeApp = new SeededOpportunityApplication { ApplicationId = seedData.UpcomingFlatFeeApp.Id, ConcertId = seedData.UpcomingFlatFeeApp.Booking!.Concert!.Id },
+                UpcomingVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.UpcomingVenueHireApp.Id, ConcertId = seedData.UpcomingVenueHireApp.Booking!.Concert!.Id },
+                FlatFeeUpcomingConcert = new SeededConcert { Id = seedData.UpcomingFlatFeeBooking.Concert!.Id },
+                VenueHireUpcomingConcert = new SeededConcert { Id = seedData.UpcomingVenueHireBooking.Concert!.Id },
+                DoorSplitUpcomingConcert = new SeededConcert { Id = seedData.PostedDoorSplitBooking.Concert!.Id },
+                VersusUpcomingConcert = new SeededConcert { Id = seedData.PostedVersusBooking.Concert!.Id },
             });
         });
 
@@ -39,13 +45,13 @@ public static class E2EEndpointExtensions
             if (result.IsFailed)
                 return Results.BadRequest(result.Errors.Select(e => e.Message));
 
-            var applicationId = await db.OpportunityApplications
-                .Where(a => a.Concert!.Id == concertId)
-                .Select(a => a.Id)
+            var bookingId = await db.ConcertBookings
+                .Where(b => b.Concert!.Id == concertId)
+                .Select(b => b.Id)
                 .FirstOrDefaultAsync();
 
             var paymentIntentId = await db.SettlementTransactions
-                .Where(t => t.ApplicationId == applicationId)
+                .Where(t => t.BookingId == bookingId)
                 .OrderByDescending(t => t.CreatedAt)
                 .Select(t => t.PaymentIntentId)
                 .FirstOrDefaultAsync();
@@ -57,8 +63,13 @@ public static class E2EEndpointExtensions
 
         app.MapGet("/e2e/payment-intent/{applicationId:int}", async (int applicationId, ApplicationDbContext db) =>
         {
+            var bookingId = await db.ConcertBookings
+                .Where(b => b.ApplicationId == applicationId)
+                .Select(b => b.Id)
+                .FirstOrDefaultAsync();
+
             var paymentIntentId = await db.SettlementTransactions
-                .Where(t => t.ApplicationId == applicationId)
+                .Where(t => t.BookingId == bookingId)
                 .OrderByDescending(t => t.CreatedAt)
                 .Select(t => t.PaymentIntentId)
                 .FirstOrDefaultAsync();

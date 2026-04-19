@@ -139,19 +139,32 @@ public class TestDbInitializer : IDbInitializer
             var opps = seed.Opportunities;
 
             seed.FlatFeeApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[0].Id);
-            seed.SettledApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[1].Id, ConcertFaker.GetFaker("Draft Concert", 0m, 100, 100).Generate());
-            seed.AwaitingPaymentApp = OpportunityApplicationFactory.AwaitingPayment(seed.Artist.Id, opps[2].Id, ConcertFaker.GetFaker("Unsettled Concert", 0m, 100, 100).Generate());
+
+            seed.ConfirmedBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Draft Concert", 0m, 100, 100).Generate());
+            seed.ConfirmedApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[1].Id, seed.ConfirmedBooking);
+
+            seed.AwaitingPaymentBooking = ConcertBookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Unsettled Concert", 0m, 100, 100).Generate());
+            seed.AwaitingPaymentApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[2].Id, seed.AwaitingPaymentBooking);
+
             seed.VersusApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[3].Id);
             seed.DoorSplitApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[4].Id);
             seed.VenueHireApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[5].Id);
-            seed.PostedFlatFeeApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[6].Id, ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, 100, now).Generate());
-            seed.PostedDoorSplitApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[7].Id, ConcertFaker.GetFaker("Posted DoorSplit Concert", 10.00m, 100, 100, now).Generate());
-            seed.PostedVersusApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[8].Id, ConcertFaker.GetFaker("Posted Versus Concert", 10.00m, 100, 100, now).Generate());
-            seed.PostedVenueHireApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[9].Id, ConcertFaker.GetFaker("Posted VenueHire Concert", 10.00m, 100, 100, now).Generate());
+
+            seed.PostedFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedFlatFeeApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[6].Id, seed.PostedFlatFeeBooking);
+
+            seed.PostedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted DoorSplit Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedDoorSplitApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[7].Id, seed.PostedDoorSplitBooking);
+
+            seed.PostedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted Versus Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedVersusApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[8].Id, seed.PostedVersusBooking);
+
+            seed.PostedVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted VenueHire Concert", 10.00m, 100, 100, now).Generate());
+            seed.PostedVenueHireApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[9].Id, seed.PostedVenueHireBooking);
 
             context.OpportunityApplications.AddRange(
                 seed.FlatFeeApp,
-                seed.SettledApp,
+                seed.ConfirmedApp,
                 seed.AwaitingPaymentApp,
                 seed.VersusApp,
                 seed.DoorSplitApp,

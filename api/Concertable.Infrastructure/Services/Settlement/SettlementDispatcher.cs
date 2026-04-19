@@ -12,9 +12,9 @@ public class SettlementDispatcher : ISettlementDispatcher
         this.resolver = resolver;
     }
 
-    public async Task SettleAsync(int applicationId)
+    public async Task SettleAsync(int bookingId)
     {
-        var strategy = await resolver.ResolveForApplicationAsync(applicationId);
-        await strategy.SettleAsync(applicationId);
+        var strategy = await resolver.ResolveForBookingAsync(bookingId);
+        await strategy.SettleAsync(bookingId);
     }
 }

@@ -21,7 +21,7 @@ public class SettlementDispatcherTests
     public async Task SettleAsync_ShouldResolveStrategyAndDelegate()
     {
         var strategy = new Mock<IConcertWorkflowStrategy>();
-        resolver.Setup(r => r.ResolveForApplicationAsync(1)).ReturnsAsync(strategy.Object);
+        resolver.Setup(r => r.ResolveForBookingAsync(1)).ReturnsAsync(strategy.Object);
 
         await sut.SettleAsync(1);
 

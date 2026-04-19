@@ -481,12 +481,33 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Concerts",
+                name: "ConcertBookings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ApplicationId = table.Column<int>(type: "int", nullable: false),
+                    PaymentMethodId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConcertBookings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ConcertBookings_OpportunityApplications_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "OpportunityApplications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Concerts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BookingId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     About = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BannerUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -500,9 +521,9 @@ namespace Concertable.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Concerts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Concerts_OpportunityApplications_ApplicationId",
-                        column: x => x.ApplicationId,
-                        principalTable: "OpportunityApplications",
+                        name: "FK_Concerts_ConcertBookings_BookingId",
+                        column: x => x.BookingId,
+                        principalTable: "ConcertBookings",
                         principalColumn: "Id");
                 });
 
@@ -511,15 +532,15 @@ namespace Concertable.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false),
-                    ApplicationId = table.Column<int>(type: "int", nullable: false)
+                    BookingId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SettlementTransactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SettlementTransactions_OpportunityApplications_ApplicationId",
-                        column: x => x.ApplicationId,
-                        principalTable: "OpportunityApplications",
+                        name: "FK_SettlementTransactions_ConcertBookings_BookingId",
+                        column: x => x.BookingId,
+                        principalTable: "ConcertBookings",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_SettlementTransactions_Transactions_Id",
@@ -656,6 +677,12 @@ namespace Concertable.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ConcertBookings_ApplicationId",
+                table: "ConcertBookings",
+                column: "ApplicationId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ConcertGenres_GenreId",
                 table: "ConcertGenres",
                 column: "GenreId");
@@ -666,9 +693,9 @@ namespace Concertable.Infrastructure.Migrations
                 column: "ConcertId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Concerts_ApplicationId",
+                name: "IX_Concerts_BookingId",
                 table: "Concerts",
-                column: "ApplicationId",
+                column: "BookingId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -740,9 +767,9 @@ namespace Concertable.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_SettlementTransactions_ApplicationId",
+                name: "IX_SettlementTransactions_BookingId",
                 table: "SettlementTransactions",
-                column: "ApplicationId");
+                column: "BookingId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tickets_ConcertId",
@@ -867,6 +894,9 @@ namespace Concertable.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Concerts");
+
+            migrationBuilder.DropTable(
+                name: "ConcertBookings");
 
             migrationBuilder.DropTable(
                 name: "OpportunityApplications");

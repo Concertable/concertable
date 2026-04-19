@@ -40,8 +40,8 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
         return await upfrontConcertService.InitiateAsync(applicationId, venueManager, artistManager, contract.Fee, paymentMethodId);
     }
 
-    public Task SettleAsync(int applicationId) =>
-        upfrontConcertService.SettleAsync(applicationId);
+    public Task SettleAsync(int bookingId) =>
+        upfrontConcertService.SettleAsync(bookingId);
 
     public Task<IFinishOutcome> FinishedAsync(int concertId) =>
         upfrontConcertService.FinishedAsync(concertId);

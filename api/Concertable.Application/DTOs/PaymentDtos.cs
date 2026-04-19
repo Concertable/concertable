@@ -32,7 +32,7 @@ public record SettlementTransactionDto : ITransaction
 {
     public int Id { get; set; }
     public TransactionType TransactionType => TransactionType.Settlement;
-    public int ApplicationId { get; set; }
+    public int BookingId { get; set; }
     public Guid FromUserId { get; set; }
     public Guid ToUserId { get; set; }
     public required string PaymentIntentId { get; set; }

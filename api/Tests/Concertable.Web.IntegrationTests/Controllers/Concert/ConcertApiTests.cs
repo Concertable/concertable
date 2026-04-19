@@ -27,7 +27,7 @@ public class ConcertApiTests : IAsyncLifetime
         var request = BuildPostRequest();
 
         var response = await client.PutAsync(
-            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -40,20 +40,20 @@ public class ConcertApiTests : IAsyncLifetime
         var request = BuildPostRequest();
 
         var response = await client.PutAsync(
-            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
-    public async Task Post_ShouldReturn400_WhenApplicationNotSettled()
+    public async Task Post_ShouldReturn400_WhenBookingNotConfirmed()
     {
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
         var request = BuildPostRequest();
 
         var response = await client.PutAsync(
-            $"/api/Concert/post/{fixture.SeedData.AwaitingPaymentApp.Concert!.Id}",
+            $"/api/Concert/post/{fixture.SeedData.AwaitingPaymentBooking.Concert!.Id}",
             request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -66,7 +66,7 @@ public class ConcertApiTests : IAsyncLifetime
         var request = BuildPostRequest();
 
         var response = await client.PutAsync(
-            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -79,11 +79,11 @@ public class ConcertApiTests : IAsyncLifetime
         var request = BuildPostRequest();
 
         await client.PutAsync(
-            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
         var response = await client.PutAsync(
-            $"/api/Concert/post/{fixture.SeedData.SettledApp.Concert!.Id}",
+            $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

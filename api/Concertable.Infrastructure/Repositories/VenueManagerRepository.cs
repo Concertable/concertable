@@ -18,7 +18,7 @@ public class VenueManagerRepository : GuidRepository<VenueManagerEntity>, IManag
             .OfType<VenueManagerEntity>()
             .Where(u => u.Id == context.Concerts
                 .Where(c => c.Id == concertId)
-                .Select(c => c.Application.Opportunity.Venue.UserId)
+                .Select(c => c.Booking.Application.Opportunity.Venue.UserId)
                 .First())
             .FirstOrDefaultAsync();
     }

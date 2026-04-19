@@ -21,16 +21,16 @@ public class ConcertSearchSpecification : IConcertSearchSpecification
     {
         query = query
             .Where(e => e.DatePosted != null)
-            .Where(e => e.Application.Opportunity.Period.End > timeProvider.GetUtcNow());
+            .Where(e => e.Booking.Application.Opportunity.Period.End > timeProvider.GetUtcNow());
 
         if (searchParams.From != null)
-            query = query.Where(e => DateOnly.FromDateTime(e.Application.Opportunity.Period.Start) >= searchParams.From);
+            query = query.Where(e => DateOnly.FromDateTime(e.Booking.Application.Opportunity.Period.Start) >= searchParams.From);
 
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
 
         if (searchParams.ShowHistory == false)
-            query = query.Where(e => e.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow());
+            query = query.Where(e => e.Booking.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow());
 
         if (searchParams.ShowSold == false)
             query = query.Where(e => e.AvailableTickets > 0);

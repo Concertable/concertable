@@ -18,7 +18,7 @@ public class ArtistEntity : IIdEntity, IHasName, ILocatable<ArtistEntity>, IRevi
     public string BannerUrl { get; private set; } = null!;
     public ArtistManagerEntity User { get; set; } = null!;
     public static Expression<Func<ArtistEntity, Point?>> LocationExpression => a => a.User.Location;
-    public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Application.ArtistId;
+    public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Booking.Application.ArtistId;
 
     public HashSet<ArtistGenreEntity> ArtistGenres { get; private set; } = [];
     public HashSet<OpportunityApplicationEntity> Applications { get; private set; } = [];

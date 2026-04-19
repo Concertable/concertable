@@ -21,7 +21,7 @@ public class UserRepository : GuidRepository<UserEntity>, IUserRepository
     {
         return await context.Concerts
             .Where(e => e.Id == concertId)
-            .Select(e => e.Application.Artist.User)
+            .Select(e => e.Booking.Application.Artist.User)
             .FirstOrDefaultAsync();
     }
 
@@ -37,7 +37,7 @@ public class UserRepository : GuidRepository<UserEntity>, IUserRepository
     {
         return await context.Concerts
             .Where(e => e.Id == concertId)
-            .Select(e => (Guid?)e.Application.Artist.UserId)
+            .Select(e => (Guid?)e.Booking.Application.Artist.UserId)
             .FirstOrDefaultAsync();
     }
 

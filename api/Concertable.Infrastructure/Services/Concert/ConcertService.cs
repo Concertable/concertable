@@ -127,7 +127,7 @@ public class ConcertService : IConcertService
         var concertHeaderDto = concertEntity.ToHeaderDto();
         concertHeaderDto.Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating;
 
-        var location = concertEntity.Application.Opportunity.Venue.User.Location;
+        var location = concertEntity.Booking.Application.Opportunity.Venue.User.Location;
 
         if (location is null)
             return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = [] };

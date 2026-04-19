@@ -3,12 +3,6 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Enums;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.ExceptionServices;
 using Concertable.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
@@ -24,33 +18,31 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
 
     public async Task<IEnumerable<OpportunityApplicationEntity>> GetByOpportunityIdAsync(int id)
     {
-        var query = context.OpportunityApplications
-        .Where(ca => ca.OpportunityId == id)
-        .Include(ca => ca.Artist)
-            .ThenInclude(a => a.User)
-        .Include(ca => ca.Artist)
-            .ThenInclude(a => a.ArtistGenres)
-                .ThenInclude(ag => ag.Genre)
-        .Include(ca => ca.Opportunity)
-            .ThenInclude(o => o.Contract)
-        .Include(ca => ca.Opportunity)
-            .ThenInclude(o => o.OpportunityGenres)
-                .ThenInclude(og => og.Genre);
-
-        return await query.ToListAsync();
+        return await context.OpportunityApplications
+            .Where(ca => ca.OpportunityId == id)
+            .Include(ca => ca.Artist)
+                .ThenInclude(a => a.User)
+            .Include(ca => ca.Artist)
+                .ThenInclude(a => a.ArtistGenres)
+                    .ThenInclude(ag => ag.Genre)
+            .Include(ca => ca.Opportunity)
+                .ThenInclude(o => o.Contract)
+            .Include(ca => ca.Opportunity)
+                .ThenInclude(o => o.OpportunityGenres)
+                    .ThenInclude(og => og.Genre)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<OpportunityApplicationEntity>> GetPendingByArtistIdAsync(int artistId)
     {
-        var query = context.OpportunityApplications
-        .Include(a => a.Opportunity)
-            .ThenInclude(o => o.Venue)
-        .Where(a =>
-            a.ArtistId == artistId &&
-            !context.Concerts.Any(e => e.ApplicationId == a.Id) &&
-            a.Opportunity.Period.Start > timeProvider.GetUtcNow());
-
-        return await query.ToListAsync();
+        return await context.OpportunityApplications
+            .Include(a => a.Opportunity)
+                .ThenInclude(o => o.Venue)
+            .Where(a =>
+                a.ArtistId == artistId &&
+                !context.ConcertBookings.Any(b => b.ApplicationId == a.Id) &&
+                a.Opportunity.Period.Start > timeProvider.GetUtcNow())
+            .ToListAsync();
     }
 
     public async Task<(ArtistEntity, VenueEntity)?> GetArtistAndVenueByIdAsync(int id)
@@ -73,7 +65,7 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
 
     public async new Task<OpportunityApplicationEntity?> GetByIdAsync(int id)
     {
-        var query = context.OpportunityApplications
+        return await context.OpportunityApplications
             .Where(ca => ca.Id == id)
             .Include(ca => ca.Artist)
                 .ThenInclude(ca => ca.ArtistGenres)
@@ -83,16 +75,7 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
                 .ThenInclude(o => o.Contract)
             .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.OpportunityGenres)
-                    .ThenInclude(og => og.Genre);
-
-        return await query.FirstOrDefaultAsync();
-    }
-
-    public async Task<OpportunityApplicationEntity?> GetByConcertIdAsync(int concertId)
-    {
-        return await context.OpportunityApplications
-            .Where(a => a.Concert!.Id == concertId)
-            .Include(a => a.Opportunity)
+                    .ThenInclude(og => og.Genre)
             .FirstOrDefaultAsync();
     }
 
@@ -105,17 +88,16 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
 
     public async Task<IEnumerable<OpportunityApplicationEntity>> GetRecentDeniedByArtistIdAsync(int artistId)
     {
-        var query = context.OpportunityApplications
+        return await context.OpportunityApplications
             .Include(a => a.Opportunity)
                 .ThenInclude(o => o.Venue)
             .Where(a =>
                 a.ArtistId == artistId &&
-                context.Concerts.Any(e =>
-                    e.Application.OpportunityId == a.OpportunityId &&
-                    e.ApplicationId != a.Id)) // someone else was accepted
+                context.ConcertBookings.Any(b =>
+                    b.Application.OpportunityId == a.OpportunityId &&
+                    b.ApplicationId != a.Id))
             .OrderByDescending(a => a.Opportunity.Period.End)
-            .Take(5);
-
-        return await query.ToListAsync();
+            .Take(5)
+            .ToListAsync();
     }
 }

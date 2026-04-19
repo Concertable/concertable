@@ -8,12 +8,11 @@ public class OpportunityApplicationEntity : IIdEntity
 {
     public int Id { get; private set; }
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Pending;
-    public string? PaymentMethodId { get; private set; }
     public int OpportunityId { get; private set; }
     public int ArtistId { get; private set; }
     public OpportunityEntity Opportunity { get; set; } = null!;
     public ArtistEntity Artist { get; set; } = null!;
-    public ConcertEntity? Concert { get; set; }
+    public ConcertBookingEntity? Booking { get; set; }
 
     private OpportunityApplicationEntity() { }
 
@@ -23,12 +22,12 @@ public class OpportunityApplicationEntity : IIdEntity
         OpportunityId = opportunityId
     };
 
-    public void Accept(ConcertEntity concert)
+    public void Accept(ConcertBookingEntity bookingConcert)
     {
-        if (Status != ApplicationStatus.Pending && Status != ApplicationStatus.AwaitingPayment)
-            throw new DomainException("Only pending or awaiting payment applications can be accepted.");
+        if (Status != ApplicationStatus.Pending)
+            throw new DomainException("Only pending applications can be accepted.");
         Status = ApplicationStatus.Accepted;
-        Concert = concert;
+        Booking = bookingConcert;
     }
 
     public void Reject()
@@ -43,33 +42,5 @@ public class OpportunityApplicationEntity : IIdEntity
         if (Status != ApplicationStatus.Pending)
             throw new DomainException("Only pending applications can be withdrawn.");
         Status = ApplicationStatus.Withdrawn;
-    }
-
-    public void StorePaymentMethod(string? paymentMethodId)
-    {
-        PaymentMethodId = paymentMethodId;
-    }
-
-    public void AwaitPayment()
-    {
-        if (Status != ApplicationStatus.Pending && Status != ApplicationStatus.Accepted)
-            throw new DomainException("Only pending or accepted applications can await payment.");
-        Status = ApplicationStatus.AwaitingPayment;
-    }
-
-    public void FailPayment()
-    {
-        if (Status != ApplicationStatus.AwaitingPayment)
-            throw new DomainException("Only applications awaiting payment can fail payment.");
-        Status = ApplicationStatus.PaymentFailed;
-    }
-
-    public void Complete()
-    {
-        if (Status != ApplicationStatus.AwaitingPayment && Status != ApplicationStatus.Accepted)
-            throw new DomainException("Only awaiting payment or accepted applications can be completed.");
-        if (DateTime.UtcNow < Opportunity.Period.End)
-            throw new DomainException("Application cannot be completed before the concert has ended.");
-        Status = ApplicationStatus.Complete;
     }
 }

@@ -30,4 +30,11 @@ public class ContractStrategyResolver<T> : IContractStrategyResolver<T> where T 
             ?? throw new NotFoundException("Contract not found for this application");
         return factory.Create(contractType);
     }
+
+    public async Task<T> ResolveForBookingAsync(int bookingId)
+    {
+        var contractType = await contractRepository.GetTypeByBookingIdAsync(bookingId)
+            ?? throw new NotFoundException("Contract not found for this booking");
+        return factory.Create(contractType);
+    }
 }
