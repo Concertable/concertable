@@ -6,15 +6,15 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Settlement;
 
-public class SettlementProcessorTests
+public class SettlementDispatcherTests
 {
     private readonly Mock<IContractStrategyResolver<IConcertWorkflowStrategy>> resolver;
-    private readonly SettlementProcessor sut;
+    private readonly SettlementDispatcher sut;
 
-    public SettlementProcessorTests()
+    public SettlementDispatcherTests()
     {
         resolver = new Mock<IContractStrategyResolver<IConcertWorkflowStrategy>>();
-        sut = new SettlementProcessor(resolver.Object);
+        sut = new SettlementDispatcher(resolver.Object);
     }
 
     [Fact]

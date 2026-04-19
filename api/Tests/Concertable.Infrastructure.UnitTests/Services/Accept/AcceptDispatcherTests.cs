@@ -6,15 +6,15 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Accept;
 
-public class AcceptProcessorTests
+public class AcceptDispatcherTests
 {
     private readonly Mock<IContractStrategyResolver<IConcertWorkflowStrategy>> resolver;
-    private readonly AcceptProcessor sut;
+    private readonly AcceptDispatcher sut;
 
-    public AcceptProcessorTests()
+    public AcceptDispatcherTests()
     {
         resolver = new Mock<IContractStrategyResolver<IConcertWorkflowStrategy>>();
-        sut = new AcceptProcessor(resolver.Object);
+        sut = new AcceptDispatcher(resolver.Object);
     }
 
     [Fact]

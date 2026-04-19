@@ -56,8 +56,8 @@ internal static class ServiceCollectionExtensions
         services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
         services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
 
-        services.AddScoped<IFinishedProcessor, FinishedProcessor>();
-        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
+        services.AddScoped<IFinishedDispatcher, FinishedDispatcher>();
+        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddKeyedScoped<IConcertWorkflowStrategy, FlatFeeConcertWorkflow>(ContractType.FlatFee);
         services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);
         services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);

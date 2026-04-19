@@ -2,6 +2,7 @@ using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 
 namespace Concertable.Infrastructure.Services.Application;
@@ -25,7 +26,7 @@ public class UpfrontConcertService : IUpfrontConcertService
         this.concertDraftService = concertDraftService;
     }
 
-    public async Task InitiateAsync(int applicationId, ManagerEntity payer, ManagerEntity payee, decimal amount, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, ManagerEntity payer, ManagerEntity payee, decimal amount, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
@@ -38,7 +39,8 @@ public class UpfrontConcertService : IUpfrontConcertService
         application.AwaitPayment();
         await applicationRepository.SaveChangesAsync();
 
-        await managerPaymentService.PayAsync(payer, payee, amount, applicationId, paymentMethodId);
+        var payment = await managerPaymentService.PayAsync(payer, payee, amount, applicationId, paymentMethodId);
+        return new ImmediateAcceptOutcome(payment);
     }
 
     public async Task SettleAsync(int applicationId)
@@ -49,12 +51,14 @@ public class UpfrontConcertService : IUpfrontConcertService
             throw new BadRequestException(draftResult.Errors);
     }
 
-    public async Task FinishedAsync(int concertId)
+    public async Task<IFinishOutcome> FinishedAsync(int concertId)
     {
         var application = await applicationRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Application not found");
 
         application.Complete();
         await applicationRepository.SaveChangesAsync();
+
+        return new ImmediateFinishOutcome();
     }
 }

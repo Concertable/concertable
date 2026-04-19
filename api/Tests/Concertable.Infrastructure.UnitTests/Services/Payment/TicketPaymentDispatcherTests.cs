@@ -8,15 +8,15 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Payment;
 
-public class TicketPaymentProcessorTests
+public class TicketPaymentDispatcherTests
 {
     private readonly Mock<IContractStrategyResolver<ITicketPaymentStrategy>> resolver;
-    private readonly TicketPaymentProcessor sut;
+    private readonly TicketPaymentDispatcher sut;
 
-    public TicketPaymentProcessorTests()
+    public TicketPaymentDispatcherTests()
     {
         resolver = new Mock<IContractStrategyResolver<ITicketPaymentStrategy>>();
-        sut = new TicketPaymentProcessor(resolver.Object);
+        sut = new TicketPaymentDispatcher(resolver.Object);
     }
 
     [Fact]

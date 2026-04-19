@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Responses;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -10,18 +11,18 @@ namespace Concertable.Workers.UnitTests.Functions;
 public class ConcertFinishedFunctionTests
 {
     private readonly Mock<IConcertRepository> concertRepository;
-    private readonly Mock<IFinishedProcessor> finishedProcessor;
+    private readonly Mock<IFinishedDispatcher> finishedDispatcher;
     private readonly Mock<ILogger<ConcertFinishedFunction>> logger;
     private readonly ConcertFinishedFunction sut;
 
     public ConcertFinishedFunctionTests()
     {
         concertRepository = new Mock<IConcertRepository>();
-        finishedProcessor = new Mock<IFinishedProcessor>();
+        finishedDispatcher = new Mock<IFinishedDispatcher>();
         logger = new Mock<ILogger<ConcertFinishedFunction>>();
-        sut = new ConcertFinishedFunction(concertRepository.Object, finishedProcessor.Object, logger.Object);
+        sut = new ConcertFinishedFunction(concertRepository.Object, finishedDispatcher.Object, logger.Object);
 
-        finishedProcessor.Setup(p => p.FinishedAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok());
+        finishedDispatcher.Setup(p => p.FinishedAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok<IFinishOutcome>(new ImmediateFinishOutcome()));
     }
 
     [Fact]
@@ -34,9 +35,9 @@ public class ConcertFinishedFunctionTests
         await sut.Run(null!);
 
         // Assert
-        finishedProcessor.Verify(p => p.FinishedAsync(1), Times.Once);
-        finishedProcessor.Verify(p => p.FinishedAsync(2), Times.Once);
-        finishedProcessor.Verify(p => p.FinishedAsync(3), Times.Once);
+        finishedDispatcher.Verify(p => p.FinishedAsync(1), Times.Once);
+        finishedDispatcher.Verify(p => p.FinishedAsync(2), Times.Once);
+        finishedDispatcher.Verify(p => p.FinishedAsync(3), Times.Once);
     }
 
     [Fact]
@@ -44,15 +45,15 @@ public class ConcertFinishedFunctionTests
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([1, 2, 3]);
-        finishedProcessor.Setup(p => p.FinishedAsync(2)).ReturnsAsync(Result.Fail("Payment failed"));
+        finishedDispatcher.Setup(p => p.FinishedAsync(2)).ReturnsAsync(Result.Fail<IFinishOutcome>("Payment failed"));
 
         // Act
         await sut.Run(null!);
 
         // Assert
-        finishedProcessor.Verify(p => p.FinishedAsync(1), Times.Once);
-        finishedProcessor.Verify(p => p.FinishedAsync(2), Times.Once);
-        finishedProcessor.Verify(p => p.FinishedAsync(3), Times.Once);
+        finishedDispatcher.Verify(p => p.FinishedAsync(1), Times.Once);
+        finishedDispatcher.Verify(p => p.FinishedAsync(2), Times.Once);
+        finishedDispatcher.Verify(p => p.FinishedAsync(3), Times.Once);
     }
 
     [Fact]
@@ -65,6 +66,6 @@ public class ConcertFinishedFunctionTests
         await sut.Run(null!);
 
         // Assert
-        finishedProcessor.Verify(p => p.FinishedAsync(It.IsAny<int>()), Times.Never);
+        finishedDispatcher.Verify(p => p.FinishedAsync(It.IsAny<int>()), Times.Never);
     }
 }

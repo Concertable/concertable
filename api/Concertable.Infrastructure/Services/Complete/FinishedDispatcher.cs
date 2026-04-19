@@ -1,25 +1,26 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Responses;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Complete;
 
-public class FinishedProcessor : IFinishedProcessor
+public class FinishedDispatcher : IFinishedDispatcher
 {
     private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 
-    public FinishedProcessor(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
+    public FinishedDispatcher(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
     {
         this.resolver = resolver;
     }
 
-    public async Task<Result> FinishedAsync(int concertId)
+    public async Task<Result<IFinishOutcome>> FinishedAsync(int concertId)
     {
         try
         {
             var strategy = await resolver.ResolveForConcertAsync(concertId);
-            await strategy.FinishedAsync(concertId);
-            return Result.Ok();
+            var outcome = await strategy.FinishedAsync(concertId);
+            return Result.Ok(outcome);
         }
         catch (Exception ex)
         {

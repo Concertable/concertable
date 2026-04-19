@@ -5,11 +5,11 @@ using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class TicketPaymentProcessor : ITicketPaymentProcessor
+public class TicketPaymentDispatcher : ITicketPaymentDispatcher
 {
     private readonly IContractStrategyResolver<ITicketPaymentStrategy> resolver;
 
-    public TicketPaymentProcessor(IContractStrategyResolver<ITicketPaymentStrategy> resolver)
+    public TicketPaymentDispatcher(IContractStrategyResolver<ITicketPaymentStrategy> resolver)
     {
         this.resolver = resolver;
     }

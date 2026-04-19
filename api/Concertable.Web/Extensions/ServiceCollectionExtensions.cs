@@ -280,11 +280,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
         services.AddScoped<IManagerPaymentService, ManagerPaymentService>();
         services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
-        services.AddScoped<ITicketPaymentProcessor, TicketPaymentProcessor>();
+        services.AddScoped<ITicketPaymentDispatcher, TicketPaymentDispatcher>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
-        services.AddScoped<IAcceptProcessor, AcceptProcessor>();
-        services.AddScoped<IFinishedProcessor, FinishedProcessor>();
-        services.AddScoped<ISettlementProcessor, SettlementProcessor>();
+        services.AddScoped<IAcceptDispatcher, AcceptDispatcher>();
+        services.AddScoped<IFinishedDispatcher, FinishedDispatcher>();
+        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
 
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);

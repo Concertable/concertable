@@ -100,8 +100,8 @@ public class OpportunityApplicationController : ControllerBase
     [HttpPost("accept/{applicationId}")]
     public async Task<IActionResult> Accept(int applicationId, [FromBody] AcceptApplicationRequest? request = null)
     {
-        await applicationService.AcceptAsync(applicationId, request?.PaymentMethodId);
-        return Ok();
+        var outcome = await applicationService.AcceptAsync(applicationId, request?.PaymentMethodId);
+        return Ok(outcome);
     }
 
     [HttpGet("is-owner/{id}")]

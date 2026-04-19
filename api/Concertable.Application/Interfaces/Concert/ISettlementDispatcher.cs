@@ -1,6 +1,6 @@
 namespace Concertable.Application.Interfaces.Concert;
 
-public interface ISettlementProcessor
+public interface ISettlementDispatcher
 {
     Task SettleAsync(int applicationId);
 }

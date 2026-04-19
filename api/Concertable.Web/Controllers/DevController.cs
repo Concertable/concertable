@@ -73,19 +73,23 @@ public class DevController : ControllerBase
     [HttpPost("accept")]
     public async Task<IActionResult> Accept(
         [FromQuery] int applicationId,
-        [FromServices] IAcceptProcessor acceptProcessor)
+        [FromServices] IAcceptDispatcher acceptDispatcher)
     {
-        await acceptProcessor.AcceptAsync(applicationId);
-        return Ok();
+        var outcome = await acceptDispatcher.AcceptAsync(applicationId);
+        return Ok(outcome);
     }
 
     [Authorize]
     [HttpPost("complete")]
     public async Task<IActionResult> Complete(
         [FromQuery] int concertId,
-        [FromServices] IFinishedProcessor finishedProcessor)
+        [FromServices] IFinishedDispatcher finishedDispatcher)
     {
-        await finishedProcessor.FinishedAsync(concertId);
-        return Ok();
+        var result = await finishedDispatcher.FinishedAsync(concertId);
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors.Select(e => e.Message));
+
+        return Ok(result.Value);
     }
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams } from "@tanstack/react-router";
+import { loadStripe } from "@stripe/stripe-js";
 import dayjs from "dayjs";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,19 @@ import {
   useAcceptApplicationMutation,
 } from "@/hooks/query/useApplicationQuery";
 import { usePaymentMethodQuery } from "@/hooks/query/useStripeAccountQuery";
+import type { AcceptOutcome } from "@/types/application";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 export default function ApplicationCheckoutPage() {
-  const { id } = useParams({ from: "/_customer/application/checkout/$id" });
-  const { data: application, isLoading, isError } = useApplicationQuery(id);
+  const { applicationId } = useParams({ strict: false }) as {
+    applicationId: number;
+  };
+  const {
+    data: application,
+    isLoading,
+    isError,
+  } = useApplicationQuery(applicationId);
   const { data: savedCard, isLoading: isPaymentMethodLoading } =
     usePaymentMethodQuery();
   const { mutate: accept, isPending } = useAcceptApplicationMutation(
@@ -24,32 +34,66 @@ export default function ApplicationCheckoutPage() {
   const [paymentMethodId, setPaymentMethodId] = useState<
     string | null | undefined
   >(undefined);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isAwaiting, setIsAwaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (isLoading) return <CheckoutSkeleton />;
   if (isError || !application)
     return <div className="text-destructive p-6">Application not found.</div>;
 
-  if (isSuccess) return <SuccessView artistName={application.artist.name} />;
-
   const { artist, opportunity } = application;
+
+  async function handleOutcome(outcome: AcceptOutcome) {
+    if (outcome.$type === "deferred") {
+      setIsAwaiting(true);
+      return;
+    }
+
+    if (outcome.payment.requiresAction && outcome.payment.clientSecret) {
+      const stripe = await stripePromise;
+      const { error } = await stripe!.handleNextAction({
+        clientSecret: outcome.payment.clientSecret,
+      });
+      if (error) {
+        setError(error.message ?? "Payment authentication failed.");
+        return;
+      }
+    }
+
+    setIsAwaiting(true);
+  }
 
   function handleAccept() {
     setError(null);
     accept(
       { applicationId: application!.id, paymentMethodId },
       {
-        onSuccess: () => setIsSuccess(true),
+        onSuccess: handleOutcome,
         onError: () =>
           setError("Failed to accept application. Please try again."),
       },
     );
   }
 
+  if (isAwaiting) {
+    return (
+      <div className="mx-auto flex max-w-lg flex-col items-center gap-4 p-6 pt-20 text-center">
+        <CheckCircle className="mx-auto size-16 text-green-500" />
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">Application Accepted</h1>
+          <p className="text-muted-foreground">
+            You have accepted{" "}
+            <span className="text-foreground font-medium">{artist.name}</span>.
+            Creating concert draft...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Accept Application</h1>
+      <h1 className="text-2xl font-bold">Checkout</h1>
 
       <div className="space-y-1 rounded-lg border p-4">
         <p className="font-semibold">{artist.name}</p>
@@ -86,24 +130,8 @@ export default function ApplicationCheckoutPage() {
         disabled={isPending || paymentMethodId === undefined}
         onClick={handleAccept}
       >
-        {isPending ? "Accepting..." : "Accept Application"}
+        {isPending ? "Processing..." : "Confirm & Pay"}
       </Button>
-    </div>
-  );
-}
-
-function SuccessView({ artistName }: { artistName: string }) {
-  return (
-    <div className="mx-auto max-w-lg space-y-6 p-6 text-center">
-      <CheckCircle className="mx-auto size-16 text-green-500" />
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Application Accepted</h1>
-        <p className="text-muted-foreground">
-          You have accepted{" "}
-          <span className="text-foreground font-medium">{artistName}</span>.
-          They will be notified and a draft concert will be created.
-        </p>
-      </div>
     </div>
   );
 }

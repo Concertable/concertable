@@ -16,3 +16,20 @@ export interface OpportunityApplication {
   opportunity: Opportunity;
   status: ApplicationStatus;
 }
+
+interface PaymentResponse {
+  requiresAction: boolean;
+  clientSecret?: string;
+  transactionId?: string;
+}
+
+interface ImmediateAcceptOutcome {
+  $type: "immediate";
+  payment: PaymentResponse;
+}
+
+interface DeferredAcceptOutcome {
+  $type: "deferred";
+}
+
+export type AcceptOutcome = ImmediateAcceptOutcome | DeferredAcceptOutcome;

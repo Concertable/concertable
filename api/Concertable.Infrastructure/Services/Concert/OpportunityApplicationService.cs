@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
+using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 using Concertable.Application.Exceptions;
 
@@ -21,7 +22,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
     private readonly IOpportunityService opportunityService;
     private readonly IArtistService artistService;
     private readonly IOwnershipService ownershipService;
-    private readonly IAcceptProcessor acceptProcessor;
+    private readonly IAcceptDispatcher acceptDispatcher;
     private readonly IOpportunityApplicationMapper mapper;
 
     public OpportunityApplicationService(
@@ -35,7 +36,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         IOpportunityService opportunityService,
         IOwnershipService ownershipService,
         IArtistService artistService,
-        IAcceptProcessor acceptProcessor,
+        IAcceptDispatcher acceptDispatcher,
         IOpportunityApplicationMapper mapper)
     {
         this.applicationRepository = applicationRepository;
@@ -48,7 +49,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         this.opportunityService = opportunityService;
         this.artistService = artistService;
         this.ownershipService = ownershipService;
-        this.acceptProcessor = acceptProcessor;
+        this.acceptDispatcher = acceptDispatcher;
         this.mapper = mapper;
     }
 
@@ -125,9 +126,9 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         return mapper.ToDto(application);
     }
 
-    public async Task AcceptAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
-        await acceptProcessor.AcceptAsync(applicationId, paymentMethodId);
+        var outcome = await acceptDispatcher.AcceptAsync(applicationId, paymentMethodId);
 
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");
@@ -139,6 +140,8 @@ public class OpportunityApplicationService : IOpportunityApplicationService
             action: MessageAction.ApplicationAccepted);
 
         await emailService.SendEmailAsync(artist.User.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
+
+        return outcome;
     }
 
     public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)

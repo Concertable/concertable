@@ -3,11 +3,11 @@ using Concertable.Application.Interfaces.Concert;
 
 namespace Concertable.Infrastructure.Services.Settlement;
 
-public class SettlementProcessor : ISettlementProcessor
+public class SettlementDispatcher : ISettlementDispatcher
 {
     private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 
-    public SettlementProcessor(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
+    public SettlementDispatcher(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
     {
         this.resolver = resolver;
     }

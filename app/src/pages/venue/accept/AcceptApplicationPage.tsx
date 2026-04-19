@@ -1,22 +1,15 @@
 import { useParams, useNavigate } from "@tanstack/react-router";
-import {
-  useApplicationQuery,
-  useAcceptApplicationMutation,
-} from "@/hooks/query/useApplicationQuery";
+import { useApplicationQuery } from "@/hooks/query/useApplicationQuery";
 import { usePayoutAccountStatusQuery } from "@/hooks/query/useStripeAccountQuery";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
 import { StripeOnboardingBanner } from "@/components/stripe/StripeOnboardingBanner";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import dayjs from "dayjs";
 
 export default function AcceptApplicationPage() {
   const { applicationId } = useParams({ from: "/venue/accept/$applicationId" });
   const navigate = useNavigate();
   const { data: application, isLoading } = useApplicationQuery(applicationId);
-  const { mutate: accept, isPending } = useAcceptApplicationMutation(
-    application?.opportunity.id ?? 0,
-  );
   const { data: accountStatus } = usePayoutAccountStatusQuery(true);
 
   if (isLoading || !application) return null;
@@ -24,8 +17,9 @@ export default function AcceptApplicationPage() {
   const { artist, opportunity } = application;
 
   function handleConfirm() {
-    accept(application!.id, {
-      onSuccess: () => toast.success("Application accepted"),
+    void navigate({
+      to: "/venue/application/checkout/$applicationId",
+      params: { applicationId },
     });
   }
 
@@ -57,11 +51,8 @@ export default function AcceptApplicationPage() {
         >
           Cancel
         </Button>
-        <Button
-          disabled={isPending || accountStatus !== "Verified"}
-          onClick={handleConfirm}
-        >
-          {isPending ? "Confirming..." : "Confirm"}
+        <Button disabled={accountStatus !== "Verified"} onClick={handleConfirm}>
+          Continue
         </Button>
       </div>
     </div>

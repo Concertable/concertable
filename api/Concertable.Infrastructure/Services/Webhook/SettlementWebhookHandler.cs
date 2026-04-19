@@ -8,19 +8,19 @@ namespace Concertable.Infrastructure.Services.Webhook;
 public class SettlementWebhookHandler : ISettlementWebhookStrategy
 {
     private readonly ITransactionService transactionService;
-    private readonly ISettlementProcessor settlementProcessor;
+    private readonly ISettlementDispatcher settlementDispatcher;
 
     public SettlementWebhookHandler(
         ITransactionService transactionService,
-        ISettlementProcessor settlementProcessor)
+        ISettlementDispatcher settlementDispatcher)
     {
         this.transactionService = transactionService;
-        this.settlementProcessor = settlementProcessor;
+        this.settlementDispatcher = settlementDispatcher;
     }
 
     public async Task HandleAsync(PaymentIntent intent, CancellationToken cancellationToken)
     {
         await transactionService.CompleteAsync(intent.Id);
-        await settlementProcessor.SettleAsync(int.Parse(intent.Metadata["applicationId"]));
+        await settlementDispatcher.SettleAsync(int.Parse(intent.Metadata["applicationId"]));
     }
 }

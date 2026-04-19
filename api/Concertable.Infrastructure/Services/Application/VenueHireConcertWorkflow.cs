@@ -1,6 +1,7 @@
 using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 
@@ -25,7 +26,7 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         this.venueManagerRepository = venueManagerRepository;
     }
 
-    public async Task InitiateAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
     {
         var contract = await contractRepository.GetByApplicationIdAsync<VenueHireContractEntity>(applicationId)
             ?? throw new NotFoundException("VenueHire contract not found");
@@ -36,12 +37,12 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Venue manager not found");
 
-        await upfrontConcertService.InitiateAsync(applicationId, artistManager, venueManager, contract.HireFee, paymentMethodId);
+        return await upfrontConcertService.InitiateAsync(applicationId, artistManager, venueManager, contract.HireFee, paymentMethodId);
     }
 
     public Task SettleAsync(int applicationId) =>
         upfrontConcertService.SettleAsync(applicationId);
 
-    public Task FinishedAsync(int concertId) =>
+    public Task<IFinishOutcome> FinishedAsync(int concertId) =>
         upfrontConcertService.FinishedAsync(concertId);
 }

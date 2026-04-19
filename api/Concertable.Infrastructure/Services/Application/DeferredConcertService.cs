@@ -2,6 +2,7 @@ using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 
 namespace Concertable.Infrastructure.Services.Application;
@@ -25,7 +26,7 @@ public class DeferredConcertService : IDeferredConcertService
         this.concertDraftService = concertDraftService;
     }
 
-    public async Task InitiateAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
@@ -42,6 +43,8 @@ public class DeferredConcertService : IDeferredConcertService
 
         if (draftResult.IsFailed)
             throw new BadRequestException(draftResult.Errors);
+
+        return new DeferredAcceptOutcome();
     }
 
     public async Task SettleAsync(int applicationId)
@@ -53,7 +56,7 @@ public class DeferredConcertService : IDeferredConcertService
         await applicationRepository.SaveChangesAsync();
     }
 
-    public async Task FinishedAsync(int concertId, ManagerEntity payer, ManagerEntity payee, decimal amount)
+    public async Task<IFinishOutcome> FinishedAsync(int concertId, ManagerEntity payer, ManagerEntity payee, decimal amount)
     {
         var application = await applicationRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Application not found");
@@ -61,6 +64,7 @@ public class DeferredConcertService : IDeferredConcertService
         application.AwaitPayment();
         await applicationRepository.SaveChangesAsync();
 
-        await managerPaymentService.PayAsync(payer, payee, amount, application.Id, application.PaymentMethodId);
+        var payment = await managerPaymentService.PayAsync(payer, payee, amount, application.Id, application.PaymentMethodId);
+        return new DeferredFinishOutcome(payment);
     }
 }

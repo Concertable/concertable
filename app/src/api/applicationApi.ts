@@ -1,5 +1,8 @@
 import api from "@/lib/axios";
-import type { OpportunityApplication } from "@/types/application";
+import type {
+  AcceptOutcome,
+  OpportunityApplication,
+} from "@/types/application";
 
 const applicationApi = {
   applyToOpportunity: async (
@@ -32,10 +35,12 @@ const applicationApi = {
   acceptApplication: async (
     applicationId: number,
     paymentMethodId?: string | null,
-  ): Promise<void> => {
-    await api.post(`/opportunityapplication/accept/${applicationId}`, {
-      paymentMethodId,
-    });
+  ): Promise<AcceptOutcome> => {
+    const { data } = await api.post<AcceptOutcome>(
+      `/opportunityapplication/accept/${applicationId}`,
+      { paymentMethodId },
+    );
+    return data;
   },
 
   canAcceptApplication: async (applicationId: number): Promise<boolean> => {

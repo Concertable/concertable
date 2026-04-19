@@ -7,16 +7,16 @@ namespace Workers.Functions;
 public class ConcertFinishedFunction
 {
     private readonly IConcertRepository concertRepository;
-    private readonly IFinishedProcessor finishedProcessor;
+    private readonly IFinishedDispatcher finishedDispatcher;
     private readonly ILogger<ConcertFinishedFunction> logger;
 
     public ConcertFinishedFunction(
         IConcertRepository concertRepository,
-        IFinishedProcessor finishedProcessor,
+        IFinishedDispatcher finishedDispatcher,
         ILogger<ConcertFinishedFunction> logger)
     {
         this.concertRepository = concertRepository;
-        this.finishedProcessor = finishedProcessor;
+        this.finishedDispatcher = finishedDispatcher;
         this.logger = logger;
     }
 
@@ -27,7 +27,7 @@ public class ConcertFinishedFunction
 
         foreach (var concertId in concertIds)
         {
-            var result = await finishedProcessor.FinishedAsync(concertId);
+            var result = await finishedDispatcher.FinishedAsync(concertId);
 
             if (result.IsFailed)
                 logger.LogError("Failed to finish concert {ConcertId}: {Errors}", concertId, result.Errors);

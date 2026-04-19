@@ -12,23 +12,17 @@ public class ConcertDraftService : IConcertDraftService
     private readonly IOpportunityRepository opportunityRepository;
     private readonly IApplicationAcceptHandler acceptHandler;
     private readonly IConcertNotificationService concertNotificationService;
-    private readonly IApplicationNotificationService applicationNotificationService;
-    private readonly IManagerRepository<ArtistManagerEntity> artistManagerRepository;
 
     public ConcertDraftService(
         IOpportunityApplicationRepository applicationRepository,
         IOpportunityRepository opportunityRepository,
         IApplicationAcceptHandler acceptHandler,
-        IConcertNotificationService concertNotificationService,
-        IApplicationNotificationService applicationNotificationService,
-        IManagerRepository<ArtistManagerEntity> artistManagerRepository)
+        IConcertNotificationService concertNotificationService)
     {
         this.applicationRepository = applicationRepository;
         this.opportunityRepository = opportunityRepository;
         this.acceptHandler = acceptHandler;
         this.concertNotificationService = concertNotificationService;
-        this.applicationNotificationService = applicationNotificationService;
-        this.artistManagerRepository = artistManagerRepository;
     }
 
     public async Task<Result<ConcertEntity>> CreateAsync(int applicationId)
@@ -57,11 +51,7 @@ public class ConcertDraftService : IConcertDraftService
 
         await acceptHandler.HandleAsync(applicationId, concert);
 
-        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Artist manager not found");
-
         await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concert.Id);
-        await applicationNotificationService.ApplicationAcceptedAsync(artistManager.Id.ToString(), concert.Id);
 
         return Result.Ok(concert);
     }

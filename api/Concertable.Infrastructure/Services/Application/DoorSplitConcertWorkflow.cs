@@ -1,6 +1,7 @@
 using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 
@@ -28,13 +29,13 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         this.artistManagerRepository = artistManagerRepository;
     }
 
-    public Task InitiateAsync(int applicationId, string? paymentMethodId = null) =>
+    public Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null) =>
         deferredConcertService.InitiateAsync(applicationId, paymentMethodId);
 
     public Task SettleAsync(int applicationId) =>
         deferredConcertService.SettleAsync(applicationId);
 
-    public async Task FinishedAsync(int concertId)
+    public async Task<IFinishOutcome> FinishedAsync(int concertId)
     {
         var contract = await contractRepository.GetByConcertIdAsync<DoorSplitContractEntity>(concertId)
             ?? throw new NotFoundException("DoorSplit contract not found");
@@ -48,6 +49,6 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = contract.CalculateArtistShare(totalRevenue);
 
-        await deferredConcertService.FinishedAsync(concertId, venueManager, artistManager, artistShare);
+        return await deferredConcertService.FinishedAsync(concertId, venueManager, artistManager, artistShare);
     }
 }

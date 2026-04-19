@@ -6,15 +6,15 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Complete;
 
-public class CompleteProcessorTests
+public class FinishedDispatcherTests
 {
     private readonly Mock<IContractStrategyResolver<IConcertWorkflowStrategy>> resolver;
-    private readonly FinishedProcessor sut;
+    private readonly FinishedDispatcher sut;
 
-    public CompleteProcessorTests()
+    public FinishedDispatcherTests()
     {
         resolver = new Mock<IContractStrategyResolver<IConcertWorkflowStrategy>>();
-        sut = new FinishedProcessor(resolver.Object);
+        sut = new FinishedDispatcher(resolver.Object);
     }
 
     [Fact]
