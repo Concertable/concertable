@@ -32,8 +32,8 @@ public class VersusConcertWorkflow : IConcertWorkflowStrategy
     public Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null) =>
         deferredConcertService.InitiateAsync(applicationId);
 
-    public Task SettleAsync(int applicationId) =>
-        deferredConcertService.SettleAsync(applicationId);
+    public Task SettleAsync(int bookingId) =>
+        deferredConcertService.SettleAsync(bookingId);
 
     public async Task<IFinishOutcome> FinishedAsync(int concertId)
     {

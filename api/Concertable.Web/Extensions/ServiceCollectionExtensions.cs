@@ -24,6 +24,7 @@ using Concertable.Infrastructure.Repositories.Review;
 using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Repositories.Search;
 using Concertable.Infrastructure.Services;
+using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
@@ -233,6 +234,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistRepository, ArtistRepository>();
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
+        services.AddScoped<IConcertBookingRepository, ConcertBookingRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
         services.AddScoped<IContractRepository, ContractRepository>();
@@ -293,6 +295,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
         services.AddScoped<ITicketPaymentDispatcher, TicketPaymentDispatcher>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
+        services.AddScoped<IConcertBookingConfirmHandler, ConcertBookingConfirmHandler>();
         services.AddScoped<IAcceptDispatcher, AcceptDispatcher>();
         services.AddScoped<IFinishedDispatcher, FinishedDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();

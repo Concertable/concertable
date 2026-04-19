@@ -18,7 +18,7 @@ public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>, IReview
     public bool Approved { get; private set; }
     public VenueManagerEntity User { get; set; } = null!;
     public static Expression<Func<VenueEntity, Point?>> LocationExpression => v => v.User.Location;
-    public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Application.Opportunity.VenueId;
+    public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Booking.Application.Opportunity.VenueId;
 
     public ICollection<OpportunityEntity> Opportunities { get; private set; } = [];
 

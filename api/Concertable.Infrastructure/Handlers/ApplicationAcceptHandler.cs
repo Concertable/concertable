@@ -18,12 +18,12 @@ public class ApplicationAcceptHandler : IApplicationAcceptHandler
         this.taskRunner = taskRunner;
     }
 
-    public async Task HandleAsync(int applicationId, ConcertEntity concert)
+    public async Task HandleAsync(int applicationId, ConcertBookingEntity bookingConcert)
     {
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        application.Accept(concert);
+        application.Accept(bookingConcert);
         await applicationRepository.SaveChangesAsync();
 
         await taskRunner.RunAsync<IOpportunityApplicationRepository>(

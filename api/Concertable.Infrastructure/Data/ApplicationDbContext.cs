@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<OpportunityEntity> Opportunities { get; set; }
     public DbSet<OpportunityGenreEntity> OpportunityGenres { get; set; }
     public DbSet<OpportunityApplicationEntity> OpportunityApplications { get; set; }
+    public DbSet<ConcertBookingEntity> ConcertBookings { get; set; }
     public DbSet<ReviewEntity> Reviews { get; set; }
     public DbSet<TicketEntity> Tickets { get; set; }
     public DbSet<UserEntity> Users { get; set; }
@@ -108,15 +109,15 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<SettlementTransactionEntity>()
-            .HasOne(t => t.Application)
+            .HasOne(t => t.Booking)
             .WithMany()
-            .HasForeignKey(t => t.ApplicationId)
+            .HasForeignKey(t => t.BookingId)
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<ConcertEntity>()
-            .HasOne(e => e.Application)
-            .WithOne(a => a.Concert)
-            .HasForeignKey<ConcertEntity>(e => e.ApplicationId)
+            .HasOne(e => e.Booking)
+            .WithOne(b => b.Concert)
+            .HasForeignKey<ConcertEntity>(e => e.BookingId)
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<ConcertGenreEntity>()

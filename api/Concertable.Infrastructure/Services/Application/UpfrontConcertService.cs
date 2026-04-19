@@ -12,17 +12,23 @@ public class UpfrontConcertService : IUpfrontConcertService
 {
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IOpportunityApplicationRepository applicationRepository;
+    private readonly IConcertBookingRepository bookingRepository;
+    private readonly IApplicationAcceptHandler acceptHandler;
     private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertDraftService concertDraftService;
 
     public UpfrontConcertService(
         IOpportunityApplicationValidator applicationValidator,
         IOpportunityApplicationRepository applicationRepository,
+        IConcertBookingRepository bookingRepository,
+        IApplicationAcceptHandler acceptHandler,
         [FromKeyedServices("onSession")] IManagerPaymentService managerPaymentService,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
+        this.bookingRepository = bookingRepository;
+        this.acceptHandler = acceptHandler;
         this.managerPaymentService = managerPaymentService;
         this.concertDraftService = concertDraftService;
     }
@@ -30,35 +36,33 @@ public class UpfrontConcertService : IUpfrontConcertService
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, ManagerEntity payer, ManagerEntity payee, decimal amount, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
-
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var application = await applicationRepository.GetByIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
+        var bookingConcert = ConcertBookingEntity.Create(applicationId);
+        bookingConcert.AwaitPayment();
+        await bookingRepository.AddAsync(bookingConcert);
 
-        application.AwaitPayment();
-        await applicationRepository.SaveChangesAsync();
+        await acceptHandler.HandleAsync(applicationId, bookingConcert);
 
-        var payment = await managerPaymentService.PayAsync(payer, payee, amount, applicationId, paymentMethodId);
+        var payment = await managerPaymentService.PayAsync(payer, payee, amount, bookingConcert.Id, paymentMethodId);
         return new ImmediateAcceptOutcome(payment);
     }
 
-    public async Task SettleAsync(int applicationId)
+    public async Task SettleAsync(int bookingId)
     {
-        var draftResult = await concertDraftService.CreateAsync(applicationId);
-
+        var draftResult = await concertDraftService.CreateAsync(bookingId);
         if (draftResult.IsFailed)
             throw new BadRequestException(draftResult.Errors);
     }
 
     public async Task<IFinishOutcome> FinishedAsync(int concertId)
     {
-        var application = await applicationRepository.GetByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("Application not found");
+        var bookingConcert = await bookingRepository.GetByConcertIdAsync(concertId)
+            ?? throw new NotFoundException("Booking not found");
 
-        application.Complete();
-        await applicationRepository.SaveChangesAsync();
+        bookingConcert.Complete();
+        await bookingRepository.SaveChangesAsync();
 
         return new ImmediateFinishOutcome();
     }

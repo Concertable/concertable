@@ -84,7 +84,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
 
         // Assert
         var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.VenueHireApp.Id}");
-        Assert.Equal(ApplicationStatus.AwaitingPayment, application!.Status);
+        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
         Assert.Empty(fixture.NotificationService.DraftCreated);
     }
 
@@ -100,7 +100,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
         // Assert
         var application = await fixture.CreateClient(fixture.SeedData.VenueManager1)
             .GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.VenueHireApp.Id}");
-        Assert.Equal(ApplicationStatus.AwaitingPayment, application!.Status);
+        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
         Assert.Empty(fixture.NotificationService.DraftCreated);
     }
 }

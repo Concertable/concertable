@@ -8,7 +8,7 @@ namespace Concertable.Core.Entities;
 public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>, IReviewable<ConcertEntity>
 {
     public int Id { get; private set; }
-    public int ApplicationId { get; private set; }
+    public int BookingId { get; private set; }
     public string Name { get; private set; } = null!;
     public string About { get; private set; } = null!;
     public string? BannerUrl { get; private set; }
@@ -17,18 +17,18 @@ public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>, IRe
     public int TotalTickets { get; private set; }
     public int AvailableTickets { get; private set; }
     public DateTime? DatePosted { get; private set; }
-    public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Application.Opportunity.Venue.User.Location;
+    public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Booking.Application.Opportunity.Venue.User.Location;
     public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.ConcertId;
-    public OpportunityApplicationEntity Application { get; set; } = null!;
+    public ConcertBookingEntity Booking { get; set; } = null!;
     public ICollection<TicketEntity> Tickets { get; } = [];
     public HashSet<ConcertGenreEntity> ConcertGenres { get; private set; } = [];
     public ICollection<ConcertImageEntity> Images { get; private set; } = [];
 
     private ConcertEntity() { }
 
-    public static ConcertEntity CreateDraft(int applicationId, string name, string about, IEnumerable<int> genreIds) => new()
+    public static ConcertEntity CreateDraft(int bookingId, string name, string about, IEnumerable<int> genreIds) => new()
     {
-        ApplicationId = applicationId,
+        BookingId = bookingId,
         Name = name,
         About = about,
         ConcertGenres = genreIds.Select(id => new ConcertGenreEntity { GenreId = id }).ToHashSet()

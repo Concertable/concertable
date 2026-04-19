@@ -11,4 +11,5 @@ public interface IContractRepository : IRepository<ContractEntity>
     Task<T?> GetByApplicationIdAsync<T>(int applicationId) where T : ContractEntity;
     Task<ContractType?> GetTypeByConcertIdAsync(int concertId);
     Task<ContractType?> GetTypeByApplicationIdAsync(int applicationId);
+    Task<ContractType?> GetTypeByBookingIdAsync(int bookingId);
 }

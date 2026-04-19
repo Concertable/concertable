@@ -60,7 +60,7 @@ public async Task InitializeAsync()
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
                 services.AddResettables(NotificationService, StripePaymentClient, EmailService);
                 services.AddSingleton<IEmailService>(EmailService);
-                services.AddScoped<IPaymentService, PaymentService>();
+
                 services.AddScoped<IWebhookService, MockWebhookService>();
                 services.AddSingleton<IStripeClient, MockStripeClient>();
                 services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));

@@ -20,7 +20,7 @@ public class ConcertValidator : IConcertValidator
     {
         var errors = new List<string>();
 
-        if (concert.Application.Status != ApplicationStatus.Accepted)
+        if (concert.Booking.Application.Status != ApplicationStatus.Accepted)
             errors.Add("Concert cannot be posted until the application is accepted");
 
         if (concert.DatePosted is not null)

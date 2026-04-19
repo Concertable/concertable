@@ -40,8 +40,8 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         return await upfrontConcertService.InitiateAsync(applicationId, artistManager, venueManager, contract.HireFee, paymentMethodId);
     }
 
-    public Task SettleAsync(int applicationId) =>
-        upfrontConcertService.SettleAsync(applicationId);
+    public Task SettleAsync(int bookingId) =>
+        upfrontConcertService.SettleAsync(bookingId);
 
     public Task<IFinishOutcome> FinishedAsync(int concertId) =>
         upfrontConcertService.FinishedAsync(concertId);

@@ -8,30 +8,28 @@ namespace Concertable.Infrastructure.Services.Concert;
 
 public class ConcertDraftService : IConcertDraftService
 {
-    private readonly IOpportunityApplicationRepository applicationRepository;
-    private readonly IOpportunityRepository opportunityRepository;
-    private readonly IApplicationAcceptHandler acceptHandler;
+    private readonly IConcertBookingRepository bookingRepository;
+    private readonly IConcertBookingConfirmHandler confirmHandler;
     private readonly IConcertNotificationService concertNotificationService;
 
     public ConcertDraftService(
-        IOpportunityApplicationRepository applicationRepository,
-        IOpportunityRepository opportunityRepository,
-        IApplicationAcceptHandler acceptHandler,
+        IConcertBookingRepository bookingRepository,
+        IConcertBookingConfirmHandler confirmHandler,
         IConcertNotificationService concertNotificationService)
     {
-        this.applicationRepository = applicationRepository;
-        this.opportunityRepository = opportunityRepository;
-        this.acceptHandler = acceptHandler;
+        this.bookingRepository = bookingRepository;
+        this.confirmHandler = confirmHandler;
         this.concertNotificationService = concertNotificationService;
     }
 
-    public async Task<Result<ConcertEntity>> CreateAsync(int applicationId)
+    public async Task<Result<ConcertEntity>> CreateAsync(int bookingId)
     {
-        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
-            ?? throw new NotFoundException("Concert application not found");
+        var bookingConcert = await bookingRepository.GetByIdAsync(bookingId)
+            ?? throw new NotFoundException("Booking not found");
 
-        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Opportunity not found");
+        var artist = bookingConcert.Application.Artist;
+        var opportunity = bookingConcert.Application.Opportunity;
+        var venue = opportunity.Venue;
 
         var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
         var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId);
@@ -44,12 +42,12 @@ public class ConcertDraftService : IConcertDraftService
             return Result.Fail("The artist does not match any genres required by the concert opportunity");
 
         var concert = ConcertEntity.CreateDraft(
-            applicationId,
+            bookingConcert.Id,
             $"{artist.Name} performing at {venue.Name}",
             venue.About,
             matchingGenreIds);
 
-        await acceptHandler.HandleAsync(applicationId, concert);
+        await confirmHandler.HandleAsync(bookingConcert, concert);
 
         await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concert.Id);
 

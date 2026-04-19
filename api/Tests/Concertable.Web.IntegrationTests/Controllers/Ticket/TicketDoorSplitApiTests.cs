@@ -28,7 +28,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.Customer);
-        var request = BuildPurchaseRequest(fixture.SeedData.PostedDoorSplitApp.Concert!.Id);
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedDoorSplitBooking.Concert!.Id);
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
@@ -40,7 +40,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
         Assert.NotNull(result!.TransactionId);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Single(tickets!);
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{fixture.SeedData.PostedDoorSplitApp.Concert!.Id}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{fixture.SeedData.PostedDoorSplitBooking.Concert!.Id}");
         Assert.Equal(99, concert!.AvailableTickets);
         var (userId, _) = Assert.Single(fixture.NotificationService.TicketPurchased);
         Assert.Equal(fixture.SeedData.Customer.Id.ToString(), userId);
@@ -58,7 +58,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.Customer);
-        var request = BuildPurchaseRequest(fixture.SeedData.PostedDoorSplitApp.Concert!.Id);
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedDoorSplitBooking.Concert!.Id);
 
         // Act
         await client.PostAsync("/api/Ticket/purchase", request);
@@ -76,7 +76,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.Customer, o => o.UseFailingPayment());
-        var request = BuildPurchaseRequest(fixture.SeedData.PostedDoorSplitApp.Concert!.Id);
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedDoorSplitBooking.Concert!.Id);
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
@@ -86,7 +86,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
         Assert.Empty(fixture.NotificationService.TicketPurchased);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Empty(tickets!);
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{fixture.SeedData.PostedDoorSplitApp.Concert!.Id}");
+        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/{fixture.SeedData.PostedDoorSplitBooking.Concert!.Id}");
         Assert.Equal(100, concert!.AvailableTickets);
         var transactions = await client.GetAsync<Pagination<ITransaction>>("/api/Transaction");
         Assert.Empty(transactions!.Data);

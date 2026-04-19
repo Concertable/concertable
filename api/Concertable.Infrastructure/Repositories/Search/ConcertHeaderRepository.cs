@@ -79,7 +79,7 @@ public class ConcertHeaderRepository : IConcertHeaderRepository
 
         query = concertParams.OrderByRecent
             ? query.OrderByDescending(c => c.DatePosted)
-            : query.OrderBy(c => c.Application.Opportunity.Period.Start);
+            : query.OrderBy(c => c.Booking.Application.Opportunity.Period.Start);
 
         return await query
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))

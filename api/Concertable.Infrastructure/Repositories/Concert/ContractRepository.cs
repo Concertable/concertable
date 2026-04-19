@@ -24,7 +24,7 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
     {
         return await context.Concerts
             .Where(c => c.Id == concertId)
-            .Select(c => c.Application.Opportunity.Contract)
+            .Select(c => c.Booking.Application.Opportunity.Contract)
             .OfType<T>()
             .FirstOrDefaultAsync();
     }
@@ -42,7 +42,7 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
     {
         var opportunityId = await context.Concerts
             .Where(c => c.Id == concertId)
-            .Select(c => (int?)c.Application.OpportunityId)
+            .Select(c => (int?)c.Booking.Application.OpportunityId)
             .FirstOrDefaultAsync();
 
         if (opportunityId is null) return null;
@@ -59,6 +59,22 @@ public class ContractRepository : Repository<ContractEntity>, IContractRepositor
         var opportunityId = await context.OpportunityApplications
             .Where(a => a.Id == applicationId)
             .Select(a => (int?)a.OpportunityId)
+            .FirstOrDefaultAsync();
+
+        if (opportunityId is null) return null;
+
+        var contract = await context.Contracts
+            .Where(c => c.Id == opportunityId)
+            .FirstOrDefaultAsync();
+
+        return contract?.ContractType;
+    }
+
+    public async Task<ContractType?> GetTypeByBookingIdAsync(int bookingId)
+    {
+        var opportunityId = await context.ConcertBookings
+            .Where(b => b.Id == bookingId)
+            .Select(b => (int?)b.Application.OpportunityId)
             .FirstOrDefaultAsync();
 
         if (opportunityId is null) return null;

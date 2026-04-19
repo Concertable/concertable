@@ -18,7 +18,7 @@ public class ArtistManagerRepository : GuidRepository<ArtistManagerEntity>, IMan
             .OfType<ArtistManagerEntity>()
             .Where(u => u.Id == context.Concerts
                 .Where(c => c.Id == concertId)
-                .Select(c => c.Application.Artist.UserId)
+                .Select(c => c.Booking.Application.Artist.UserId)
                 .First())
             .FirstOrDefaultAsync();
     }

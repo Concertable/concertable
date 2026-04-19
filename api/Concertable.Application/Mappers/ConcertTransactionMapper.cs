@@ -9,7 +9,7 @@ public class SettlementTransactionMapper : ITransactionMapper
     public TransactionEntity ToEntity(ITransaction dto)
     {
         var d = (SettlementTransactionDto)dto;
-        return SettlementTransactionEntity.Create(d.FromUserId, d.ToUserId, d.PaymentIntentId, d.Amount, d.Status, d.ApplicationId);
+        return SettlementTransactionEntity.Create(d.FromUserId, d.ToUserId, d.PaymentIntentId, d.Amount, d.Status, d.BookingId);
     }
 
     public ITransaction ToDto(TransactionEntity entity)
@@ -18,7 +18,7 @@ public class SettlementTransactionMapper : ITransactionMapper
         return new SettlementTransactionDto
         {
             Id = e.Id,
-            ApplicationId = e.ApplicationId,
+            BookingId = e.BookingId,
             FromUserId = e.FromUserId,
             ToUserId = e.ToUserId,
             PaymentIntentId = e.PaymentIntentId,

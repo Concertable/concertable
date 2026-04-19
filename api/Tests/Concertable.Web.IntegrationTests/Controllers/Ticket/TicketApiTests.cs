@@ -25,7 +25,7 @@ public class TicketApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient();
-        var request = BuildPurchaseRequest(fixture.SeedData.PostedFlatFeeApp.Concert!.Id);
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedFlatFeeBooking.Concert!.Id);
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
@@ -39,7 +39,7 @@ public class TicketApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
-        var request = BuildPurchaseRequest(fixture.SeedData.PostedFlatFeeApp.Concert!.Id);
+        var request = BuildPurchaseRequest(fixture.SeedData.PostedFlatFeeBooking.Concert!.Id);
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
@@ -53,7 +53,7 @@ public class TicketApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.Customer);
-        var request = BuildPurchaseRequest(fixture.SeedData.SettledApp.Concert!.Id);
+        var request = BuildPurchaseRequest(fixture.SeedData.ConfirmedBooking.Concert!.Id);
 
         // Act
         var response = await client.PostAsync("/api/Ticket/purchase", request);
@@ -73,7 +73,7 @@ public class TicketApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
         // Act
-        var response = await client.GetAsync($"/api/Ticket/can-purchase/{fixture.SeedData.SettledApp.Concert!.Id}");
+        var response = await client.GetAsync($"/api/Ticket/can-purchase/{fixture.SeedData.ConfirmedBooking.Concert!.Id}");
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -86,7 +86,7 @@ public class TicketApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
         // Act
-        var response = await client.GetAsync($"/api/Ticket/can-purchase/{fixture.SeedData.PostedFlatFeeApp.Concert!.Id}");
+        var response = await client.GetAsync($"/api/Ticket/can-purchase/{fixture.SeedData.PostedFlatFeeBooking.Concert!.Id}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

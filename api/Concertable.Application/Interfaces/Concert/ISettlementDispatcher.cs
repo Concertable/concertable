@@ -2,5 +2,5 @@ namespace Concertable.Application.Interfaces.Concert;
 
 public interface ISettlementDispatcher
 {
-    Task SettleAsync(int applicationId);
+    Task SettleAsync(int bookingId);
 }

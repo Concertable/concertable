@@ -36,7 +36,7 @@ public class ConcertFinishedTests : IAsyncLifetime
         var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
             $"/api/OpportunityApplication/{fixture.SeedData.PostedFlatFeeApp.ApplicationId}");
 
-        Assert.Equal(ApplicationStatus.Complete, application!.Status);
+        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class ConcertFinishedTests : IAsyncLifetime
         var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
             $"/api/OpportunityApplication/{fixture.SeedData.PostedVenueHireApp.ApplicationId}");
 
-        Assert.Equal(ApplicationStatus.Complete, application!.Status);
+        Assert.Equal(ApplicationStatus.Accepted, application!.Status);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class ConcertFinishedTests : IAsyncLifetime
         await fixture.Polling.UntilAsync(
             async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
                 $"/api/OpportunityApplication/{fixture.SeedData.FinishedDoorSplitApp.ApplicationId}"),
-            app => app?.Status == ApplicationStatus.Complete,
+            app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
     }
 
@@ -100,7 +100,7 @@ public class ConcertFinishedTests : IAsyncLifetime
         await fixture.Polling.UntilAsync(
             async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
                 $"/api/OpportunityApplication/{fixture.SeedData.FinishedVersusApp.ApplicationId}"),
-            app => app?.Status == ApplicationStatus.Complete,
+            app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
     }
 }

@@ -22,11 +22,7 @@ public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunity
     {
         var query = context.Opportunities
             .Where(o => o.VenueId == id && o.Period.Start >= timeProvider.GetUtcNow())
-            .Where(o => !context.Concerts.Any(e => e.ApplicationId ==
-                context.OpportunityApplications
-                    .Where(ca => ca.OpportunityId == o.Id)
-                    .Select(ca => ca.Id)
-                    .FirstOrDefault()))
+            .Where(o => !context.ConcertBookings.Any(b => b.Application.OpportunityId == o.Id))
             .Include(o => o.Contract)
             .Include(o => o.OpportunityGenres)
             .ThenInclude(og => og.Genre)

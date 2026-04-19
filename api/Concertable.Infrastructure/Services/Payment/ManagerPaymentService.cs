@@ -27,7 +27,7 @@ public class ManagerPaymentService : IManagerPaymentService
         this.timeProvider = timeProvider;
     }
 
-    public async Task<PaymentResponse> PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int applicationId, string? paymentMethodId = null)
+    public async Task<PaymentResponse> PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int bookingId, string? paymentMethodId = null)
     {
         if (await stripeAccountService.GetAccountStatusAsync(payee.StripeAccountId) != PayoutAccountStatus.Verified)
             throw new BadRequestException("Payee has not completed Stripe verification");
@@ -46,7 +46,7 @@ public class ManagerPaymentService : IManagerPaymentService
                 { "fromUserId", payer.Id.ToString() },
                 { "toUserId", payee.Id.ToString() },
                 { "type", "settlement" },
-                { "applicationId", applicationId.ToString() }
+                { "bookingId", bookingId.ToString() }
             }
         });
 
@@ -58,7 +58,7 @@ public class ManagerPaymentService : IManagerPaymentService
 
         await transactionService.LogAsync(new SettlementTransactionDto
         {
-            ApplicationId = applicationId,
+            BookingId = bookingId,
             FromUserId = payer.Id,
             ToUserId = payee.Id,
             PaymentIntentId = response.Value.TransactionId,

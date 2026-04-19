@@ -11,18 +11,21 @@ namespace Concertable.Infrastructure.Services.Application;
 public class DeferredConcertService : IDeferredConcertService
 {
     private readonly IOpportunityApplicationValidator applicationValidator;
-    private readonly IOpportunityApplicationRepository applicationRepository;
+    private readonly IConcertBookingRepository bookingRepository;
+    private readonly IApplicationAcceptHandler acceptHandler;
     private readonly IManagerPaymentService managerPaymentService;
     private readonly IConcertDraftService concertDraftService;
 
     public DeferredConcertService(
         IOpportunityApplicationValidator applicationValidator,
-        IOpportunityApplicationRepository applicationRepository,
+        IConcertBookingRepository bookingRepository,
+        IApplicationAcceptHandler acceptHandler,
         [FromKeyedServices("offSession")] IManagerPaymentService managerPaymentService,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
-        this.applicationRepository = applicationRepository;
+        this.bookingRepository = bookingRepository;
+        this.acceptHandler = acceptHandler;
         this.managerPaymentService = managerPaymentService;
         this.concertDraftService = concertDraftService;
     }
@@ -30,36 +33,39 @@ public class DeferredConcertService : IDeferredConcertService
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
-
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var draftResult = await concertDraftService.CreateAsync(applicationId);
+        var bookingConcert = ConcertBookingEntity.Create(applicationId);
+        await bookingRepository.AddAsync(bookingConcert);
 
+        await acceptHandler.HandleAsync(applicationId, bookingConcert);
+
+        var draftResult = await concertDraftService.CreateAsync(bookingConcert.Id);
         if (draftResult.IsFailed)
             throw new BadRequestException(draftResult.Errors);
 
         return new DeferredAcceptOutcome();
     }
 
-    public async Task SettleAsync(int applicationId)
-    {
-        var application = await applicationRepository.GetByIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
-
-        application.Complete();
-        await applicationRepository.SaveChangesAsync();
-    }
-
     public async Task<IFinishOutcome> FinishedAsync(int concertId, ManagerEntity payer, ManagerEntity payee, decimal amount)
     {
-        var application = await applicationRepository.GetByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("Application not found");
+        var bookingConcert = await bookingRepository.GetByConcertIdAsync(concertId)
+            ?? throw new NotFoundException("Booking not found");
 
-        application.AwaitPayment();
-        await applicationRepository.SaveChangesAsync();
+        bookingConcert.AwaitPayment();
+        await bookingRepository.SaveChangesAsync();
 
-        var payment = await managerPaymentService.PayAsync(payer, payee, amount, application.Id, application.PaymentMethodId);
+        var payment = await managerPaymentService.PayAsync(payer, payee, amount, bookingConcert.Id, bookingConcert.PaymentMethodId);
         return new DeferredFinishOutcome(payment);
+    }
+
+    public async Task SettleAsync(int bookingId)
+    {
+        var bookingConcert = await bookingRepository.GetByIdAsync(bookingId)
+            ?? throw new NotFoundException("Booking not found");
+
+        bookingConcert.Complete();
+        await bookingRepository.SaveChangesAsync();
     }
 }
