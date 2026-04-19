@@ -1,5 +1,7 @@
+using Concertable.Application.Interfaces;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Entities;
+using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +9,30 @@ namespace Concertable.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions options) : base(options) { }
+    private readonly IDomainEventDispatcher? dispatcher;
+
+    public ApplicationDbContext(DbContextOptions options, IDomainEventDispatcher? dispatcher = null) : base(options)
+    {
+        this.dispatcher = dispatcher;
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var events = ChangeTracker
+            .Entries<IEventRaiser>()
+            .SelectMany(e => e.Entity.DomainEvents)
+            .ToList();
+
+        foreach (var entry in ChangeTracker.Entries<IEventRaiser>())
+            entry.Entity.ClearDomainEvents();
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (dispatcher is not null)
+            await dispatcher.DispatchAsync(events, cancellationToken);
+
+        return result;
+    }
 
     public DbSet<ArtistEntity> Artists { get; set; }
     public DbSet<ArtistGenreEntity> ArtistGenres { get; set; }

@@ -15,6 +15,7 @@ using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
+using Concertable.Infrastructure.Events;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Mappers;
@@ -88,6 +89,7 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<AuditInterceptor>();
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(
