@@ -18,23 +18,8 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options)
         modelBuilder.ApplyConfiguration(new UserEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ManagerEntityConfiguration());
-
-        modelBuilder.Entity<RefreshTokenEntity>()
-            .HasOne(rt => rt.User)
-            .WithMany(u => u.RefreshTokens)
-            .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<EmailVerificationTokenEntity>()
-            .HasOne(t => t.User)
-            .WithMany(u => u.EmailVerificationTokens)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<PasswordResetTokenEntity>()
-            .HasOne(t => t.User)
-            .WithMany(u => u.PasswordResetTokens)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.ApplyConfiguration(new RefreshTokenEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new EmailVerificationTokenEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new PasswordResetTokenEntityConfiguration());
     }
 }

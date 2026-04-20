@@ -39,3 +39,36 @@ public class ManagerEntityConfiguration : IEntityTypeConfiguration<ManagerEntity
         builder.Property(u => u.StripeAccountId).IsRequired();
     }
 }
+
+public class RefreshTokenEntityConfiguration : IEntityTypeConfiguration<RefreshTokenEntity>
+{
+    public void Configure(EntityTypeBuilder<RefreshTokenEntity> builder)
+    {
+        builder.HasOne(rt => rt.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public class EmailVerificationTokenEntityConfiguration : IEntityTypeConfiguration<EmailVerificationTokenEntity>
+{
+    public void Configure(EntityTypeBuilder<EmailVerificationTokenEntity> builder)
+    {
+        builder.HasOne(t => t.User)
+            .WithMany(u => u.EmailVerificationTokens)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public class PasswordResetTokenEntityConfiguration : IEntityTypeConfiguration<PasswordResetTokenEntity>
+{
+    public void Configure(EntityTypeBuilder<PasswordResetTokenEntity> builder)
+    {
+        builder.HasOne(t => t.User)
+            .WithMany(u => u.PasswordResetTokens)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
