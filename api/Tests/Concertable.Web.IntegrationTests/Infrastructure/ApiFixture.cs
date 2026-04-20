@@ -151,5 +151,26 @@ public async Task InitializeAsync()
         return client;
     }
 
+    public HttpClient CreateClient(Guid userId, Role role, Action<TestClientOptions> configure)
+    {
+        var options = new TestClientOptions();
+        configure(options);
+
+        var customFactory = factory.WithWebHostBuilder(b =>
+        {
+            if (options.Configure is not null)
+                b.ConfigureAppConfiguration((_, config) => options.Configure(config));
+            if (options.Services is not null)
+                b.ConfigureTestServices(options.Services);
+        });
+
+        StripeClient = customFactory.Services.GetRequiredService<IStripeClient>();
+
+        var client = customFactory.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, userId.ToString());
+        client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, role.ToString());
+        return client;
+    }
+
     public HttpClient CreateClient() => factory.CreateClient();
 }

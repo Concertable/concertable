@@ -1,5 +1,4 @@
 using Concertable.Core.Entities;
-using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Interfaces;
 
 namespace Concertable.Application.Interfaces.Search;

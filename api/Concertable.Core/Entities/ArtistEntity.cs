@@ -1,6 +1,3 @@
-using Concertable.Core.Entities.Interfaces;
-using Concertable.Core.Exceptions;
-using Concertable.Core.Extensions;
 using Concertable.Core.Interfaces;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;

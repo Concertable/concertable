@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Search;
 
 namespace Concertable.Application.DTOs;
 
@@ -74,18 +73,7 @@ public record ConcertArtistSummaryDto
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
 
-public record TicketConcertDto
-{
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public decimal Price { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-    public required string VenueName { get; set; }
-    public required string ArtistName { get; set; }
-}
-
-public record ConcertHeaderDto : IHeader, IAddress
+public record ConcertSnapshot
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -98,3 +86,15 @@ public record ConcertHeaderDto : IHeader, IAddress
     public DateTime? DatePosted { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
+
+public record TicketConcertDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public decimal Price { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public required string VenueName { get; set; }
+    public required string ArtistName { get; set; }
+}
+

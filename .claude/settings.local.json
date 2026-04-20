@@ -122,7 +122,16 @@
       "WebFetch(domain:docs.stripe.com)",
       "Bash(git -C \"C:/Users/TommySeery/source/repos/Concertable\" status --short)",
       "WebFetch(domain:specification.ardalis.com)",
-      "WebFetch(domain:hellowahab.wordpress.com)"
+      "WebFetch(domain:hellowahab.wordpress.com)",
+      "Bash(cp '__TRACKED_VAR__/Interfaces/*.cs' __TRACKED_VAR__/Interfaces/)",
+      "Bash(cp '__TRACKED_VAR__/Services/*.cs' __TRACKED_VAR__/Services/)",
+      "Bash(cp '__TRACKED_VAR__/Repositories/*.cs' __TRACKED_VAR__/Repositories/)",
+      "Bash(cp '__TRACKED_VAR__/Specifications/*.cs' __TRACKED_VAR__/Specifications/)",
+      "Bash(awk '{print $NF}')",
+      "Bash(xargs head *)",
+      "Bash(handle.exe api/Concertable.Search.Application)",
+      "Bash(tasklist)",
+      "Bash(git add *)"
     ]
   }
 }

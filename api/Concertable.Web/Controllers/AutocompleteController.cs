@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Search;
+using Concertable.Search.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,14 +9,14 @@ namespace Concertable.Web.Controllers;
 [AllowAnonymous]
 public class AutocompleteController : ControllerBase
 {
-    private readonly IHeaderAutocompleteService headerAutocompleteService;
+    private readonly IAutocompleteModule autocompleteModule;
 
-    public AutocompleteController(IHeaderAutocompleteService headerAutocompleteService)
+    public AutocompleteController(IAutocompleteModule autocompleteModule)
     {
-        this.headerAutocompleteService = headerAutocompleteService;
+        this.autocompleteModule = autocompleteModule;
     }
 
     [HttpGet("headers")]
     public async Task<IActionResult> GetHeaders([FromQuery] string? searchTerm)
-        => Ok(await headerAutocompleteService.GetAsync(searchTerm));
+        => Ok(await autocompleteModule.GetAsync(searchTerm));
 }

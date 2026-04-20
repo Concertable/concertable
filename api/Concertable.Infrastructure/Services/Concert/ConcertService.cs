@@ -4,8 +4,8 @@ using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.Interfaces.Search;
 using Concertable.Application.Mappers;
+using Concertable.Search.Contracts;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
@@ -17,7 +17,7 @@ namespace Concertable.Infrastructure.Services.Concert;
 public class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
-    private readonly IConcertHeaderService concertHeaderService;
+    private readonly IConcertHeaderModule concertHeaderModule;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IOpportunityApplicationValidator applicationValidator;
@@ -32,7 +32,7 @@ public class ConcertService : IConcertService
 
     public ConcertService(
         IConcertRepository concertRepository,
-        IConcertHeaderService concertHeaderService,
+        IConcertHeaderModule concertHeaderModule,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IOpportunityApplicationValidator applicationValidator,
@@ -46,7 +46,7 @@ public class ConcertService : IConcertService
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
-        this.concertHeaderService = concertHeaderService;
+        this.concertHeaderModule = concertHeaderModule;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
@@ -124,8 +124,8 @@ public class ConcertService : IConcertService
 
         await concertRepository.SaveChangesAsync();
 
-        var concertHeaderDto = concertEntity.ToHeaderDto();
-        concertHeaderDto.Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating;
+        var concertHeaderDto = concertEntity.ToSnapshotDto();
+        concertHeaderDto = concertHeaderDto with { Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating };
 
         var location = concertEntity.Booking.Application.Opportunity.Venue.User.Location;
 
@@ -156,31 +156,6 @@ public class ConcertService : IConcertService
             .ToList();
 
         return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = userIdsToNotify };
-    }
-
-    public async Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync()
-    {
-        var user = currentUser.GetOrDefault();
-
-        if (user is null)
-            return [];
-
-        var preferences = await preferenceService.GetByUserIdAsync(user.Id);
-
-        if (preferences is null)
-            return [];
-
-        var concertParams = new ConcertParams
-        {
-            Latitude = user.Latitude,
-            Longitude = user.Longitude,
-            RadiusKm = preferences.RadiusKm,
-            GenreIds = preferences.Genres.Select(g => g.Id).ToList(),
-            OrderByRecent = true,
-            Take = 10
-        };
-
-        return await concertHeaderService.GetRecommendedAsync(concertParams);
     }
 
     public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id) =>

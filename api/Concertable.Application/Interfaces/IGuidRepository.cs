@@ -1,4 +1,3 @@
-using Concertable.Core.Entities.Interfaces;
 
 namespace Concertable.Application.Interfaces;
 

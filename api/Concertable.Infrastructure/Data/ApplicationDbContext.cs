@@ -1,7 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Entities;
-using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +10,12 @@ public class ApplicationDbContext : DbContext
 {
     private readonly IDomainEventDispatcher? dispatcher;
 
-    public ApplicationDbContext(DbContextOptions options, IDomainEventDispatcher? dispatcher = null) : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IDomainEventDispatcher? dispatcher = null) : base(options)
+    {
+        this.dispatcher = dispatcher;
+    }
+
+    protected ApplicationDbContext(DbContextOptions options, IDomainEventDispatcher? dispatcher = null) : base(options)
     {
         this.dispatcher = dispatcher;
     }

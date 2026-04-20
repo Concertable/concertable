@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Concertable.Core\Concertable.Core.csproj" />
+    <ProjectReference Include="..\..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Search\Concertable.Search.Application\Concertable.Search.Application.csproj" />
   </ItemGroup>
 
 </Project>

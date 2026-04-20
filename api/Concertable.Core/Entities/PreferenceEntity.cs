@@ -1,5 +1,3 @@
-using Concertable.Core.Entities.Interfaces;
-using Concertable.Core.Extensions;
 using Concertable.Core.Interfaces;
 
 namespace Concertable.Core.Entities;

@@ -78,12 +78,6 @@ public class ConcertController : ControllerBase
         return Ok((await concertService.GetUnpostedByArtistIdAsync(id)).ToSummaryResponses());
     }
 
-    [HttpGet("headers/recommended")]
-    public async Task<ActionResult<IEnumerable<ConcertHeaderDto>>> GetRecommendedHeaders()
-    {
-        return Ok(await concertService.GetRecommendedHeadersAsync());
-    }
-
     [Authorize(Roles = "VenueManager")]
     [HttpPut("{id}")]
     public async Task<ActionResult<ConcertUpdateResponse>> Update(int id, [FromBody] UpdateConcertRequest request)
@@ -106,7 +100,7 @@ public class ConcertController : ControllerBase
         [FromQuery] string? name,
         [FromQuery] string? imageUrl)
     {
-        var concertHeaderDto = new ConcertHeaderDto
+        var concertSnapshot = new ConcertSnapshot
         {
             Id = 1,
             Name = name ?? "The Rockers performing at the Grand Venue",
@@ -119,7 +113,7 @@ public class ConcertController : ControllerBase
             DatePosted = DateTime.UtcNow
         };
 
-        await notificationService.ConcertPostedAsync(userId.ToString(), concertHeaderDto);
+        await notificationService.ConcertPostedAsync(userId.ToString(), concertSnapshot);
 
         return Ok($"SignalR test message sent to User {userId}");
     }

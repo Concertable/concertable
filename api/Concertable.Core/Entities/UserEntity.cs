@@ -1,6 +1,4 @@
-using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Enums;
-using Concertable.Core.ValueObjects;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Core.Entities;

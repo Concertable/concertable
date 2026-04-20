@@ -4,6 +4,7 @@ using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding.Fakers;
+using Concertable.Search.Infrastructure.Extensions;
 using Concertable.Web.Extensions;
 using Concertable.Web.Hubs;
 using Concertable.Web.Middleware;
@@ -74,7 +75,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();
-services.AddSearch();
+services.AddSearchModule();
 services.AddAuth(builder.Configuration);
 services.AddValidation();
 

@@ -5,7 +5,6 @@ using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
-using Concertable.Core.ValueObjects;
 using Concertable.Seeding.Fakers;
 using Concertable.Seeding.Factories;
 using Concertable.Infrastructure.Services.Geometry;

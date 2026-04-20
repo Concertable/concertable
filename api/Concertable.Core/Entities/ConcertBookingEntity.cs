@@ -1,6 +1,4 @@
-using Concertable.Core.Entities.Interfaces;
 using Concertable.Core.Enums;
-using Concertable.Core.Exceptions;
 
 namespace Concertable.Core.Entities;
 

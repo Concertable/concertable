@@ -1,7 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
-using Concertable.Core.ValueObjects;
 using Concertable.Application.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;

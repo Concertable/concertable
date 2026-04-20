@@ -1,7 +1,5 @@
 using Concertable.Core.Enums;
-using Concertable.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
-using System.Text.Json.Serialization;
 
 namespace Concertable.Application.DTOs;
 
@@ -14,16 +12,6 @@ public record UserDto
     public double? Longitude { get; set; }
     public string? County { get; set; }
     public string? Town { get; set; }
-}
-
-public record GenreDto(int Id, string Name);
-
-public class AutocompleteDto : IHasName
-{
-    public required int Id { get; init; }
-    public required string Name { get; init; }
-    [JsonPropertyName("$type")]
-    public required string Type { get; init; }
 }
 
 public record LocationDto(string County, string Town);

@@ -1,5 +1,4 @@
 using Concertable.Core.Entities;
-using Concertable.Core.Entities.Interfaces;
 using System.Linq.Expressions;
 
 namespace Concertable.Core.Interfaces;

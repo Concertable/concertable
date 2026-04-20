@@ -4,7 +4,7 @@ namespace Concertable.Application.Responses;
 
 public record ConcertPostResponse
 {
-    public required ConcertHeaderDto ConcertHeader { get; set; }
+    public required ConcertSnapshot ConcertHeader { get; set; }
     public IEnumerable<Guid> UserIds { get; set; } = [];
 }
 

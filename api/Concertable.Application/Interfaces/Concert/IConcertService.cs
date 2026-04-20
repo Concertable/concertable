@@ -2,9 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
-using Concertable.Core.Parameters;
 using FluentResults;
-
 
 namespace Concertable.Application.Interfaces.Concert;
 
@@ -17,7 +15,6 @@ public interface IConcertService
     Task<Result<ConcertEntity>> CreateDraftAsync(int applicationId);
     Task<ConcertUpdateResponse> UpdateAsync(int id, UpdateConcertRequest request);
     Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request);
-    Task<IEnumerable<ConcertHeaderDto>> GetRecommendedHeadersAsync();
     Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id);
     Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id);
     Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id);

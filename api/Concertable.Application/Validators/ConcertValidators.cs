@@ -15,16 +15,6 @@ public class UpdateConcertRequestValidator : AbstractValidator<UpdateConcertRequ
     }
 }
 
-
-public class ConcertParamsValidator : AbstractValidator<ConcertParams>
-{
-    public ConcertParamsValidator()
-    {
-        Include(new Parameters.GeoParamsValidator());
-        RuleFor(x => x.Take).GreaterThan(0);
-    }
-}
-
 public class ConcertBookingParamsValidator : AbstractValidator<ConcertBookingParams>
 {
     public ConcertBookingParamsValidator()

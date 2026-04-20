@@ -44,7 +44,7 @@ public static class ConcertMappers
         Genres = concert.ConcertGenres.Select(eg => eg.Genre.ToDto())
     };
 
-    public static ConcertHeaderDto ToHeaderDto(this ConcertEntity concert) => new()
+    public static ConcertSnapshot ToSnapshotDto(this ConcertEntity concert) => new()
     {
         Id = concert.Id,
         Name = concert.Name,
@@ -54,18 +54,6 @@ public static class ConcertMappers
         County = concert.Booking.Application.Opportunity.Venue.User.Address?.County ?? string.Empty,
         Town = concert.Booking.Application.Opportunity.Venue.User.Address?.Town ?? string.Empty,
         DatePosted = concert.DatePosted
-    };
-
-    public static ConcertHeaderDto ToHeaderDto(this ConcertDto concertDto) => new()
-    {
-        Id = concertDto.Id,
-        Name = concertDto.Name,
-        ImageUrl = concertDto.Artist.Avatar ?? string.Empty,
-        StartDate = concertDto.StartDate,
-        EndDate = concertDto.EndDate,
-        County = concertDto.Venue.County,
-        Town = concertDto.Venue.Town,
-        DatePosted = concertDto.DatePosted
     };
 
     public static IEnumerable<ConcertDto> ToDtos(this IEnumerable<ConcertEntity> concerts) =>

@@ -1,6 +1,6 @@
-using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
+using Concertable.Search.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,19 +11,16 @@ namespace Concertable.Web.Controllers;
 [AllowAnonymous]
 public class HeaderController : ControllerBase
 {
-    private readonly IHeaderServiceFactory headerServiceFactory;
+    private readonly IHeaderModule headerModule;
 
-    public HeaderController(IHeaderServiceFactory headerServiceFactory)
+    public HeaderController(IHeaderModule headerModule)
     {
-        this.headerServiceFactory = headerServiceFactory;
+        this.headerModule = headerModule;
     }
 
     [HttpGet]
     public async Task<IActionResult> Search([FromQuery] SearchParams searchParams)
-    {
-        var service = headerServiceFactory.Create(searchParams.HeaderType!.Value);
-        return Ok(await service.SearchAsync(searchParams));
-    }
+        => Ok(await headerModule.SearchAsync(searchParams));
 
     [HttpGet("amount/{amount}")]
     public async Task<IActionResult> GetByAmount(int amount, [FromQuery] HeaderType? headerType)
@@ -31,8 +28,6 @@ public class HeaderController : ControllerBase
         if (headerType is null)
             return BadRequest("Header type is required.");
 
-        var service = headerServiceFactory.Create(headerType.Value);
-        return Ok(await service.GetByAmountAsync(amount));
+        return Ok(await headerModule.GetByAmountAsync(headerType.Value, amount));
     }
-
 }
