@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Application.Interfaces;
 
-public interface IUserRepository : IGuidRepository<UserEntity>
+internal interface IUserRepository : IGuidRepository<UserEntity>
 {
     Task<Guid?> GetIdByApplicationIdAsync(int applicationId);
     Task<Guid?> GetIdByConcertIdAsync(int concertId);

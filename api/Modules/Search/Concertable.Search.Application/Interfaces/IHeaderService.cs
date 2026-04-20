@@ -4,7 +4,7 @@ using Concertable.Search.Contracts;
 
 namespace Concertable.Search.Application.Interfaces;
 
-public interface IHeaderService
+internal interface IHeaderService
 {
     Task<IPagination<IHeader>> SearchAsync(SearchParams searchParams);
     Task<IEnumerable<IHeader>> GetByAmountAsync(int amount);

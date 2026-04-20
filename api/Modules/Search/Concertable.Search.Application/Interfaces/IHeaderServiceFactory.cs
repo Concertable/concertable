@@ -2,7 +2,7 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Search.Application.Interfaces;
 
-public interface IHeaderServiceFactory
+internal interface IHeaderServiceFactory
 {
     IHeaderService Create(HeaderType type);
 }

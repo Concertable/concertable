@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Concertable.Identity.Application.Validators;
 
-public class LoginRequestValidator : AbstractValidator<LoginRequest>
+internal class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
@@ -11,7 +11,7 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
     }
 }
 
-public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
+internal class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
     public RegisterRequestValidator()
     {
@@ -21,7 +21,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     }
 }
 
-public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
+internal class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
 {
     public ForgotPasswordRequestValidator()
     {
@@ -29,7 +29,7 @@ public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRe
     }
 }
 
-public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
+internal class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
 {
     public ResetPasswordRequestValidator()
     {
@@ -39,7 +39,7 @@ public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequ
     }
 }
 
-public class ChangeEmailRequestValidator : AbstractValidator<ChangeEmailRequest>
+internal class ChangeEmailRequestValidator : AbstractValidator<ChangeEmailRequest>
 {
     public ChangeEmailRequestValidator()
     {
@@ -47,7 +47,7 @@ public class ChangeEmailRequestValidator : AbstractValidator<ChangeEmailRequest>
     }
 }
 
-public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
+internal class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
 {
     public RefreshTokenRequestValidator()
     {

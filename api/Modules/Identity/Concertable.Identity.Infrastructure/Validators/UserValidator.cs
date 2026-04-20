@@ -2,7 +2,7 @@ using FluentResults;
 
 namespace Concertable.Identity.Infrastructure.Validators;
 
-public class UserValidator : IUserValidator
+internal class UserValidator : IUserValidator
 {
     private readonly IUserRepository userRepository;
 

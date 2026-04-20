@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Application.Interfaces.Auth;
 
-public interface IUserRegister
+internal interface IUserRegister
 {
     Task RegisterAsync(RegisterRequest request, string passwordHash);
 }

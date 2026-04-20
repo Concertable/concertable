@@ -1,11 +1,1 @@
-namespace Concertable.Identity.Application.Requests;
-
-public record ForgotPasswordResponse
-{
-    public required string Message { get; set; }
-}
-
-public record ResetPasswordResponse
-{
-    public required string Message { get; set; }
-}
+// Moved to Concertable.Identity.Contracts

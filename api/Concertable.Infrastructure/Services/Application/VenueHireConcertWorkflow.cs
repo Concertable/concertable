@@ -2,7 +2,6 @@ using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 
 namespace Concertable.Infrastructure.Services.Application;
@@ -11,19 +10,16 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IContractRepository contractRepository;
-    private readonly IManagerRepository<ArtistManagerEntity> artistManagerRepository;
-    private readonly IManagerRepository<VenueManagerEntity> venueManagerRepository;
+    private readonly IManagerModule managerModule;
 
     public VenueHireConcertWorkflow(
         IUpfrontConcertService upfrontConcertService,
         IContractRepository contractRepository,
-        IManagerRepository<ArtistManagerEntity> artistManagerRepository,
-        IManagerRepository<VenueManagerEntity> venueManagerRepository)
+        IManagerModule managerModule)
     {
         this.upfrontConcertService = upfrontConcertService;
         this.contractRepository = contractRepository;
-        this.artistManagerRepository = artistManagerRepository;
-        this.venueManagerRepository = venueManagerRepository;
+        this.managerModule = managerModule;
     }
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
@@ -31,10 +27,10 @@ public class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         var contract = await contractRepository.GetByApplicationIdAsync<VenueHireContractEntity>(applicationId)
             ?? throw new NotFoundException("VenueHire contract not found");
 
-        var artistManager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
+        var artistManager = await managerModule.GetArtistManagerByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Artist manager not found");
 
-        var venueManager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
+        var venueManager = await managerModule.GetVenueManagerByApplicationIdAsync(applicationId)
             ?? throw new NotFoundException("Venue manager not found");
 
         return await upfrontConcertService.InitiateAsync(applicationId, artistManager, venueManager, contract.HireFee, paymentMethodId);

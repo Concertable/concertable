@@ -1,6 +1,6 @@
 namespace Concertable.Identity.Application.Interfaces;
 
-public interface IUserPreferenceService
+internal interface IUserPreferenceService
 {
     Task<IEnumerable<Guid>> GetUserIdsByPreferencesAsync();
 }

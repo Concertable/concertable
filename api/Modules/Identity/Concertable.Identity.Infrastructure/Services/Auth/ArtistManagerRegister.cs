@@ -4,7 +4,7 @@ using Concertable.Identity.Infrastructure.Data;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class ArtistManagerRegister : IUserRegister
+internal class ArtistManagerRegister : IUserRegister
 {
     private readonly IdentityDbContext context;
     private readonly IStripeAccountService stripeAccountService;
@@ -18,9 +18,9 @@ public class ArtistManagerRegister : IUserRegister
     public async Task RegisterAsync(RegisterRequest request, string passwordHash)
     {
         var manager = ArtistManagerEntity.Create(request.Email, passwordHash);
+        manager.StripeCustomerId = await stripeAccountService.CreateCustomerAsync(request.Email);
+        manager.StripeAccountId = await stripeAccountService.CreateConnectAccountAsync(request.Email);
         context.Users.Add(manager);
-        await stripeAccountService.AddCustomerAsync(manager);
-        await stripeAccountService.AddConnectAccountAsync(manager);
         await context.SaveChangesAsync();
     }
 }

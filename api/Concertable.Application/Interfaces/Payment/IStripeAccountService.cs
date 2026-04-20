@@ -7,9 +7,9 @@ namespace Concertable.Application.Interfaces.Payment;
 public interface IStripeAccountService
 {
     Task AddCustomerAsync(UserEntity user);
-    Task CreateCustomerAsync(UserEntity user);
     Task AddConnectAccountAsync(ManagerEntity manager);
-    Task CreateConnectAccountAsync(ManagerEntity manager);
+    Task<string> CreateCustomerAsync(string email);
+    Task<string> CreateConnectAccountAsync(string email);
     Task<string> GetOnboardingLinkAsync(string stripeAccountId);
     Task<PayoutAccountStatus> GetAccountStatusAsync(string stripeAccountId);
     Task<string> GetPaymentMethodAsync(string stripeCustomerId);

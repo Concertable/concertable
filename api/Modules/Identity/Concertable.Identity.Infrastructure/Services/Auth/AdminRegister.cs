@@ -3,7 +3,7 @@ using Concertable.Identity.Infrastructure.Data;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class AdminRegister : IUserRegister
+internal class AdminRegister : IUserRegister
 {
     private readonly IdentityDbContext context;
 

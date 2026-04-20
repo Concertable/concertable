@@ -13,4 +13,6 @@ public interface IOpportunityService
     Task<IPagination<OpportunityDto>> GetActiveByVenueIdAsync(int id, IPageParams pageParams);
     Task<OpportunityDto> GetByIdAsync(int id);
     Task<UserEntity> GetOwnerByIdAsync(int id);
+    Task<bool> OwnsOpportunityAsync(int opportunityId);
+    Task<bool> OwnsOpportunityByApplicationIdAsync(int applicationId);
 }

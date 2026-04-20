@@ -17,7 +17,7 @@ public class ArtistService : IArtistService
     private readonly IArtistRepository artistRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
-    private readonly ICurrentUserResolver currentUserResolver;
+    private readonly IManagerModule managerModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
     private readonly IUnitOfWork unitOfWork;
@@ -26,7 +26,7 @@ public class ArtistService : IArtistService
         IArtistRepository artistRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        ICurrentUserResolver currentUserResolver,
+        IManagerModule managerModule,
         IGeocodingService geocodingService,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
         IUnitOfWork unitOfWork)
@@ -34,7 +34,7 @@ public class ArtistService : IArtistService
         this.artistRepository = artistRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
-        this.currentUserResolver = currentUserResolver;
+        this.managerModule = managerModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
         this.unitOfWork = unitOfWork;
@@ -54,7 +54,8 @@ public class ArtistService : IArtistService
 
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
     {
-        var user = await currentUserResolver.ResolveAsync();
+        var user = await managerModule.GetManagerAsync(currentUser.GetId())
+            ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);
         var artist = ArtistEntity.Create(user.Id, request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
@@ -105,5 +106,11 @@ public class ArtistService : IArtistService
             throw new ForbiddenException("You do not own an Artist");
 
         return id.Value;
+    }
+
+    public async Task<bool> OwnsArtistAsync(int artistId)
+    {
+        var id = await artistRepository.GetIdByUserIdAsync(currentUser.GetId());
+        return id == artistId;
     }
 }

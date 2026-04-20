@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Identity.Infrastructure.Data.Seeders;
 
-public class IdentityTestSeeder : ITestSeeder
+internal class IdentityTestSeeder : ITestSeeder
 {
     public int Order => 0;
 

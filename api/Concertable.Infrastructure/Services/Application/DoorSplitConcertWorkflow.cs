@@ -2,7 +2,6 @@ using Concertable.Application.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 
 namespace Concertable.Infrastructure.Services.Application;
@@ -12,21 +11,18 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IContractRepository contractRepository;
     private readonly IConcertRepository concertRepository;
-    private readonly IManagerRepository<VenueManagerEntity> venueManagerRepository;
-    private readonly IManagerRepository<ArtistManagerEntity> artistManagerRepository;
+    private readonly IManagerModule managerModule;
 
     public DoorSplitConcertWorkflow(
         IDeferredConcertService deferredConcertService,
         IContractRepository contractRepository,
         IConcertRepository concertRepository,
-        IManagerRepository<VenueManagerEntity> venueManagerRepository,
-        IManagerRepository<ArtistManagerEntity> artistManagerRepository)
+        IManagerModule managerModule)
     {
         this.deferredConcertService = deferredConcertService;
         this.contractRepository = contractRepository;
         this.concertRepository = concertRepository;
-        this.venueManagerRepository = venueManagerRepository;
-        this.artistManagerRepository = artistManagerRepository;
+        this.managerModule = managerModule;
     }
 
     public Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null) =>
@@ -40,10 +36,10 @@ public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         var contract = await contractRepository.GetByConcertIdAsync<DoorSplitContractEntity>(concertId)
             ?? throw new NotFoundException("DoorSplit contract not found");
 
-        var venueManager = await venueManagerRepository.GetByConcertIdAsync(concertId)
+        var venueManager = await managerModule.GetVenueManagerByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Venue manager not found");
 
-        var artistManager = await artistManagerRepository.GetByConcertIdAsync(concertId)
+        var artistManager = await managerModule.GetArtistManagerByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Artist manager not found");
 
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);

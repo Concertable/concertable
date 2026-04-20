@@ -7,7 +7,7 @@ using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Search.Application.Services;
 
-public class ConcertHeaderService : IHeaderService, IConcertHeaderModule
+internal class ConcertHeaderService : IHeaderService, IConcertHeaderModule
 {
     private readonly IConcertHeaderRepository concertHeaderRepository;
 

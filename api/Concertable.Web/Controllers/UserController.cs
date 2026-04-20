@@ -1,5 +1,5 @@
-﻿using Concertable.Application.Interfaces;
-using Concertable.Application.Requests;
+﻿using Concertable.Application.Requests;
+using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,17 +10,19 @@ namespace Concertable.Web.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly IUserService userService;
+    private readonly IAuthModule authModule;
+    private readonly ICurrentUser currentUser;
 
-    public UsersController(IUserService userService)
+    public UsersController(IAuthModule authModule, ICurrentUser currentUser)
     {
-        this.userService = userService;
+        this.authModule = authModule;
+        this.currentUser = currentUser;
     }
 
     [HttpPut("location")]
     public async Task<ActionResult<IUser>> UpdateLocation([FromBody] UpdateLocationRequest request)
     {
-        var updatedUser = await userService.SaveLocationAsync(request.Latitude, request.Longitude);
+        var updatedUser = await authModule.SaveLocationAsync(currentUser.GetId(), request.Latitude, request.Longitude);
         return Ok(updatedUser);
     }
 }

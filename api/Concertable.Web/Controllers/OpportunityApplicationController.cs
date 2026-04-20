@@ -1,6 +1,5 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Identity.Contracts;
 using Concertable.Application.Interfaces.Concert;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,21 +15,18 @@ public class OpportunityApplicationController : ControllerBase
     private readonly IOpportunityApplicationService applicationService;
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IArtistService artistService;
-    private readonly IOwnershipService ownershipService;
-    private readonly ICurrentUser currentUser;
+    private readonly IOpportunityService opportunityService;
 
     public OpportunityApplicationController(
         IOpportunityApplicationService applicationService,
         IOpportunityApplicationValidator applicationValidator,
         IArtistService artistService,
-        IOwnershipService ownershipService,
-        ICurrentUser currentUser)
+        IOpportunityService opportunityService)
     {
         this.applicationService = applicationService;
         this.applicationValidator = applicationValidator;
         this.artistService = artistService;
-        this.ownershipService = ownershipService;
-        this.currentUser = currentUser;
+        this.opportunityService = opportunityService;
     }
 
     [Authorize(Roles = "VenueManager")]
@@ -108,7 +104,7 @@ public class OpportunityApplicationController : ControllerBase
     [HttpGet("is-owner/{id}")]
     public async Task<ActionResult<bool>> IsOwner(int id)
     {
-        return Ok(await ownershipService.OwnsOpportunityByApplicationId(id));
+        return Ok(await opportunityService.OwnsOpportunityByApplicationIdAsync(id));
     }
 
 }

@@ -1,8 +1,6 @@
-using Concertable.Identity.Application.DTOs;
-
 namespace Concertable.Identity.Application.Mappers;
 
-public class AdminMapper : IUserMapper
+internal class AdminMapper : IUserMapper
 {
     public IUser ToDto(UserEntity entity) => new AdminDto
     {

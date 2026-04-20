@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class AuthUriService : IAuthUriService
+internal class AuthUriService : IAuthUriService
 {
     private readonly IUriService _uriService;
 

@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Concertable.Search.Application.Validators;
 
-public class GeoParamsValidator : AbstractValidator<IGeoParams>
+internal class GeoParamsValidator : AbstractValidator<IGeoParams>
 {
     public GeoParamsValidator()
     {

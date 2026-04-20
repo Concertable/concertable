@@ -1,5 +1,4 @@
 using System.Net;
-using Concertable.Identity.Application.DTOs;
 using Concertable.Application.Requests;
 using Concertable.Core.Enums;
 using Concertable.Web.IntegrationTests.Infrastructure;

@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Identity.Infrastructure.Data.Seeders;
 
-public class IdentityDevSeeder : IDevSeeder
+internal class IdentityDevSeeder : IDevSeeder
 {
     public int Order => 0;
 

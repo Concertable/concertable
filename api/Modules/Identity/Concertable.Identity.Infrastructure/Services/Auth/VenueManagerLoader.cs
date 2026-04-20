@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class VenueManagerLoader : IUserLoader
+internal class VenueManagerLoader : IUserLoader
 {
     private readonly IdentityDbContext context;
 

@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace Concertable.Search.Infrastructure.Specifications;
 
-public class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
+internal class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
     where TEntity : class, IIdEntity, ILocatable<TEntity>
 {
     private readonly IGeometryProvider geometryProvider;

@@ -7,7 +7,7 @@ using Concertable.Infrastructure.Settings;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class JwtTokenService : ITokenService
+internal class JwtTokenService : ITokenService
 {
     private readonly AuthSettings settings;
     private readonly TimeProvider timeProvider;

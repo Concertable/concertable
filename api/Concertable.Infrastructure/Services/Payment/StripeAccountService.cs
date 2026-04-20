@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Core.Entities;
@@ -13,7 +12,6 @@ namespace Concertable.Infrastructure.Services.Payment;
 
 public class StripeAccountService : IStripeAccountService
 {
-    private readonly IUserRepository userRepository;
     private readonly string baseUri;
     private readonly AccountService accountService;
     private readonly AccountLinkService accountLinkService;
@@ -22,7 +20,6 @@ public class StripeAccountService : IStripeAccountService
     private readonly SetupIntentService setupIntentService;
 
     public StripeAccountService(
-        IUserRepository userRepository,
         IOptions<StripeSettings> stripeSettings,
         IConfiguration configuration,
         AccountService accountService,
@@ -32,7 +29,6 @@ public class StripeAccountService : IStripeAccountService
         SetupIntentService setupIntentService)
     {
         StripeConfiguration.ApiKey = stripeSettings.Value.SecretKey;
-        this.userRepository = userRepository;
         this.baseUri = configuration["BaseUri:http"]!;
         this.accountService = accountService;
         this.accountLinkService = accountLinkService;
@@ -47,15 +43,7 @@ public class StripeAccountService : IStripeAccountService
         {
             Email = user.Email,
         });
-
         user.StripeCustomerId = customer.Id;
-    }
-
-    public async Task CreateCustomerAsync(UserEntity user)
-    {
-        await AddCustomerAsync(user);
-        userRepository.Update(user);
-        await userRepository.SaveChangesAsync();
     }
 
     public async Task AddConnectAccountAsync(ManagerEntity manager)
@@ -71,15 +59,29 @@ public class StripeAccountService : IStripeAccountService
                 Transfers = new AccountCapabilitiesTransfersOptions { Requested = true }
             }
         });
-
         manager.StripeAccountId = account.Id;
     }
 
-    public async Task CreateConnectAccountAsync(ManagerEntity manager)
+    public async Task<string> CreateCustomerAsync(string email)
     {
-        await AddConnectAccountAsync(manager);
-        userRepository.Update(manager);
-        await userRepository.SaveChangesAsync();
+        var customer = await customerService.CreateAsync(new CustomerCreateOptions { Email = email });
+        return customer.Id;
+    }
+
+    public async Task<string> CreateConnectAccountAsync(string email)
+    {
+        var account = await accountService.CreateAsync(new AccountCreateOptions
+        {
+            Type = "express",
+            Email = email,
+            Country = "GB",
+            Capabilities = new AccountCapabilitiesOptions
+            {
+                CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },
+                Transfers = new AccountCapabilitiesTransfersOptions { Requested = true }
+            }
+        });
+        return account.Id;
     }
 
     public async Task<string> GetOnboardingLinkAsync(string stripeAccountId)

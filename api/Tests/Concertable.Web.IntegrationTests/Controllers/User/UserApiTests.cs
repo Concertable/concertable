@@ -1,6 +1,5 @@
 using System.Net;
 using Concertable.Application.DTOs;
-using Concertable.Identity.Application.DTOs;
 using Concertable.Application.Requests;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;

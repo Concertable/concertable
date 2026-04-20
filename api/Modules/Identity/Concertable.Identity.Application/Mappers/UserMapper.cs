@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Application.Mappers;
 
-public class UserMapper : IUserMapper
+internal class UserMapper : IUserMapper
 {
     private readonly IDictionary<Role, IUserMapper> mappers = new Dictionary<Role, IUserMapper>
     {

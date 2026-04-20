@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class ArtistManagerLoader : IUserLoader
+internal class ArtistManagerLoader : IUserLoader
 {
     private readonly IdentityDbContext context;
 

@@ -6,5 +6,6 @@ public record ManagerDto
     public string? Email { get; init; }
     public string? Avatar { get; init; }
     public string StripeAccountId { get; init; } = string.Empty;
+    public string? StripeCustomerId { get; init; }
 }
 

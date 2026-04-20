@@ -2,7 +2,6 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Application.Exceptions;
 
@@ -27,7 +26,7 @@ public class ManagerPaymentService : IManagerPaymentService
         this.timeProvider = timeProvider;
     }
 
-    public async Task<PaymentResponse> PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int bookingId, string? paymentMethodId = null)
+    public async Task<PaymentResponse> PayAsync(ManagerDto payer, ManagerDto payee, decimal amount, int bookingId, string? paymentMethodId = null)
     {
         if (await stripeAccountService.GetAccountStatusAsync(payee.StripeAccountId) != PayoutAccountStatus.Verified)
             throw new BadRequestException("Payee has not completed Stripe verification");

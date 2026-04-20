@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Application.Interfaces;
 
-public interface IUserMapper
+internal interface IUserMapper
 {
     IUser ToDto(UserEntity entity);
 }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class UserLoader : IUserLoader
+internal class UserLoader : IUserLoader
 {
     private readonly IServiceProvider serviceProvider;
 

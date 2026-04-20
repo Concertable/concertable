@@ -1,8 +1,6 @@
-using Concertable.Identity.Application.DTOs;
-
 namespace Concertable.Identity.Application.Interfaces;
 
-public interface IAuthService
+internal interface IAuthService
 {
     Task RegisterAsync(RegisterRequest request);
     Task<LoginResponse> LoginAsync(LoginRequest request);

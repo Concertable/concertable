@@ -48,7 +48,7 @@ public class DeferredConcertService : IDeferredConcertService
         return new DeferredAcceptOutcome();
     }
 
-    public async Task<IFinishOutcome> FinishedAsync(int concertId, ManagerEntity payer, ManagerEntity payee, decimal amount)
+    public async Task<IFinishOutcome> FinishedAsync(int concertId, ManagerDto payer, ManagerDto payee, decimal amount)
     {
         var bookingConcert = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");

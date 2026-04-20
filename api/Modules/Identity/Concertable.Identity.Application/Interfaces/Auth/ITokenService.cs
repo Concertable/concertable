@@ -1,6 +1,6 @@
 namespace Concertable.Identity.Application.Interfaces.Auth;
 
-public interface ITokenService
+internal interface ITokenService
 {
     string CreateAccessToken(Guid userId, string email, Role role);
     string CreateRefreshToken();

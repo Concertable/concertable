@@ -2,7 +2,7 @@ using FluentResults;
 
 namespace Concertable.Identity.Application.Interfaces;
 
-public interface IUserValidator
+internal interface IUserValidator
 {
     Task<Result> CanRegisterAsync(RegisterRequest request);
 }

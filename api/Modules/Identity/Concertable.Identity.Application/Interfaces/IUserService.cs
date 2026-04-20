@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Application.Interfaces;
 
-public interface IUserService
+internal interface IUserService
 {
     Task<UserEntity> GetByApplicationIdAsync(int applicationId);
     Task<UserEntity> GetByConcertIdAsync(int id);

@@ -3,7 +3,7 @@ using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Search.Application.Services;
 
-public class HeaderAutocompleteService : IHeaderAutocompleteService
+internal class HeaderAutocompleteService : IHeaderAutocompleteService
 {
     private readonly IHeaderAutocompleteRepository headerAutocompleteRepository;
 

@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
@@ -13,11 +12,10 @@ namespace Concertable.Web.Controllers;
 public class OpportunityController : ControllerBase
 {
     private readonly IOpportunityService opportunityService;
-    private readonly IOwnershipService ownershipService;
-    public OpportunityController(IOpportunityService opportunityService, IOwnershipService ownershipService)
+
+    public OpportunityController(IOpportunityService opportunityService)
     {
         this.opportunityService = opportunityService;
-        this.ownershipService = ownershipService;
     }
 
     [HttpGet("active/venue/{id}")]
@@ -58,6 +56,6 @@ public class OpportunityController : ControllerBase
     [HttpGet("is-owner/{id}")]
     public async Task<IActionResult> IsOwner(int id)
     {
-        return Ok(await ownershipService.OwnsOpportunityAsync(id));
+        return Ok(await opportunityService.OwnsOpportunityAsync(id));
     }
 }

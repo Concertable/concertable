@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
-using Concertable.Identity.Infrastructure.Data.Seeders;
+using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Infrastructure.Extensions;
@@ -71,7 +71,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddScoped<IDbInitializer, DevDbInitializer>();
     services.AddScoped<Concertable.Seeding.SeedData>();
     services.AddScoped<ILocationFaker, LocationFaker>();
-    services.AddScoped<IDevSeeder, IdentityDevSeeder>();
+    services.AddIdentityDevSeeder();
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();

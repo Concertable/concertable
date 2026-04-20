@@ -1,6 +1,5 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Identity.Contracts;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
@@ -22,7 +21,6 @@ public class OpportunityApplicationService : IOpportunityApplicationService
     private readonly IEmailService emailService;
     private readonly IOpportunityService opportunityService;
     private readonly IArtistService artistService;
-    private readonly IOwnershipService ownershipService;
     private readonly IAcceptDispatcher acceptDispatcher;
     private readonly IOpportunityApplicationMapper mapper;
 
@@ -35,7 +33,6 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         IMessageService messageService,
         IEmailService emailService,
         IOpportunityService opportunityService,
-        IOwnershipService ownershipService,
         IArtistService artistService,
         IAcceptDispatcher acceptDispatcher,
         IOpportunityApplicationMapper mapper)
@@ -49,14 +46,13 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         this.emailService = emailService;
         this.opportunityService = opportunityService;
         this.artistService = artistService;
-        this.ownershipService = ownershipService;
         this.acceptDispatcher = acceptDispatcher;
         this.mapper = mapper;
     }
 
     public async Task<IEnumerable<OpportunityApplicationDto>> GetByOpportunityIdAsync(int id)
     {
-        var response = await ownershipService.OwnsOpportunityAsync(id);
+        var response = await opportunityService.OwnsOpportunityAsync(id);
 
         if (!response)
             throw new ForbiddenException("You do not own this Concert Opportunity");

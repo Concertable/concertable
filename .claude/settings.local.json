@@ -135,7 +135,8 @@
       "Bash(break)",
       "Bash(dotnet restore *)",
       "Bash(git -C /c/Users/TommySeery/source/repos/Concertable status --short)",
-      "Bash(dotnet clean *)"
+      "Bash(dotnet clean *)",
+      "Bash(git *)"
     ]
   }
 }

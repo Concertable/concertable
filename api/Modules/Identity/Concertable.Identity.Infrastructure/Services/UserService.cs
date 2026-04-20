@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Identity.Infrastructure.Services;
 
-public class UserService : IUserService
+internal class UserService : IUserService
 {
     private readonly IUserRepository userRepsitory;
     private readonly ICurrentUser currentUser;

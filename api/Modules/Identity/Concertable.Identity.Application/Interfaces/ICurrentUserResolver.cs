@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Application.Interfaces;
 
-public interface ICurrentUserResolver
+internal interface ICurrentUserResolver
 {
     Task<UserEntity> ResolveAsync(CancellationToken ct = default);
 }

@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class UserRegister : IUserRegister
+internal class UserRegister : IUserRegister
 {
     private readonly IServiceProvider serviceProvider;
 

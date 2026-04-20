@@ -1,6 +1,6 @@
 namespace Concertable.Search.Infrastructure.Specifications;
 
-public class SearchSpecification<TEntity> : ISearchSpecification<TEntity>
+internal class SearchSpecification<TEntity> : ISearchSpecification<TEntity>
     where TEntity : IEntity, IHasName
 {
     public IQueryable<TEntity> Apply(IQueryable<TEntity> query, string? searchTerm)

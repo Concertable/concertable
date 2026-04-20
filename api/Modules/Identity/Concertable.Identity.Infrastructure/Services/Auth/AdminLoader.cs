@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class AdminLoader : IUserLoader
+internal class AdminLoader : IUserLoader
 {
     private readonly IdentityDbContext context;
 

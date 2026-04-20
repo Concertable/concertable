@@ -1,20 +1,29 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
+using Concertable.Identity.Contracts;
 
 namespace Concertable.Infrastructure.Validators;
 
 public class StripeCustomerValidator : IStripeValidationStrategy
 {
-    private readonly ICurrentUserResolver currentUserResolver;
+    private readonly IAuthModule authModule;
+    private readonly IManagerModule managerModule;
+    private readonly ICurrentUser currentUser;
 
-    public StripeCustomerValidator(ICurrentUserResolver currentUserResolver)
+    public StripeCustomerValidator(IAuthModule authModule, IManagerModule managerModule, ICurrentUser currentUser)
     {
-        this.currentUserResolver = currentUserResolver;
+        this.authModule = authModule;
+        this.managerModule = managerModule;
+        this.currentUser = currentUser;
     }
 
     public async Task<bool> ValidateAsync()
     {
-        var user = await currentUserResolver.ResolveAsync();
-        return !string.IsNullOrEmpty(user.StripeCustomerId);
+        var userId = currentUser.GetId();
+
+        var manager = await managerModule.GetManagerAsync(userId);
+        if (manager is not null) return !string.IsNullOrEmpty(manager.StripeCustomerId);
+
+        var customer = await authModule.GetCustomerAsync(userId);
+        return !string.IsNullOrEmpty(customer?.StripeCustomerId);
     }
 }

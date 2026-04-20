@@ -1,7 +1,7 @@
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 
-public class BCryptPasswordHasher : IPasswordHasher
+internal class BCryptPasswordHasher : IPasswordHasher
 {
     public string Hash(string password) => BCrypt.Net.BCrypt.HashPassword(password);
 

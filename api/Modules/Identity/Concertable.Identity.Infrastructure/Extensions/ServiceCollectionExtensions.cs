@@ -1,9 +1,7 @@
 using Concertable.Data.Application;
-using Concertable.Identity.Application.Interfaces;
-using Concertable.Identity.Infrastructure.Repositories;
-using Concertable.Identity.Contracts;
-using Concertable.Identity.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data.Seeders;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,7 +27,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IOwnershipService, OwnershipService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IManagerRepository<ArtistManagerEntity>, ArtistManagerRepository>();
         services.AddScoped<IManagerRepository<VenueManagerEntity>, VenueManagerRepository>();
@@ -56,8 +53,21 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserAccessor>();
         services.AddScoped<ICurrentUserResolver, CurrentUserResolver>();
-        services.AddScoped<IIdentityModule, IdentityModule>();
+        services.AddScoped<IAuthModule, AuthModule>();
+        services.AddScoped<IManagerModule, IdentityModule>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddIdentityDevSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<IDevSeeder, IdentityDevSeeder>();
+        return services;
+    }
+
+    public static IServiceCollection AddIdentityTestSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<ITestSeeder, IdentityTestSeeder>();
         return services;
     }
 }

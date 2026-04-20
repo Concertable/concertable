@@ -17,7 +17,7 @@ public class VenueService : IVenueService
     private readonly IVenueRepository venueRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
-    private readonly ICurrentUserResolver currentUserResolver;
+    private readonly IManagerModule managerModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
     private readonly IUnitOfWork unitOfWork;
@@ -26,7 +26,7 @@ public class VenueService : IVenueService
         IVenueRepository venueRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        ICurrentUserResolver currentUserResolver,
+        IManagerModule managerModule,
         IGeocodingService geocodingService,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
         IUnitOfWork unitOfWork)
@@ -34,7 +34,7 @@ public class VenueService : IVenueService
         this.venueRepository = venueRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
-        this.currentUserResolver = currentUserResolver;
+        this.managerModule = managerModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
         this.unitOfWork = unitOfWork;
@@ -48,7 +48,8 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
-        var user = await currentUserResolver.ResolveAsync();
+        var user = await managerModule.GetManagerAsync(currentUser.GetId())
+            ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);
         var venue = VenueEntity.Create(user.Id, request.Name, request.About, bannerUrl);
@@ -105,6 +106,12 @@ public class VenueService : IVenueService
             throw new ForbiddenException("You do not own a Venue");
 
         return id.Value;
+    }
+
+    public async Task<bool> OwnsVenueAsync(int venueId)
+    {
+        var id = await venueRepository.GetIdByUserIdAsync(currentUser.GetId());
+        return id == venueId;
     }
 
     public async Task ApproveAsync(int id)

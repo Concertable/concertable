@@ -4,7 +4,7 @@ using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Search.Application;
 
-public class AutocompleteModule : IAutocompleteModule
+internal class AutocompleteModule : IAutocompleteModule
 {
     private readonly IHeaderAutocompleteService autocompleteService;
 

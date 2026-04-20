@@ -6,7 +6,7 @@ using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Search.Application;
 
-public class SearchModule : IHeaderModule
+internal class SearchModule : IHeaderModule
 {
     private readonly IHeaderServiceFactory headerServiceFactory;
 

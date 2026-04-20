@@ -13,15 +13,17 @@ public class FakeStripeAccountService : IStripeAccountService
         return Task.CompletedTask;
     }
 
-    public Task CreateCustomerAsync(UserEntity user) => AddCustomerAsync(user);
-
     public Task AddConnectAccountAsync(ManagerEntity manager)
     {
         manager.StripeAccountId = $"acct_fake_{manager.Id}";
         return Task.CompletedTask;
     }
 
-    public Task CreateConnectAccountAsync(ManagerEntity manager) => AddConnectAccountAsync(manager);
+    public Task<string> CreateCustomerAsync(string email) =>
+        Task.FromResult($"cus_fake_{Guid.NewGuid()}");
+
+    public Task<string> CreateConnectAccountAsync(string email) =>
+        Task.FromResult($"acct_fake_{Guid.NewGuid()}");
 
     public Task<string> GetOnboardingLinkAsync(string stripeId) =>
         Task.FromResult("https://fake-stripe-onboarding.local");

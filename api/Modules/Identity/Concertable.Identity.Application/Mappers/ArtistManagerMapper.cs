@@ -1,8 +1,6 @@
-using Concertable.Identity.Application.DTOs;
-
 namespace Concertable.Identity.Application.Mappers;
 
-public class ArtistManagerMapper : IUserMapper
+internal class ArtistManagerMapper : IUserMapper
 {
     public IUser ToDto(UserEntity entity)
     {

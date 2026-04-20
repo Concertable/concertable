@@ -1,4 +1,3 @@
-using Concertable.Identity.Application.DTOs;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
@@ -8,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Concertable.Identity.Infrastructure.Services;
 
-public class AuthService : IAuthService
+internal class AuthService : IAuthService
 {
     private readonly IdentityDbContext context;
     private readonly IPasswordHasher passwordHasher;
