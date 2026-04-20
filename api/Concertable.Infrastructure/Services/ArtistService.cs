@@ -1,41 +1,48 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Exceptions;
+using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Identity.Contracts;
+using Concertable.Shared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services;
 
 public class ArtistService : IArtistService
 {
     private readonly IArtistRepository artistRepository;
-    private readonly IUserRepository userRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
-    private readonly IUserService userService;
+    private readonly ICurrentUserResolver currentUserResolver;
+    private readonly IGeocodingService geocodingService;
+    private readonly IGeometryProvider geometryProvider;
     private readonly IUnitOfWork unitOfWork;
 
     public ArtistService(
         IArtistRepository artistRepository,
-        IUserRepository userRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        IUserService userService,
+        ICurrentUserResolver currentUserResolver,
+        IGeocodingService geocodingService,
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
         IUnitOfWork unitOfWork)
     {
         this.artistRepository = artistRepository;
-        this.userRepository = userRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
-        this.userService = userService;
+        this.currentUserResolver = currentUserResolver;
+        this.geocodingService = geocodingService;
+        this.geometryProvider = geometryProvider;
         this.unitOfWork = unitOfWork;
     }
 
     public async Task<ArtistDto> GetDetailsForCurrentUserAsync()
     {
-        var user = currentUser.Get();
-        return await artistRepository.GetDtoByUserIdAsync(user.Id)
+        return await artistRepository.GetDtoByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Artist not found");
     }
 
@@ -47,14 +54,18 @@ public class ArtistService : IArtistService
 
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
     {
-        var user = currentUser.GetEntity();
+        var user = await currentUserResolver.ResolveAsync();
+
         var bannerUrl = await imageService.UploadAsync(request.Banner);
         var artist = ArtistEntity.Create(user.Id, request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
 
-        await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
+        var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
+        artist.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
+        artist.Address = new Address(locationDto.County, locationDto.Town);
+        artist.Avatar = user.Avatar;
+        artist.Email = user.Email;
 
         var createdArtist = await artistRepository.AddAsync(artist);
-        userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
 
         return createdArtist.ToDto();
@@ -65,8 +76,7 @@ public class ArtistService : IArtistService
         var artist = await artistRepository.GetFullByIdAsync(id)
             ?? throw new NotFoundException("Artist not found");
 
-        var user = currentUser.GetEntity();
-        if (artist.UserId != user.Id)
+        if (artist.UserId != currentUser.GetId())
             throw new ForbiddenException("You do not own this Artist");
 
         var bannerUrl = request.Banner is not null
@@ -75,12 +85,13 @@ public class ArtistService : IArtistService
 
         artist.Update(request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
 
-        await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
+        var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
+        artist.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
+        artist.Address = new Address(locationDto.County, locationDto.Town);
 
         if (request.Avatar is not null)
-            user.Avatar = await imageService.ReplaceAsync(request.Avatar, user.Avatar);
+            artist.Avatar = await imageService.ReplaceAsync(request.Avatar, artist.Avatar);
 
-        userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
 
         return artist.ToDto();
@@ -88,8 +99,7 @@ public class ArtistService : IArtistService
 
     public async Task<int> GetIdForCurrentUserAsync()
     {
-        var user = currentUser.Get();
-        int? id = await artistRepository.GetIdByUserIdAsync(user.Id);
+        int? id = await artistRepository.GetIdByUserIdAsync(currentUser.GetId());
 
         if (id is null)
             throw new ForbiddenException("You do not own an Artist");

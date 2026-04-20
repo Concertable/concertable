@@ -1,42 +1,19 @@
-using Concertable.Application.Interfaces;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
+using Concertable.Core.Entities.Contracts;
+using Concertable.Data.Infrastructure;
+using Concertable.Data.Infrastructure.Data;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContextBase
 {
-    private readonly IDomainEventDispatcher? dispatcher;
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IDomainEventDispatcher? dispatcher = null)
+        : base(options, dispatcher) { }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IDomainEventDispatcher? dispatcher = null) : base(options)
-    {
-        this.dispatcher = dispatcher;
-    }
-
-    protected ApplicationDbContext(DbContextOptions options, IDomainEventDispatcher? dispatcher = null) : base(options)
-    {
-        this.dispatcher = dispatcher;
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var events = ChangeTracker
-            .Entries<IEventRaiser>()
-            .SelectMany(e => e.Entity.DomainEvents)
-            .ToList();
-
-        foreach (var entry in ChangeTracker.Entries<IEventRaiser>())
-            entry.Entity.ClearDomainEvents();
-
-        var result = await base.SaveChangesAsync(cancellationToken);
-
-        if (dispatcher is not null)
-            await dispatcher.DispatchAsync(events, cancellationToken);
-
-        return result;
-    }
+    protected ApplicationDbContext(DbContextOptions options, IDomainEventDispatcher? dispatcher = null)
+        : base(options, dispatcher) { }
 
     public DbSet<ArtistEntity> Artists { get; set; }
     public DbSet<ArtistGenreEntity> ArtistGenres { get; set; }
@@ -50,7 +27,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<ConcertBookingEntity> ConcertBookings { get; set; }
     public DbSet<ReviewEntity> Reviews { get; set; }
     public DbSet<TicketEntity> Tickets { get; set; }
-    public DbSet<UserEntity> Users { get; set; }
     public DbSet<MessageEntity> Messages { get; set; }
     public DbSet<VenueEntity> Venues { get; set; }
     public DbSet<VenueImageEntity> VenueImages { get; set; }
@@ -60,9 +36,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<PreferenceEntity> Preferences { get; set; }
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
     public DbSet<StripeEventEntity> StripeEvents { get; set; }
-    public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
-    public DbSet<EmailVerificationTokenEntity> EmailVerificationTokens => Set<EmailVerificationTokenEntity>();
-    public DbSet<PasswordResetTokenEntity> PasswordResetTokens => Set<PasswordResetTokenEntity>();
     public DbSet<ContractEntity> Contracts { get; set; }
     public DbSet<FlatFeeContractEntity> FlatFeeContracts { get; set; }
     public DbSet<DoorSplitContractEntity> DoorSplitContracts { get; set; }
@@ -71,187 +44,7 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<UserEntity>(e =>
-        {
-            e.ToTable("Users");
-            e.Property(u => u.Location).HasColumnType("geography");
-            e.HasIndex(u => u.Email).IsUnique();
-            e.HasDiscriminator(u => u.Role)
-                .HasValue<UserEntity>(Role.Admin)
-                .HasValue<VenueManagerEntity>(Role.VenueManager)
-                .HasValue<ArtistManagerEntity>(Role.ArtistManager)
-                .HasValue<CustomerEntity>(Role.Customer);
-            e.OwnsOne(u => u.Address, a =>
-            {
-                a.Property(x => x.County).HasColumnName("County");
-                a.Property(x => x.Town).HasColumnName("Town");
-            });
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ReadDbContext).Assembly);
 
-        modelBuilder.Entity<CustomerEntity>()
-            .Property(u => u.StripeCustomerId).IsRequired();
-
-        modelBuilder.Entity<ManagerEntity>()
-            .Property(u => u.StripeCustomerId).IsRequired();
-
-        modelBuilder.Entity<ManagerEntity>()
-            .Property(u => u.StripeAccountId).IsRequired();
-
-        modelBuilder.Entity<StripeEventEntity>()
-            .HasKey(e => e.EventId);
-
-        modelBuilder.Entity<OpportunityApplicationEntity>(e =>
-        {
-            e.HasIndex(ca => new { ca.OpportunityId, ca.ArtistId }).IsUnique();
-        });
-
-        modelBuilder.Entity<MessageEntity>()
-            .HasOne(m => m.FromUser)
-            .WithMany(u => u.SentMessages)
-            .HasForeignKey(m => m.FromUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<MessageEntity>()
-            .HasOne(m => m.ToUser)
-            .WithMany(u => u.ReceivedMessages)
-            .HasForeignKey(m => m.ToUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<TransactionEntity>(e =>
-        {
-            e.UseTptMappingStrategy();
-            e.HasIndex(t => t.PaymentIntentId).IsUnique();
-            e.HasOne(p => p.FromUser)
-                .WithMany()
-                .HasForeignKey(p => p.FromUserId)
-                .OnDelete(DeleteBehavior.NoAction);
-            e.HasOne(p => p.ToUser)
-                .WithMany()
-                .HasForeignKey(p => p.ToUserId)
-                .OnDelete(DeleteBehavior.NoAction);
-        });
-
-        modelBuilder.Entity<TicketTransactionEntity>()
-            .HasOne(t => t.Concert)
-            .WithMany()
-            .HasForeignKey(t => t.ConcertId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<SettlementTransactionEntity>()
-            .HasOne(t => t.Booking)
-            .WithMany()
-            .HasForeignKey(t => t.BookingId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<ConcertEntity>()
-            .HasOne(e => e.Booking)
-            .WithOne(b => b.Concert)
-            .HasForeignKey<ConcertEntity>(e => e.BookingId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<ConcertGenreEntity>()
-            .HasOne(cg => cg.Concert)
-            .WithMany(c => c.ConcertGenres)
-            .HasForeignKey(cg => cg.ConcertId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
-
-        modelBuilder.Entity<ConcertGenreEntity>()
-            .HasOne(cg => cg.Genre)
-            .WithMany(g => g.ConcertGenres)
-            .HasForeignKey(cg => cg.GenreId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
-
-        modelBuilder.Entity<ConcertImageEntity>()
-            .HasOne(ci => ci.Concert)
-            .WithMany(c => c.Images)
-            .HasForeignKey(ci => ci.ConcertId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
-
-        modelBuilder.Entity<OpportunityEntity>()
-            .OwnsOne(o => o.Period, p =>
-            {
-                p.Property(x => x.Start).HasColumnName("StartDate");
-                p.Property(x => x.End).HasColumnName("EndDate");
-            });
-
-        modelBuilder.Entity<OpportunityEntity>()
-            .HasOne(o => o.Venue)
-            .WithMany(v => v.Opportunities)
-            .HasForeignKey(o => o.VenueId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<OpportunityApplicationEntity>()
-            .HasOne(ca => ca.Opportunity)
-            .WithMany(o => o.Applications)
-            .HasForeignKey(ca => ca.OpportunityId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<OpportunityApplicationEntity>()
-            .HasOne(ca => ca.Artist)
-            .WithMany(a => a.Applications)
-            .HasForeignKey(ca => ca.ArtistId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<TicketEntity>()
-            .HasOne(t => t.Concert)
-            .WithMany(e => e.Tickets)
-            .HasForeignKey(t => t.ConcertId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<TicketEntity>()
-            .HasOne(t => t.User)
-            .WithMany(u => u.Tickets)
-            .HasForeignKey(t => t.UserId)
-            .IsRequired();
-
-        modelBuilder.Entity<CustomerEntity>()
-            .HasOne(c => c.Preference)
-            .WithOne(p => p.User)
-            .HasForeignKey<PreferenceEntity>(p => p.UserId)
-            .IsRequired();
-
-        modelBuilder.Entity<ArtistManagerEntity>()
-            .HasOne(am => am.Artist)
-            .WithOne(a => a.User)
-            .HasForeignKey<ArtistEntity>(a => a.UserId)
-            .IsRequired();
-
-        modelBuilder.Entity<VenueManagerEntity>()
-            .HasOne(vm => vm.Venue)
-            .WithOne(v => v.User)
-            .HasForeignKey<VenueEntity>(v => v.UserId)
-            .IsRequired();
-
-        modelBuilder.Entity<RefreshTokenEntity>()
-            .HasOne(rt => rt.User)
-            .WithMany(u => u.RefreshTokens)
-            .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<EmailVerificationTokenEntity>()
-            .HasOne(t => t.User)
-            .WithMany(u => u.EmailVerificationTokens)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<PasswordResetTokenEntity>()
-            .HasOne(t => t.User)
-            .WithMany(u => u.PasswordResetTokens)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<ContractEntity>()
-            .UseTptMappingStrategy()
-            .HasOne(c => c.Opportunity)
-            .WithOne(o => o.Contract)
-            .HasForeignKey<ContractEntity>(c => c.Id)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -108,6 +108,10 @@ public class TestDbInitializer : IDbInitializer
         {
             seed.Artist = ArtistFaker.GetFaker(seed.ArtistManager.Id, "Test Artist", "artist.jpg").Generate();
             seed.Artist.SyncGenres([seed.Rock.Id]);
+            seed.Artist.Location = seed.ArtistManager.Location;
+            seed.Artist.Address = seed.ArtistManager.Address;
+            seed.Artist.Avatar = seed.ArtistManager.Avatar;
+            seed.Artist.Email = seed.ArtistManager.Email;
 
             context.Artists.Add(seed.Artist);
             await context.SaveChangesAsync();
@@ -116,6 +120,10 @@ public class TestDbInitializer : IDbInitializer
         await context.Venues.SeedIfEmptyAsync(async () =>
         {
             seed.Venue = VenueFaker.GetFaker(seed.VenueManager1.Id, "Test Venue", "venue.jpg").Generate();
+            seed.Venue.Location = seed.VenueManager1.Location;
+            seed.Venue.Address = seed.VenueManager1.Address;
+            seed.Venue.Avatar = seed.VenueManager1.Avatar;
+            seed.Venue.Email = seed.VenueManager1.Email;
 
             context.Venues.Add(seed.Venue);
             await context.SaveChangesAsync();

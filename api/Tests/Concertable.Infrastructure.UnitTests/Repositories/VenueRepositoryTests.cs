@@ -60,7 +60,6 @@ public class VenueRepositoryTests : IDisposable
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Id);
-        Assert.NotNull(result.User);
     }
 
     [Fact]
@@ -82,7 +81,6 @@ public class VenueRepositoryTests : IDisposable
 
         Assert.NotNull(result);
         Assert.Equal(UserId, result.UserId);
-        Assert.NotNull(result.User);
     }
 
     [Fact]

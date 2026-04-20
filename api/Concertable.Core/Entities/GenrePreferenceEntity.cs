@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Concertable.Core.Interfaces;
 
 namespace Concertable.Core.Entities;
 
+[Table("GenrePreferences")]
 public class GenrePreferenceEntity : IIdEntity, IGenreJoin
 {
     public int Id { get; private set; }

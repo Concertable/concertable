@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Shared\Concertable.Shared.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

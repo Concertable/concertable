@@ -131,7 +131,10 @@
       "Bash(xargs head *)",
       "Bash(handle.exe api/Concertable.Search.Application)",
       "Bash(tasklist)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(break)",
+      "Bash(dotnet restore *)",
+      "Bash(git -C /c/Users/TommySeery/source/repos/Concertable status --short)"
     ]
   }
 }

@@ -1,0 +1,57 @@
+using Concertable.Core.Entities;
+using Concertable.Core.Entities.Contracts;
+using Concertable.Data.Application;
+using Microsoft.EntityFrameworkCore;
+
+namespace Concertable.Data.Infrastructure.Data;
+
+public class ReadDbContext(DbContextOptions<ReadDbContext> options)
+    : DbContextBase(options), IReadDbContext
+{
+    public ReadDbContext() : this(new DbContextOptionsBuilder<ReadDbContext>().Options) { }
+
+    public IQueryable<UserEntity> Users => Set<UserEntity>().AsNoTracking();
+    public IQueryable<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>().AsNoTracking();
+    public IQueryable<EmailVerificationTokenEntity> EmailVerificationTokens => Set<EmailVerificationTokenEntity>().AsNoTracking();
+    public IQueryable<PasswordResetTokenEntity> PasswordResetTokens => Set<PasswordResetTokenEntity>().AsNoTracking();
+    public IQueryable<ArtistEntity> Artists => Set<ArtistEntity>().AsNoTracking();
+    public IQueryable<ArtistGenreEntity> ArtistGenres => Set<ArtistGenreEntity>().AsNoTracking();
+    public IQueryable<VenueEntity> Venues => Set<VenueEntity>().AsNoTracking();
+    public IQueryable<VenueImageEntity> VenueImages => Set<VenueImageEntity>().AsNoTracking();
+    public IQueryable<ConcertEntity> Concerts => Set<ConcertEntity>().AsNoTracking();
+    public IQueryable<ConcertGenreEntity> ConcertGenres => Set<ConcertGenreEntity>().AsNoTracking();
+    public IQueryable<ConcertImageEntity> ConcertImages => Set<ConcertImageEntity>().AsNoTracking();
+    public IQueryable<GenreEntity> Genres => Set<GenreEntity>().AsNoTracking();
+    public IQueryable<OpportunityEntity> Opportunities => Set<OpportunityEntity>().AsNoTracking();
+    public IQueryable<OpportunityGenreEntity> OpportunityGenres => Set<OpportunityGenreEntity>().AsNoTracking();
+    public IQueryable<OpportunityApplicationEntity> OpportunityApplications => Set<OpportunityApplicationEntity>().AsNoTracking();
+    public IQueryable<ConcertBookingEntity> ConcertBookings => Set<ConcertBookingEntity>().AsNoTracking();
+    public IQueryable<ReviewEntity> Reviews => Set<ReviewEntity>().AsNoTracking();
+    public IQueryable<TicketEntity> Tickets => Set<TicketEntity>().AsNoTracking();
+    public IQueryable<MessageEntity> Messages => Set<MessageEntity>().AsNoTracking();
+    public IQueryable<TransactionEntity> Transactions => Set<TransactionEntity>().AsNoTracking();
+    public IQueryable<TicketTransactionEntity> TicketTransactions => Set<TicketTransactionEntity>().AsNoTracking();
+    public IQueryable<SettlementTransactionEntity> SettlementTransactions => Set<SettlementTransactionEntity>().AsNoTracking();
+    public IQueryable<PreferenceEntity> Preferences => Set<PreferenceEntity>().AsNoTracking();
+    public IQueryable<GenrePreferenceEntity> GenrePreferences => Set<GenrePreferenceEntity>().AsNoTracking();
+    public IQueryable<StripeEventEntity> StripeEvents => Set<StripeEventEntity>().AsNoTracking();
+    public IQueryable<ContractEntity> Contracts => Set<ContractEntity>().AsNoTracking();
+    public IQueryable<FlatFeeContractEntity> FlatFeeContracts => Set<FlatFeeContractEntity>().AsNoTracking();
+    public IQueryable<DoorSplitContractEntity> DoorSplitContracts => Set<DoorSplitContractEntity>().AsNoTracking();
+    public IQueryable<VersusContractEntity> VersusContracts => Set<VersusContractEntity>().AsNoTracking();
+    public IQueryable<VenueHireContractEntity> VenueHireContracts => Set<VenueHireContractEntity>().AsNoTracking();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ReadDbContext).Assembly);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default)
+        => throw new NotSupportedException("ReadDbContext is read-only.");
+
+    public override int SaveChanges()
+        => throw new NotSupportedException("ReadDbContext is read-only.");
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        => throw new NotSupportedException("ReadDbContext is read-only.");
+}

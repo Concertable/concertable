@@ -1,6 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
@@ -9,12 +8,11 @@ using Concertable.Application.Interfaces.Rating;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
-using Concertable.Application.Validators;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
-using Concertable.Infrastructure.Events;
+using Concertable.Data.Infrastructure.Data;
+using Concertable.Data.Infrastructure.Events;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Mappers;
@@ -23,11 +21,9 @@ using Concertable.Infrastructure.Repositories.Concert;
 using Concertable.Infrastructure.Repositories.Review;
 using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Services;
-using Concertable.Application.Interfaces;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
-using Concertable.Infrastructure.Services.Auth;
 using Concertable.Infrastructure.Services.Blob;
 using Concertable.Infrastructure.Services.Complete;
 using Concertable.Infrastructure.Services.Concert;
@@ -40,6 +36,8 @@ using Concertable.Infrastructure.Services.Settlement;
 using Concertable.Infrastructure.Services.Webhook;
 using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
+using Concertable.Core.Enums;
+using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Search.Infrastructure.Extensions;
 using Concertable.Web.Authorization;
 using Concertable.Web.Handlers;
@@ -57,9 +55,6 @@ using NetTopologySuite.Geometries;
 using QRCoder;
 using QuestPDF.Infrastructure;
 using System.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Concertable.Web.Extensions;
 
@@ -200,7 +195,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
-        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddKeyedScoped<IReviewService, ArtistReviewService>(ReviewType.Artist);
         services.AddKeyedScoped<IReviewService, VenueReviewService>(ReviewType.Venue);
@@ -213,8 +207,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPreferenceService, PreferenceService>();
         services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();
-        services.AddScoped<IAuthUriService, AuthUriService>();
-        services.AddScoped<IOwnershipService, OwnershipService>();
         services.AddContracts();
         services.AddServiceValidators();
 
@@ -226,7 +218,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
         services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
-        services.AddScoped<IUserValidator, UserValidator>();
         services.AddScoped<IReviewValidator, ReviewValidator>();
 
         return services;
@@ -244,7 +235,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IReviewRepository<ArtistEntity>, ReviewRepository<ArtistEntity>>();
         services.AddScoped<IReviewRepository<VenueEntity>, ReviewRepository<VenueEntity>>();
@@ -252,9 +242,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
         services.AddScoped<IVenueReviewRepository, VenueReviewRepository>();
         services.AddScoped<IConcertReviewRepository, ConcertReviewRepository>();
-        services.AddScoped<IManagerRepository<VenueManagerEntity>, VenueManagerRepository>();
-        services.AddScoped<IManagerRepository<ArtistManagerEntity>, ArtistManagerRepository>();
-        services.AddRatingRepositories();
+services.AddRatingRepositories();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -288,7 +276,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContractService, ContractService>();
 
         services.AddSingleton<IContractMapper, ContractMapper>();
-        services.AddSingleton<IUserMapper, UserMapper>();
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 
@@ -326,34 +313,16 @@ public static class ServiceCollectionExtensions
     {
         services.AddFluentValidationAutoValidation();
         services.AddValidatorsFromAssemblyContaining<LoginRequest>();
+        services.AddValidatorsFromAssemblyContaining<IVenueService>();
 
         return services;
     }
 
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddIdentityModule(configuration);
+
         var authSettings = configuration.GetSection("Auth").Get<AuthSettings>()!;
-        services.Configure<AuthSettings>(configuration.GetSection("Auth"));
-
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserLoader, UserLoader>();
-        services.AddKeyedScoped<IUserLoader, VenueManagerLoader>(Role.VenueManager);
-        services.AddKeyedScoped<IUserLoader, ArtistManagerLoader>(Role.ArtistManager);
-        services.AddKeyedScoped<IUserLoader, CustomerLoader>(Role.Customer);
-        services.AddKeyedScoped<IUserLoader, AdminLoader>(Role.Admin);
-
-        services.AddScoped<IUserRegister, UserRegister>();
-        services.AddKeyedScoped<IUserRegister, VenueManagerRegister>(Role.VenueManager);
-        services.AddKeyedScoped<IUserRegister, ArtistManagerRegister>(Role.ArtistManager);
-        services.AddKeyedScoped<IUserRegister, CustomerRegister>(Role.Customer);
-        services.AddKeyedScoped<IUserRegister, AdminRegister>(Role.Admin);
-        services.AddSingleton<JwtSecurityTokenHandler>();
-        services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
-        services.AddSingleton<ITokenService, JwtTokenService>();
-        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-        services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUser, CurrentUserAccessor>();
-
         var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);
         var signingKey = new SymmetricSecurityKey(keyBytes);
 

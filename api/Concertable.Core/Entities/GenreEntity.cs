@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Concertable.Core.Entities;
 
+[Table("Genres")]
 public class GenreEntity : IIdEntity
 {
     public int Id { get; private set; }

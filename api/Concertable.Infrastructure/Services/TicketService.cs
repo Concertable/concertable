@@ -1,6 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Identity.Contracts;
 using Concertable.Application.Mappers;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
@@ -45,9 +46,7 @@ public class TicketService : ITicketService
 
     public async Task<Result<TicketPaymentResponse>> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
-        var user = currentUser.Get();
-
-        if (user.Role != Role.Customer)
+        if (currentUser.GetRole() != Role.Customer)
             throw new ForbiddenException("Only Customers can buy tickets");
 
         var validationResult = await ticketValidator.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
@@ -68,7 +67,7 @@ public class TicketService : ITicketService
             RequiresAction = paymentResult.Value.RequiresAction,
             TransactionId = paymentResult.Value.TransactionId,
             ClientSecret = paymentResult.Value.ClientSecret,
-            UserEmail = user.Email
+            UserEmail = currentUser.Email
         });
     }
 
@@ -122,15 +121,13 @@ public class TicketService : ITicketService
 
 public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
-        var user = currentUser.Get();
-        var tickets = await ticketRepository.GetUpcomingByUserIdAsync(user.Id);
+        var tickets = await ticketRepository.GetUpcomingByUserIdAsync(currentUser.GetId());
         return tickets.ToDtos();
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserHistoryAsync()
     {
-        var user = currentUser.Get();
-        var tickets = await ticketRepository.GetHistoryByUserIdAsync(user.Id);
+        var tickets = await ticketRepository.GetHistoryByUserIdAsync(currentUser.GetId());
         return tickets.ToDtos();
     }
 

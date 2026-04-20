@@ -12,8 +12,8 @@ public static class QueryableConcertMappers
         IQueryable<RatingAggregate> concertRatings,
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
-        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.User.Location != null
-                                 && c.Booking.Application.Opportunity.Venue.User.Address != null).AsExpandable()
+        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null
+                                 && c.Booking.Application.Opportunity.Venue.Address != null).AsExpandable()
         join cr in concertRatings on c.Id equals cr.EntityId into crg
         from concertRating in crg.DefaultIfEmpty()
         join ar in artistRatings on c.Booking.Application.ArtistId equals ar.EntityId into arg
@@ -26,7 +26,7 @@ public static class QueryableConcertMappers
             Name = c.Name,
             About = c.About,
             BannerUrl = c.BannerUrl ?? c.Booking.Application.Artist.BannerUrl,
-            Avatar = c.Avatar ?? c.Booking.Application.Artist.User.Avatar,
+            Avatar = c.Avatar ?? c.Booking.Application.Artist.Avatar,
             Rating = (double?)concertRating.AverageRating ?? 0.0,
             Price = c.Price,
             TotalTickets = c.TotalTickets,
@@ -40,18 +40,18 @@ public static class QueryableConcertMappers
                 Id = c.Booking.Application.Opportunity.Venue.Id,
                 Name = c.Booking.Application.Opportunity.Venue.Name,
                 Rating = (double?)venueRating.AverageRating ?? 0.0,
-                County = c.Booking.Application.Opportunity.Venue.User.Address!.County,
-                Town = c.Booking.Application.Opportunity.Venue.User.Address!.Town,
-                Latitude = c.Booking.Application.Opportunity.Venue.User.Location!.Y,
-                Longitude = c.Booking.Application.Opportunity.Venue.User.Location!.X
+                County = c.Booking.Application.Opportunity.Venue.Address!.County,
+                Town = c.Booking.Application.Opportunity.Venue.Address!.Town,
+                Latitude = c.Booking.Application.Opportunity.Venue.Location!.Y,
+                Longitude = c.Booking.Application.Opportunity.Venue.Location!.X
             },
             Artist = new ConcertArtistDto
             {
                 Id = c.Booking.Application.Artist.Id,
                 Name = c.Booking.Application.Artist.Name,
-                Avatar = c.Booking.Application.Artist.User.Avatar,
-                County = c.Booking.Application.Artist.User.Address.County ?? string.Empty,
-                Town = c.Booking.Application.Artist.User.Address.Town ?? string.Empty,
+                Avatar = c.Booking.Application.Artist.Avatar,
+                County = c.Booking.Application.Artist.Address.County ?? string.Empty,
+                Town = c.Booking.Application.Artist.Address.Town ?? string.Empty,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
                 Genres = GenreSelectors.FromArtist.Invoke(c.Booking.Application.Artist)
             }
@@ -61,8 +61,8 @@ public static class QueryableConcertMappers
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
-        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.User.Location != null
-                                 && c.Booking.Application.Opportunity.Venue.User.Address != null).AsExpandable()
+        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null
+                                 && c.Booking.Application.Opportunity.Venue.Address != null).AsExpandable()
         join ar in artistRatings on c.Booking.Application.ArtistId equals ar.EntityId into arg
         from artistRating in arg.DefaultIfEmpty()
         join vr in venueRatings on c.Booking.Application.Opportunity.VenueId equals vr.EntityId into vrg
@@ -71,7 +71,7 @@ public static class QueryableConcertMappers
         {
             Id = c.Id,
             Name = c.Name,
-            ImageUrl = c.Avatar ?? c.Booking.Application.Artist.User.Avatar,
+            ImageUrl = c.Avatar ?? c.Booking.Application.Artist.Avatar,
             Price = c.Price,
             TotalTickets = c.TotalTickets,
             AvailableTickets = c.AvailableTickets,

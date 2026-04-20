@@ -14,8 +14,11 @@ public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>, IReview
     public string About { get; private set; } = null!;
     public string BannerUrl { get; private set; } = null!;
     public bool Approved { get; private set; }
-    public VenueManagerEntity User { get; set; } = null!;
-    public static Expression<Func<VenueEntity, Point?>> LocationExpression => v => v.User.Location;
+    public Point? Location { get; set; }
+    public Address? Address { get; set; }
+    public string? Avatar { get; set; }
+    public string? Email { get; set; }
+    public static Expression<Func<VenueEntity, Point?>> LocationExpression => v => v.Location;
     public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Booking.Application.Opportunity.VenueId;
 
     public ICollection<OpportunityEntity> Opportunities { get; private set; } = [];

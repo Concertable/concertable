@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
 using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
+using Concertable.Identity.Contracts;
 
 namespace Concertable.Infrastructure.Services;
 
@@ -45,15 +46,14 @@ public class PreferenceService : IPreferenceService
 
     public async Task<PreferenceDto?> GetByUserAsync()
     {
-        var user = currentUser.Get();
-        return await GetByUserIdAsync(user.Id);
+        return await GetByUserIdAsync(currentUser.GetId());
     }
 
     public async Task<PreferenceDto> UpdateAsync(PreferenceDto preferenceDto)
     {
         var preference = await preferenceRepository.GetByIdAsync(preferenceDto.Id)
             ?? throw new NotFoundException("Preference not found");
-        var userId = currentUser.Get().Id;
+        var userId = currentUser.GetId();
 
         if (userId != preference.User.Id)
             throw new UnauthorizedAccessException("You do not own this preference");

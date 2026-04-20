@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Concertable.Core.Entities;
 
+[Table("Reviews")]
 public class ReviewEntity : IIdEntity
 {
     public int Id { get; private set; }

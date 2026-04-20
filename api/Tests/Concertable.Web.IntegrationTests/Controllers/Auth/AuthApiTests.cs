@@ -1,6 +1,6 @@
 using System.Net;
+using Concertable.Identity.Application.DTOs;
 using Concertable.Application.Requests;
-using Concertable.Application.DTOs;
 using Concertable.Core.Enums;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
@@ -347,6 +347,180 @@ public class AuthApiTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Logout
+
+    [Fact]
+    public async Task Logout_ShouldReturn401_WhenUnauthenticated()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+
+        // Act
+        var response = await client.PostAsync("/api/Auth/logout", new RefreshTokenRequest { RefreshToken = "any-token" });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_ShouldReturn204_WhenAuthenticated()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+        const string email = "logout@test.com";
+        const string password = "Password123!";
+
+        await client.PostAsJsonEnsureSuccessAsync("/api/Auth/register", new RegisterRequest
+        {
+            Email = email,
+            Password = password,
+            Role = Role.Customer
+        });
+
+        var token = fixture.EmailService.ExtractToken(email);
+        await client.PostAsJsonEnsureSuccessAsync("/api/Auth/verify-email", new VerifyEmailRequest { Token = token! });
+
+        var loginResponse = await (await client.PostAsync("/api/Auth/login", new LoginRequest { Email = email, Password = password }))
+            .Content.ReadAsync<LoginResponse>();
+
+        var authenticatedClient = fixture.CreateClient(loginResponse!.User.Id, Role.Customer);
+
+        // Act
+        var response = await authenticatedClient.PostAsync("/api/Auth/logout", new RefreshTokenRequest
+        {
+            RefreshToken = loginResponse.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_ShouldInvalidateRefreshToken()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+        const string email = "logoutinvalidate@test.com";
+        const string password = "Password123!";
+
+        await client.PostAsJsonEnsureSuccessAsync("/api/Auth/register", new RegisterRequest
+        {
+            Email = email,
+            Password = password,
+            Role = Role.Customer
+        });
+
+        var token = fixture.EmailService.ExtractToken(email);
+        await client.PostAsJsonEnsureSuccessAsync("/api/Auth/verify-email", new VerifyEmailRequest { Token = token! });
+
+        var loginResponse = await (await client.PostAsync("/api/Auth/login", new LoginRequest { Email = email, Password = password }))
+            .Content.ReadAsync<LoginResponse>();
+
+        var authenticatedClient = fixture.CreateClient(loginResponse!.User.Id, Role.Customer);
+        await authenticatedClient.PostAsJsonEnsureSuccessAsync("/api/Auth/logout", new RefreshTokenRequest
+        {
+            RefreshToken = loginResponse.RefreshToken
+        });
+
+        // Act — attempt to use the invalidated refresh token
+        var response = await client.PostAsync("/api/Auth/refresh", new RefreshTokenRequest
+        {
+            RefreshToken = loginResponse.RefreshToken
+        });
+
+        // Assert — invalidated token is treated as unauthorized, not bad request
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Refresh
+
+    [Fact]
+    public async Task Refresh_ShouldReturn401_WhenTokenIsInvalid()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+
+        // Act
+        var response = await client.PostAsync("/api/Auth/refresh", new RefreshTokenRequest { RefreshToken = "invalid-token" });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Refresh_ShouldReturn200_WhenTokenIsValid()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+        const string email = "refresh@test.com";
+        const string password = "Password123!";
+
+        await client.PostAsJsonEnsureSuccessAsync("/api/Auth/register", new RegisterRequest
+        {
+            Email = email,
+            Password = password,
+            Role = Role.Customer
+        });
+
+        var token = fixture.EmailService.ExtractToken(email);
+        await client.PostAsJsonEnsureSuccessAsync("/api/Auth/verify-email", new VerifyEmailRequest { Token = token! });
+
+        var loginResponse = await (await client.PostAsync("/api/Auth/login", new LoginRequest { Email = email, Password = password }))
+            .Content.ReadAsync<LoginResponse>();
+
+        // Act
+        var response = await client.PostAsync("/api/Auth/refresh", new RefreshTokenRequest
+        {
+            RefreshToken = loginResponse!.RefreshToken
+        });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var refreshResponse = await response.Content.ReadAsync<LoginResponse>();
+        Assert.NotNull(refreshResponse);
+        Assert.NotNull(refreshResponse.AccessToken);
+        Assert.NotNull(refreshResponse.RefreshToken);
+    }
+
+    #endregion
+
+    #region Me
+
+    [Fact]
+    public async Task Me_ShouldReturn401_WhenUnauthenticated()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/api/Auth/me");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Me_ShouldReturn200_WhenAuthenticated()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.Customer);
+
+        // Act
+        var response = await client.GetAsync("/api/Auth/me");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var user = await response.Content.ReadAsync<CustomerDto>();
+        Assert.NotNull(user);
+        Assert.Equal(fixture.SeedData.Customer.Id, user.Id);
+        Assert.Equal("customer@test.com", user.Email);
+        Assert.Equal(Role.Customer, user.Role);
     }
 
     #endregion

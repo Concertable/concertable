@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Requests;
-using Concertable.Application.DTOs;
+using Concertable.Identity.Application.DTOs;
+using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +13,15 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService authService;
     private readonly ICurrentUser currentUser;
+    private readonly IUserService userService;
+    private readonly IUserMapper userMapper;
 
-    public AuthController(IAuthService authService, ICurrentUser currentUser)
+    public AuthController(IAuthService authService, ICurrentUser currentUser, IUserService userService, IUserMapper userMapper)
     {
         this.authService = authService;
         this.currentUser = currentUser;
+        this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     [HttpPost("register")]
@@ -48,9 +53,11 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<IUser> Me()
+    public async Task<ActionResult<IUser>> Me()
     {
-        return Ok(currentUser.Get());
+        var entity = await userService.GetUserEntityByIdAsync(currentUser.GetId());
+        if (entity is null) return Unauthorized();
+        return Ok(userMapper.ToDto(entity));
     }
 
     [HttpPost("send-verification")]

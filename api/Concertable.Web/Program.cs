@@ -7,7 +7,6 @@ using Concertable.Seeding.Fakers;
 using Concertable.Search.Infrastructure.Extensions;
 using Concertable.Web.Extensions;
 using Concertable.Web.Hubs;
-using Concertable.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,7 +87,6 @@ app.UseExceptionHandler();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<CurrentUserMiddleware>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 

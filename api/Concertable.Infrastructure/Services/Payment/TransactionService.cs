@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;

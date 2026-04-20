@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts;
 using Concertable.Core.Interfaces;
 
 namespace Concertable.Infrastructure.Validators;

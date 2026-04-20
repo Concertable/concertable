@@ -1,5 +1,5 @@
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Data.Infrastructure.Data;
 using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

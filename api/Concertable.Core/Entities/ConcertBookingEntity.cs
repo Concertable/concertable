@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities;
 
+[Table("ConcertBookings")]
 public class ConcertBookingEntity : IIdEntity
 {
     public int Id { get; private set; }

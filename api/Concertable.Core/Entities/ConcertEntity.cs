@@ -16,7 +16,7 @@ public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>, IRe
     public int TotalTickets { get; private set; }
     public int AvailableTickets { get; private set; }
     public DateTime? DatePosted { get; private set; }
-    public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Booking.Application.Opportunity.Venue.User.Location;
+    public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Booking.Application.Opportunity.Venue.Location;
     public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.ConcertId;
     public ConcertBookingEntity Booking { get; set; } = null!;
     public ICollection<TicketEntity> Tickets { get; } = [];

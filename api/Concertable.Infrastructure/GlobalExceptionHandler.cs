@@ -30,7 +30,14 @@ public class GlobalExceptionHandler : IExceptionHandler
             Instance = httpContext.Request.Path
         };
 
-        if (exception is DomainException domainEx)
+        if (exception is UnauthorizedAccessException)
+        {
+            httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            problemDetails.Status = httpContext.Response.StatusCode;
+            problemDetails.Title = "Unauthorized";
+            problemDetails.Detail = exception.Message;
+        }
+        else if (exception is DomainException domainEx)
         {
             httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             problemDetails.Status = httpContext.Response.StatusCode;

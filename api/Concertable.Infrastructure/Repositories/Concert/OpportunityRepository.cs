@@ -35,7 +35,7 @@ public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunity
     {
         return await context.Users
             .OfType<VenueManagerEntity>()
-            .Where(vm => vm.Venue != null && vm.Venue.Opportunities.Any(o => o.Id == opportunityId))
+            .Where(vm => context.Venues.Any(v => v.UserId == vm.Id && v.Opportunities.Any(o => o.Id == opportunityId)))
             .FirstOrDefaultAsync();
     }
 
@@ -63,7 +63,6 @@ public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunity
             .Include(o => o.OpportunityGenres)
                 .ThenInclude(og => og.Genre)
             .Include(o => o.Venue)
-                .ThenInclude(v => v.User)
             .Where(o => o.Applications.Any(a => a.Id == id))
             .FirstOrDefaultAsync();
     }

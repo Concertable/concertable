@@ -217,6 +217,14 @@ public class DevDbInitializer : IDbInitializer
                 ArtistFaker.GetFaker(artistManagerIds[33], "Echo Collapse", "echocollapse.jpg").Generate(),
                 ArtistFaker.GetFaker(artistManagerIds[34], "Violet Sundown", "violetsundown.jpg").Generate()
             };
+            foreach (var artist in artists)
+            {
+                var loc = locationFaker.Next();
+                artist.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
+                artist.Address = new Address(loc.County, loc.Town);
+                artist.Email = string.Empty;
+            }
+
             context.Artists.AddRange(artists);
             await context.SaveChangesAsync();
         });
@@ -317,6 +325,14 @@ public class DevDbInitializer : IDbInitializer
                 VenueFaker.GetFaker(venueManagerIds[33], "Dundee Fat Sams", "dundeefatsams.jpg").Generate(),
                 VenueFaker.GetFaker(venueManagerIds[34], "Coventry Empire", "coventryempire.jpg").Generate()
             };
+            foreach (var venue in venues)
+            {
+                var loc = locationFaker.Next();
+                venue.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
+                venue.Address = new Address(loc.County, loc.Town);
+                venue.Email = string.Empty;
+            }
+
             context.Venues.AddRange(venues);
             await context.SaveChangesAsync();
         });

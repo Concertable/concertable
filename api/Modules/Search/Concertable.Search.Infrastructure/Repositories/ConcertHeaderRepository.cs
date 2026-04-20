@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Data.Infrastructure.Data;
 using Concertable.Infrastructure.Extensions;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Search.Application.Interfaces;

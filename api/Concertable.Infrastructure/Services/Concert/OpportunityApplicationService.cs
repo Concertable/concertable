@@ -1,5 +1,6 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
@@ -89,7 +90,6 @@ public class OpportunityApplicationService : IOpportunityApplicationService
 
         var application = OpportunityApplicationEntity.Create(artistDto.Id, opportunityId);
 
-        var user = currentUser.Get();
         var opportunityOwner = await opportunityService.GetOwnerByIdAsync(opportunityId);
         var opportunity = await opportunityService.GetByIdAsync(opportunityId);
 
@@ -107,12 +107,12 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         await applicationRepository.AddAsync(application);
 
         await messageService.SendAsync(
-            fromUserId: user.Id,
+            fromUserId: currentUser.GetId(),
             toUserId: opportunityOwner.Id,
-            content: $"{user.Email} has applied to your concert opportunity",
+            content: $"{currentUser.Email} has applied to your concert opportunity",
             action: MessageAction.ApplicationReceived);
 
-        await emailService.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{user.Email} has applied to your concert opportunity");
+        await emailService.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{currentUser.Email} has applied to your concert opportunity");
 
         try
         {
@@ -139,7 +139,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
             content: "Your application has been accepted!",
             action: MessageAction.ApplicationAccepted);
 
-        await emailService.SendEmailAsync(artist.User.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
+        await emailService.SendEmailAsync(artist.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
 
         return outcome;
     }

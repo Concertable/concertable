@@ -21,7 +21,6 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
     {
         return await context.Venues
             .Where(v => v.Id == id)
-            .Include(v => v.User)
             .FirstOrDefaultAsync();
     }
 
@@ -38,7 +37,6 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
     {
         return await context.Venues
             .Where(v => v.UserId == id)
-            .Include(v => v.User)
             .FirstOrDefaultAsync();
     }
 
