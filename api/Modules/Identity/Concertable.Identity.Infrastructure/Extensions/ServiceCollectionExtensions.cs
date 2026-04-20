@@ -7,7 +7,6 @@ using Concertable.Identity.Contracts;
 using Concertable.Application.Mappers;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Services.Auth;
 using Concertable.Infrastructure.Settings;

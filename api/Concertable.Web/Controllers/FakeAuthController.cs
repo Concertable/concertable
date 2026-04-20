@@ -1,5 +1,5 @@
 using Concertable.Application.Interfaces.Auth;
-using Concertable.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +9,11 @@ namespace Concertable.Web.Controllers;
 [Route("api/[controller]")]
 public class FakeAuthController : ControllerBase
 {
-    private readonly ApplicationDbContext context;
+    private readonly IdentityDbContext context;
     private readonly ITokenService tokenService;
     private readonly IConfiguration configuration;
 
-    public FakeAuthController(ApplicationDbContext context, ITokenService tokenService, IConfiguration configuration)
+    public FakeAuthController(IdentityDbContext context, ITokenService tokenService, IConfiguration configuration)
     {
         this.context = context;
         this.tokenService = tokenService;

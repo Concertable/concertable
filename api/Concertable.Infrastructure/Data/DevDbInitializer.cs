@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
@@ -21,126 +20,36 @@ public class DevDbInitializer : IDbInitializer
     private readonly SeedData seedData;
     private readonly TimeProvider timeProvider;
     private readonly IGeometryProvider geometryProvider;
-    private readonly IPasswordHasher passwordHasher;
     private readonly ILocationFaker locationFaker;
+    private readonly IEnumerable<IDevSeeder> seeders;
 
     public DevDbInitializer(
         ApplicationDbContext context,
         SeedData seedData,
         TimeProvider timeProvider,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        IPasswordHasher passwordHasher,
-        ILocationFaker locationFaker)
+        ILocationFaker locationFaker,
+        IEnumerable<IDevSeeder> seeders)
     {
         this.context = context;
         this.seedData = seedData;
         this.timeProvider = timeProvider;
         this.geometryProvider = geometryProvider;
-        this.passwordHasher = passwordHasher;
         this.locationFaker = locationFaker;
+        this.seeders = seeders;
     }
 
     public async Task InitializeAsync()
     {
+        foreach (var seeder in seeders.OrderBy(s => s.Order))
+            await seeder.SeedAsync();
+
         await context.Database.MigrateAsync();
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-
-        await context.Users.SeedIfEmptyAsync(async () =>
-        {
-            var hash = passwordHasher.Hash(SeedData.TestPassword);
-
-            seedData.Admin = UserFactory.Admin("admin@test.com", hash);
-            seedData.Admin.Location = geometryProvider.CreatePoint(51.0, -0.5);
-            seedData.Admin.Address = new Address("Leicestershire", "Loughborough");
-            seedData.Admin.Avatar = "avatar.jpg";
-            context.Users.Add(seedData.Admin);
-
-            var customerLoc = locationFaker.Next();
-            seedData.Customer = UserFactory.Customer("customer1@test.com", hash);
-            seedData.Customer.StripeCustomerId = "cus_UIIy9Gbwfr3uAP";
-            seedData.Customer.Location = geometryProvider.CreatePoint(customerLoc.Latitude, customerLoc.Longitude);
-            seedData.Customer.Address = new Address(customerLoc.County, customerLoc.Town);
-            seedData.Customer.Avatar = "avatar.jpg";
-            context.Users.Add(seedData.Customer);
-
-            for (int i = 2; i <= 6; i++)
-            {
-                var loc = locationFaker.Next();
-                var c = UserFactory.Customer($"customer{i}@test.com", hash);
-                c.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
-                c.Address = new Address(loc.County, loc.Town);
-                c.Avatar = "avatar.jpg";
-                context.Users.Add(c);
-            }
-
-            var am1Loc = locationFaker.Next();
-            seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
-            seedData.ArtistManager.StripeAccountId = "acct_1TJiMePysoXmht10";
-            seedData.ArtistManager.StripeCustomerId = "cus_UIIy5mCilBtJbR";
-            seedData.ArtistManager.Location = geometryProvider.CreatePoint(am1Loc.Latitude, am1Loc.Longitude);
-            seedData.ArtistManager.Address = new Address(am1Loc.County, am1Loc.Town);
-            seedData.ArtistManager.Avatar = "avatar.jpg";
-            context.Users.Add(seedData.ArtistManager);
-
-            var am2Loc = locationFaker.Next();
-            var artistManager2 = UserFactory.ArtistManager("artistmanager2@test.com", hash);
-            artistManager2.StripeAccountId = "acct_1TJiMoPupFslP2qz";
-            artistManager2.StripeCustomerId = "cus_UIIy5415r69RmJ";
-            artistManager2.Location = geometryProvider.CreatePoint(am2Loc.Latitude, am2Loc.Longitude);
-            artistManager2.Address = new Address(am2Loc.County, am2Loc.Town);
-            artistManager2.Avatar = "avatar.jpg";
-            context.Users.Add(artistManager2);
-
-            for (int i = 3; i <= 35; i++)
-            {
-                var loc = locationFaker.Next();
-                var am = UserFactory.ArtistManager($"artistmanager{i}@test.com", hash);
-                am.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
-                am.Address = new Address(loc.County, loc.Town);
-                am.Avatar = "avatar.jpg";
-                context.Users.Add(am);
-            }
-
-            var vm1Loc = locationFaker.Next();
-            seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
-            seedData.VenueManager1.StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
-            seedData.VenueManager1.StripeCustomerId = "cus_UIIymKfHijbNVO";
-            seedData.VenueManager1.Location = geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude);
-            seedData.VenueManager1.Address = new Address(vm1Loc.County, vm1Loc.Town);
-            seedData.VenueManager1.Avatar = "avatar.jpg";
-            context.Users.Add(seedData.VenueManager1);
-
-            var vm2Loc = locationFaker.Next();
-            seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
-            seedData.VenueManager2.StripeAccountId = "acct_1TJiPJLLwGSDilbV";
-            seedData.VenueManager2.StripeCustomerId = "cus_UIJ1qfgxYu624Q";
-            seedData.VenueManager2.Location = geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude);
-            seedData.VenueManager2.Address = new Address(vm2Loc.County, vm2Loc.Town);
-            seedData.VenueManager2.Avatar = "avatar.jpg";
-            context.Users.Add(seedData.VenueManager2);
-
-            for (int i = 3; i <= 35; i++)
-            {
-                var loc = locationFaker.Next();
-                var vm = UserFactory.VenueManager($"venuemanager{i}@test.com", hash);
-                vm.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
-                vm.Address = new Address(loc.County, loc.Town);
-                vm.Avatar = "avatar.jpg";
-                context.Users.Add(vm);
-            }
-
-            await context.SaveChangesAsync();
-        });
-
-        // Always resolve IDs from DB so subsequent blocks work on first run and restarts
-        var usersByEmail = await context.Users.ToDictionaryAsync(u => u.Email, u => u.Id);
-        var customerIds = new List<Guid> { usersByEmail["customer1@test.com"] };
-        for (int i = 2; i <= 6; i++) customerIds.Add(usersByEmail[$"customer{i}@test.com"]);
-        var artistManagerIds = new List<Guid>();
-        for (int i = 1; i <= 35; i++) artistManagerIds.Add(usersByEmail[$"artistmanager{i}@test.com"]);
-        var venueManagerIds = new List<Guid> { usersByEmail["venuemanager1@test.com"], usersByEmail["venuemanager2@test.com"] };
-        for (int i = 3; i <= 35; i++) venueManagerIds.Add(usersByEmail[$"venuemanager{i}@test.com"]);
+        var customerIds = seedData.CustomerIds;
+        var artistManagerIds = seedData.ArtistManagerIds;
+        var venueManagerIds = seedData.VenueManagerIds;
 
         await context.Genres.SeedIfEmptyAsync(async () =>
         {

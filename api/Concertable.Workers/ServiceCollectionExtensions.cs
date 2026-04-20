@@ -5,6 +5,8 @@ using Concertable.Core.Enums;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Data.Infrastructure.Events;
+using Concertable.Shared;
 using Concertable.Identity.Infrastructure.Extensions;
 using Infrastructure;
 using Concertable.Infrastructure.Data;

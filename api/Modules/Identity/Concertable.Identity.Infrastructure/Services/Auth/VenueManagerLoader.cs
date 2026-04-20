@@ -1,15 +1,15 @@
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Services.Auth;
 
 public class VenueManagerLoader : IUserLoader
 {
-    private readonly ApplicationDbContext context;
+    private readonly IdentityDbContext context;
 
-    public VenueManagerLoader(ApplicationDbContext context)
+    public VenueManagerLoader(IdentityDbContext context)
     {
         this.context = context;
     }

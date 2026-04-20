@@ -1,0 +1,90 @@
+using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Auth;
+using Concertable.Application.Interfaces.Geometry;
+using Concertable.Core.Parameters;
+using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Seeding;
+using Concertable.Seeding.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Concertable.Seeding.Factories;
+using Concertable.Seeding.Fakers;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Concertable.Identity.Infrastructure.Data.Seeders;
+
+public class IdentityTestSeeder : ITestSeeder
+{
+    public int Order => 0;
+
+    private readonly IdentityDbContext context;
+    private readonly SeedData seedData;
+    private readonly IPasswordHasher passwordHasher;
+    private readonly IGeometryProvider geometryProvider;
+    private readonly ILocationFaker locationFaker;
+
+    public IdentityTestSeeder(
+        IdentityDbContext context,
+        SeedData seedData,
+        IPasswordHasher passwordHasher,
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
+        ILocationFaker locationFaker)
+    {
+        this.context = context;
+        this.seedData = seedData;
+        this.passwordHasher = passwordHasher;
+        this.geometryProvider = geometryProvider;
+        this.locationFaker = locationFaker;
+    }
+
+    public async Task SeedAsync(CancellationToken ct = default)
+    {
+        await context.Database.MigrateAsync(ct);
+
+        await context.Users.SeedIfEmptyAsync(async () =>
+        {
+            var hash = passwordHasher.Hash(SeedData.TestPassword);
+
+            var vm1Loc = locationFaker.Next();
+            seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
+            seedData.VenueManager1.StripeAccountId = "acct_test_venuemanager";
+            seedData.VenueManager1.StripeCustomerId = "cus_test_venuemanager";
+            seedData.VenueManager1.Location = geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude);
+            seedData.VenueManager1.Address = new Address(vm1Loc.County, vm1Loc.Town);
+
+            var vm2Loc = locationFaker.Next();
+            seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
+            seedData.VenueManager2.StripeAccountId = "acct_test_venuemanager2";
+            seedData.VenueManager2.StripeCustomerId = "cus_test_venuemanager2";
+            seedData.VenueManager2.Location = geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude);
+            seedData.VenueManager2.Address = new Address(vm2Loc.County, vm2Loc.Town);
+
+            seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
+            seedData.ArtistManager.StripeAccountId = "acct_test_artistmanager";
+            seedData.ArtistManager.StripeCustomerId = "cus_test_artistmanager";
+            seedData.ArtistManager.Location = geometryProvider.CreatePoint(51, 0);
+            seedData.ArtistManager.Address = new Address("Test County", "Test Town");
+
+            seedData.ArtistManagerNoArtist = UserFactory.ArtistManager("artistmanager2@test.com", hash);
+            seedData.ArtistManagerNoArtist.StripeAccountId = "acct_test_artistmanager2";
+            seedData.ArtistManagerNoArtist.StripeCustomerId = "cus_test_artistmanager2";
+            seedData.ArtistManagerNoArtist.Location = geometryProvider.CreatePoint(51, 0);
+            seedData.ArtistManagerNoArtist.Address = new Address("Test County", "Test Town");
+
+            seedData.Customer = UserFactory.Customer("customer@test.com", hash);
+            seedData.Customer.Location = geometryProvider.CreatePoint(51, 0);
+
+            seedData.Admin = UserFactory.Admin("admin@test.com", hash);
+            seedData.Admin.Location = geometryProvider.CreatePoint(51, 0);
+
+            context.Users.AddRange(
+                seedData.VenueManager1,
+                seedData.VenueManager2,
+                seedData.ArtistManager,
+                seedData.ArtistManagerNoArtist,
+                seedData.Customer,
+                seedData.Admin);
+
+            await context.SaveChangesAsync(ct);
+        });
+    }
+}

@@ -1,15 +1,15 @@
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Services.Auth;
 
 public class AdminRegister : IUserRegister
 {
-    private readonly ApplicationDbContext context;
+    private readonly IdentityDbContext context;
 
-    public AdminRegister(ApplicationDbContext context)
+    public AdminRegister(IdentityDbContext context)
     {
         this.context = context;
     }

@@ -1,22 +1,38 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 
 #nullable disable
 
-namespace Concertable.Infrastructure.Migrations
+namespace Concertable.Identity.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class RemoveTokenEntitiesFromApplicationContext : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Tables are now owned by IdentityDbContext — no schema change needed.
-        }
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    County = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Town = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Location = table.Column<Point>(type: "geography", nullable: true),
+                    StripeCustomerId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Avatar = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsEmailVerified = table.Column<bool>(type: "bit", nullable: false),
+                    StripeAccountId = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
             migrationBuilder.CreateTable(
                 name: "EmailVerificationTokens",
                 columns: table => new
@@ -24,9 +40,9 @@ namespace Concertable.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,9 +62,9 @@ namespace Concertable.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,9 +84,9 @@ namespace Concertable.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -97,6 +113,28 @@ namespace Concertable.Infrastructure.Migrations
                 name: "IX_RefreshTokens_UserId",
                 table: "RefreshTokens",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "EmailVerificationTokens");
+
+            migrationBuilder.DropTable(
+                name: "PasswordResetTokens");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

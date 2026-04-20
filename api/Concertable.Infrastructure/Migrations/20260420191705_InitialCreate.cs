@@ -13,52 +13,6 @@ namespace Concertable.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Genres",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Genres", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StripeEvents",
-                columns: table => new
-                {
-                    EventId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StripeEvents", x => x.EventId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    County = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Town = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Location = table.Column<Point>(type: "geography", nullable: true),
-                    StripeCustomerId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Avatar = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsEmailVerified = table.Column<bool>(type: "bit", nullable: false),
-                    StripeAccountId = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Artists",
                 columns: table => new
                 {
@@ -77,34 +31,19 @@ namespace Concertable.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Artists", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Artists_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "EmailVerificationTokens",
+                name: "Genres",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EmailVerificationTokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EmailVerificationTokens_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_Genres", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -138,28 +77,6 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PasswordResetTokens",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PasswordResetTokens_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Preferences",
                 columns: table => new
                 {
@@ -180,25 +97,15 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RefreshTokens",
+                name: "StripeEvents",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsRevoked = table.Column<bool>(type: "bit", nullable: false)
+                    EventId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    EventProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RefreshTokens_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_StripeEvents", x => x.EventId);
                 });
 
             migrationBuilder.CreateTable(
@@ -252,12 +159,6 @@ namespace Concertable.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Venues", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Venues_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -681,12 +582,6 @@ namespace Concertable.Infrastructure.Migrations
                 column: "GenreId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Artists_UserId",
-                table: "Artists",
-                column: "UserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ConcertBookings_ApplicationId",
                 table: "ConcertBookings",
                 column: "ApplicationId",
@@ -707,11 +602,6 @@ namespace Concertable.Infrastructure.Migrations
                 table: "Concerts",
                 column: "BookingId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EmailVerificationTokens_UserId",
-                table: "EmailVerificationTokens",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GenrePreferences_GenreId",
@@ -755,20 +645,10 @@ namespace Concertable.Infrastructure.Migrations
                 column: "GenreId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PasswordResetTokens_UserId",
-                table: "PasswordResetTokens",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Preferences_UserId",
                 table: "Preferences",
                 column: "UserId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RefreshTokens_UserId",
-                table: "RefreshTokens",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_TicketId",
@@ -813,21 +693,9 @@ namespace Concertable.Infrastructure.Migrations
                 column: "ToUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
-                table: "Users",
-                column: "Email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_VenueImages_VenueId",
                 table: "VenueImages",
                 column: "VenueId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Venues_UserId",
-                table: "Venues",
-                column: "UserId",
-                unique: true);
         }
 
         /// <inheritdoc />
@@ -846,9 +714,6 @@ namespace Concertable.Infrastructure.Migrations
                 name: "DoorSplitContracts");
 
             migrationBuilder.DropTable(
-                name: "EmailVerificationTokens");
-
-            migrationBuilder.DropTable(
                 name: "FlatFeeContracts");
 
             migrationBuilder.DropTable(
@@ -859,12 +724,6 @@ namespace Concertable.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "OpportunityGenres");
-
-            migrationBuilder.DropTable(
-                name: "PasswordResetTokens");
-
-            migrationBuilder.DropTable(
-                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
@@ -919,9 +778,6 @@ namespace Concertable.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Venues");
-
-            migrationBuilder.DropTable(
-                name: "Users");
         }
     }
 }

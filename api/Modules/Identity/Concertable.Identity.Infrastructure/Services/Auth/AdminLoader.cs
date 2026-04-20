@@ -1,15 +1,15 @@
 using Concertable.Application.Interfaces.Auth;
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Services.Auth;
 
 public class AdminLoader : IUserLoader
 {
-    private readonly ApplicationDbContext context;
+    private readonly IdentityDbContext context;
 
-    public AdminLoader(ApplicationDbContext context)
+    public AdminLoader(IdentityDbContext context)
     {
         this.context = context;
     }

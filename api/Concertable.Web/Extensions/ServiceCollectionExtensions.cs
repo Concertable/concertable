@@ -11,6 +11,7 @@ using Concertable.Application.Serializers;
 using Concertable.Core.Entities;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
+using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Events;
 using Concertable.Infrastructure.Factories;
@@ -93,6 +94,7 @@ public static class ServiceCollectionExtensions
             opt.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
                     sqlOpt => sqlOpt.UseNetTopologySuite()));
+        services.AddScoped<IReadDbContext, ReadDbContext>();
 
         services.AddScoped<IDbConnection>(_ =>
             new SqlConnection(configuration.GetConnectionString("DefaultConnection")));

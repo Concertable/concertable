@@ -2,16 +2,16 @@ using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Services.Auth;
 
 public class VenueManagerRegister : IUserRegister
 {
-    private readonly ApplicationDbContext context;
+    private readonly IdentityDbContext context;
     private readonly IStripeAccountService stripeAccountService;
 
-    public VenueManagerRegister(ApplicationDbContext context, IStripeAccountService stripeAccountService)
+    public VenueManagerRegister(IdentityDbContext context, IStripeAccountService stripeAccountService)
     {
         this.context = context;
         this.stripeAccountService = stripeAccountService;

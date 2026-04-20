@@ -13,6 +13,10 @@ public class SeedData
     public CustomerEntity Customer { get; set; } = null!;
     public AdminEntity Admin { get; set; } = null!;
 
+    public IReadOnlyList<Guid> CustomerIds { get; set; } = [];
+    public IReadOnlyList<Guid> ArtistManagerIds { get; set; } = [];
+    public IReadOnlyList<Guid> VenueManagerIds { get; set; } = [];
+
     public GenreEntity Rock { get; set; } = null!;
     public GenreEntity Jazz { get; set; } = null!;
     public GenreEntity HipHop { get; set; } = null!;

@@ -3,6 +3,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
 using Concertable.Core.Interfaces;
+using Concertable.Data.Application;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +13,12 @@ namespace Concertable.Infrastructure.Repositories.Concert;
 public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunityRepository
 {
     private readonly TimeProvider timeProvider;
+    private readonly IReadDbContext readContext;
 
-    public OpportunityRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context)
+    public OpportunityRepository(ApplicationDbContext context, TimeProvider timeProvider, IReadDbContext readContext) : base(context)
     {
         this.timeProvider = timeProvider;
+        this.readContext = readContext;
     }
 
     public async Task<IPagination<OpportunityEntity>> GetActiveByVenueIdAsync(int id, IPageParams pageParams)
@@ -33,9 +36,9 @@ public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunity
 
     public async Task<UserEntity?> GetOwnerByIdAsync(int opportunityId)
     {
-        return await context.Users
+        return await readContext.Users
             .OfType<VenueManagerEntity>()
-            .Where(vm => context.Venues.Any(v => v.UserId == vm.Id && v.Opportunities.Any(o => o.Id == opportunityId)))
+            .Where(vm => readContext.Venues.Any(v => v.UserId == vm.Id && v.Opportunities.Any(o => o.Id == opportunityId)))
             .FirstOrDefaultAsync();
     }
 

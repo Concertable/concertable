@@ -46,5 +46,10 @@ public class ApplicationDbContext : DbContextBase
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ReadDbContext).Assembly);
 
+        // Identity-owned tables — schema managed by IdentityDbContext migrations
+        modelBuilder.Entity<UserEntity>().ToTable("Users", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<RefreshTokenEntity>().ToTable("RefreshTokens", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<EmailVerificationTokenEntity>().ToTable("EmailVerificationTokens", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<PasswordResetTokenEntity>().ToTable("PasswordResetTokens", t => t.ExcludeFromMigrations());
     }
 }

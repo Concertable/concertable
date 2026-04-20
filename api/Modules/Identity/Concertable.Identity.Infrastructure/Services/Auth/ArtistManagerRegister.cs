@@ -2,16 +2,16 @@ using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Identity.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Services.Auth;
 
 public class ArtistManagerRegister : IUserRegister
 {
-    private readonly ApplicationDbContext context;
+    private readonly IdentityDbContext context;
     private readonly IStripeAccountService stripeAccountService;
 
-    public ArtistManagerRegister(ApplicationDbContext context, IStripeAccountService stripeAccountService)
+    public ArtistManagerRegister(IdentityDbContext context, IStripeAccountService stripeAccountService)
     {
         this.context = context;
         this.stripeAccountService = stripeAccountService;
