@@ -9,6 +9,7 @@ public class SeedData
     public VenueManagerEntity VenueManager1 { get; set; } = null!;
     public VenueManagerEntity VenueManager2 { get; set; } = null!;
     public ArtistManagerEntity ArtistManager { get; set; } = null!;
+    public ArtistManagerEntity ArtistManagerNoArtist { get; set; } = null!;
     public CustomerEntity Customer { get; set; } = null!;
     public AdminEntity Admin { get; set; } = null!;
 

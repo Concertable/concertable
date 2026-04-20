@@ -81,6 +81,12 @@ public class TestDbInitializer : IDbInitializer
             seed.ArtistManager.Location = geometryProvider.CreatePoint(51, 0);
             seed.ArtistManager.Address = new Address("Test County", "Test Town");
 
+            seed.ArtistManagerNoArtist = UserFactory.ArtistManager("artistmanager2@test.com", hash);
+            seed.ArtistManagerNoArtist.StripeAccountId = "acct_test_artistmanager2";
+            seed.ArtistManagerNoArtist.StripeCustomerId = "cus_test_artistmanager2";
+            seed.ArtistManagerNoArtist.Location = geometryProvider.CreatePoint(51, 0);
+            seed.ArtistManagerNoArtist.Address = new Address("Test County", "Test Town");
+
             seed.Customer = UserFactory.Customer("customer@test.com", hash);
             seed.Customer.Location = geometryProvider.CreatePoint(51, 0);
 
@@ -91,6 +97,7 @@ public class TestDbInitializer : IDbInitializer
                 seed.VenueManager1,
                 seed.VenueManager2,
                 seed.ArtistManager,
+                seed.ArtistManagerNoArtist,
                 seed.Customer,
                 seed.Admin);
 
