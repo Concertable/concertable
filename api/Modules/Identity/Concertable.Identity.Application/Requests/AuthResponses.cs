@@ -1,4 +1,4 @@
-namespace Concertable.Application.Requests;
+namespace Concertable.Identity.Application.Requests;
 
 public record ForgotPasswordResponse
 {

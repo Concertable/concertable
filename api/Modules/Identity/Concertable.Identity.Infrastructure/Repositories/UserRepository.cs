@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces;
 using Concertable.Data.Application;
 using Concertable.Identity.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

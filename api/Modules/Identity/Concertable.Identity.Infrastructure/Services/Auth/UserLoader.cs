@@ -1,8 +1,7 @@
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Infrastructure.Services.Auth;
+namespace Concertable.Identity.Infrastructure.Services.Auth;
 
 public class UserLoader : IUserLoader
 {

@@ -1,13 +1,12 @@
 using Concertable.Core.Entities;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data.Configurations;
-using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Identity.Infrastructure.Data;
 
-public class IdentityDbContext(DbContextOptions<IdentityDbContext> options, IDomainEventDispatcher? dispatcher = null)
-    : DbContextBase(options, dispatcher)
+public class IdentityDbContext(DbContextOptions<IdentityDbContext> options)
+    : DbContextBase(options)
 {
     public DbSet<UserEntity> Users => Set<UserEntity>();
     public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();

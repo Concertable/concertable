@@ -1,7 +1,6 @@
 using Concertable.Identity.Application.DTOs;
-using Concertable.Application.Interfaces;
 
-namespace Concertable.Application.Mappers;
+namespace Concertable.Identity.Application.Mappers;
 
 public class CustomerMapper : IUserMapper
 {

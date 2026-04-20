@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
 using Concertable.Identity.Infrastructure.Data.Seeders;

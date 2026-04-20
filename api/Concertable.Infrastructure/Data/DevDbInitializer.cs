@@ -42,9 +42,12 @@ public class DevDbInitializer : IDbInitializer
     public async Task InitializeAsync()
     {
         foreach (var seeder in seeders.OrderBy(s => s.Order))
-            await seeder.SeedAsync();
+            await seeder.MigrateAsync();
 
         await context.Database.MigrateAsync();
+
+        foreach (var seeder in seeders.OrderBy(s => s.Order))
+            await seeder.SeedAsync();
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var customerIds = seedData.CustomerIds;

@@ -1,7 +1,6 @@
-using Concertable.Application.Requests;
 using FluentValidation;
 
-namespace Concertable.Application.Validators;
+namespace Concertable.Identity.Application.Validators;
 
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {

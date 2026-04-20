@@ -1,7 +1,6 @@
-using Concertable.Application.Requests;
 using Concertable.Identity.Application.DTOs;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Identity.Application.Interfaces;
 
 public interface IAuthService
 {

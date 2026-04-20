@@ -1,9 +1,12 @@
+using Concertable.Identity.Domain.Events;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Identity.Domain;
 
-public class UserEntity : IGuidEntity
+public class UserEntity : IGuidEntity, IEventRaiser
 {
+    private readonly EventRaiser _events = new();
+
     protected UserEntity() { }
 
     protected UserEntity(string email, string passwordHash, Role role)
@@ -17,17 +20,27 @@ public class UserEntity : IGuidEntity
     public string Email { get; private set; } = null!;
     public string PasswordHash { get; set; } = string.Empty;
     public Role Role { get; private set; }
-    public Address? Address { get; set; }
-    public Point? Location { get; set; }
+    public Address? Address { get; private set; }
+    public Point? Location { get; private set; }
     public string StripeCustomerId { get; set; } = string.Empty;
     public string Avatar { get; set; } = string.Empty;
     public bool IsEmailVerified { get; private set; }
+
+    public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
+    public void ClearDomainEvents() => _events.Clear();
 
     public ICollection<RefreshTokenEntity> RefreshTokens { get; private set; } = [];
     public ICollection<EmailVerificationTokenEntity> EmailVerificationTokens { get; private set; } = [];
     public ICollection<PasswordResetTokenEntity> PasswordResetTokens { get; private set; } = [];
 
     public void VerifyEmail() => IsEmailVerified = true;
+
+    public void UpdateLocation(Point location, Address? address = null)
+    {
+        Location = location;
+        Address = address;
+        _events.Raise(new UserLocationUpdatedEvent(Id, location, address));
+    }
 }
 
 public abstract class ManagerEntity : UserEntity

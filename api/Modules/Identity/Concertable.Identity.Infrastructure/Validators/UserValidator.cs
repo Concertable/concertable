@@ -1,8 +1,6 @@
-using Concertable.Application.Interfaces;
-using Concertable.Application.Requests;
 using FluentResults;
 
-namespace Concertable.Infrastructure.Validators;
+namespace Concertable.Identity.Infrastructure.Validators;
 
 public class UserValidator : IUserValidator
 {

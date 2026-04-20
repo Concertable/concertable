@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
@@ -6,7 +5,7 @@ using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Identity.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Identity.Infrastructure.Services;
 
 public class UserService : IUserService
 {
@@ -60,8 +59,9 @@ public class UserService : IUserService
             ?? throw new UnauthorizedAccessException("User not found.");
 
         var locationDto = await geocodingService.GetLocationAsync(latitude, longitude);
-        user.Location = geometryProvider.CreatePoint(latitude, longitude);
-        user.Address = new Address(locationDto.County, locationDto.Town);
+        user.UpdateLocation(
+            geometryProvider.CreatePoint(latitude, longitude),
+            new Address(locationDto.County, locationDto.Town));
 
         userRepsitory.Update(user);
         await userRepsitory.SaveChangesAsync();
@@ -72,8 +72,9 @@ public class UserService : IUserService
     public async Task UpdateLocationAsync(UserEntity user, double latitude, double longitude)
     {
         var location = await geocodingService.GetLocationAsync(latitude, longitude);
-        user.Location = geometryProvider.CreatePoint(latitude, longitude);
-        user.Address = new Address(location.County, location.Town);
+        user.UpdateLocation(
+            geometryProvider.CreatePoint(latitude, longitude),
+            new Address(location.County, location.Town));
     }
 
     public async Task<UserEntity?> GetUserEntityByIdAsync(Guid userId, CancellationToken cancellationToken = default)

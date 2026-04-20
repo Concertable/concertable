@@ -22,7 +22,9 @@ using Concertable.Infrastructure.Repositories.Concert;
 using Concertable.Infrastructure.Repositories.Review;
 using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Services;
+using Concertable.Infrastructure.Events;
 using Concertable.Infrastructure.Handlers;
+using Concertable.Identity.Domain.Events;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
 using Concertable.Infrastructure.Services.Blob;
@@ -83,12 +85,16 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddScoped<DomainEventDispatchInterceptor>();
+        services.AddScoped<IDomainEventHandler<UserLocationUpdatedEvent>, UserLocationUpdatedHandler>();
 
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
                     sqlOpt => sqlOpt.UseNetTopologySuite())
-                .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
+                .AddInterceptors(
+                    sp.GetRequiredService<AuditInterceptor>(),
+                    sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.AddDbContext<ReadDbContext>(opt =>
             opt.UseSqlServer(

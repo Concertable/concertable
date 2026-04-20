@@ -1,16 +1,10 @@
-using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Data.Application;
 using Concertable.Identity.Application.Interfaces;
 using Concertable.Identity.Infrastructure.Repositories;
 using Concertable.Identity.Contracts;
-using Concertable.Application.Mappers;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Infrastructure.Services;
-using Concertable.Infrastructure.Services.Auth;
 using Concertable.Infrastructure.Settings;
-using Concertable.Infrastructure.Validators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +21,9 @@ public static class ServiceCollectionExtensions
             opt.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
                     sqlOpt => sqlOpt.UseNetTopologySuite())
-                .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
+                .AddInterceptors(
+                    sp.GetRequiredService<AuditInterceptor>(),
+                    sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.Configure<AuthSettings>(configuration.GetSection("Auth"));
 

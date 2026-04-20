@@ -1,12 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using Concertable.Application.Interfaces.Auth;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Concertable.Infrastructure.Settings;
 
-namespace Concertable.Infrastructure.Services.Auth;
+namespace Concertable.Identity.Infrastructure.Services.Auth;
 
 public class JwtTokenService : ITokenService
 {

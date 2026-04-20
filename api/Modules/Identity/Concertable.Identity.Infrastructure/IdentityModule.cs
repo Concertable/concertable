@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Identity.Contracts;
 

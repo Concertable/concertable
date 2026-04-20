@@ -1,7 +1,6 @@
-using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Identity.Infrastructure.Services;
 
 internal class CurrentUserResolver : ICurrentUserResolver
 {

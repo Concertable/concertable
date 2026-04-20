@@ -1,7 +1,6 @@
-using Concertable.Application.Requests;
 using FluentResults;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Identity.Application.Interfaces;
 
 public interface IUserValidator
 {

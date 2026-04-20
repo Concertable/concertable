@@ -1,4 +1,4 @@
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Identity.Application.Interfaces;
 
 public interface IOwnershipService
 {

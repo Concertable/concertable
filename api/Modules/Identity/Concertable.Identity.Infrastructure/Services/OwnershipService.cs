@@ -1,10 +1,9 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Entities;
 using Concertable.Application.Exceptions;
 using Concertable.Identity.Contracts;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Identity.Infrastructure.Services;
 
 public class OwnershipService : IOwnershipService
 {

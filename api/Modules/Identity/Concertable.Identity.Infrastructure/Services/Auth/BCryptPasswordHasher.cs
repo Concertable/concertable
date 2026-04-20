@@ -1,6 +1,5 @@
-using Concertable.Application.Interfaces.Auth;
 
-namespace Concertable.Infrastructure.Services.Auth;
+namespace Concertable.Identity.Infrastructure.Services.Auth;
 
 public class BCryptPasswordHasher : IPasswordHasher
 {

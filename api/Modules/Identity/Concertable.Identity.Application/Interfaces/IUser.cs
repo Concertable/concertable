@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Concertable.Identity.Application.DTOs;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Identity.Application.Interfaces;
 
 [JsonDerivedType(typeof(VenueManagerDto), "venueManager")]
 [JsonDerivedType(typeof(ArtistManagerDto), "artistManager")]

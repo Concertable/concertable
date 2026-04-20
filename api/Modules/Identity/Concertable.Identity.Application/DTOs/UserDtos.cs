@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces;
 
 namespace Concertable.Identity.Application.DTOs;
 

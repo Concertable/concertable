@@ -1,10 +1,8 @@
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Requests;
 using Concertable.Core.Entities;
 using Concertable.Identity.Infrastructure.Data;
 
-namespace Concertable.Infrastructure.Services.Auth;
+namespace Concertable.Identity.Infrastructure.Services.Auth;
 
 public class ArtistManagerRegister : IUserRegister
 {

@@ -1,5 +1,3 @@
-using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Services.Geometry;
@@ -36,25 +34,23 @@ public class IdentityDevSeeder : IDevSeeder
         this.locationFaker = locationFaker;
     }
 
+    public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
+
     public async Task SeedAsync(CancellationToken ct = default)
     {
-        await context.Database.MigrateAsync(ct);
-
         await context.Users.SeedIfEmptyAsync(async () =>
         {
             var hash = passwordHasher.Hash(SeedData.TestPassword);
 
             seedData.Admin = UserFactory.Admin("admin@test.com", hash);
-            seedData.Admin.Location = geometryProvider.CreatePoint(51.0, -0.5);
-            seedData.Admin.Address = new Address("Leicestershire", "Loughborough");
+            seedData.Admin.UpdateLocation(geometryProvider.CreatePoint(51.0, -0.5), new Address("Leicestershire", "Loughborough"));
             seedData.Admin.Avatar = "avatar.jpg";
             context.Users.Add(seedData.Admin);
 
             var customerLoc = locationFaker.Next();
             seedData.Customer = UserFactory.Customer("customer1@test.com", hash);
             seedData.Customer.StripeCustomerId = "cus_UIIy9Gbwfr3uAP";
-            seedData.Customer.Location = geometryProvider.CreatePoint(customerLoc.Latitude, customerLoc.Longitude);
-            seedData.Customer.Address = new Address(customerLoc.County, customerLoc.Town);
+            seedData.Customer.UpdateLocation(geometryProvider.CreatePoint(customerLoc.Latitude, customerLoc.Longitude), new Address(customerLoc.County, customerLoc.Town));
             seedData.Customer.Avatar = "avatar.jpg";
             context.Users.Add(seedData.Customer);
 
@@ -62,8 +58,7 @@ public class IdentityDevSeeder : IDevSeeder
             {
                 var loc = locationFaker.Next();
                 var c = UserFactory.Customer($"customer{i}@test.com", hash);
-                c.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
-                c.Address = new Address(loc.County, loc.Town);
+                c.UpdateLocation(geometryProvider.CreatePoint(loc.Latitude, loc.Longitude), new Address(loc.County, loc.Town));
                 c.Avatar = "avatar.jpg";
                 context.Users.Add(c);
             }
@@ -72,8 +67,7 @@ public class IdentityDevSeeder : IDevSeeder
             seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
             seedData.ArtistManager.StripeAccountId = "acct_1TJiMePysoXmht10";
             seedData.ArtistManager.StripeCustomerId = "cus_UIIy5mCilBtJbR";
-            seedData.ArtistManager.Location = geometryProvider.CreatePoint(am1Loc.Latitude, am1Loc.Longitude);
-            seedData.ArtistManager.Address = new Address(am1Loc.County, am1Loc.Town);
+            seedData.ArtistManager.UpdateLocation(geometryProvider.CreatePoint(am1Loc.Latitude, am1Loc.Longitude), new Address(am1Loc.County, am1Loc.Town));
             seedData.ArtistManager.Avatar = "avatar.jpg";
             context.Users.Add(seedData.ArtistManager);
 
@@ -81,8 +75,7 @@ public class IdentityDevSeeder : IDevSeeder
             var artistManager2 = UserFactory.ArtistManager("artistmanager2@test.com", hash);
             artistManager2.StripeAccountId = "acct_1TJiMoPupFslP2qz";
             artistManager2.StripeCustomerId = "cus_UIIy5415r69RmJ";
-            artistManager2.Location = geometryProvider.CreatePoint(am2Loc.Latitude, am2Loc.Longitude);
-            artistManager2.Address = new Address(am2Loc.County, am2Loc.Town);
+            artistManager2.UpdateLocation(geometryProvider.CreatePoint(am2Loc.Latitude, am2Loc.Longitude), new Address(am2Loc.County, am2Loc.Town));
             artistManager2.Avatar = "avatar.jpg";
             context.Users.Add(artistManager2);
 
@@ -90,8 +83,7 @@ public class IdentityDevSeeder : IDevSeeder
             {
                 var loc = locationFaker.Next();
                 var am = UserFactory.ArtistManager($"artistmanager{i}@test.com", hash);
-                am.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
-                am.Address = new Address(loc.County, loc.Town);
+                am.UpdateLocation(geometryProvider.CreatePoint(loc.Latitude, loc.Longitude), new Address(loc.County, loc.Town));
                 am.Avatar = "avatar.jpg";
                 context.Users.Add(am);
             }
@@ -100,8 +92,7 @@ public class IdentityDevSeeder : IDevSeeder
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
             seedData.VenueManager1.StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
             seedData.VenueManager1.StripeCustomerId = "cus_UIIymKfHijbNVO";
-            seedData.VenueManager1.Location = geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude);
-            seedData.VenueManager1.Address = new Address(vm1Loc.County, vm1Loc.Town);
+            seedData.VenueManager1.UpdateLocation(geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude), new Address(vm1Loc.County, vm1Loc.Town));
             seedData.VenueManager1.Avatar = "avatar.jpg";
             context.Users.Add(seedData.VenueManager1);
 
@@ -109,8 +100,7 @@ public class IdentityDevSeeder : IDevSeeder
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
             seedData.VenueManager2.StripeAccountId = "acct_1TJiPJLLwGSDilbV";
             seedData.VenueManager2.StripeCustomerId = "cus_UIJ1qfgxYu624Q";
-            seedData.VenueManager2.Location = geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude);
-            seedData.VenueManager2.Address = new Address(vm2Loc.County, vm2Loc.Town);
+            seedData.VenueManager2.UpdateLocation(geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude), new Address(vm2Loc.County, vm2Loc.Town));
             seedData.VenueManager2.Avatar = "avatar.jpg";
             context.Users.Add(seedData.VenueManager2);
 
@@ -118,8 +108,7 @@ public class IdentityDevSeeder : IDevSeeder
             {
                 var loc = locationFaker.Next();
                 var vm = UserFactory.VenueManager($"venuemanager{i}@test.com", hash);
-                vm.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
-                vm.Address = new Address(loc.County, loc.Town);
+                vm.UpdateLocation(geometryProvider.CreatePoint(loc.Latitude, loc.Longitude), new Address(loc.County, loc.Town));
                 vm.Avatar = "avatar.jpg";
                 context.Users.Add(vm);
             }

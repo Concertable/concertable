@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Shared\Concertable.Shared.csproj" />
+    <ProjectReference Include="..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
   </ItemGroup>
 

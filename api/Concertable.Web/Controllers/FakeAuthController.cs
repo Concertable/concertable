@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Identity.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

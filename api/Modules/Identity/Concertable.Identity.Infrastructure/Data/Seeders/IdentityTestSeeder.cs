@@ -1,5 +1,3 @@
-using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Services.Geometry;
@@ -36,10 +34,10 @@ public class IdentityTestSeeder : ITestSeeder
         this.locationFaker = locationFaker;
     }
 
+    public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
+
     public async Task SeedAsync(CancellationToken ct = default)
     {
-        await context.Database.MigrateAsync(ct);
-
         await context.Users.SeedIfEmptyAsync(async () =>
         {
             var hash = passwordHasher.Hash(SeedData.TestPassword);
@@ -48,33 +46,29 @@ public class IdentityTestSeeder : ITestSeeder
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
             seedData.VenueManager1.StripeAccountId = "acct_test_venuemanager";
             seedData.VenueManager1.StripeCustomerId = "cus_test_venuemanager";
-            seedData.VenueManager1.Location = geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude);
-            seedData.VenueManager1.Address = new Address(vm1Loc.County, vm1Loc.Town);
+            seedData.VenueManager1.UpdateLocation(geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude), new Address(vm1Loc.County, vm1Loc.Town));
 
             var vm2Loc = locationFaker.Next();
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
             seedData.VenueManager2.StripeAccountId = "acct_test_venuemanager2";
             seedData.VenueManager2.StripeCustomerId = "cus_test_venuemanager2";
-            seedData.VenueManager2.Location = geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude);
-            seedData.VenueManager2.Address = new Address(vm2Loc.County, vm2Loc.Town);
+            seedData.VenueManager2.UpdateLocation(geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude), new Address(vm2Loc.County, vm2Loc.Town));
 
             seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
             seedData.ArtistManager.StripeAccountId = "acct_test_artistmanager";
             seedData.ArtistManager.StripeCustomerId = "cus_test_artistmanager";
-            seedData.ArtistManager.Location = geometryProvider.CreatePoint(51, 0);
-            seedData.ArtistManager.Address = new Address("Test County", "Test Town");
+            seedData.ArtistManager.UpdateLocation(geometryProvider.CreatePoint(51, 0), new Address("Test County", "Test Town"));
 
             seedData.ArtistManagerNoArtist = UserFactory.ArtistManager("artistmanager2@test.com", hash);
             seedData.ArtistManagerNoArtist.StripeAccountId = "acct_test_artistmanager2";
             seedData.ArtistManagerNoArtist.StripeCustomerId = "cus_test_artistmanager2";
-            seedData.ArtistManagerNoArtist.Location = geometryProvider.CreatePoint(51, 0);
-            seedData.ArtistManagerNoArtist.Address = new Address("Test County", "Test Town");
+            seedData.ArtistManagerNoArtist.UpdateLocation(geometryProvider.CreatePoint(51, 0), new Address("Test County", "Test Town"));
 
             seedData.Customer = UserFactory.Customer("customer@test.com", hash);
-            seedData.Customer.Location = geometryProvider.CreatePoint(51, 0);
+            seedData.Customer.UpdateLocation(geometryProvider.CreatePoint(51, 0));
 
             seedData.Admin = UserFactory.Admin("admin@test.com", hash);
-            seedData.Admin.Location = geometryProvider.CreatePoint(51, 0);
+            seedData.Admin.UpdateLocation(geometryProvider.CreatePoint(51, 0));
 
             context.Users.AddRange(
                 seedData.VenueManager1,

@@ -1,6 +1,3 @@
-using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
-using Concertable.Application.Requests;
 using Concertable.Identity.Application.DTOs;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Core.Entities;
@@ -9,7 +6,7 @@ using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Identity.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {

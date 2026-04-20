@@ -1,7 +1,7 @@
 using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Identity.Infrastructure.Services;
 
 internal class CurrentUserAccessor : ICurrentUser
 {

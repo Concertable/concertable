@@ -1,4 +1,4 @@
-namespace Concertable.Application.Interfaces.Auth;
+namespace Concertable.Identity.Application.Interfaces.Auth;
 
 public interface IAuthUriService
 {

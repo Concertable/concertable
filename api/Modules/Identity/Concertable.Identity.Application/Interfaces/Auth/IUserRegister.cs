@@ -1,6 +1,5 @@
-using Concertable.Application.Requests;
 
-namespace Concertable.Application.Interfaces.Auth;
+namespace Concertable.Identity.Application.Interfaces.Auth;
 
 public interface IUserRegister
 {

@@ -2,18 +2,17 @@ using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContextBase
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IDomainEventDispatcher? dispatcher = null)
-        : base(options, dispatcher) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options) { }
 
-    protected ApplicationDbContext(DbContextOptions options, IDomainEventDispatcher? dispatcher = null)
-        : base(options, dispatcher) { }
+    protected ApplicationDbContext(DbContextOptions options)
+        : base(options) { }
 
     public DbSet<ArtistEntity> Artists { get; set; }
     public DbSet<ArtistGenreEntity> ArtistGenres { get; set; }

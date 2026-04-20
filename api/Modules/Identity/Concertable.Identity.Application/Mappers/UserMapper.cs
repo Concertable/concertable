@@ -1,6 +1,5 @@
-using Concertable.Application.Interfaces;
 
-namespace Concertable.Application.Mappers;
+namespace Concertable.Identity.Application.Mappers;
 
 public class UserMapper : IUserMapper
 {
