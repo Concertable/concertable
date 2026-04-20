@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Application\Concertable.Application.csproj" />
+    <ProjectReference Include="..\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
   </ItemGroup>
 
 </Project>

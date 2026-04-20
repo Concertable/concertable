@@ -39,11 +39,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Seeding", "api\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Shared", "api\Concertable.Shared\Concertable.Shared.csproj", "{9BB07245-2094-441C-8DBA-C9C1669A1E41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Search.Contracts", "api\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj", "{1069CDB2-7224-49DA-819A-F2E5EEA21BC0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{A4C2E1D0-B3F7-4A8E-9C1D-2E5F6A7B8C9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Search.Application", "api\Concertable.Search.Application\Concertable.Search.Application.csproj", "{97B511E4-C2E3-4C61-9E90-2DCEFB829E20}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Search", "Search", "{B5D3F2E1-C4A8-4B9F-0D2E-3F6A7B8C9D0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Search.Infrastructure", "api\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj", "{EF38F66F-3672-46E5-815F-65A70D0E5F7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Search.Contracts", "api\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj", "{1069CDB2-7224-49DA-819A-F2E5EEA21BC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Search.Application", "api\Modules\Search\Concertable.Search.Application\Concertable.Search.Application.csproj", "{97B511E4-C2E3-4C61-9E90-2DCEFB829E20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Search.Infrastructure", "api\Modules\Search\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj", "{EF38F66F-3672-46E5-815F-65A70D0E5F7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -285,9 +289,11 @@ Global
 		{83ED7AF0-B302-4C34-ABD0-E6435D3BC7C0} = {9C8FFF27-5BE4-449F-BE2F-1440CC35EFCB}
 		{90E7AECC-4A56-49D3-B524-23A50A481A3B} = {D82C56D6-B2CD-F611-9E31-04638F7EC30E}
 		{9BB07245-2094-441C-8DBA-C9C1669A1E41} = {D82C56D6-B2CD-F611-9E31-04638F7EC30E}
-		{1069CDB2-7224-49DA-819A-F2E5EEA21BC0} = {D82C56D6-B2CD-F611-9E31-04638F7EC30E}
-		{97B511E4-C2E3-4C61-9E90-2DCEFB829E20} = {D82C56D6-B2CD-F611-9E31-04638F7EC30E}
-		{EF38F66F-3672-46E5-815F-65A70D0E5F7E} = {D82C56D6-B2CD-F611-9E31-04638F7EC30E}
+		{A4C2E1D0-B3F7-4A8E-9C1D-2E5F6A7B8C9D} = {D82C56D6-B2CD-F611-9E31-04638F7EC30E}
+		{B5D3F2E1-C4A8-4B9F-0D2E-3F6A7B8C9D0E} = {A4C2E1D0-B3F7-4A8E-9C1D-2E5F6A7B8C9D}
+		{1069CDB2-7224-49DA-819A-F2E5EEA21BC0} = {B5D3F2E1-C4A8-4B9F-0D2E-3F6A7B8C9D0E}
+		{97B511E4-C2E3-4C61-9E90-2DCEFB829E20} = {B5D3F2E1-C4A8-4B9F-0D2E-3F6A7B8C9D0E}
+		{EF38F66F-3672-46E5-815F-65A70D0E5F7E} = {B5D3F2E1-C4A8-4B9F-0D2E-3F6A7B8C9D0E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EF2B45BA-C520-4580-BAD9-D39B6FCE0DAF}

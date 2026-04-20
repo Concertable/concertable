@@ -128,7 +128,10 @@
       "Bash(cp '__TRACKED_VAR__/Repositories/*.cs' __TRACKED_VAR__/Repositories/)",
       "Bash(cp '__TRACKED_VAR__/Specifications/*.cs' __TRACKED_VAR__/Specifications/)",
       "Bash(awk '{print $NF}')",
-      "Bash(xargs head *)"
+      "Bash(xargs head *)",
+      "Bash(handle.exe api/Concertable.Search.Application)",
+      "Bash(tasklist)",
+      "Bash(git add *)"
     ]
   }
 }

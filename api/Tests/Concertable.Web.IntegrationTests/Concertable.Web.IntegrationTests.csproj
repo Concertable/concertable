@@ -22,7 +22,7 @@
     <ProjectReference Include="..\..\Concertable.Web\Concertable.Web.csproj" />
     <ProjectReference Include="..\..\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
-    <ProjectReference Include="..\..\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
