@@ -240,9 +240,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
-        services.AddScoped<IReviewRepository<ArtistEntity>, ReviewRepository<ArtistEntity>>();
-        services.AddScoped<IReviewRepository<VenueEntity>, ReviewRepository<VenueEntity>>();
-        services.AddScoped<IReviewRepository<ConcertEntity>, ReviewRepository<ConcertEntity>>();
         services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
         services.AddScoped<IVenueReviewRepository, VenueReviewRepository>();
         services.AddScoped<IConcertReviewRepository, ConcertReviewRepository>();

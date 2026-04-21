@@ -1,10 +1,10 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
 using Concertable.Data.Application;
 using Concertable.Infrastructure.Extensions;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Search.Infrastructure.Repositories;
@@ -13,24 +13,24 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
 {
     private readonly IReadDbContext context;
     private readonly IConcertSearchSpecification searchSpecification;
-    private readonly IRatingSpecification<ConcertEntity> ratingSpecification;
     private readonly IGeometrySpecification<ConcertEntity> geometrySpecification;
     private readonly ISortSpecification<ConcertHeaderDto> sortSpecification;
+    private readonly IRatingSpecification<ConcertEntity> ratingSpecification;
     private readonly TimeProvider timeProvider;
 
     public ConcertHeaderRepository(
         IReadDbContext context,
         IConcertSearchSpecification searchSpecification,
-        IRatingSpecification<ConcertEntity> ratingSpecification,
         IGeometrySpecification<ConcertEntity> geometrySpecification,
         ISortSpecification<ConcertHeaderDto> sortSpecification,
+        IRatingSpecification<ConcertEntity> ratingSpecification,
         TimeProvider timeProvider)
     {
         this.context = context;
         this.searchSpecification = searchSpecification;
-        this.ratingSpecification = ratingSpecification;
         this.geometrySpecification = geometrySpecification;
         this.sortSpecification = sortSpecification;
+        this.ratingSpecification = ratingSpecification;
         this.timeProvider = timeProvider;
     }
 
@@ -43,7 +43,7 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
     }
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Concerts            .Active(timeProvider.GetUtcNow().DateTime)
+        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
             .OrderByDescending(c => c.DatePosted)
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(amount)

@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using Concertable.Core.Interfaces;
 
 namespace Concertable.Core.Entities;
 

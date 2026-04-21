@@ -4,7 +4,6 @@ using Concertable.Application.Responses;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Core.Entities;
-using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 using Microsoft.EntityFrameworkCore;
 

@@ -2,7 +2,6 @@ using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
-using Concertable.Core.Interfaces;
 using Concertable.Data.Application;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Helpers;

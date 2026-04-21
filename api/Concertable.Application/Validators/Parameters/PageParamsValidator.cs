@@ -1,4 +1,3 @@
-using Concertable.Core.Interfaces;
 using FluentValidation;
 
 namespace Concertable.Application.Validators.Parameters;

@@ -1,10 +1,9 @@
-using Concertable.Core.Interfaces;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Artist.Domain;
 
-public class ArtistEntity : IIdEntity, IHasName, ILocatable<ArtistEntity>, IReviewable<ArtistEntity>, IHasGenreJoins<ArtistGenreEntity>
+public class ArtistEntity : IIdEntity, IHasName, IHasLocation, ILocatable<ArtistEntity>, IHasGenreJoins<ArtistGenreEntity>
 {
     private ArtistEntity() { }
 
@@ -18,10 +17,8 @@ public class ArtistEntity : IIdEntity, IHasName, ILocatable<ArtistEntity>, IRevi
     public string? Avatar { get; set; }
     public string? Email { get; set; }
     public static Expression<Func<ArtistEntity, Point?>> LocationExpression => a => a.Location;
-    public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Booking.Application.ArtistId;
 
     public HashSet<ArtistGenreEntity> ArtistGenres { get; private set; } = [];
-    public HashSet<OpportunityApplicationEntity> Applications { get; private set; } = [];
 
     HashSet<ArtistGenreEntity> IHasGenreJoins<ArtistGenreEntity>.GenreJoins => ArtistGenres;
 

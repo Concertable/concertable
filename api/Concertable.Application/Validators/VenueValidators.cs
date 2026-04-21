@@ -1,4 +1,5 @@
 using Concertable.Application.Requests;
+using Concertable.Shared.Validation;
 using FluentValidation;
 
 namespace Concertable.Application.Validators;

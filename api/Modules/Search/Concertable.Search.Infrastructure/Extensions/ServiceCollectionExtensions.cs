@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Search.Application;
@@ -20,13 +19,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
         services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
 
-        services.AddSingleton<IReviewSpecification<ArtistEntity>, ReviewSpecification<ArtistEntity>>();
-        services.AddSingleton<IReviewSpecification<VenueEntity>, ReviewSpecification<VenueEntity>>();
-        services.AddSingleton<IReviewSpecification<ConcertEntity>, ReviewSpecification<ConcertEntity>>();
-
-        services.AddSingleton<IRatingSpecification<ArtistEntity>, RatingSpecification<ArtistEntity>>();
-        services.AddSingleton<IRatingSpecification<VenueEntity>, RatingSpecification<VenueEntity>>();
-        services.AddSingleton<IRatingSpecification<ConcertEntity>, RatingSpecification<ConcertEntity>>();
+        services.AddSingleton<IRatingSpecification<ArtistEntity>, ArtistRatingSpecification>();
+        services.AddSingleton<IRatingSpecification<VenueEntity>, VenueRatingSpecification>();
+        services.AddSingleton<IRatingSpecification<ConcertEntity>, ConcertRatingSpecification>();
 
         services.AddSingleton<ISearchSpecification<ArtistEntity>, SearchSpecification<ArtistEntity>>();
         services.AddSingleton<ISearchSpecification<VenueEntity>, SearchSpecification<VenueEntity>>();

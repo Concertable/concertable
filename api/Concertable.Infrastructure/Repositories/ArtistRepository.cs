@@ -1,9 +1,9 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Entities;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Mappers;
-using Concertable.Core.Entities;
+using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories;
@@ -12,7 +12,9 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
 {
     private readonly IRatingSpecification<ArtistEntity> ratingSpecification;
 
-    public ArtistRepository(ApplicationDbContext context, IRatingSpecification<ArtistEntity> ratingSpecification) : base(context)
+    public ArtistRepository(
+        ApplicationDbContext context,
+        IRatingSpecification<ArtistEntity> ratingSpecification) : base(context)
     {
         this.ratingSpecification = ratingSpecification;
     }
@@ -37,10 +39,9 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
 
     public async Task<ArtistSummaryDto?> GetSummaryAsync(int id)
     {
-        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Artists
             .Where(a => a.Id == id)
-            .ToSummaryDto(ratings)
+            .ToSummaryDto(ratingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 
@@ -54,19 +55,17 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
 
     public async Task<ArtistDto?> GetDtoByIdAsync(int id)
     {
-        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Artists
             .Where(a => a.Id == id)
-            .ToDto(ratings)
+            .ToDto(ratingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 
     public async Task<ArtistDto?> GetDtoByUserIdAsync(Guid userId)
     {
-        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Artists
             .Where(a => a.UserId == userId)
-            .ToDto(ratings)
+            .ToDto(ratingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 }

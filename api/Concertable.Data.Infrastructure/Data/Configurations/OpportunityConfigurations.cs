@@ -34,7 +34,7 @@ public class OpportunityApplicationEntityConfiguration : IEntityTypeConfiguratio
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
         builder.HasOne(ca => ca.Artist)
-            .WithMany(a => a.Applications)
+            .WithMany()
             .HasForeignKey(ca => ca.ArtistId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);

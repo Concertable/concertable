@@ -5,7 +5,6 @@ using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Shared.Exceptions;
-using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 
 namespace Concertable.Infrastructure.Services.Payment;

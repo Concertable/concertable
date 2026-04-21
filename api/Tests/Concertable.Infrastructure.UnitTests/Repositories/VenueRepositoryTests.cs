@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Search;
+using Concertable.Search.Application.Interfaces;
 using Concertable.Seeding;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;

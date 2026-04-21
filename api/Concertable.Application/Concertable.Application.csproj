@@ -3,11 +3,11 @@
   <ItemGroup>
 <PackageReference Include="FluentResults" Version="4.0.0" />
 <PackageReference Include="FluentValidation" Version="11.11.0" />
-<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Core\Concertable.Core.csproj" />
+    <ProjectReference Include="..\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Application\Concertable.Identity.Application.csproj" />
   </ItemGroup>

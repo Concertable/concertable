@@ -1,7 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
-using Concertable.Core.Interfaces;
 
 namespace Concertable.Application.Interfaces.Concert;
 

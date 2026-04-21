@@ -2,7 +2,7 @@ using Concertable.Application.Interfaces;
 
 namespace Concertable.Application.DTOs;
 
-public record VenueDto : IDetails, IAddress, ILatLong
+public record VenueDto : IAddress, ILatLong
 {
     public int Id { get; set; }
     public required string Name { get; set; }

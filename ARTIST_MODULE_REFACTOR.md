@@ -1,110 +1,661 @@
-# Artist Module Extraction — Handoff Context
+# Artist Module Extraction — Implementation Plan
 
-## Goal
-Extract the Artist domain into a `Concertable.Artist` module following the same Modular Monolith pattern used for `Concertable.Search`. This is part of a broader MM migration (Search ✅ → Artist → Venue → Concert → Payment).
+> **State of the world (2026-04-21)** — Identity is done. Search is done. Artist is next.
+> This file supersedes the previous stale plan (pre-Identity, pre-denormalization).
+>
+> **Update (2026-04-21, post-design-review):** Original plan §11.a (keep `ArtistEntity.ReviewIdSelector`
+> and reference `Concertable.Core` from `Artist.Domain`) conflicts with §4/§8 (keep
+> `OpportunityApplicationEntity.Artist` nav in `Concertable.Core`). The two together create a project
+> reference cycle. Decision: kill `IReviewable<T>` (the `static abstract` entity member driving the
+> cycle) and replace the generic `RatingSpecification<T>` / `ReviewSpecification<T>` /
+> `IReviewRepository<T>` triple with per-module concrete classes (Stage 0). Then do the Artist
+> extraction as Stage 1.
+>
+> **Update (2026-04-21, post-pivot):** Earlier iterations of Stage 0 proposed deleting
+> `IRatingSpecification<T>` along with the other generics and inlining its body at call sites. That
+> thrashed the code (duplicated `.GroupBy/.Select` across ~15 sites) for no architectural gain. Final
+> shape:
+> - **Keep `IRatingSpecification<T>`** — move to `Concertable.Search.Application/Interfaces/`, drop
+>   only the `where T : IReviewable<T>` constraint (that was the cycle driver), keep a light
+>   `where T : class, IIdEntity` constraint for intent (matches the other Search interfaces). `T`
+>   is a DI tag — the interface methods don't consume it. 3 concrete impls
+>   (`ArtistRatingSpecification`, `VenueRatingSpecification`, `ConcertRatingSpecification`) live in
+>   `Search.Infrastructure`.
+> - **Delete `IReviewSpecification<T>` entirely** — Search has no consumer; its only user was the
+>   generic `ReviewRepository<T>` wrapper, which is also being deleted. Reviews are per-module reads
+>   (filter `Reviews` by `artistId`/`venueId`/`concertId`) — the 3 concrete review repos inline the
+>   1-line `.Where(...)` themselves.
 
-## Architecture Pattern (established)
-Each module has:
-- `Concertable.{Module}.Contracts` — public facade interfaces (`IArtistModule`), public DTOs. Only this project is referenced by other modules.
-- `Concertable.{Module}.Application` — interfaces (services, repos), internal use cases
-- `Concertable.{Module}.Infrastructure` — implementations (services, repos, EF config)
-- Everything marked `internal`; only Contracts + `AddArtistModule()` DI extension are public
-- Cross-module communication: reference Contracts only, never internals
-- One physical DB, separate schema per module (`artist` schema)
-- Per-module write DbContext (internal), inheriting from the global `ApplicationDbContext` until full migration is complete
+---
 
-See `Concertable.Search.*` projects as the reference implementation.
+## Staged approach
 
-## What Belongs in the Artist Module
+- **Stage 0 — Kill `IReviewable<T>` + the generic review/rating/wrapper triple.** Prerequisite to
+  Artist. No module boundaries move; replace the cross-module entity coupling with 3 concrete
+  rating specs in Search + 3 inlined review repos per module.
+- **Stage 1 — Artist module extraction.** As originally designed (§2-§10 below), now free of the
+  cycle. `Concertable.Core` takes a project reference to `Concertable.Artist.Domain` for the
+  `OpportunityApplicationEntity.Artist` nav; `Artist.Domain` does *not* need to reference
+  `Concertable.Core`.
 
-### Domain entities (move from `Concertable.Core`)
-- `ArtistEntity`
-- `ArtistGenreEntity`
-- `ArtistManagerEntity` (the manager user role entity)
-- `ArtistImageEntity` (if it exists separately)
+---
 
-### Application interfaces (move from `Concertable.Application`)
-- `IArtistService`
-- `IArtistRepository`
-- `IArtistReviewRepository`
-- DTOs: `ArtistDto`, `ArtistSummaryDto`
-- Requests: `CreateArtistRequest`, `UpdateArtistRequest`
-- Validators: `CreateArtistRequestValidator`, `UpdateArtistRequestValidator`
-- Mappers: `ArtistMappers.cs`, `ArtistManagerMapper.cs`
+## Stage 0 — Kill IReviewable + concretize reviews/ratings
 
-### Infrastructure implementations (move from `Concertable.Infrastructure`)
-- `ArtistService`
-- `ArtistRepository`
-- `ArtistReviewRepository` (if exists)
-- EF configuration for Artist entities
+### Why each piece goes / stays
 
-### Web layer
-- `ArtistController` stays in `Concertable.Web` but references `IArtistModule` facade instead of `IArtistService` directly (or keeps `IArtistService` if it's exposed through the Contracts project)
+| Piece | Status | Rationale |
+|---|---|---|
+| `IReviewable<T>` (`static abstract ReviewIdSelector`) | **delete** | Source of the cycle. Entity implementation body traverses `Ticket → Concert → Booking → Application`, pulling Concert-module types into whatever project owns the entity. |
+| Generic `RatingSpecification<T>` + `ReviewSpecification<T>` | **delete** | Only exist to consume `IReviewable<T>`. Replace with 3 concrete rating specs; review has no generic impl. |
+| Generic `IReviewRepository<T>` + `ReviewRepository<T>` | **delete** | Thin wrapper the 3 concrete review repos delegate through. Absorbed directly. |
+| `IRatingSpecification<T>` | **keep**, relocate, drop constraint | 15+ consumers across Search headers, entity repos, rating repos, and a unit test. Phantom `T` keeps DI disambiguation. Lives alongside the rest of Search's interfaces. |
+| `IReviewSpecification<T>` | **delete** | No Search consumer. Sole user was the generic `ReviewRepository<T>` wrapper, also being deleted. Reviews are per-module reads. |
 
-## Identity Module Consideration (affects ArtistManagerEntity)
+### Files to delete
 
-A `Concertable.Identity` module is planned (see MM plan). The key question for Artist extraction is what happens to `ArtistManagerEntity`.
+- `api/Concertable.Core/Interfaces/IReviewable.cs`
+- `api/Concertable.Application/Interfaces/Search/IReviewSpecification.cs`
+- `api/Concertable.Application/Interfaces/Search/IRatingSpecification.cs` *(old location — moved, see below)*
+- `api/Concertable.Application/Interfaces/IReviewRepository.cs` (generic)
+- `api/Concertable.Infrastructure/Repositories/Review/ReviewRepository.cs` (generic)
+- `api/Modules/Search/Concertable.Search.Infrastructure/Specifications/RatingSpecification.cs` (generic)
+- `api/Modules/Search/Concertable.Search.Infrastructure/Specifications/ReviewSpecification.cs` (generic)
+- `api/Concertable.Infrastructure/Mappers/ReviewSelectors.cs` *(transient file from the first-pass inlining attempt — not needed with the final shape; delete if it exists)*
 
-`ArtistManagerEntity` inherits `ManagerEntity → UserEntity` and lives in the same TPH/TPT hierarchy. Two options:
+### Entity cleanup — strip `IReviewable<TSelf>` + `ReviewIdSelector`
 
-**Option A — Keep manager entities in Identity (recommended for now)**
-Identity owns `UserEntity`, `ManagerEntity`, `ArtistManagerEntity`, `VenueManagerEntity`. Artist module references `ArtistManagerEntity` via `IIdentityModule` or through Identity.Contracts. The EF inheritance stays intact — no migration risk.
+- `api/Concertable.Core/Entities/ArtistEntity.cs` — drop `IReviewable<ArtistEntity>` + selector.
+- `api/Concertable.Core/Entities/VenueEntity.cs` — drop `IReviewable<VenueEntity>` + selector.
+- `api/Concertable.Core/Entities/ConcertEntity.cs` — drop `IReviewable<ConcertEntity>` + selector.
 
-**Option B — Break inheritance, move to Artist**
-`ArtistManagerEntity` moves to Artist module, drops inheritance, keeps only `UserId (Guid)` as a FK to `UserEntity` in Identity. Cleaner MM boundary but requires an EF migration to restructure the TPH table.
+### Interface relocation
 
-Option A is the safer path during initial extraction. Option B is the eventual target. Proceed with Option A; don't restructure the inheritance chain during this refactor.
+Move `IRatingSpecification<T>` from `Concertable.Application/Interfaces/Search/` to
+`Concertable.Search.Application/Interfaces/`. Drop **only** the `where T : IReviewable<T>`
+constraint (the cycle driver); keep a light `where T : class, IIdEntity` to document intent and
+match the style of other Search interfaces.
 
-**Practical impact for Artist extraction:** `ArtistManagerEntity` stays put for now. Artist module will reference it from wherever it lives (currently `Concertable.Core`, eventually `Concertable.Identity`).
+This matches `IGeometrySpecification<T>`, `ISearchSpecification<T>`, `ISortSpecification<T>`, etc.,
+which are already in `Concertable.Search.Application/Interfaces/`. `IRatingSpecification<T>` +
+(now-deleted) `IReviewSpecification<T>` were the last stragglers.
 
-## Known Friction Points (investigate before moving)
+```csharp
+// api/Modules/Search/Concertable.Search.Application/Interfaces/IRatingSpecification.cs
+public interface IRatingSpecification<T> where T : class, IIdEntity
+{
+    IQueryable<RatingAggregate> ApplyAggregate(IQueryable<ReviewEntity> reviews);
+    IQueryable<double?> ApplyAverage(IQueryable<ReviewEntity> reviews, int id);
+}
+```
 
-### 1. `ArtistEntity.ReviewIdSelector` — crosses into Concert domain
-The artist entity has an expression that traverses `Ticket.Concert.Booking.Application.ArtistId` for rating calculations. This creates a direct dependency from Artist domain on Concert/Booking/Ticket structure.
-**Fix needed:** Abstract the rating calculation — either pass in the selector from outside, or introduce a rating aggregation service that lives in a shared layer.
+> `T` is purely a DI disambiguation tag — neither method signature consumes it. The constraint is
+> documentation, not load-bearing. Unlike `SearchSpecification<TEntity> where TEntity : IEntity, IHasName`,
+> where `TEntity` is actually used (`e.Name.Contains(...)`), `IRatingSpecification<T>`'s body
+> wouldn't break with any `T`. We keep the weak constraint for consistency only.
 
-### 2. Concert domain reaches into Artist via navigation properties
-- `OpportunityApplicationEntity` has a direct FK and navigation to `ArtistEntity`
-- `ConcertRepository` explicitly includes `.Artist.ArtistGenres.Genre` and `.Artist.User`
-- `IOpportunityApplicationRepository` has `GetArtistAndVenueByIdAsync()` returning raw `ArtistEntity`
+### Concrete rating specs — 3 new files in `Search.Infrastructure`
 
-**Fix needed:** Once Artist is a module, Concert cannot reference `ArtistEntity` directly. Concert must reference `ArtistId` (int) only and call `IArtistModule.GetSummaryAsync(artistId)` for any artist data it needs. Navigation properties across module boundaries must be removed.
+Each hard-codes its own selector inline. No abstractions, no shared helpers.
 
-### 3. `OpportunityApplicationService` injects `IArtistService`
-Concert/Opportunity application service directly calls Artist service.
-**Fix needed:** Replace with `IArtistModule` contract call.
+```csharp
+// api/Modules/Search/Concertable.Search.Infrastructure/Specifications/ArtistRatingSpecification.cs
+internal class ArtistRatingSpecification : IRatingSpecification<ArtistEntity>
+{
+    public IQueryable<RatingAggregate> ApplyAggregate(IQueryable<ReviewEntity> reviews) =>
+        reviews
+            .GroupBy(r => r.Ticket.Concert.Booking.Application.ArtistId)
+            .Select(g => new RatingAggregate
+            {
+                EntityId = g.Key,
+                AverageRating = Math.Round(g.Average(r => (double?)r.Stars) ?? 0.0, 1)
+            });
 
-### 4. `OwnershipService` injects both `IArtistService` and `IVenueService`
-This shared ownership service crosses multiple domains.
-**Fix needed:** Either move ownership checks into each module's own service, or keep `OwnershipService` in `Concertable.Application` referencing the Contracts interfaces of each module.
+    public IQueryable<double?> ApplyAverage(IQueryable<ReviewEntity> reviews, int id) =>
+        reviews
+            .Where(r => r.Ticket.Concert.Booking.Application.ArtistId == id)
+            .GroupBy(_ => 1)
+            .Select(g => g.Average(r => (double?)r.Stars));
+}
+```
 
-## Integration Tests (written, ready to use as refactor validation)
+Mirror for `VenueRatingSpecification` (`Application.Opportunity.VenueId`) and
+`ConcertRatingSpecification` (`Ticket.ConcertId`). These files move with Venue / Concert extractions
+later; for Stage 0 they all live in `Search.Infrastructure/Specifications/`.
 
-Tests are at: `api/Tests/Concertable.Web.IntegrationTests/Controllers/Artist/`
-- `ArtistApiTests.cs` — 17 tests covering all 4 endpoints
-- `ArtistRequestBuilders.cs` — test request factory helpers
-- `ArtistMappers.cs` — form content serialization for requests
+### Project-reference adjustment
 
-`SeedData` has `ArtistManagerNoArtist` — a seeded `ArtistManagerEntity` with no artist, used for Create and ownership tests. `ApiFixture` was extended with a `CreateClient(Guid, Role, Action<TestClientOptions>)` overload.
+`api/Concertable.Infrastructure/Concertable.Infrastructure.csproj` must reference
+`Concertable.Search.Application` so Artist/Venue/Concert/Rating repos can inject
+`IRatingSpecification<T>` from its new home.
 
-**Run before refactor to establish baseline:**
+```xml
+<ProjectReference Include="..\Modules\Search\Concertable.Search.Application\Concertable.Search.Application.csproj" />
+```
+
+Direction is fine — Infrastructure-layer consumers depending on module-Application is the normal
+flow (same as the existing `Identity.Application` reference).
+
+### Call-site rewrites
+
+**3 entity repos** (`ArtistRepository`, `VenueRepository`, `ConcertRepository`) — no shape change,
+just the `using` moves from `Concertable.Application.Interfaces.Search` to
+`Concertable.Search.Application.Interfaces`. Injection and `.ApplyAggregate(context.Reviews)` calls
+are identical.
+
+**3 Search header repos** (`ArtistHeaderRepository`, `VenueHeaderRepository`, `ConcertHeaderRepository`)
+— same. `using` change only.
+
+**3 rating repos** (`ArtistRatingRepository`, `VenueRatingRepository`, `ConcertRatingRepository`) —
+same. `using` change only; `.ApplyAverage(context.Reviews, id)` unchanged.
+
+**3 review repos** (`ArtistReviewRepository`, `VenueReviewRepository`, `ConcertReviewRepository`) —
+**absorb the generic wrapper body directly.** These classes currently delegate to
+`IReviewRepository<T>`. Post-change: inject `ApplicationDbContext`, inline the filter, and inline
+`.ToDto().ToPaginationAsync(pageParams)` / `.ToSummaryDto().FirstOrDefaultAsync()`:
+
+```csharp
+// Example: ArtistReviewRepository
+public Task<IPagination<ReviewDto>> GetAsync(int id, IPageParams pageParams) =>
+    context.Reviews
+        .Where(r => r.Ticket.Concert.Booking.Application.ArtistId == id)
+        .OrderByDescending(r => r.Id)
+        .ToDto()
+        .ToPaginationAsync(pageParams);
+
+public async Task<ReviewSummaryDto> GetSummaryAsync(int id) =>
+    await context.Reviews
+        .Where(r => r.Ticket.Concert.Booking.Application.ArtistId == id)
+        .ToSummaryDto()
+        .FirstOrDefaultAsync()
+        ?? new ReviewSummaryDto(0, null);
+```
+
+`VenueReviewRepository` uses `Application.Opportunity.VenueId`. `ConcertReviewRepository` uses
+`Ticket.ConcertId` and keeps its existing `CanReviewAsync` / `AddAsync` / `SaveChangesAsync` logic.
+
+### DI cleanup
+
+`api/Modules/Search/Concertable.Search.Infrastructure/Extensions/ServiceCollectionExtensions.cs`:
+- Delete 3 `IReviewSpecification<T>` registrations.
+- Swap 3 `IRatingSpecification<T>, RatingSpecification<T>` registrations for the new concrete types:
+  ```csharp
+  services.AddSingleton<IRatingSpecification<ArtistEntity>, ArtistRatingSpecification>();
+  services.AddSingleton<IRatingSpecification<VenueEntity>, VenueRatingSpecification>();
+  services.AddSingleton<IRatingSpecification<ConcertEntity>, ConcertRatingSpecification>();
+  ```
+
+`api/Concertable.Web/Extensions/ServiceCollectionExtensions.cs`:
+- Delete 3 `IReviewRepository<T>` registrations (lines 243-245).
+
+### Unit-test touch-up
+
+`api/Tests/Concertable.Infrastructure.UnitTests/Repositories/VenueRepositoryTests.cs` mocks
+`IRatingSpecification<VenueEntity>`. The mock still works after the interface relocation — only the
+`using` needs updating from `Concertable.Application.Interfaces.Search` to
+`Concertable.Search.Application.Interfaces`.
+
+### Stage 0 acceptance — ✅ complete (2026-04-21)
+
+- Full `dotnet build` succeeds.
+- `dotnet test --filter "FullyQualifiedName~ArtistApiTests"` — 17 pass.
+- Full `dotnet test` — matches pre-change baseline:
+  - Core.UnitTests: all pass
+  - Infrastructure.UnitTests: 74 pass
+  - Workers.UnitTests: 3 pass
+  - Web.IntegrationTests: 129 pass
+  - Web.E2ETests: 4 fail (all `ConcertDraftTests`) — **infrastructure-level, unrelated to this refactor.** Baseline verified by re-running against `git stash`'d HEAD: all 4 fail there too with `StripeCliFixture.InitializeAsync` → `TaskCanceledException`. (The earlier plan wrote "2 failures" from memory; actual baseline is 4.)
+
+---
+
+## Stage 1 — Artist module extraction
+
+Run this only after Stage 0 is green. Previously §1-§12 below, updated for the post-Stage-0 world.
+
+### Stage 1 progress (2026-04-21)
+
+Steps 2–4 of §10 landed. State of the tree:
+
+- ✅ 4 Artist projects scaffolded under `api/Modules/Artist/` (Contracts, Domain, Application,
+  Infrastructure) with the project references from §2, added to `Concertable.sln`.
+- ✅ `ArtistEntity` + `ArtistGenreEntity` moved to `Concertable.Artist.Domain`. Namespace renamed.
+- ✅ `ArtistEntity.Applications` inverse nav dropped. `OpportunityApplicationEntityConfiguration`
+  side switched to `.WithMany()`.
+- ✅ `ArtistEntity` now implements `IHasLocation` alongside the existing `ILocatable<ArtistEntity>` /
+  `LocationExpression` (not deleted — will be phased out during per-entity Location work, per user).
+- ✅ **Cycle break:** `GenreEntity` moved from `Concertable.Core/Entities/` to
+  `Concertable.Shared.Domain/` (namespace `Concertable.Shared`). Its reverse nav collections
+  (`ArtistGenres`, `ConcertGenres`, `OpportunityGenres`) were dropped — grep-verified unused at
+  runtime. `ConcertGenreEntityConfiguration` flipped `.WithMany(g => g.ConcertGenres)` to
+  `.WithMany()`. This means `Artist.Domain` can own `ArtistGenreEntity.Genre : GenreEntity` (via
+  Shared.Domain) without taking a `Concertable.Core` project reference — cycle avoided.
+- ✅ `ArtistGenreEntity` composite key + relationships configured fluently in a new
+  `ArtistGenreEntityConfiguration` (inside `Concertable.Data.Infrastructure/Data/Configurations/
+  ArtistEntityConfiguration.cs`). Entity is free of EF Core attributes, keeping `Artist.Domain`
+  dependency-lean (Shared.Domain only, no EF Core package ref).
+- ✅ `Concertable.Core` → `Concertable.Artist.Domain` project reference added.
+  `OpportunityApplicationEntity.cs` updated with `using Concertable.Artist.Domain;`.
+- ✅ Global usings updated (`Concertable.Artist.Domain` added to):
+  `Concertable.Core`, `Concertable.Infrastructure`, `Concertable.Web`, `Concertable.Application`,
+  `Concertable.Seeding`, `Concertable.Data.Infrastructure`,
+  `Concertable.Search.Application`, `Concertable.Search.Infrastructure`. `IReadDbContext.cs` got
+  `using Concertable.Artist.Domain;` + `using Concertable.Shared;` for `GenreEntity`.
+- ✅ Build green. Test baseline held:
+  - `ArtistApiTests`: 17 pass.
+  - Core/Infrastructure/Workers unit tests + Web integration tests (129): all pass.
+  - E2E `ConcertDraftTests` 4 failures — pre-existing Stripe CLI infrastructure issue, unrelated.
+
+**Unplanned side-quest — `GenreEntity` relocation.** Not in the original plan. Surfaced because
+`ArtistGenreEntity.Genre : GenreEntity` made `Artist.Domain → Core` unavoidable while we also
+needed `Core → Artist.Domain`. Moving `GenreEntity` to `Shared.Domain` is the canonical fix (it's
+reference data every module reads; no module owns writes for it). Captured in CLAUDE.md rule 5.
+
+**New invariant captured (CLAUDE.md):** module `Domain` is the only cross-module escape hatch
+we're currently accepting (for entity types referenced by `IReadDbContext` and by EF nav props we
+haven't detangled yet). Any other cross-module Application/Infrastructure reference requires an
+explicit conversation.
+
+**Remaining Stage 1 steps (from §10): 5–13.** Next up is step 5 — move Application layer
+(`IArtistService`, `IArtistRepository`, DTOs, Requests, Validators, Mappers) into
+`Concertable.Artist.Application` with correct namespaces from the start.
+
+### Stage 1 progress (2026-04-21, cont.) — shared-type foundations for Application move
+
+Before moving the Application layer, extracted shared dependencies out of legacy
+`Concertable.Application` so `Artist.Application` can live without a wrong-direction reference to
+it. All done, build green.
+
+- ✅ **New `Concertable.Shared.Validation` project.** Owns `ImageValidator` / `BannerImageValidator` /
+  `AvatarImageValidator`. FluentValidation + ImageSharp package refs live here; zero internal
+  project refs so consumers don't inherit unintended transitive deps. `Concertable.Application`
+  references it; `ImageSharp` dropped from `Concertable.Application.csproj`. Added to `Concertable.sln`.
+- ✅ **`ImageDto` → `Concertable.Shared.Contracts`** (namespace `Concertable.Shared`). Shared.Contracts
+  gained `<FrameworkReference Microsoft.AspNetCore.App>` for `IFormFile`. Legacy `Concertable.Application.DTOs.ImageDto` deleted.
+- ✅ **`IIdRepository<T>` in `Shared.Domain`** (parallel to existing `IGuidRepository<T>`), and
+  **`IdModuleRepository<TEntity, TContext>` in `Data.Infrastructure/ModuleRepository.cs`** (parallel
+  to `GuidModuleRepository`). Legacy `Concertable.Application/Interfaces/IRepository.cs` and
+  `Concertable.Infrastructure/Repositories/Repository.cs` **left alone** — 7 non-Artist repos still
+  use them until their modules extract.
+- ✅ **`IDetails` deleted** (file + `: IDetails` implementations on `ArtistDto`, `VenueDto`,
+  `ConcertDto`). It was marker-only polymorphism with zero consumers.
+- ✅ **CLAUDE.md**: added rule that modules can ship multiple facades (Identity =
+  `IIdentityModule` + `IAuthModule`) — don't force everything through one fat `IXModule`.
+
+### 1. Why Artist is straightforward now
+
+Most of the Identity work paid forward:
+
+- `ArtistManagerEntity` already lives in `Concertable.Identity.Domain/UserEntity.cs:66` — Artist doesn't own the user hierarchy.
+- `ArtistEntity` is already denormalized — `Location`, `Address`, `Avatar`, `Email` live on the entity itself (`api/Concertable.Core/Entities/ArtistEntity.cs:16-19`). No `User` nav property remains.
+- `ICurrentUser`, `Role`, `ICurrentUserResolver`, `IManagerModule` all live in `Identity.Contracts` / `Identity.Application` — Artist injects them cleanly.
+- `GuidModuleRepository<TEntity, TContext>` base exists in `Concertable.Data.Infrastructure/ModuleRepository.cs` — the replacement for `Repository<ApplicationDbContext>`.
+- `IReadDbContext` already exposes `IQueryable<ArtistEntity>` and `IQueryable<ArtistGenreEntity>` (`Concertable.Data.Application/IReadDbContext.cs:13-14`).
+- `DbContextBase` handles audit + domain event dispatch — `ArtistDbContext` inherits from it, never from `ApplicationDbContext`.
+- **Post-Stage-0:** `ArtistEntity` no longer implements `IReviewable` — it's a clean POCO. `Artist.Domain` doesn't need `Concertable.Core`. Rating aggregation is owned by `ArtistRatingSpecification` in `Search.Infrastructure`.
+
+The remaining friction points are coupling from **Concert into Artist** (nav properties,
+`IArtistService` injection in `OpportunityApplicationService`, `.Include(x => x.Artist)` chains).
+**These are deferred to Concert extraction** — Artist's job is only to become a clean outbound
+module. Inbound coupling gets cleaned up when the caller's module is extracted.
+
+---
+
+### 2. Target architecture
+
+```
+api/Modules/Artist/
+  Concertable.Artist.Contracts/       ← public; IArtistModule facade, Artist summary DTOs for cross-module
+  Concertable.Artist.Domain/          ← internal; ArtistEntity, ArtistGenreEntity, domain events
+  Concertable.Artist.Application/     ← internal; IArtistService, IArtistRepository, DTOs, Requests, Validators, Mappers
+  Concertable.Artist.Infrastructure/  ← internal; ArtistService, ArtistRepository, ArtistDbContext, EF config, AddArtistModule()
+```
+
+Same 4-project shape as Identity. `Domain` was added mid-Identity-refactor because entities don't
+belong in Application — follow that correction from the start here.
+
+**Project references (post-Stage-0):**
+
+| Project | References |
+|---|---|
+| `Artist.Contracts` | `Concertable.Shared.Domain` |
+| `Artist.Domain` | `Artist.Contracts`, `Concertable.Shared.Domain` *(no `Concertable.Core` dependency — Stage 0 removed it)* |
+| `Artist.Application` | `Artist.Contracts`, `Artist.Domain`, `Identity.Contracts` (for `ICurrentUser`), `Shared.Contracts` (for `ImageDto`, `GenreDto`), `Shared.Validation` (for `Banner`/`AvatarImageValidator`), FluentValidation |
+| `Artist.Infrastructure` | `Artist.Contracts`, `Artist.Application`, `Identity.Contracts`, `Identity.Application`, `Data.Application`, `Data.Infrastructure`, `Concertable.Infrastructure` (transitional — for `IImageService`, `IGeocodingService`, `IGeometryProvider`, `IUnitOfWork`) |
+
+**Reverse reference:** `Concertable.Core` gains a project reference to `Concertable.Artist.Domain`,
+because `OpportunityApplicationEntity.Artist` (nav in Core) now targets the relocated
+`ArtistEntity`. This mirrors how `Concertable.Core` already references `Concertable.Identity.Domain`
+for `UserEntity` navs on `MessageEntity` / `TransactionEntity`.
+
+---
+
+### 3. Files to move
+
+#### Entities → `Artist.Domain/`
+
+| From | To |
+|---|---|
+| `Concertable.Core/Entities/ArtistEntity.cs` | `Artist.Domain/ArtistEntity.cs` |
+| `Concertable.Core/Entities/ArtistGenreEntity.cs` | `Artist.Domain/ArtistGenreEntity.cs` |
+
+> Entities stay `public` — `OpportunityApplicationEntity.Artist` nav (Concert side) still exists
+> until Concert extraction; `ArtistManagerRepository` in Identity.Infrastructure reads `Artist.UserId`
+> via `IReadDbContext`. Flip to `internal` only after Concert is extracted.
+
+#### Application interfaces + DTOs + Requests + Validators + Mappers → `Artist.Application/`
+
+| From | To |
+|---|---|
+| `Concertable.Application/Interfaces/IArtistService.cs` | `Artist.Application/Interfaces/` |
+| `Concertable.Application/Interfaces/IArtistRepository.cs` | `Artist.Application/Interfaces/` |
+| `Concertable.Application/DTOs/ArtistDtos.cs` (ArtistDto + ArtistSummaryDto) | `Artist.Application/DTOs/` |
+| `Concertable.Application/Requests/ArtistRequests.cs` | `Artist.Application/Requests/` |
+| `Concertable.Application/Validators/ArtistValidators.cs` | `Artist.Application/Validators/` |
+| `Concertable.Application/Mappers/ArtistMappers.cs` (entity→DTO) | `Artist.Application/Mappers/` |
+
+**Namespace lesson from Identity:** rename the namespaces as you move, not later. Target namespaces
+are `Concertable.Artist.Application.Interfaces`, `Concertable.Artist.Application.DTOs`, etc. Do
+**not** leave them as `Concertable.Application.*` — Identity did that as a shortcut and it became
+§4 of `IDENTITY_COMPLETION.md`.
+
+#### Infrastructure → `Artist.Infrastructure/`
+
+| From | To |
+|---|---|
+| `Concertable.Infrastructure/Services/ArtistService.cs` | `Artist.Infrastructure/Services/` |
+| `Concertable.Infrastructure/Repositories/ArtistRepository.cs` | `Artist.Infrastructure/Repositories/` |
+| `Concertable.Infrastructure/Mappers/QueryableArtistMappers.cs` | `Artist.Infrastructure/Mappers/` |
+
+**`ArtistEntityConfiguration.cs` stays in `Concertable.Data.Infrastructure/Data/Configurations/`.**
+This matches Identity's precedent — `UserEntityConfiguration` et al. never moved into
+`Identity.Infrastructure`; they stay colocated with the other configs and `IdentityDbContext`
+imports them explicitly. Keeping the same pattern means `ReadDbContext`'s
+`ApplyConfigurationsFromAssembly(typeof(ReadDbContext).Assembly)` keeps finding all configs without
+needing per-module assembly scans. Migrating configs per-module is a cleanup pass for later, not
+this refactor.
+
+#### Stays in `Concertable.Web`
+
+- `ArtistController.cs` — references `IArtistService` from `Artist.Application`.
+- `ArtistResponseMappers.cs` — HTTP response mappers stay with the controller.
+- `ArtistResponses.cs` — same.
+
+#### Stays in `Concertable.Infrastructure` (transitional)
+
+- `ArtistReviewRepository.cs` and `ArtistRatingRepository.cs` — both query the `Review`/`Rating`
+  pipeline which is tied to Tickets/Concerts. Moving these before Concert is extracted trades one
+  cross-module leak for another. Defer.
+- `Concertable.Seeding/Fakers/ArtistFaker.cs` — seeding lives in its own seam; will move during the
+  seeding-refactor work already planned.
+
+> `ArtistRatingSpecification` lives in `Search.Infrastructure` — that's its permanent-until-rewrite
+> home. The rating pipeline rewrite (MM_NORTH_STAR §5, per-module review tables fed by events)
+> replaces these specs entirely, so moving them per-module is not on the path.
+
+---
+
+### 4. Cross-module coupling — what to fix, what to defer
+
+#### Fix now (Artist outbound)
+
+1. **`ArtistRepository` base class.** Currently `Repository<ArtistEntity>` with `ApplicationDbContext`.
+   After extraction: `GuidModuleRepository<ArtistEntity, ArtistDbContext>`. Constructor becomes
+   `(ArtistDbContext context, IReadDbContext readDb, IRatingSpecification<ArtistEntity> ratingSpec)`
+   — `readDb` is needed because rating aggregation queries `Reviews`, which `ArtistDbContext`
+   doesn't own.
+2. **`ArtistRepository` rating aggregation.** Stage 0 kept the `IRatingSpecification<T>` injection;
+   Stage 1 just swaps the queried source from `context.Reviews` to `readDb.Reviews` when
+   `.ApplyAggregate(...)` is called.
+3. **`ArtistService` dependencies — already clean.** Constructor already injects `ICurrentUser` +
+   `IManagerModule` from Identity.Contracts. No change beyond project reference updates.
+
+#### Defer to Concert extraction (Artist inbound)
+
+These **stay as-is**. They work today because Artist entities still live in the same physical DB
+and EF can still resolve nav properties inside `ApplicationDbContext`. Each one is a leak, but
+fixing it now means fixing the Concert side from Artist's module, which is backwards.
+
+1. **`OpportunityApplicationService.cs:24`** injects `IArtistService`. When Concert is extracted
+   it'll become `IArtistModule.GetSummaryAsync(artistId)` or similar.
+2. **`OpportunityApplicationRepository.GetArtistAndVenueByIdAsync`** — uses `.Include(ca => ca.Artist).ThenInclude(a => a.ArtistGenres)...`.
+3. **`ConcertRepository`** — `.Include(...).Artist.ArtistGenres.Genre` chains.
+4. **`ConcertBookingRepository` / `TicketRepository`** — same include pattern.
+
+(The old item 5 — `ArtistEntity.ReviewIdSelector` — was killed in Stage 0.)
+
+---
+
+### 5. `IArtistModule` contract — what goes in Contracts
+
+`Artist.Contracts` exposes only what *other modules* call. Two known callers after Identity:
+
+- **Identity's `ArtistManagerRepository`** reads `readDb.Artists.Where(a => a.UserId == ...).Select(a => a.Id)` — this is an `IReadDbContext` read, not a contract call. Nothing needed.
+- **Concert/Opportunity** currently uses `IArtistService`. When Concert is extracted it will switch to `IArtistModule`. **Define the facade now** so the Concert extraction has a target.
+
+Proposed starting surface — add methods only as callers appear, don't over-design:
+
+```csharp
+// Concertable.Artist.Contracts
+public interface IArtistModule
+{
+    Task<ArtistSummaryDto?> GetSummaryAsync(int artistId);
+    Task<int?> GetIdByUserIdAsync(Guid userId);
+}
+
+public record ArtistSummaryDto(int Id, string Name, string? Avatar, string? Email, AddressDto? Address);
+```
+
+`AddressDto` / `GenreDto` references: if Contracts needs value-object shapes, either put them in
+`Artist.Contracts` or reference `Concertable.Shared.Domain` (Address is already a shared VO).
+
+**Naming collision risk:** The Application-level `ArtistDto` (full detail with genres, rating,
+banner) is different from the Contracts-level `ArtistSummaryDto` (small, for cross-module). Identity
+hit name collisions between `Application.DTOs.UserDto` and `Contracts.UserDto`; the Identity plan
+(step 9) dropped the Contracts-side `UserDto` entirely because no one called it. Keep
+`ArtistSummaryDto` in Contracts tight; keep full `ArtistDto` in `Artist.Application`. No re-export.
+
+**IArtistService in Contracts? — No.** The controller is the only in-process caller and it lives
+in the same deployable. Put `IArtistService` in `Artist.Application` and let `Concertable.Web`
+reference `Artist.Application` directly. Identity's `IAuthService` / `IUserService` follow the same
+pattern.
+
+---
+
+### 6. `ArtistDbContext`
+
+```csharp
+// Artist.Infrastructure/Data/ArtistDbContext.cs
+internal class ArtistDbContext(DbContextOptions<ArtistDbContext> options)
+    : DbContextBase(options)
+{
+    public DbSet<ArtistEntity> Artists => Set<ArtistEntity>();
+    public DbSet<ArtistGenreEntity> ArtistGenres => Set<ArtistGenreEntity>();
+
+    protected override void OnModelCreating(ModelBuilder b)
+    {
+        base.OnModelCreating(b);
+        b.ApplyConfiguration(new ArtistEntityConfiguration());
+        b.ApplyConfiguration(new ArtistGenreEntityConfiguration()); // if a dedicated config exists; otherwise configure inline
+    }
+}
+```
+
+**Rules (from CLAUDE.md):**
+- Inherit `DbContextBase`, not `ApplicationDbContext`.
+- Only Artist-owned entities. `GenreEntity` is shared reference data — `ArtistGenreEntity.GenreId` is a plain `int` FK here; no `DbSet<GenreEntity>` or `.HasOne<GenreEntity>()` in this context.
+- `OpportunityApplicationEntity` reverse nav on `ArtistEntity.Applications` → **drop the collection from `ArtistEntity`**. Grep confirmed nothing reads it at runtime; only `OpportunityApplicationEntityConfiguration` uses it as the inverse nav — change that to `.WithMany()` (no inverse).
+
+#### Configuration placement
+
+Identity did **not** move its config files — `UserEntityConfiguration` et al. stayed in
+`Concertable.Data.Infrastructure/Data/Configurations/`, and `IdentityDbContext` imports + applies
+them explicitly. Match that precedent:
+
+- `ArtistEntityConfiguration.cs` **stays put** in `Concertable.Data.Infrastructure/Data/Configurations/`.
+- `ArtistDbContext.OnModelCreating` does `modelBuilder.ApplyConfiguration(new ArtistEntityConfiguration())`
+  with `using Concertable.Data.Infrastructure.Data.Configurations;`.
+- `ReadDbContext` and `ApplicationDbContext` keep their existing `ApplyConfigurationsFromAssembly(typeof(ReadDbContext).Assembly)`
+  call — the config is still in that assembly, so it's still picked up automatically.
+
+**Why not move the config into `Artist.Infrastructure`?** Once you move it, `ReadDbContext` loses
+automatic pickup (its assembly scan only covers `Concertable.Data.Infrastructure`). You'd need to
+append `ApplyConfigurationsFromAssembly(typeof(ArtistDbContext).Assembly)` to `ReadDbContext` — and
+another line for every subsequent module. Identity dodged that whole problem by leaving configs in
+place. Do the same.
+
+---
+
+### 7. DI wiring — `AddArtistModule()`
+
+Mirror `AddIdentityModule()`:
+
+```csharp
+// Artist.Infrastructure/Extensions/ServiceCollectionExtensions.cs
+public static IServiceCollection AddArtistModule(this IServiceCollection services, IConfiguration configuration)
+{
+    services.AddDbContext<ArtistDbContext>((sp, opt) =>
+        opt.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                sqlOpt => sqlOpt.UseNetTopologySuite())
+            .AddInterceptors(
+                sp.GetRequiredService<AuditInterceptor>(),
+                sp.GetRequiredService<DomainEventDispatchInterceptor>()));
+
+    services.AddScoped<IArtistService, ArtistService>();
+    services.AddScoped<IArtistRepository, ArtistRepository>();
+    services.AddScoped<IArtistModule, ArtistModule>();
+
+    services.AddValidatorsFromAssemblyContaining<CreateArtistRequestValidator>();
+
+    return services;
+}
+```
+
+Called from `Concertable.Web/Extensions/ServiceCollectionExtensions.cs` alongside
+`AddIdentityModule()` and `AddSearchModule()`. Remove the current registrations of `IArtistService`
+/ `IArtistRepository` / Artist validators from `Concertable.Web` and `Concertable.Infrastructure`
+DI extensions — `AddArtistModule()` owns them.
+
+---
+
+### 8. `ApplicationDbContext` cleanup
+
+After this refactor, `ApplicationDbContext` should no longer own Artist entities:
+
+- Remove `DbSet<ArtistEntity> Artists` and `DbSet<ArtistGenreEntity> ArtistGenres` from `ApplicationDbContext`.
+- Cross-module reads on Artist go through `IReadDbContext`.
+- `ApplicationDbContext` still contains Concert-side entities that **nav-reference** `ArtistEntity`
+  (e.g. `OpportunityApplicationEntity.Artist`). The nav stays and EF can still resolve it because
+  Artist is still a `public` POCO and lives in the same DB. The Concert-side EF config keeps
+  `.HasOne(a => a.Artist)...`. This works.
+
+**On `ArtistEntityConfiguration`:** stays in `Concertable.Data.Infrastructure/Data/Configurations/`
+(matches Identity's precedent — `UserEntityConfiguration` never moved into `Identity.Infrastructure`
+either). The configuration (owned-type `Address`, `Location` as `geography`, etc.) is still needed:
+
+- `ArtistDbContext` imports it (`using Concertable.Data.Infrastructure.Data.Configurations;`) and
+  applies it explicitly via `modelBuilder.ApplyConfiguration(new ArtistEntityConfiguration())`.
+- `ReadDbContext` continues to scan its own assembly — config is still in that assembly, so no
+  changes to `ReadDbContext` needed.
+- `ApplicationDbContext` needs the config as long as it still has `DbSet<ArtistEntity>`; after
+  step 10 of §10 removes the DbSet it doesn't need it either. No scan changes required here either.
+
+---
+
+### 9. Integration tests
+
+`api/Tests/Concertable.Web.IntegrationTests/Controllers/Artist/ArtistApiTests.cs` — **17 tests**
+(actual count; earlier plan said 19). These are the refactor harness. Run before Stage 0, between
+Stage 0 and Stage 1, and after each Stage 1 step.
+
 ```
 dotnet test --filter "FullyQualifiedName~ArtistApiTests"
 ```
-All 17 should pass before you start moving files.
 
-## Suggested Extraction Order
-1. Create `Concertable.Artist.Contracts`, `Concertable.Artist.Application`, `Concertable.Artist.Infrastructure` projects
-2. Move domain entities → `Concertable.Artist.Application` (or a Domain sub-folder)
-3. Move interfaces + DTOs + validators → `Concertable.Artist.Application`
-4. Move service + repo implementations → `Concertable.Artist.Infrastructure`
-5. Create `IArtistModule` facade in Contracts, expose only what other modules need
-6. Fix the `ReviewIdSelector` coupling (see friction point 1)
-7. Update `OpportunityApplicationService` and `OwnershipService` to use `IArtistModule` (see friction points 3 & 4)
-8. Remove `ArtistEntity` navigation properties from Concert-side repositories, replace with ID-only + service calls
-9. Register via `services.AddArtistModule()` in `Program.cs`
-10. Re-run the 15 Artist integration tests — all should still pass
+Also run the full suite after major steps to catch regressions from seed-data/DbContext changes:
+
+```
+dotnet test
+```
+
+Baseline going in: whatever count is green now (17 Artist + 2 `ConcertDraftTests` E2E pre-existing failures).
+Target: same count after Stage 0, same count after Stage 1.
+
+---
+
+### 10. Implementation order (Stage 1)
+
+1. Confirm Stage 0 green — `ArtistApiTests` all pass, no new failures in full suite.
+2. **Scaffold projects** — create 4 `.csproj` files under `api/Modules/Artist/`, add to solution, wire project references per §2.
+3. **Move entities** → `Artist.Domain/`. Update namespaces to `Concertable.Artist.Domain`. Drop `ArtistEntity.Applications`; flip the EF config side to `.WithMany()`.
+4. **Add `Concertable.Core → Concertable.Artist.Domain` project reference.** Update `OpportunityApplicationEntity.Artist` nav's `using`.
+5. **Move Application layer** → `Artist.Application/` with correct `Concertable.Artist.Application.*` namespaces from the start.
+6. **Create `ArtistDbContext`** in `Artist.Infrastructure/Data/`. `ArtistEntityConfiguration` stays in `Concertable.Data.Infrastructure/Data/Configurations/`; `ArtistDbContext` imports + applies it explicitly via `modelBuilder.ApplyConfiguration(new ArtistEntityConfiguration())`.
+7. **Move Infrastructure layer** → `Artist.Infrastructure/`. `ArtistService` (no logic change), `ArtistRepository` (switch to `GuidModuleRepository<ArtistEntity, ArtistDbContext>` + inject `IReadDbContext`; swap rating aggregation source from `context.Reviews` to `readDb.Reviews`), `QueryableArtistMappers`.
+8. **Create `IArtistModule` + `ArtistModule`** in `Artist.Contracts` / `Artist.Infrastructure`. Minimal surface (§5).
+9. **`AddArtistModule()`** DI extension. Remove old registrations from Web/Infrastructure.
+10. **`ApplicationDbContext` cleanup** — remove `DbSet<ArtistEntity>`, `DbSet<ArtistGenreEntity>`, and their configs.
+11. **Global usings** — add `Concertable.Artist.Contracts`, `Concertable.Artist.Domain` to `Concertable.Infrastructure/GlobalUsings.cs` and `Concertable.Web/GlobalUsings.cs` where those projects used to pull Artist types via `Concertable.Application.*` / `Concertable.Core.Entities`.
+12. **Re-run tests** — 17 Artist integration + full suite.
+13. **Fix any build/test regressions**. Most likely: ambiguous `ArtistDto` references; leaked `using Concertable.Application.Interfaces` still pointing at the old `IArtistService` location.
+
+---
+
+### 11. Known friction points (for the implementer)
+
+#### a. ~~`ArtistEntity.ReviewIdSelector` stays~~ — killed in Stage 0
+`ArtistEntity` is now a clean POCO with no `IReviewable` implementation. `Artist.Domain` does not
+reference `Concertable.Core`.
+
+#### b. `ArtistEntity.Applications` collection
+Drop it. Only used as inverse nav in `OpportunityApplicationEntityConfiguration.Configure` —
+change `.WithMany(a => a.Applications)` to `.WithMany()`. Confirmed via grep that no runtime code
+reads it.
+
+#### c. `ArtistRepository` keeps injecting `IRatingSpecification<ArtistEntity>`
+Interface relocated to `Concertable.Search.Application.Interfaces`; concrete impl is
+`ArtistRatingSpecification` in `Search.Infrastructure`. Stage 1 only changes the queried source
+from `context.Reviews` to `readDb.Reviews` when `.ApplyAggregate(...)` is called.
+
+#### d. `IArtistService` consumers in Web + Infrastructure
+Current consumers (grep result):
+- `ArtistController` — just updates its `using` to `Concertable.Artist.Application.Interfaces`.
+- `OpportunityApplicationService` — leaves its `IArtistService` injection as-is (deferred to Concert extraction per §4).
+- `Concertable.Web/Extensions/ServiceCollectionExtensions.cs` — remove Artist registrations; `AddArtistModule()` takes over.
+
+#### e. ArtistManagerEntity + Artist inheritance — already handled
+Identity owns `ArtistManagerEntity`. Artist doesn't touch the user hierarchy. `ArtistService.CreateAsync`
+calls `managerModule.GetManagerAsync(...)` to fetch the manager — that's already the correct
+cross-module contract call. No change.
+
+#### f. Seeding
+`Concertable.Seeding/Fakers/ArtistFaker.cs` stays put. The per-module seeder pattern
+(`IDevSeeder`/`ITestSeeder`) from the seeding-refactor memo hasn't been applied to Artist yet.
+Don't introduce it here — add `ArtistDevSeeder` / `ArtistTestSeeder` as a separate follow-up
+(aligns with the Identity pattern).
+
+---
+
+### 12. Explicitly out of scope
+
+- Breaking `OpportunityApplicationService`'s `IArtistService` injection → **Concert extraction**.
+- Removing `.Include(x => x.Artist)...` chains from Concert repos → **Concert extraction**.
+- `ArtistReviewRepository` / `ArtistRatingRepository` relocation → **Concert extraction** (they query the Review pipeline tied to Tickets/Concerts).
+- Flipping `ArtistEntity` / `ArtistGenreEntity` to `internal` → after Concert extraction, when nothing outside Artist references them.
+- Per-module seeders (`ArtistDevSeeder`, `ArtistTestSeeder`) → follow-up after this refactor lands.
+- Moving `ArtistRatingSpecification` into `Artist.Infrastructure` (stays in `Search.Infrastructure`; replaced during rating-pipeline rewrite per MM_NORTH_STAR §5).
+
+---
+
+### 13. Up next: Venue
+
+Venue is structurally identical to Artist: same denormalization already done, same `VenueManagerEntity`
+in `Identity.Domain`, same inbound coupling from Concert. After Artist lands, Venue is a near-copy.
+The plan for Venue writes itself from this file.
 
 ## Reference
-- Search module extraction (complete) is the pattern to follow: `Concertable.Search.Contracts`, `Concertable.Search.Application`, `Concertable.Search.Infrastructure`
-- Kamil Grzybek modular monolith series: `modular-monolith-with-ddd` on GitHub
+- `IDENTITY_MODULE_REFACTOR.md` — the pattern.
+- `IDENTITY_COMPLETION.md` — specifically §3 (ModuleRepository bases) and §4 (namespace lesson).
+- `CLAUDE.md` — the non-negotiable DbContext / module rules.
+- `MM_NORTH_STAR.md` — §Corollary 1/2/5 explain why the `IReviewable<T>` abstraction had to die.
+- `Concertable.Search.*` + `Concertable.Identity.*` — two reference implementations in-repo.

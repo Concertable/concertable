@@ -1,5 +1,4 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
@@ -8,6 +7,7 @@ using Concertable.Core.Enums;
 using Concertable.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Concertable.Infrastructure.Data;
+using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
 
@@ -51,101 +51,101 @@ public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
 
     public async Task<ConcertSummaryDto?> GetSummaryAsync(int id)
     {
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Id == id)
-            .ToSummaryDto(artistRatings, venueRatings)
+            .ToSummaryDto(
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 
     public async Task<ConcertDto?> GetDtoByIdAsync(int id)
     {
-        var concertRatings = concertRatingSpecification.ApplyAggregate(context.Reviews);
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Id == id)
-            .ToDto(concertRatings, artistRatings, venueRatings)
+            .ToDto(
+                concertRatingSpecification.ApplyAggregate(context.Reviews),
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id)
     {
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id
                         && e.Booking.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow()
                         && e.DatePosted != null)
-            .ToSummaryDto(artistRatings, venueRatings)
+            .ToSummaryDto(
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id)
     {
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id
                         && e.Booking.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow()
                         && e.DatePosted != null)
-            .ToSummaryDto(artistRatings, venueRatings)
+            .ToSummaryDto(
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .ToListAsync();
     }
 
     public async Task<ConcertDto?> GetDtoByApplicationIdAsync(int applicationId)
     {
-        var concertRatings = concertRatingSpecification.ApplyAggregate(context.Reviews);
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Booking.ApplicationId == applicationId)
-            .ToDto(concertRatings, artistRatings, venueRatings)
+            .ToDto(
+                concertRatingSpecification.ApplyAggregate(context.Reviews),
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id)
     {
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id
                         && e.Booking.Application.Opportunity.Period.Start < timeProvider.GetUtcNow()
                         && e.DatePosted != null)
-            .ToSummaryDto(artistRatings, venueRatings)
+            .ToSummaryDto(
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id)
     {
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id
                         && e.Booking.Application.Opportunity.Period.Start < timeProvider.GetUtcNow()
                         && e.DatePosted != null)
-            .ToSummaryDto(artistRatings, venueRatings)
+            .ToSummaryDto(
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id)
     {
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id && e.DatePosted == null)
-            .ToSummaryDto(artistRatings, venueRatings)
+            .ToSummaryDto(
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByVenueIdAsync(int id)
     {
-        var artistRatings = artistRatingSpecification.ApplyAggregate(context.Reviews);
-        var venueRatings = venueRatingSpecification.ApplyAggregate(context.Reviews);
         return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id && e.DatePosted == null)
-            .ToSummaryDto(artistRatings, venueRatings)
+            .ToSummaryDto(
+                artistRatingSpecification.ApplyAggregate(context.Reviews),
+                venueRatingSpecification.ApplyAggregate(context.Reviews))
             .ToListAsync();
     }
 
