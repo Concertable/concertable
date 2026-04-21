@@ -1,6 +1,5 @@
-using Concertable.Application.DTOs;
+using Concertable.Artist.Application.DTOs;
 using Concertable.Core.Projections;
-using Concertable.Core.Entities;
 using LinqKit;
 
 namespace Concertable.Infrastructure.Mappers;

@@ -1,8 +1,8 @@
-using Concertable.Application.Requests;
+using Concertable.Artist.Application.Requests;
 using Concertable.Shared.Validation;
 using FluentValidation;
 
-namespace Concertable.Application.Validators;
+namespace Concertable.Artist.Application.Validators;
 
 public class CreateArtistRequestValidator : AbstractValidator<CreateArtistRequest>
 {

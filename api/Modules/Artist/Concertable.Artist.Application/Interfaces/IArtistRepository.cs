@@ -1,9 +1,9 @@
-using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Artist.Application.DTOs;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Artist.Application.Interfaces;
 
-public interface IArtistRepository : IRepository<ArtistEntity>
+public interface IArtistRepository : IIdRepository<ArtistEntity>
 {
     Task<int?> GetIdByUserIdAsync(Guid id);
     Task<ArtistEntity?> GetByUserIdAsync(Guid id);

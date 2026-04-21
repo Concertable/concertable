@@ -1,7 +1,6 @@
-using Concertable.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Application.Requests;
+namespace Concertable.Artist.Application.Requests;
 
 public record CreateArtistRequest
 {

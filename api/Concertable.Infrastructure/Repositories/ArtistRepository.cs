@@ -1,6 +1,6 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Core.Entities;
+using Concertable.Artist.Application.DTOs;
+using Concertable.Artist.Application.Interfaces;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Mappers;
 using Concertable.Search.Application.Interfaces;

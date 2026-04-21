@@ -1,5 +1,6 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Artist.Application.Mappers;
 using Concertable.Core.Entities;
 
 namespace Concertable.Application.Mappers;

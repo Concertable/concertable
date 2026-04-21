@@ -1,6 +1,7 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Artist.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Concertable.Application.DTOs;

@@ -1,9 +1,9 @@
-using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.DTOs;
-using Concertable.Application.Mappers;
-using Concertable.Application.Requests;
+using Concertable.Artist.Application.DTOs;
+using Concertable.Artist.Application.Interfaces;
+using Concertable.Artist.Application.Mappers;
+using Concertable.Artist.Application.Requests;
 using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Identity.Contracts;

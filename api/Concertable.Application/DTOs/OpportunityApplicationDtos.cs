@@ -1,3 +1,4 @@
+using Concertable.Artist.Application.DTOs;
 using Concertable.Core.Enums;
 
 namespace Concertable.Application.DTOs;

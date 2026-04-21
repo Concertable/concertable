@@ -1,5 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
+using Concertable.Artist.Application.Interfaces;
+using Concertable.Artist.Application.Validators;
 using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
@@ -315,6 +317,7 @@ services.AddRatingRepositories();
         services.AddFluentValidationAutoValidation();
         services.AddValidatorsFromAssemblyContaining<LoginRequest>();
         services.AddValidatorsFromAssemblyContaining<IVenueService>();
+        services.AddValidatorsFromAssemblyContaining<CreateArtistRequestValidator>();
 
         return services;
     }

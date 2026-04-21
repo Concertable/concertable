@@ -1,6 +1,9 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Artist.Application.DTOs;
+using Concertable.Artist.Application.Interfaces;
+using Concertable.Artist.Application.Mappers;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;

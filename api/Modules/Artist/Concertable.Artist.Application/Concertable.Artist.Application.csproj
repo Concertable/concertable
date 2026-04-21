@@ -7,9 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Concertable.Artist.Contracts\Concertable.Artist.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
     <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

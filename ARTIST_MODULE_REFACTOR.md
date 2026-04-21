@@ -281,6 +281,48 @@ it. All done, build green.
 - ✅ **CLAUDE.md**: added rule that modules can ship multiple facades (Identity =
   `IIdentityModule` + `IAuthModule`) — don't force everything through one fat `IXModule`.
 
+### Stage 1 progress (2026-04-21, step 5) — Application layer moved
+
+Step 5 of §10 landed. State:
+
+- ✅ 6 files moved from `Concertable.Application` into `api/Modules/Artist/Concertable.Artist.Application/`
+  with `Concertable.Artist.Application.*` namespaces from the start:
+  - `Interfaces/IArtistService.cs`, `Interfaces/IArtistRepository.cs`
+  - `DTOs/ArtistDtos.cs`, `Requests/ArtistRequests.cs`
+  - `Validators/ArtistValidators.cs`, `Mappers/ArtistMappers.cs`
+- ✅ `IArtistRepository` now extends `IIdRepository<ArtistEntity>` (Shared.Domain) instead of
+  the legacy `IRepository<ArtistEntity>`. Identical surface, clean dependency direction.
+- ✅ `Concertable.Artist.Application.csproj` gained refs: `Shared.Contracts` (for `ImageDto`,
+  `GenreDto`), `Shared.Validation` (for `Banner`/`AvatarImageValidator`), and
+  `<FrameworkReference Microsoft.AspNetCore.App>` (for `IFormFile` in `CreateArtistRequest`).
+  `GlobalUsings.cs` added with `Concertable.Shared` + `Concertable.Artist.Domain`.
+- ✅ `ArtistMappers` inlines `GenreDto` construction (one line per mapping) instead of calling
+  `GenreMappers.ToDto()`. Keeps Artist.Application free of a dep on legacy `Concertable.Application`
+  purely for `GenreMappers`.
+- ✅ Consumers updated:
+  - `Concertable.Web.csproj` + `Concertable.Infrastructure.csproj` + `Concertable.Application.csproj`
+    each gained `<ProjectReference Include=".../Concertable.Artist.Application.csproj" />`.
+    Concertable.Application → Artist.Application is tolerated as a transitional wrong-direction ref —
+    `OpportunityApplicationDto`/`IOpportunityApplicationService` still name `ArtistSummaryDto`/`ArtistDto`;
+    that coupling gets removed in Concert extraction (per §4).
+  - `ArtistController`, `ArtistResponseMappers`, `OpportunityApplicationController`,
+    `OpportunityApplicationService`, `ArtistService`, `ArtistRepository`, `QueryableArtistMappers`,
+    `OpportunityApplicationMapper`, `OpportunityApplicationDtos`, `IOpportunityApplicationService`,
+    `ArtistApiTests`, `ArtistRequestBuilders`, `ArtistMappers` (test helper) — all `using` updates.
+  - `Concertable.Web/Extensions/ServiceCollectionExtensions.cs` — added
+    `using Concertable.Artist.Application.Interfaces;` + `using Concertable.Artist.Application.Validators;`
+    and `services.AddValidatorsFromAssemblyContaining<CreateArtistRequestValidator>();` so
+    FluentValidation picks up validators in the new assembly. (This line moves to `AddArtistModule()`
+    at step 9.)
+- ✅ Test baseline held:
+  - `ArtistApiTests`: 17 pass.
+  - Core/Infrastructure/Workers unit tests + Web integration (129): all pass.
+  - E2E `ConcertDraftTests` 4 failures — pre-existing Stripe CLI infra issue, unrelated.
+
+**✅ Step 6 done** — `ArtistDbContext` created at `api/Modules/Artist/Concertable.Artist.Infrastructure/Data/ArtistDbContext.cs`. Inherits `DbContextBase`, owns `Artists` + `ArtistGenres` DbSets, applies `ArtistEntityConfiguration` + `ArtistGenreEntityConfiguration` explicitly (both stay in `Concertable.Data.Infrastructure/Data/Configurations/` per §6/§8 Identity precedent). Build green, 0 errors.
+
+**Next: step 7** — Move Infrastructure layer (`ArtistService`, `ArtistRepository`, `QueryableArtistMappers`) to `Artist.Infrastructure/`. Switch `ArtistRepository` base to `IdModuleRepository<ArtistEntity, ArtistDbContext>` + inject `IReadDbContext`; swap rating aggregation source from `context.Reviews` to `readDb.Reviews`.
+
 ### 1. Why Artist is straightforward now
 
 Most of the Identity work paid forward:

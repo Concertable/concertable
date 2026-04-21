@@ -1,4 +1,4 @@
-using Concertable.Application.Requests;
+using Concertable.Artist.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

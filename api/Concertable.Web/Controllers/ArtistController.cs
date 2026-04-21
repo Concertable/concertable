@@ -1,9 +1,9 @@
-using Concertable.Application.Interfaces;
+using Concertable.Artist.Application.Interfaces;
+using Concertable.Artist.Application.Requests;
 using Concertable.Web.Mappers;
 using Concertable.Web.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Concertable.Application.Requests;
 
 namespace Concertable.Web.Controllers;
 

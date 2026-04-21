@@ -1,8 +1,7 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Requests;
-using Concertable.Core.Entities;
+using Concertable.Artist.Application.DTOs;
+using Concertable.Artist.Application.Requests;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Artist.Application.Interfaces;
 
 public interface IArtistService
 {

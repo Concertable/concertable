@@ -1,4 +1,4 @@
-using Concertable.Application.DTOs;
+using Concertable.Artist.Application.DTOs;
 using Concertable.Web.Responses;
 
 namespace Concertable.Web.Mappers;

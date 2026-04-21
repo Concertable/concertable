@@ -1,4 +1,4 @@
-namespace Concertable.Application.DTOs;
+namespace Concertable.Artist.Application.DTOs;
 
 public record ArtistDto : IAddress
 {
