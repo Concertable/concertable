@@ -10,10 +10,12 @@ internal class ArtistDbContext(DbContextOptions<ArtistDbContext> options)
 {
     public DbSet<ArtistEntity> Artists => Set<ArtistEntity>();
     public DbSet<ArtistGenreEntity> ArtistGenres => Set<ArtistGenreEntity>();
+    public DbSet<ArtistRatingProjection> ArtistRatingProjections => Set<ArtistRatingProjection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new ArtistEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ArtistGenreEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ArtistRatingProjectionConfiguration());
     }
 }

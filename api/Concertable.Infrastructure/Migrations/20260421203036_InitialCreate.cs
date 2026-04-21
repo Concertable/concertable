@@ -13,6 +13,42 @@ namespace Concertable.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "ArtistRatingProjections",
+                columns: table => new
+                {
+                    ArtistId = table.Column<int>(type: "int", nullable: false),
+                    AverageRating = table.Column<double>(type: "float", nullable: false),
+                    ReviewCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ArtistRatingProjections", x => x.ArtistId);
+                });
+
+            // Backfill from existing reviews for pre-existing databases.
+            // No-op on a fresh database where Reviews doesn't exist yet or is empty.
+            migrationBuilder.Sql(@"
+                IF OBJECT_ID('Reviews', 'U') IS NOT NULL
+                    AND OBJECT_ID('Tickets', 'U') IS NOT NULL
+                    AND OBJECT_ID('Concerts', 'U') IS NOT NULL
+                    AND OBJECT_ID('ConcertBookings', 'U') IS NOT NULL
+                    AND OBJECT_ID('OpportunityApplications', 'U') IS NOT NULL
+                BEGIN
+                    INSERT INTO ArtistRatingProjections (ArtistId, AverageRating, ReviewCount)
+                    SELECT
+                        oa.ArtistId,
+                        ROUND(AVG(CAST(r.Stars AS FLOAT)), 1),
+                        COUNT(*)
+                    FROM Reviews r
+                    JOIN Tickets t ON r.TicketId = t.Id
+                    JOIN Concerts c ON t.ConcertId = c.Id
+                    JOIN ConcertBookings cb ON c.BookingId = cb.Id
+                    JOIN OpportunityApplications oa ON cb.ApplicationId = oa.Id
+                    GROUP BY oa.ArtistId;
+                END;
+            ");
+
+            migrationBuilder.CreateTable(
                 name: "Artists",
                 columns: table => new
                 {
@@ -703,6 +739,9 @@ namespace Concertable.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ArtistGenres");
+
+            migrationBuilder.DropTable(
+                name: "ArtistRatingProjections");
 
             migrationBuilder.DropTable(
                 name: "ConcertGenres");

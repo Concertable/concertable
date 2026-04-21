@@ -1,6 +1,5 @@
-using Concertable.Core.Projections;
-using Concertable.Infrastructure.Mappers;
-using LinqKit;
+using Concertable.Artist.Domain;
+using Concertable.Shared;
 
 namespace Concertable.Artist.Infrastructure.Mappers;
 
@@ -8,25 +7,25 @@ internal static class QueryableArtistMappers
 {
     public static IQueryable<ArtistSummaryDto> ToSummaryDto(
         this IQueryable<ArtistEntity> query,
-        IQueryable<RatingAggregate> ratings) =>
-        from a in query.AsExpandable()
-        join r in ratings on a.Id equals r.EntityId into rg
+        IQueryable<ArtistRatingProjection> ratings) =>
+        from a in query
+        join r in ratings on a.Id equals r.ArtistId into rg
         from rating in rg.DefaultIfEmpty()
         select new ArtistSummaryDto
         {
             Id = a.Id,
             Name = a.Name,
             Avatar = a.Avatar,
-            Rating = (double?)rating.AverageRating ?? 0.0,
-            Genres = GenreSelectors.FromArtist.Invoke(a)
+            Rating = rating == null ? 0.0 : rating.AverageRating,
+            Genres = a.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
         };
 
     public static IQueryable<ArtistDto> ToDto(
         this IQueryable<ArtistEntity> query,
-        IQueryable<RatingAggregate> ratings) =>
-        from a in query.AsExpandable()
+        IQueryable<ArtistRatingProjection> ratings) =>
+        from a in query
         where a.Address != null
-        join r in ratings on a.Id equals r.EntityId into rg
+        join r in ratings on a.Id equals r.ArtistId into rg
         from rating in rg.DefaultIfEmpty()
         select new ArtistDto
         {
@@ -38,7 +37,7 @@ internal static class QueryableArtistMappers
             County = a.Address!.County,
             Town = a.Address!.Town,
             Email = a.Email ?? string.Empty,
-            Rating = (double?)rating.AverageRating ?? 0.0,
-            Genres = GenreSelectors.FromArtist.Invoke(a)
+            Rating = rating == null ? 0.0 : rating.AverageRating,
+            Genres = a.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))
         };
 }

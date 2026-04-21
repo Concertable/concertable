@@ -46,6 +46,9 @@ public class TicketRepository : GuidRepository<TicketEntity>, ITicketRepository
     {
         return await context.Tickets
             .Include(t => t.Concert)
+                .ThenInclude(c => c.Booking)
+                    .ThenInclude(b => b.Application)
+                        .ThenInclude(a => a.Opportunity)
             .FirstOrDefaultAsync(t => t.UserId == userId && t.ConcertId == concertId);
     }
 }

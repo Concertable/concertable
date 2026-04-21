@@ -13,7 +13,7 @@ using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
-using Concertable.Data.Infrastructure.Events;
+using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Mappers;
@@ -83,8 +83,8 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSharedInfrastructure();
         services.AddScoped<AuditInterceptor>();
-        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<DomainEventDispatchInterceptor>();
         services.AddScoped<IDomainEventHandler<UserLocationUpdatedEvent>, UserLocationUpdatedHandler>();
 

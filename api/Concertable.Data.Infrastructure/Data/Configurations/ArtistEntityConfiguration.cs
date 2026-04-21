@@ -36,3 +36,13 @@ public class ArtistGenreEntityConfiguration : IEntityTypeConfiguration<ArtistGen
             .IsRequired();
     }
 }
+
+public class ArtistRatingProjectionConfiguration : IEntityTypeConfiguration<ArtistRatingProjection>
+{
+    public void Configure(EntityTypeBuilder<ArtistRatingProjection> builder)
+    {
+        builder.ToTable("ArtistRatingProjections");
+        builder.HasKey(p => p.ArtistId);
+        builder.Property(p => p.ArtistId).ValueGeneratedNever();
+    }
+}

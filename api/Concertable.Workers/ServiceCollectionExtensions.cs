@@ -4,8 +4,8 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Core.Enums;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Extensions;
-using Concertable.Data.Infrastructure.Events;
 using Concertable.Shared;
+using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Infrastructure;
 using Concertable.Infrastructure.Data;
@@ -29,8 +29,8 @@ internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSharedInfrastructure();
         services.AddScoped<AuditInterceptor>();
-        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseSqlServer(

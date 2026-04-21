@@ -38,7 +38,14 @@ public class ConcertReviewService : IReviewService
         var ticket = await ticketRepository.GetByUserIdAndConcertIdAsync(userId, request.ConcertId)
             ?? throw new NotFoundException("Cannot find ticket");
 
-        var review = ReviewEntity.Create(ticket.Id, request.Stars, request.Details);
+        var application = ticket.Concert.Booking.Application;
+        var review = ReviewEntity.Create(
+            ticket.Id,
+            request.Stars,
+            request.Details,
+            application.ArtistId,
+            application.Opportunity.VenueId,
+            ticket.ConcertId);
 
         await reviewRepository.AddAsync(review);
         await reviewRepository.SaveChangesAsync();

@@ -31,13 +31,17 @@ monolith is gone:
 | Piece | Permanent home | Why |
 |---|---|---|
 | `IIntegrationEvent*` interfaces | `Concertable.Shared.Domain` | Primitives every module references |
-| `InProcessIntegrationEventBus` | `Concertable.Data.Infrastructure` | Shared infra — survives with `ReadDbContext`/`AuditInterceptor` until the monolith boundary itself dissolves. Swaps for `OutboxIntegrationEventBus` later in place. |
+| `InProcessIntegrationEventBus` | `Concertable.Shared.Infrastructure` *(new project)* | Cross-cutting infra with no DB concern — pub/sub bus resolves handlers from DI. Lives next to `DomainEventDispatcher` (which is being relocated here too). Swaps for `OutboxIntegrationEventBus` later; at that point the in-process impl stays here, and only the outbox impl (which writes to a table) lives in `Data.Infrastructure`. |
+| `DomainEventDispatcher` | `Concertable.Shared.Infrastructure` *(relocated from `Data.Infrastructure`)* | Resolves handlers from DI — zero DB concern. Was parked in `Data.Infrastructure` only because no shared-infra project existed. This plan creates `Shared.Infrastructure` and moves it. |
+| `DomainEventDispatchInterceptor` | `Concertable.Data.Infrastructure` *(stays)* | EF `SaveChangesInterceptor` — legitimately belongs with EF infrastructure. |
 | `ReviewSubmittedEvent` | `Concertable.Concert.Contracts` | Cross-module event — Concert owns the fact |
 | `ReviewCreatedDomainEvent` | `Concertable.Concert.Domain` | Intra-module domain event raised by `ReviewEntity` |
 | `ReviewCreatedDomainEventHandler` | `Concertable.Concert.Infrastructure` | Module's own infrastructure — never goes through `Concertable.Infrastructure` |
 | `AddConcertModule()` | `Concertable.Concert.Infrastructure` | DI entry point for Concert module from day one — accretes more registrations as Concert extracts |
 | `ArtistRatingProjection` | `Concertable.Artist.Domain` | Artist owns its read projections |
 | `ArtistReviewProjectionHandler` | `Concertable.Artist.Infrastructure` | Artist owns the handler that maintains its projection |
+
+> **Naming principle (decided 2026-04-21):** `Data.Infrastructure` means "infra that touches databases" — `ReadDbContext`, `DbContextBase`, `AuditInterceptor`, EF configs, EF interceptors. A pub/sub bus or in-memory event dispatcher has no DB concern and doesn't belong there. `Concertable.Shared.Infrastructure` is the honest home for cross-cutting infra impls whose interfaces live in `Shared.Domain`. `ReadDbContext` remains in `Data.Infrastructure` for now despite being a cross-cutting shim — it legitimately owns DbContext plumbing, and until each module's read surface is replaced by Contracts-level read models (MM_NORTH_STAR §Corollary 5) it has to live somewhere EF-aware.
 
 `IReadDbContext` + `IRatingSpecification` stay alive for the Search module (header repos), but
 `ArtistRepository` stops needing them entirely. Same outcome for `VenueRepository` and
@@ -72,7 +76,7 @@ ReviewCreatedDomainEventHandler (Concertable.Infrastructure)
 | `IIntegrationEvent` | `Concertable.Shared` | Marker interface, parallel to `IDomainEvent` |
 | `IIntegrationEventHandler<T>` | `Concertable.Shared` | Parallel to `IDomainEventHandler<T>` |
 | `IIntegrationEventBus` | `Concertable.Shared` | Publish-only, in-process for now |
-| `InProcessIntegrationEventBus` | `Concertable.Data.Infrastructure` | Resolves handlers from DI, same pattern as `DomainEventDispatcher` |
+| `InProcessIntegrationEventBus` | `Concertable.Shared.Infrastructure` *(new project)* | Resolves handlers from DI, same pattern as `DomainEventDispatcher` (which is being relocated into this same project) |
 | `ReviewSubmittedEvent` | `Concertable.Concert.Contracts` *(new stub project)* | Cross-module event; lives in Contracts so Artist/Venue can reference it without Concert internals |
 | `ReviewCreatedDomainEvent` | `Concertable.Concert.Domain` *(new stub project)* | Internal domain event raised by `ReviewEntity` — lives with the entity's eventual home |
 | `ReviewCreatedDomainEventHandler` | `Concertable.Concert.Infrastructure` *(new stub project)* | Converts domain event → integration event. Permanent home — never lived in `Concertable.Infrastructure` |
@@ -109,10 +113,46 @@ No new project. Three new files in `Concertable.Shared.Domain`.
 
 ---
 
-### Step 2 — In-process bus in `Concertable.Data.Infrastructure`
+### Step 2 — Stand up `Concertable.Shared.Infrastructure` + in-process bus
+
+**Why a new project.** `Data.Infrastructure` means "infra that touches databases" (`ReadDbContext`,
+`DbContextBase`, `AuditInterceptor`, EF configs, EF interceptors). A pub/sub bus or in-memory
+dispatcher has no DB concern. Parking them in `Data.Infrastructure` was a naming compromise forced
+by the absence of a shared-infra project — this step creates the honest home.
+
+**Create `api/Concertable.Shared.Infrastructure/Concertable.Shared.Infrastructure.csproj`:**
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="..." />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+Add to `Concertable.sln`.
+
+**Relocate `DomainEventDispatcher` into the new project** — `Concertable.Data.Infrastructure/Events/DomainEventDispatcher.cs`
+moves to `Concertable.Shared.Infrastructure/Events/DomainEventDispatcher.cs`. Namespace updates to
+`Concertable.Shared.Infrastructure.Events`. `DomainEventDispatchInterceptor` **stays in
+`Data.Infrastructure`** — it's an EF `SaveChangesInterceptor` and legitimately belongs with EF infra.
+Its `using` line just changes from `Concertable.Data.Infrastructure.Events` to
+`Concertable.Shared.Infrastructure.Events`.
+
+**Add the bus alongside:**
 
 ```csharp
-// Concertable.Data.Infrastructure/Events/InProcessIntegrationEventBus.cs
+// Concertable.Shared.Infrastructure/Events/InProcessIntegrationEventBus.cs
+namespace Concertable.Shared.Infrastructure.Events;
+
 public class InProcessIntegrationEventBus(IServiceProvider sp) : IIntegrationEventBus
 {
     public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken ct = default)
@@ -125,16 +165,35 @@ public class InProcessIntegrationEventBus(IServiceProvider sp) : IIntegrationEve
 }
 ```
 
-Register in `Concertable.Data.Infrastructure/Extensions/ServiceCollectionExtensions.cs`:
+**DI extension in the new project:**
 
 ```csharp
-services.AddScoped<IIntegrationEventBus, InProcessIntegrationEventBus>();
+// Concertable.Shared.Infrastructure/Extensions/ServiceCollectionExtensions.cs
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services)
+    {
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddScoped<IIntegrationEventBus, InProcessIntegrationEventBus>();
+        return services;
+    }
+}
 ```
 
-This registration is shared infrastructure — lives alongside `DomainEventDispatcher` registration.
+**Update consumers.** Any project that currently registers `DomainEventDispatcher` directly (e.g. a
+line in `Concertable.Data.Infrastructure/Extensions/ServiceCollectionExtensions.cs` or
+`Concertable.Web/Extensions/ServiceCollectionExtensions.cs`) replaces that line with a single
+`services.AddSharedInfrastructure()` call. `Program.cs` adds it alongside `AddReadDbContext()` etc.
 
-> **Future swap point.** When you add an outbox, replace `InProcessIntegrationEventBus` with
-> `OutboxIntegrationEventBus`. Every handler, every event, every module stays unchanged.
+Every project that currently references `Concertable.Data.Infrastructure` purely for
+`DomainEventDispatcher` should gain a `Concertable.Shared.Infrastructure` ProjectReference. Projects
+that need both (the Data.Infrastructure interceptor *and* the shared dispatcher) keep both — normal.
+
+> **Future swap point.** When you add an outbox, add `OutboxIntegrationEventBus` as a new impl —
+> likely in `Data.Infrastructure` since it writes to an outbox table. The interface stays in
+> `Shared.Domain`; the in-process impl stays in `Shared.Infrastructure` for test/local use; the DI
+> registration picks one based on configuration. Every handler, every event, every module stays
+> unchanged.
 
 ---
 
@@ -526,5 +585,5 @@ is where the standard gets enforced for those modules — not in code that doesn
 - `ARTIST_MODULE_REFACTOR.md` — this plan unblocks step 8 completion + full IReadDbContext removal.
 - `MM_NORTH_STAR.md` §Corollary 1 — `IReadDbContext` is a transitional shim; this removes one consumer.
 - `MM_NORTH_STAR.md` §Corollary 5 — each module owns its own read projections.
-- `Concertable.Data.Infrastructure/Events/DomainEventDispatcher.cs` — pattern for `InProcessIntegrationEventBus`.
-- `Concertable.Data.Infrastructure/Data/DomainEventDispatchInterceptor.cs` — how domain events reach handlers.
+- `Concertable.Shared.Infrastructure/Events/DomainEventDispatcher.cs` *(post-Step-2 location)* — pattern for `InProcessIntegrationEventBus`.
+- `Concertable.Data.Infrastructure/Data/DomainEventDispatchInterceptor.cs` — how domain events reach handlers (stays in Data.Infrastructure; EF interceptor).

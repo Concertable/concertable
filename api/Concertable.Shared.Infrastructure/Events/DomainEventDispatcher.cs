@@ -1,7 +1,6 @@
-using Concertable.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Data.Infrastructure.Events;
+namespace Concertable.Shared.Infrastructure.Events;
 
 public class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEventDispatcher
 {
@@ -12,7 +11,7 @@ public class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEv
             var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(@event.GetType());
             var handlers = serviceProvider.GetServices(handlerType);
             foreach (var handler in handlers)
-                await ((dynamic)handler).HandleAsync((dynamic)@event, ct);
+                await ((dynamic)handler!).HandleAsync((dynamic)@event, ct);
         }
     }
 }
