@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
-using Concertable.Data.Infrastructure.Data;
+using Concertable.Data.Application;
 using Concertable.Infrastructure.Extensions;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Search.Application.Interfaces;
@@ -11,7 +11,7 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class ConcertHeaderRepository : IConcertHeaderRepository
 {
-    private readonly ReadDbContext context;
+    private readonly IReadDbContext context;
     private readonly IConcertSearchSpecification searchSpecification;
     private readonly IRatingSpecification<ConcertEntity> ratingSpecification;
     private readonly IGeometrySpecification<ConcertEntity> geometrySpecification;
@@ -19,7 +19,7 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
     private readonly TimeProvider timeProvider;
 
     public ConcertHeaderRepository(
-        ReadDbContext context,
+        IReadDbContext context,
         IConcertSearchSpecification searchSpecification,
         IRatingSpecification<ConcertEntity> ratingSpecification,
         IGeometrySpecification<ConcertEntity> geometrySpecification,
@@ -43,8 +43,7 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
     }
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Concerts.AsNoTracking()
-            .Active(timeProvider.GetUtcNow().DateTime)
+        await context.Concerts            .Active(timeProvider.GetUtcNow().DateTime)
             .OrderByDescending(c => c.DatePosted)
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(amount)

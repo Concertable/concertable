@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Data.Infrastructure.Data;
 
-public class ReadDbContext(DbContextOptions<ReadDbContext> options)
+internal class ReadDbContext(DbContextOptions<ReadDbContext> options)
     : DbContextBase(options), IReadDbContext
 {
     public ReadDbContext() : this(new DbContextOptionsBuilder<ReadDbContext>().Options) { }

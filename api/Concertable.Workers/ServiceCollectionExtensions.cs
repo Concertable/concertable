@@ -2,9 +2,8 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Core.Enums;
-using Concertable.Data.Application;
 using Concertable.Data.Infrastructure;
-using Concertable.Data.Infrastructure.Data;
+using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Events;
 using Concertable.Shared;
 using Concertable.Identity.Infrastructure.Extensions;
@@ -22,6 +21,7 @@ using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Concertable.Data.Infrastructure.Data;
 
 namespace Workers;
 
@@ -37,11 +37,7 @@ internal static class ServiceCollectionExtensions
                 configuration.GetConnectionString("DefaultConnection"),
                 sqlOpt => sqlOpt.UseNetTopologySuite()));
 
-        services.AddDbContext<ReadDbContext>(opt =>
-            opt.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                sqlOpt => sqlOpt.UseNetTopologySuite()));
-        services.AddScoped<IReadDbContext, ReadDbContext>();
+        services.AddReadDbContext(configuration);
 
         services.AddIdentityModule(configuration);
 

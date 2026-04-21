@@ -11,8 +11,8 @@ using Concertable.Application.Serializers;
 using Concertable.Core.Entities;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
-using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Events;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
@@ -96,11 +96,7 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<AuditInterceptor>(),
                     sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
-        services.AddDbContext<ReadDbContext>(opt =>
-            opt.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    sqlOpt => sqlOpt.UseNetTopologySuite()));
-        services.AddScoped<IReadDbContext, ReadDbContext>();
+        services.AddReadDbContext(configuration);
 
         services.AddScoped<IDbConnection>(_ =>
             new SqlConnection(configuration.GetConnectionString("DefaultConnection")));

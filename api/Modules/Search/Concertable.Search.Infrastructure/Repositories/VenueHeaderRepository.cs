@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
-using Concertable.Data.Infrastructure.Data;
+using Concertable.Data.Application;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,14 +10,14 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class VenueHeaderRepository : IVenueHeaderRepository
 {
-    private readonly ReadDbContext context;
+    private readonly IReadDbContext context;
     private readonly IVenueSearchSpecification searchSpecification;
     private readonly IGeometrySpecification<VenueEntity> geometrySpecification;
     private readonly IRatingSpecification<VenueEntity> ratingSpecification;
     private readonly ISortSpecification<VenueHeaderDto> sortSpecification;
 
     public VenueHeaderRepository(
-        ReadDbContext context,
+        IReadDbContext context,
         IVenueSearchSpecification searchSpecification,
         IGeometrySpecification<VenueEntity> geometrySpecification,
         IRatingSpecification<VenueEntity> ratingSpecification,
@@ -32,14 +32,14 @@ internal class VenueHeaderRepository : IVenueHeaderRepository
 
     public async Task<IPagination<VenueHeaderDto>> SearchAsync(SearchParams searchParams)
     {
-        var query = searchSpecification.Apply(context.Venues.AsNoTracking(), searchParams);
+        var query = searchSpecification.Apply(context.Venues, searchParams);
         query = geometrySpecification.Apply(query, searchParams);
         var dtos = sortSpecification.Apply(query.ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews)), searchParams);
         return await dtos.ToPaginationAsync(searchParams);
     }
 
     public async Task<IEnumerable<VenueHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Venues.AsNoTracking()
+        await context.Venues
             .OrderBy(v => v.Id)
             .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
             .Take(amount)

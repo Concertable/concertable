@@ -1,7 +1,6 @@
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Data.Infrastructure;
-using Concertable.Data.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Data;
@@ -43,7 +42,7 @@ public class ApplicationDbContext : DbContextBase
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ReadDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DbContextBase).Assembly);
 
         // Identity-owned tables — schema managed by IdentityDbContext migrations
         modelBuilder.Entity<UserEntity>().ToTable("Users", t => t.ExcludeFromMigrations());
