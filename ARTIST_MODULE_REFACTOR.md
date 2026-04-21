@@ -321,7 +321,18 @@ Step 5 of §10 landed. State:
 
 **✅ Step 6 done** — `ArtistDbContext` created at `api/Modules/Artist/Concertable.Artist.Infrastructure/Data/ArtistDbContext.cs`. Inherits `DbContextBase`, owns `Artists` + `ArtistGenres` DbSets, applies `ArtistEntityConfiguration` + `ArtistGenreEntityConfiguration` explicitly (both stay in `Concertable.Data.Infrastructure/Data/Configurations/` per §6/§8 Identity precedent). Build green, 0 errors.
 
-**Next: step 7** — Move Infrastructure layer (`ArtistService`, `ArtistRepository`, `QueryableArtistMappers`) to `Artist.Infrastructure/`. Switch `ArtistRepository` base to `IdModuleRepository<ArtistEntity, ArtistDbContext>` + inject `IReadDbContext`; swap rating aggregation source from `context.Reviews` to `readDb.Reviews`.
+**✅ Steps 7+9 done (2026-04-21)** — Infrastructure layer moved + `AddArtistModule()` wired.
+- `ArtistService`, `ArtistRepository`, `QueryableArtistMappers` moved from `Concertable.Infrastructure` to `Artist.Infrastructure/Services|Repositories|Mappers`. All three are now `internal`. Old files deleted.
+- `ArtistRepository` base switched from `Repository<ArtistEntity>` (ApplicationDbContext) to `IdModuleRepository<ArtistEntity, ArtistDbContext>`. Injects `IReadDbContext readDb`. Read-path DTO/scalar queries (`GetDtoByIdAsync`, `GetDtoByUserIdAsync`, `GetSummaryAsync`, `GetIdByUserIdAsync`) use `readDb.Artists` + `readDb.Reviews` — **must stay on same context to avoid cross-context LINQ join errors** (EF cannot join `IQueryable<T>` from two different DbContext instances). Write-path tracked queries (`GetFullByIdAsync`, `GetByUserIdAsync`) use `context.Artists` for change tracking.
+- `ArtistService` drops `IUnitOfWork` dependency; calls `artistRepository.SaveChangesAsync()` directly (saves via `ArtistDbContext`, matching Identity precedent).
+- `GlobalUsings.cs` added to `Artist.Infrastructure`.
+- `FluentValidation.DependencyInjectionExtensions` (11.11.0) added to `Artist.Infrastructure.csproj`.
+- `AddArtistModule(IConfiguration)` extension created in `Artist.Infrastructure/Extensions/ServiceCollectionExtensions.cs`. Registers `ArtistDbContext` with SQL Server + NetTopologySuite + interceptors; registers `IArtistService`, `IArtistRepository`; scans Artist.Application assembly for validators.
+- `Concertable.Web.csproj`: swapped `Artist.Application` ref for `Artist.Infrastructure` (transitive coverage). Added `using Concertable.Artist.Infrastructure.Extensions;` + `services.AddArtistModule(builder.Configuration);` to `Program.cs`.
+- `Concertable.Web/Extensions/ServiceCollectionExtensions.cs`: removed `IArtistService`, `IArtistRepository`, `CreateArtistRequestValidator` registrations and their dead `using` statements.
+- Build: 0 errors (pre-existing `AppHost`/`IntegrationTests` CS2001 editor-config misses unrelated). ArtistApiTests: 17 pass. Full integration suite: 129 pass.
+
+**Next: step 8** — Create `IArtistModule` + `ArtistModule` in `Artist.Contracts` / `Artist.Infrastructure`. Minimal surface: `GetSummaryAsync(int artistId)` + `GetIdByUserIdAsync(Guid userId)`. Register `IArtistModule, ArtistModule` in `AddArtistModule()`.
 
 ### 1. Why Artist is straightforward now
 

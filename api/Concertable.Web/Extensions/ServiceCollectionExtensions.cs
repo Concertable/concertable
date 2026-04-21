@@ -1,7 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Artist.Application.Interfaces;
-using Concertable.Artist.Application.Validators;
 using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
@@ -192,7 +190,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
         services.AddScoped<IVenueService, VenueService>();
-        services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertDraftService, ConcertDraftService>();
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
@@ -232,7 +229,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IVenueRepository, VenueRepository>();
-        services.AddScoped<IArtistRepository, ArtistRepository>();
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
         services.AddScoped<IConcertBookingRepository, ConcertBookingRepository>();
@@ -317,7 +313,6 @@ services.AddRatingRepositories();
         services.AddFluentValidationAutoValidation();
         services.AddValidatorsFromAssemblyContaining<LoginRequest>();
         services.AddValidatorsFromAssemblyContaining<IVenueService>();
-        services.AddValidatorsFromAssemblyContaining<CreateArtistRequestValidator>();
 
         return services;
     }

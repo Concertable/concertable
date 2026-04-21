@@ -1,18 +1,13 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Artist.Application.DTOs;
-using Concertable.Artist.Application.Interfaces;
 using Concertable.Artist.Application.Mappers;
 using Concertable.Artist.Application.Requests;
-using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
-using Concertable.Identity.Contracts;
-using Concertable.Shared;
+using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Artist.Infrastructure.Services;
 
-public class ArtistService : IArtistService
+internal class ArtistService : IArtistService
 {
     private readonly IArtistRepository artistRepository;
     private readonly IImageService imageService;
@@ -20,7 +15,6 @@ public class ArtistService : IArtistService
     private readonly IManagerModule managerModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
-    private readonly IUnitOfWork unitOfWork;
 
     public ArtistService(
         IArtistRepository artistRepository,
@@ -28,8 +22,7 @@ public class ArtistService : IArtistService
         ICurrentUser currentUser,
         IManagerModule managerModule,
         IGeocodingService geocodingService,
-        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        IUnitOfWork unitOfWork)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.artistRepository = artistRepository;
         this.imageService = imageService;
@@ -37,20 +30,15 @@ public class ArtistService : IArtistService
         this.managerModule = managerModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
-        this.unitOfWork = unitOfWork;
     }
 
-    public async Task<ArtistDto> GetDetailsForCurrentUserAsync()
-    {
-        return await artistRepository.GetDtoByUserIdAsync(currentUser.GetId())
+    public async Task<ArtistDto> GetDetailsForCurrentUserAsync() =>
+        await artistRepository.GetDtoByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Artist not found");
-    }
 
-    public async Task<ArtistDto> GetDetailsByIdAsync(int id)
-    {
-        return await artistRepository.GetDtoByIdAsync(id)
+    public async Task<ArtistDto> GetDetailsByIdAsync(int id) =>
+        await artistRepository.GetDtoByIdAsync(id)
             ?? throw new NotFoundException("Artist not found");
-    }
 
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
     {
@@ -67,7 +55,7 @@ public class ArtistService : IArtistService
         artist.Email = user.Email;
 
         var createdArtist = await artistRepository.AddAsync(artist);
-        await unitOfWork.SaveChangesAsync();
+        await artistRepository.SaveChangesAsync();
 
         return createdArtist.ToDto();
     }
@@ -93,7 +81,7 @@ public class ArtistService : IArtistService
         if (request.Avatar is not null)
             artist.Avatar = await imageService.ReplaceAsync(request.Avatar, artist.Avatar);
 
-        await unitOfWork.SaveChangesAsync();
+        await artistRepository.SaveChangesAsync();
 
         return artist.ToDto();
     }

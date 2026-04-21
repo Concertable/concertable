@@ -1,10 +1,10 @@
-using Concertable.Artist.Application.DTOs;
 using Concertable.Core.Projections;
+using Concertable.Infrastructure.Mappers;
 using LinqKit;
 
-namespace Concertable.Infrastructure.Mappers;
+namespace Concertable.Artist.Infrastructure.Mappers;
 
-public static class QueryableArtistMappers
+internal static class QueryableArtistMappers
 {
     public static IQueryable<ArtistSummaryDto> ToSummaryDto(
         this IQueryable<ArtistEntity> query,
