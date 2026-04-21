@@ -141,7 +141,8 @@
       "Bash(xargs -0 grep -h \"^using\")",
       "Bash(xargs -0 grep -n \"ReadDbContext\")",
       "Bash(xargs -0 grep -E \"new.*DbContext|<.*DbContext>\")",
-      "Bash(xargs -0 grep -l \"\\\\.AddDbContext\\\\|\\\\.AddScoped.*Context\")"
+      "Bash(xargs -0 grep -l \"\\\\.AddDbContext\\\\|\\\\.AddScoped.*Context\")",
+      "Bash(wait)"
     ]
   }
 }
