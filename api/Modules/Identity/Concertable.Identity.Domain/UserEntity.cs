@@ -39,7 +39,7 @@ public class UserEntity : IGuidEntity, IEventRaiser
     {
         Location = location;
         Address = address;
-        _events.Raise(new UserLocationUpdatedEvent(Id, location, address));
+        _events.Raise(new UserLocationUpdatedDomainEvent(Id, location, address));
     }
 }
 

@@ -9,9 +9,9 @@ public class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEv
         foreach (var @event in events)
         {
             var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(@event.GetType());
-            var handlers = serviceProvider.GetServices(handlerType);
-            foreach (var handler in handlers)
-                await ((dynamic)handler!).HandleAsync((dynamic)@event, ct);
+            var method = handlerType.GetMethod(nameof(IDomainEventHandler<IDomainEvent>.HandleAsync))!;
+            foreach (var handler in serviceProvider.GetServices(handlerType))
+                await (Task)method.Invoke(handler, [@event, ct])!;
         }
     }
 }

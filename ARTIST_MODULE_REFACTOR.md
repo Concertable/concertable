@@ -332,6 +332,21 @@ Step 5 of §10 landed. State:
 - `Concertable.Web/Extensions/ServiceCollectionExtensions.cs`: removed `IArtistService`, `IArtistRepository`, `CreateArtistRequestValidator` registrations and their dead `using` statements.
 - Build: 0 errors (pre-existing `AppHost`/`IntegrationTests` CS2001 editor-config misses unrelated). ArtistApiTests: 17 pass. Full integration suite: 129 pass.
 
+**Amendment to steps 7+9 — integration event pattern (post-7+9, 2026-04-21):**
+The intermediate `IReadDbContext` + `IRatingSpecification` approach was superseded before it shipped. Artist now owns its rating data as a first-class projection updated via integration events — no cross-context queries anywhere in the module.
+
+- `ArtistRatingProjection` domain entity added to `Artist.Domain` (`ArtistId` PK, `AverageRating`, `ReviewCount`).
+- `ArtistRatingProjectionConfiguration` added to `Concertable.Data.Infrastructure/Data/Configurations/ArtistEntityConfiguration.cs` (same file, per §8 precedent). Maps to `"ArtistRatingProjections"` table, `ArtistId` PK with `ValueGeneratedNever`.
+- `ArtistDbContext` gained `DbSet<ArtistRatingProjection> ArtistRatingProjections` + `ApplyConfiguration(new ArtistRatingProjectionConfiguration())`.
+- `ArtistReviewProjectionHandler` (in `Artist.Infrastructure/Handlers/`) — `IIntegrationEventHandler<ReviewSubmittedEvent>` from `Concertable.Concert.Contracts.Events`. Upserts `ArtistRatingProjection` in `ArtistDbContext` (incremental average, `ReviewCount` used for Welford update).
+- `ArtistLocationSyncHandler` (in `Artist.Infrastructure/Handlers/`) — `IIntegrationEventHandler<UserLocationUpdatedEvent>` from `Concertable.Identity.Contracts.Events`. Syncs `Location`/`Address` on `ArtistEntity` in `ArtistDbContext`.
+- Both handlers registered in `AddArtistModule()` as scoped `IIntegrationEventHandler<T>`.
+- `Artist.Infrastructure.csproj` gained `Concertable.Concert.Contracts` project reference.
+- `QueryableArtistMappers` rewritten: takes `IQueryable<ArtistRatingProjection>` instead of `IQueryable<RatingAggregate>`; no LinqKit dependency; genres inlined as `a.ArtistGenres.Select(ag => new GenreDto(ag.Genre.Id, ag.Genre.Name))` (EF navigates directly).
+- `ArtistRepository` rewritten as primary constructor (just `ArtistDbContext`). Zero `IReadDbContext`, zero `IRatingSpecification`. Read-path queries use `.AsNoTracking()` on `context.Artists` + `context.ArtistRatingProjections`. Write-path tracked queries (`GetFullByIdAsync`, `GetByUserIdAsync`) use plain `context.Artists`.
+- `Data.Application` + `Search.Application` project references in `Artist.Infrastructure.csproj` are now orphaned — pending cleanup (no code uses them).
+- **Broader context:** `Concertable.Shared.Infrastructure` project created for integration event bus infrastructure. `Concertable.Concert.Infrastructure` (with `AddConcertModule()`) and `Concertable.Concert.Contracts` also created around this work.
+
 **Next: step 8** — Create `IArtistModule` + `ArtistModule` in `Artist.Contracts` / `Artist.Infrastructure`. Minimal surface: `GetSummaryAsync(int artistId)` + `GetIdByUserIdAsync(Guid userId)`. Register `IArtistModule, ArtistModule` in `AddArtistModule()`.
 
 ### 1. Why Artist is straightforward now

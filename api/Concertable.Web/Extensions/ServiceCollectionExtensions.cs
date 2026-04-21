@@ -24,7 +24,7 @@ using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Events;
 using Concertable.Infrastructure.Handlers;
-using Concertable.Identity.Domain.Events;
+using Concertable.Identity.Contracts.Events;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
 using Concertable.Infrastructure.Services.Blob;
@@ -86,7 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddSharedInfrastructure();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
-        services.AddScoped<IDomainEventHandler<UserLocationUpdatedEvent>, UserLocationUpdatedHandler>();
+        services.AddScoped<IIntegrationEventHandler<UserLocationUpdatedEvent>, VenueLocationSyncHandler>();
 
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(
