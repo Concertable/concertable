@@ -1,6 +1,4 @@
-using Concertable.Application.DTOs;
-
-namespace Concertable.Web.Responses;
+namespace Concertable.Artist.Api.Responses;
 
 public record ArtistDetailsResponse
 {

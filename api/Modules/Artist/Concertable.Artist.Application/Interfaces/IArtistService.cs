@@ -3,7 +3,7 @@ using Concertable.Artist.Application.Requests;
 
 namespace Concertable.Artist.Application.Interfaces;
 
-public interface IArtistService
+internal interface IArtistService
 {
     Task<ArtistDto> GetDetailsByIdAsync(int id);
     Task<ArtistDto> GetDetailsForCurrentUserAsync();

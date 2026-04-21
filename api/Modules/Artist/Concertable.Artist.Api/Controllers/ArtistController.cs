@@ -1,15 +1,13 @@
-using Concertable.Artist.Application.Interfaces;
-using Concertable.Artist.Application.Requests;
-using Concertable.Web.Mappers;
-using Concertable.Web.Responses;
+using Concertable.Artist.Api.Mappers;
+using Concertable.Artist.Api.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Artist.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ArtistController : ControllerBase
+internal class ArtistController : ControllerBase
 {
     private readonly IArtistService artistService;
 

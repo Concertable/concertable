@@ -13,12 +13,3 @@ public record ArtistDto : IAddress
     public required string Town { get; set; }
     public required string Email { get; set; }
 }
-
-public record ArtistSummaryDto
-{
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public string? Avatar { get; set; }
-    public double Rating { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
-}

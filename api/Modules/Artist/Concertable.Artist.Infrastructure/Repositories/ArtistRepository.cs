@@ -44,4 +44,10 @@ internal class ArtistRepository(ArtistDbContext context)
             .Where(a => a.UserId == userId)
             .ToDto(context.ArtistRatingProjections.AsNoTracking())
             .FirstOrDefaultAsync();
+
+    public async Task<IReadOnlySet<int>> GetGenreIdsAsync(int id) =>
+        await context.Artists.AsNoTracking()
+            .Where(a => a.Id == id)
+            .SelectMany(a => a.ArtistGenres.Select(ag => ag.GenreId))
+            .ToHashSetAsync();
 }

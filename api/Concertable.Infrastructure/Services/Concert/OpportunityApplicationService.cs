@@ -2,8 +2,8 @@ using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Artist.Application.DTOs;
-using Concertable.Artist.Application.Interfaces;
 using Concertable.Artist.Application.Mappers;
+using Concertable.Artist.Contracts;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
@@ -24,7 +24,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
     private readonly IMessageService messageService;
     private readonly IEmailService emailService;
     private readonly IOpportunityService opportunityService;
-    private readonly IArtistService artistService;
+    private readonly IArtistModule artistModule;
     private readonly IAcceptDispatcher acceptDispatcher;
     private readonly IOpportunityApplicationMapper mapper;
 
@@ -37,7 +37,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         IMessageService messageService,
         IEmailService emailService,
         IOpportunityService opportunityService,
-        IArtistService artistService,
+        IArtistModule artistModule,
         IAcceptDispatcher acceptDispatcher,
         IOpportunityApplicationMapper mapper)
     {
@@ -49,7 +49,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         this.messageService = messageService;
         this.emailService = emailService;
         this.opportunityService = opportunityService;
-        this.artistService = artistService;
+        this.artistModule = artistModule;
         this.acceptDispatcher = acceptDispatcher;
         this.mapper = mapper;
     }
@@ -68,14 +68,16 @@ public class OpportunityApplicationService : IOpportunityApplicationService
 
     public async Task<IEnumerable<OpportunityApplicationDto>> GetPendingForArtistAsync()
     {
-        var artistId = await artistService.GetIdForCurrentUserAsync();
+        var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
+            ?? throw new ForbiddenException("You must have an Artist account");
         var applications = await applicationRepository.GetPendingByArtistIdAsync(artistId);
         return mapper.ToDtos(applications);
     }
 
     public async Task<IEnumerable<OpportunityApplicationDto>> GetRecentDeniedForArtistAsync()
     {
-        var artistId = await artistService.GetIdForCurrentUserAsync();
+        var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
+            ?? throw new ForbiddenException("You must have an Artist account");
         var applications = await applicationRepository.GetRecentDeniedByArtistIdAsync(artistId);
         return mapper.ToDtos(applications);
     }
@@ -85,20 +87,20 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         if (!await stripeValidator.ValidateAccountAsync())
             throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
 
-        var artistDto = await artistService.GetDetailsForCurrentUserAsync()
+        var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
 
-        var application = OpportunityApplicationEntity.Create(artistDto.Id, opportunityId);
+        var application = OpportunityApplicationEntity.Create(artistId, opportunityId);
 
         var opportunityOwner = await opportunityService.GetOwnerByIdAsync(opportunityId);
         var opportunity = await opportunityService.GetByIdAsync(opportunityId);
 
-        var result = await applicationValidator.CanApplyAsync(opportunityId, artistDto.Id);
+        var result = await applicationValidator.CanApplyAsync(opportunityId, artistId);
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
+        var artistGenreIds = await artistModule.GetGenreIdsAsync(artistId);
         var opportunityGenreIds = opportunity.Genres.Select(g => g.Id).ToHashSet();
 
         if (opportunityGenreIds.Count > 0 && !artistGenreIds.Overlaps(opportunityGenreIds))

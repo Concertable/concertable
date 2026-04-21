@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
-using Concertable.Artist.Infrastructure.Extensions;
+using Concertable.Artist.Api.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
@@ -78,7 +78,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 services.AddServices(builder.Configuration);
 services.AddRepositories();
 services.AddSearchModule();
-services.AddArtistModule(builder.Configuration);
+services.AddArtistApi(builder.Configuration);
 services.AddConcertModule();
 services.AddAuth(builder.Configuration);
 services.AddValidation();

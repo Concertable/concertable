@@ -12,14 +12,32 @@ api/Modules/<Module>/
   Concertable.<Module>.Domain/          ← entities, domain events, value objects scoped to the module
   Concertable.<Module>.Application/     ← services, repositories, DTOs, requests, validators, mappers
   Concertable.<Module>.Infrastructure/  ← EF repos, external integrations, AddXModule() DI extension
+  Concertable.<Module>.Api/             ← controllers for this module's HTTP endpoints
 ```
+
+`Concertable.Web` is the composition host only — it wires up middleware/auth/Swagger, calls each
+module's `AddXModule()`, and references each module's `.Api` so the host can discover controllers
+via `ApplicationPart`. It does **not** own per-module controllers.
+
+**Pilot migration note (2026-04-21):** Artist is the pilot for the `Module.Api` pattern. Identity
+and Search still have their controllers in `Concertable.Web/Controllers/`; they'll migrate after
+Artist validates the approach. When evaluating an existing module, the pre-pilot shape is expected
+— don't treat it as drift.
 
 ## Cross-module rules — the short version
 
-1. **Contracts is the only module a foreign caller references.** Public interfaces, module facade
-   (`IXModule`), and cross-module summary DTOs live here. Nothing else.
-2. **Do not reference another module's `Application` or `Infrastructure`.** If you think you need to,
-   stop and consult the user — this is a design decision, not a shortcut.
+1. **Contracts is the only module a *foreign* caller references.** A foreign caller = another
+   module's Application / Infrastructure / Api, or a cross-module orchestration inside
+   `Concertable.Web`. For them, Contracts holds public interfaces (`IXModule` facade), cross-module
+   DTOs, integration events — the stable shape that would become HTTP/Refit if this module
+   extracted to a microservice. `IXModule` is deliberately **minimal**: cross-module lookups, not
+   the full CRUD surface. Controllers for a module's own HTTP endpoints are NOT foreign callers —
+   they live inside `Module.Api` and inject the module's own internal services
+   (`IXService`/`IXRepository` in `Module.Application`, made visible via `InternalsVisibleTo`).
+2. **Do not reference another module's `Application`, `Infrastructure`, or `Api`.** If you think
+   you need to, stop and consult the user — this is a design decision, not a shortcut.
+   `Concertable.Web` is allowed to reference `Module.Api` (for ApplicationPart discovery) and
+   `Module.Infrastructure` (for `AddXModule()` DI), but not `Module.Application`.
 3. **Domain references are tolerated as the escape hatch for entities.** `IReadDbContext` exposes
    `IQueryable<TEntity>` typed against module Domain projects, and EF nav properties across modules
    (e.g. `OpportunityApplicationEntity.Artist`) need the referenced entity type to compile. This is
@@ -56,7 +74,17 @@ api/Modules/<Module>/
   `Module.Contracts` and the `AddXModule()` extension are public.
 - Compiler-enforced boundary, not a naming-convention hope.
 - Remove Identity/Artist/etc internals from `Concertable.Web/GlobalUsings.cs` — Web imports from
-  `Module.Contracts` only.
+  `Module.Contracts` (and optionally `Module.Api` for controller ApplicationPart wiring) only.
+- `IXService`, `IXRepository`, validators, mappers — all `internal` to `Module.Application`. They
+  are visible to `Module.Infrastructure` and `Module.Api` via `[assembly: InternalsVisibleTo(...)]`
+  entries (put these in an `AssemblyInfo.cs` inside the owning project, matching the Identity
+  precedent at `api/Modules/Identity/Concertable.Identity.Infrastructure/AssemblyInfo.cs`).
+  `Module.Api` controllers inject `IXService`/`IXRepository` because Api is same-module, not
+  foreign.
+- DTOs, requests, responses **consumed by the module's own controllers** can stay `internal` in
+  `Module.Application` if they're not consumed by any foreign caller. Move them to
+  `Module.Contracts` only when another module actually needs them (e.g. a summary DTO referenced by
+  another module's DTO, or a DTO returned from `IXModule`).
 
 ## Naming
 
@@ -64,9 +92,19 @@ api/Modules/<Module>/
 - Namespace: rename as you move. **Do not** leave `Concertable.Application.*` on files that now live
   inside a module — Identity did this as a shortcut and paid for it later (see `IDENTITY_COMPLETION.md §4`).
 - Module facade: `IXModule` in Contracts. Implementation `XModule` in Infrastructure.
+  **The facade is the cross-module surface only** — the methods OTHER modules (Concert, Identity,
+  Payment, etc.) call to look things up. It is intentionally minimal and stable: the shape you'd
+  turn into an HTTP/Refit contract if this module extracted to a microservice. HTTP endpoints
+  the module itself exposes are backed by `IXService` inside `Module.Application` and called by
+  controllers in `Module.Api`, **not** via `IXModule`. Don't put `CreateAsync`/`UpdateAsync` on
+  `IXModule` just because the Web UI uses them — other modules don't create or update foreign
+  aggregates, only the owning module's controllers do.
 - **A module can expose multiple facades.** Don't force everything through one fat `IXModule`. Split
   by concern when it reads cleaner — Identity ships both `IIdentityModule` (user lookups) and
   `IAuthModule` (auth flows) in `Identity.Contracts`. Each is its own `IYModule` + `YModule` pair.
+  (Identity today doubles `IAuthModule` as the controller-facing interface — that's pre-pilot
+  shape; post-Artist-pilot, Auth-related HTTP endpoints will move into `Identity.Api` and
+  `IAuthModule` will shrink to cross-module auth lookups only.)
 
 ## When in doubt
 

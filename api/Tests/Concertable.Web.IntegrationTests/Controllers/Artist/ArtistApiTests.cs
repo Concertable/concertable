@@ -1,7 +1,7 @@
 using System.Net;
 using Concertable.Artist.Application.DTOs;
 using Concertable.Web.IntegrationTests.Infrastructure;
-using Concertable.Web.Responses;
+using Concertable.Artist.Api.Responses;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Artist.ArtistRequestBuilders;
 

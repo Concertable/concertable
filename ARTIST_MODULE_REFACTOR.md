@@ -347,7 +347,237 @@ The intermediate `IReadDbContext` + `IRatingSpecification` approach was supersed
 - `Data.Application` + `Search.Application` project references in `Artist.Infrastructure.csproj` are now orphaned — pending cleanup (no code uses them).
 - **Broader context:** `Concertable.Shared.Infrastructure` project created for integration event bus infrastructure. `Concertable.Concert.Infrastructure` (with `AddConcertModule()`) and `Concertable.Concert.Contracts` also created around this work.
 
-**Next: step 8** — Create `IArtistModule` + `ArtistModule` in `Artist.Contracts` / `Artist.Infrastructure`. Minimal surface: `GetSummaryAsync(int artistId)` + `GetIdByUserIdAsync(Guid userId)`. Register `IArtistModule, ArtistModule` in `AddArtistModule()`.
+**✅ Step 8 done (2026-04-21) — Module.Api pilot landed.** ArtistApiTests: 17 pass. Full integration suite: 129 pass. `IArtistService` + `IArtistRepository` are `internal`; the only foreign callers (`OpportunityApplicationController`, `OpportunityApplicationService`) now use `IArtistModule` + `ICurrentUser` and the full-DTO over-fetch is gone. One implementation note: ASP.NET Core's default `ControllerFeatureProvider` only discovers `public` controllers, so `ArtistController` is `internal` and `Artist.Api` registers a minimal `InternalControllerFeatureProvider` via `ConfigureApplicationPartManager` inside `AddArtistApi()`. This is the pattern future Module.Api migrations (Identity, Search, Venue, Concert) should follow.
+
+**Step 8 — re-corrected plan (2026-04-21, post-design-debate):**
+
+Two false starts have been superseded. For the record:
+
+- **Attempt 1 (minimal cross-module shim):** `IArtistModule` with just `GetSummaryAsync` +
+  `GetIdByUserIdAsync`, `IArtistService` stays `public` in Application, `Concertable.Web`
+  references `Artist.Application` directly. Killed by CLAUDE.md rule 1 (Web is a foreign caller;
+  foreign callers must go through Contracts).
+- **Attempt 2 (full facade + delegator):** `IArtistModule` exposes every controller method,
+  `IArtistService` flips `internal`, `ArtistModule` is a thin delegator. Killed on design
+  grounds — conflates HTTP-facing surface with the module-to-module contract, adds a
+  zero-value delegator layer, pollutes the cross-module contract with CRUD methods no other
+  module ever calls (`CreateAsync`, `UpdateAsync`, …).
+
+**Final direction: `Module.Api` as a 5th project per module.** Controllers move **inside** the
+module, next to the service they use. `Concertable.Web` becomes pure composition host. `IXModule`
+in Contracts stays minimal cross-module (the correct MM stable contract — matches the shape you'd
+extract to Refit/HTTP). `IXService` stays `internal` to `Module.Application` with
+`InternalsVisibleTo("Concertable.<Module>.Api")` so the sibling Api project can inject it.
+
+**This step pilots the pattern on Artist only.** Identity (`AuthController`, `UserController`,
+`StripeAccountController`) and Search keep their pre-pilot shape (controllers in
+`Concertable.Web/Controllers/`). If the Artist migration goes cleanly, migrate Identity + Search
+later. CLAUDE.md has been updated to document the target shape + the pilot note.
+
+**Target reference graph for Artist:**
+
+```
+Concertable.Artist.Contracts     — IArtistModule (minimal), cross-module DTOs, integration events
+Concertable.Artist.Domain        — ArtistEntity, ArtistGenreEntity, ArtistRatingProjection
+Concertable.Artist.Application   — IArtistService (internal), IArtistRepository (internal), DTOs,
+                                   Requests, Validators, Mappers. [InternalsVisibleTo:
+                                   Infrastructure, Api]
+Concertable.Artist.Infrastructure — ArtistService, ArtistRepository, QueryableArtistMappers,
+                                   Handlers, ArtistModule (the IArtistModule impl), ArtistDbContext,
+                                   AddArtistModule() DI extension.
+Concertable.Artist.Api           — ArtistController, ArtistResponseMappers, ArtistResponses,
+                                   AddArtistApi() extension that calls AddArtistModule() +
+                                   .AddApplicationPart(typeof(ArtistController).Assembly).
+
+Concertable.Web → Concertable.Artist.Api (only; transitively reaches Infrastructure + below)
+```
+
+**Scope of step 8 (execution order):**
+
+1. **Revert the two failed attempts' artifacts** (currently sitting in the tree):
+   - Delete `api/Modules/Artist/Concertable.Artist.Contracts/IArtistModule.cs` (the 2-method
+     version) — will be recreated with the final minimal shape.
+   - Delete `api/Modules/Artist/Concertable.Artist.Contracts/ArtistSummaryDto.cs` (standalone
+     `(int, string, string?, string?, Address?)` record) — the existing Application
+     `ArtistSummaryDto` (Id/Name/Avatar/Rating/Genres) is the one with real consumers; reuse it.
+   - Delete `api/Modules/Artist/Concertable.Artist.Infrastructure/ArtistModule.cs` (wired to the
+     2-method interface).
+   - In `Artist.Infrastructure/Extensions/ServiceCollectionExtensions.cs`, remove the
+     `services.AddScoped<IArtistModule, ArtistModule>()` line + its `using` — will be re-added
+     after the new `ArtistModule` exists.
+
+2. **Scaffold `Concertable.Artist.Api` project.** New folder `api/Modules/Artist/Concertable.Artist.Api/`
+   with `Concertable.Artist.Api.csproj`:
+   - `TargetFramework net10.0`, `ImplicitUsings enable`, `Nullable enable`.
+   - `<FrameworkReference Include="Microsoft.AspNetCore.App" />` (MVC/routing).
+   - Project refs: `Artist.Contracts`, `Artist.Application`, `Artist.Infrastructure` (for the DI
+     extension it wraps).
+   - Add to `Concertable.sln`.
+
+3. **Move controller + response types into `Artist.Api`:**
+   - `Concertable.Web/Controllers/ArtistController.cs` → `Artist.Api/Controllers/ArtistController.cs`
+     (namespace `Concertable.Artist.Api.Controllers`).
+   - `Concertable.Web/Mappers/ArtistResponseMappers.cs` → `Artist.Api/Mappers/`.
+   - `Concertable.Web/Responses/ArtistResponses.cs` → `Artist.Api/Responses/`.
+     (Grep-verify no cross-controller consumer before moving the responses.)
+   - Controller keeps injecting `IArtistService` — same-module, made visible via
+     `InternalsVisibleTo` in step 4.
+
+4. **Add `InternalsVisibleTo`** in `Artist.Application/AssemblyInfo.cs`:
+   ```csharp
+   [assembly: InternalsVisibleTo("Concertable.Artist.Infrastructure")]
+   [assembly: InternalsVisibleTo("Concertable.Artist.Api")]
+   ```
+   Mirrors Identity's `api/Modules/Identity/Concertable.Identity.Infrastructure/AssemblyInfo.cs`.
+   Flip BOTH `IArtistService` and `IArtistRepository` from `public` → `internal`. Sibling
+   projects (Infrastructure, Api) see them via `InternalsVisibleTo`; foreign callers do NOT —
+   that's enforced by step 9's swap to `IArtistModule`.
+
+5. **Define minimal `IArtistModule` in Contracts.** Three cross-module methods — each a thing
+   another *module* actually needs today, no speculation:
+   ```csharp
+   // Concertable.Artist.Contracts/IArtistModule.cs
+   public interface IArtistModule
+   {
+       Task<int?> GetIdByUserIdAsync(Guid userId);
+       Task<ArtistSummaryDto?> GetSummaryAsync(int artistId);
+       Task<IReadOnlySet<int>> GetGenreIdsAsync(int artistId);
+   }
+   ```
+   - `GetIdByUserIdAsync` — Concert's `OpportunityApplicationController.CanApply` +
+     `OpportunityApplicationService.GetPendingForArtistAsync` / `GetRecentDeniedForArtistAsync` /
+     `ApplyAsync` all need "artist Id for this user" — nullable variant (returns `int?`). Throw
+     at call site if required.
+   - `GetSummaryAsync` — Concert's `OpportunityApplicationDto.Artist` (display card); currently
+     populated inline via `.Include(x => x.Artist)`, but the facade method lands now so the
+     Concert extraction has the target already wired.
+   - `GetGenreIdsAsync` — Concert's `OpportunityApplicationService.ApplyAsync` genre-overlap
+     check. Data-shaped (returns the set). We picked this over a verb-shaped
+     `HasAnyGenreAsync(artistId, IEnumerable<int>)` because Concert currently owns the overlap
+     rule (`artistGenreIds.Overlaps(opportunityGenreIds)`) and a pure lookup keeps that
+     ownership clean. Revisit if the rule ever evolves — easy to swap for the verb form later.
+   - Move `ArtistSummaryDto` from `Artist.Application/DTOs/ArtistDtos.cs` to
+     `Artist.Contracts/ArtistSummaryDto.cs` (namespace `Concertable.Artist.Contracts`) — it has a
+     real cross-module consumer via `OpportunityApplicationDto.Artist` today.
+   - **`ArtistDto`, `CreateArtistRequest`, `UpdateArtistRequest` stay in `Artist.Application`** —
+     only Artist's own controller consumes them, they're an internal implementation detail.
+   - `Artist.Contracts.csproj` gains `Concertable.Shared.Contracts` ref (for `GenreDto` used inside
+     `ArtistSummaryDto`).
+
+6. **Implement `ArtistModule` in Infrastructure** (tiny — 3 methods, delegate to
+   `IArtistRepository`):
+   ```csharp
+   // Concertable.Artist.Infrastructure/ArtistModule.cs
+   internal class ArtistModule(IArtistRepository repo) : IArtistModule
+   {
+       public Task<int?> GetIdByUserIdAsync(Guid userId) =>
+           repo.GetIdByUserIdAsync(userId);
+       public Task<ArtistSummaryDto?> GetSummaryAsync(int artistId) =>
+           repo.GetSummaryAsync(artistId);
+       public Task<IReadOnlySet<int>> GetGenreIdsAsync(int artistId) =>
+           repo.GetGenreIdsAsync(artistId);
+   }
+   ```
+   Add `Task<IReadOnlySet<int>> GetGenreIdsAsync(int artistId)` to `IArtistRepository` +
+   `ArtistRepository` — 1-liner projecting `context.Artists.Where(a => a.Id == artistId)
+   .SelectMany(a => a.ArtistGenres.Select(ag => ag.GenreId))` into a set (`AsNoTracking`, use
+   `ToHashSetAsync` then cast to `IReadOnlySet<int>`; or `ToListAsync` then
+   `.ToHashSet()`).
+   Register `IArtistModule, ArtistModule` in `AddArtistModule()`.
+   `IArtistRepository.GetSummaryAsync` already returns an `ArtistSummaryDto`; after step 5 the
+   namespace changes from `Concertable.Artist.Application.DTOs` to
+   `Concertable.Artist.Contracts` — update the using in `IArtistRepository`, `ArtistRepository`,
+   and `QueryableArtistMappers`.
+
+7. **`AddArtistApi()` extension** in `Artist.Api/Extensions/ServiceCollectionExtensions.cs`:
+   ```csharp
+   public static IServiceCollection AddArtistApi(this IServiceCollection services, IConfiguration config)
+   {
+       services.AddArtistModule(config);
+       services.AddControllers()
+           .AddApplicationPart(typeof(ArtistController).Assembly);
+       return services;
+   }
+   ```
+   Or leave `.AddApplicationPart(...)` in `Program.cs` — either works. The point is Web calls one
+   extension per module.
+
+8. **Swap `Concertable.Web` wiring:**
+   - `Concertable.Web.csproj`: drop `Concertable.Artist.Infrastructure` project ref, add
+     `Concertable.Artist.Api` project ref (transitively reaches Infrastructure + below).
+   - `Program.cs`: swap `services.AddArtistModule(builder.Configuration)` → `services.AddArtistApi(...)`.
+   - `Concertable.Web/Extensions/ServiceCollectionExtensions.cs`: any stale `Concertable.Artist.*`
+     usings → remove.
+   - `Concertable.Web/GlobalUsings.cs`: remove any Artist internals that leaked in.
+
+9. **Swap `OpportunityApplicationController` + `OpportunityApplicationService` to
+   `IArtistModule` + `ICurrentUser`.** Both are legacy Concert-side callers that currently inject
+   `IArtistService` and over-fetch the full `ArtistDto` to use 1-2 fields. Kill the over-fetch
+   AND remove the last foreign consumer of `IArtistService` in one pass — that's what lets step
+   4 flip `IArtistService` to `internal` with no transitional wart.
+
+   **`OpportunityApplicationController`** (in `Concertable.Web/Controllers/`) — inject
+   `IArtistModule` + `ICurrentUser`, drop `IArtistService`:
+   ```csharp
+   // CanApply action — was: artistService.GetDetailsForCurrentUserAsync() then ?.Id
+   var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId());
+   if (artistId is null) return NotFound("Artist not found");
+   var result = await applicationValidator.CanApplyAsync(opportunityId, artistId.Value);
+   ```
+
+   **`OpportunityApplicationService`** (in `Concertable.Infrastructure/Services/Concert/`) —
+   inject `IArtistModule`, keep existing `ICurrentUser`, drop `IArtistService`:
+   ```csharp
+   // GetPendingForArtistAsync / GetRecentDeniedForArtistAsync — was: artistService.GetIdForCurrentUserAsync()
+   var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
+       ?? throw new ForbiddenException("You must have an Artist account");
+
+   // ApplyAsync — was: var artistDto = await artistService.GetDetailsForCurrentUserAsync() ?? throw ...
+   //                   var artistGenreIds = artistDto.Genres.Select(g => g.Id).ToHashSet();
+   var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
+       ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
+   var application = OpportunityApplicationEntity.Create(artistId, opportunityId);
+   // ... existing opportunity fetch + validator call unchanged (artistDto.Id → artistId)
+   var artistGenreIds = await artistModule.GetGenreIdsAsync(artistId);
+   // rest of overlap check unchanged
+   ```
+
+   Project-ref adjustments:
+   - `Concertable.Infrastructure.csproj` gains `Concertable.Artist.Contracts` ref (if not already
+     transitively via Artist.Application — likely has it), drops `Concertable.Artist.Application`
+     ref **only if** no other legacy file still uses Artist.Application types. Grep-verify. Most
+     likely still needs to stay while `OpportunityApplicationDto` in legacy `Concertable.Application`
+     still names `ArtistSummaryDto` from Artist.Application — that untangles during Concert
+     extraction. Leave the ref; just remove the `using Concertable.Artist.Application.Interfaces;`
+     from `OpportunityApplicationService.cs` / `OpportunityApplicationController.cs`.
+   - `Concertable.Web/Concertable.Web.csproj` — same: `OpportunityApplicationController` stops
+     referencing `Concertable.Artist.Application.Interfaces`.
+   - Both files need `using Concertable.Artist.Contracts;` + `using Concertable.Identity.Contracts;`
+     (for `ICurrentUser` — probably already there).
+
+   After this swap, **nothing outside the Artist module references `IArtistService`** — step 4's
+   `internal` flip is clean.
+
+10. **Artist.Infrastructure.csproj orphaned-ref cleanup** (carry-over):
+    - Drop `Concertable.Data.Application` + `Concertable.Search.Application` refs. Unused since
+      the Integration Event pattern landed.
+
+11. **Build + test gates:**
+    - `dotnet build` clean.
+    - `ArtistApiTests`: 17 pass (same tests, unchanged — the controller lives in a different
+      assembly but responds to the same HTTP routes).
+    - Full integration suite: 129 pass.
+    - Pre-existing 4× `ConcertDraftTests` Stripe-CLI failures — remain as baseline.
+
+**What this step does NOT do:**
+- Does NOT migrate Identity or Search controllers into `Identity.Api` / `Search.Api` — pilot on
+  Artist first. Those migrations are captured as a follow-up once Artist validates.
+- Does NOT remove `.Include(x => x.Artist)` chains in Concert-side repos (rule 6 — Concert's job).
+- Does NOT flip `ArtistEntity`/`ArtistGenreEntity` to `internal` (still needed by Concert's EF
+  navs + Identity's `ArtistManagerRepository` via `IReadDbContext`).
+- Does NOT remove `Concertable.Application → Artist.Application` project ref (legacy
+  `OpportunityApplicationDto` still names Application-level `ArtistSummaryDto`; gets untangled in
+  Concert extraction when the DTO moves out of legacy Application).
 
 ### 1. Why Artist is straightforward now
 

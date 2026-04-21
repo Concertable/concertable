@@ -1,7 +1,6 @@
-using Concertable.Artist.Application.DTOs;
-using Concertable.Web.Responses;
+using Concertable.Artist.Api.Responses;
 
-namespace Concertable.Web.Mappers;
+namespace Concertable.Artist.Api.Mappers;
 
 public static class ArtistResponseMappers
 {
