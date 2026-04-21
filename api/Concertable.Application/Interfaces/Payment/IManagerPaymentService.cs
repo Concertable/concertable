@@ -1,9 +1,8 @@
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 
 namespace Concertable.Application.Interfaces.Payment;
 
 public interface IManagerPaymentService
 {
-    Task<PaymentResponse> PayAsync(ManagerEntity payer, ManagerEntity payee, decimal amount, int bookingId, string? paymentMethodId = null);
+    Task<PaymentResponse> PayAsync(ManagerDto payer, ManagerDto payee, decimal amount, int bookingId, string? paymentMethodId = null);
 }

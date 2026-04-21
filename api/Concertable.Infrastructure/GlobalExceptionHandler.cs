@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Diagnostics;
 
@@ -30,7 +30,14 @@ public class GlobalExceptionHandler : IExceptionHandler
             Instance = httpContext.Request.Path
         };
 
-        if (exception is DomainException domainEx)
+        if (exception is UnauthorizedAccessException)
+        {
+            httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            problemDetails.Status = httpContext.Response.StatusCode;
+            problemDetails.Title = "Unauthorized";
+            problemDetails.Detail = exception.Message;
+        }
+        else if (exception is DomainException domainEx)
         {
             httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             problemDetails.Status = httpContext.Response.StatusCode;
@@ -59,13 +66,19 @@ public class GlobalExceptionHandler : IExceptionHandler
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             problemDetails.Status = httpContext.Response.StatusCode;
             problemDetails.Title = "Internal Server Error";
-            problemDetails.Detail = exception.Message;
+            problemDetails.Detail = env.IsDevelopment() || env.IsEnvironment("Testing")
+                ? exception.Message
+                : "An unexpected error occurred.";
 
-            problemDetails.Extensions["stackTrace"] = exception.ToString();
-
-            if (exception.InnerException != null)
+            if (env.IsDevelopment() || env.IsEnvironment("Testing"))
             {
-                problemDetails.Extensions["innerException"] = exception.InnerException.ToString();
+                problemDetails.Extensions["exceptionType"] = exception.GetType().FullName;
+                problemDetails.Extensions["stackTrace"] = exception.ToString();
+
+                if (exception.InnerException != null)
+                {
+                    problemDetails.Extensions["innerException"] = exception.InnerException.ToString();
+                }
             }
         }
 

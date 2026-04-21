@@ -1,4 +1,3 @@
-using Concertable.Infrastructure.Services.Auth;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services;

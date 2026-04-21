@@ -6,7 +6,8 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Responses;
 using Concertable.Core.Enums;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Enums;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -21,7 +22,6 @@ public class OpportunityApplicationService : IOpportunityApplicationService
     private readonly IEmailService emailService;
     private readonly IOpportunityService opportunityService;
     private readonly IArtistService artistService;
-    private readonly IOwnershipService ownershipService;
     private readonly IAcceptDispatcher acceptDispatcher;
     private readonly IOpportunityApplicationMapper mapper;
 
@@ -34,7 +34,6 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         IMessageService messageService,
         IEmailService emailService,
         IOpportunityService opportunityService,
-        IOwnershipService ownershipService,
         IArtistService artistService,
         IAcceptDispatcher acceptDispatcher,
         IOpportunityApplicationMapper mapper)
@@ -48,14 +47,13 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         this.emailService = emailService;
         this.opportunityService = opportunityService;
         this.artistService = artistService;
-        this.ownershipService = ownershipService;
         this.acceptDispatcher = acceptDispatcher;
         this.mapper = mapper;
     }
 
     public async Task<IEnumerable<OpportunityApplicationDto>> GetByOpportunityIdAsync(int id)
     {
-        var response = await ownershipService.OwnsOpportunityAsync(id);
+        var response = await opportunityService.OwnsOpportunityAsync(id);
 
         if (!response)
             throw new ForbiddenException("You do not own this Concert Opportunity");
@@ -89,7 +87,6 @@ public class OpportunityApplicationService : IOpportunityApplicationService
 
         var application = OpportunityApplicationEntity.Create(artistDto.Id, opportunityId);
 
-        var user = currentUser.Get();
         var opportunityOwner = await opportunityService.GetOwnerByIdAsync(opportunityId);
         var opportunity = await opportunityService.GetByIdAsync(opportunityId);
 
@@ -107,12 +104,12 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         await applicationRepository.AddAsync(application);
 
         await messageService.SendAsync(
-            fromUserId: user.Id,
+            fromUserId: currentUser.GetId(),
             toUserId: opportunityOwner.Id,
-            content: $"{user.Email} has applied to your concert opportunity",
+            content: $"{currentUser.Email} has applied to your concert opportunity",
             action: MessageAction.ApplicationReceived);
 
-        await emailService.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{user.Email} has applied to your concert opportunity");
+        await emailService.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{currentUser.Email} has applied to your concert opportunity");
 
         try
         {
@@ -139,7 +136,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
             content: "Your application has been accepted!",
             action: MessageAction.ApplicationAccepted);
 
-        await emailService.SendEmailAsync(artist.User.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
+        await emailService.SendEmailAsync(artist.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
 
         return outcome;
     }

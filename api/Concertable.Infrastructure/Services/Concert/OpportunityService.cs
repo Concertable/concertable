@@ -6,8 +6,9 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Core.Interfaces;
+using Concertable.Identity.Contracts;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -19,6 +20,7 @@ public class OpportunityService : IOpportunityService
     private readonly IContractMapper contractMapper;
     private readonly IUnitOfWork unitOfWork;
     private readonly IOpportunityMapper mapper;
+    private readonly ICurrentUser currentUser;
 
     public OpportunityService(
         IOpportunityRepository opportunityRepository,
@@ -26,7 +28,8 @@ public class OpportunityService : IOpportunityService
         IVenueService venueService,
         IContractMapper contractMapper,
         IUnitOfWork unitOfWork,
-        IOpportunityMapper mapper)
+        IOpportunityMapper mapper,
+        ICurrentUser currentUser)
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidationFactory = stripeValidationFactory;
@@ -34,6 +37,7 @@ public class OpportunityService : IOpportunityService
         this.contractMapper = contractMapper;
         this.unitOfWork = unitOfWork;
         this.mapper = mapper;
+        this.currentUser = currentUser;
     }
 
     public async Task<OpportunityDto> CreateAsync(OpportunityRequest request)
@@ -160,5 +164,17 @@ public class OpportunityService : IOpportunityService
     {
         return await opportunityRepository.GetOwnerByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity owner not found");
+    }
+
+    public async Task<bool> OwnsOpportunityAsync(int opportunityId)
+    {
+        var opportunity = await opportunityRepository.GetWithVenueByIdAsync(opportunityId);
+        return opportunity?.Venue?.UserId == currentUser.GetId();
+    }
+
+    public async Task<bool> OwnsOpportunityByApplicationIdAsync(int applicationId)
+    {
+        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId);
+        return opportunity?.Venue?.UserId == currentUser.GetId();
     }
 }

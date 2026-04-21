@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities;
 using Concertable.Infrastructure.Services.Application;
 using Moq;
 using Xunit;
@@ -18,8 +17,7 @@ public class VenueHireConcertWorkflowCompleteTests
         sut = new VenueHireConcertWorkflow(
             upfrontConcertService.Object,
             new Mock<IContractRepository>().Object,
-            new Mock<IManagerRepository<ArtistManagerEntity>>().Object,
-            new Mock<IManagerRepository<VenueManagerEntity>>().Object);
+            new Mock<IManagerModule>().Object);
     }
 
     [Fact]

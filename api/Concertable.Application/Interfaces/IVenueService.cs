@@ -10,5 +10,6 @@ public interface IVenueService
     Task<VenueDto> CreateAsync(CreateVenueRequest request);
     Task<VenueDto> UpdateAsync(int id, UpdateVenueRequest request);
     Task<int> GetIdForCurrentUserAsync();
+    Task<bool> OwnsVenueAsync(int venueId);
     Task ApproveAsync(int id);
 }

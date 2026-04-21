@@ -1,8 +1,7 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +18,7 @@ public class CustomerPaymentService : ICustomerPaymentService
         this.stripeAccountService = stripeAccountService;
     }
 
-    public async Task<Result<PaymentResponse>> PayAsync(CustomerEntity payer, ManagerEntity payee, int concertId, int quantity, string? paymentMethodId, decimal price)
+    public async Task<Result<PaymentResponse>> PayAsync(CustomerDto payer, ManagerDto payee, int concertId, int quantity, string? paymentMethodId, decimal price)
     {
         var resolvedPaymentMethodId = paymentMethodId
             ?? await stripeAccountService.GetPaymentMethodAsync(payer.StripeCustomerId)

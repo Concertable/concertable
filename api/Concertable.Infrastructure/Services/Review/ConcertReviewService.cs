@@ -1,10 +1,11 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 

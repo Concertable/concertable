@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Concertable.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Core.Entities;
 
+[Table("ArtistGenres")]
 [PrimaryKey(nameof(ArtistId), nameof(GenreId))]
 public class ArtistGenreEntity : IGenreJoin
 {

@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Services.Application;
@@ -13,36 +12,30 @@ public class DoorSplitConcertWorkflowCompleteTests
 {
     private readonly Mock<IDeferredConcertService> deferredConcertService;
     private readonly Mock<IContractRepository> contractRepository;
-    private readonly Mock<IManagerRepository<VenueManagerEntity>> venueManagerRepository;
-    private readonly Mock<IManagerRepository<ArtistManagerEntity>> artistManagerRepository;
+    private readonly Mock<IManagerModule> managerModule;
     private readonly Mock<IConcertRepository> concertRepository;
     private readonly DoorSplitConcertWorkflow sut;
 
     private readonly DoorSplitContractEntity contract = DoorSplitContractEntity.Create(50, PaymentMethod.Cash);
-    private readonly VenueManagerEntity venueManager;
-    private readonly ArtistManagerEntity artistManager;
+    private readonly ManagerDto venueManager = new() { Id = Guid.NewGuid(), Email = "venue@test.com" };
+    private readonly ManagerDto artistManager = new() { Id = Guid.NewGuid(), Email = "artist@test.com" };
 
     public DoorSplitConcertWorkflowCompleteTests()
     {
-        venueManager = VenueManagerEntity.Create("venue@test.com", string.Empty);
-        artistManager = ArtistManagerEntity.Create("artist@test.com", string.Empty);
-
         deferredConcertService = new Mock<IDeferredConcertService>();
         contractRepository = new Mock<IContractRepository>();
-        venueManagerRepository = new Mock<IManagerRepository<VenueManagerEntity>>();
-        artistManagerRepository = new Mock<IManagerRepository<ArtistManagerEntity>>();
+        managerModule = new Mock<IManagerModule>();
         concertRepository = new Mock<IConcertRepository>();
 
         sut = new DoorSplitConcertWorkflow(
             deferredConcertService.Object,
             contractRepository.Object,
             concertRepository.Object,
-            venueManagerRepository.Object,
-            artistManagerRepository.Object);
+            managerModule.Object);
 
         contractRepository.Setup(r => r.GetByConcertIdAsync<DoorSplitContractEntity>(10)).ReturnsAsync(contract);
-        venueManagerRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(venueManager);
-        artistManagerRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(artistManager);
+        managerModule.Setup(r => r.GetVenueManagerByConcertIdAsync(10)).ReturnsAsync(venueManager);
+        managerModule.Setup(r => r.GetArtistManagerByConcertIdAsync(10)).ReturnsAsync(artistManager);
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
     }
 

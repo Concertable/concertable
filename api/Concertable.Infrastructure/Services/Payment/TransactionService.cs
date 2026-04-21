@@ -1,9 +1,10 @@
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 

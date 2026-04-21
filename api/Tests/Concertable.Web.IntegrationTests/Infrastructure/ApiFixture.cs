@@ -3,6 +3,7 @@ using Concertable.Core.Enums;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Core.Entities;
+using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Application.Interfaces.Payment;
@@ -74,6 +75,7 @@ public async Task InitializeAsync()
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
                 services.AddScoped<SeedData>();
                 services.AddScoped<ILocationFaker, LocationFaker>();
+                services.AddIdentityTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {

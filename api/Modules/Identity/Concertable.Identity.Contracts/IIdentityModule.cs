@@ -1,0 +1,1 @@
+namespace Concertable.Identity.Contracts;

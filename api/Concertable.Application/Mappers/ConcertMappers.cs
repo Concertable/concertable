@@ -10,9 +10,9 @@ public static class ConcertMappers
     {
         Id = artist.Id,
         Name = artist.Name,
-        Avatar = artist.User.Avatar,
-        County = artist.User.Address?.County ?? string.Empty,
-        Town = artist.User.Address?.Town ?? string.Empty,
+        Avatar = artist.Avatar,
+        County = artist.Address?.County ?? string.Empty,
+        Town = artist.Address?.Town ?? string.Empty,
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto())
     };
 
@@ -20,10 +20,10 @@ public static class ConcertMappers
     {
         Id = venue.Id,
         Name = venue.Name,
-        County = venue.User.Address?.County ?? string.Empty,
-        Town = venue.User.Address?.Town ?? string.Empty,
-        Latitude = venue.User.Location?.Y ?? 0.0,
-        Longitude = venue.User.Location?.X ?? 0.0
+        County = venue.Address?.County ?? string.Empty,
+        Town = venue.Address?.Town ?? string.Empty,
+        Latitude = venue.Location?.Y ?? 0.0,
+        Longitude = venue.Location?.X ?? 0.0
     };
 
     public static ConcertDto ToDto(this ConcertEntity concert) => new()
@@ -32,7 +32,7 @@ public static class ConcertMappers
         Name = concert.Name,
         About = concert.About,
         BannerUrl = concert.BannerUrl ?? concert.Booking.Application.Artist.BannerUrl,
-        Avatar = concert.Avatar ?? concert.Booking.Application.Artist.User.Avatar,
+        Avatar = concert.Avatar ?? concert.Booking.Application.Artist.Avatar,
         Price = concert.Price,
         TotalTickets = concert.TotalTickets,
         AvailableTickets = concert.AvailableTickets,
@@ -48,11 +48,11 @@ public static class ConcertMappers
     {
         Id = concert.Id,
         Name = concert.Name,
-        ImageUrl = concert.Booking.Application.Artist.User.Avatar,
+        ImageUrl = concert.Booking.Application.Artist.Avatar,
         StartDate = concert.Booking.Application.Opportunity.Period.Start,
         EndDate = concert.Booking.Application.Opportunity.Period.End,
-        County = concert.Booking.Application.Opportunity.Venue.User.Address?.County ?? string.Empty,
-        Town = concert.Booking.Application.Opportunity.Venue.User.Address?.Town ?? string.Empty,
+        County = concert.Booking.Application.Opportunity.Venue.Address?.County ?? string.Empty,
+        Town = concert.Booking.Application.Opportunity.Venue.Address?.Town ?? string.Empty,
         DatePosted = concert.DatePosted
     };
 

@@ -23,7 +23,6 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .Where(v => v.UserId == id)
             .Include(a => a.ArtistGenres)
                 .ThenInclude(ag => ag.Genre)
-            .Include(a => a.User)
             .FirstOrDefaultAsync();
     }
 
@@ -33,7 +32,6 @@ public class ArtistRepository : Repository<ArtistEntity>, IArtistRepository
             .Where(a => a.Id == id)
             .Include(a => a.ArtistGenres)
                 .ThenInclude(ag => ag.Genre)
-            .Include(a => a.User)
             .FirstOrDefaultAsync();
     }
 

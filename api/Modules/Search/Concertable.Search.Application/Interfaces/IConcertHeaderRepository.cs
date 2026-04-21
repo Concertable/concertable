@@ -3,7 +3,7 @@ using Concertable.Core.Parameters;
 
 namespace Concertable.Search.Application.Interfaces;
 
-public interface IConcertHeaderRepository : IHeaderRepository<ConcertHeaderDto>
+internal interface IConcertHeaderRepository : IHeaderRepository<ConcertHeaderDto>
 {
     Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount);
     Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync();

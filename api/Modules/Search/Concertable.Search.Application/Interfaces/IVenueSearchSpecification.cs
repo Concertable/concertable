@@ -3,7 +3,7 @@ using Concertable.Core.Parameters;
 
 namespace Concertable.Search.Application.Interfaces;
 
-public interface IVenueSearchSpecification
+internal interface IVenueSearchSpecification
 {
     IQueryable<VenueEntity> Apply(IQueryable<VenueEntity> query, SearchParams searchParams);
 }

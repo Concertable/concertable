@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Search.Application.Services;
 
-public class HeaderServiceFactory : IHeaderServiceFactory
+internal class HeaderServiceFactory : IHeaderServiceFactory
 {
     private readonly IServiceProvider serviceProvider;
 

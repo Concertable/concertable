@@ -1,0 +1,12 @@
+
+namespace Concertable.Identity.Application.Interfaces;
+
+internal interface IUserRepository : IGuidRepository<UserEntity>
+{
+    Task<Guid?> GetIdByApplicationIdAsync(int applicationId);
+    Task<Guid?> GetIdByConcertIdAsync(int concertId);
+    Task<UserEntity?> GetByApplicationIdAsync(int applicationId);
+    Task<UserEntity?> GetByConcertIdAsync(int concertId);
+    Task<bool> ExistsByEmailAsync(string email);
+    Task<UserEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+}

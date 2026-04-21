@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Auth;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
@@ -19,30 +18,36 @@ public class TestDbInitializer : IDbInitializer
 {
     private readonly ApplicationDbContext context;
     private readonly IGeometryProvider geometryProvider;
-    private readonly IPasswordHasher passwordHasher;
     private readonly SeedData seed;
     private readonly ILocationFaker locationFaker;
     private readonly TimeProvider timeProvider;
+    private readonly IEnumerable<ITestSeeder> seeders;
 
     public TestDbInitializer(
         ApplicationDbContext context,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        IPasswordHasher passwordHasher,
         SeedData seed,
         ILocationFaker locationFaker,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IEnumerable<ITestSeeder> seeders)
     {
         this.context = context;
         this.geometryProvider = geometryProvider;
-        this.passwordHasher = passwordHasher;
         this.seed = seed;
         this.locationFaker = locationFaker;
         this.timeProvider = timeProvider;
+        this.seeders = seeders;
     }
 
     public async Task InitializeAsync()
     {
+        foreach (var seeder in seeders.OrderBy(s => s.Order))
+            await seeder.MigrateAsync();
+
         await context.Database.MigrateAsync();
+
+        foreach (var seeder in seeders.OrderBy(s => s.Order))
+            await seeder.SeedAsync();
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
 
@@ -57,57 +62,14 @@ public class TestDbInitializer : IDbInitializer
             await context.SaveChangesAsync();
         });
 
-        await context.Users.SeedIfEmptyAsync(async () =>
-        {
-            var hash = passwordHasher.Hash(SeedData.TestPassword);
-
-            var vm1Loc = locationFaker.Next();
-            seed.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
-            seed.VenueManager1.StripeAccountId = "acct_test_venuemanager";
-            seed.VenueManager1.StripeCustomerId = "cus_test_venuemanager";
-            seed.VenueManager1.Location = geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude);
-            seed.VenueManager1.Address = new Address(vm1Loc.County, vm1Loc.Town);
-
-            var vm2Loc = locationFaker.Next();
-            seed.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
-            seed.VenueManager2.StripeAccountId = "acct_test_venuemanager2";
-            seed.VenueManager2.StripeCustomerId = "cus_test_venuemanager2";
-            seed.VenueManager2.Location = geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude);
-            seed.VenueManager2.Address = new Address(vm2Loc.County, vm2Loc.Town);
-
-            seed.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
-            seed.ArtistManager.StripeAccountId = "acct_test_artistmanager";
-            seed.ArtistManager.StripeCustomerId = "cus_test_artistmanager";
-            seed.ArtistManager.Location = geometryProvider.CreatePoint(51, 0);
-            seed.ArtistManager.Address = new Address("Test County", "Test Town");
-
-            seed.ArtistManagerNoArtist = UserFactory.ArtistManager("artistmanager2@test.com", hash);
-            seed.ArtistManagerNoArtist.StripeAccountId = "acct_test_artistmanager2";
-            seed.ArtistManagerNoArtist.StripeCustomerId = "cus_test_artistmanager2";
-            seed.ArtistManagerNoArtist.Location = geometryProvider.CreatePoint(51, 0);
-            seed.ArtistManagerNoArtist.Address = new Address("Test County", "Test Town");
-
-            seed.Customer = UserFactory.Customer("customer@test.com", hash);
-            seed.Customer.Location = geometryProvider.CreatePoint(51, 0);
-
-            seed.Admin = UserFactory.Admin("admin@test.com", hash);
-            seed.Admin.Location = geometryProvider.CreatePoint(51, 0);
-
-            context.Users.AddRange(
-                seed.VenueManager1,
-                seed.VenueManager2,
-                seed.ArtistManager,
-                seed.ArtistManagerNoArtist,
-                seed.Customer,
-                seed.Admin);
-
-            await context.SaveChangesAsync();
-        });
-
         await context.Artists.SeedIfEmptyAsync(async () =>
         {
             seed.Artist = ArtistFaker.GetFaker(seed.ArtistManager.Id, "Test Artist", "artist.jpg").Generate();
             seed.Artist.SyncGenres([seed.Rock.Id]);
+            seed.Artist.Location = seed.ArtistManager.Location;
+            seed.Artist.Address = seed.ArtistManager.Address;
+            seed.Artist.Avatar = seed.ArtistManager.Avatar;
+            seed.Artist.Email = seed.ArtistManager.Email;
 
             context.Artists.Add(seed.Artist);
             await context.SaveChangesAsync();
@@ -116,6 +78,10 @@ public class TestDbInitializer : IDbInitializer
         await context.Venues.SeedIfEmptyAsync(async () =>
         {
             seed.Venue = VenueFaker.GetFaker(seed.VenueManager1.Id, "Test Venue", "venue.jpg").Generate();
+            seed.Venue.Location = seed.VenueManager1.Location;
+            seed.Venue.Address = seed.VenueManager1.Address;
+            seed.Venue.Avatar = seed.VenueManager1.Avatar;
+            seed.Venue.Email = seed.VenueManager1.Email;
 
             context.Venues.Add(seed.Venue);
             await context.SaveChangesAsync();

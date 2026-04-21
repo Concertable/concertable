@@ -12,12 +12,10 @@ namespace Concertable.Web.Controllers;
 public class VenueController : ControllerBase
 {
     private readonly IVenueService venueService;
-    private readonly IOwnershipService ownershipService;
 
-    public VenueController(IVenueService venueService, IOwnershipService ownershipService)
+    public VenueController(IVenueService venueService)
     {
         this.venueService = venueService;
-        this.ownershipService = ownershipService;
     }
 
     [HttpGet("{id}")]
@@ -59,6 +57,6 @@ public class VenueController : ControllerBase
     [HttpGet("is-owner/{id}")]
     public async Task<ActionResult<bool>> IsOwner(int id)
     {
-        return Ok(await ownershipService.OwnsVenueAsync(id));
+        return Ok(await venueService.OwnsVenueAsync(id));
     }
 }

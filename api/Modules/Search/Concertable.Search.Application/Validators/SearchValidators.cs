@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Concertable.Search.Application.Validators;
 
-public class SearchParamsValidator : AbstractValidator<SearchParams>
+internal class SearchParamsValidator : AbstractValidator<SearchParams>
 {
     public SearchParamsValidator()
     {
@@ -13,7 +13,7 @@ public class SearchParamsValidator : AbstractValidator<SearchParams>
     }
 }
 
-public class ConcertParamsValidator : AbstractValidator<ConcertParams>
+internal class ConcertParamsValidator : AbstractValidator<ConcertParams>
 {
     public ConcertParamsValidator()
     {

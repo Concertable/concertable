@@ -1,6 +1,5 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
-using Concertable.Application.DTOs;
 using Concertable.Seeding;
 using Microsoft.Extensions.Logging;
 using Stripe;

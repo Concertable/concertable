@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Search.Application\Concertable.Search.Application.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

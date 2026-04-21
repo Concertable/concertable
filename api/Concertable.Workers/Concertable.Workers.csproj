@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Infrastructure\Concertable.Identity.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

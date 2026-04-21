@@ -131,7 +131,18 @@
       "Bash(xargs head *)",
       "Bash(handle.exe api/Concertable.Search.Application)",
       "Bash(tasklist)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(break)",
+      "Bash(dotnet restore *)",
+      "Bash(git -C /c/Users/TommySeery/source/repos/Concertable status --short)",
+      "Bash(dotnet clean *)",
+      "Bash(git *)",
+      "Bash(xargs -0 grep -l \"\\\\.Data\\\\.Infrastructure\\\\|\\\\.Infrastructure\\\\.Data\")",
+      "Bash(xargs -0 grep -h \"^using\")",
+      "Bash(xargs -0 grep -n \"ReadDbContext\")",
+      "Bash(xargs -0 grep -E \"new.*DbContext|<.*DbContext>\")",
+      "Bash(xargs -0 grep -l \"\\\\.AddDbContext\\\\|\\\\.AddScoped.*Context\")",
+      "Bash(wait)"
     ]
   }
 }

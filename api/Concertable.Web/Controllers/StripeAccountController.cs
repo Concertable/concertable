@@ -1,8 +1,7 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
+using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,26 +13,35 @@ public class StripeAccountController : ControllerBase
 {
     private readonly IStripeAccountService stripeAccountService;
     private readonly ICurrentUser currentUser;
+    private readonly IManagerModule managerModule;
+    private readonly IAuthModule authModule;
 
-    public StripeAccountController(IStripeAccountService stripeAccountService, ICurrentUser currentUser)
+    public StripeAccountController(
+        IStripeAccountService stripeAccountService,
+        ICurrentUser currentUser,
+        IManagerModule managerModule,
+        IAuthModule authModule)
     {
         this.stripeAccountService = stripeAccountService;
         this.currentUser = currentUser;
+        this.managerModule = managerModule;
+        this.authModule = authModule;
     }
 
     [HttpGet("onboarding-link")]
     public async Task<ActionResult<string>> GetOnboardingLink()
     {
-        var manager = currentUser.GetEntity<ManagerEntity>();
+        var manager = await managerModule.GetManagerAsync(currentUser.GetId())
+            ?? throw new UnauthorizedAccessException("Manager not found.");
 
-        var link = await stripeAccountService.GetOnboardingLinkAsync(manager.StripeAccountId);
-        return Ok(link);
+        return Ok(await stripeAccountService.GetOnboardingLinkAsync(manager.StripeAccountId));
     }
 
     [HttpGet("account-status")]
     public async Task<ActionResult<PayoutAccountStatus>> GetAccountStatus()
     {
-        var manager = currentUser.GetEntity<ManagerEntity>();
+        var manager = await managerModule.GetManagerAsync(currentUser.GetId())
+            ?? throw new UnauthorizedAccessException("Manager not found.");
 
         return Ok(await stripeAccountService.GetAccountStatusAsync(manager.StripeAccountId));
     }
@@ -41,20 +49,25 @@ public class StripeAccountController : ControllerBase
     [HttpGet("payment-method")]
     public async Task<ActionResult<PaymentMethodDto?>> GetPaymentMethod()
     {
-        var user = currentUser.GetEntity<UserEntity>();
-        if (string.IsNullOrWhiteSpace(user.StripeCustomerId))
+        var customer = await authModule.GetCustomerAsync(currentUser.GetId());
+        if (customer is null || string.IsNullOrWhiteSpace(customer.StripeCustomerId))
             return Ok(null);
-        return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(user.StripeCustomerId));
+        return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(customer.StripeCustomerId));
     }
 
     [HttpPost("setup-intent")]
     public async Task<ActionResult<string>> CreateSetupIntent()
     {
-        var user = currentUser.GetEntity<UserEntity>();
+        var customer = await authModule.GetCustomerAsync(currentUser.GetId());
+        if (customer is null) return Unauthorized();
 
-        if (string.IsNullOrWhiteSpace(user.StripeCustomerId))
-            await stripeAccountService.CreateCustomerAsync(user);
+        var stripeCustomerId = customer.StripeCustomerId;
+        if (string.IsNullOrWhiteSpace(stripeCustomerId))
+        {
+            stripeCustomerId = await stripeAccountService.CreateCustomerAsync(customer.Email!);
+            await authModule.SetStripeCustomerIdAsync(currentUser.GetId(), stripeCustomerId);
+        }
 
-        return Ok(await stripeAccountService.CreateSetupIntentAsync(user.StripeCustomerId));
+        return Ok(await stripeAccountService.CreateSetupIntentAsync(stripeCustomerId));
     }
 }

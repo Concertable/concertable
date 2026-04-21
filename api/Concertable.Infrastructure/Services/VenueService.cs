@@ -1,35 +1,42 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
-using Concertable.Core.Enums;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
+using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Identity.Contracts;
+using Concertable.Shared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services;
 
 public class VenueService : IVenueService
 {
     private readonly IVenueRepository venueRepository;
-    private readonly IUserRepository userRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
-    private readonly IUserService userService;
+    private readonly IManagerModule managerModule;
+    private readonly IGeocodingService geocodingService;
+    private readonly IGeometryProvider geometryProvider;
     private readonly IUnitOfWork unitOfWork;
 
     public VenueService(
         IVenueRepository venueRepository,
-        IUserRepository userRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        IUserService userService,
+        IManagerModule managerModule,
+        IGeocodingService geocodingService,
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
         IUnitOfWork unitOfWork)
     {
         this.venueRepository = venueRepository;
-        this.userRepository = userRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
-        this.userService = userService;
+        this.managerModule = managerModule;
+        this.geocodingService = geocodingService;
+        this.geometryProvider = geometryProvider;
         this.unitOfWork = unitOfWork;
     }
 
@@ -41,15 +48,19 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
-        var user = currentUser.GetEntity<VenueManagerEntity>();
+        var user = await managerModule.GetManagerAsync(currentUser.GetId())
+            ?? throw new ForbiddenException("Manager not found");
+
         var bannerUrl = await imageService.UploadAsync(request.Banner);
         var venue = VenueEntity.Create(user.Id, request.Name, request.About, bannerUrl);
 
-        await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
+        var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
+        venue.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
+        venue.Address = new Address(locationDto.County, locationDto.Town);
+        venue.Avatar = user.Avatar;
+        venue.Email = user.Email;
 
         var createdVenue = await venueRepository.AddAsync(venue);
-        createdVenue.User = user;
-        userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
 
         return createdVenue.ToDto();
@@ -59,9 +70,8 @@ public class VenueService : IVenueService
     {
         var venue = await venueRepository.GetFullByIdAsync(id)
             ?? throw new NotFoundException("Venue not found");
-        var user = currentUser.GetEntity();
 
-        if (venue.UserId != user.Id)
+        if (venue.UserId != currentUser.GetId())
             throw new ForbiddenException("You do not own this venue");
 
         var bannerUrl = request.Banner is not null
@@ -70,12 +80,13 @@ public class VenueService : IVenueService
 
         venue.Update(request.Name, request.About, bannerUrl);
 
-        await userService.UpdateLocationAsync(user, request.Latitude, request.Longitude);
+        var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
+        venue.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
+        venue.Address = new Address(locationDto.County, locationDto.Town);
 
         if (request.Avatar is not null)
-            user.Avatar = await imageService.ReplaceAsync(request.Avatar, user.Avatar);
+            venue.Avatar = await imageService.ReplaceAsync(request.Avatar, venue.Avatar);
 
-        userRepository.Update(user);
         await unitOfWork.SaveChangesAsync();
 
         return venue.ToDto();
@@ -83,20 +94,24 @@ public class VenueService : IVenueService
 
     public async Task<VenueDto> GetDetailsForCurrentUserAsync()
     {
-        var user = currentUser.Get();
-        return await venueRepository.GetDtoByUserIdAsync(user.Id)
+        return await venueRepository.GetDtoByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found");
     }
 
     public async Task<int> GetIdForCurrentUserAsync()
     {
-        var user = currentUser.Get();
-        int? id = await venueRepository.GetIdByUserIdAsync(user.Id);
+        int? id = await venueRepository.GetIdByUserIdAsync(currentUser.GetId());
 
         if (id is null)
             throw new ForbiddenException("You do not own a Venue");
 
         return id.Value;
+    }
+
+    public async Task<bool> OwnsVenueAsync(int venueId)
+    {
+        var id = await venueRepository.GetIdByUserIdAsync(currentUser.GetId());
+        return id == venueId;
     }
 
     public async Task ApproveAsync(int id)

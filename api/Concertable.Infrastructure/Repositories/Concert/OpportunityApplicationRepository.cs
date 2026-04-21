@@ -21,8 +21,6 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
         return await context.OpportunityApplications
             .Where(ca => ca.OpportunityId == id)
             .Include(ca => ca.Artist)
-                .ThenInclude(a => a.User)
-            .Include(ca => ca.Artist)
                 .ThenInclude(a => a.ArtistGenres)
                     .ThenInclude(ag => ag.Genre)
             .Include(ca => ca.Opportunity)
@@ -50,12 +48,9 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
         var query = await context.OpportunityApplications
             .Where(ca => ca.Id == id)
             .Include(ca => ca.Artist)
-                .ThenInclude(a => a.User)
-            .Include(ca => ca.Artist)
                 .ThenInclude(a => a.ArtistGenres)
             .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.Venue)
-                    .ThenInclude(v => v.User)
             .Include(ca => ca.Opportunity.OpportunityGenres)
             .FirstOrDefaultAsync();
 
@@ -70,7 +65,6 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
             .Include(ca => ca.Artist)
                 .ThenInclude(ca => ca.ArtistGenres)
                     .ThenInclude(ca => ca.Genre)
-            .Include(ca => ca.Artist.User)
             .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.Contract)
             .Include(ca => ca.Opportunity)

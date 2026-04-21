@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\Concertable.Identity.Application\Concertable.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Data.Application\Concertable.Data.Application.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Seeding\Concertable.Seeding.csproj" />
+  </ItemGroup>
+
+</Project>

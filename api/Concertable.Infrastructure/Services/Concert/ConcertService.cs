@@ -1,7 +1,8 @@
 
 using Concertable.Application.DTOs;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Mappers;
@@ -127,7 +128,7 @@ public class ConcertService : IConcertService
         var concertHeaderDto = concertEntity.ToSnapshotDto();
         concertHeaderDto = concertHeaderDto with { Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating };
 
-        var location = concertEntity.Booking.Application.Opportunity.Venue.User.Location;
+        var location = concertEntity.Booking.Application.Opportunity.Venue.Location;
 
         if (location is null)
             return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = [] };

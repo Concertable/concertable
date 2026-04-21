@@ -12,18 +12,18 @@ public static class ArtistMappers
         Name = artist.Name,
         About = artist.About,
         BannerUrl = artist.BannerUrl,
-        Avatar = artist.User.Avatar,
+        Avatar = artist.Avatar,
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
-        County = artist.User.Address?.County ?? string.Empty,
-        Town = artist.User.Address?.Town ?? string.Empty,
-        Email = artist.User.Email ?? string.Empty
+        County = artist.Address?.County ?? string.Empty,
+        Town = artist.Address?.Town ?? string.Empty,
+        Email = artist.Email ?? string.Empty
     };
 
     public static ArtistSummaryDto ToSummaryDto(this ArtistEntity artist) => new()
     {
         Id = artist.Id,
         Name = artist.Name,
-        Avatar = artist.User.Avatar,
+        Avatar = artist.Avatar,
         Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto()),
     };
 

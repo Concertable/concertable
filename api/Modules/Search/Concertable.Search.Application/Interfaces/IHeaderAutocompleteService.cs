@@ -2,7 +2,7 @@
 
 namespace Concertable.Search.Application.Interfaces;
 
-public interface IHeaderAutocompleteService
+internal interface IHeaderAutocompleteService
 {
     Task<IEnumerable<AutocompleteDto>> GetAsync(string? searchTerm);
 }

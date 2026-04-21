@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Identity.Contracts;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
@@ -39,7 +40,7 @@ public class OpportunityApplicationValidator : IOpportunityApplicationValidator
 
         var errors = new List<string>();
 
-        if (opportunity.Venue.UserId != currentUser.Get().Id)
+        if (opportunity.Venue.UserId != currentUser.GetId())
             errors.Add("You do not own this concert opportunity");
 
         if (opportunity.Period.Start < timeProvider.GetUtcNow())

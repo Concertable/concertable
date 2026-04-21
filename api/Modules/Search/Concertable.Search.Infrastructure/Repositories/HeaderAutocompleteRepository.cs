@@ -1,5 +1,5 @@
 using Concertable.Core.Entities;
-using Concertable.Infrastructure.Data;
+using Concertable.Data.Application;
 using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,13 +7,13 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class HeaderAutocompleteRepository : IHeaderAutocompleteRepository
 {
-    private readonly ReadDbContext context;
+    private readonly IReadDbContext context;
     private readonly ISearchSpecification<ArtistEntity> artistSearchSpecification;
     private readonly ISearchSpecification<VenueEntity> venueSearchSpecification;
     private readonly ISearchSpecification<ConcertEntity> concertSearchSpecification;
 
     public HeaderAutocompleteRepository(
-        ReadDbContext context,
+        IReadDbContext context,
         ISearchSpecification<ArtistEntity> artistSearchSpecification,
         ISearchSpecification<VenueEntity> venueSearchSpecification,
         ISearchSpecification<ConcertEntity> concertSearchSpecification)
@@ -26,17 +26,17 @@ internal class HeaderAutocompleteRepository : IHeaderAutocompleteRepository
 
     public async Task<IEnumerable<AutocompleteDto>> GetAsync(string? searchTerm) =>
         await artistSearchSpecification
-            .Apply(context.Artists.AsNoTracking(), searchTerm)
+            .Apply(context.Artists, searchTerm)
             .ToAutocompleteDtos()
             .Take(20)
             .Concat(
                 venueSearchSpecification
-                    .Apply(context.Venues.AsNoTracking(), searchTerm)
+                    .Apply(context.Venues, searchTerm)
                     .ToAutocompleteDtos()
                     .Take(20))
             .Concat(
                 concertSearchSpecification
-                    .Apply(context.Concerts.AsNoTracking(), searchTerm)
+                    .Apply(context.Concerts, searchTerm)
                     .ToAutocompleteDtos()
                     .Take(20))
             .OrderBy(r => r.Name)

@@ -6,6 +6,7 @@ using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
+using Concertable.Identity.Contracts;
 
 namespace Concertable.Infrastructure.Services;
 
@@ -45,8 +46,8 @@ public class MessageService : IMessageService
 
     public async Task<IPagination<MessageDto>> GetForUserAsync(IPageParams pageParams)
     {
-        var user = currentUser.Get();
-        var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
+        var userId = currentUser.GetId();
+        var messages = await messageRepository.GetByUserIdAsync(userId, pageParams);
 
         return new Pagination<MessageDto>(
             messages.Data.Select(m => m.ToDto()),
@@ -59,9 +60,9 @@ public class MessageService : IMessageService
     {
         var pageParams = new PageParams { PageNumber = 1, PageSize = 5 };
 
-        var user = currentUser.Get();
-        var messages = await messageRepository.GetByUserIdAsync(user.Id, pageParams);
-        var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
+        var userId = currentUser.GetId();
+        var messages = await messageRepository.GetByUserIdAsync(userId, pageParams);
+        var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(userId);
 
         var pagination = new Pagination<MessageDto>(
             messages.Data.Select(m => m.ToDto()),
@@ -74,8 +75,7 @@ public class MessageService : IMessageService
 
     public async Task<int> GetUnreadCountForUserAsync()
     {
-        var user = currentUser.Get();
-        return await messageRepository.GetUnreadCountByUserIdAsync(user.Id);
+        return await messageRepository.GetUnreadCountByUserIdAsync(currentUser.GetId());
     }
 
     public async Task MarkAsReadAsync(List<int> ids)
