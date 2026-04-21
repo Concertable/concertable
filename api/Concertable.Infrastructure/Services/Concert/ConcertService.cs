@@ -1,6 +1,6 @@
 
 using Concertable.Application.DTOs;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Identity.Contracts;
 using Concertable.Application.Interfaces.Concert;

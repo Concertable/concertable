@@ -2,7 +2,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Payment;
@@ -30,8 +30,7 @@ public class VenueTicketPaymentService : ITicketPaymentStrategy
     {
         var payer = await authModule.GetCustomerAsync(currentUser.GetId())
             ?? throw new ForbiddenException("Only customers can purchase tickets");
-        var payee = await managerModule.GetVenueManagerByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("Venue manager not found for this concert");
+        var payee = await managerModule.GetVenueManagerByConcertIdAsync(concertId);
 
         return await customerPaymentService.PayAsync(payer, payee, concertId, quantity, paymentMethodId, price);
     }

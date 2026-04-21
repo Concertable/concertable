@@ -1,5 +1,7 @@
 using Concertable.Core.Entities;
 using Concertable.Identity.Contracts;
+using Concertable.Identity.Infrastructure.Extensions;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Identity.Infrastructure;
 
@@ -11,40 +13,34 @@ internal class IdentityModule(
     public async Task<ManagerDto?> GetManagerAsync(Guid userId)
     {
         var user = await userRepository.GetByIdAsync(userId);
-        if (user is not ManagerEntity manager) return null;
-        return ToDto(manager);
+        return user is ManagerEntity manager ? manager.ToDto() : null;
     }
 
-    public async Task<ManagerDto?> GetVenueManagerByConcertIdAsync(int concertId)
+    public async Task<ManagerDto> GetVenueManagerByConcertIdAsync(int concertId)
     {
-        var manager = await venueManagerRepository.GetByConcertIdAsync(concertId);
-        return manager is null ? null : ToDto(manager);
+        var manager = await venueManagerRepository.GetByConcertIdAsync(concertId)
+            ?? throw new NotFoundException($"Venue manager not found for concert {concertId}");
+        return manager.ToDto();
     }
 
-    public async Task<ManagerDto?> GetArtistManagerByConcertIdAsync(int concertId)
+    public async Task<ManagerDto> GetArtistManagerByConcertIdAsync(int concertId)
     {
-        var manager = await artistManagerRepository.GetByConcertIdAsync(concertId);
-        return manager is null ? null : ToDto(manager);
+        var manager = await artistManagerRepository.GetByConcertIdAsync(concertId)
+            ?? throw new NotFoundException($"Artist manager not found for concert {concertId}");
+        return manager.ToDto();
     }
 
-    public async Task<ManagerDto?> GetVenueManagerByApplicationIdAsync(int applicationId)
+    public async Task<ManagerDto> GetVenueManagerByApplicationIdAsync(int applicationId)
     {
-        var manager = await venueManagerRepository.GetByApplicationIdAsync(applicationId);
-        return manager is null ? null : ToDto(manager);
+        var manager = await venueManagerRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException($"Venue manager not found for application {applicationId}");
+        return manager.ToDto();
     }
 
-    public async Task<ManagerDto?> GetArtistManagerByApplicationIdAsync(int applicationId)
+    public async Task<ManagerDto> GetArtistManagerByApplicationIdAsync(int applicationId)
     {
-        var manager = await artistManagerRepository.GetByApplicationIdAsync(applicationId);
-        return manager is null ? null : ToDto(manager);
+        var manager = await artistManagerRepository.GetByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException($"Artist manager not found for application {applicationId}");
+        return manager.ToDto();
     }
-
-    private static ManagerDto ToDto(ManagerEntity manager) => new()
-    {
-        Id = manager.Id,
-        Email = manager.Email,
-        Avatar = manager.Avatar,
-        StripeAccountId = manager.StripeAccountId,
-        StripeCustomerId = manager.StripeCustomerId
-    };
 }

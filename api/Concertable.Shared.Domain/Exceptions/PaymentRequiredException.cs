@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Concertable.Application.Exceptions;
+namespace Concertable.Shared.Exceptions;
 
 public class PaymentRequiredException : HttpException
 {

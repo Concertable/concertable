@@ -1,5 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using QRCoder;
 
 namespace Concertable.Infrastructure.Services;

@@ -1,6 +1,6 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 

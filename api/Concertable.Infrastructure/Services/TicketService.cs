@@ -6,7 +6,7 @@ using Concertable.Application.Mappers;
 using Concertable.Application.Responses;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Core.Parameters;
 using FluentResults;
 

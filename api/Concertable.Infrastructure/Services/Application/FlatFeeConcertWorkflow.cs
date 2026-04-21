@@ -1,4 +1,4 @@
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
@@ -27,11 +27,8 @@ public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
         var contract = await contractRepository.GetByApplicationIdAsync<FlatFeeContractEntity>(applicationId)
             ?? throw new NotFoundException("FlatFee contract not found");
 
-        var venueManager = await managerModule.GetVenueManagerByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Venue manager not found");
-
-        var artistManager = await managerModule.GetArtistManagerByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("Artist manager not found");
+        var venueManager = await managerModule.GetVenueManagerByApplicationIdAsync(applicationId);
+        var artistManager = await managerModule.GetArtistManagerByApplicationIdAsync(applicationId);
 
         return await upfrontConcertService.InitiateAsync(applicationId, venueManager, artistManager, contract.Fee, paymentMethodId);
     }

@@ -4,7 +4,7 @@ using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Identity.Contracts;
 using Concertable.Shared;

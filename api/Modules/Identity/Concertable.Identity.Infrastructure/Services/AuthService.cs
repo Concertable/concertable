@@ -1,6 +1,6 @@
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Core.Entities;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

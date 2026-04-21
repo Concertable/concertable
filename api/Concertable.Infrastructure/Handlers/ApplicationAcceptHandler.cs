@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces.Concert;
 
 namespace Concertable.Infrastructure.Handlers;

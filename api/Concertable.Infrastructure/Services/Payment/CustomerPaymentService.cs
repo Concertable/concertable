@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,4 +1,4 @@
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
@@ -36,11 +36,8 @@ public class VersusConcertWorkflow : IConcertWorkflowStrategy
         var contract = await contractRepository.GetByConcertIdAsync<VersusContractEntity>(concertId)
             ?? throw new NotFoundException("Versus contract not found");
 
-        var venueManager = await managerModule.GetVenueManagerByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("Venue manager not found");
-
-        var artistManager = await managerModule.GetArtistManagerByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("Artist manager not found");
+        var venueManager = await managerModule.GetVenueManagerByConcertIdAsync(concertId);
+        var artistManager = await managerModule.GetArtistManagerByConcertIdAsync(concertId);
 
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = contract.CalculateArtistShare(totalRevenue);

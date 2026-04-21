@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Application.Exceptions;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Factories;
 
