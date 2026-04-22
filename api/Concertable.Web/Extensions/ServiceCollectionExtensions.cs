@@ -40,8 +40,6 @@ using Concertable.Infrastructure.Services.Webhook;
 using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
 using Concertable.Core.Enums;
-using Concertable.Identity.Infrastructure.Extensions;
-using Concertable.Search.Infrastructure.Extensions;
 using Concertable.Web.Authorization;
 using Concertable.Web.Handlers;
 using Concertable.Web.Services;
@@ -319,8 +317,6 @@ services.AddRatingRepositories();
 
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentityModule(configuration);
-
         var authSettings = configuration.GetSection("Auth").Get<AuthSettings>()!;
         var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);
         var signingKey = new SymmetricSecurityKey(keyBytes);

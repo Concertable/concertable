@@ -1,13 +1,12 @@
-using Concertable.Search.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Search.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous]
-public class AutocompleteController : ControllerBase
+internal class AutocompleteController : ControllerBase
 {
     private readonly IAutocompleteModule autocompleteModule;
 

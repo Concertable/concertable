@@ -1,13 +1,12 @@
 using Concertable.Core.Parameters;
-using Concertable.Search.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Search.Api.Controllers;
 
 [ApiController]
 [Route("api/concert/headers")]
-public class ConcertHeaderController : ControllerBase
+internal class ConcertHeaderController : ControllerBase
 {
     private readonly IConcertHeaderModule concertHeaderModule;
 

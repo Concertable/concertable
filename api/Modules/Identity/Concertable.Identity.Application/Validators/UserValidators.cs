@@ -1,7 +1,7 @@
-using Concertable.Application.Requests;
+using Concertable.Identity.Application.Requests;
 using FluentValidation;
 
-namespace Concertable.Application.Validators;
+namespace Concertable.Identity.Application.Validators;
 
 public class UpdateLocationRequestValidator : AbstractValidator<UpdateLocationRequest>
 {

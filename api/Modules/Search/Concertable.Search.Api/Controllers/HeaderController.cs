@@ -1,15 +1,14 @@
 using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
-using Concertable.Search.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Search.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous]
-public class HeaderController : ControllerBase
+internal class HeaderController : ControllerBase
 {
     private readonly IHeaderModule headerModule;
 

@@ -55,6 +55,32 @@ If a module needs `Email`, `StripeAccountId`, `Avatar`, `DisplayName`, etc. from
 maintains its own table for those fields, populated from events. Storage is cheap; boundaries are
 not.
 
+**Restricted per consumer.** A projection carries **only** the fields the consuming module
+actually needs — never the full foreign aggregate. When the same source entity is needed by two
+different consumers with different concerns, each consumer gets its **own** projection table,
+shaped to its own view. A projection is a contract between the source module's events and one
+consumer; it is not a shared dataset. The canonical example is reviews:
+
+- `ReviewEntity` lives in Concert. `ReviewSubmittedEvent` carries `ArtistId`, `VenueId`, `Stars`,
+  `Comment`, `CreatedAt`, `ReviewerUserId`.
+- **Artist** maintains `ArtistReviewProjection` (`ReviewId`, `ArtistId`, `Stars`, `Comment`,
+  `CreatedAt`, `ReviewerUserId`) — **no `VenueId`**.
+- **Venue** maintains `VenueReviewProjection` (`ReviewId`, `VenueId`, `Stars`, `Comment`,
+  `CreatedAt`, `ReviewerUserId`) — **no `ArtistId`**.
+- Each handler writes only the slice its module is allowed to see. Artist never learns which
+  venue a review is attached to; Venue never learns which artist. Association data that isn't
+  the consumer's concern stays out of the consumer's database.
+
+The same principle covers **aggregates-over-that-data**: `ArtistRatingProjection` and
+`VenueRatingProjection` are two separate tables, each owned by the module whose display it drives,
+each fed from the same `ReviewSubmittedEvent` by an in-module handler. Neither module reads the
+other's aggregate.
+
+**Search follows the same pattern when Artist/Venue/Concert finish extracting.** Each source
+module will publish its own `ArtistSearchModel` / `VenueSearchModel` / `ConcertSearchModel` as a
+search-shaped projection populated via events, and Search consumes them as the source of its
+search index. Search only sees search-relevant fields — raw writable fields do not leak through.
+
 **Applies only to module-owned facts.** See §6 below for shared reference data — that's a different
 category and does *not* get duplicated.
 
@@ -132,6 +158,9 @@ DB-level integrity, zero runtime lookup overhead, less ceremony.
 | `Artist.Name`, `Artist.About`, `Artist.Genres`, `Artist.Location` | Artist | Search (projection) |
 | `Venue.Name`, `Venue.Capacity`, `Venue.Location` | Venue | Search (projection), Concert (booking snapshot) |
 | `Concert.Id`, `Booking.Id`, `Application.Id` | Concert | Payment (booking snapshot for payout) |
+| `Review.Stars`, `Review.Comment`, `Review.CreatedAt` | Concert | Artist (`ArtistReviewProjection`, ArtistId-scoped — no VenueId), Venue (`VenueReviewProjection`, VenueId-scoped — no ArtistId). Restricted per consumer, see §5. |
+| `Artist.Rating`, `Artist.ReviewCount` (aggregate over Review) | Artist (`ArtistRatingProjection`, fed by Concert's `ReviewSubmittedEvent` — already implemented) | Search (future, via `ArtistSearchModel`) |
+| `Venue.Rating`, `Venue.ReviewCount` (aggregate over Review) | Venue (`VenueRatingProjection`, fed by Concert's `ReviewSubmittedEvent` — symmetric to Artist) | Search (future, via `VenueSearchModel`) |
 | `Payout.Status`, `Ticket.Status` | Payment | Concert (via events) |
 
 ### Cross-module events (illustrative, not exhaustive)
@@ -159,6 +188,7 @@ DB-level integrity, zero runtime lookup overhead, less ceremony.
 - `ApplicationAccepted(ApplicationId, ArtistUserId, VenueUserId, BookingId)`
 - `ConcertScheduled(ConcertId, BookingId, Date)`
 - `ConcertCompleted(ConcertId)` — payment trigger.
+- `ReviewSubmittedEvent(ReviewId, ArtistId, VenueId, ConcertId, ReviewerUserId, Stars, Comment, CreatedAt)` — fan-out: Artist handler updates `ArtistRatingProjection` + `ArtistReviewProjection` (no `VenueId`); Venue handler updates `VenueRatingProjection` + `VenueReviewProjection` (no `ArtistId`). Each consumer projects only its own association — see §5.
 
 **From Payment:**
 - `PayoutRequested(PayoutId, BookingId, Recipients)`

@@ -4,10 +4,11 @@ using Concertable.Core.ModelBinders;
 using Concertable.Artist.Api.Extensions;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
+using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding.Fakers;
-using Concertable.Search.Infrastructure.Extensions;
+using Concertable.Search.Api.Extensions;
 using Concertable.Web.Extensions;
 using Concertable.Web.Hubs;
 
@@ -79,9 +80,10 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();
-services.AddSearchModule();
+services.AddSearchApi();
 services.AddArtistApi(builder.Configuration);
 services.AddConcertModule();
+services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();
 

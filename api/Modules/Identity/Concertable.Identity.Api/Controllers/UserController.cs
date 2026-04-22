@@ -1,14 +1,12 @@
-﻿using Concertable.Application.Requests;
-using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Identity.Api.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController : ControllerBase
+internal class UsersController : ControllerBase
 {
     private readonly IAuthModule authModule;
     private readonly ICurrentUser currentUser;
