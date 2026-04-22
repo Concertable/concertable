@@ -1,7 +1,9 @@
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Identity.Domain.Events;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Identity.Infrastructure.Data.Seeders;
+using Concertable.Identity.Infrastructure.Events;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -55,6 +57,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUserResolver, CurrentUserResolver>();
         services.AddScoped<IAuthModule, AuthModule>();
         services.AddScoped<IManagerModule, IdentityModule>();
+
+        services.AddScoped<IDomainEventHandler<UserLocationUpdatedDomainEvent>, UserLocationUpdatedDomainEventHandler>();
 
         return services;
     }

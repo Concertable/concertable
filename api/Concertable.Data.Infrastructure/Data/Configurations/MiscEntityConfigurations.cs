@@ -81,7 +81,7 @@ public class ConcertGenreEntityConfiguration : IEntityTypeConfiguration<ConcertG
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
         builder.HasOne(cg => cg.Genre)
-            .WithMany(g => g.ConcertGenres)
+            .WithMany()
             .HasForeignKey(cg => cg.GenreId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();

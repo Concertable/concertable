@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Concertable.Concert.Domain.Events;
+using Concertable.Shared;
 
 namespace Concertable.Core.Entities;
 
 [Table("Reviews")]
-public class ReviewEntity : IIdEntity
+public class ReviewEntity : IIdEntity, IEventRaiser
 {
     public int Id { get; private set; }
     public Guid TicketId { get; private set; }
@@ -11,12 +13,24 @@ public class ReviewEntity : IIdEntity
     public string? Details { get; private set; }
     public TicketEntity Ticket { get; set; } = null!;
 
+    private readonly EventRaiser _events = new();
+    public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
+    public void ClearDomainEvents() => _events.Clear();
+
     private ReviewEntity() { }
 
-    public static ReviewEntity Create(Guid ticketId, byte stars, string? details)
+    public static ReviewEntity Create(
+        Guid ticketId,
+        byte stars,
+        string? details,
+        int artistId,
+        int venueId,
+        int concertId)
     {
         ValidateStars(stars);
-        return new() { TicketId = ticketId, Stars = stars, Details = details };
+        var review = new ReviewEntity { TicketId = ticketId, Stars = stars, Details = details };
+        review._events.Raise(new ReviewCreatedDomainEvent(ticketId, artistId, venueId, concertId, stars));
+        return review;
     }
 
     private static void ValidateStars(byte stars)

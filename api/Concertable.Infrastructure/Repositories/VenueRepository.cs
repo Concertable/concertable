@@ -1,9 +1,9 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Search;
+using Concertable.Core.Entities;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Mappers;
-using Concertable.Core.Entities;
+using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories;
@@ -12,7 +12,9 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
 {
     private readonly IRatingSpecification<VenueEntity> ratingSpecification;
 
-    public VenueRepository(ApplicationDbContext context, IRatingSpecification<VenueEntity> ratingSpecification) : base(context)
+    public VenueRepository(
+        ApplicationDbContext context,
+        IRatingSpecification<VenueEntity> ratingSpecification) : base(context)
     {
         this.ratingSpecification = ratingSpecification;
     }
@@ -26,10 +28,9 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
 
     public async Task<VenueSummaryDto?> GetSummaryAsync(int id)
     {
-        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Venues
             .Where(v => v.Id == id)
-            .ToSummaryDto(ratings)
+            .ToSummaryDto(ratingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 
@@ -50,19 +51,17 @@ public class VenueRepository : Repository<VenueEntity>, IVenueRepository
 
     public async Task<VenueDto?> GetDtoByIdAsync(int id)
     {
-        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Venues
             .Where(v => v.Id == id)
-            .ToDto(ratings)
+            .ToDto(ratingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 
     public async Task<VenueDto?> GetDtoByUserIdAsync(Guid userId)
     {
-        var ratings = ratingSpecification.ApplyAggregate(context.Reviews);
         return await context.Venues
             .Where(v => v.UserId == userId)
-            .ToDto(ratings)
+            .ToDto(ratingSpecification.ApplyAggregate(context.Reviews))
             .FirstOrDefaultAsync();
     }
 }

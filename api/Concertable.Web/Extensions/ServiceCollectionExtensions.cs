@@ -13,7 +13,7 @@ using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
-using Concertable.Data.Infrastructure.Events;
+using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Mappers;
@@ -24,7 +24,7 @@ using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Events;
 using Concertable.Infrastructure.Handlers;
-using Concertable.Identity.Domain.Events;
+using Concertable.Identity.Contracts.Events;
 using Concertable.Infrastructure.Services.Accept;
 using Concertable.Infrastructure.Services.Application;
 using Concertable.Infrastructure.Services.Blob;
@@ -83,10 +83,10 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSharedInfrastructure();
         services.AddScoped<AuditInterceptor>();
-        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<DomainEventDispatchInterceptor>();
-        services.AddScoped<IDomainEventHandler<UserLocationUpdatedEvent>, UserLocationUpdatedHandler>();
+        services.AddScoped<IIntegrationEventHandler<UserLocationUpdatedEvent>, VenueLocationSyncHandler>();
 
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(
@@ -190,7 +190,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
         services.AddScoped<IVenueService, VenueService>();
-        services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IConcertDraftService, ConcertDraftService>();
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
@@ -230,7 +229,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IVenueRepository, VenueRepository>();
-        services.AddScoped<IArtistRepository, ArtistRepository>();
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
         services.AddScoped<IConcertBookingRepository, ConcertBookingRepository>();
@@ -240,9 +238,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
-        services.AddScoped<IReviewRepository<ArtistEntity>, ReviewRepository<ArtistEntity>>();
-        services.AddScoped<IReviewRepository<VenueEntity>, ReviewRepository<VenueEntity>>();
-        services.AddScoped<IReviewRepository<ConcertEntity>, ReviewRepository<ConcertEntity>>();
         services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
         services.AddScoped<IVenueReviewRepository, VenueReviewRepository>();
         services.AddScoped<IConcertReviewRepository, ConcertReviewRepository>();

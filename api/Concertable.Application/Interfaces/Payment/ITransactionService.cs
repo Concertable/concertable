@@ -1,5 +1,4 @@
 using Concertable.Application.Responses;
-using Concertable.Core.Interfaces;
 using Concertable.Core.Parameters;
 
 namespace Concertable.Application.Interfaces.Payment;

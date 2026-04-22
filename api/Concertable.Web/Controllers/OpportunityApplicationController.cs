@@ -1,6 +1,8 @@
 using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
+using Concertable.Artist.Contracts;
+using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Concertable.Application.DTOs;
@@ -14,18 +16,21 @@ public class OpportunityApplicationController : ControllerBase
 {
     private readonly IOpportunityApplicationService applicationService;
     private readonly IOpportunityApplicationValidator applicationValidator;
-    private readonly IArtistService artistService;
+    private readonly IArtistModule artistModule;
+    private readonly ICurrentUser currentUser;
     private readonly IOpportunityService opportunityService;
 
     public OpportunityApplicationController(
         IOpportunityApplicationService applicationService,
         IOpportunityApplicationValidator applicationValidator,
-        IArtistService artistService,
+        IArtistModule artistModule,
+        ICurrentUser currentUser,
         IOpportunityService opportunityService)
     {
         this.applicationService = applicationService;
         this.applicationValidator = applicationValidator;
-        this.artistService = artistService;
+        this.artistModule = artistModule;
+        this.currentUser = currentUser;
         this.opportunityService = opportunityService;
     }
 
@@ -68,12 +73,12 @@ public class OpportunityApplicationController : ControllerBase
     [HttpGet("can-apply/{opportunityId}")]
     public async Task<ActionResult<bool>> CanApply(int opportunityId)
     {
-        var artist = await artistService.GetDetailsForCurrentUserAsync();
+        var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId());
 
-        if (artist is null)
+        if (artistId is null)
             return NotFound("Artist not found");
 
-        var result = await applicationValidator.CanApplyAsync(opportunityId, artist.Id);
+        var result = await applicationValidator.CanApplyAsync(opportunityId, artistId.Value);
 
         if (result.IsFailed)
             return BadRequest(result.Errors.Select(e => e.Message));

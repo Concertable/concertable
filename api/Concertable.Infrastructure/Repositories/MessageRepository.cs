@@ -1,4 +1,3 @@
-using Concertable.Core.Interfaces;
 using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;

@@ -1,83 +1,126 @@
-# Concertable — Architecture Guide
+# Concertable — Modular Monolith Rules
 
-## Modular Monolith: Database Layer Rules
+Ongoing refactor: extracting bounded modules (Search ✅, Identity ✅, Artist 🚧, Venue, Concert, Payment) out of the
+legacy `Concertable.Core` / `Concertable.Application` / `Concertable.Infrastructure` trio. Follow these rules for
+**every** change until the extraction is complete.
 
-This project is being refactored into a modular monolith. The database architecture rules below are **non-negotiable** — deviating from them defeats the purpose of the refactor.
+## Module layout
 
-### Project Responsibilities
-
-| Project | Contains | EF dep? |
-|---|---|---|
-| `Concertable.Shared` | Pure primitives — `IDomainEventDispatcher`, `IEventRaiser`, value objects, marker interfaces | No |
-| `Concertable.Data.Application` | `IReadDbContext` with typed `IQueryable<XEntity>` properties | No (IQueryable is System.Linq) |
-| `Concertable.Data.Infrastructure` | `DbContextBase`, `ReadDbContext`, `AuditInterceptor`, `DomainEventDispatcher`, migrations, seeding | Yes |
-| `Concertable.{Module}.Infrastructure` | `XyzDbContext : DbContextBase` — only that module's owned entities | Yes |
-
-`Concertable.Shared.Infrastructure` does not exist. `Concertable.Infrastructure` is the legacy project being gutted into `Concertable.Data.*`.
-
-### DbContextBase
-
-Lives in `Concertable.Data.Infrastructure`. Abstract, no DbSets — purely behavioural. Handles domain event dispatch and audit on every `SaveChangesAsync`. All module write contexts inherit from this, never from `DbContext` directly.
-
-```csharp
-public abstract class DbContextBase(DbContextOptions options, IDomainEventDispatcher? dispatcher = null)
-    : DbContext(options)
-{
-    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
-    {
-        var events = ChangeTracker.Entries<IEventRaiser>()
-            .SelectMany(e => e.Entity.DomainEvents).ToList();
-        foreach (var entry in ChangeTracker.Entries<IEventRaiser>())
-            entry.Entity.ClearDomainEvents();
-        var result = await base.SaveChangesAsync(ct);
-        if (dispatcher is not null)
-            await dispatcher.DispatchAsync(events, ct);
-        return result;
-    }
-}
+```
+api/Modules/<Module>/
+  Concertable.<Module>.Contracts/       ← public surface; other modules reference this only
+  Concertable.<Module>.Domain/          ← entities, domain events, value objects scoped to the module
+  Concertable.<Module>.Application/     ← services, repositories, DTOs, requests, validators, mappers
+  Concertable.<Module>.Infrastructure/  ← EF repos, external integrations, AddXModule() DI extension
+  Concertable.<Module>.Api/             ← controllers for this module's HTTP endpoints
 ```
 
-### Module Write Contexts
+`Concertable.Web` is the composition host only — it wires up middleware/auth/Swagger, calls each
+module's `AddXModule()`, and references each module's `.Api` so the host can discover controllers
+via `ApplicationPart`. It does **not** own per-module controllers.
 
-Each module's write context inherits `DbContextBase` and declares **only the entities that module owns**.
+**Pilot migration note (2026-04-21):** Artist is the pilot for the `Module.Api` pattern. Identity
+and Search still have their controllers in `Concertable.Web/Controllers/`; they'll migrate after
+Artist validates the approach. When evaluating an existing module, the pre-pilot shape is expected
+— don't treat it as drift.
 
-```csharp
-public class IdentityDbContext(DbContextOptions<IdentityDbContext> options, IDomainEventDispatcher? dispatcher = null)
-    : DbContextBase(options, dispatcher)
-{
-    public DbSet<UserEntity> Users => Set<UserEntity>();
-    public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();
-    // Only Identity-owned entities
-}
-```
+## Cross-module rules — the short version
 
-### Rules for Module Write Contexts
+1. **Contracts is the only module a *foreign* caller references.** A foreign caller = another
+   module's Application / Infrastructure / Api, or a cross-module orchestration inside
+   `Concertable.Web`. For them, Contracts holds public interfaces (`IXModule` facade), cross-module
+   DTOs, integration events — the stable shape that would become HTTP/Refit if this module
+   extracted to a microservice. `IXModule` is deliberately **minimal**: cross-module lookups, not
+   the full CRUD surface. Controllers for a module's own HTTP endpoints are NOT foreign callers —
+   they live inside `Module.Api` and inject the module's own internal services
+   (`IXService`/`IXRepository` in `Module.Application`, made visible via `InternalsVisibleTo`).
+2. **Do not reference another module's `Application`, `Infrastructure`, or `Api`.** If you think
+   you need to, stop and consult the user — this is a design decision, not a shortcut.
+   `Concertable.Web` is allowed to reference `Module.Api` (for ApplicationPart discovery) and
+   `Module.Infrastructure` (for `AddXModule()` DI), but not `Module.Application`.
+3. **Domain references are tolerated as the escape hatch for entities.** `IReadDbContext` exposes
+   `IQueryable<TEntity>` typed against module Domain projects, and EF nav properties across modules
+   (e.g. `OpportunityApplicationEntity.Artist`) need the referenced entity type to compile. This is
+   the *only* currently-accepted reason to reference another module's Domain. Plan: replace with
+   Contracts-level read models (e.g. `IQueryable<ArtistReadModel>`) so Domain stops leaking. Until
+   that lands, the Core → Module.Domain direction is the accepted workaround, not the target.
+4. **Never reference across modules in the wrong direction.** Module.Domain must not reference
+   `Concertable.Core` (that's the cycle that motivated Artist Stage 0). If a shared entity is in the
+   way, move it to `Concertable.Shared.Domain` (e.g. `GenreEntity`) rather than re-coupling.
+5. **Shared is for primitives only.** Value objects, marker interfaces (`IIdEntity`, `IHasName`,
+   `IHasLocation`), domain-event primitives, reference-data entities that every module reads but no
+   module owns writes for (`GenreEntity`). No concrete services, no module-specific DTOs. If only
+   one module uses it, it belongs in that module.
+6. **Inbound coupling gets fixed by the caller's module extraction, not the callee's.** If Concert
+   repos have `.Include(x => x.Artist)` chains, leave them alone when extracting Artist — they get
+   rewritten when Concert is extracted to talk to `IArtistModule` instead.
 
-1. **Always inherit `DbContextBase`, never `ApplicationDbContext` or `DbContext` directly.**
+## Database rules
 
-2. **Only register entities this module owns.** No other module's entities, no shared join tables for reference data.
+- Module write contexts inherit `DbContextBase` — **never** `ApplicationDbContext`.
+- A module DbContext owns only its module's entities. Cross-module FKs are plain primitives
+  (`Guid`, `int`) with no nav property and no foreign `DbSet` on that context.
+- `IReadDbContext` (in `Concertable.Data.Application`) is the cross-module read shim — it projects
+  `IQueryable<TEntity>` for every module. Use it for reads that span modules.
+- EF `IEntityTypeConfiguration<T>` files stay in `Concertable.Data.Infrastructure/Data/Configurations/`
+  (matches Identity precedent — keeps `ReadDbContext`'s single `ApplyConfigurationsFromAssembly`
+  call working). Module DbContexts import + apply them explicitly.
+- Composite keys, owned types, `geography` columns, etc. configured via Fluent API so Domain stays
+  free of EF Core attributes beyond `System.ComponentModel.DataAnnotations.Schema` BCL attributes.
 
-3. **Cross-module FK references are plain primitives.** A `Guid UserId` or `int GenreId` is fine. Do not add a navigation property or `DbSet<>` for an entity another module owns. The DB enforces the FK; EF in this context doesn't need to know the target entity exists.
+## Internal enforcement
 
-4. **Never add new DbSets to `ApplicationDbContext`.** It is legacy and shrinks as modules are extracted.
+- Everything in `Module.Application` and `Module.Infrastructure` should be `internal`. Only
+  `Module.Contracts` and the `AddXModule()` extension are public.
+- Compiler-enforced boundary, not a naming-convention hope.
+- Remove Identity/Artist/etc internals from `Concertable.Web/GlobalUsings.cs` — Web imports from
+  `Module.Contracts` (and optionally `Module.Api` for controller ApplicationPart wiring) only.
+- `IXService`, `IXRepository`, validators, mappers — all `internal` to `Module.Application`. They
+  are visible to `Module.Infrastructure` and `Module.Api` via `[assembly: InternalsVisibleTo(...)]`
+  entries (put these in an `AssemblyInfo.cs` inside the owning project, matching the Identity
+  precedent at `api/Modules/Identity/Concertable.Identity.Infrastructure/AssemblyInfo.cs`).
+  `Module.Api` controllers inject `IXService`/`IXRepository` because Api is same-module, not
+  foreign.
+- DTOs, requests, responses **consumed by the module's own controllers** can stay `internal` in
+  `Module.Application` if they're not consumed by any foreign caller. Move them to
+  `Module.Contracts` only when another module actually needs them (e.g. a summary DTO referenced by
+  another module's DTO, or a DTO returned from `IXModule`).
 
-### ReadDbContext and IReadDbContext
+## Naming
 
-`IReadDbContext` lives in `Concertable.Data.Application` — it exposes typed `IQueryable<XEntity>` properties for every entity across all modules. No EF dependency (IQueryable is System.Linq), but does reference all module Domain projects.
+- Project: `Concertable.<Module>.<Layer>` (e.g. `Concertable.Artist.Application`).
+- Namespace: rename as you move. **Do not** leave `Concertable.Application.*` on files that now live
+  inside a module — Identity did this as a shortcut and paid for it later (see `IDENTITY_COMPLETION.md §4`).
+- Module facade: `IXModule` in Contracts. Implementation `XModule` in Infrastructure.
+  **The facade is the cross-module surface only** — the methods OTHER modules (Concert, Identity,
+  Payment, etc.) call to look things up. It is intentionally minimal and stable: the shape you'd
+  turn into an HTTP/Refit contract if this module extracted to a microservice. HTTP endpoints
+  the module itself exposes are backed by `IXService` inside `Module.Application` and called by
+  controllers in `Module.Api`, **not** via `IXModule`. Don't put `CreateAsync`/`UpdateAsync` on
+  `IXModule` just because the Web UI uses them — other modules don't create or update foreign
+  aggregates, only the owning module's controllers do.
+- **A module can expose multiple facades.** Don't force everything through one fat `IXModule`. Split
+  by concern when it reads cleaner — Identity ships both `IIdentityModule` (user lookups) and
+  `IAuthModule` (auth flows) in `Identity.Contracts`. Each is its own `IYModule` + `YModule` pair.
+  (Identity today doubles `IAuthModule` as the controller-facing interface — that's pre-pilot
+  shape; post-Artist-pilot, Auth-related HTTP endpoints will move into `Identity.Api` and
+  `IAuthModule` will shrink to cross-module auth lookups only.)
 
-`ReadDbContext` lives in `Concertable.Data.Infrastructure`, implements `IReadDbContext`, is strictly no-tracking, and throws on `SaveChanges`. It is the only context that spans all modules and is used for all cross-module reads.
+## When in doubt
 
-### Shared / Reference Data (e.g. GenreEntity)
+- **Ask the user.** A cross-module reference that isn't through Contracts is a design decision. The
+  only currently-accepted exception is Core/module → Module.Domain for entity types (see rule 3).
+  Any other cross-module Application/Infrastructure reference needs an explicit conversation.
 
-No module owns `GenreEntity` in a write sense. The rule is:
+## Reference implementations in-repo
 
-- Store the FK as a plain primitive (`int GenreId`) in join entities like `ConcertGenreEntity`.
-- Do not configure `.HasOne<GenreEntity>()` in any module write context.
-- Query genres via `IReadDbContext`.
-- Eventually `GenreEntity` belongs in a `ReferenceData` module — for now it lives where it is.
+- `Concertable.Search.*` — query-side module, skips Domain (no owned writes).
+- `Concertable.Identity.*` — full 4-layer module, includes `IIdentityModule` + `IAuthModule` facades
+  and `ICurrentUser` in Contracts.
 
-### Module Extraction Order
+## Staged plans (do not delete)
 
-Identity → Artist → Venue → Concert → Payment
-
-Each extracted module must have its own `XyzDbContext : DbContextBase` before moving to the next.
+- `ARTIST_MODULE_REFACTOR.md` — active.
+- `MM_NORTH_STAR.md` — corollaries + long-term targets (rating-pipeline rewrite, per-module review
+  tables, read-model replacement for Module.Domain references).
+- Memory: `project_modular_monolith.md` for agreed stage progress.

@@ -46,11 +46,8 @@ public class TestDbInitializer : IDbInitializer
 
         await context.Database.MigrateAsync();
 
-        foreach (var seeder in seeders.OrderBy(s => s.Order))
-            await seeder.SeedAsync();
-
-        var now = timeProvider.GetUtcNow().UtcDateTime;
-
+        // Genres are reference data used by module seeders (ArtistTestSeeder needs seed.Rock),
+        // so they must be seeded before the SeedAsync loop runs.
         await context.Genres.SeedIfEmptyAsync(async () =>
         {
             seed.Rock = GenreFactory.Create("Rock");
@@ -62,18 +59,10 @@ public class TestDbInitializer : IDbInitializer
             await context.SaveChangesAsync();
         });
 
-        await context.Artists.SeedIfEmptyAsync(async () =>
-        {
-            seed.Artist = ArtistFaker.GetFaker(seed.ArtistManager.Id, "Test Artist", "artist.jpg").Generate();
-            seed.Artist.SyncGenres([seed.Rock.Id]);
-            seed.Artist.Location = seed.ArtistManager.Location;
-            seed.Artist.Address = seed.ArtistManager.Address;
-            seed.Artist.Avatar = seed.ArtistManager.Avatar;
-            seed.Artist.Email = seed.ArtistManager.Email;
+        foreach (var seeder in seeders.OrderBy(s => s.Order))
+            await seeder.SeedAsync();
 
-            context.Artists.Add(seed.Artist);
-            await context.SaveChangesAsync();
-        });
+        var now = timeProvider.GetUtcNow().UtcDateTime;
 
         await context.Venues.SeedIfEmptyAsync(async () =>
         {

@@ -1,10 +1,9 @@
-using Concertable.Core.Interfaces;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
 namespace Concertable.Core.Entities;
 
-public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>, IReviewable<VenueEntity>
+public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>
 {
     private VenueEntity() { }
 
@@ -19,7 +18,6 @@ public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>, IReview
     public string? Avatar { get; set; }
     public string? Email { get; set; }
     public static Expression<Func<VenueEntity, Point?>> LocationExpression => v => v.Location;
-    public static Expression<Func<ReviewEntity, int>> ReviewIdSelector => r => r.Ticket.Concert.Booking.Application.Opportunity.VenueId;
 
     public ICollection<OpportunityEntity> Opportunities { get; private set; } = [];
 

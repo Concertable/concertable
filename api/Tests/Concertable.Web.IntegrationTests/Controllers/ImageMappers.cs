@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using Concertable.Application.DTOs;
+using Concertable.Shared;
 
 namespace Concertable.Web.IntegrationTests.Controllers;
 

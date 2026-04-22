@@ -39,7 +39,9 @@
 		<ProjectReference Include="..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
 		<ProjectReference Include="..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
 		<ProjectReference Include="..\Modules\Identity\Concertable.Identity.Application\Concertable.Identity.Application.csproj" />
+		<ProjectReference Include="..\Modules\Artist\Concertable.Artist.Application\Concertable.Artist.Application.csproj" />
 		<ProjectReference Include="..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
+		<ProjectReference Include="..\Modules\Search\Concertable.Search.Application\Concertable.Search.Application.csproj" />
 		<ProjectReference Include="..\Concertable.Seeding\Concertable.Seeding.csproj" />
 	</ItemGroup>
 

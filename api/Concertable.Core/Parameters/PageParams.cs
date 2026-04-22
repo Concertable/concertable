@@ -1,4 +1,3 @@
-using Concertable.Core.Interfaces;
 
 namespace Concertable.Core.Parameters;
 

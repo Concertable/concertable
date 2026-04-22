@@ -1,8 +1,6 @@
-using Concertable.Application.Interfaces;
-
 namespace Concertable.Application.DTOs;
 
-public record ConcertDto : IDetails
+public record ConcertDto
 {
     public int Id { get; set; }
     public required string Name { get; set; }

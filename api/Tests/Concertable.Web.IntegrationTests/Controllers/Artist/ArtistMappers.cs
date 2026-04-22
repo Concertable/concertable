@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using Concertable.Application.Requests;
+using Concertable.Artist.Application.Requests;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Artist;
 

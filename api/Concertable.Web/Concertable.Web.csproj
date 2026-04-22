@@ -32,7 +32,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
+    <ProjectReference Include="..\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Infrastructure\Concertable.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Artist\Concertable.Artist.Api\Concertable.Artist.Api.csproj" />
+    <ProjectReference Include="..\Modules\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Application\Concertable.Application.csproj" />
     <ProjectReference Include="..\Modules\Search\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />

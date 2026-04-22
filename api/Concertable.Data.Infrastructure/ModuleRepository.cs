@@ -44,3 +44,15 @@ public abstract class GuidModuleRepository<TEntity, TContext>(TContext context)
     public bool Exists(Guid id) =>
         context.Set<TEntity>().Any(e => e.Id == id);
 }
+
+public abstract class IdModuleRepository<TEntity, TContext>(TContext context)
+    : ModuleRepository<TEntity, TContext>(context), IIdRepository<TEntity>
+    where TEntity : class, IIdEntity
+    where TContext : DbContextBase
+{
+    public Task<TEntity?> GetByIdAsync(int id) =>
+        context.Set<TEntity>().FindAsync(id).AsTask();
+
+    public bool Exists(int id) =>
+        context.Set<TEntity>().Any(e => e.Id == id);
+}

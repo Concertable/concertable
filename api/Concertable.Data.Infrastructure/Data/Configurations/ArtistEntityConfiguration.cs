@@ -1,4 +1,4 @@
-using Concertable.Core.Entities;
+using Concertable.Artist.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,5 +15,34 @@ public class ArtistEntityConfiguration : IEntityTypeConfiguration<ArtistEntity>
             a.Property(x => x.County).HasColumnName("County");
             a.Property(x => x.Town).HasColumnName("Town");
         });
+    }
+}
+
+public class ArtistGenreEntityConfiguration : IEntityTypeConfiguration<ArtistGenreEntity>
+{
+    public void Configure(EntityTypeBuilder<ArtistGenreEntity> builder)
+    {
+        builder.ToTable("ArtistGenres");
+        builder.HasKey(ag => new { ag.ArtistId, ag.GenreId });
+        builder.HasOne(ag => ag.Artist)
+            .WithMany(a => a.ArtistGenres)
+            .HasForeignKey(ag => ag.ArtistId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+        builder.HasOne(ag => ag.Genre)
+            .WithMany()
+            .HasForeignKey(ag => ag.GenreId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+    }
+}
+
+public class ArtistRatingProjectionConfiguration : IEntityTypeConfiguration<ArtistRatingProjection>
+{
+    public void Configure(EntityTypeBuilder<ArtistRatingProjection> builder)
+    {
+        builder.ToTable("ArtistRatingProjections");
+        builder.HasKey(p => p.ArtistId);
+        builder.Property(p => p.ArtistId).ValueGeneratedNever();
     }
 }

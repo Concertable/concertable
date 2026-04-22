@@ -1,9 +1,9 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Search;
 using Concertable.Core.Entities;
 using Concertable.Data.Application;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Search.Infrastructure.Repositories;
@@ -13,21 +13,21 @@ internal class ArtistHeaderRepository : IArtistHeaderRepository
     private readonly IReadDbContext context;
     private readonly IArtistSearchSpecification searchSpecification;
     private readonly IGeometrySpecification<ArtistEntity> geometrySpecification;
-    private readonly IRatingSpecification<ArtistEntity> ratingSpecification;
     private readonly ISortSpecification<ArtistHeaderDto> sortSpecification;
+    private readonly IRatingSpecification<ArtistEntity> ratingSpecification;
 
     public ArtistHeaderRepository(
         IReadDbContext context,
         IArtistSearchSpecification searchSpecification,
         IGeometrySpecification<ArtistEntity> geometrySpecification,
-        IRatingSpecification<ArtistEntity> ratingSpecification,
-        ISortSpecification<ArtistHeaderDto> sortSpecification)
+        ISortSpecification<ArtistHeaderDto> sortSpecification,
+        IRatingSpecification<ArtistEntity> ratingSpecification)
     {
         this.context = context;
         this.searchSpecification = searchSpecification;
         this.geometrySpecification = geometrySpecification;
-        this.ratingSpecification = ratingSpecification;
         this.sortSpecification = sortSpecification;
+        this.ratingSpecification = ratingSpecification;
     }
 
     public async Task<IPagination<ArtistHeaderDto>> SearchAsync(SearchParams searchParams)

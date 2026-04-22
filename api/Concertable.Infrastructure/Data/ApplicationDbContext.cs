@@ -13,8 +13,6 @@ public class ApplicationDbContext : DbContextBase
     protected ApplicationDbContext(DbContextOptions options)
         : base(options) { }
 
-    public DbSet<ArtistEntity> Artists { get; set; }
-    public DbSet<ArtistGenreEntity> ArtistGenres { get; set; }
     public DbSet<ConcertEntity> Concerts { get; set; }
     public DbSet<ConcertGenreEntity> ConcertGenres { get; set; }
     public DbSet<ConcertImageEntity> ConcertImages { get; set; }
@@ -49,5 +47,10 @@ public class ApplicationDbContext : DbContextBase
         modelBuilder.Entity<RefreshTokenEntity>().ToTable("RefreshTokens", t => t.ExcludeFromMigrations());
         modelBuilder.Entity<EmailVerificationTokenEntity>().ToTable("EmailVerificationTokens", t => t.ExcludeFromMigrations());
         modelBuilder.Entity<PasswordResetTokenEntity>().ToTable("PasswordResetTokens", t => t.ExcludeFromMigrations());
+
+        // Artist-owned tables — schema managed by ArtistDbContext migrations
+        modelBuilder.Entity<ArtistEntity>().ToTable("Artists", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<ArtistGenreEntity>().ToTable("ArtistGenres", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<ArtistRatingProjection>().ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
     }
 }
