@@ -1,5 +1,4 @@
-
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
 public class ConcertImageEntity : IIdEntity
 {

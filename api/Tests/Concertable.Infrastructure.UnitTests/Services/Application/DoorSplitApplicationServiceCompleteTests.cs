@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Services.Application;
 using Moq;

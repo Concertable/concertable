@@ -1,7 +1,5 @@
-using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Concertable.Infrastructure.Data;
 
@@ -21,8 +19,8 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
         return await context.OpportunityApplications
             .Where(ca => ca.OpportunityId == id)
             .Include(ca => ca.Artist)
-                .ThenInclude(a => a.ArtistGenres)
-                    .ThenInclude(ag => ag.Genre)
+                .ThenInclude(a => a.Genres)
+                    .ThenInclude(g => g.Genre)
             .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.Contract)
             .Include(ca => ca.Opportunity)
@@ -43,15 +41,13 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
             .ToListAsync();
     }
 
-    public async Task<(ArtistEntity, VenueEntity)?> GetArtistAndVenueByIdAsync(int id)
+    public async Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id)
     {
         var query = await context.OpportunityApplications
             .Where(ca => ca.Id == id)
             .Include(ca => ca.Artist)
-                .ThenInclude(a => a.ArtistGenres)
             .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.Venue)
-            .Include(ca => ca.Opportunity.OpportunityGenres)
             .FirstOrDefaultAsync();
 
         if (query is null) return null;
@@ -63,8 +59,8 @@ public class OpportunityApplicationRepository : Repository<OpportunityApplicatio
         return await context.OpportunityApplications
             .Where(ca => ca.Id == id)
             .Include(ca => ca.Artist)
-                .ThenInclude(ca => ca.ArtistGenres)
-                    .ThenInclude(ca => ca.Genre)
+                .ThenInclude(a => a.Genres)
+                    .ThenInclude(g => g.Genre)
             .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.Contract)
             .Include(ca => ca.Opportunity)

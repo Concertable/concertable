@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 
 namespace Concertable.Application.Mappers;

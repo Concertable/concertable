@@ -11,7 +11,7 @@ public static class QueryableReviewMappers
             Id = r.Id,
             Stars = r.Stars,
             Details = r.Details,
-            Email = r.Ticket.User.Email ?? string.Empty
+            Email = string.Empty
         });
 
     public static IQueryable<ReviewSummaryDto> ToSummaryDto(this IQueryable<ReviewEntity> query) =>

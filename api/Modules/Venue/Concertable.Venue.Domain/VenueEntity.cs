@@ -1,9 +1,8 @@
 using NetTopologySuite.Geometries;
-using System.Linq.Expressions;
 
 namespace Concertable.Venue.Domain;
 
-public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>
+public class VenueEntity : IIdEntity, IHasName, IHasLocation
 {
     private VenueEntity() { }
 
@@ -17,7 +16,6 @@ public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>
     public Address? Address { get; set; }
     public string? Avatar { get; set; }
     public string? Email { get; set; }
-    public static Expression<Func<VenueEntity, Point?>> LocationExpression => v => v.Location;
 
     public static VenueEntity Create(Guid userId, string name, string about, string bannerUrl)
     {

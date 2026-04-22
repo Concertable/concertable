@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
 [Table("OpportunityGenres")]
 [PrimaryKey(nameof(OpportunityId), nameof(GenreId))]

@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 
 namespace Concertable.Application.Interfaces.Concert;

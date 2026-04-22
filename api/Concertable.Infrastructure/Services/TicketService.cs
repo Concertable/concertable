@@ -122,13 +122,13 @@ public class TicketService : ITicketService
 public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
         var tickets = await ticketRepository.GetUpcomingByUserIdAsync(currentUser.GetId());
-        return tickets.ToDtos();
+        return tickets.ToDtos(currentUser.Email ?? string.Empty);
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserHistoryAsync()
     {
         var tickets = await ticketRepository.GetHistoryByUserIdAsync(currentUser.GetId());
-        return tickets.ToDtos();
+        return tickets.ToDtos(currentUser.Email ?? string.Empty);
     }
 
     private TicketEntity BuildTicket(Guid userId, int concertId)

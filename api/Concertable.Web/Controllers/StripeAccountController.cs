@@ -31,7 +31,7 @@ public class StripeAccountController : ControllerBase
     [HttpGet("onboarding-link")]
     public async Task<ActionResult<string>> GetOnboardingLink()
     {
-        var manager = await managerModule.GetManagerAsync(currentUser.GetId())
+        var manager = await managerModule.GetByIdAsync(currentUser.GetId())
             ?? throw new UnauthorizedAccessException("Manager not found.");
 
         return Ok(await stripeAccountService.GetOnboardingLinkAsync(manager.StripeAccountId));
@@ -40,7 +40,7 @@ public class StripeAccountController : ControllerBase
     [HttpGet("account-status")]
     public async Task<ActionResult<PayoutAccountStatus>> GetAccountStatus()
     {
-        var manager = await managerModule.GetManagerAsync(currentUser.GetId())
+        var manager = await managerModule.GetByIdAsync(currentUser.GetId())
             ?? throw new UnauthorizedAccessException("Manager not found.");
 
         return Ok(await stripeAccountService.GetAccountStatusAsync(manager.StripeAccountId));

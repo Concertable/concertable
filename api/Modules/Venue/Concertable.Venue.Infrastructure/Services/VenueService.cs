@@ -40,7 +40,7 @@ internal class VenueService : IVenueService
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
-        var user = await managerModule.GetManagerAsync(currentUser.GetId())
+        var user = await managerModule.GetByIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);

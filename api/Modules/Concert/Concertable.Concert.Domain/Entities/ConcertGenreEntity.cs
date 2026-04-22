@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
 [PrimaryKey(nameof(ConcertId), nameof(GenreId))]
 public class ConcertGenreEntity : IEquatable<ConcertGenreEntity>

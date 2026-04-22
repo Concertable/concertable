@@ -6,22 +6,22 @@ namespace Concertable.Application.Mappers;
 
 public static class ConcertMappers
 {
-    private static ConcertArtistDto ToConcertArtistDto(this ArtistEntity artist) => new()
+    private static ConcertArtistDto ToConcertArtistDto(this ArtistReadModel artist) => new()
     {
         Id = artist.Id,
         Name = artist.Name,
         Avatar = artist.Avatar,
-        County = artist.Address?.County ?? string.Empty,
-        Town = artist.Address?.Town ?? string.Empty,
-        Genres = artist.ArtistGenres.Select(ag => ag.Genre.ToDto())
+        County = artist.County ?? string.Empty,
+        Town = artist.Town ?? string.Empty,
+        Genres = artist.Genres.Select(ag => ag.Genre.ToDto())
     };
 
-    private static ConcertVenueDto ToConcertVenueDto(this VenueEntity venue) => new()
+    private static ConcertVenueDto ToConcertVenueDto(this VenueReadModel venue) => new()
     {
         Id = venue.Id,
         Name = venue.Name,
-        County = venue.Address?.County ?? string.Empty,
-        Town = venue.Address?.Town ?? string.Empty,
+        County = venue.County ?? string.Empty,
+        Town = venue.Town ?? string.Empty,
         Latitude = venue.Location?.Y ?? 0.0,
         Longitude = venue.Location?.X ?? 0.0
     };
@@ -51,8 +51,8 @@ public static class ConcertMappers
         ImageUrl = concert.Booking.Application.Artist.Avatar,
         StartDate = concert.Booking.Application.Opportunity.Period.Start,
         EndDate = concert.Booking.Application.Opportunity.Period.End,
-        County = concert.Booking.Application.Opportunity.Venue.Address?.County ?? string.Empty,
-        Town = concert.Booking.Application.Opportunity.Venue.Address?.Town ?? string.Empty,
+        County = concert.Booking.Application.Opportunity.Venue.County ?? string.Empty,
+        Town = concert.Booking.Application.Opportunity.Venue.Town ?? string.Empty,
         DatePosted = concert.DatePosted
     };
 

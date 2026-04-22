@@ -2,7 +2,6 @@ using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities.Contracts;
 
 namespace Concertable.Infrastructure.Services.Application;
 

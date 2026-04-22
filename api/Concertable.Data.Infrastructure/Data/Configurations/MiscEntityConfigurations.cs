@@ -39,10 +39,6 @@ public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
             .HasForeignKey(t => t.ConcertId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
-        builder.HasOne(t => t.User)
-            .WithMany()
-            .HasForeignKey(t => t.UserId)
-            .IsRequired();
     }
 }
 

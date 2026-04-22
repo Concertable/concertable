@@ -142,7 +142,12 @@
       "Bash(xargs -0 grep -n \"ReadDbContext\")",
       "Bash(xargs -0 grep -E \"new.*DbContext|<.*DbContext>\")",
       "Bash(xargs -0 grep -l \"\\\\.AddDbContext\\\\|\\\\.AddScoped.*Context\")",
-      "Bash(wait)"
+      "Bash(wait)",
+      "Bash(wc *)",
+      "Bash(awk 'NR==1,/^### 5\\\\. Each module/{next}; /^### 6\\\\./{p=1} p' MM_NORTH_STAR.md)",
+      "Bash(awk '/^### 5\\\\. Each module/{exit} {print}' MM_NORTH_STAR.md)",
+      "Read(//tmp/**)",
+      "Bash(rm MM_NORTH_STAR.md.tmp_section5.md /tmp/mm_after.md /tmp/mm_before.md)"
     ]
   }
 }

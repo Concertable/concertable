@@ -1,6 +1,4 @@
-using Concertable.Core.Enums;
-
-namespace Concertable.Core.Entities.Contracts;
+namespace Concertable.Concert.Domain;
 
 public class VenueHireContractEntity : ContractEntity
 {

@@ -32,8 +32,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IManagerRepository<ArtistManagerEntity>, ArtistManagerRepository>();
-        services.AddScoped<IManagerRepository<VenueManagerEntity>, VenueManagerRepository>();
         services.AddScoped<IUserValidator, UserValidator>();
         services.AddSingleton<IUserMapper, UserMapper>();
         services.AddScoped<IAuthUriService, AuthUriService>();

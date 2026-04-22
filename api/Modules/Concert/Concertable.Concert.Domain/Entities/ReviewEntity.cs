@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Concertable.Concert.Domain.Events;
 using Concertable.Shared;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
 [Table("Reviews")]
 public class ReviewEntity : IIdEntity, IEventRaiser

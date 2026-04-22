@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Repositories;

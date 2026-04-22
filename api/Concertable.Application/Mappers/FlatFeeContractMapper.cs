@@ -1,6 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities.Contracts;
 namespace Concertable.Application.Mappers;
 
 public class FlatFeeContractMapper : IContractMapper

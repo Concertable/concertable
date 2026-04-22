@@ -1,5 +1,4 @@
 using Concertable.Core.Entities;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Data.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 

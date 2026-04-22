@@ -5,7 +5,7 @@ using Concertable.Core.Enums;
 
 namespace Concertable.Application.Interfaces.Concert;
 
-public interface IConcertRepository : IRepository<Core.Entities.ConcertEntity>
+public interface IConcertRepository : IRepository<ConcertEntity>
 {
     Task<ConcertEntity?> GetFullByIdAsync(int id);
     Task<ConcertDto?> GetDtoByIdAsync(int id);

@@ -1,11 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Models;
-using Concertable.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Concertable.Application.Interfaces.Concert;
 
@@ -14,6 +8,6 @@ public interface IOpportunityApplicationRepository : IRepository<OpportunityAppl
     Task<IEnumerable<OpportunityApplicationEntity>> GetByOpportunityIdAsync(int opportunityId);
     Task<IEnumerable<OpportunityApplicationEntity>> GetPendingByArtistIdAsync(int id);
     Task<IEnumerable<OpportunityApplicationEntity>> GetRecentDeniedByArtistIdAsync(int id);
-    Task<(ArtistEntity, VenueEntity)?> GetArtistAndVenueByIdAsync(int id);
+    Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id);
     Task RejectAllExceptAsync(int opportunityId, int applicationId);
 }

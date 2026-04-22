@@ -5,14 +5,11 @@ namespace Concertable.Application.Mappers;
 
 public static class ReviewMappers
 {
-    public static ReviewDto ToDto(this ReviewEntity review) => new()
+    public static ReviewDto ToDto(this ReviewEntity review, string email) => new()
     {
         Id = review.Id,
         Stars = review.Stars,
         Details = review.Details,
-        Email = review.Ticket.User.Email ?? string.Empty
+        Email = email
     };
-
-    public static IEnumerable<ReviewDto> ToDtos(this IEnumerable<ReviewEntity> reviews) =>
-        reviews.Select(r => r.ToDto());
 }

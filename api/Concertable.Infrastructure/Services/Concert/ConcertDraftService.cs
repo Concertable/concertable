@@ -28,7 +28,7 @@ public class ConcertDraftService : IConcertDraftService
         var opportunity = bookingConcert.Application.Opportunity;
         var venue = opportunity.Venue;
 
-        var artistGenreIds = artist.ArtistGenres.Select(ag => ag.GenreId);
+        var artistGenreIds = artist.Genres.Select(g => g.GenreId);
         var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId);
 
         var matchingGenreIds = opportunityGenreIds.Any()

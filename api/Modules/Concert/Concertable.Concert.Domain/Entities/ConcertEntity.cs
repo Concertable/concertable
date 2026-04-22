@@ -1,9 +1,8 @@
 using NetTopologySuite.Geometries;
-using System.Linq.Expressions;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
-public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>
+public class ConcertEntity : IIdEntity, IHasName, IHasLocation
 {
     public int Id { get; private set; }
     public int BookingId { get; private set; }
@@ -15,7 +14,7 @@ public class ConcertEntity : IIdEntity, IHasName, ILocatable<ConcertEntity>
     public int TotalTickets { get; private set; }
     public int AvailableTickets { get; private set; }
     public DateTime? DatePosted { get; private set; }
-    public static Expression<Func<ConcertEntity, Point?>> LocationExpression => c => c.Booking.Application.Opportunity.Venue.Location;
+    public Point? Location { get; set; }
     public ConcertBookingEntity Booking { get; set; } = null!;
     public ICollection<TicketEntity> Tickets { get; } = [];
     public HashSet<ConcertGenreEntity> ConcertGenres { get; private set; } = [];

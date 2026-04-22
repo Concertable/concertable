@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
-using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Identity.Contracts;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,30 +26,6 @@ internal class UserService : IUserService
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
         this.userMapper = userMapper;
-    }
-
-    public async Task<Guid> GetIdByApplicationIdAsync(int applicationId)
-    {
-        return await userRepsitory.GetIdByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("User not found for application");
-    }
-
-    public async Task<UserEntity> GetByApplicationIdAsync(int applicationId)
-    {
-        return await userRepsitory.GetByApplicationIdAsync(applicationId)
-            ?? throw new NotFoundException("User not found for application");
-    }
-
-    public async Task<Guid> GetIdByConcertIdAsync(int concertId)
-    {
-        return await userRepsitory.GetIdByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("User not found for concert");
-    }
-
-    public async Task<UserEntity> GetByConcertIdAsync(int concertId)
-    {
-        return await userRepsitory.GetByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("User not found for concert");
     }
 
     public async Task<IUser> SaveLocationAsync(double latitude, double longitude)

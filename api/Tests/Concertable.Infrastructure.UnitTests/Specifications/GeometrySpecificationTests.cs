@@ -4,7 +4,6 @@ using Concertable.Search.Infrastructure.Specifications;
 using Moq;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using System.Linq.Expressions;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Specifications;
@@ -33,9 +32,9 @@ public class GeometrySpecificationTests
         sut = new GeometrySpecification<TestEntity>(geometryProvider.Object);
     }
 
-    private TestEntity London => new() { Owner = new TestOwner { Location = londonPoint } };
-    private TestEntity Manchester => new() { Owner = new TestOwner { Location = manchesterPoint } };
-    private TestEntity NoLocation => new() { Owner = new TestOwner { Location = null } };
+    private TestEntity London => new() { Location = londonPoint };
+    private TestEntity Manchester => new() { Location = manchesterPoint };
+    private TestEntity NoLocation => new() { Location = null };
 
     [Fact]
     public void Apply_ShouldReturnUnmodifiedQuery_WhenCoordinatesAreInvalid()
@@ -121,15 +120,9 @@ public class GeometrySpecificationTests
         Assert.Single(result);
     }
 
-    private class TestEntity : IIdEntity, ILocatable<TestEntity>
+    private class TestEntity : IIdEntity, IHasLocation
     {
         public int Id { get; set; }
-        public TestOwner Owner { get; set; } = null!;
-        public static Expression<Func<TestEntity, Point?>> LocationExpression => e => e.Owner.Location;
-    }
-
-    private class TestOwner : IEntity
-    {
         public Point? Location { get; set; }
     }
 

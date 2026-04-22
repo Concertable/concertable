@@ -1,5 +1,4 @@
-
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
 public class TicketEntity : IGuidEntity
 {
@@ -8,7 +7,6 @@ public class TicketEntity : IGuidEntity
     public int ConcertId { get; private set; }
     public DateTime PurchaseDate { get; private set; }
     public byte[] QrCode { get; private set; } = null!;
-    public CustomerEntity User { get; set; } = null!;
     public ConcertEntity Concert { get; set; } = null!;
     public ReviewEntity? Review { get; set; }
 

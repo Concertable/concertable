@@ -1,7 +1,6 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Artist.Application.Mappers;
-using Concertable.Core.Entities;
+using Concertable.Artist.Contracts;
 
 namespace Concertable.Application.Mappers;
 
@@ -15,7 +14,17 @@ public class OpportunityApplicationMapper : IOpportunityApplicationMapper
     }
 
     public OpportunityApplicationDto ToDto(OpportunityApplicationEntity application) =>
-        new(application.Id, application.Artist.ToSummaryDto(), opportunityMapper.ToDto(application.Opportunity), application.Opportunity.Contract.ContractType, application.Status);
+        new(application.Id,
+            new ArtistSummaryDto
+            {
+                Id = application.Artist.Id,
+                Name = application.Artist.Name,
+                Avatar = application.Artist.Avatar,
+                Genres = application.Artist.Genres.Select(g => new GenreDto(g.Genre.Id, g.Genre.Name))
+            },
+            opportunityMapper.ToDto(application.Opportunity),
+            application.Opportunity.Contract.ContractType,
+            application.Status);
 
     public IEnumerable<OpportunityApplicationDto> ToDtos(IEnumerable<OpportunityApplicationEntity> applications) =>
         applications.Select(ToDto);

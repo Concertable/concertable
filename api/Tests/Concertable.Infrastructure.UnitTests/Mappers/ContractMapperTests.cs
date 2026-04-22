@@ -1,6 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Xunit;
 

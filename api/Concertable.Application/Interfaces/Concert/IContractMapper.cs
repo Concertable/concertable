@@ -1,4 +1,3 @@
-using Concertable.Core.Entities.Contracts;
 
 namespace Concertable.Application.Interfaces.Concert;
 

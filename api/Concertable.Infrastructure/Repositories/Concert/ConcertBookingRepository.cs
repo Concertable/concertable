@@ -15,7 +15,7 @@ public class ConcertBookingRepository : Repository<ConcertBookingEntity>, IConce
             .Where(b => b.Id == id)
             .Include(b => b.Application)
                 .ThenInclude(a => a.Artist)
-                    .ThenInclude(a => a.ArtistGenres)
+                    .ThenInclude(a => a.Genres)
             .Include(b => b.Application)
                 .ThenInclude(a => a.Opportunity)
                     .ThenInclude(o => o.Venue)

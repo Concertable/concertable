@@ -28,7 +28,6 @@ public class TicketRepository : GuidRepository<TicketEntity>, ITicketRepository
             .Where(t => t.UserId == id && t.Concert.Booking.Application.Opportunity.Period.Start < timeProvider.GetUtcNow())
             .Include(t => t.Concert).ThenInclude(c => c.Booking).ThenInclude(b => b.Application).ThenInclude(a => a.Opportunity).ThenInclude(o => o.Venue)
             .Include(t => t.Concert).ThenInclude(c => c.Booking).ThenInclude(b => b.Application).ThenInclude(a => a.Artist)
-            .Include(t => t.User)
             .ToListAsync();
     }
 
@@ -38,7 +37,6 @@ public class TicketRepository : GuidRepository<TicketEntity>, ITicketRepository
             .Where(t => t.UserId == id && t.Concert.Booking.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow())
             .Include(t => t.Concert).ThenInclude(c => c.Booking).ThenInclude(b => b.Application).ThenInclude(a => a.Opportunity).ThenInclude(o => o.Venue)
             .Include(t => t.Concert).ThenInclude(c => c.Booking).ThenInclude(b => b.Application).ThenInclude(a => a.Artist)
-            .Include(t => t.User)
             .ToListAsync();
     }
 

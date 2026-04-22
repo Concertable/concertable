@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using Concertable.Core.Enums;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
 [Table("ConcertBookings")]
 public class ConcertBookingEntity : IIdEntity

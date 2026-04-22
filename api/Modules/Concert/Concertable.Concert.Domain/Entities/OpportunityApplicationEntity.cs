@@ -1,7 +1,4 @@
-using Concertable.Artist.Domain;
-using Concertable.Core.Enums;
-
-namespace Concertable.Core.Entities;
+namespace Concertable.Concert.Domain;
 
 public class OpportunityApplicationEntity : IIdEntity
 {
@@ -10,7 +7,7 @@ public class OpportunityApplicationEntity : IIdEntity
     public int OpportunityId { get; private set; }
     public int ArtistId { get; private set; }
     public OpportunityEntity Opportunity { get; set; } = null!;
-    public ArtistEntity Artist { get; set; } = null!;
+    public ArtistReadModel Artist { get; set; } = null!;
     public ConcertBookingEntity? Booking { get; set; }
 
     private OpportunityApplicationEntity() { }

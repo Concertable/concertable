@@ -1,9 +1,8 @@
 using NetTopologySuite.Geometries;
-using System.Linq.Expressions;
 
 namespace Concertable.Artist.Domain;
 
-public class ArtistEntity : IIdEntity, IHasName, IHasLocation, ILocatable<ArtistEntity>, IHasGenreJoins<ArtistGenreEntity>
+public class ArtistEntity : IIdEntity, IHasName, IHasLocation, IHasGenreJoins<ArtistGenreEntity>
 {
     private ArtistEntity() { }
 
@@ -16,7 +15,6 @@ public class ArtistEntity : IIdEntity, IHasName, IHasLocation, ILocatable<Artist
     public Address? Address { get; set; }
     public string? Avatar { get; set; }
     public string? Email { get; set; }
-    public static Expression<Func<ArtistEntity, Point?>> LocationExpression => a => a.Location;
 
     public HashSet<ArtistGenreEntity> ArtistGenres { get; private set; } = [];
 

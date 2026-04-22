@@ -1,8 +1,5 @@
-using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Artist.Application.DTOs;
-using Concertable.Artist.Application.Mappers;
 using Concertable.Artist.Contracts;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
@@ -11,8 +8,6 @@ using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
-using Concertable.Venue.Application.DTOs;
-using Concertable.Venue.Application.Mappers;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
@@ -148,12 +143,8 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         return outcome;
     }
 
-    public async Task<(ArtistDto, VenueDto)> GetArtistAndVenueByIdAsync(int id)
-    {
-        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(id)
-            ?? throw new NotFoundException("Concert application not found");
-        return (artist.ToDto(), venue.ToDto());
-    }
+    public async Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id) =>
+        await applicationRepository.GetArtistAndVenueByIdAsync(id);
 
     public async Task<OpportunityApplicationDto> GetByIdAsync(int id)
     {

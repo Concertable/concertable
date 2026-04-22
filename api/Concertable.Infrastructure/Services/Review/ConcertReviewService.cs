@@ -50,6 +50,6 @@ public class ConcertReviewService : IReviewService
         await reviewRepository.AddAsync(review);
         await reviewRepository.SaveChangesAsync();
 
-        return review.ToDto();
+        return review.ToDto(currentUser.Email ?? string.Empty);
     }
 }

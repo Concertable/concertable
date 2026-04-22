@@ -19,7 +19,7 @@ public class StripeAccountValidator : IStripeValidationStrategy
 
     public async Task<bool> ValidateAsync()
     {
-        var manager = await managerModule.GetManagerAsync(currentUser.GetId());
+        var manager = await managerModule.GetByIdAsync(currentUser.GetId());
         if (manager is null) return false;
 
         return await stripeAccountService.GetAccountStatusAsync(manager.StripeAccountId) == PayoutAccountStatus.Verified;

@@ -1,6 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Services.Concert;

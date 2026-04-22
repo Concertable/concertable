@@ -1,3 +1,4 @@
+using Concertable.Concert.Domain;
 using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities;

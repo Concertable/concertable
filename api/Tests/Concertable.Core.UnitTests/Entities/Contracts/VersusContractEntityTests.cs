@@ -1,4 +1,3 @@
-using Concertable.Core.Entities.Contracts;
 using Concertable.Core.Enums;
 using Xunit;
 
