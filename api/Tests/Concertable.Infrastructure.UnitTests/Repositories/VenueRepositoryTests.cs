@@ -3,6 +3,7 @@ using Concertable.Seeding;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
 using Concertable.Infrastructure.Repositories;
+using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;

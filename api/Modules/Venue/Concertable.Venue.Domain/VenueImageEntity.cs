@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Venue.Domain;
 
 [Table("VenueImages")]
 public class VenueImageEntity : IIdEntity

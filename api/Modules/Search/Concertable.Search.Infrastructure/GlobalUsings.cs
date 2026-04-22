@@ -4,3 +4,4 @@ global using Concertable.Search.Application.Interfaces;
 global using Concertable.Search.Infrastructure.Mappers;
 global using Concertable.Identity.Contracts;
 global using Concertable.Artist.Domain;
+global using Concertable.Venue.Domain;
