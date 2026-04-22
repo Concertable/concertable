@@ -1,11 +1,10 @@
 using Concertable.Identity.Contracts.Events;
-using Concertable.Infrastructure.Data;
-using Concertable.Shared;
+using Concertable.Venue.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.Infrastructure.Events;
+namespace Concertable.Venue.Infrastructure.Handlers;
 
-public class VenueLocationSyncHandler(ApplicationDbContext db)
+internal class VenueLocationSyncHandler(VenueDbContext db)
     : IIntegrationEventHandler<UserLocationUpdatedEvent>
 {
     public async Task HandleAsync(UserLocationUpdatedEvent e, CancellationToken ct = default)

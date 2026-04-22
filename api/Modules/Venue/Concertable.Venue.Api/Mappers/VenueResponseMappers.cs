@@ -1,9 +1,9 @@
-using Concertable.Application.DTOs;
-using Concertable.Web.Responses;
+using Concertable.Venue.Api.Responses;
+using Concertable.Venue.Application.DTOs;
 
-namespace Concertable.Web.Mappers;
+namespace Concertable.Venue.Api.Mappers;
 
-public static class VenueResponseMappers
+internal static class VenueResponseMappers
 {
     public static VenueDetailsResponse ToDetailsResponse(this VenueDto dto) => new()
     {

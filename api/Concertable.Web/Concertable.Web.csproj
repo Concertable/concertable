@@ -35,6 +35,8 @@
     <ProjectReference Include="..\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Api\Concertable.Identity.Api.csproj" />
     <ProjectReference Include="..\Modules\Artist\Concertable.Artist.Api\Concertable.Artist.Api.csproj" />
+    <ProjectReference Include="..\Modules\Venue\Concertable.Venue.Api\Concertable.Venue.Api.csproj" />
+    <ProjectReference Include="..\Modules\Venue\Concertable.Venue.Infrastructure\Concertable.Venue.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Application\Concertable.Application.csproj" />
     <ProjectReference Include="..\Modules\Search\Concertable.Search.Api\Concertable.Search.Api.csproj" />

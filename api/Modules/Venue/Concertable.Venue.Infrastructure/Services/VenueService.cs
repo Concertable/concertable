@@ -1,18 +1,13 @@
-using Concertable.Core.Entities;
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.DTOs;
-using Concertable.Application.Mappers;
-using Concertable.Application.Requests;
-using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Services.Geometry;
-using Concertable.Identity.Contracts;
-using Concertable.Shared;
+using Concertable.Shared.Exceptions;
+using Concertable.Venue.Application.Mappers;
+using Concertable.Venue.Application.Requests;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Venue.Infrastructure.Services;
 
-public class VenueService : IVenueService
+internal class VenueService : IVenueService
 {
     private readonly IVenueRepository venueRepository;
     private readonly IImageService imageService;
@@ -20,7 +15,6 @@ public class VenueService : IVenueService
     private readonly IManagerModule managerModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
-    private readonly IUnitOfWork unitOfWork;
 
     public VenueService(
         IVenueRepository venueRepository,
@@ -28,8 +22,7 @@ public class VenueService : IVenueService
         ICurrentUser currentUser,
         IManagerModule managerModule,
         IGeocodingService geocodingService,
-        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        IUnitOfWork unitOfWork)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.venueRepository = venueRepository;
         this.imageService = imageService;
@@ -37,7 +30,6 @@ public class VenueService : IVenueService
         this.managerModule = managerModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
-        this.unitOfWork = unitOfWork;
     }
 
     public async Task<VenueDto> GetDetailsByIdAsync(int id)
@@ -61,7 +53,7 @@ public class VenueService : IVenueService
         venue.Email = user.Email;
 
         var createdVenue = await venueRepository.AddAsync(venue);
-        await unitOfWork.SaveChangesAsync();
+        await venueRepository.SaveChangesAsync();
 
         return createdVenue.ToDto();
     }
@@ -87,7 +79,7 @@ public class VenueService : IVenueService
         if (request.Avatar is not null)
             venue.Avatar = await imageService.ReplaceAsync(request.Avatar, venue.Avatar);
 
-        await unitOfWork.SaveChangesAsync();
+        await venueRepository.SaveChangesAsync();
 
         return venue.ToDto();
     }
@@ -120,6 +112,6 @@ public class VenueService : IVenueService
             ?? throw new NotFoundException("Venue not found");
 
         venue.Approve();
-        await unitOfWork.SaveChangesAsync();
+        await venueRepository.SaveChangesAsync();
     }
 }

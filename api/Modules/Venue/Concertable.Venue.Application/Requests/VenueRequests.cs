@@ -1,9 +1,8 @@
-using Concertable.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Application.Requests;
+namespace Concertable.Venue.Application.Requests;
 
-public record CreateVenueRequest
+internal record CreateVenueRequest
 {
     public required string Name { get; init; }
     public required string About { get; init; }
@@ -12,7 +11,7 @@ public record CreateVenueRequest
     public required IFormFile Banner { get; init; }
 }
 
-public record UpdateVenueRequest
+internal record UpdateVenueRequest
 {
     public required string Name { get; init; }
     public required string About { get; init; }

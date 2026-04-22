@@ -1,9 +1,9 @@
-using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
+using Concertable.Application.Interfaces;
+using Concertable.Venue.Application.DTOs;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Venue.Application.Interfaces;
 
-public interface IVenueRepository : IRepository<VenueEntity>
+internal interface IVenueRepository : IIdRepository<VenueEntity>
 {
     Task<VenueEntity?> GetByUserIdAsync(Guid id);
     Task<int?> GetIdByUserIdAsync(Guid userId);

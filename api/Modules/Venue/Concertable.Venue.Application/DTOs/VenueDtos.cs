@@ -1,8 +1,6 @@
-using Concertable.Application.Interfaces;
+namespace Concertable.Venue.Application.DTOs;
 
-namespace Concertable.Application.DTOs;
-
-public record VenueDto : IAddress, ILatLong
+public record VenueDto : IAddress
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -16,12 +14,4 @@ public record VenueDto : IAddress, ILatLong
     public required string Town { get; set; }
     public bool Approved { get; set; } = false;
     public required string Email { get; set; }
-}
-
-public record VenueSummaryDto
-{
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public string? Avatar { get; set; }
-    public double Rating { get; set; }
 }

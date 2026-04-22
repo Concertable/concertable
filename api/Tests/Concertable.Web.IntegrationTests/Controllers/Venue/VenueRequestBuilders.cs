@@ -1,13 +1,13 @@
-using Concertable.Application.Requests;
+using Concertable.Venue.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Venue;
 
-public static class VenueRequestBuilders
+internal static class VenueRequestBuilders
 {
-    public static CreateVenueRequest BuildCreateRequest(
+    internal static CreateVenueRequest BuildCreateRequest(
         string name = "New Venue",
         string about = "About the venue",
         double latitude = 51.5,
@@ -34,7 +34,7 @@ public static class VenueRequestBuilders
         };
     }
 
-    public static UpdateVenueRequest BuildUpdateRequest(
+    internal static UpdateVenueRequest BuildUpdateRequest(
         string name = "Updated Venue",
         string about = "Updated about",
         double latitude = 51.5,

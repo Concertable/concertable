@@ -1,9 +1,7 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Requests;
-using Concertable.Core.Entities;
 using Concertable.Shared.Exceptions;
+using Concertable.Venue.Application.DTOs;
 
-namespace Concertable.Application.Mappers;
+namespace Concertable.Venue.Application.Mappers;
 
 public static class VenueMappers
 {

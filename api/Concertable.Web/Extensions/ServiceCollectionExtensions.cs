@@ -22,7 +22,6 @@ using Concertable.Infrastructure.Repositories.Concert;
 using Concertable.Infrastructure.Repositories.Review;
 using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Services;
-using Concertable.Infrastructure.Events;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Identity.Contracts.Events;
 using Concertable.Infrastructure.Services.Accept;
@@ -84,8 +83,6 @@ public static class ServiceCollectionExtensions
         services.AddSharedInfrastructure();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
-        services.AddScoped<IIntegrationEventHandler<UserLocationUpdatedEvent>, VenueLocationSyncHandler>();
-
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
@@ -187,7 +184,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplicationNotificationService, SignalRApplicationNotificationService>();
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
-        services.AddScoped<IVenueService, VenueService>();
+        // IVenueService registered by AddVenueModule() via AddVenueApi()
         services.AddScoped<IConcertDraftService, ConcertDraftService>();
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
@@ -226,7 +223,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IVenueRepository, VenueRepository>();
+        // IVenueRepository registered by AddVenueModule() via AddVenueApi()
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
         services.AddScoped<IConcertBookingRepository, ConcertBookingRepository>();
@@ -310,7 +307,7 @@ services.AddRatingRepositories();
     {
         services.AddFluentValidationAutoValidation();
         services.AddValidatorsFromAssemblyContaining<LoginRequest>();
-        services.AddValidatorsFromAssemblyContaining<IVenueService>();
+        // Venue validators registered by AddVenueModule() via AddVenueApi()
 
         return services;
     }

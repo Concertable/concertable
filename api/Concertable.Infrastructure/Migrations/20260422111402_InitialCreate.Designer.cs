@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260421230249_InitialCreate")]
+    [Migration("20260422111402_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -486,68 +486,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.VenueEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("About")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Approved")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Avatar")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BannerUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Point>("Location")
-                        .HasColumnType("geography");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Venues", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.VenueImageEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("VenueId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VenueId");
-
-                    b.ToTable("VenueImages");
-                });
-
             modelBuilder.Entity("Concertable.Identity.Domain.EmailVerificationTokenEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -702,6 +640,93 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Genres");
+                });
+
+            modelBuilder.Entity("Concertable.Venue.Domain.VenueEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BannerUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Point>("Location")
+                        .HasColumnType("geography");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Venues", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Venue.Domain.VenueImageEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VenueId");
+
+                    b.ToTable("VenueImages", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Venue.Domain.VenueRatingProjection", b =>
+                {
+                    b.Property<int>("VenueId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("AverageRating")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("VenueId");
+
+                    b.ToTable("VenueRatingProjections", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
@@ -970,8 +995,8 @@ namespace Concertable.Infrastructure.Migrations
 
             modelBuilder.Entity("Concertable.Core.Entities.OpportunityEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.VenueEntity", "Venue")
-                        .WithMany("Opportunities")
+                    b.HasOne("Concertable.Venue.Domain.VenueEntity", "Venue")
+                        .WithMany()
                         .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1082,45 +1107,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("ToUser");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.VenueEntity", b =>
-                {
-                    b.OwnsOne("Concertable.Shared.Address", "Address", b1 =>
-                        {
-                            b1.Property<int>("VenueEntityId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("County")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("County");
-
-                            b1.Property<string>("Town")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("Town");
-
-                            b1.HasKey("VenueEntityId");
-
-                            b1.ToTable("Venues");
-
-                            b1.WithOwner()
-                                .HasForeignKey("VenueEntityId");
-                        });
-
-                    b.Navigation("Address");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.VenueImageEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.VenueEntity", "Venue")
-                        .WithMany()
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Venue");
-                });
-
             modelBuilder.Entity("Concertable.Identity.Domain.EmailVerificationTokenEntity", b =>
                 {
                     b.HasOne("Concertable.Identity.Domain.UserEntity", "User")
@@ -1180,6 +1166,45 @@ namespace Concertable.Infrastructure.Migrations
                         });
 
                     b.Navigation("Address");
+                });
+
+            modelBuilder.Entity("Concertable.Venue.Domain.VenueEntity", b =>
+                {
+                    b.OwnsOne("Concertable.Shared.Address", "Address", b1 =>
+                        {
+                            b1.Property<int>("VenueEntityId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("County")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("County");
+
+                            b1.Property<string>("Town")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Town");
+
+                            b1.HasKey("VenueEntityId");
+
+                            b1.ToTable("Venues");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VenueEntityId");
+                        });
+
+                    b.Navigation("Address");
+                });
+
+            modelBuilder.Entity("Concertable.Venue.Domain.VenueImageEntity", b =>
+                {
+                    b.HasOne("Concertable.Venue.Domain.VenueEntity", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Venue");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
@@ -1294,11 +1319,6 @@ namespace Concertable.Infrastructure.Migrations
             modelBuilder.Entity("Concertable.Core.Entities.TicketEntity", b =>
                 {
                     b.Navigation("Review");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.VenueEntity", b =>
-                {
-                    b.Navigation("Opportunities");
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.UserEntity", b =>

@@ -17,6 +17,41 @@ progress.
 cleanup is needed — the shared `IReviewable<TSelf>` abstraction was already killed during Artist
 Stage 0, and `VenueEntity` is a clean POCO today. Straight to Stage 1.
 
+---
+
+## Progress (2026-04-22)
+
+**Steps 1–4 ✅ landed. Build green, 0 errors.**
+
+- **Step 1 ✅** — 5 projects scaffolded under `api/Modules/Venue/` (Contracts, Domain, Application,
+  Infrastructure, Api). Added to `Concertable.sln` under `Modules/Venue` solution folder.
+  **Sln artefact encountered:** `dotnet sln add --solution-folder Modules/Venue ...` created a
+  *duplicate* `Modules` solution folder at the sln root (GUID `{CA253913…}`) rather than nesting
+  into the existing `api/Modules` folder (GUID `{A4C2E1D0…}`). Hand-edited `Concertable.sln` to
+  delete the duplicate project entry and reparent `Venue` under `{A4C2E1D0…}`. Flagging for Concert
+  extraction — same CLI quirk will recur. Fix: run `dotnet sln add` without `--solution-folder`,
+  then hand-edit the nested-projects section OR use VS's "Move To" after adding flat.
+- **Step 2 ✅** — `VenueEntity` + `VenueImageEntity` moved to `Concertable.Venue.Domain` namespace.
+  Dropped `VenueEntity.Opportunities` inverse nav. `OpportunityEntityConfiguration` switched to
+  `.WithMany()`. **Unplanned find:** `OpportunityRepository.GetOwnerByIdAsync` used
+  `v.Opportunities.Any(...)` in a query — plan only mentioned the EF config site. Rewrote the
+  query to go through `readContext.Opportunities` + `o.Venue.UserId` (outgoing `Opportunity.Venue`
+  nav stays per §3). Concert extraction will rewrite this whole block anyway.
+- **Step 3 ✅** — `VenueRatingProjection` landed in `Venue.Domain` (`VenueId`, `AverageRating`,
+  `ReviewCount`). EF config deferred to Step 6 (with `VenueDbContext`).
+- **Step 4 ✅** — `Concertable.Core → Concertable.Venue.Domain` project ref added. Propagated
+  `global using Concertable.Venue.Domain` to Core, Application, Infrastructure, Data.Infrastructure,
+  Search.Application, Search.Infrastructure GlobalUsings (transitive via Core works for most
+  consumers; these six are the `global using` hosts that previously listed `Concertable.Artist.Domain`).
+  Fixed 7 explicit-using sites: `IReadDbContext`, `VenueFaker`, `SeedData`,
+  `IVenueSearchSpecification`, `VenueRepositoryTests`. Empty-project global using lines for
+  `Concertable.Venue.Contracts` / `Concertable.Venue.Application.*` **removed** from
+  `Venue.Application/Infrastructure/Api` GlobalUsings — those namespaces don't exist until the
+  corresponding files land. Re-add them as each project gains content.
+
+**Next: Step 5** — move Application layer (IVenueService, IVenueRepository, DTOs, Requests,
+Validators, Mappers) to `Venue.Application` with `internal` visibility + `AssemblyInfo.cs`.
+
 ### What already matches the Artist starting line
 
 - `VenueEntity` does **not** implement `IReviewable<VenueEntity>` — already a POCO
@@ -247,8 +282,12 @@ CLAUDE.md's DTO visibility rule.
   `ApplicationDbContext`).
 - Cross-module FKs (`UserId`) remain plain `Guid` primitives with no nav, no constraint (matches
   Artist + CLAUDE.md database rules).
-- Migration history table: `__EFMigrationsHistory_Venue` (parallels `__EFMigrationsHistory_Artist`
-  / `__EFMigrationsHistory_Identity`).
+- Migration history table: **default `__EFMigrationsHistory`** (shared with Identity/Artist/Application).
+  The original plan called for `__EFMigrationsHistory_Venue` paralleling Artist/Identity, but Artist
+  and Identity don't actually have per-context history tables — they use the default. Using the
+  default keeps Venue consistent + lets Respawner's existing `TablesToIgnore = ["__EFMigrationsHistory"]`
+  preserve Venue's migration records between integration test resets. Per-module history tables are
+  a broader MM_NORTH_STAR follow-up, not Venue Stage 1 scope.
 
 ### 6. `AddVenueModule()` DI wiring
 
@@ -257,8 +296,8 @@ public static IServiceCollection AddVenueModule(this IServiceCollection services
 {
     services.AddDbContext<VenueDbContext>(opts =>
         opts.UseSqlServer(cfg.GetConnectionString("DefaultConnection"),
-            sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Venue")
-                      .UseNetTopologySuite()));
+            sql => sql.UseNetTopologySuite()));
+    // No MigrationsHistoryTable override — use shared default, see §5.
     services.AddScoped<IVenueService, VenueService>();
     services.AddScoped<IVenueRepository, VenueRepository>();
     services.AddScoped<IVenueModule, VenueModule>();

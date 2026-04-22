@@ -11,6 +11,8 @@ using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
+using Concertable.Venue.Application.DTOs;
+using Concertable.Venue.Application.Mappers;
 
 namespace Concertable.Infrastructure.Services.Concert;
 

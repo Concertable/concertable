@@ -1,9 +1,9 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Requests;
+using Concertable.Venue.Application.DTOs;
+using Concertable.Venue.Application.Requests;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Venue.Application.Interfaces;
 
-public interface IVenueService
+internal interface IVenueService
 {
     Task<VenueDto> GetDetailsByIdAsync(int id);
     Task<VenueDto> GetDetailsForCurrentUserAsync();

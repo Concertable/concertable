@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using NetTopologySuite.Geometries;
 
 #nullable disable
 
@@ -53,6 +52,26 @@ namespace Concertable.Infrastructure.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Opportunities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    VenueId = table.Column<int>(type: "int", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Opportunities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Opportunities_Venues_VenueId",
+                        column: x => x.VenueId,
+                        principalTable: "Venues",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -119,94 +138,6 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Venues",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    About = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BannerUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Approved = table.Column<bool>(type: "bit", nullable: false),
-                    Location = table.Column<Point>(type: "geography", nullable: true),
-                    County = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Town = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Venues", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "GenrePreferences",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PreferenceId = table.Column<int>(type: "int", nullable: false),
-                    GenreId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GenrePreferences", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GenrePreferences_Genres_GenreId",
-                        column: x => x.GenreId,
-                        principalTable: "Genres",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_GenrePreferences_Preferences_PreferenceId",
-                        column: x => x.PreferenceId,
-                        principalTable: "Preferences",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Opportunities",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    VenueId = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Opportunities", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Opportunities_Venues_VenueId",
-                        column: x => x.VenueId,
-                        principalTable: "Venues",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "VenueImages",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    VenueId = table.Column<int>(type: "int", nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VenueImages", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VenueImages_Venues_VenueId",
-                        column: x => x.VenueId,
-                        principalTable: "Venues",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Contracts",
                 columns: table => new
                 {
@@ -269,6 +200,32 @@ namespace Concertable.Infrastructure.Migrations
                         name: "FK_OpportunityGenres_Opportunities_OpportunityId",
                         column: x => x.OpportunityId,
                         principalTable: "Opportunities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GenrePreferences",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PreferenceId = table.Column<int>(type: "int", nullable: false),
+                    GenreId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GenrePreferences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GenrePreferences_Genres_GenreId",
+                        column: x => x.GenreId,
+                        principalTable: "Genres",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GenrePreferences_Preferences_PreferenceId",
+                        column: x => x.PreferenceId,
+                        principalTable: "Preferences",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -641,11 +598,6 @@ namespace Concertable.Infrastructure.Migrations
                 name: "IX_Transactions_ToUserId",
                 table: "Transactions",
                 column: "ToUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VenueImages_VenueId",
-                table: "VenueImages",
-                column: "VenueId");
         }
 
         /// <inheritdoc />
@@ -688,9 +640,6 @@ namespace Concertable.Infrastructure.Migrations
                 name: "VenueHireContracts");
 
             migrationBuilder.DropTable(
-                name: "VenueImages");
-
-            migrationBuilder.DropTable(
                 name: "VersusContracts");
 
             migrationBuilder.DropTable(
@@ -719,9 +668,6 @@ namespace Concertable.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Opportunities");
-
-            migrationBuilder.DropTable(
-                name: "Venues");
         }
     }
 }

@@ -1,10 +1,10 @@
-using Concertable.Application.Requests;
 using Concertable.Shared.Validation;
+using Concertable.Venue.Application.Requests;
 using FluentValidation;
 
-namespace Concertable.Application.Validators;
+namespace Concertable.Venue.Application.Validators;
 
-public class CreateVenueRequestValidator : AbstractValidator<CreateVenueRequest>
+internal class CreateVenueRequestValidator : AbstractValidator<CreateVenueRequest>
 {
     public CreateVenueRequestValidator()
     {
@@ -27,7 +27,7 @@ public class CreateVenueRequestValidator : AbstractValidator<CreateVenueRequest>
     }
 }
 
-public class UpdateVenueRequestValidator : AbstractValidator<UpdateVenueRequest>
+internal class UpdateVenueRequestValidator : AbstractValidator<UpdateVenueRequest>
 {
     public UpdateVenueRequestValidator()
     {

@@ -1,15 +1,15 @@
-using Concertable.Application.Interfaces;
-using Concertable.Web.Mappers;
-using Concertable.Web.Responses;
+using Concertable.Venue.Api.Mappers;
+using Concertable.Venue.Api.Responses;
+using Concertable.Venue.Application.Interfaces;
+using Concertable.Venue.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Concertable.Application.Requests;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Venue.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class VenueController : ControllerBase
+internal class VenueController : ControllerBase
 {
     private readonly IVenueService venueService;
 

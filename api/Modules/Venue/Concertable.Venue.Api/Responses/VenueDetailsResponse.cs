@@ -1,4 +1,4 @@
-namespace Concertable.Web.Responses;
+namespace Concertable.Venue.Api.Responses;
 
 public record VenueDetailsResponse
 {

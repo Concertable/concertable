@@ -15,7 +15,7 @@ public class OpportunityService : IOpportunityService
 {
     private readonly IOpportunityRepository opportunityRepository;
     private readonly IStripeValidationFactory stripeValidationFactory;
-    private readonly IVenueService venueService;
+    private readonly IVenueModule venueModule;
     private readonly IContractMapper contractMapper;
     private readonly IUnitOfWork unitOfWork;
     private readonly IOpportunityMapper mapper;
@@ -24,7 +24,7 @@ public class OpportunityService : IOpportunityService
     public OpportunityService(
         IOpportunityRepository opportunityRepository,
         IStripeValidationFactory stripeValidationFactory,
-        IVenueService venueService,
+        IVenueModule venueModule,
         IContractMapper contractMapper,
         IUnitOfWork unitOfWork,
         IOpportunityMapper mapper,
@@ -32,7 +32,7 @@ public class OpportunityService : IOpportunityService
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidationFactory = stripeValidationFactory;
-        this.venueService = venueService;
+        this.venueModule = venueModule;
         this.contractMapper = contractMapper;
         this.unitOfWork = unitOfWork;
         this.mapper = mapper;
@@ -44,7 +44,7 @@ public class OpportunityService : IOpportunityService
         if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
             throw new ForbiddenException("You do not have the required Stripe account set up");
 
-        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+        var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
 
         using var transaction = await unitOfWork.BeginTransactionAsync();
@@ -53,7 +53,7 @@ public class OpportunityService : IOpportunityService
         {
             var contract = contractMapper.ToEntity(request.Contract);
             var opportunity = OpportunityEntity.Create(
-                venueDto.Id,
+                venueId,
                 new DateRange(request.StartDate, request.EndDate),
                 contract,
                 request.GenreIds);
@@ -83,7 +83,7 @@ public class OpportunityService : IOpportunityService
                 throw new ForbiddenException("You do not have the required Stripe account set up");
         }
 
-        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+        var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
 
         using var transaction = await unitOfWork.BeginTransactionAsync();
@@ -94,7 +94,7 @@ public class OpportunityService : IOpportunityService
             {
                 var contract = contractMapper.ToEntity(request.Contract);
                 var opportunity = OpportunityEntity.Create(
-                    venueDto.Id,
+                    venueId,
                     new DateRange(request.StartDate, request.EndDate),
                     contract,
                     request.GenreIds);
@@ -117,13 +117,13 @@ public class OpportunityService : IOpportunityService
         if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
             throw new ForbiddenException("You do not have the required Stripe account set up");
 
-        var venueDto = await venueService.GetDetailsForCurrentUserAsync()
+        var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
 
         var opportunity = await opportunityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity not found");
 
-        if (opportunity.VenueId != venueDto.Id)
+        if (opportunity.VenueId != venueId)
             throw new ForbiddenException("You do not own this concert opportunity");
 
         using var transaction = await unitOfWork.BeginTransactionAsync();
