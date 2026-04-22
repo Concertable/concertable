@@ -55,6 +55,42 @@ If a module needs `Email`, `StripeAccountId`, `Avatar`, `DisplayName`, etc. from
 maintains its own table for those fields, populated from events. Storage is cheap; boundaries are
 not.
 
+**Applies only to module-owned facts.** See §6 below for shared reference data — that's a different
+category and does *not* get duplicated.
+
+### 6. Shared reference data lives in one place and is read via FK.
+Reference data that no module owns writes for — `GenreEntity`, and any future `CountryEntity` /
+`CurrencyEntity` / similar static vocabulary — lives in a dedicated **`SharedDbContext`** owned by
+nobody. Every module FKs into its tables directly. No duplication, no event-sync ceremony. The
+`SharedDbContext` has **zero outbound FKs** (reference data is structurally terminal), so it
+migrates first and every module cleanly FKs into it without circular-dependency problems.
+
+**Taxonomy — three kinds of data, three different rules:**
+
+| Data kind | Rule | Example |
+|---|---|---|
+| Module-internal | Stays in the owning module, never leaves. | `Artist.About`, `User.PasswordHash` |
+| Module-owned, cross-cut | Other modules keep projected copies, synced via events (Corollary 5). | `User.Email` → Notification's copy, `Artist.Name` → Search's projection |
+| Shared reference data | Dedicated `SharedDbContext`, every module FKs in, no duplication. | `Genres`, `Countries`, `Currencies` |
+
+**Why no duplication for reference data:** it's shared vocabulary, not a fact owned by one module.
+Genres have no ownership semantics — no module "decides" when genres change. 8 rows × N modules
+of event-synced copies is ceremony without benefit, and risks drift between modules that should
+be using identical vocabulary. A single FK-addressable source is the structurally correct shape.
+
+**Why `ExcludeFromMigrations` stays in module contexts:** a module with an `ArtistGenreEntity.Genre`
+nav pulls `GenreEntity` into its model (needed for `.Include()` projection), so EF would try to
+manage the `Genres` schema from that context's migrations unless told otherwise.
+`modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations())` is the
+idiomatic EF Core way to say "I read this, someone else owns its DDL." Not a workaround —
+*the* pattern.
+
+**Why not use Grzybek's "Administration module" shape instead:** cosmetically similar (one owner,
+everyone else reads), but wraps reference data in a module-with-Contracts shape preferred when the
+data is write-complex (audited tax codes, user-editable catalogues with workflows). For
+static, FK-addressable reference data like genres, dedicated-context is strictly better —
+DB-level integrity, zero runtime lookup overhead, less ceremony.
+
 ---
 
 ## Event Infrastructure (already scaffolded)
@@ -254,9 +290,19 @@ This is the multi-year target. Today is mid-extraction. Rough order:
    `SearchDbContext` + projections fed by events, `IReadDbContext` and the
    `Concertable.Data.Application` project are deleted.
 
-5. **Delete nav properties across module boundaries.** FKs become plain primitives. EF configs in
-   each module's context stop configuring relationships to other modules' entities. At this point
-   `ApplicationDbContext` should be essentially empty and can be removed.
+5. **Delete nav properties across module boundaries.** FKs between *modules* become plain
+   primitives (`Guid UserId`, `int ArtistId`). EF configs in each module's context stop
+   configuring relationships to other modules' entities. FKs into **shared reference data**
+   (`GenreEntity` etc. — see §6) stay as real EF relationships, pointing at `SharedDbContext`.
+   At this point `ApplicationDbContext` has shrunk to just reference-data tables; rename it
+   `SharedDbContext` (same process, same DB, semantically accurate). The Artist/Identity/etc.
+   `ExcludeFromMigrations` lines in `ApplicationDbContext` retire here because the navs that
+   pulled those entities into its model are gone. The per-module `ExcludeFromMigrations` for
+   `GenreEntity` stays — that's the §6 idiom.
+
+   This step also retires the cross-context FK hand-edit documented in
+   `feedback_cross_context_fk.md`: `SharedDbContext` has zero outbound FKs, so it migrates
+   first and every module's FK into `Genres` works naturally — no circular dependency.
 
 6. **Retire query-shaped facades.** `IArtistModule.GetSummaryAsync` etc. either go away (callers
    got their own projection) or remain as narrow, documented synchronous-consistency exceptions.

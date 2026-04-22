@@ -579,6 +579,192 @@ Concertable.Web → Concertable.Artist.Api (only; transitively reaches Infrastru
   `OpportunityApplicationDto` still names Application-level `ArtistSummaryDto`; gets untangled in
   Concert extraction when the DTO moves out of legacy Application).
 
+**Step 10 plan — ApplicationDbContext cleanup + Artist migration ownership (2026-04-21, post-step-8):**
+
+This is the final execution step for Artist Stage 1. Goal: `ArtistDbContext` owns the Artist schema
+via its own migrations; `ApplicationDbContext` no longer has `DbSet<ArtistEntity>` /
+`DbSet<ArtistGenreEntity>`; schema on disk is unchanged but ownership moves. Mirrors the Identity
+precedent (`IdentityDbContext` + `ExcludeFromMigrations` on Users/tokens in ApplicationDbContext).
+
+**Current state (verified):**
+- `api/Concertable.Infrastructure/Migrations/20260421211351_InitialCreate.cs` currently creates
+  `Artists` (line 29), `ArtistGenres` (178), `ArtistRatingProjections` (16) — need to move.
+- `ArtistDbContext` has no migrations folder yet.
+- `ApplicationDbContext.cs:16-17` has `DbSet<ArtistEntity> Artists` + `DbSet<ArtistGenreEntity> ArtistGenres`.
+- `TestDbInitializer.cs:65-76` + `DevDbInitializer` seed `context.Artists` directly via
+  `ApplicationDbContext` — this breaks once the DbSets are removed, so per-module Artist seeders
+  become a precondition (matches Identity's reason for creating `IdentityDevSeeder`/`IdentityTestSeeder`).
+
+**Pulled in from §12 "out of scope" → NOW in scope for this step:** `ArtistDevSeeder` +
+`ArtistTestSeeder`. Cannot remove `DbSet<ArtistEntity>` cleanly without this.
+
+**Execution order:**
+
+10a. **Create `ArtistTestSeeder` + `ArtistDevSeeder`** in
+`api/Modules/Artist/Concertable.Artist.Infrastructure/Data/Seeders/`:
+   - Both `internal`. `ArtistTestSeeder : ITestSeeder`, `ArtistDevSeeder : IDevSeeder`.
+   - `Order = 1` (after Identity's `0` — Artist depends on `SeedData.ArtistManager`/`ArtistManagerIds`).
+   - Inject `ArtistDbContext context` + `SeedData`.
+   - `MigrateAsync(ct) => context.Database.MigrateAsync(ct)` — matches
+     `IdentityTestSeeder.cs:37`.
+   - `SeedAsync` — move Artist-specific seed logic:
+     - From `TestDbInitializer.cs:65-76` (the `context.Artists.SeedIfEmptyAsync(...)` block —
+       1 test artist tied to `seed.ArtistManager`) → `ArtistTestSeeder.SeedAsync`.
+     - From `DevDbInitializer.cs:92-144` (35 artists via `ArtistFaker` + `ArtistGenres` seed
+       block) → `ArtistDevSeeder.SeedAsync`.
+   - Seeders write to `context.Artists` / `context.ArtistGenres` where `context` is now
+     `ArtistDbContext`. FK fields (`UserId`, `ManagerId`) stay plain primitives — no nav.
+
+10b. **Extension methods** in
+`api/Modules/Artist/Concertable.Artist.Infrastructure/Extensions/ServiceCollectionExtensions.cs`:
+   ```csharp
+   public static IServiceCollection AddArtistDevSeeder(this IServiceCollection services)
+   {
+       services.AddScoped<IDevSeeder, ArtistDevSeeder>();
+       return services;
+   }
+
+   public static IServiceCollection AddArtistTestSeeder(this IServiceCollection services)
+   {
+       services.AddScoped<ITestSeeder, ArtistTestSeeder>();
+       return services;
+   }
+   ```
+   Matches Identity's `AddIdentityDevSeeder()` / `AddIdentityTestSeeder()` precedent in
+   `api/Modules/Identity/Concertable.Identity.Infrastructure/Extensions/ServiceCollectionExtensions.cs:66-76`.
+
+10c. **Register in composition roots:**
+   - `Program.cs` — next to `services.AddIdentityDevSeeder()` (line 76), add
+     `services.AddArtistDevSeeder();`.
+   - Integration test startup (wherever `AddIdentityTestSeeder` is called) — add
+     `services.AddArtistTestSeeder();`. Grep for `AddIdentityTestSeeder` to locate.
+
+10d. **Remove Artist-side seeding from the legacy initializers:**
+   - Delete the Artist `SeedIfEmptyAsync` blocks from `TestDbInitializer.cs` (lines 65-76).
+   - Delete Artist + ArtistGenres blocks from `DevDbInitializer.cs` (lines 92-144 per grep).
+   - `ApplicationDbContext` still has `Genres`/`Reviews`/etc. seeding — leave those; only Artist
+     logic moves.
+
+10e. **Remove Artist DbSets from `ApplicationDbContext.cs`:**
+   - Delete lines 16-17: `DbSet<ArtistEntity> Artists`, `DbSet<ArtistGenreEntity> ArtistGenres`.
+   - Add `using Concertable.Artist.Domain;` (for the `ExcludeFromMigrations` block below).
+
+10f. **Add `ExcludeFromMigrations` for Artist entities** in `ApplicationDbContext.OnModelCreating`
+(matching Identity precedent at lines 47-51):
+   ```csharp
+   // Artist-owned tables — schema managed by ArtistDbContext migrations
+   modelBuilder.Entity<ArtistEntity>().ToTable("Artists", t => t.ExcludeFromMigrations());
+   modelBuilder.Entity<ArtistGenreEntity>().ToTable("ArtistGenres", t => t.ExcludeFromMigrations());
+   modelBuilder.Entity<ArtistRatingProjection>().ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
+   ```
+   Keeps the model aware of Artist entities so that Concert-side nav props
+   (`OpportunityApplicationEntity.Artist`) and `IReadDbContext.Artists` continue to resolve in
+   queries — but `ApplicationDbContext` migrations will not touch those tables.
+
+10g. **Scaffold `InitialCreate` for `ArtistDbContext`:**
+   ```
+   dotnet ef migrations add InitialCreate \
+     --context ArtistDbContext \
+     --project api/Modules/Artist/Concertable.Artist.Infrastructure \
+     --startup-project api/Concertable.Web \
+     --output-dir Data/Migrations
+   ```
+   Lands at `api/Modules/Artist/Concertable.Artist.Infrastructure/Data/Migrations/`. Creates
+   `Artists`, `ArtistGenres`, `ArtistRatingProjections`. Matches Identity's migration location
+   (`api/Modules/Identity/Concertable.Identity.Infrastructure/Data/Migrations/`).
+
+10h. **Regenerate `ApplicationDbContext` `InitialCreate`** (current one owns Artist tables — matches
+Identity pattern of fresh InitialCreates per DbContext):
+   ```
+   rm api/Concertable.Infrastructure/Migrations/20260421211351_InitialCreate.cs
+   rm api/Concertable.Infrastructure/Migrations/20260421211351_InitialCreate.Designer.cs
+   rm api/Concertable.Infrastructure/Migrations/ApplicationDbContextModelSnapshot.cs
+   dotnet ef migrations add InitialCreate \
+     --context ApplicationDbContext \
+     --project api/Concertable.Infrastructure \
+     --startup-project api/Concertable.Web
+   ```
+   Expected result: new migration has no `CreateTable("Artists"/"ArtistGenres"/"ArtistRatingProjections")`.
+   Grep the generated `*.cs` to confirm before moving on.
+
+10i. **Verify startup migration wiring:** `TestDbInitializer.cs:44-47` and `DevDbInitializer.cs:44-47`
+already loop over `IEnumerable<ITestSeeder>` / `IEnumerable<IDevSeeder>` and call `MigrateAsync`
+before the outer `context.Database.MigrateAsync()`. Adding `ArtistTestSeeder`/`ArtistDevSeeder` to
+DI plugs in automatically — no initializer code changes needed after 10d.
+
+10j. **Build + tests:**
+   - `dotnet build` clean.
+   - Full integration suite: 129 pass. `ArtistApiTests` 17 green.
+   - Nuke the test DB between runs if startup picks up the old snapshot — `Database.MigrateAsync`
+     will fail if schema drift exists. Usual dev-DB reset: drop `Concertable_Test` +
+     `Concertable_Dev` DBs, let initializers rebuild fresh.
+
+10k. **Step 11 — global usings sweep** (per original plan §10 step 11):
+   - `Concertable.Infrastructure/GlobalUsings.cs` — add `Concertable.Artist.Contracts` /
+     `Concertable.Artist.Domain` if any files inside depend on them via implicit legacy paths.
+   - `Concertable.Web/GlobalUsings.cs` — already has `Concertable.Artist.Domain` (line 3); add
+     `Concertable.Artist.Contracts` if the remaining Concert-side web controllers need
+     `IArtistModule` etc. without explicit `using`.
+   - Grep for orphaned `using Concertable.Artist.Application.*` outside the Artist module and
+     remove.
+
+**After 10k lands, Artist Stage 1 is fully done.** §12 remaining items stay as Concert-extraction
+work (inbound coupling, entity internal flip, rating repo relocation) — correctly out of scope per
+rule 6 (inbound coupling gets fixed by the caller's extraction, not the callee's).
+
+**✅ Step 10 LANDED (2026-04-22):** All substeps 10a–10k executed. 129/129 integration tests green.
+
+**Gotcha discovered + resolved during 10j (cross-context FK ordering):** The scaffolded
+`ArtistDbContext.InitialCreate` emitted `FK_ArtistGenres_Genres_GenreId` (FK to the
+`Genres` table owned by `ApplicationDbContext`). Because migrations run in this order —
+Identity → Artist → ApplicationDbContext — the FK references a table that doesn't exist yet,
+which SQL Server rejects at `CREATE TABLE` time with `Foreign key 'FK_ArtistGenres_Genres_GenreId'
+references invalid table 'Genres'`. The symmetric FK `FK_OpportunityApplications_Artists_ArtistId`
+in `ApplicationDbContext` migrations works fine because Artist runs first, so Artists exists
+before ApplicationDbContext's FK-creation runs — but we can't reorder to put ApplicationDbContext
+first (that breaks the reverse FK). **Fix applied:** hand-edited
+`api/Modules/Artist/Concertable.Artist.Infrastructure/Data/Migrations/20260421230203_InitialCreate.cs`
+to remove the `table.ForeignKey("FK_ArtistGenres_Genres_GenreId", ...)` block and the
+corresponding `CreateIndex("IX_ArtistGenres_GenreId", ...)`. The CLR nav
+`ArtistGenreEntity.Genre` is preserved for `.Include()` projection (the model snapshot keeps
+the relationship), but the physical DB-level FK constraint is dropped. Safe because `Genres`
+is reference data that is never deleted, so orphan `ArtistGenres` rows can't arise from Genre
+deletion. If a future migration regenerates the snapshot, verify the FK doesn't reappear — and
+if it does, apply the same hand-edit. **This pattern will recur for Venue and Concert
+extractions** any time a module-owned entity has a FK to shared `Genres` (or other cross-context
+reference data) via a CLR nav. Document in `MM_NORTH_STAR.md` when we get there.
+
+**Genre seeding reorder (2026-04-22, part of 10d):** In both `TestDbInitializer` and
+`DevDbInitializer`, the inline `context.Genres.SeedIfEmptyAsync(...)` block had to move to
+**before** the `seeders.OrderBy(s => s.Order)` `SeedAsync` loop. `ArtistTestSeeder`/`ArtistDevSeeder`
+(Order=1) depend on `seed.Rock` (test) and hardcoded `GenreId`s 1–8 (dev), so Genres must be
+populated before Artist seeder runs. Identity (Order=0) has no Genre dependency, so placing
+Genres ahead of both seeders is safe. Long-term: `Genres` could become its own
+`GenreTestSeeder`/`GenreDevSeeder` owned by `Concertable.Infrastructure` for full consistency
+with the per-module seeder pattern — logged as follow-up, **not** in scope for Artist refactor.
+
+**North-star footnote on the two `ExcludeFromMigrations` blocks (2026-04-22):** Both remaining
+smells resolve at the same future milestone, for the same reason — see `MM_NORTH_STAR.md §6`
+("Shared reference data") and bridge step 5.
+- `modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations())` in
+  `ArtistDbContext.OnModelCreating` **stays forever**. It's the idiomatic EF Core way to say
+  "I read `GenreEntity` via `ArtistGenreEntity.Genre` nav for `.Include()` projection, but
+  `SharedDbContext` owns its schema." Same pattern will repeat in `VenueDbContext` +
+  `ConcertDbContext`. Not a workaround.
+- `modelBuilder.Entity<ArtistEntity|ArtistGenreEntity|ArtistRatingProjection>().ToTable(...,
+  ExcludeFromMigrations())` in `ApplicationDbContext.OnModelCreating` **goes away** once
+  `OpportunityApplicationEntity.Artist` / `MessageEntity.User` / similar cross-module navs are
+  deleted as part of Concert extraction (inbound coupling, rule 6). At that point
+  `ApplicationDbContext` has shrunk to just `Genres` + future reference tables and gets renamed
+  `SharedDbContext`.
+- The hand-edit dropping `FK_ArtistGenres_Genres_GenreId` from Artist's migration also retires
+  at the `SharedDbContext` rename: Shared migrates first (zero outbound FKs → no cycle), so
+  Artist's FK into Genres works naturally and no hand-edit is needed.
+
+**None of this blocks Artist Stage 1.** The smells are logged, their retirement path is known,
+they apply to Venue + Concert extractions the same way, and the fix is a single cross-cutting
+rename — not a per-module task.
+
 ### 1. Why Artist is straightforward now
 
 Most of the Identity work paid forward:
@@ -940,7 +1126,7 @@ Don't introduce it here — add `ArtistDevSeeder` / `ArtistTestSeeder` as a sepa
 - Removing `.Include(x => x.Artist)...` chains from Concert repos → **Concert extraction**.
 - `ArtistReviewRepository` / `ArtistRatingRepository` relocation → **Concert extraction** (they query the Review pipeline tied to Tickets/Concerts).
 - Flipping `ArtistEntity` / `ArtistGenreEntity` to `internal` → after Concert extraction, when nothing outside Artist references them.
-- Per-module seeders (`ArtistDevSeeder`, `ArtistTestSeeder`) → follow-up after this refactor lands.
+- ~~Per-module seeders (`ArtistDevSeeder`, `ArtistTestSeeder`) → follow-up after this refactor lands.~~ **Pulled into Step 10** (post-step-8 review 2026-04-21): removing `DbSet<ArtistEntity>` from `ApplicationDbContext` requires moving seeding off it first, so the per-module seeders are a precondition for ApplicationDbContext cleanup, not a follow-up.
 - Moving `ArtistRatingSpecification` into `Artist.Infrastructure` (stays in `Search.Infrastructure`; replaced during rating-pipeline rewrite per MM_NORTH_STAR §5).
 
 ---

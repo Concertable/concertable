@@ -57,7 +57,10 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Artists", (string)null);
+                    b.ToTable("Artists", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Artist.Domain.ArtistGenreEntity", b =>
@@ -72,7 +75,10 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("ArtistGenres", (string)null);
+                    b.ToTable("ArtistGenres", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Artist.Domain.ArtistRatingProjection", b =>
@@ -88,7 +94,10 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("ArtistId");
 
-                    b.ToTable("ArtistRatingProjections", (string)null);
+                    b.ToTable("ArtistRatingProjections", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.ConcertBookingEntity", b =>

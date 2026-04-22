@@ -1,6 +1,7 @@
 using Concertable.Artist.Application.Validators;
 using Concertable.Artist.Contracts;
 using Concertable.Artist.Infrastructure.Data;
+using Concertable.Artist.Infrastructure.Data.Seeders;
 using Concertable.Artist.Infrastructure.Handlers;
 using Concertable.Artist.Infrastructure.Repositories;
 using Concertable.Artist.Infrastructure.Services;
@@ -34,6 +35,18 @@ public static class ServiceCollectionExtensions
 
         services.AddValidatorsFromAssemblyContaining<CreateArtistRequestValidator>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddArtistDevSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<IDevSeeder, ArtistDevSeeder>();
+        return services;
+    }
+
+    public static IServiceCollection AddArtistTestSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<ITestSeeder, ArtistTestSeeder>();
         return services;
     }
 }

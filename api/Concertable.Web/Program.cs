@@ -2,6 +2,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Serializers;
 using Concertable.Core.ModelBinders;
 using Concertable.Artist.Api.Extensions;
+using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
@@ -74,6 +75,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddScoped<Concertable.Seeding.SeedData>();
     services.AddScoped<ILocationFaker, LocationFaker>();
     services.AddIdentityDevSeeder();
+    services.AddArtistDevSeeder();
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();

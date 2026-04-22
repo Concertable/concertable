@@ -17,5 +17,10 @@ internal class ArtistDbContext(DbContextOptions<ArtistDbContext> options)
         modelBuilder.ApplyConfiguration(new ArtistEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ArtistGenreEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ArtistRatingProjectionConfiguration());
+
+        // GenreEntity is shared reference data owned by ApplicationDbContext; the
+        // ArtistGenreEntity.Genre nav pulls it into this model for query joins, but the
+        // Genres table schema must not be duplicated in ArtistDbContext migrations.
+        modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
     }
 }
