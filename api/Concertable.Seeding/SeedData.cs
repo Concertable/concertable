@@ -1,4 +1,5 @@
 using Concertable.Core.Entities;
+using Concertable.Venue.Domain;
 
 namespace Concertable.Seeding;
 

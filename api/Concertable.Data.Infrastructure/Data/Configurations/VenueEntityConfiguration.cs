@@ -1,4 +1,4 @@
-using Concertable.Core.Entities;
+using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,5 +15,15 @@ public class VenueEntityConfiguration : IEntityTypeConfiguration<VenueEntity>
             a.Property(x => x.County).HasColumnName("County");
             a.Property(x => x.Town).HasColumnName("Town");
         });
+    }
+}
+
+public class VenueRatingProjectionConfiguration : IEntityTypeConfiguration<VenueRatingProjection>
+{
+    public void Configure(EntityTypeBuilder<VenueRatingProjection> builder)
+    {
+        builder.ToTable("VenueRatingProjections");
+        builder.HasKey(p => p.VenueId);
+        builder.Property(p => p.VenueId).ValueGeneratedNever();
     }
 }

@@ -24,8 +24,6 @@ public class ApplicationDbContext : DbContextBase
     public DbSet<ReviewEntity> Reviews { get; set; }
     public DbSet<TicketEntity> Tickets { get; set; }
     public DbSet<MessageEntity> Messages { get; set; }
-    public DbSet<VenueEntity> Venues { get; set; }
-    public DbSet<VenueImageEntity> VenueImages { get; set; }
     public DbSet<TransactionEntity> Transactions { get; set; }
     public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
     public DbSet<SettlementTransactionEntity> SettlementTransactions { get; set; }
@@ -52,5 +50,10 @@ public class ApplicationDbContext : DbContextBase
         modelBuilder.Entity<ArtistEntity>().ToTable("Artists", t => t.ExcludeFromMigrations());
         modelBuilder.Entity<ArtistGenreEntity>().ToTable("ArtistGenres", t => t.ExcludeFromMigrations());
         modelBuilder.Entity<ArtistRatingProjection>().ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
+
+        // Venue-owned tables — schema managed by VenueDbContext migrations
+        modelBuilder.Entity<VenueEntity>().ToTable("Venues", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<VenueImageEntity>().ToTable("VenueImages", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<VenueRatingProjection>().ToTable("VenueRatingProjections", t => t.ExcludeFromMigrations());
     }
 }

@@ -3,6 +3,7 @@ using Concertable.Core.Entities;
 using Concertable.Core.Entities.Contracts;
 using Concertable.Identity.Domain;
 using Concertable.Shared;
+using Concertable.Venue.Domain;
 
 namespace Concertable.Data.Application;
 

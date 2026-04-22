@@ -5,9 +5,9 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Artist;
 
-public static class ArtistRequestBuilders
+internal static class ArtistRequestBuilders
 {
-    public static CreateArtistRequest BuildCreateRequest(
+    internal static CreateArtistRequest BuildCreateRequest(
         string name = "New Artist",
         string about = "About the artist",
         double latitude = 51.5,
@@ -34,7 +34,7 @@ public static class ArtistRequestBuilders
         };
     }
 
-    public static UpdateArtistRequest BuildUpdateRequest(
+    internal static UpdateArtistRequest BuildUpdateRequest(
         string name = "Updated Artist",
         string about = "Updated about",
         double latitude = 51.5,

@@ -1,6 +1,7 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Responses;
 using Concertable.Artist.Application.DTOs;
+using Concertable.Venue.Application.DTOs;
 
 namespace Concertable.Application.Interfaces.Concert;
 

@@ -15,7 +15,7 @@ public class OpportunityEntityConfiguration : IEntityTypeConfiguration<Opportuni
             p.Property(x => x.End).HasColumnName("EndDate");
         });
         builder.HasOne(o => o.Venue)
-            .WithMany(v => v.Opportunities)
+            .WithMany()
             .HasForeignKey(o => o.VenueId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);

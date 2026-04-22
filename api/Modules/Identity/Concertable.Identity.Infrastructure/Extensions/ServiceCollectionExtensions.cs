@@ -1,10 +1,12 @@
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Identity.Application.Validators;
 using Concertable.Identity.Domain.Events;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Identity.Infrastructure.Data.Seeders;
 using Concertable.Identity.Infrastructure.Events;
 using Concertable.Infrastructure.Settings;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,6 +61,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IManagerModule, IdentityModule>();
 
         services.AddScoped<IDomainEventHandler<UserLocationUpdatedDomainEvent>, UserLocationUpdatedDomainEventHandler>();
+
+        services.AddValidatorsFromAssemblyContaining<UpdateLocationRequestValidator>();
 
         return services;
     }

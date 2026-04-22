@@ -1,13 +1,13 @@
 using System.Net.Http.Headers;
-using Concertable.Application.Requests;
+using Concertable.Venue.Application.Requests;
 using Concertable.Web.IntegrationTests.Controllers;
 using Microsoft.AspNetCore.Http;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Venue;
 
-public static class VenueMappers
+internal static class VenueMappers
 {
-    public static async Task<MultipartFormDataContent> ToFormContent(this CreateVenueRequest req)
+    internal static async Task<MultipartFormDataContent> ToFormContent(this CreateVenueRequest req)
     {
         var content = new MultipartFormDataContent
         {
@@ -26,7 +26,7 @@ public static class VenueMappers
         return content;
     }
 
-    public static async Task<MultipartFormDataContent> ToFormContent(this UpdateVenueRequest req)
+    internal static async Task<MultipartFormDataContent> ToFormContent(this UpdateVenueRequest req)
     {
         var content = new MultipartFormDataContent
         {

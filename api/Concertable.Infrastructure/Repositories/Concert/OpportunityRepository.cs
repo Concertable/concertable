@@ -37,7 +37,7 @@ public class OpportunityRepository : Repository<OpportunityEntity>, IOpportunity
     {
         return await readContext.Users
             .OfType<VenueManagerEntity>()
-            .Where(vm => readContext.Venues.Any(v => v.UserId == vm.Id && v.Opportunities.Any(o => o.Id == opportunityId)))
+            .Where(vm => readContext.Opportunities.Any(o => o.Id == opportunityId && o.Venue.UserId == vm.Id))
             .FirstOrDefaultAsync();
     }
 

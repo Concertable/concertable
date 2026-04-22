@@ -64,18 +64,6 @@ public class TestDbInitializer : IDbInitializer
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
 
-        await context.Venues.SeedIfEmptyAsync(async () =>
-        {
-            seed.Venue = VenueFaker.GetFaker(seed.VenueManager1.Id, "Test Venue", "venue.jpg").Generate();
-            seed.Venue.Location = seed.VenueManager1.Location;
-            seed.Venue.Address = seed.VenueManager1.Address;
-            seed.Venue.Avatar = seed.VenueManager1.Avatar;
-            seed.Venue.Email = seed.VenueManager1.Email;
-
-            context.Venues.Add(seed.Venue);
-            await context.SaveChangesAsync();
-        });
-
         await context.Opportunities.SeedIfEmptyAsync(async () =>
         {
             seed.Opportunities =

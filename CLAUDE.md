@@ -19,10 +19,9 @@ api/Modules/<Module>/
 module's `AddXModule()`, and references each module's `.Api` so the host can discover controllers
 via `ApplicationPart`. It does **not** own per-module controllers.
 
-**Pilot migration note (2026-04-21):** Artist is the pilot for the `Module.Api` pattern. Identity
-and Search still have their controllers in `Concertable.Web/Controllers/`; they'll migrate after
-Artist validates the approach. When evaluating an existing module, the pre-pilot shape is expected
-— don't treat it as drift.
+**Module.Api pattern status (2026-04-22):** Artist, Identity, and Search have migrated.
+Venue/Concert/Payment are not yet extracted. `Concertable.Web/Controllers/` still holds legacy
+controllers for those unextracted modules — that's expected, not drift.
 
 ## Cross-module rules — the short version
 
@@ -102,9 +101,10 @@ Artist validates the approach. When evaluating an existing module, the pre-pilot
 - **A module can expose multiple facades.** Don't force everything through one fat `IXModule`. Split
   by concern when it reads cleaner — Identity ships both `IIdentityModule` (user lookups) and
   `IAuthModule` (auth flows) in `Identity.Contracts`. Each is its own `IYModule` + `YModule` pair.
-  (Identity today doubles `IAuthModule` as the controller-facing interface — that's pre-pilot
-  shape; post-Artist-pilot, Auth-related HTTP endpoints will move into `Identity.Api` and
-  `IAuthModule` will shrink to cross-module auth lookups only.)
+  (Identity's `AuthController`/`UsersController` currently still bind to `IAuthModule` directly —
+  that's carryover from the pre-Api-pilot shape. `IAuthModule` should shrink to cross-module auth
+  lookups only; controller-facing concerns belong on an internal `IAuthService` in
+  `Identity.Application`. Deferred until we touch Auth flows again.)
 
 ## When in doubt
 
