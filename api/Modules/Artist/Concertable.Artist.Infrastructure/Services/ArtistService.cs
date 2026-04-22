@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Artist.Application.Mappers;
 using Concertable.Artist.Application.Requests;
+using Concertable.Artist.Contracts.Events;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ internal class ArtistService : IArtistService
     private readonly IManagerModule managerModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
+    private readonly IIntegrationEventBus eventBus;
 
     public ArtistService(
         IArtistRepository artistRepository,
@@ -22,7 +24,8 @@ internal class ArtistService : IArtistService
         ICurrentUser currentUser,
         IManagerModule managerModule,
         IGeocodingService geocodingService,
-        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
+        IIntegrationEventBus eventBus)
     {
         this.artistRepository = artistRepository;
         this.imageService = imageService;
@@ -30,6 +33,7 @@ internal class ArtistService : IArtistService
         this.managerModule = managerModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
+        this.eventBus = eventBus;
     }
 
     public async Task<ArtistDto> GetDetailsForCurrentUserAsync() =>
@@ -57,6 +61,8 @@ internal class ArtistService : IArtistService
         var createdArtist = await artistRepository.AddAsync(artist);
         await artistRepository.SaveChangesAsync();
 
+        await eventBus.PublishAsync(ToChangedEvent(createdArtist, request.Genres.Select(g => g.Id)));
+
         return createdArtist.ToDto();
     }
 
@@ -83,6 +89,8 @@ internal class ArtistService : IArtistService
 
         await artistRepository.SaveChangesAsync();
 
+        await eventBus.PublishAsync(ToChangedEvent(artist, request.Genres.Select(g => g.Id)));
+
         return artist.ToDto();
     }
 
@@ -101,4 +109,16 @@ internal class ArtistService : IArtistService
         var id = await artistRepository.GetIdByUserIdAsync(currentUser.GetId());
         return id == artistId;
     }
+
+    private static ArtistChangedEvent ToChangedEvent(ArtistEntity artist, IEnumerable<int> genreIds) =>
+        new(
+            artist.Id,
+            artist.UserId,
+            artist.Name,
+            artist.Avatar,
+            artist.BannerUrl,
+            artist.Address?.County,
+            artist.Address?.Town,
+            artist.Email,
+            genreIds.ToArray());
 }

@@ -1175,6 +1175,39 @@ projection handlers).
       Artist/Venue tables and upserts Concert's read models once, or a one-off migration
       script. Decide at deployment time.
 
+   ✅ **Done 2026-04-22.**
+
+   **Events (Contracts, public records, `: IIntegrationEvent`):**
+   - `ArtistChangedEvent(int ArtistId, Guid UserId, string Name, string? Avatar, string? BannerUrl, string? County, string? Town, string? Email, IReadOnlyCollection<int> GenreIds)` in
+     `api/Modules/Artist/Concertable.Artist.Contracts/Events/ArtistChangedEvent.cs`.
+   - `VenueChangedEvent(int VenueId, Guid UserId, string Name, string About, string? County, string? Town, double? Latitude, double? Longitude)` in
+     `api/Modules/Venue/Concertable.Venue.Contracts/Events/VenueChangedEvent.cs`.
+   - **Field-set deviation from plan draft:** the plan §6b draft listed only `(ArtistId, UserId, Name, Avatar)` / `(VenueId, UserId, Name, Avatar)`. Final shape carries every field the read models hold (per §2b read-model definitions), so the projection handler can fully populate without secondary lookups. `Genres` ride as `int[]` IDs (Concert's `ArtistReadModelGenre` join already references `Shared.Domain.GenreEntity` — the join row only needs `GenreId`). `VenueChangedEvent` carries `Lat/Lng` as primitives instead of an NTS `Point`, keeping `Venue.Contracts` NTS-free; the handler reconstructs the Point via a static `NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326)`.
+   - **Single Changed event vs Created/Updated split:** went with one `Changed` event per aggregate. Projection handler is upsert-by-id (idempotent), so distinguishing create/update gains nothing here. If a future consumer needs the distinction it can be added without breaking this contract.
+
+   **Publish points:**
+   - `ArtistService.CreateAsync` + `ArtistService.UpdateAsync` — emit `ArtistChangedEvent` after `SaveChangesAsync`. New ctor dep `IIntegrationEventBus eventBus`. Event payload built via private `ToChangedEvent(ArtistEntity, IEnumerable<int> genreIds)` helper that pulls genre IDs from the request (request is the canonical source — entity's `ArtistGenres` collection isn't always loaded post-create).
+   - `VenueService.CreateAsync` + `VenueService.UpdateAsync` — same shape. Private `ToChangedEvent(VenueEntity)` helper. `Latitude=Location?.Y, Longitude=Location?.X` (NTS Point convention: X=lng, Y=lat per OGC).
+
+   **Handlers (Concert.Infrastructure/Handlers/, both `internal`):**
+   - `ArtistReadModelProjectionHandler : IIntegrationEventHandler<ArtistChangedEvent>` — `Include(a => a.Genres).FirstOrDefaultAsync(a => a.Id == e.ArtistId)`; insert-or-update with explicit Id assignment (`ArtistReadModel.Id = e.ArtistId`). Genre sync via `desired.Except(current)` add + `current.Except(desired)` remove. `await db.SaveChangesAsync(ct)` per call.
+   - `VenueReadModelProjectionHandler : IIntegrationEventHandler<VenueChangedEvent>` — `FirstOrDefaultAsync(v => v.Id == e.VenueId)`; insert-or-update; reconstruct Point from event Lat/Lng via static GeometryFactory (SRID 4326). No `IGeometryProvider` dep — Concert.Infrastructure can't reference `Concertable.Application` per MM rules; static NTS factory is self-contained.
+
+   **DI registration (Concert.Infrastructure/Extensions/ServiceCollectionExtensions.AddConcertModule):** both handlers added as `services.AddScoped<IIntegrationEventHandler<XChangedEvent>, XReadModelProjectionHandler>()`. Same module-extension method that already registers `ReviewCreatedDomainEventHandler`. AddConcertModule isn't actually wired into Web/Workers yet (that's Step 11) — handlers don't fire until then.
+
+   **csproj refs added** to `Concertable.Concert.Infrastructure.csproj`:
+   - `..\..\Artist\Concertable.Artist.Contracts\Concertable.Artist.Contracts.csproj`
+   - `..\..\Venue\Concertable.Venue.Contracts\Concertable.Venue.Contracts.csproj`
+
+   These are the only cross-module refs Concert.Infrastructure needs for §6b (Contracts only — CLAUDE rule 1). Artist.Contracts and Venue.Contracts already only ref Shared.Domain + Shared.Contracts, so the dep graph stays clean.
+
+   **Build:** still exactly 10 intentional CS1061 errors from Step 3 (4 workflows + 2 ticket payment services in legacy `Concertable.Infrastructure`, deferred to Step 7). Zero new errors. Tests still RED on PendingModelChangesWarning until Steps 13–14.
+
+   **Deferred:**
+   - **Backfill** for production — TBD at deployment per plan note. Dev/test seeders will populate read models directly in Step 10.
+   - **Wiring through `AddConcertModule()`** — handlers are registered inside the extension but the extension itself isn't called yet. Step 11.
+   - **CreateAsync/UpdateAsync test coverage** for the publish behaviour — covered indirectly by integration tests once the read-model tables exist (Step 14+).
+
 7. **Move Infrastructure layer** → `Concert.Infrastructure/`:
    - All services + workflow strategies + dispatchers + repositories.
    - Rewrite callers of the deleted Identity repo methods (from Step 3) to
