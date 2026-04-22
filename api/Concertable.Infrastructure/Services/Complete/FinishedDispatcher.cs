@@ -1,11 +1,10 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Complete;
 
-public class FinishedDispatcher : IFinishedDispatcher
+internal class FinishedDispatcher : IFinishedDispatcher
 {
     private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 

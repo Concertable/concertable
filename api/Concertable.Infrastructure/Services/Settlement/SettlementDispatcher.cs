@@ -1,9 +1,8 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 
 namespace Concertable.Infrastructure.Services.Settlement;
 
-public class SettlementDispatcher : ISettlementDispatcher
+internal class SettlementDispatcher : ISettlementDispatcher
 {
     private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 

@@ -1,11 +1,10 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class TicketPaymentDispatcher : ITicketPaymentDispatcher
+internal class TicketPaymentDispatcher : ITicketPaymentDispatcher
 {
     private readonly IContractStrategyResolver<ITicketPaymentStrategy> resolver;
 

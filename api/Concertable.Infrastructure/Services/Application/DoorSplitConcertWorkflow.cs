@@ -1,11 +1,10 @@
 using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
 
 namespace Concertable.Infrastructure.Services.Application;
 
-public class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
+internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IContractRepository contractRepository;

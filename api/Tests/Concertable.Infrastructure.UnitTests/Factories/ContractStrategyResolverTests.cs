@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Enums;
 using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Factories;

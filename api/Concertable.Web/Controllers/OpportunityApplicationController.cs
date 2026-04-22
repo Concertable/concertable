@@ -1,6 +1,4 @@
-using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Artist.Contracts;
 using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;

@@ -1,11 +1,10 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Microsoft.EntityFrameworkCore;
 using Concertable.Infrastructure.Data;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
 
-public class OpportunityApplicationRepository : Repository<OpportunityApplicationEntity>, IOpportunityApplicationRepository
+internal class OpportunityApplicationRepository : Repository<OpportunityApplicationEntity>, IOpportunityApplicationRepository
 {
     private readonly TimeProvider timeProvider;
 

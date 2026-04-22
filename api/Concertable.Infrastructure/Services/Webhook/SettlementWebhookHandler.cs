@@ -1,11 +1,10 @@
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Infrastructure.Interfaces;
 using Stripe;
 
 namespace Concertable.Infrastructure.Services.Webhook;
 
-public class SettlementWebhookHandler : ISettlementWebhookStrategy
+internal class SettlementWebhookHandler : ISettlementWebhookStrategy
 {
     private readonly ITransactionService transactionService;
     private readonly ISettlementDispatcher settlementDispatcher;

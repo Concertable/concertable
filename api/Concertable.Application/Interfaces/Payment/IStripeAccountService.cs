@@ -1,5 +1,4 @@
 using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 
 namespace Concertable.Application.Interfaces.Payment;

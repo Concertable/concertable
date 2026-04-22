@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Factories;

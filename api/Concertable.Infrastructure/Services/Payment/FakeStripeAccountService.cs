@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 
 namespace Concertable.Infrastructure.Services.Payment;

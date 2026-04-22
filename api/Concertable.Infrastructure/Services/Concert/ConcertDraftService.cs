@@ -1,12 +1,10 @@
 using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
-public class ConcertDraftService : IConcertDraftService
+internal class ConcertDraftService : IConcertDraftService
 {
     private readonly IConcertBookingRepository bookingRepository;
     private readonly IConcertNotificationService concertNotificationService;

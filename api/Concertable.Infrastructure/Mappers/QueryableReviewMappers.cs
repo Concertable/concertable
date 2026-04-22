@@ -1,5 +1,4 @@
 using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
 
 namespace Concertable.Infrastructure.Mappers;
 

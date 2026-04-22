@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Infrastructure.Data;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Repositories;
@@ -6,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
 
-public class ContractRepository : Repository<ContractEntity>, IContractRepository
+internal class ContractRepository : Repository<ContractEntity>, IContractRepository
 {
     public ContractRepository(ApplicationDbContext context) : base(context) { }
 

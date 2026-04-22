@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Data.Application;
 using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;

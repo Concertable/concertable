@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;

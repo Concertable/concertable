@@ -1,11 +1,10 @@
 using Concertable.Application.Interfaces;
-using Concertable.Core.Entities;
 using Concertable.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
 
-public class ConcertBookingRepository : Repository<ConcertBookingEntity>, IConcertBookingRepository
+internal class ConcertBookingRepository : Repository<ConcertBookingEntity>, IConcertBookingRepository
 {
     public ConcertBookingRepository(ApplicationDbContext context) : base(context) { }
 

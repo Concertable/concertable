@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Search.Application;
 using Concertable.Search.Application.Validators;

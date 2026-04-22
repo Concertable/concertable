@@ -1,14 +1,12 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Blob;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Interfaces.Rating;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
-using Concertable.Core.Entities;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;

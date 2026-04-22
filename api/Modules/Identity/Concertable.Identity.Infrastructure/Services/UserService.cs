@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Core.Entities;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Identity.Contracts;
 using Microsoft.Extensions.DependencyInjection;

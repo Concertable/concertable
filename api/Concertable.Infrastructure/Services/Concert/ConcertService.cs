@@ -3,19 +3,17 @@ using Concertable.Application.DTOs;
 using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
 using Concertable.Identity.Contracts;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Mappers;
 using Concertable.Search.Contracts;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
-public class ConcertService : IConcertService
+internal class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
     private readonly IConcertHeaderModule concertHeaderModule;

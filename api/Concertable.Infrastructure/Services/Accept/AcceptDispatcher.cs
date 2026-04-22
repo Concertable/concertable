@@ -1,10 +1,9 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
 
 namespace Concertable.Infrastructure.Services.Accept;
 
-public class AcceptDispatcher : IAcceptDispatcher
+internal class AcceptDispatcher : IAcceptDispatcher
 {
     private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
 

@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Artist.Contracts;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
@@ -11,7 +10,7 @@ using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
-public class OpportunityApplicationService : IOpportunityApplicationService
+internal class OpportunityApplicationService : IOpportunityApplicationService
 {
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IUnitOfWork unitOfWork;
@@ -22,6 +21,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
     private readonly IEmailService emailService;
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
+    private readonly IManagerModule managerModule;
     private readonly IAcceptDispatcher acceptDispatcher;
     private readonly IOpportunityApplicationMapper mapper;
 
@@ -35,6 +35,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         IEmailService emailService,
         IOpportunityService opportunityService,
         IArtistModule artistModule,
+        IManagerModule managerModule,
         IAcceptDispatcher acceptDispatcher,
         IOpportunityApplicationMapper mapper)
     {
@@ -47,6 +48,7 @@ public class OpportunityApplicationService : IOpportunityApplicationService
         this.emailService = emailService;
         this.opportunityService = opportunityService;
         this.artistModule = artistModule;
+        this.managerModule = managerModule;
         this.acceptDispatcher = acceptDispatcher;
         this.mapper = mapper;
     }
@@ -89,7 +91,10 @@ public class OpportunityApplicationService : IOpportunityApplicationService
 
         var application = OpportunityApplicationEntity.Create(artistId, opportunityId);
 
-        var opportunityOwner = await opportunityService.GetOwnerByIdAsync(opportunityId);
+        var opportunityOwnerId = await opportunityService.GetOwnerByIdAsync(opportunityId)
+            ?? throw new NotFoundException("Concert Opportunity owner not found");
+        var opportunityOwner = await managerModule.GetByIdAsync(opportunityOwnerId)
+            ?? throw new NotFoundException("Venue manager not found for opportunity owner");
         var opportunity = await opportunityService.GetByIdAsync(opportunityId);
 
         var result = await applicationValidator.CanApplyAsync(opportunityId, artistId);

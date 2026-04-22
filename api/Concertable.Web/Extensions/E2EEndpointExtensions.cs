@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding;
 using Microsoft.EntityFrameworkCore;

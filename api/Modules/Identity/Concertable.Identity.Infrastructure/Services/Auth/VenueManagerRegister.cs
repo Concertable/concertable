@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Core.Entities;
 using Concertable.Identity.Infrastructure.Data;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;

@@ -1,11 +1,9 @@
-using Concertable.Application.Interfaces.Concert;
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
 
-public class ConcertValidator : IConcertValidator
+internal class ConcertValidator : IConcertValidator
 {
     public Task<Result> CanUpdateAsync(ConcertEntity concert, int newTotalTickets)
     {

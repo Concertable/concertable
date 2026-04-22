@@ -1,11 +1,10 @@
 using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
 
 namespace Concertable.Infrastructure.Services.Application;
 
-public class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
+internal class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IContractRepository contractRepository;

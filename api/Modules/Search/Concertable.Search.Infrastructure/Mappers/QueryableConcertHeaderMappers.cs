@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Core.Projections;
 using Concertable.Infrastructure.Mappers;
 using LinqKit;

@@ -969,10 +969,153 @@ projection handlers).
    `global using Concertable.Concert.Domain` to all GlobalUsings hosts that currently import
    `Concertable.Core.Entities` for concert types. Fix explicit-using sites.
 
+   ✅ **Done 2026-04-22.** Project ref + global usings were both done in earlier steps
+   (Core.csproj already references Concert.Domain; 17 GlobalUsings hosts already have the
+   global using from Step 2b). Step 4 was the explicit-using audit:
+   - 134 files had `using Concertable.Core.Entities;`. 7 entity types remain in
+     `Concertable.Core.Entities` (Transaction, TicketTransaction, ConcertTransaction,
+     Preference, GenrePreference, Message, StripeEvent — Payment + ancillary types not yet
+     extracted). 38 files genuinely reference one of those — kept.
+   - **103 dead `using Concertable.Core.Entities;` lines stripped** (concert types now resolve
+     via `Concertable.Concert.Domain` global using). Spans Application/Infrastructure/Web/
+     Seeding/Search.Infrastructure/Identity.Infrastructure/Data.Infrastructure + 4 test files.
+   - 31 files retain the import (legitimate — they reference one of the 7 surviving types).
+   - `Workers.UnitTests` GlobalUsings checked — has no concert refs at all, no propagation
+     needed.
+   - **Build**: same 10 CS1061 errors from Step 3 (Step 7 rewrite list); zero new errors.
+
+   **Post-Step-4 status (continuation pointer):**
+   - 10 CS1061 errors in `Concertable.Infrastructure` are intentional and stay broken until
+     **Step 7** — rewriting them in their current location would mean rewriting twice (the
+     files all move to `Concert.Infrastructure` in Step 7, where the `IManagerModule.GetByIdAsync`
+     calls go in cleanly with the read-model nav UserId hop).
+   - `ConcertDbContext` lands in **Step 6** (after Step 5 moves Application). Step 6b wires
+     `ArtistChangedIntegrationEvent`/`VenueChangedIntegrationEvent` + projection handlers to
+     populate `ArtistReadModel`/`VenueReadModel`.
+   - **Sequence: Step 5 → Step 6 → Step 6b → Step 7** (Infrastructure move + IManagerModule
+     rewrite happens together in Step 7).
+
 5. **Move Application layer** → `Concert.Application/` with `internal` visibility + correct
    namespace + `AssemblyInfo.cs`. Workflow-strategy interfaces
    (`IContractStrategy`/`IConcertWorkflowStrategy`/`ITicketPaymentStrategy`) + outcome types
    live here too.
+
+   ✅ **Done 2026-04-22.** 47 files moved (interfaces, DTOs, requests, responses, validators,
+   mappers — Concert/Opportunity/Contract surface only). All `internal`. **Ticket + Review
+   surface deferred to Step 7** (TicketDto's `User : UserDto` coupling and
+   ReviewDto/Email handling need IIdentityModule rewiring that lands with the Infra move).
+
+   **Architectural side-moves (out of original §2 scope but unblocked Step 5):**
+   - `Concertable.Payment.Contracts` project scaffolded at `api/Modules/Payment/`. Holds
+     `PaymentResponse` (the base Stripe-response record used by both Concert immediate-pay
+     paths AND legacy `IManagerPaymentService`/`ICustomerPaymentService`/`IPaymentService`).
+     `Concertable.Application` + `Concert.Application` both reference it. Sln + nested-folder
+     entries added (Payment folder GUID `{C0F1A8B4-...}`, Payment.Contracts GUID
+     `{D1A2B9C5-...}`). Payment module will absorb the rest during Payment Stage 1.
+   - `IPagination<T>` + `Pagination<T>` moved → `Concertable.Shared.Contracts` under namespace
+     `Concertable.Shared` (legitimate primitive per CLAUDE.md rule 5; Search/Venue/Concert all
+     consume it). `IPageParams` was already there. Files relocated + namespace renamed; ~38
+     callsites picked it up automatically via global `using Concertable.Shared`.
+   - `GenreMappers` (extension methods on `GenreEntity`/`GenreDto`) moved →
+     `Concertable.Shared.Contracts` — was blocking Concert.Application's mappers since
+     `GenreEntity` is in Shared.Domain and `GenreDto` is in Shared.Contracts already. Added
+     `<Using Include="Concertable.Shared" />` to Shared.Contracts.csproj for global resolution.
+   - `ConcertBookingParams` moved out of `Concertable.Core/Parameters/` →
+     `Concert.Application/Requests/`, `internal`. Was Concert-scoped; only consumer is
+     `ConcertBookingParamsValidator`.
+
+   **Sln entries (Concert.Application + Concert.Api added; Step 1's Done note claimed these
+   were in but they weren't):** GUIDs `{A8D9E6F2-4B3C-4A5E-B7C1-1F2E3D4C5B6A}` (Application),
+   `{B9E0F7A3-5C4D-5B6F-C8D2-2A3B4C5D6E7F}` (Api). Both nested under existing
+   `Modules/Concert` solution folder.
+
+   **`AssemblyInfo.cs` InternalsVisibleTo grants** (Step 5 expanded list — each marked
+   TEMPORARY with retiring step):
+   ```csharp
+   [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]   // Step 7
+   [assembly: InternalsVisibleTo("Concertable.Concert.Api")]              // Step 9
+   [assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]     // permanent
+   [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")] // permanent
+   [assembly: InternalsVisibleTo("Concertable.Infrastructure.IntegrationTests")] // permanent
+   [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]        // permanent
+   // TEMPORARY: legacy Concertable.Infrastructure still hosts Concert service impls until Step 7.
+   [assembly: InternalsVisibleTo("Concertable.Infrastructure")]
+   // TEMPORARY: Concertable.Workers re-registers Concert dispatchers until Step 12.
+   [assembly: InternalsVisibleTo("Concertable.Workers")]
+   // TEMPORARY: DevController + E2EEndpointExtensions inject Concert dispatchers; remove when those move into Concert.Api (Step 9).
+   [assembly: InternalsVisibleTo("Concertable.Web")]
+   ```
+
+   **Mid-Step accessibility cascade (key learning — codify in feedback memory):** Once
+   Concert.Application interfaces became `internal`, every legacy Concert IMPL in
+   `Concertable.Infrastructure` failed to build with CS0050/CS0051 ("constructor parameter X
+   is less accessible than method") — because `public` impl classes can't take `internal`
+   interfaces in their ctors/method signatures. The wrong fix was making interfaces `public`
+   for test convenience (the user explicitly flagged this as an antipattern mid-step). The
+   right fix: bulk-flip 31 legacy impl classes `public class` → `internal class`. Files
+   touched: `ConcertService`, `ConcertDraftService`, `OpportunityService`,
+   `OpportunityApplicationService`, `ContractService`, `UpfrontConcertService`,
+   `DeferredConcertService`, 4 workflows, 4 dispatchers, `ApplicationAcceptHandler`,
+   `TicketService`, `ArtistTicketPaymentService`, `VenueTicketPaymentService`,
+   `SettlementWebhookHandler`, `ConcertRepository`, `ConcertBookingRepository`,
+   `OpportunityRepository`, `OpportunityApplicationRepository`, `ContractRepository`,
+   `ConcertValidator`, `OpportunityApplicationValidator`, `TicketValidator`,
+   `ContractStrategyFactory`, `ContractStrategyResolver`, `QueryableConcertMappers`. DI is
+   unaffected — `AddScoped<IFoo, Foo>()` works fine across `InternalsVisibleTo` boundaries.
+
+   **Signature pre-change** (originally planned for Step 7, pulled into Step 5 because the
+   interface couldn't otherwise compile inside Concert.Application without an Identity.Domain
+   ref): `IOpportunityService.GetOwnerByIdAsync(int)` and `IOpportunityRepository.GetOwnerByIdAsync(int)`
+   both rewritten from `Task<UserEntity>` → `Task<Guid?>`. The single legacy caller —
+   `OpportunityApplicationService.ApplyAsync` — picks up `IManagerModule managerModule` ctor
+   dep and does `managerModule.GetByIdAsync(opportunityOwnerId)` for the email lookup
+   previously sourced from `UserEntity.Email`. `OpportunityRepository.GetOwnerByIdAsync` now
+   reads `o.Venue.UserId` from its own context (no `IReadDbContext` ride-along).
+
+   **Global usings added to keep callers compiling without per-file churn** (legacy hosts +
+   tests get Concert.Application namespaces via global usings rather than ~100 individual
+   `using` updates):
+   - `Concertable.Infrastructure/GlobalUsings.cs` → all 6 Concert.Application namespaces
+     (Interfaces/DTOs/Requests/Responses/Validators/Mappers) + `Payment.Contracts`
+   - `Concertable.Web/GlobalUsings.cs` → same
+   - `Concertable.Workers/GlobalUsings.cs` → same
+   - `Concertable.Application/GlobalUsings.cs` → `Payment.Contracts` (legacy IPaymentService etc.)
+   - Test global usings (`Web.IntegrationTests`, `Web.E2ETests`, `Infrastructure.UnitTests`)
+     → all Concert.Application namespaces + Payment.Contracts
+   - `Concert.Application/GlobalUsings.cs` → `Concertable.Application.Interfaces` (for
+     `IIdRepository`/`IGuidRepository` whose namespace is awkwardly `Concertable.Application.Interfaces`
+     even though their files live in Shared.Domain). Marked as a known awkward import; cleanup
+     belongs to a separate Shared.Domain namespace-rename pass.
+
+   **Bulk strip:** `using Concertable.Application.Interfaces.Concert;` deleted from ~30 files
+   (namespace no longer exists post-move). Sed: `sed -i '/^using Concertable\.Application\.Interfaces\.Concert;$/d'`.
+
+   **Files staying in legacy `Concertable.Application/` until Step 7** (Ticket/Review surface
+   per scope agreement): `ITicketRepository`, `ITicketService`, `ITicketValidator`,
+   `IConcertReviewRepository`, `IArtistReviewRepository`, `IVenueReviewRepository`
+   (rating-pipeline rewrite, MM_NORTH_STAR §5), `IReviewService`, `IReviewServiceFactory`,
+   `IReviewValidator`, `TicketDto` (in `SharedDtos.cs`), `TicketConcertDto` (kept in
+   `SharedDtos.cs` after a brief move-and-revert when TicketDto's UserDto coupling surfaced),
+   `ReviewDto`, `CreateReviewRequest`, `TicketValidators.cs`, `ReviewValidators.cs`,
+   `TicketMappers.cs`, `ReviewMappers.cs`, `TicketTransactionMapper.cs`,
+   `ConcertTransactionMapper.cs` (last two implement Payment-module `ITransactionMapper`).
+   `PaymentResponses.cs` in legacy now contains only `TicketPaymentResponse` (the base
+   `PaymentResponse` moved to `Payment.Contracts`).
+
+   **Cross-module ref chain** (Stage 5 transitional shape — collapses in Step 7):
+   - `Concertable.Application` → `Concertable.Payment.Contracts` ✓
+   - `Concertable.Infrastructure` → `Concertable.Concert.Application` (via project ref) ✓
+   - `Concertable.Application` does **not** reference `Concert.Application` (no callers need
+     the move-targets — TicketMappers/SharedDtos all use TicketConcertDto from legacy now).
+   - `Concert.Application.csproj` refs: Concert.Contracts, Concert.Domain, Identity.Contracts,
+     Artist.Contracts, Venue.Contracts, Payment.Contracts, Shared.Contracts, Shared.Validation
+     + FluentResults + FluentValidation packages.
+
+   **Build:** same 10 intentional CS1061 errors from Step 3 (the `IManagerModule.GetXManagerByConcertIdAsync`
+   /`GetXManagerByApplicationIdAsync` callers in 4 workflows + 2 ticket payment services + 2
+   test mocks). Zero new errors. These get rewritten in Step 7 as the workflows/services move
+   to `Concert.Infrastructure` and pick up the read-model UserId hop +
+   `managerModule.GetByIdAsync(userId)`.
 
 6. **Create `ConcertDbContext`** in `Concert.Infrastructure/Data/`. Apply all 14 entity
    configurations explicitly for Concert-owned types, **plus 2 more** for the Step 2b read

@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

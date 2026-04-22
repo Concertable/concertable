@@ -1,14 +1,12 @@
 using Concertable.Shared.Exceptions;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services.Application;
 
-public class UpfrontConcertService : IUpfrontConcertService
+internal class UpfrontConcertService : IUpfrontConcertService
 {
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IOpportunityApplicationRepository applicationRepository;

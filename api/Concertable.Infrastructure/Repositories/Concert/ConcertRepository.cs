@@ -1,7 +1,5 @@
 using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Mappers;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Mappers;
@@ -11,7 +9,7 @@ using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Infrastructure.Repositories.Concert;
 
-public class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
+internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
 {
     private readonly TimeProvider timeProvider;
     private readonly IRatingSpecification<ConcertEntity> concertRatingSpecification;

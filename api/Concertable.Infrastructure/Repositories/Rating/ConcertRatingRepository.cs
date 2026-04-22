@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Rating;
-using Concertable.Core.Entities;
 using Concertable.Infrastructure.Data;
 using Concertable.Search.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;

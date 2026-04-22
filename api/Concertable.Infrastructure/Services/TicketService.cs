@@ -1,16 +1,14 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Identity.Contracts;
 using Concertable.Application.Mappers;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Shared.Exceptions;
 using Concertable.Core.Parameters;
 using FluentResults;
 
-public class TicketService : ITicketService
+internal class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;

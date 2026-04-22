@@ -2,7 +2,6 @@ using Concertable.Application.Interfaces;
 using Concertable.Core.Enums;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
-using Concertable.Core.Entities;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;

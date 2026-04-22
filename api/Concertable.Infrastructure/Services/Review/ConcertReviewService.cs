@@ -4,7 +4,6 @@ using Concertable.Identity.Contracts;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Concertable.Shared.Exceptions;
 using Concertable.Core.Parameters;
 

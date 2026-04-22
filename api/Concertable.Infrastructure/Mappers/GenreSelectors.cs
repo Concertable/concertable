@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
 using LinqKit;
 
 namespace Concertable.Infrastructure.Mappers;

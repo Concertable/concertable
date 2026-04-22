@@ -1,6 +1,4 @@
-using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
@@ -11,7 +9,7 @@ using Concertable.Identity.Contracts;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
-public class OpportunityService : IOpportunityService
+internal class OpportunityService : IOpportunityService
 {
     private readonly IOpportunityRepository opportunityRepository;
     private readonly IStripeValidationFactory stripeValidationFactory;
@@ -159,10 +157,9 @@ public class OpportunityService : IOpportunityService
         return mapper.ToDto(opportunity);
     }
 
-    public async Task<UserEntity> GetOwnerByIdAsync(int id)
+    public async Task<Guid?> GetOwnerByIdAsync(int id)
     {
-        return await opportunityRepository.GetOwnerByIdAsync(id)
-            ?? throw new NotFoundException("Concert Opportunity owner not found");
+        return await opportunityRepository.GetOwnerByIdAsync(id);
     }
 
     public async Task<bool> OwnsOpportunityAsync(int opportunityId)

@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Application.Responses;
 using Concertable.Shared.Exceptions;
@@ -7,7 +6,7 @@ using FluentResults;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class VenueTicketPaymentService : ITicketPaymentStrategy
+internal class VenueTicketPaymentService : ITicketPaymentStrategy
 {
     private readonly ICustomerPaymentService customerPaymentService;
     private readonly IAuthModule authModule;

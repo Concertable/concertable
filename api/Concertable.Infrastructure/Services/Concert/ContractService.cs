@@ -1,9 +1,8 @@
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Concert;
 
-public class ContractService : IContractService
+internal class ContractService : IContractService
 {
     private readonly IContractRepository contractRepository;
     private readonly IContractMapper contractMapper;

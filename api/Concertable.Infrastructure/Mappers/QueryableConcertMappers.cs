@@ -1,11 +1,10 @@
 using Concertable.Application.DTOs;
 using Concertable.Core.Projections;
-using Concertable.Core.Entities;
 using LinqKit;
 
 namespace Concertable.Infrastructure.Mappers;
 
-public static class QueryableConcertMappers
+internal static class QueryableConcertMappers
 {
     public static IQueryable<ConcertDto> ToDto(
         this IQueryable<ConcertEntity> query,
