@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Concertable.Artist.Application.Requests;
 
-public record CreateArtistRequest
+internal record CreateArtistRequest
 {
     public required string Name { get; init; }
     public required string About { get; init; }
@@ -12,7 +12,7 @@ public record CreateArtistRequest
     public required IFormFile Banner { get; init; }
 }
 
-public record UpdateArtistRequest
+internal record UpdateArtistRequest
 {
     public required string Name { get; init; }
     public required string About { get; init; }

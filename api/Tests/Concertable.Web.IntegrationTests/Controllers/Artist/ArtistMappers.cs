@@ -3,9 +3,9 @@ using Concertable.Artist.Application.Requests;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Artist;
 
-public static class ArtistMappers
+internal static class ArtistMappers
 {
-    public static async Task<MultipartFormDataContent> ToFormContent(this CreateArtistRequest req)
+    internal static async Task<MultipartFormDataContent> ToFormContent(this CreateArtistRequest req)
     {
         var content = new MultipartFormDataContent
         {
@@ -24,7 +24,7 @@ public static class ArtistMappers
         return content;
     }
 
-    public static Task<MultipartFormDataContent> ToFormContent(this UpdateArtistRequest req)
+    internal static Task<MultipartFormDataContent> ToFormContent(this UpdateArtistRequest req)
     {
         var content = new MultipartFormDataContent
         {

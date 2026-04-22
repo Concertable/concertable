@@ -21,6 +21,30 @@ Stage 0, and `VenueEntity` is a clean POCO today. Straight to Stage 1.
 
 ## Progress (2026-04-22)
 
+**Stage 1 ✅ COMPLETE. All 218 tests passing (129 integration + 89 unit).**
+
+Final fixes applied after migration rescaffold:
+- **Migration history table** — removed custom `MigrationsHistoryTable("__EFMigrationsHistory_Venue")` from
+  `VenueDbContext` DI registration (`api/Modules/Venue/Concertable.Venue.Infrastructure/Extensions/
+  ServiceCollectionExtensions.cs`). Venue now shares the default `__EFMigrationsHistory` so Respawner's
+  existing `TablesToIgnore = ["__EFMigrationsHistory"]` preserves migration records between test resets.
+  See `feedback_shared_migrations_history_table.md`.
+- **UnitOfWork / SaveChanges mismatch** — `VenueService` originally injected `IUnitOfWork`, but
+  `UnitOfWork` is bound to `ApplicationDbContext`. `venueRepository.AddAsync(venue)` attached the
+  entity to `VenueDbContext`, then `unitOfWork.SaveChangesAsync()` saved the wrong context → changes
+  never persisted → `venue.Id` stayed 0 on Create. Fixed by dropping `IUnitOfWork` from `VenueService`
+  and calling `venueRepository.SaveChangesAsync()` (inherited from `ModuleRepository` and saving
+  `VenueDbContext`). Matches `ArtistService` precedent (ArtistService.cs:58,84). See
+  `feedback_module_service_saves_own_context.md`.
+- **Cross-context FKs in rescaffolded ApplicationDbContext migration** — LEFT IN PLACE. Migration
+  order is module seeders first (Identity=0, Artist=1, Venue=2), then `ApplicationDbContext.MigrateAsync`
+  last. Because ApplicationDbContext's cross-context FKs (`FK_Opportunities_Venues_VenueId`,
+  `FK_OpportunityApplications_Artists_ArtistId`, `FK_Messages_Users_FromUserId`, etc.) point to tables
+  owned by contexts that already ran, the principal tables exist when these constraints are created.
+  No stripping needed here. (The Artist `FK_ArtistGenres_Genres_GenreId` gotcha is the *reverse*
+  direction — ArtistDbContext runs before ApplicationDbContext, so the FK would fail. That one IS
+  stripped.) See updated `feedback_cross_context_fk.md` for the direction rule.
+
 **Steps 1–4 ✅ landed. Build green, 0 errors.**
 
 - **Step 1 ✅** — 5 projects scaffolded under `api/Modules/Venue/` (Contracts, Domain, Application,
