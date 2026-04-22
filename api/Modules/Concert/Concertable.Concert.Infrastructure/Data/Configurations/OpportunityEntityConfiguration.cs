@@ -1,9 +1,10 @@
+using Concertable.Concert.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Concertable.Data.Infrastructure.Data.Configurations;
+namespace Concertable.Concert.Infrastructure.Data.Configurations;
 
-public class OpportunityEntityConfiguration : IEntityTypeConfiguration<OpportunityEntity>
+internal class OpportunityEntityConfiguration : IEntityTypeConfiguration<OpportunityEntity>
 {
     public void Configure(EntityTypeBuilder<OpportunityEntity> builder)
     {
@@ -21,7 +22,7 @@ public class OpportunityEntityConfiguration : IEntityTypeConfiguration<Opportuni
     }
 }
 
-public class OpportunityApplicationEntityConfiguration : IEntityTypeConfiguration<OpportunityApplicationEntity>
+internal class OpportunityApplicationEntityConfiguration : IEntityTypeConfiguration<OpportunityApplicationEntity>
 {
     public void Configure(EntityTypeBuilder<OpportunityApplicationEntity> builder)
     {

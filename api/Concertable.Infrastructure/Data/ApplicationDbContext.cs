@@ -37,7 +37,13 @@ public class ApplicationDbContext : DbContextBase
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DbContextBase).Assembly);
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => a.GetName().Name is string n
+                     && n.StartsWith("Concertable.")
+                     && n.EndsWith(".Infrastructure")))
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(asm);
+        }
 
         // Identity-owned tables — schema managed by IdentityDbContext migrations
         modelBuilder.Entity<UserEntity>().ToTable("Users", t => t.ExcludeFromMigrations());

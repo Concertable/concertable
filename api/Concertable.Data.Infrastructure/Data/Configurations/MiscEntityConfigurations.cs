@@ -29,19 +29,6 @@ public class MessageEntityConfiguration : IEntityTypeConfiguration<MessageEntity
     }
 }
 
-public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
-{
-    public void Configure(EntityTypeBuilder<TicketEntity> builder)
-    {
-        builder.ToTable("Tickets");
-        builder.HasOne(t => t.Concert)
-            .WithMany(e => e.Tickets)
-            .HasForeignKey(t => t.ConcertId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.NoAction);
-    }
-}
-
 public class PreferenceEntityConfiguration : IEntityTypeConfiguration<PreferenceEntity>
 {
     public void Configure(EntityTypeBuilder<PreferenceEntity> builder)
@@ -54,45 +41,3 @@ public class PreferenceEntityConfiguration : IEntityTypeConfiguration<Preference
     }
 }
 
-public class ConcertEntityConfiguration : IEntityTypeConfiguration<ConcertEntity>
-{
-    public void Configure(EntityTypeBuilder<ConcertEntity> builder)
-    {
-        builder.ToTable("Concerts");
-        builder.HasOne(e => e.Booking)
-            .WithOne(b => b.Concert)
-            .HasForeignKey<ConcertEntity>(e => e.BookingId)
-            .OnDelete(DeleteBehavior.NoAction);
-    }
-}
-
-public class ConcertGenreEntityConfiguration : IEntityTypeConfiguration<ConcertGenreEntity>
-{
-    public void Configure(EntityTypeBuilder<ConcertGenreEntity> builder)
-    {
-        builder.ToTable("ConcertGenres");
-        builder.HasOne(cg => cg.Concert)
-            .WithMany(c => c.ConcertGenres)
-            .HasForeignKey(cg => cg.ConcertId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
-        builder.HasOne(cg => cg.Genre)
-            .WithMany()
-            .HasForeignKey(cg => cg.GenreId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
-    }
-}
-
-public class ConcertImageEntityConfiguration : IEntityTypeConfiguration<ConcertImageEntity>
-{
-    public void Configure(EntityTypeBuilder<ConcertImageEntity> builder)
-    {
-        builder.ToTable("ConcertImages");
-        builder.HasOne(ci => ci.Concert)
-            .WithMany(c => c.Images)
-            .HasForeignKey(ci => ci.ConcertId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
-    }
-}

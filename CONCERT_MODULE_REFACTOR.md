@@ -1125,6 +1125,35 @@ projection handlers).
    source tables are not mapped in ConcertDbContext at all — Concert doesn't read them
    directly; the read models are Concert's own snapshot, populated from events (Step 6b).
 
+   **✅ Done 2026-04-22.**
+
+   **Files created:**
+   - `api/Modules/Concert/Concertable.Concert.Infrastructure/Data/ConcertDbContext.cs` — `internal class ConcertDbContext : DbContextBase`. 17 DbSets (14 owned + 2 read models + ArtistReadModelGenres join). `OnModelCreating` is a one-liner: `modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConcertDbContext).Assembly)` — picks up every `IEntityTypeConfiguration<>` in Concert.Infrastructure (`internal` works fine, EF reflection ignores access modifiers).
+   - 11 configs in `api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Configurations/` (one file per config, all `internal`):
+     - **Pre-existing, moved out of `Data.Infrastructure/Data/Configurations/` (Concert owns these entities):** `ConcertEntityConfiguration`, `ConcertGenreEntityConfiguration`, `ConcertImageEntityConfiguration`, `TicketEntityConfiguration`, `OpportunityEntityConfiguration` (file also holds `OpportunityApplicationEntityConfiguration`), `ContractEntityConfiguration` (file also holds `FlatFee/DoorSplit/Versus/VenueHire ContractEntityConfiguration` — TPT inheritance). `Data.Infrastructure/Data/Configurations/OpportunityConfigurations.cs` + `ContractConfigurations.cs` deleted; Concert/Ticket configs stripped from `MiscEntityConfigurations.cs`.
+     - **NEW (didn't exist before — entities used EF conventions previously):** `ConcertBookingEntityConfiguration` (1:1 Application↔Booking via ApplicationId, NoAction), `OpportunityGenreEntityConfiguration` (cascading FKs to Opportunity+Genre, mirrors ConcertGenre), `ReviewEntityConfiguration` (Ticket nav via TicketId Guid FK, NoAction), `ArtistReadModelConfiguration` + `ArtistReadModelGenreConfiguration` (same file: unique UserId index, cascading HasMany Genres, composite key on join), `VenueReadModelConfiguration` (unique UserId index + Location.HasColumnType("geography")).
+
+   **ReadDbContext + ApplicationDbContext cross-assembly discovery:** Both used to call `ApplyConfigurationsFromAssembly(typeof(<self>).Assembly)` — but Concert configs no longer live in those assemblies. Fix: replace with an `AppDomain.CurrentDomain.GetAssemblies()` filter for `Concertable.*.Infrastructure` and call `ApplyConfigurationsFromAssembly` per matching assembly. Concert.Infrastructure is loaded into AppDomain via Web's transitive ref (and via DI registration once AddConcertModule lands at Step 11). No project-ref change required (Data.Infrastructure → Concert.Infrastructure would be a cycle). No registry. No public types. Configs stay `internal`. Same approach in `Concertable.Infrastructure/Data/ApplicationDbContext.cs` so AppDb keeps a valid model during the transition window until Step 13 strips its DbSets.
+
+   **Mid-step corrections (key learning, codified in `feedback_module_owns_its_configs.md`):**
+   - User flagged twice that Concert-owned configs sitting in `Concertable.Data.Infrastructure/Data/Configurations/` violates module ownership — first for the 5 NEW ones I appended to `MiscEntityConfigurations.cs`, then for the 6 pre-existing ones (`ConcertEntityConfiguration` etc.) I left there. Correct read: the legacy `Data.Infrastructure/Data/Configurations/` folder is pre-extraction carryover, not the target. Anything Concert owns moves to `Concert.Infrastructure/Data/Configurations/` now. CLAUDE.md rewritten to make this unambiguous.
+   - User also pushed back on my initial 17-line `ApplyConfiguration` block in `OnModelCreating` and on a static-registry pattern I tried for cross-assembly discovery. Final shape uses `ApplyConfigurationsFromAssembly` for everything — one line in ConcertDbContext (its own assembly), AppDomain scan in ReadDbContext/AppDbContext (cross-assembly).
+
+   **Note:** `OpportunityGenreEntity` + `ConcertGenreEntity` retain their EF Core `[PrimaryKey]` attributes — violates CLAUDE "Domain free of EF attributes beyond BCL `Schema`" rule, but pre-existing carryover. Cleanup deferred (low priority; doesn't block extraction).
+
+   **csproj:**
+   - `Concertable.Concert.Infrastructure.csproj` — added EF Core `SqlServer` 10.0.3 + `SqlServer.NetTopologySuite` 10.0.3 packages, `Data.Infrastructure` project ref. Bumped `DependencyInjection.Abstractions` 10.0.1 → 10.0.3 to resolve NU1605 downgrade warning-as-error from EF transitive ref.
+
+   **Cross-context coexistence (transitional):**
+   - `ApplicationDbContext.OnModelCreating` calls `ApplyConfigurationsFromAssembly(typeof(DbContextBase).Assembly)`, so it now picks up the 5 new configs automatically. The 3 Concert-owned ones (Booking, OpportunityGenre, Review) match the entities ApplicationDbContext already has DbSets for — additive only. The 3 read-model configs (Artist/Venue read models + join) get added to ApplicationDbContext's model too via the assembly scan, which would create new tables — **but ApplicationDbContext is going away in Step 13**, so this is short-term noise. PendingModelChangesWarning was already RED per memory; this changes nothing about test status.
+
+   **What was NOT done (deferred):**
+   - **IReadDbContext composition unchanged.** Plan §10j says "Verify `IReadDbContext`'s implementation knows about `ConcertDbContext` during Step 6" — but ReadDbContext is a separate DbContext that maps the same physical tables and applies configs from the same Data.Infrastructure assembly. As long as the configs live in Data.Infrastructure (rule), ReadDbContext's `Set<ConcertEntity>()` etc. continue to work whether the "owning" model is ApplicationDbContext or ConcertDbContext at the EF level. ArtistReadModel/VenueReadModel are Concert-private — not exposed via IReadDbContext (Search doesn't read them).
+   - **No `AddConcertModule()` DI wiring** — that's Step 11 (after services move in Step 7).
+   - **No migrations scaffolded** — Step 14.
+
+   **Build:** still exactly the 10 intentional CS1061 errors from Step 3 (4 workflows + 2 ticket payment services in legacy `Concertable.Infrastructure`). Zero new errors. Tests still RED on PendingModelChangesWarning until Steps 13–14.
+
 6b. **Integration events + projection handlers.** Wire the read models to Artist/Venue write
     paths.
 

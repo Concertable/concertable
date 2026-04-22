@@ -61,9 +61,19 @@ controllers for those unextracted modules — that's expected, not drift.
   (`Guid`, `int`) with no nav property and no foreign `DbSet` on that context.
 - `IReadDbContext` (in `Concertable.Data.Application`) is the cross-module read shim — it projects
   `IQueryable<TEntity>` for every module. Use it for reads that span modules.
-- EF `IEntityTypeConfiguration<T>` files stay in `Concertable.Data.Infrastructure/Data/Configurations/`
-  (matches Identity precedent — keeps `ReadDbContext`'s single `ApplyConfigurationsFromAssembly`
-  call working). Module DbContexts import + apply them explicitly.
+- EF `IEntityTypeConfiguration<T>` files **live in the module that owns the entity**, under
+  `Module.Infrastructure/Data/Configurations/`, declared `internal`. Module DbContexts apply
+  them explicitly via `modelBuilder.ApplyConfiguration(new XConfiguration())` — not via
+  `ApplyConfigurationsFromAssembly`. **Do not** add new module-owned configs to
+  `Concertable.Data.Infrastructure/Data/Configurations/` "for symmetry with what's there." The
+  configs sitting in `Data.Infrastructure/Data/Configurations/` today are pre-extraction
+  carryover, applied by `ApplicationDbContext` via `ApplyConfigurationsFromAssembly` and by
+  `ReadDbContext` the same way; they retire alongside `ApplicationDbContext` (Concert Step 13
+  and equivalents). When you author a NEW config or extract an existing one, it goes to the
+  owning module's Infrastructure project. The only configs that should remain in
+  `Data.Infrastructure/Data/Configurations/` are ones for entities still owned by
+  `ApplicationDbContext` (Message, Transaction, Preference, StripeEvent, etc., until those
+  modules extract).
 - Composite keys, owned types, `geography` columns, etc. configured via Fluent API so Domain stays
   free of EF Core attributes beyond `System.ComponentModel.DataAnnotations.Schema` BCL attributes.
 
