@@ -6,6 +6,7 @@ using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Venue.Api.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Concert.Api.Extensions;
+using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
@@ -80,6 +81,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddIdentityDevSeeder();
     services.AddArtistDevSeeder();
     services.AddVenueDevSeeder();
+    services.AddConcertDevSeeder();
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();

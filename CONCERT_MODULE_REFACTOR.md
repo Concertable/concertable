@@ -1446,6 +1446,60 @@ projection handlers).
     surface of any module (concerts, opportunities, applications, contracts, tickets,
     reviews, transactions).
 
+    ✅ **Done 2026-04-22.** Two seeders created in
+    `Concert.Infrastructure/Data/Seeders/` (Order = 3, after Identity 0 / Artist 1 / Venue 2):
+
+    - **`ConcertDevSeeder`** (internal, `IDevSeeder`) — injects `ConcertDbContext`,
+      `SeedData`, `TimeProvider`. `MigrateAsync()` calls `context.Database.MigrateAsync(ct)`.
+      `SeedAsync()` blocks moved verbatim from `DevDbInitializer.InitializeAsync` (lines
+      93–588): 57 Opportunities + 53 OpportunityGenres + 81 OpportunityApplications (with
+      embedded `ConcertBookingFactory.{Confirmed,Complete,AwaitingPayment}` and the full
+      `seed.{Confirmed/Posted/AwaitingPayment/Finished/Upcoming}*App/Booking` carrier
+      population) + 60 ConcertGenres + 99 Tickets + 33 Reviews. All `seed.*App` /
+      `seed.*Booking` writes preserved so downstream consumers (`SettlementTransaction` /
+      `TicketTransaction` seeding still in legacy DevDbInitializer; integration tests)
+      keep working.
+    - **`ConcertTestSeeder`** (internal, `ITestSeeder`) — injects same trio. `SeedAsync()`
+      moved verbatim from `TestDbInitializer.InitializeAsync` (lines 65–130): 10
+      Opportunities (using `seed.Venue.Id` from VenueTestSeeder + `seed.Rock.Id` from genre
+      reference data) + 10 OpportunityApplications populating `seed.{FlatFee/Confirmed/
+      AwaitingPayment/Versus/DoorSplit/VenueHire/Posted*}App/Booking`. Posted* bookings
+      attach `ConcertGenreEntity { GenreId = seed.Rock.Id }` inline.
+
+    **DI extensions** added to
+    `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs`:
+    `AddConcertDevSeeder()` registers `IDevSeeder → ConcertDevSeeder`,
+    `AddConcertTestSeeder()` registers `ITestSeeder → ConcertTestSeeder`. Mirrors
+    Venue/Artist pattern.
+
+    **Wiring**:
+    - `Concertable.Web/Program.cs` — added
+      `using Concertable.Concert.Infrastructure.Extensions;` and
+      `services.AddConcertDevSeeder();` after `AddVenueDevSeeder()` inside the
+      `IsEnvironment("Testing") == false` branch.
+    - `Tests/Concertable.Web.IntegrationTests/Infrastructure/ApiFixture.cs` — added
+      `using Concertable.Concert.Infrastructure.Extensions;` and
+      `services.AddConcertTestSeeder();` after `AddVenueTestSeeder()` inside
+      `ConfigureTestServices`.
+
+    **Strip from legacy initializers**:
+    - `DevDbInitializer.cs` — removed Opportunities + OpportunityGenres +
+      OpportunityApplications + ConcertGenres + Tickets + Reviews blocks (~496 lines).
+      Kept: seeder loop, Genres seeding, Preferences, GenrePreferences, **Settlement +
+      TicketTransaction seeding** (Transactions are still owned by `ApplicationDbContext`
+      until Payment extracts — Concert seeder running first ensures concert IDs 1–3 exist
+      when transactions reference them). Trimmed unused usings: `Concertable.Core.Parameters`,
+      `Concertable.Seeding.Fakers` was kept (`ILocationFaker` still injected for parity
+      with prior shape and might be needed by future seeding here).
+    - `TestDbInitializer.cs` — removed Opportunities + OpportunityApplications blocks
+      (~66 lines). Kept: seeder loop + Genres seeding (reference data needed by
+      ArtistTestSeeder which assigns genre IDs).
+
+    **Build**: full solution `dotnet build` — **0 errors, 77 warnings** (all pre-existing
+    NuGet vulnerabilities + 4 duplicate-using warnings carried from Step 9 sweep).
+    Integration tests still RED at runtime on `PendingModelChangesWarning` — expected,
+    gated until Steps 13–14.
+
 11. **`AddConcertModule()`** DI extension with the full block from §6. Wire it up in
     `Concertable.Web/Program.cs`.
 
