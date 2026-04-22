@@ -5,7 +5,7 @@ using Concertable.Artist.Api.Extensions;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Venue.Api.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
-using Concertable.Concert.Infrastructure.Extensions;
+using Concertable.Concert.Api.Extensions;
 using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
@@ -29,9 +29,7 @@ builder.Services.AddControllers(opts =>
     options.JsonSerializerOptions.WriteIndented = true;
     options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-})
-.ConfigureApplicationPartManager(apm =>
-    apm.FeatureProviders.Add(new Concertable.Web.Extensions.InternalControllerFeatureProvider()));
+});
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
@@ -88,7 +86,7 @@ services.AddRepositories();
 services.AddSearchApi();
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
-services.AddConcertModule();
+services.AddConcertApi();
 services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();

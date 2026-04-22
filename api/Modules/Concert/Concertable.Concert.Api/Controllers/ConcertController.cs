@@ -1,15 +1,10 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
-using Concertable.Application.Requests;
-using Concertable.Application.Responses;
-using Concertable.Core.Parameters;
-using Concertable.Web.Handlers;
-using Concertable.Web.Mappers;
-using Concertable.Web.Responses;
+using Concertable.Concert.Api.Handlers;
+using Concertable.Concert.Api.Mappers;
+using Concertable.Concert.Api.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Concert.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -116,6 +111,4 @@ internal class ConcertController : ControllerBase
 
         return Ok($"SignalR test message sent to User {userId}");
     }
-
-
 }

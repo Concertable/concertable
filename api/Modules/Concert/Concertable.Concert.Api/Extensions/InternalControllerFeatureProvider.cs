@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
-namespace Concertable.Web.Extensions;
+namespace Concertable.Concert.Api.Extensions;
 
 internal class InternalControllerFeatureProvider : ControllerFeatureProvider
 {

@@ -1371,8 +1371,74 @@ projection handlers).
 8. **Extend `IConcertModule` + `ConcertModule`** stubs (they exist; add the empty interface
    per §4 and the stub impl).
 
+   ✅ **Done 2026-04-22.** `IConcertModule` (empty, public) created in
+   `Concert.Contracts/IConcertModule.cs`. `internal sealed class ConcertModule : IConcertModule`
+   created in `Concert.Infrastructure/ConcertModule.cs`. Registered via
+   `services.AddScoped<IConcertModule, ConcertModule>()` in `AddConcertModule()`. Build 0 errors.
+
 9. **Create `Concert.Api`** with all 4–6 controllers (internal) +
    `InternalControllerFeatureProvider`. Inject internal services directly.
+
+   ✅ **Done 2026-04-22.** Files moved from `Concertable.Web/` into
+   `Concertable.Concert.Api/`:
+   - `Controllers/` (5 files): `ConcertController`, `ContractController`,
+     `OpportunityController`, `OpportunityApplicationController`, `DevController` — all
+     `internal class`, namespace `Concertable.Concert.Api.Controllers`.
+   - `Handlers/` (2 files): `IConcertPostedHandler` + `ConcertPostedHandler` — `internal`,
+     namespace `Concertable.Concert.Api.Handlers`. Registration moved from
+     `Concertable.Web/Extensions/ServiceCollectionExtensions.cs:181` to `AddConcertApi()`.
+   - `Mappers/ConcertResponseMappers.cs` — `internal static`, namespace
+     `Concertable.Concert.Api.Mappers`.
+   - `Responses/ConcertResponses.cs` (5 records) — flipped `public record` → `internal record`,
+     namespace `Concertable.Concert.Api.Responses`.
+   - `Requests/ApplicationRequests.cs` (`AcceptApplicationRequest`) — flipped to `internal`,
+     namespace `Concertable.Concert.Api.Requests`.
+
+   `Extensions/InternalControllerFeatureProvider.cs` added (mirrors Venue.Api copy).
+   `Extensions/ServiceCollectionExtensions.cs` exposes `public static AddConcertApi(this
+   IServiceCollection)` which calls `AddConcertModule()`, registers `IConcertPostedHandler`,
+   then `AddControllers().AddApplicationPart(typeof(ConcertController).Assembly)
+   .ConfigureApplicationPartManager(apm => apm.FeatureProviders.Add(new
+   InternalControllerFeatureProvider()))`.
+
+   `GlobalUsings.cs` (Concert.Api) extended with `Concertable.Concert.Domain`,
+   `Concert.Application.{Interfaces,DTOs,Requests,Responses}`. `AssemblyInfo.cs` added
+   granting `InternalsVisibleTo("Concertable.Web.IntegrationTests")` so test files can see
+   `internal record` response types. The 9 integration test files using
+   `Concertable.Web.{Responses,Requests,Mappers,Handlers}` updated to
+   `Concertable.Concert.Api.{Responses,Requests,Mappers,Handlers}` via sed.
+
+   `Concertable.Web` host changes:
+   - `Concertable.Web.csproj` adds `<ProjectReference>` to `Concertable.Concert.Api`. Kept
+     `Concertable.Concert.Infrastructure` ref (still hosts the bulk of Concert DI in Web's
+     `ServiceCollectionExtensions.cs` until Steps 11–12).
+   - `Program.cs` swaps `using Concertable.Concert.Infrastructure.Extensions;` →
+     `using Concertable.Concert.Api.Extensions;` and `services.AddConcertModule();` →
+     `services.AddConcertApi();`. The `.ConfigureApplicationPartManager(apm =>
+     apm.FeatureProviders.Add(new Concertable.Web.Extensions.InternalControllerFeatureProvider()))`
+     entry deleted from the top-level `AddControllers()` chain.
+   - `Web/Extensions/InternalControllerFeatureProvider.cs` deleted (no remaining internal
+     controllers in Web — all 5 internal Web controllers were Concert).
+   - `Web/Extensions/ServiceCollectionExtensions.cs` removed `using Concertable.Web.Handlers;`
+     and replaced the `IConcertPostedHandler` registration line with a `// IConcertPostedHandler
+     registered by AddConcertApi()` breadcrumb.
+   - 11 files deleted from Web: 5 controllers, 2 handler files,
+     `Mappers/ConcertResponseMappers.cs`, `Responses/ConcertResponses.cs`,
+     `Requests/ApplicationRequests.cs`, `Extensions/InternalControllerFeatureProvider.cs`.
+
+   **Build:** `dotnet build Concertable.sln` — **0 errors**. Tests still RED at runtime on
+   `PendingModelChangesWarning` until Steps 13–14 (no migration yet); compilation green.
+
+   **Deferred from Step 9:**
+   - `OpportunityApplicationController` still injects `IOpportunityApplicationValidator`,
+     `IArtistModule`, `ICurrentUser`, `IOpportunityService` directly. Per §10h
+     ("don't narrow the surface") this is intentional — refactors are post-extraction.
+   - `DevController` is now in `Concert.Api` and stays `internal`. The `[Authorize]/api/dev/{accept,complete}`
+     routes route through `IAcceptDispatcher`/`IFinishedDispatcher` from
+     `Concert.Application.Interfaces` (resolved via Concert.Application's
+     `[InternalsVisibleTo("Concertable.Concert.Api")]` grant). The Concert.Application
+     TEMPORARY IVT to `Concertable.Web` for dispatchers stays in place until E2EEndpointExtensions
+     stops using `IFinishedDispatcher` directly (separate cleanup, see Stage 0 §3).
 
 10. **Add `ConcertDevSeeder` + `ConcertTestSeeder`** in `Concert.Infrastructure/Seeding/`.
     Wire into `DevDbInitializer` and `TestDbInitializer` via `IDevSeeder`/`ITestSeeder`.

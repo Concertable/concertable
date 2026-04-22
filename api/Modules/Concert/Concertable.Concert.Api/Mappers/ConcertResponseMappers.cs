@@ -1,7 +1,6 @@
-using Concertable.Application.DTOs;
-using Concertable.Web.Responses;
+using Concertable.Concert.Api.Responses;
 
-namespace Concertable.Web.Mappers;
+namespace Concertable.Concert.Api.Mappers;
 
 internal static class ConcertResponseMappers
 {

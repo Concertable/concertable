@@ -1,7 +1,6 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Responses;
 
-namespace Concertable.Web.Handlers;
+namespace Concertable.Concert.Api.Handlers;
 
 internal class ConcertPostedHandler : IConcertPostedHandler
 {

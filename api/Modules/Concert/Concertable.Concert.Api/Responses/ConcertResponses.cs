@@ -1,8 +1,6 @@
-using Concertable.Application.DTOs;
+namespace Concertable.Concert.Api.Responses;
 
-namespace Concertable.Web.Responses;
-
-public record ConcertDetailsResponse
+internal record ConcertDetailsResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -21,7 +19,7 @@ public record ConcertDetailsResponse
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
 
-public record ConcertArtistResponse
+internal record ConcertArtistResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -32,7 +30,7 @@ public record ConcertArtistResponse
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }
 
-public record ConcertVenueResponse
+internal record ConcertVenueResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -42,7 +40,7 @@ public record ConcertVenueResponse
     public double Longitude { get; set; }
 }
 
-public record ConcertSummaryResponse
+internal record ConcertSummaryResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -57,14 +55,14 @@ public record ConcertSummaryResponse
     public required ConcertArtistSummaryResponse Artist { get; set; }
 }
 
-public record ConcertVenueSummaryResponse
+internal record ConcertVenueSummaryResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }
     public double Rating { get; set; }
 }
 
-public record ConcertArtistSummaryResponse
+internal record ConcertArtistSummaryResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }

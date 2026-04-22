@@ -1,12 +1,10 @@
-using Concertable.Application.Interfaces;
 using Concertable.Artist.Contracts;
+using Concertable.Concert.Api.Requests;
 using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Concertable.Application.DTOs;
-using Concertable.Web.Requests;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Concert.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -109,5 +107,4 @@ internal class OpportunityApplicationController : ControllerBase
     {
         return Ok(await opportunityService.OwnsOpportunityByApplicationIdAsync(id));
     }
-
 }

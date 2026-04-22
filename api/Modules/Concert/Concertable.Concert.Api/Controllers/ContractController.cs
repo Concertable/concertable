@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Web.Controllers;
+namespace Concertable.Concert.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -19,5 +18,4 @@ internal class ContractController : ControllerBase
     {
         return Ok(await contractService.GetByOpportunityIdAsync(opportunityId));
     }
-
 }
