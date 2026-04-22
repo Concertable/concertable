@@ -13,7 +13,7 @@ namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ConcertController : ControllerBase
+internal class ConcertController : ControllerBase
 {
     private readonly IConcertService concertService;
     private readonly IConcertNotificationService notificationService;

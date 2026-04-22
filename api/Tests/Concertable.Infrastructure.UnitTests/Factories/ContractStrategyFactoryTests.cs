@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Factories;
 
-public class ContractStrategyFactoryTests
+internal class ContractStrategyFactoryTests
 {
     private static readonly IConcertWorkflowStrategy flatFeeStrategy = new Mock<IConcertWorkflowStrategy>().Object;
     private static readonly IConcertWorkflowStrategy doorSplitStrategy = new Mock<IConcertWorkflowStrategy>().Object;

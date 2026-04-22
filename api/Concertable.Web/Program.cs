@@ -29,7 +29,9 @@ builder.Services.AddControllers(opts =>
     options.JsonSerializerOptions.WriteIndented = true;
     options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-});
+})
+.ConfigureApplicationPartManager(apm =>
+    apm.FeatureProviders.Add(new Concertable.Web.Extensions.InternalControllerFeatureProvider()));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();

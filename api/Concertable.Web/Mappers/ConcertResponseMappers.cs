@@ -3,7 +3,7 @@ using Concertable.Web.Responses;
 
 namespace Concertable.Web.Mappers;
 
-public static class ConcertResponseMappers
+internal static class ConcertResponseMappers
 {
     public static ConcertSummaryResponse ToSummaryResponse(this ConcertSummaryDto dto) => new()
     {

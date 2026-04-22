@@ -10,7 +10,7 @@ namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DevController : ControllerBase
+internal class DevController : ControllerBase
 {
     //[HttpGet("user")]
     //public async Task<ActionResult<IUser>> GetUser(

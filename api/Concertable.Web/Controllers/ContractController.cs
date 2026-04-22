@@ -5,7 +5,7 @@ namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ContractController : ControllerBase
+internal class ContractController : ControllerBase
 {
     private readonly IContractService contractService;
 

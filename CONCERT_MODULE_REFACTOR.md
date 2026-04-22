@@ -1219,6 +1219,155 @@ projection handlers).
    - Leave payment-service injections pointing at `Concertable.Infrastructure` (temporary
      legacy ref — see §3).
 
+   ✅ **Done 2026-04-22.**
+
+   **Files moved (from `Concertable.Infrastructure/Services/...` to
+   `Concert.Infrastructure/Services/...`, all `internal`):**
+   - `Services/Concert/{ConcertService, ConcertDraftService, ContractService,
+     OpportunityApplicationService, OpportunityService}` → `Concert.Infrastructure/Services/`.
+   - `Services/Application/{DeferredConcertService, UpfrontConcertService,
+     DoorSplitConcertWorkflow, FlatFeeConcertWorkflow, VenueHireConcertWorkflow,
+     VersusConcertWorkflow}` → same path under Concert.Infrastructure.
+   - `Services/{Accept/AcceptDispatcher, Complete/FinishedDispatcher,
+     Settlement/SettlementDispatcher}` → same paths.
+   - `Services/Webhook/{WebhookProcessor, WebhookQueue, WebhookService,
+     TicketWebhookHandler, SettlementWebhookHandler}` → `Concert.Infrastructure/Services/Webhook/`.
+   - `Services/Review/{ConcertReviewService, ArtistReviewService, VenueReviewService}`
+     → same paths under Concert.Infrastructure (Review services flipped from `public` to
+     `internal`; their `IXReviewRepository` interfaces stay public in legacy
+     `Concertable.Application/Interfaces/` until the rating-pipeline rewrite — internal
+     impl can implement public interface, fine).
+
+   **Repositories moved (legacy `Repository<T>` → `IdModuleRepository<T, ConcertDbContext>`):**
+   - `Repositories/Concert/{ConcertRepository, ConcertBookingRepository, ContractRepository,
+     OpportunityRepository, OpportunityApplicationRepository}` → `Concert.Infrastructure/Repositories/`.
+   - `Repositories/Review/{ConcertReviewRepository, ArtistReviewRepository,
+     VenueReviewRepository}` → `Concert.Infrastructure/Repositories/Review/`. These
+     don't fit `IdModuleRepository` (composite Ticket-PK semantics on `ReviewEntity`),
+     so they keep direct `ConcertDbContext` injection — flipped from `public` to `internal`.
+
+   **`IConcertBookingRepository.GetByConcertIdAsync` Include extension:** added
+   `.Include(b => b.Application).ThenInclude(a => a.Artist)` and the existing
+   `.ThenInclude(o => o.Venue)` so the booking returns the Artist/Venue read-model navs the
+   workflow rewrites need. (`GetByIdAsync` already loaded both, but `GetByConcertIdAsync`
+   was the call path used by Versus/DoorSplit workflows + payment ticket services.)
+
+   **IManagerModule rewrites (10 callers from Step 3 deferred list):**
+   - `Versus/DoorSplitConcertWorkflow.FinishedAsync(concertId)` — load booking via new
+     `bookingRepository.GetByConcertIdAsync(concertId)`, then
+     `managerModule.GetByIdAsync(booking.Application.Opportunity.Venue.UserId)` +
+     `managerModule.GetByIdAsync(booking.Application.Artist.UserId)`. New ctor dep
+     `IConcertBookingRepository` on both workflows.
+   - `FlatFee/VenueHireConcertWorkflow.InitiateAsync(applicationId, ...)` — use existing
+     `IOpportunityApplicationRepository.GetArtistAndVenueByIdAsync(id)` (returns
+     `(ArtistReadModel, VenueReadModel)?`); call `managerModule.GetByIdAsync(venue.UserId)`
+     and `managerModule.GetByIdAsync(artist.UserId)`. New ctor dep
+     `IOpportunityApplicationRepository` (replaces unused `IConcertRepository`).
+   - `VenueTicketPaymentService.PayAsync(concertId, ...)` (stays in legacy
+     `Concertable.Infrastructure/Services/Payment/` per §3) — inject
+     `IConcertBookingRepository` (now in `Concert.Infrastructure`, accessible to legacy
+     `Concertable.Infrastructure` via existing `[InternalsVisibleTo("Concertable.Infrastructure")]`
+     in `Concert.Application/AssemblyInfo.cs`); load booking, call
+     `managerModule.GetByIdAsync(booking.Application.Opportunity.Venue.UserId)`.
+   - `ArtistTicketPaymentService.PayAsync(concertId, ...)` — same shape, calls
+     `managerModule.GetByIdAsync(booking.Application.Artist.UserId)`.
+   - **Test mock rewrites** — `DoorSplit/VersusApplicationServiceCompleteTests` previously
+     mocked the deleted `IManagerModule.GetXManagerByConcertIdAsync(int)`. Replaced with
+     mocks for `IConcertBookingRepository.GetByConcertIdAsync` returning a hand-built
+     `ConcertBookingEntity` (helper `BookingFactory.Create(artistUserId, venueUserId)`
+     uses `Activator.CreateInstance(..., NonPublic)` to bypass private setters on
+     `OpportunityApplicationEntity`/`OpportunityEntity`) plus `IManagerModule.GetByIdAsync`
+     mocks keyed on UserId.
+   - `FlatFee/VenueHireConcertWorkflowCompleteTests` — added the
+     `IOpportunityApplicationRepository` ctor arg.
+
+   **csproj refs added to `Concertable.Concert.Infrastructure.csproj`:**
+   - `Concertable.Concert.Application` — needed for the now-internal interfaces
+     (`IConcertService`, `IConcertRepository`, etc.).
+   - `Concertable.Application` + `Concertable.Core` — payment/ticket/notification interfaces
+     and `Core.Enums.MessageAction`/parameters still in legacy.
+   - `Concertable.Identity.Contracts` + `Concertable.Search.Contracts` +
+     `Concertable.Payment.Contracts` — cross-module Contracts (`ICurrentUser`,
+     `IConcertHeaderModule`, payment shared types).
+   - `Concertable.Search.Application` — TEMPORARY for `IRatingSpecification<T>`
+     consumption in `ConcertRepository`. Removed during the rating-pipeline rewrite
+     (MM_NORTH_STAR §5).
+   - `Concertable.Infrastructure` — TEMPORARY for payment services
+     (`ICustomerPaymentService`, keyed `IManagerPaymentService`, `IBackgroundTaskQueue`,
+     `IWebhookStrategyFactory`, `Concertable.Infrastructure.Helpers.ToPaginationAsync`,
+     `Concertable.Infrastructure.Mappers.QueryableConcertMappers/QueryableReviewMappers`).
+     Replaced with `Concertable.Payment.Contracts` ref during Payment Stage 1.
+
+   **`InternalsVisibleTo` grants (TEMPORARY) on `Concertable.Infrastructure/AssemblyInfo.cs`:**
+   - `Concertable.Concert.Infrastructure`, `Concertable.Workers`, `Concertable.Web`,
+     `Concertable.Infrastructure.UnitTests`, `Concertable.Web.IntegrationTests` —
+     so legacy internal helpers (Queryable mappers, factories, dispatchers, background
+     queue) remain accessible during the transition. Removed when Payment extracts and
+     these helpers move into Concert.Infrastructure or out to Payment.Infrastructure.
+
+   **`Concertable.Workers` integration:**
+   - Added project ref to `Concertable.Concert.Infrastructure`.
+   - `Workers/ServiceCollectionExtensions.cs` updated `using` block to point at the new
+     namespaces (`Concertable.Concert.Infrastructure.{Repositories,Services.{Accept,
+     Application,Complete,Settlement}}`) — kept `Concertable.Infrastructure.Services.Payment`
+     for `ManagerPaymentService` (Payment-internal, doesn't move).
+   - `Workers/Functions/ConcertFinishedFunction.cs` flipped `public class` → `internal class`
+     (its ctor takes the now-internal `IConcertRepository` + `IFinishedDispatcher`). Workers
+     only runs Functions internally; xUnit test compatibility handled via new
+     `Concertable.Workers/AssemblyInfo.cs` granting
+     `[InternalsVisibleTo("Concertable.Workers.UnitTests")]`.
+
+   **`Concertable.Web` host changes:**
+   - `Concertable.Web/Extensions/ServiceCollectionExtensions.cs` `using` block updated to
+     the new `Concertable.Concert.Infrastructure.*` namespaces (legacy
+     `Repositories/Rating`, `Services/{Email,Geometry,Payment,Rating,Blob}` stay).
+   - All Web Concert-touching controllers/handlers/mappers flipped `public` → `internal`:
+     `Controllers/{Concert,Contract,Dev,Opportunity,OpportunityApplication}Controller`,
+     `Handlers/{ConcertPostedHandler, IConcertPostedHandler}`,
+     `Mappers/ConcertResponseMappers`. They inject the now-internal Concert services
+     (CS0051 prevents public class wrapping internal types regardless of
+     `InternalsVisibleTo`).
+   - New `Web/Extensions/InternalControllerFeatureProvider.cs` (mirrors the per-Module.Api
+     copies) registered into `AddControllers(...).ConfigureApplicationPartManager(...)` in
+     `Program.cs` so the now-internal Web controllers are still discovered by MVC.
+
+   **TEMPORARY public-flips in `Concert.Application` for tests** (xUnit `[Fact]` + `[Theory]`
+   classes must be public, and their public method/property signatures can't carry internal
+   types — public wrappers force a propagation). Each annotated with a `// TEMPORARY:`
+   comment naming the consumer; flip back internal once the corresponding test moves out:
+   - `IConcertWorkflowStrategy`, `IContractStrategy` — consumed by
+     `ContractStrategyFactoryTests.ContractTypeStrategies` `TheoryData`.
+   - `IAcceptOutcome`/`ImmediateAcceptOutcome`/`DeferredAcceptOutcome`,
+     `IFinishOutcome`/`ImmediateFinishOutcome`/`DeferredFinishOutcome` — return types on
+     the now-public `IConcertWorkflowStrategy` so they cascade.
+   - `IContract`, `OpportunityRequest`, `UpdateConcertRequest` — consumed by
+     `Web.IntegrationTests/Controllers/Opportunity/{OpportunityApiTests,
+     OpportunityRequestBuilders}` and `Concert/ConcertRequestBuilders`.
+   - `IConcertNotificationService` — `Web.IntegrationTests/Infrastructure/Mocks/IMockNotificationService`
+     extends it as a public mock interface.
+
+   **Concert.Infrastructure project skeleton in place:**
+   - `AssemblyInfo.cs` with `InternalsVisibleTo` for `Concert.Api`,
+     `Web.IntegrationTests`, `Infrastructure.UnitTests`, `Infrastructure.IntegrationTests`,
+     `Workers.UnitTests`, plus TEMPORARY grants for `Workers`, `Web`,
+     `Concertable.Infrastructure`.
+   - `GlobalUsings.cs` consolidating `Concertable.Shared`, the cross-module Contracts,
+     `Concert.{Domain,Application.{Interfaces,DTOs,Mappers,Requests,Responses,Validators}}`,
+     and the legacy `Concertable.{Application.{Interfaces,DTOs,Mappers,Requests,Responses},Core.Parameters,Data.Infrastructure,Data.Infrastructure.Data}`.
+
+   **Build:** `dotnet build Concertable.sln` — **0 errors**, 43 warnings (existing nullable-
+   ref + transitive package warnings, all pre-existing). The 10 deferred CS1061 callers
+   from Step 3 are gone — workflows + payment ticket services compile cleanly against the
+   read-model UserId hop.
+
+   **Tests still RED at runtime** on `PendingModelChangesWarning` until Steps 13–14 (no
+   migration yet); compilation is green.
+
+   **Deferred from Step 7:**
+   - `OpportunityApplicationController.cs` is now `internal` but still injects `IOpportunityApplicationValidator`/`IArtistModule`/`IOpportunityService` directly — Step 9 moves it into `Concert.Api` where this is the standard shape.
+   - `DevController` flipped to `internal` — kills the public `/api/dev/*` discovery path. If those routes are still used outside development, Step 9 needs to either keep DevController in Web (and route through `IConcertLifecycleModule` once that lands per §4b) or move into Concert.Api.
+   - The `// TEMPORARY:` public-flips in Concert.Application carry follow-up tags so the cleanup is searchable post-extraction. None block subsequent steps.
+
 8. **Extend `IConcertModule` + `ConcertModule`** stubs (they exist; add the empty interface
    per §4 and the stub impl).
 

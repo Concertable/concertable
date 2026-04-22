@@ -1,4 +1,5 @@
 using Concertable.Artist.Contracts.Events;
+using Concertable.Concert.Contracts;
 using Concertable.Concert.Domain.Events;
 using Concertable.Concert.Infrastructure.Events;
 using Concertable.Concert.Infrastructure.Handlers;
@@ -12,6 +13,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddConcertModule(this IServiceCollection services)
     {
+        services.AddScoped<IConcertModule, ConcertModule>();
+
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();

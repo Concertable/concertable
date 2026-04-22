@@ -10,7 +10,7 @@ namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OpportunityApplicationController : ControllerBase
+internal class OpportunityApplicationController : ControllerBase
 {
     private readonly IOpportunityApplicationService applicationService;
     private readonly IOpportunityApplicationValidator applicationValidator;

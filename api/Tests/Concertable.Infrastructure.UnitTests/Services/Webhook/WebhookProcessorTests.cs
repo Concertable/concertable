@@ -2,7 +2,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Interfaces;
-using Concertable.Infrastructure.Services.Webhook;
+using Concertable.Concert.Infrastructure.Services.Webhook;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Stripe;

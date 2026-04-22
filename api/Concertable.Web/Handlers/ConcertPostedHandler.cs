@@ -3,7 +3,7 @@ using Concertable.Application.Responses;
 
 namespace Concertable.Web.Handlers;
 
-public class ConcertPostedHandler : IConcertPostedHandler
+internal class ConcertPostedHandler : IConcertPostedHandler
 {
     private readonly IBackgroundTaskRunner taskRunner;
     private readonly IConcertNotificationService notificationService;

@@ -8,7 +8,7 @@ namespace Concertable.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OpportunityController : ControllerBase
+internal class OpportunityController : ControllerBase
 {
     private readonly IOpportunityService opportunityService;
 

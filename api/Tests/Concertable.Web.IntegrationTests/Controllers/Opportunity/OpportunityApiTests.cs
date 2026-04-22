@@ -10,7 +10,7 @@ using static Concertable.Web.IntegrationTests.Controllers.Opportunity.Opportunit
 namespace Concertable.Web.IntegrationTests.Controllers.Opportunity;
 
 [Collection("Integration")]
-public class OpportunityApiTests : IAsyncLifetime
+internal class OpportunityApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;
 

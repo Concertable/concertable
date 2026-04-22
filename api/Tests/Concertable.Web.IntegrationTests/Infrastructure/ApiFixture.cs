@@ -28,7 +28,7 @@ public class ApiFixture : IAsyncLifetime
     private WebApplicationFactory<Program> factory = null!;
     private IServiceScope? scope;
 
-    public IMockNotificationService NotificationService { get; } = new MockNotificationService();
+    internal IMockNotificationService NotificationService { get; } = new MockNotificationService();
     public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;

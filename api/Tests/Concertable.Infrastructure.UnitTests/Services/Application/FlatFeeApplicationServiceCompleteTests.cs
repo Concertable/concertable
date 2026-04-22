@@ -1,5 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Infrastructure.Services.Application;
+using Concertable.Concert.Infrastructure.Services.Application;
 using Moq;
 using Xunit;
 
@@ -16,6 +16,7 @@ public class FlatFeeConcertWorkflowCompleteTests
         sut = new FlatFeeConcertWorkflow(
             upfrontConcertService.Object,
             new Mock<IContractRepository>().Object,
+            new Mock<IOpportunityApplicationRepository>().Object,
             new Mock<IManagerModule>().Object);
     }
 
