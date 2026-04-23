@@ -43,7 +43,13 @@ internal class ReadDbContext(DbContextOptions<ReadDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ReadDbContext).Assembly);
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => a.GetName().Name is string n
+                     && n.StartsWith("Concertable.")
+                     && n.EndsWith(".Infrastructure")))
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(asm);
+        }
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)

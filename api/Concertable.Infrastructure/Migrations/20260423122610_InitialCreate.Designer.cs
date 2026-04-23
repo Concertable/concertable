@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260422111402_InitialCreate")]
+    [Migration("20260423122610_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -103,131 +103,6 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertBookingEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ApplicationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PaymentMethodId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationId")
-                        .IsUnique();
-
-                    b.ToTable("ConcertBookings");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("About")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("AvailableTickets")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Avatar")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BannerUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DatePosted")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("TotalTickets")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId")
-                        .IsUnique();
-
-                    b.ToTable("Concerts", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertGenreEntity", b =>
-                {
-                    b.Property<int>("ConcertId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GenreId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ConcertId", "GenreId");
-
-                    b.HasIndex("GenreId");
-
-                    b.ToTable("ConcertGenres", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertImageEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ConcertId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConcertId");
-
-                    b.ToTable("ConcertImages", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.ContractEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Contracts", (string)null);
-
-                    b.UseTptMappingStrategy();
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.GenrePreferenceEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -287,66 +162,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("Messages", (string)null);
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityApplicationEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArtistId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OpportunityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArtistId");
-
-                    b.HasIndex("OpportunityId", "ArtistId")
-                        .IsUnique();
-
-                    b.ToTable("OpportunityApplications", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("VenueId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VenueId");
-
-                    b.ToTable("Opportunities", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityGenreEntity", b =>
-                {
-                    b.Property<int>("OpportunityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GenreId")
-                        .HasColumnType("int");
-
-                    b.HasKey("OpportunityId", "GenreId");
-
-                    b.HasIndex("GenreId");
-
-                    b.ToTable("OpportunityGenres");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -369,31 +184,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("Preferences", (string)null);
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.ReviewEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Details")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte>("Stars")
-                        .HasColumnType("tinyint");
-
-                    b.Property<Guid>("TicketId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TicketId")
-                        .IsUnique();
-
-                    b.ToTable("Reviews");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.StripeEventEntity", b =>
                 {
                     b.Property<string>("EventId")
@@ -405,34 +195,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasKey("EventId");
 
                     b.ToTable("StripeEvents", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.TicketEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("ConcertId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PurchaseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte[]>("QrCode")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConcertId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.TransactionEntity", b =>
@@ -639,7 +401,10 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genres");
+                    b.ToTable("Genres", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Venue.Domain.VenueEntity", b =>
@@ -729,57 +494,12 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
-                {
-                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
-
-                    b.Property<decimal>("ArtistDoorPercent")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.ToTable("DoorSplitContracts", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.FlatFeeContractEntity", b =>
-                {
-                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
-
-                    b.Property<decimal>("Fee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.ToTable("FlatFeeContracts", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VenueHireContractEntity", b =>
-                {
-                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
-
-                    b.Property<decimal>("HireFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.ToTable("VenueHireContracts", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VersusContractEntity", b =>
-                {
-                    b.HasBaseType("Concertable.Core.Entities.Contracts.ContractEntity");
-
-                    b.Property<decimal>("ArtistDoorPercent")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Guarantee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.ToTable("VersusContracts", (string)null);
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.SettlementTransactionEntity", b =>
                 {
                     b.HasBaseType("Concertable.Core.Entities.TransactionEntity");
 
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
-
-                    b.HasIndex("BookingId");
 
                     b.ToTable("SettlementTransactions", (string)null);
                 });
@@ -790,8 +510,6 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.Property<int>("ConcertId")
                         .HasColumnType("int");
-
-                    b.HasIndex("ConcertId");
 
                     b.ToTable("TicketTransactions", (string)null);
                 });
@@ -873,69 +591,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Genre");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertBookingEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.OpportunityApplicationEntity", "Application")
-                        .WithOne("Booking")
-                        .HasForeignKey("Concertable.Core.Entities.ConcertBookingEntity", "ApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Application");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.ConcertBookingEntity", "Booking")
-                        .WithOne("Concert")
-                        .HasForeignKey("Concertable.Core.Entities.ConcertEntity", "BookingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertGenreEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.ConcertEntity", "Concert")
-                        .WithMany("ConcertGenres")
-                        .HasForeignKey("ConcertId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Concertable.Shared.GenreEntity", "Genre")
-                        .WithMany()
-                        .HasForeignKey("GenreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Concert");
-
-                    b.Navigation("Genre");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertImageEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.ConcertEntity", "Concert")
-                        .WithMany("Images")
-                        .HasForeignKey("ConcertId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Concert");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.ContractEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.OpportunityEntity", "Opportunity")
-                        .WithOne("Contract")
-                        .HasForeignKey("Concertable.Core.Entities.Contracts.ContractEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Opportunity");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.GenrePreferenceEntity", b =>
                 {
                     b.HasOne("Concertable.Shared.GenreEntity", "Genre")
@@ -974,79 +629,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("ToUser");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityApplicationEntity", b =>
-                {
-                    b.HasOne("Concertable.Artist.Domain.ArtistEntity", "Artist")
-                        .WithMany()
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Concertable.Core.Entities.OpportunityEntity", "Opportunity")
-                        .WithMany("Applications")
-                        .HasForeignKey("OpportunityId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Artist");
-
-                    b.Navigation("Opportunity");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityEntity", b =>
-                {
-                    b.HasOne("Concertable.Venue.Domain.VenueEntity", "Venue")
-                        .WithMany()
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.OwnsOne("Concertable.Shared.DateRange", "Period", b1 =>
-                        {
-                            b1.Property<int>("OpportunityEntityId")
-                                .HasColumnType("int");
-
-                            b1.Property<DateTime>("End")
-                                .HasColumnType("datetime2")
-                                .HasColumnName("EndDate");
-
-                            b1.Property<DateTime>("Start")
-                                .HasColumnType("datetime2")
-                                .HasColumnName("StartDate");
-
-                            b1.HasKey("OpportunityEntityId");
-
-                            b1.ToTable("Opportunities");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OpportunityEntityId");
-                        });
-
-                    b.Navigation("Period")
-                        .IsRequired();
-
-                    b.Navigation("Venue");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityGenreEntity", b =>
-                {
-                    b.HasOne("Concertable.Shared.GenreEntity", "Genre")
-                        .WithMany()
-                        .HasForeignKey("GenreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Concertable.Core.Entities.OpportunityEntity", "Opportunity")
-                        .WithMany("OpportunityGenres")
-                        .HasForeignKey("OpportunityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Genre");
-
-                    b.Navigation("Opportunity");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>
                 {
                     b.HasOne("Concertable.Identity.Domain.CustomerEntity", "User")
@@ -1054,36 +636,6 @@ namespace Concertable.Infrastructure.Migrations
                         .HasForeignKey("Concertable.Core.Entities.PreferenceEntity", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ReviewEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.TicketEntity", "Ticket")
-                        .WithOne("Review")
-                        .HasForeignKey("Concertable.Core.Entities.ReviewEntity", "TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ticket");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.TicketEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.ConcertEntity", "Concert")
-                        .WithMany("Tickets")
-                        .HasForeignKey("ConcertId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Concertable.Identity.Domain.CustomerEntity", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Concert");
 
                     b.Navigation("User");
                 });
@@ -1207,74 +759,22 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
-                        .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.Contracts.DoorSplitContractEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.FlatFeeContractEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
-                        .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.Contracts.FlatFeeContractEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VenueHireContractEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
-                        .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.Contracts.VenueHireContractEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.Contracts.VersusContractEntity", b =>
-                {
-                    b.HasOne("Concertable.Core.Entities.Contracts.ContractEntity", null)
-                        .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.Contracts.VersusContractEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.SettlementTransactionEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.ConcertBookingEntity", "Booking")
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("Concertable.Core.Entities.TransactionEntity", null)
                         .WithOne()
                         .HasForeignKey("Concertable.Core.Entities.SettlementTransactionEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Booking");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.TicketTransactionEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.ConcertEntity", "Concert")
-                        .WithMany()
-                        .HasForeignKey("ConcertId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("Concertable.Core.Entities.TransactionEntity", null)
                         .WithOne()
                         .HasForeignKey("Concertable.Core.Entities.TicketTransactionEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Concert");
                 });
 
             modelBuilder.Entity("Concertable.Artist.Domain.ArtistEntity", b =>
@@ -1282,43 +782,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("ArtistGenres");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertBookingEntity", b =>
-                {
-                    b.Navigation("Concert");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.ConcertEntity", b =>
-                {
-                    b.Navigation("ConcertGenres");
-
-                    b.Navigation("Images");
-
-                    b.Navigation("Tickets");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityApplicationEntity", b =>
-                {
-                    b.Navigation("Booking");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.OpportunityEntity", b =>
-                {
-                    b.Navigation("Applications");
-
-                    b.Navigation("Contract")
-                        .IsRequired();
-
-                    b.Navigation("OpportunityGenres");
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>
                 {
                     b.Navigation("GenrePreferences");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.TicketEntity", b =>
-                {
-                    b.Navigation("Review");
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.UserEntity", b =>

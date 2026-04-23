@@ -2,9 +2,9 @@ using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Concertable.Data.Infrastructure.Data.Configurations;
+namespace Concertable.Venue.Infrastructure.Data.Configurations;
 
-public class VenueEntityConfiguration : IEntityTypeConfiguration<VenueEntity>
+internal class VenueEntityConfiguration : IEntityTypeConfiguration<VenueEntity>
 {
     public void Configure(EntityTypeBuilder<VenueEntity> builder)
     {
@@ -18,7 +18,7 @@ public class VenueEntityConfiguration : IEntityTypeConfiguration<VenueEntity>
     }
 }
 
-public class VenueRatingProjectionConfiguration : IEntityTypeConfiguration<VenueRatingProjection>
+internal class VenueRatingProjectionConfiguration : IEntityTypeConfiguration<VenueRatingProjection>
 {
     public void Configure(EntityTypeBuilder<VenueRatingProjection> builder)
     {

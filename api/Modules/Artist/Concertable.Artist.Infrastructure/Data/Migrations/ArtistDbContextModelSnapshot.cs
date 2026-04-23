@@ -130,7 +130,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
 
                             b1.HasKey("ArtistEntityId");
 
-                            b1.ToTable("Artists", (string)null);
+                            b1.ToTable("Artists");
 
                             b1.WithOwner()
                                 .HasForeignKey("ArtistEntityId");

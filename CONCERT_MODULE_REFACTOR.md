@@ -1854,11 +1854,67 @@ projection handlers).
     See `project_shared_dbcontext.md` for the codified pattern (was previously a
     "future idea" memory; promoted to current state).
 
+    **Close-out: full migration-folder reset (2026-04-23).** Per
+    `project_concert_migration_reset.md`, deleted every `Migrations/` folder across
+    Identity/Artist/Venue/Concert/Concertable.Infrastructure plus the existing Concert
+    one, then re-scaffolded `InitialCreate` per context in dep order Shared → Identity
+    → Artist → Venue → Concert → AppDb. Caught a missed `ExcludeFromMigrations` on
+    `ArtistDbContext` (added the `Entity<GenreEntity>().ToTable("Genres", t =>
+    t.ExcludeFromMigrations())` line + re-scaffolded). Final state:
+    - Shared: 1 table (Genres)
+    - Identity: 4 tables (Users, RefreshTokens, EmailVerificationTokens, PasswordResetTokens)
+    - Artist: 3 tables (Artists, ArtistGenres, ArtistRatingProjections)
+    - Venue: 3 tables (Venues, VenueImages, VenueRatingProjections)
+    - Concert: 18 tables (17 Concert-owned + ArtistReadModelGenres) — FKs to Genres
+      retained as legitimate cross-context refs (lines 84/165/315)
+    - AppDb: 7 tables (Messages, Preferences, GenrePreferences, StripeEvents,
+      Transactions, TicketTransactions, SettlementTransactions)
+
+    Solution build green: 0 errors, 77 warnings. The retired
+    `20260423095729_DropConcertTables` AppDb migration is gone — InitialCreate now
+    reflects the post-extraction schema directly.
+
+    **Follow-on: Artist + Venue config relocation (2026-04-23).** Moved
+    `ArtistEntityConfiguration` (3 inline configs: Artist/ArtistGenre/ArtistRatingProjection)
+    from `Concertable.Data.Infrastructure/Data/Configurations/` →
+    `Concertable.Artist.Infrastructure/Data/Configurations/`, marked `internal`. Same for
+    `VenueEntityConfiguration` (Venue/VenueRatingProjection) →
+    `Concertable.Venue.Infrastructure/Data/Configurations/`. `ArtistDbContext` +
+    `VenueDbContext` now use `ApplyConfigurationsFromAssembly(typeof(XDbContext).Assembly)`
+    matching Concert's pattern (no more explicit `ApplyConfiguration(new ...())` lists).
+    `ArtistDbContext` keeps the `Entity<GenreEntity>().ToTable("Genres", t =>
+    t.ExcludeFromMigrations())` line. Re-scaffolded both InitialCreate migrations — 3
+    tables each, schema unchanged. `Concertable.Data.Infrastructure/Data/Configurations/`
+    now only holds the legacy AppDb-owned configs (MiscEntityConfigurations,
+    TransactionConfigurations, UserHierarchyConfigurations) — those retire when
+    Identity/Payment finish extraction.
+
+    **Follow-on: ReadDbContext multi-assembly scan (2026-04-23).** Switched
+    `ReadDbContext.OnModelCreating` from single-assembly scan to the same
+    `AppDomain.CurrentDomain.GetAssemblies()` loop that `ApplicationDbContext` already
+    uses (filters `Concertable.*.Infrastructure`, no Concert exclusion since Read needs
+    Concert configs). Required because configs now live across module Infrastructure
+    assemblies — Read shim needs to see all of them or geography/OwnsOne/HasDiscriminator
+    mappings silently break for cross-module read paths. This was a pre-existing latent
+    gap for Concert (configs already in Concert.Infrastructure); the Artist + Venue move
+    forced the proper fix. Final build: 0 errors, 83 warnings.
+
 15. **Global usings** — add `Concertable.Concert.Contracts` + `Concertable.Concert.Domain`
     to `Concertable.Infrastructure/GlobalUsings.cs` + `Concertable.Web/GlobalUsings.cs`
     where Concert types were previously pulled via `Concertable.Application.*` /
     `Concertable.Core.Entities`. **Remove** `Concertable.Application.Interfaces.Concert`
     and similar from legacy global using imports — Concert namespaces own those now.
+
+    ✅ **Done 2026-04-23.** `Concertable.Concert.Domain` was already present in both
+    files; added `Concertable.Concert.Contracts` so foreign callers find `IConcertModule`
+    via the global using once direct internal access (TEMPORARY `InternalsVisibleTo`)
+    retires. No legacy `Concertable.Application.*` / `Concertable.Core.*` imports were
+    present in either Web or Infrastructure GlobalUsings — already cleaned up earlier.
+    Web/Infra still global-using `Concertable.Concert.Application.*` (DTOs, Interfaces,
+    Requests, Responses, Validators, Mappers); those deps stay until Payment extraction
+    untangles `ArtistTicketPaymentService` / `VenueTicketPaymentService` (CLAUDE.md
+    rule 6 — inbound coupling fixed by caller's extraction). Build green: 0 errors,
+    75 warnings.
 
 16. **Run migrations + full test suite.** Expect failures in:
     - `VenueService`/`ArtistService` saving via wrong context (won't apply — those were

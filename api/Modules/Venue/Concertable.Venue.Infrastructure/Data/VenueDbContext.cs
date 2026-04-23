@@ -1,5 +1,3 @@
-using Concertable.Data.Infrastructure.Data.Configurations;
-using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Venue.Infrastructure.Data;
@@ -13,7 +11,6 @@ internal class VenueDbContext(DbContextOptions<VenueDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new VenueEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new VenueRatingProjectionConfiguration());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(VenueDbContext).Assembly);
     }
 }

@@ -2,9 +2,9 @@ using Concertable.Artist.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Concertable.Data.Infrastructure.Data.Configurations;
+namespace Concertable.Artist.Infrastructure.Data.Configurations;
 
-public class ArtistEntityConfiguration : IEntityTypeConfiguration<ArtistEntity>
+internal class ArtistEntityConfiguration : IEntityTypeConfiguration<ArtistEntity>
 {
     public void Configure(EntityTypeBuilder<ArtistEntity> builder)
     {
@@ -18,7 +18,7 @@ public class ArtistEntityConfiguration : IEntityTypeConfiguration<ArtistEntity>
     }
 }
 
-public class ArtistGenreEntityConfiguration : IEntityTypeConfiguration<ArtistGenreEntity>
+internal class ArtistGenreEntityConfiguration : IEntityTypeConfiguration<ArtistGenreEntity>
 {
     public void Configure(EntityTypeBuilder<ArtistGenreEntity> builder)
     {
@@ -37,7 +37,7 @@ public class ArtistGenreEntityConfiguration : IEntityTypeConfiguration<ArtistGen
     }
 }
 
-public class ArtistRatingProjectionConfiguration : IEntityTypeConfiguration<ArtistRatingProjection>
+internal class ArtistRatingProjectionConfiguration : IEntityTypeConfiguration<ArtistRatingProjection>
 {
     public void Configure(EntityTypeBuilder<ArtistRatingProjection> builder)
     {

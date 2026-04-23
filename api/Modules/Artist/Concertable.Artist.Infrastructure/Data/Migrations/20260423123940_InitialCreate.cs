@@ -62,7 +62,18 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
                         principalTable: "Artists",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ArtistGenres_Genres_GenreId",
+                        column: x => x.GenreId,
+                        principalTable: "Genres",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ArtistGenres_GenreId",
+                table: "ArtistGenres",
+                column: "GenreId");
         }
 
         /// <inheritdoc />
