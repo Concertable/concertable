@@ -32,10 +32,6 @@
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
-    <!-- TEMPORARY: rating specs (IRatingSpecification) live in Search.Application; Concert repositories
-         consume them for review-aggregate projection. Removed during the rating-pipeline rewrite
-         (MM_NORTH_STAR §5). -->
-    <ProjectReference Include="..\..\Search\Concertable.Search.Application\Concertable.Search.Application.csproj" />
     <!-- TEMPORARY: payment services (ICustomerPaymentService, IManagerPaymentService keyed,
          IStripeAccountService, IBackgroundTaskQueue, IWebhookStrategyFactory, etc.) still live
          in legacy Concertable.Infrastructure. Removed during Payment Stage 1 (replaced with

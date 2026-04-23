@@ -18,7 +18,7 @@ internal class VenueEntityConfiguration : IEntityTypeConfiguration<VenueEntity>
     }
 }
 
-internal class VenueRatingProjectionConfiguration : IEntityTypeConfiguration<VenueRatingProjection>
+public class VenueRatingProjectionConfiguration : IEntityTypeConfiguration<VenueRatingProjection>
 {
     public void Configure(EntityTypeBuilder<VenueRatingProjection> builder)
     {

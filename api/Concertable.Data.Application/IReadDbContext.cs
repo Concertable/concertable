@@ -1,4 +1,5 @@
 using Concertable.Artist.Domain;
+using Concertable.Concert.Domain;
 using Concertable.Core.Entities;
 using Concertable.Identity.Domain;
 using Concertable.Shared;
@@ -38,4 +39,7 @@ public interface IReadDbContext
     IQueryable<DoorSplitContractEntity> DoorSplitContracts { get; }
     IQueryable<VersusContractEntity> VersusContracts { get; }
     IQueryable<VenueHireContractEntity> VenueHireContracts { get; }
+    IQueryable<ArtistRatingProjection> ArtistRatingProjections { get; }
+    IQueryable<VenueRatingProjection> VenueRatingProjections { get; }
+    IQueryable<ConcertRatingProjection> ConcertRatingProjections { get; }
 }

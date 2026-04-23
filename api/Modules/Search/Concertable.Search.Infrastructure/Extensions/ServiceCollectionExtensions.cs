@@ -2,7 +2,6 @@ using Concertable.Core.Enums;
 using Concertable.Search.Application;
 using Concertable.Search.Domain.Models;
 using Concertable.Search.Application.Validators;
-using Concertable.Search.Application.Interfaces;
 using Concertable.Search.Infrastructure.Data;
 using Concertable.Search.Infrastructure.Repositories;
 using Concertable.Search.Application.Services;
@@ -25,10 +24,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGeometrySpecification<ArtistSearchModel>, GeometrySpecification<ArtistSearchModel>>();
         services.AddSingleton<IGeometrySpecification<VenueSearchModel>, GeometrySpecification<VenueSearchModel>>();
         services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
-
-        services.AddSingleton<IRatingSpecification<ArtistSearchModel>, ArtistRatingSpecification>();
-        services.AddSingleton<IRatingSpecification<VenueSearchModel>, VenueRatingSpecification>();
-        services.AddSingleton<IRatingSpecification<ConcertEntity>, ConcertRatingSpecification>();
 
         services.AddSingleton<ISearchSpecification<ArtistSearchModel>, SearchSpecification<ArtistSearchModel>>();
         services.AddSingleton<ISearchSpecification<VenueSearchModel>, SearchSpecification<VenueSearchModel>>();

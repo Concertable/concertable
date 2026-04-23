@@ -40,6 +40,9 @@ internal class ReadDbContext(DbContextOptions<ReadDbContext> options)
     public IQueryable<DoorSplitContractEntity> DoorSplitContracts => Set<DoorSplitContractEntity>().AsNoTracking();
     public IQueryable<VersusContractEntity> VersusContracts => Set<VersusContractEntity>().AsNoTracking();
     public IQueryable<VenueHireContractEntity> VenueHireContracts => Set<VenueHireContractEntity>().AsNoTracking();
+    public IQueryable<ArtistRatingProjection> ArtistRatingProjections => Set<ArtistRatingProjection>().AsNoTracking();
+    public IQueryable<VenueRatingProjection> VenueRatingProjections => Set<VenueRatingProjection>().AsNoTracking();
+    public IQueryable<ConcertRatingProjection> ConcertRatingProjections => Set<ConcertRatingProjection>().AsNoTracking();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
