@@ -1,5 +1,4 @@
 using Concertable.Concert.Infrastructure.Data;
-using Concertable.Data.Application;
 using Concertable.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +7,9 @@ namespace Concertable.Concert.Infrastructure.Repositories;
 internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbContext>, IConcertRepository
 {
     private readonly TimeProvider timeProvider;
-    private readonly IReadDbContext readDb;
 
-    public ConcertRepository(ConcertDbContext context, IReadDbContext readDb, TimeProvider timeProvider) : base(context)
+    public ConcertRepository(ConcertDbContext context, TimeProvider timeProvider) : base(context)
     {
-        this.readDb = readDb;
         this.timeProvider = timeProvider;
     }
 
@@ -35,91 +32,91 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
 
     public async Task<ConcertSummaryDto?> GetSummaryAsync(int id)
     {
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Id == id)
-            .ToSummaryDto(readDb.ArtistRatingProjections, readDb.VenueRatingProjections)
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .FirstOrDefaultAsync();
     }
 
     public async Task<ConcertDto?> GetDtoByIdAsync(int id)
     {
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Id == id)
             .ToDto(
-                readDb.ConcertRatingProjections,
-                readDb.ArtistRatingProjections,
-                readDb.VenueRatingProjections)
+                context.ConcertRatingProjections,
+                context.ArtistRatingProjections,
+                context.VenueRatingProjections)
             .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id)
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id
                         && e.Booking.Application.Opportunity.Period.Start >= now
                         && e.DatePosted != null)
-            .ToSummaryDto(readDb.ArtistRatingProjections, readDb.VenueRatingProjections)
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id)
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id
                         && e.Booking.Application.Opportunity.Period.Start >= now
                         && e.DatePosted != null)
-            .ToSummaryDto(readDb.ArtistRatingProjections, readDb.VenueRatingProjections)
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
     public async Task<ConcertDto?> GetDtoByApplicationIdAsync(int applicationId)
     {
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Booking.ApplicationId == applicationId)
             .ToDto(
-                readDb.ConcertRatingProjections,
-                readDb.ArtistRatingProjections,
-                readDb.VenueRatingProjections)
+                context.ConcertRatingProjections,
+                context.ArtistRatingProjections,
+                context.VenueRatingProjections)
             .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id)
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id
                         && e.Booking.Application.Opportunity.Period.Start < now
                         && e.DatePosted != null)
-            .ToSummaryDto(readDb.ArtistRatingProjections, readDb.VenueRatingProjections)
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id)
     {
         var now = timeProvider.GetUtcNow();
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id
                         && e.Booking.Application.Opportunity.Period.Start < now
                         && e.DatePosted != null)
-            .ToSummaryDto(readDb.ArtistRatingProjections, readDb.VenueRatingProjections)
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id)
     {
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id && e.DatePosted == null)
-            .ToSummaryDto(readDb.ArtistRatingProjections, readDb.VenueRatingProjections)
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByVenueIdAsync(int id)
     {
-        return await readDb.Concerts
+        return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id && e.DatePosted == null)
-            .ToSummaryDto(readDb.ArtistRatingProjections, readDb.VenueRatingProjections)
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
