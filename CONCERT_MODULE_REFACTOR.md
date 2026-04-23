@@ -1503,6 +1503,27 @@ projection handlers).
 11. **`AddConcertModule()`** DI extension with the full block from §6. Wire it up in
     `Concertable.Web/Program.cs`.
 
+    ✅ **Done 2026-04-23.**
+
+    **Signature change:** `AddConcertModule(this IServiceCollection services, IConfiguration configuration)`.
+    Added `ConcertDbContext` registration with both interceptors. Full §6 block wired:
+    - 7 core services (Concert/ConcertDraft/Opportunity/OpportunityApplication/Contract/Upfront/Deferred).
+    - 3 keyed review services (Artist/Venue/Concert) — all moved to Concert.Infrastructure.
+    - 4 dispatchers (Accept/Finished/Settlement + TicketPayment **TEMPORARY** legacy) + ApplicationAcceptHandler (**TEMPORARY** legacy).
+    - 4 keyed workflow strategies (FlatFee/DoorSplit/Versus/VenueHire).
+    - `IContractStrategyFactory<>` + `IContractStrategyResolver<>` (**TEMPORARY** legacy impls in Concertable.Infrastructure).
+    - Webhook plumbing: Processor + Queue + keyed TicketWebhookHandler/SettlementWebhookHandler. (`IWebhookStrategyFactory` + `IWebhookService` stay in legacy Web `AddContracts/AddStripeServices`.)
+    - 8 repositories: Concert/Opportunity/OpportunityApplication/Contract/ConcertBooking + 3 review repos.
+    - Mappers singletons: ContractMapper/OpportunityMapper/OpportunityApplicationMapper.
+    - `IConcertModule, ConcertModule` (already present, kept).
+    - 3 event handlers (already present, kept).
+    - `AddValidatorsFromAssemblyContaining<OpportunityDtoValidator>()` — added `FluentValidation.DependencyInjectionExtensions 11.11.0` package to Concert.Infrastructure.csproj.
+    - `using Concertable.Infrastructure.Interfaces;` added for `IWebhookProcessor/IWebhookQueue/IWebhookStrategy`.
+    - `global using Concertable.Core.Enums;` added to Concert.Infrastructure GlobalUsings.cs for `ReviewType`/`WebhookType`.
+
+    `AddConcertApi(this IServiceCollection services, IConfiguration configuration)` updated to accept and forward `configuration` to `AddConcertModule()`.
+    `Web/Program.cs` updated: `services.AddConcertApi(builder.Configuration)`.
+
 12. **Remove Concert registrations from `Concertable.Web/Extensions/ServiceCollectionExtensions.cs`**
     — all services, dispatchers, repositories, keyed workflow strategies. Keep the payment
     services (they stay until Payment extracts). **Also remove the duplicate Concert DI
@@ -1510,6 +1531,24 @@ projection handlers).
     `IFinishedDispatcher`, `ISettlementDispatcher`, four keyed `IConcertWorkflowStrategy`)
     and replace with a single `services.AddConcertModule(cfg)` call. Workers picks up a ref
     to `Concertable.Concert.Infrastructure` in its csproj.
+
+    ✅ **Done 2026-04-23.**
+
+    **Web `ServiceCollectionExtensions.cs`:**
+    - Removed Concert-specific usings (Concert.Infrastructure.Services/Repositories namespaces). Kept `Concertable.Concert.Infrastructure.Services.Webhook` for `WebhookService` (still registered in `AddStripeServices()` for real-stripe toggle).
+    - `AddServices()`: removed IConcertDraftService/IConcertService/IOpportunityApplicationService/IOpportunityService + 3 keyed IReviewService registrations. Added breadcrumb comments.
+    - `AddRepositories()`: removed IConcertRepository/IOpportunityApplicationRepository/IConcertBookingRepository/IOpportunityRepository/IContractRepository + 3 review repo registrations.
+    - `AddContracts()`: stripped to payment-only — removed IContractStrategyFactory/Resolver, IContractService, 3 mappers, UpfrontConcertService, DeferredConcertService, 3 dispatchers, ITicketPaymentDispatcher, IApplicationAcceptHandler, 4 keyed IConcertWorkflowStrategy, IWebhookProcessor/Queue, 2 keyed IWebhookStrategy. **Kept:** keyed IManagerPaymentService (×2), ICustomerPaymentService, 4 keyed ITicketPaymentStrategy, IWebhookStrategyFactory.
+
+    **Workers `ServiceCollectionExtensions.cs`:**
+    - Added `services.AddScoped<DomainEventDispatchInterceptor>()` to `AddInfrastructure()` (required by ConcertDbContext interceptor chain; Identity module also needs it at runtime).
+    - Added `services.AddConcertModule(configuration)` after `AddIdentityModule(configuration)`.
+    - Removed `AddRepositories()` method entirely (3 concert repos now in Concert module).
+    - Simplified `AddServices()` to payment-only: IPaymentService/IStripeAccountService/IManagerPaymentService.
+    - Added using `Concertable.Concert.Infrastructure.Extensions` + `Concertable.Data.Infrastructure.Data`.
+    - `Workers/Program.cs`: removed `.AddRepositories()` from the service chain.
+
+    **Build:** `dotnet build Concertable.sln` — **0 errors, 55 warnings** (all pre-existing nullable-ref + NU1900 NuGet warnings). Tests still RED at runtime on `PendingModelChangesWarning` until Steps 13–14.
 
 13. **`ApplicationDbContext` cleanup** — remove all 14 Concert DbSets + their
     `ApplyConfiguration` calls. Scaffold the paired drop migration.

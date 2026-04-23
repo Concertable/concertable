@@ -88,7 +88,7 @@ services.AddRepositories();
 services.AddSearchApi();
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
-services.AddConcertApi();
+services.AddConcertApi(builder.Configuration);
 services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();

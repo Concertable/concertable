@@ -7,6 +7,7 @@ using Concertable.Application.Interfaces.Rating;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
+using Concertable.Concert.Infrastructure.Services.Webhook;
 using Concertable.Infrastructure.Background;
 using Concertable.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
@@ -25,15 +26,6 @@ using Concertable.Infrastructure.Services.Email;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Infrastructure.Services.Payment;
 using Concertable.Infrastructure.Services.Rating;
-using Concertable.Concert.Infrastructure.Repositories;
-using Concertable.Concert.Infrastructure.Repositories.Review;
-using Concertable.Concert.Infrastructure.Services;
-using Concertable.Concert.Infrastructure.Services.Accept;
-using Concertable.Concert.Infrastructure.Services.Application;
-using Concertable.Concert.Infrastructure.Services.Complete;
-using Concertable.Concert.Infrastructure.Services.Review;
-using Concertable.Concert.Infrastructure.Services.Settlement;
-using Concertable.Concert.Infrastructure.Services.Webhook;
 using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
 using Concertable.Core.Enums;
@@ -182,18 +174,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
         // IVenueService registered by AddVenueModule() via AddVenueApi()
-        services.AddScoped<IConcertDraftService, ConcertDraftService>();
-        services.AddScoped<IConcertService, ConcertService>();
-        services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
+        // IConcertService/IConcertDraftService/IOpportunityService/IOpportunityApplicationService registered by AddConcertApi()
         services.AddScoped<IMessageService, MessageService>();
-        services.AddScoped<IOpportunityService, OpportunityService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
         services.AddScoped<IGenreService, GenreService>();
-        services.AddKeyedScoped<IReviewService, ArtistReviewService>(ReviewType.Artist);
-        services.AddKeyedScoped<IReviewService, VenueReviewService>(ReviewType.Venue);
-        services.AddKeyedScoped<IReviewService, ConcertReviewService>(ReviewType.Concert);
+        // IReviewService (keyed Artist/Venue/Concert) registered by AddConcertApi()
         services.AddScoped<IReviewServiceFactory, ReviewServiceFactory>();
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IPdfService, PdfService>();
@@ -221,19 +208,12 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         // IVenueRepository registered by AddVenueModule() via AddVenueApi()
-        services.AddScoped<IConcertRepository, ConcertRepository>();
-        services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
-        services.AddScoped<IConcertBookingRepository, ConcertBookingRepository>();
+        // Concert/Opportunity/OpportunityApplication/Contract/ConcertBooking/Review repos registered by AddConcertApi()
         services.AddScoped<IMessageRepository, MessageRepository>();
-        services.AddScoped<IOpportunityRepository, OpportunityRepository>();
-        services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
-        services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
-        services.AddScoped<IVenueReviewRepository, VenueReviewRepository>();
-        services.AddScoped<IConcertReviewRepository, ConcertReviewRepository>();
-services.AddRatingRepositories();
+        services.AddRatingRepositories();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -261,41 +241,18 @@ services.AddRatingRepositories();
 
     private static IServiceCollection AddContracts(this IServiceCollection services)
     {
-        services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
-        services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
-
-        services.AddScoped<IContractService, ContractService>();
-
-        services.AddSingleton<IContractMapper, ContractMapper>();
-        services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
-        services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
-
-        services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
-        services.AddScoped<IDeferredConcertService, DeferredConcertService>();
+        // IContractStrategyFactory/Resolver, dispatchers, workflow strategies, webhook processor/queue
+        // all registered by AddConcertApi(). Payment-scoped items remain here.
         services.AddKeyedManagerPaymentService("onSession");
         services.AddKeyedManagerPaymentService("offSession");
         services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
-        services.AddScoped<ITicketPaymentDispatcher, TicketPaymentDispatcher>();
-        services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
-        services.AddScoped<IAcceptDispatcher, AcceptDispatcher>();
-        services.AddScoped<IFinishedDispatcher, FinishedDispatcher>();
-        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
 
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
         services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
         services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
 
-        services.AddKeyedScoped<IConcertWorkflowStrategy, FlatFeeConcertWorkflow>(ContractType.FlatFee);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
-
         services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
-        services.AddScoped<IWebhookProcessor, WebhookProcessor>();
-        services.AddScoped<IWebhookQueue, WebhookQueue>();
-        services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>(WebhookType.Concert);
-        services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>(WebhookType.Settlement);
 
         return services;
     }

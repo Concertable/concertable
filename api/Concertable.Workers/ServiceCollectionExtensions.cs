@@ -1,26 +1,17 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Core.Enums;
-using Concertable.Data.Infrastructure;
+using Concertable.Concert.Infrastructure.Extensions;
+using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
-using Concertable.Shared;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Infrastructure;
 using Concertable.Infrastructure.Data;
-using Concertable.Infrastructure.Factories;
-using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Services.Payment;
-using Concertable.Concert.Infrastructure.Repositories;
-using Concertable.Concert.Infrastructure.Services.Accept;
-using Concertable.Concert.Infrastructure.Services.Application;
-using Concertable.Concert.Infrastructure.Services.Complete;
-using Concertable.Concert.Infrastructure.Services.Settlement;
 using Concertable.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Concertable.Data.Infrastructure.Data;
+using Concertable.Data.Infrastructure;
 
 namespace Workers;
 
@@ -30,6 +21,7 @@ internal static class ServiceCollectionExtensions
     {
         services.AddSharedInfrastructure();
         services.AddScoped<AuditInterceptor>();
+        services.AddScoped<DomainEventDispatchInterceptor>();
 
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseSqlServer(
@@ -39,18 +31,10 @@ internal static class ServiceCollectionExtensions
         services.AddReadDbContext(configuration);
 
         services.AddIdentityModule(configuration);
+        services.AddConcertModule(configuration);
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.AddSingleton(TimeProvider.System);
-
-        return services;
-    }
-
-    public static IServiceCollection AddRepositories(this IServiceCollection services)
-    {
-        services.AddScoped<IConcertRepository, ConcertRepository>();
-        services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
-        services.AddScoped<IContractRepository, ContractRepository>();
 
         return services;
     }
@@ -60,16 +44,6 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IStripeAccountService, StripeAccountService>();
         services.AddScoped<IManagerPaymentService, ManagerPaymentService>();
-
-        services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
-        services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
-
-        services.AddScoped<IFinishedDispatcher, FinishedDispatcher>();
-        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
-        services.AddKeyedScoped<IConcertWorkflowStrategy, FlatFeeConcertWorkflow>(ContractType.FlatFee);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
 
         return services;
     }

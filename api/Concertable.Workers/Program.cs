@@ -14,7 +14,6 @@ builder.Services
 
 builder.Services
     .AddInfrastructure(builder.Configuration)
-    .AddRepositories()
     .AddServices();
 
 builder.Build().Run();
