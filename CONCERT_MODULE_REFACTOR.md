@@ -1823,10 +1823,36 @@ projection handlers).
     `InitialCreate` rather than as a follow-up `AddConcertRatingProjection` migration that
     would get wiped by the Step 14 close-out reset anyway.
 
-14. **Scaffold `ConcertDbContext` `InitialCreate` migration.** Inspect for outbound FKs:
-    strip `FK_ConcertGenres_Genres_GenreId`, `FK_OpportunityGenres_Genres_GenreId`, and any
-    Artist/Venue/Identity FKs (per §7 directional rule). Keep CLR navs where §3 option (a)
-    is in effect.
+14. **Scaffold `ConcertDbContext` `InitialCreate` migration.**
+
+    ✅ **Done 2026-04-23.**
+
+    **Genre cross-context problem + SharedDbContext fix.** Concert has three join
+    entities with `GenreEntity` navs (`ConcertGenreEntity`, `OpportunityGenreEntity`,
+    `ArtistReadModelGenre`). First scaffold attempts emitted `table.ForeignKey(...
+    principalTable: "Genres" ...)` constraints, which would fail at apply time because
+    Concert migrations run before `ApplicationDbContext` in the dep order. Tried
+    `modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations())`
+    in three positions (before/after assembly scan + as a dedicated
+    `IEntityTypeConfiguration<GenreEntity>`) — all suppressed the table CREATE but EF
+    still emitted the FK constraints (works for Artist with one Genre nav; doesn't for
+    Concert with three; suspected EF Core 10.0.3 quirk).
+
+    **Resolution:** introduced `SharedDbContext` in `Concertable.Data.Infrastructure/Data/`
+    that owns `Genres` (and other shared reference data). Migration order updated to
+    Shared → Identity → Artist → Venue → Concert → AppDb so the Genres table exists
+    before Concert applies. FK constraints to Genres are now legitimate cross-context
+    references that satisfy at apply time. Each module DbContext (Artist, Venue,
+    Concert) and `ApplicationDbContext` keeps a single
+    `modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations())`
+    line so its own migration doesn't try to recreate Genres.
+
+    **Concert migration result:** `20260423121237_InitialCreate.cs` — 18 CreateTables
+    (17 Concert-owned + ArtistReadModelGenres), no Genres CreateTable, FKs to Genres
+    kept as legitimate cross-context references. Build green: 0 errors, 77 warnings.
+
+    See `project_shared_dbcontext.md` for the codified pattern (was previously a
+    "future idea" memory; promoted to current state).
 
 15. **Global usings** — add `Concertable.Concert.Contracts` + `Concertable.Concert.Domain`
     to `Concertable.Infrastructure/GlobalUsings.cs` + `Concertable.Web/GlobalUsings.cs`

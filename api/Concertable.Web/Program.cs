@@ -9,6 +9,7 @@ using Concertable.Concert.Api.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
+using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Api.Extensions;
@@ -78,6 +79,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddScoped<IDbInitializer, DevDbInitializer>();
     services.AddScoped<Concertable.Seeding.SeedData>();
     services.AddScoped<ILocationFaker, LocationFaker>();
+    services.AddSharedDevSeeder();
     services.AddIdentityDevSeeder();
     services.AddArtistDevSeeder();
     services.AddVenueDevSeeder();

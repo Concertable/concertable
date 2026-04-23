@@ -69,6 +69,7 @@ public static class ServiceCollectionExtensions
         services.AddSharedInfrastructure();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
+        services.AddSharedDbContext(configuration);
         services.AddDbContext<ApplicationDbContext>((sp, opt) =>
             opt.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),

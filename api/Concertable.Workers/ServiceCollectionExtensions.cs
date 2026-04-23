@@ -23,6 +23,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
 
+        services.AddSharedDbContext(configuration);
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),

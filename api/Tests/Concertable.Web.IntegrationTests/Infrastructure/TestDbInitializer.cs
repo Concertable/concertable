@@ -43,19 +43,6 @@ public class TestDbInitializer : IDbInitializer
 
         await context.Database.MigrateAsync();
 
-        // Genres are reference data used by module seeders (ArtistTestSeeder needs seed.Rock),
-        // so they must be seeded before the SeedAsync loop runs.
-        await context.Genres.SeedIfEmptyAsync(async () =>
-        {
-            seed.Rock = GenreFactory.Create("Rock");
-            seed.Jazz = GenreFactory.Create("Jazz");
-            seed.HipHop = GenreFactory.Create("Hip-Hop");
-            seed.Electronic = GenreFactory.Create("Electronic");
-
-            context.Genres.AddRange(seed.Rock, seed.Jazz, seed.HipHop, seed.Electronic);
-            await context.SaveChangesAsync();
-        });
-
         foreach (var seeder in seeders.OrderBy(s => s.Order))
             await seeder.SeedAsync();
     }

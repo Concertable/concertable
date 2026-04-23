@@ -7,6 +7,7 @@ using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Data.Application;
+using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Application.Interfaces.Payment;
@@ -79,6 +80,7 @@ public async Task InitializeAsync()
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
                 services.AddScoped<SeedData>();
                 services.AddScoped<ILocationFaker, LocationFaker>();
+                services.AddSharedTestSeeder();
                 services.AddIdentityTestSeeder();
                 services.AddArtistTestSeeder();
                 services.AddVenueTestSeeder();

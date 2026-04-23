@@ -44,25 +44,6 @@ public class DevDbInitializer : IDbInitializer
 
         await context.Database.MigrateAsync();
 
-        // Genres are reference data used by module seeders (ArtistDevSeeder assigns genre IDs),
-        // so they must be seeded before the SeedAsync loop runs.
-        await context.Genres.SeedIfEmptyAsync(async () =>
-        {
-            var genres = new GenreEntity[]
-            {
-                GenreFactory.Create("Rock"),
-                GenreFactory.Create("Pop"),
-                GenreFactory.Create("Jazz"),
-                GenreFactory.Create("Hip-Hop"),
-                GenreFactory.Create("Electronic"),
-                GenreFactory.Create("Indie"),
-                GenreFactory.Create("DnB"),
-                GenreFactory.Create("House")
-            };
-            context.Genres.AddRange(genres);
-            await context.SaveChangesAsync();
-        });
-
         foreach (var seeder in seeders.OrderBy(s => s.Order))
             await seeder.SeedAsync();
 

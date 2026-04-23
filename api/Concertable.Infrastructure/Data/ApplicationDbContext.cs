@@ -1,5 +1,6 @@
 using Concertable.Core.Entities;
 using Concertable.Data.Infrastructure;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Data;
@@ -12,7 +13,6 @@ public class ApplicationDbContext : DbContextBase
     protected ApplicationDbContext(DbContextOptions options)
         : base(options) { }
 
-    public DbSet<GenreEntity> Genres { get; set; }
     public DbSet<MessageEntity> Messages { get; set; }
     public DbSet<TransactionEntity> Transactions { get; set; }
     public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
@@ -31,6 +31,10 @@ public class ApplicationDbContext : DbContextBase
         {
             modelBuilder.ApplyConfigurationsFromAssembly(asm);
         }
+
+        // Shared reference data — schema managed by SharedDbContext migrations (runs first).
+        // GenrePreferenceEntity.Genre nav pulls GenreEntity into this model, so exclude the table.
+        modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
 
         // Identity-owned tables — schema managed by IdentityDbContext migrations
         modelBuilder.Entity<UserEntity>().ToTable("Users", t => t.ExcludeFromMigrations());

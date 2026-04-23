@@ -28,5 +28,7 @@ internal class ConcertDbContext(DbContextOptions<ConcertDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConcertDbContext).Assembly);
+
+        modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
     }
 }
