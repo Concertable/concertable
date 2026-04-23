@@ -27,7 +27,8 @@ public class ApplicationDbContext : DbContextBase
             .Where(a => a.GetName().Name is string n
                      && n.StartsWith("Concertable.")
                      && n.EndsWith(".Infrastructure")
-                     && n != "Concertable.Concert.Infrastructure"))
+                     && n != "Concertable.Concert.Infrastructure"
+                     && n != "Concertable.Search.Infrastructure"))
         {
             modelBuilder.ApplyConfigurationsFromAssembly(asm);
         }

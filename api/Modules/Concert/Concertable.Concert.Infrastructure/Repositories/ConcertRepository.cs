@@ -1,8 +1,5 @@
-using Concertable.Artist.Domain;
 using Concertable.Concert.Infrastructure.Data;
 using Concertable.Infrastructure.Mappers;
-using Concertable.Search.Application.Interfaces;
-using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;
@@ -10,21 +7,10 @@ namespace Concertable.Concert.Infrastructure.Repositories;
 internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbContext>, IConcertRepository
 {
     private readonly TimeProvider timeProvider;
-    private readonly IRatingSpecification<ConcertEntity> concertRatingSpecification;
-    private readonly IRatingSpecification<ArtistEntity> artistRatingSpecification;
-    private readonly IRatingSpecification<VenueEntity> venueRatingSpecification;
 
-    public ConcertRepository(
-        ConcertDbContext context,
-        TimeProvider timeProvider,
-        IRatingSpecification<ConcertEntity> concertRatingSpecification,
-        IRatingSpecification<ArtistEntity> artistRatingSpecification,
-        IRatingSpecification<VenueEntity> venueRatingSpecification) : base(context)
+    public ConcertRepository(ConcertDbContext context, TimeProvider timeProvider) : base(context)
     {
         this.timeProvider = timeProvider;
-        this.concertRatingSpecification = concertRatingSpecification;
-        this.artistRatingSpecification = artistRatingSpecification;
-        this.venueRatingSpecification = venueRatingSpecification;
     }
 
     public async Task<ConcertEntity?> GetFullByIdAsync(int id)
@@ -48,9 +34,7 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
     {
         return await context.Concerts
             .Where(e => e.Id == id)
-            .ToSummaryDto(
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .FirstOrDefaultAsync();
     }
 
@@ -59,33 +43,31 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
         return await context.Concerts
             .Where(e => e.Id == id)
             .ToDto(
-                concertRatingSpecification.ApplyAggregate(context.Reviews),
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+                context.ConcertRatingProjections,
+                context.ArtistRatingProjections,
+                context.VenueRatingProjections)
             .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id)
     {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id
-                        && e.Booking.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow()
+                        && e.Booking.Application.Opportunity.Period.Start >= now
                         && e.DatePosted != null)
-            .ToSummaryDto(
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id)
     {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id
-                        && e.Booking.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow()
+                        && e.Booking.Application.Opportunity.Period.Start >= now
                         && e.DatePosted != null)
-            .ToSummaryDto(
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
@@ -94,33 +76,31 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
         return await context.Concerts
             .Where(e => e.Booking.ApplicationId == applicationId)
             .ToDto(
-                concertRatingSpecification.ApplyAggregate(context.Reviews),
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+                context.ConcertRatingProjections,
+                context.ArtistRatingProjections,
+                context.VenueRatingProjections)
             .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id)
     {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id
-                        && e.Booking.Application.Opportunity.Period.Start < timeProvider.GetUtcNow()
+                        && e.Booking.Application.Opportunity.Period.Start < now
                         && e.DatePosted != null)
-            .ToSummaryDto(
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id)
     {
+        var now = timeProvider.GetUtcNow();
         return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id
-                        && e.Booking.Application.Opportunity.Period.Start < timeProvider.GetUtcNow()
+                        && e.Booking.Application.Opportunity.Period.Start < now
                         && e.DatePosted != null)
-            .ToSummaryDto(
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
@@ -128,9 +108,7 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
     {
         return await context.Concerts
             .Where(e => e.Booking.Application.ArtistId == id && e.DatePosted == null)
-            .ToSummaryDto(
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
@@ -138,9 +116,7 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
     {
         return await context.Concerts
             .Where(e => e.Booking.Application.Opportunity.VenueId == id && e.DatePosted == null)
-            .ToSummaryDto(
-                artistRatingSpecification.ApplyAggregate(context.Reviews),
-                venueRatingSpecification.ApplyAggregate(context.Reviews))
+            .ToSummaryDto(context.ArtistRatingProjections, context.VenueRatingProjections)
             .ToListAsync();
     }
 
@@ -175,9 +151,10 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
 
     public async Task<IEnumerable<int>> GetEndedConfirmedIdsAsync()
     {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         return await context.Concerts
             .Where(c => c.Booking.Application.Status == ApplicationStatus.Accepted
-                     && c.Booking.Application.Opportunity.Period.Start < timeProvider.GetUtcNow())
+                     && c.Booking.Application.Opportunity.Period.Start < now)
             .Select(c => c.Id)
             .ToListAsync();
     }

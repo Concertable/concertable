@@ -37,7 +37,7 @@ internal class ArtistGenreEntityConfiguration : IEntityTypeConfiguration<ArtistG
     }
 }
 
-internal class ArtistRatingProjectionConfiguration : IEntityTypeConfiguration<ArtistRatingProjection>
+public class ArtistRatingProjectionConfiguration : IEntityTypeConfiguration<ArtistRatingProjection>
 {
     public void Configure(EntityTypeBuilder<ArtistRatingProjection> builder)
     {

@@ -87,7 +87,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();
-services.AddSearchApi();
+services.AddSearchApi(builder.Configuration);
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
 services.AddConcertApi(builder.Configuration);

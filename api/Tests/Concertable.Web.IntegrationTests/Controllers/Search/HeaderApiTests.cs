@@ -24,6 +24,7 @@ public class HeaderApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         var response = await client.GetAsync("/api/Header/amount/5?headerType=Artist");
+        await response.ShouldBe(HttpStatusCode.OK);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var headers = await response.Content.ReadAsync<ArtistHeaderDto[]>();
@@ -52,6 +53,7 @@ public class HeaderApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         var response = await client.GetAsync("/api/Header/amount/10?headerType=Concert");
+        await response.ShouldBe(HttpStatusCode.OK);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var headers = await response.Content.ReadAsync<ConcertHeaderDto[]>();

@@ -1,5 +1,7 @@
+using Concertable.Artist.Domain;
 using Concertable.Concert.Domain;
 using Concertable.Data.Infrastructure;
+using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Data;
@@ -24,10 +26,25 @@ internal class ConcertDbContext(DbContextOptions<ConcertDbContext> options)
     public DbSet<ArtistReadModel> ArtistReadModels => Set<ArtistReadModel>();
     public DbSet<VenueReadModel> VenueReadModels => Set<VenueReadModel>();
     public DbSet<ConcertRatingProjection> ConcertRatingProjections => Set<ConcertRatingProjection>();
+    public DbSet<ArtistRatingProjection> ArtistRatingProjections => Set<ArtistRatingProjection>();
+    public DbSet<VenueRatingProjection> VenueRatingProjections => Set<VenueRatingProjection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConcertDbContext).Assembly);
+
+        modelBuilder.Entity<ArtistRatingProjection>(b =>
+        {
+            b.ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
+            b.HasKey(p => p.ArtistId);
+            b.Property(p => p.ArtistId).ValueGeneratedNever();
+        });
+        modelBuilder.Entity<VenueRatingProjection>(b =>
+        {
+            b.ToTable("VenueRatingProjections", t => t.ExcludeFromMigrations());
+            b.HasKey(p => p.VenueId);
+            b.Property(p => p.VenueId).ValueGeneratedNever();
+        });
 
         modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
     }

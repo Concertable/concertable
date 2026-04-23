@@ -4,5 +4,5 @@ namespace Concertable.Search.Application.Interfaces;
 
 internal interface IVenueSearchSpecification
 {
-    IQueryable<VenueEntity> Apply(IQueryable<VenueEntity> query, SearchParams searchParams);
+    IQueryable<VenueSearchModel> Apply(IQueryable<VenueSearchModel> query, SearchParams searchParams);
 }

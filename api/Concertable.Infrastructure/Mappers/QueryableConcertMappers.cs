@@ -1,5 +1,7 @@
 using Concertable.Application.DTOs;
-using Concertable.Core.Projections;
+using Concertable.Artist.Domain;
+using Concertable.Concert.Domain;
+using Concertable.Venue.Domain;
 using LinqKit;
 
 namespace Concertable.Infrastructure.Mappers;
@@ -8,15 +10,15 @@ internal static class QueryableConcertMappers
 {
     public static IQueryable<ConcertDto> ToDto(
         this IQueryable<ConcertEntity> query,
-        IQueryable<RatingAggregate> concertRatings,
-        IQueryable<RatingAggregate> artistRatings,
-        IQueryable<RatingAggregate> venueRatings) =>
+        IQueryable<ConcertRatingProjection> concertRatings,
+        IQueryable<ArtistRatingProjection> artistRatings,
+        IQueryable<VenueRatingProjection> venueRatings) =>
         from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null).AsExpandable()
-        join cr in concertRatings on c.Id equals cr.EntityId into crg
+        join cr in concertRatings on c.Id equals cr.ConcertId into crg
         from concertRating in crg.DefaultIfEmpty()
-        join ar in artistRatings on c.Booking.Application.ArtistId equals ar.EntityId into arg
+        join ar in artistRatings on c.Booking.Application.ArtistId equals ar.ArtistId into arg
         from artistRating in arg.DefaultIfEmpty()
-        join vr in venueRatings on c.Booking.Application.Opportunity.VenueId equals vr.EntityId into vrg
+        join vr in venueRatings on c.Booking.Application.Opportunity.VenueId equals vr.VenueId into vrg
         from venueRating in vrg.DefaultIfEmpty()
         select new ConcertDto
         {
@@ -57,12 +59,12 @@ internal static class QueryableConcertMappers
 
     public static IQueryable<ConcertSummaryDto> ToSummaryDto(
         this IQueryable<ConcertEntity> query,
-        IQueryable<RatingAggregate> artistRatings,
-        IQueryable<RatingAggregate> venueRatings) =>
+        IQueryable<ArtistRatingProjection> artistRatings,
+        IQueryable<VenueRatingProjection> venueRatings) =>
         from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null).AsExpandable()
-        join ar in artistRatings on c.Booking.Application.ArtistId equals ar.EntityId into arg
+        join ar in artistRatings on c.Booking.Application.ArtistId equals ar.ArtistId into arg
         from artistRating in arg.DefaultIfEmpty()
-        join vr in venueRatings on c.Booking.Application.Opportunity.VenueId equals vr.EntityId into vrg
+        join vr in venueRatings on c.Booking.Application.Opportunity.VenueId equals vr.VenueId into vrg
         from venueRating in vrg.DefaultIfEmpty()
         select new ConcertSummaryDto
         {

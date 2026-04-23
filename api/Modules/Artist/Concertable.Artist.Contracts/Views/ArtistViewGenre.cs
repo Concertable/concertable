@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Concertable.Artist.Contracts.Views;
+﻿namespace Concertable.Artist.Contracts.Views;
 
 public sealed class ArtistViewGenre
 {
