@@ -1,5 +1,6 @@
 using Concertable.Artist.Application.Interfaces;
 using Concertable.Artist.Infrastructure.Data;
+using Concertable.Artist.Infrastructure.Mappers;
 using Concertable.Concert.Contracts;
 using Concertable.Identity.Contracts;
 using Concertable.Shared;
@@ -17,9 +18,7 @@ internal class ArtistReviewService(
         var projection = await context.ArtistRatingProjections
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.ArtistId == artistId);
-        return projection is null
-            ? new ReviewSummaryDto(0, null)
-            : new ReviewSummaryDto(projection.ReviewCount, projection.AverageRating);
+        return projection.ToReviewSummaryDto();
     }
 
     public Task<IPagination<ReviewDto>> GetAsync(int artistId, IPageParams pageParams) =>

@@ -23,9 +23,7 @@ internal class ConcertReviewRepository(ConcertDbContext context, TimeProvider ti
         var projection = await context.ConcertRatingProjections
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.ConcertId == concertId);
-        return projection is null
-            ? new ReviewSummaryDto(0, null)
-            : new ReviewSummaryDto(projection.ReviewCount, projection.AverageRating);
+        return projection.ToReviewSummaryDto();
     }
 
     public Task<bool> CanUserReviewConcertAsync(Guid userId, int concertId) =>

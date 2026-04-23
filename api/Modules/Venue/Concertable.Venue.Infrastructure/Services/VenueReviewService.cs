@@ -3,6 +3,7 @@ using Concertable.Identity.Contracts;
 using Concertable.Shared;
 using Concertable.Venue.Application.Interfaces;
 using Concertable.Venue.Infrastructure.Data;
+using Concertable.Venue.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Venue.Infrastructure.Services;
@@ -17,9 +18,7 @@ internal class VenueReviewService(
         var projection = await context.VenueRatingProjections
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.VenueId == venueId);
-        return projection is null
-            ? new ReviewSummaryDto(0, null)
-            : new ReviewSummaryDto(projection.ReviewCount, projection.AverageRating);
+        return projection.ToReviewSummaryDto();
     }
 
     public Task<IPagination<ReviewDto>> GetAsync(int venueId, IPageParams pageParams) =>
