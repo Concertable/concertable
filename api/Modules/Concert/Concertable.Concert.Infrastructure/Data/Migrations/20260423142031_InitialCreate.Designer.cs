@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Concert.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ConcertDbContext))]
-    [Migration("20260423122545_InitialCreate")]
+    [Migration("20260423142031_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -29,10 +29,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
             modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModel", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Avatar")
                         .HasColumnType("nvarchar(max)");
@@ -341,10 +338,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
             modelBuilder.Entity("Concertable.Concert.Domain.VenueReadModel", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("About")
                         .IsRequired()

@@ -9,6 +9,7 @@ internal class VenueReadModelConfiguration : IEntityTypeConfiguration<VenueReadM
     public void Configure(EntityTypeBuilder<VenueReadModel> builder)
     {
         builder.ToTable("VenueReadModels");
+        builder.Property(v => v.Id).ValueGeneratedNever();
         builder.HasIndex(v => v.UserId).IsUnique();
         builder.Property(v => v.Location).HasColumnType("geography");
     }

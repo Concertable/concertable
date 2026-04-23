@@ -3,6 +3,7 @@ using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
+using Concertable.Venue.Contracts.Events;
 using Concertable.Venue.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,17 +18,20 @@ internal class VenueDevSeeder : IDevSeeder
     private readonly SeedData seed;
     private readonly IGeometryProvider geometryProvider;
     private readonly ILocationFaker locationFaker;
+    private readonly IIntegrationEventBus eventBus;
 
     public VenueDevSeeder(
         VenueDbContext context,
         SeedData seed,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        ILocationFaker locationFaker)
+        ILocationFaker locationFaker,
+        IIntegrationEventBus eventBus)
     {
         this.context = context;
         this.seed = seed;
         this.geometryProvider = geometryProvider;
         this.locationFaker = locationFaker;
+        this.eventBus = eventBus;
     }
 
     public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
@@ -86,6 +90,19 @@ internal class VenueDevSeeder : IDevSeeder
 
             context.Venues.AddRange(venues);
             await context.SaveChangesAsync(ct);
+
+            foreach (var venue in venues)
+            {
+                await eventBus.PublishAsync(new VenueChangedEvent(
+                    venue.Id,
+                    venue.UserId,
+                    venue.Name,
+                    venue.About,
+                    venue.Address?.County,
+                    venue.Address?.Town,
+                    venue.Location?.Y,
+                    venue.Location?.X), ct);
+            }
         });
     }
 }

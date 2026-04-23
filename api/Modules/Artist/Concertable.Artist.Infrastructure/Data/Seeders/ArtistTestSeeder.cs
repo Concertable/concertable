@@ -1,3 +1,4 @@
+using Concertable.Artist.Contracts.Events;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
@@ -11,11 +12,13 @@ internal class ArtistTestSeeder : ITestSeeder
 
     private readonly ArtistDbContext context;
     private readonly SeedData seed;
+    private readonly IIntegrationEventBus eventBus;
 
-    public ArtistTestSeeder(ArtistDbContext context, SeedData seed)
+    public ArtistTestSeeder(ArtistDbContext context, SeedData seed, IIntegrationEventBus eventBus)
     {
         this.context = context;
         this.seed = seed;
+        this.eventBus = eventBus;
     }
 
     public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
@@ -33,6 +36,17 @@ internal class ArtistTestSeeder : ITestSeeder
 
             context.Artists.Add(seed.Artist);
             await context.SaveChangesAsync(ct);
+
+            await eventBus.PublishAsync(new ArtistChangedEvent(
+                seed.Artist.Id,
+                seed.Artist.UserId,
+                seed.Artist.Name,
+                seed.Artist.Avatar,
+                seed.Artist.BannerUrl,
+                seed.Artist.Address?.County,
+                seed.Artist.Address?.Town,
+                seed.Artist.Email,
+                [seed.Rock.Id]), ct);
         });
     }
 }

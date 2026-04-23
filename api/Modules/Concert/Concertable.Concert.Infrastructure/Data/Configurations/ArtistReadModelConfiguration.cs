@@ -9,6 +9,7 @@ internal class ArtistReadModelConfiguration : IEntityTypeConfiguration<ArtistRea
     public void Configure(EntityTypeBuilder<ArtistReadModel> builder)
     {
         builder.ToTable("ArtistReadModels");
+        builder.Property(a => a.Id).ValueGeneratedNever();
         builder.HasIndex(a => a.UserId).IsUnique();
         builder.HasMany(a => a.Genres)
             .WithOne(g => g.Artist)

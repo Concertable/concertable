@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Geometry;
+using Concertable.Artist.Contracts.Events;
 using Concertable.Core.Parameters;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Seeding;
@@ -17,17 +18,20 @@ internal class ArtistDevSeeder : IDevSeeder
     private readonly SeedData seed;
     private readonly IGeometryProvider geometryProvider;
     private readonly ILocationFaker locationFaker;
+    private readonly IIntegrationEventBus eventBus;
 
     public ArtistDevSeeder(
         ArtistDbContext context,
         SeedData seed,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        ILocationFaker locationFaker)
+        ILocationFaker locationFaker,
+        IIntegrationEventBus eventBus)
     {
         this.context = context;
         this.seed = seed;
         this.geometryProvider = geometryProvider;
         this.locationFaker = locationFaker;
+        this.eventBus = eventBus;
     }
 
     public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
@@ -142,6 +146,35 @@ internal class ArtistDevSeeder : IDevSeeder
             };
             context.ArtistGenres.AddRange(artistGenres);
             await context.SaveChangesAsync(ct);
+
+            var artistsWithGenres = await context.Artists
+                .Select(a => new
+                {
+                    a.Id,
+                    a.UserId,
+                    a.Name,
+                    a.Avatar,
+                    a.BannerUrl,
+                    County = a.Address != null ? a.Address.County : null,
+                    Town = a.Address != null ? a.Address.Town : null,
+                    a.Email,
+                    GenreIds = a.ArtistGenres.Select(g => g.GenreId).ToArray()
+                })
+                .ToListAsync(ct);
+
+            foreach (var a in artistsWithGenres)
+            {
+                await eventBus.PublishAsync(new ArtistChangedEvent(
+                    a.Id,
+                    a.UserId,
+                    a.Name,
+                    a.Avatar,
+                    a.BannerUrl,
+                    a.County,
+                    a.Town,
+                    a.Email,
+                    a.GenreIds), ct);
+            }
         });
     }
 }
