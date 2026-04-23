@@ -3,7 +3,6 @@ using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Shared.Exceptions;
 using Concertable.Venue.Application.Mappers;
 using Concertable.Venue.Application.Requests;
-using Concertable.Venue.Contracts.Events;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Venue.Infrastructure.Services;
@@ -16,7 +15,6 @@ internal class VenueService : IVenueService
     private readonly IManagerModule managerModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
-    private readonly IIntegrationEventBus eventBus;
 
     public VenueService(
         IVenueRepository venueRepository,
@@ -24,8 +22,7 @@ internal class VenueService : IVenueService
         ICurrentUser currentUser,
         IManagerModule managerModule,
         IGeocodingService geocodingService,
-        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        IIntegrationEventBus eventBus)
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.venueRepository = venueRepository;
         this.imageService = imageService;
@@ -33,7 +30,6 @@ internal class VenueService : IVenueService
         this.managerModule = managerModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
-        this.eventBus = eventBus;
     }
 
     public async Task<VenueDto> GetDetailsByIdAsync(int id)
@@ -58,8 +54,6 @@ internal class VenueService : IVenueService
 
         var createdVenue = await venueRepository.AddAsync(venue);
         await venueRepository.SaveChangesAsync();
-
-        await eventBus.PublishAsync(ToChangedEvent(createdVenue));
 
         return createdVenue.ToDto();
     }
@@ -86,8 +80,6 @@ internal class VenueService : IVenueService
             venue.Avatar = await imageService.ReplaceAsync(request.Avatar, venue.Avatar);
 
         await venueRepository.SaveChangesAsync();
-
-        await eventBus.PublishAsync(ToChangedEvent(venue));
 
         return venue.ToDto();
     }
@@ -122,15 +114,4 @@ internal class VenueService : IVenueService
         venue.Approve();
         await venueRepository.SaveChangesAsync();
     }
-
-    private static VenueChangedEvent ToChangedEvent(VenueEntity venue) =>
-        new(
-            venue.Id,
-            venue.UserId,
-            venue.Name,
-            venue.About,
-            venue.Address?.County,
-            venue.Address?.Town,
-            venue.Location?.Y,
-            venue.Location?.X);
 }

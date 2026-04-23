@@ -116,6 +116,31 @@ controllers for those unextracted modules — that's expected, not drift.
   lookups only; controller-facing concerns belong on an internal `IAuthService` in
   `Identity.Application`. Deferred until we touch Auth flows again.)
 
+## Integration events come from domain events
+
+Cross-module integration events (`XChangedEvent`, etc.) must be raised from an entity domain event,
+not published directly from service or seeder code.
+
+- Entities implement `IEventRaiser` (`private readonly EventRaiser _events = new();`).
+- State-change methods (`Create` / `Update` / `Approve` / `SyncGenres`) raise
+  `XChangedDomainEvent(this)` after mutating. The domain event carries the entity reference, not an
+  ID primitive — on `Create` the `Id` is 0 at raise time and only gets populated during
+  `SaveChanges`; the handler reads live state at dispatch time.
+- `internal class XChangedDomainEventHandler(IIntegrationEventBus bus) : IDomainEventHandler<XChangedDomainEvent>`
+  in `Module.Infrastructure/Events/` translates to the integration event. Registered in
+  `AddXModule()`.
+- `DomainEventDispatchInterceptor` is wired on every module `DbContext`, so every
+  `SaveChangesAsync` — service, seeder, worker — fires the handler exactly once.
+- Seeders construct entities via the factory method so the event raises. `VenueFaker` / `ArtistFaker`
+  use `.CustomInstantiator(f => XEntity.Create(...))`, not the reflection `New<XEntity>()` path.
+- A service-layer `eventBus.PublishAsync(new XChangedEvent(...))` is a bug — the entity should be
+  raising it. The only legitimate `eventBus.PublishAsync` callers are domain-event handlers.
+
+Reference impls: `VenueEntity` + `VenueChangedDomainEvent` + `VenueChangedDomainEventHandler` in
+the Venue module; same shape for Artist; `UserEntity.UpdateLocation` +
+`UserLocationUpdatedDomainEventHandler` in Identity (primitive payload — works there because the
+entity already has an Id at raise time).
+
 ## When in doubt
 
 - **Ask the user.** A cross-module reference that isn't through Contracts is a design decision. The

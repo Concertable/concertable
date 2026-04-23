@@ -12,7 +12,6 @@ internal class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;
-    private readonly IUnitOfWork unitOfWork;
     private readonly ITicketPaymentDispatcher ticketPaymentDispatcher;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
@@ -23,7 +22,6 @@ internal class TicketService : ITicketService
     public TicketService(
         ITicketRepository ticketRepository,
         ITicketValidator ticketValidator,
-        IUnitOfWork unitOfWork,
         ITicketPaymentDispatcher ticketPaymentDispatcher,
         IEmailService emailService,
         IQrCodeService qrCodeService,
@@ -33,7 +31,6 @@ internal class TicketService : ITicketService
     {
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
-        this.unitOfWork = unitOfWork;
         this.ticketPaymentDispatcher = ticketPaymentDispatcher;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
@@ -76,8 +73,6 @@ internal class TicketService : ITicketService
         if (concertEntity is null)
             return Result.Fail("Concert not found");
 
-        using var transaction = await unitOfWork.BeginTransactionAsync();
-
         int quantity = purchaseCompleteDto.Quantity ?? 1;
         var tickets = new List<TicketEntity>();
 
@@ -93,12 +88,10 @@ internal class TicketService : ITicketService
             concertEntity.SellTickets(quantity);
             concertRepository.Update(concertEntity);
 
-            await unitOfWork.SaveChangesAsync();
-            await transaction.CommitAsync();
+            await ticketRepository.SaveChangesAsync();
         }
         catch (Exception)
         {
-            await transaction.RollbackAsync();
             return Result.Fail("Failed to create ticket. Please contact support.");
         }
 

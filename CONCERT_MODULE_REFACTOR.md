@@ -1927,9 +1927,154 @@ projection handlers).
       the `ContractType` enum value exactly — misordered registration is silent at startup,
       noisy at runtime.
 
+    ✅ **Done 2026-04-23.** Initial run: **0 / 122 integration tests pass** — every test
+    failed during fixture setup with `FK_Opportunities_VenueReadModels_VenueId` violation
+    in `ConcertTestSeeder.SeedAsync`. Triaged through three real bugs:
+
+    **Bug 1 — Read-model projections never populated in seeded state.** `ConcertTestSeeder`
+    creates Opportunities referencing `seed.Venue.Id`, but `OpportunityEntity.Venue` is
+    typed against `VenueReadModel` (Concert-owned projection populated by integration
+    events). In production the read model is filled by `VenueReadModelProjectionHandler`
+    handling `VenueChangedEvent` published from `VenueService`; in tests, seeders bypass
+    services and write straight to the DbContext, so events never fire and Concert's
+    `VenueReadModels` table stays empty when Opportunity FKs check.
+
+    **Fix:** seeders publish their own `XChangedEvent` after persisting, mirroring
+    production. `ArtistTestSeeder` + `VenueTestSeeder` now inject `IIntegrationEventBus`
+    and call `eventBus.PublishAsync(new XChangedEvent(...))` inside `SeedIfEmptyAsync`.
+    Same change applied to `ArtistDevSeeder` + `VenueDevSeeder` so dev runtime stays in
+    sync (dev seeder publishes per-artist after the genre join table is filled, with
+    genre IDs gathered via a query against the just-saved Artists). The in-process
+    `InProcessIntegrationEventBus` runs handlers synchronously in the same scope, so the
+    Concert handler completes its `db.SaveChangesAsync(ct)` before the seeder returns —
+    no additional ordering needed.
+
+    **Bug 2 — `ArtistReadModels.Id` and `VenueReadModels.Id` mis-configured as IDENTITY.**
+    Re-running tests after Bug 1 surfaced a new FK error:
+    `FK_ArtistReadModelGenres_ArtistReadModels_ArtistReadModelId`. Read models intentionally
+    inherit the Id from the source aggregate (the projection handler does
+    `Id = e.ArtistId`), but the auto-scaffolded Concert migration emitted
+    `Annotation("SqlServer:Identity", "1, 1")` on both Id columns, so SQL Server ignored
+    the explicit value and assigned its own — leaving the FK orphaned.
+
+    **Fix:** added `builder.Property(x => x.Id).ValueGeneratedNever()` to
+    `ArtistReadModelConfiguration` + `VenueReadModelConfiguration` and re-scaffolded
+    Concert's `InitialCreate` migration (deleted `Migrations/`, ran `dotnet ef migrations
+    add InitialCreate` after `dotnet build`; first attempt failed with "InitialCreate is
+    used by an existing migration" because of stale `obj/` snapshots — `rm -rf obj bin`
+    then full solution rebuild fixed it). New timestamp `20260423142031_InitialCreate.cs`,
+    Id columns now plain `int` columns with no IDENTITY annotation. 18 tables otherwise
+    unchanged.
+
+    **Bug 3 — Cross-context `IUnitOfWork.SaveChangesAsync()` silently no-ops in
+    `TicketService.CompleteAsync`.** Down to 4 / 122 failures, all in
+    `Ticket{FlatFee,DoorSplit,VenueHire,Versus}ApiTests.Purchase_ShouldCreateTicketAndReduce
+    AvailabilityAfterWebhook` — purchase POST returns 200, webhook fires, but
+    `/api/Ticket/upcoming/user` returns empty. Root cause: legacy
+    `Concertable.Infrastructure.Services.TicketService` was injecting `IUnitOfWork` (bound
+    to `ApplicationDbContext`) and calling `unitOfWork.BeginTransactionAsync()` +
+    `unitOfWork.SaveChangesAsync()` to persist tickets that `ITicketRepository` had added
+    to `ConcertDbContext`. The save ran on the wrong context and silently committed
+    nothing. Exactly the `feedback_module_service_saves_own_context.md` trap, just lurking
+    in legacy code rather than module code.
+
+    **Fix (minimal — full UoW redesign deferred):** replaced
+    `unitOfWork.BeginTransactionAsync()` + `unitOfWork.SaveChangesAsync()` +
+    `transaction.CommitAsync()`/`RollbackAsync()` with a single
+    `ticketRepository.SaveChangesAsync()` (writes to `ConcertDbContext`, EF wraps the
+    multi-row insert + concert update in one implicit transaction). Removed the now-unused
+    `IUnitOfWork unitOfWork` field + ctor param. The `IUnitOfWork` abstraction itself
+    survives — discussion with user landed on the design that the **right** end-state is
+    a generic `IUnitOfWork<TContext>` registered per module, but that's a larger refactor
+    deferred to its own stage (see Up Next).
+
+    **Bug 4 — `DynamicProxyGenAssembly2` IVT missing on Concert.Application,
+    Concert.Infrastructure, and Concertable.Workers.** Surfaced after integration tests
+    went green: `Concertable.Infrastructure.UnitTests` (20 / 64 failing) +
+    `Concertable.Workers.UnitTests` (3 / 3 failing) couldn't proxy internal interfaces
+    (`IContractStrategyResolver<T>`, `IContractRepository`, `IUpfrontConcertService`,
+    `IDeferredConcertService`) or strong-named-context loggers (`ILogger<WebhookProcessor>`,
+    `ILogger<ConcertFinishedFunction>`). NSubstitute uses Castle Core, which generates
+    proxies in an assembly named `DynamicProxyGenAssembly2` — that assembly needs IVT to
+    see the internal types it's proxying.
+
+    **Fix (TEMPORARY):** added `[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]`
+    (short form) to `Concertable.Concert.Application/AssemblyInfo.cs`, and the
+    strong-named long-key form to `Concertable.Concert.Infrastructure/AssemblyInfo.cs`
+    + `Concertable.Workers/AssemblyInfo.cs` (long-key required because the proxied type
+    lives in a strong-named assembly like `Microsoft.Extensions.Logging.Abstractions`).
+    All three IVT entries marked TEMPORARY in source comments — they retire when the
+    legacy unit-test projects (`Concertable.Infrastructure.UnitTests`,
+    `Concertable.Workers.UnitTests`) split into per-module test projects
+    (`Concertable.Concert.UnitTests`, etc.) and stop reaching across modules to mock
+    another module's internals.
+
+    **Final test results:**
+    - `Concertable.Core.UnitTests` — **18 / 18 passed**
+    - `Concertable.Infrastructure.UnitTests` — **64 / 64 passed**
+    - `Concertable.Workers.UnitTests` — **3 / 3 passed**
+    - `Concertable.Web.IntegrationTests` — **122 / 122 passed** (1m 25s)
+    - **Grand total: 207 / 207** across 4 suites. (E2E suite not run — talks to live
+      Stripe sandbox + frontend; Stage 1 close-out scope is service+integration only.)
+
+    Solution build green: 0 errors, 92 warnings (mostly pre-existing duplicate `using`
+    directives in the IntegrationTests project + nullable-reference warnings in the
+    E2ETests project; out of Stage 1 scope).
+
 17. **Fix regressions + close the stage.** Run the full 218+ test suite. Commit per step
     (or at the end of each logical block) — this extraction is large enough that a single
     WIP commit will be painful to rebase.
+
+    ✅ **Done 2026-04-23.** Step 16 fixes layered cleanly into commit blocks (logical
+    groupings, not strict per-file). Stage 1 close-out summary:
+
+    - **Concert module fully extracted** — Concert.Contracts/Domain/Application/
+      Infrastructure/Api all populated, namespaces flat, `Concertable.Web` references
+      Concert.Api for ApplicationPart discovery and Concert.Contracts/Concert.Domain via
+      GlobalUsings. Concert facade `IConcertModule` empty until cross-module callers prove
+      need (per CLAUDE.md naming rule).
+    - **Read-model pattern proven end-to-end** — `ArtistReadModel` + `VenueReadModel` in
+      Concert.Domain/ReadModels populated via `ArtistChangedEvent` / `VenueChangedEvent`
+      handlers in Concert.Infrastructure/Handlers. Concert.Domain no longer references
+      Artist.Domain or Venue.Domain. Test/dev seeders publish events post-persist to keep
+      projection state consistent without coupling seeders to other modules' DbContexts.
+    - **Per-context migrations land in dep order** Shared → Identity → Artist → Venue →
+      Concert → AppDb. Final table counts: Shared 1, Identity 4, Artist 3, Venue 3,
+      Concert 18, AppDb 7. Cross-context FKs (`Concert.* → Genres`,
+      `Opportunities → VenueReadModels`, etc.) satisfy at apply time because the principal
+      table exists in the migration that ran before. `ArtistReadModels.Id` /
+      `VenueReadModels.Id` configured `ValueGeneratedNever()` so the projection handler's
+      `Id = e.AggregateId` assignment is honoured.
+    - **Module-owned EF configs** — Artist/Venue/Concert configs live in their own
+      `Module.Infrastructure/Data/Configurations/` (`internal`), applied via
+      `ApplyConfigurationsFromAssembly(typeof(XDbContext).Assembly)`. The legacy
+      `Data.Infrastructure/Data/Configurations/` retains only AppDb-owned configs
+      (Misc/Transaction/UserHierarchy) — they retire when Identity/Payment finish
+      extracting. `ReadDbContext.OnModelCreating` discovers configs across all
+      `Concertable.*.Infrastructure` assemblies via the same `AppDomain.CurrentDomain.
+      GetAssemblies()` loop `ApplicationDbContext` uses.
+    - **Test-time integration-event publishing pattern** codified in seeders — locked in
+      for future modules' test seeders.
+    - **Known follow-ups (NOT Stage 1 work):**
+      - **Generic `IUnitOfWork<TContext>`** to replace the AppDb-bound `IUnitOfWork`
+        footgun across all module services. Tracked as a separate stage (see Up Next /
+        MM_NORTH_STAR). Today every module service uses `xRepository.SaveChangesAsync()`
+        per `feedback_module_service_saves_own_context.md`; the generic-UoW refactor
+        codifies that as a real abstraction with proper transactional semantics.
+      - **Per-module unit-test projects** (`Concertable.Concert.UnitTests`,
+        `Concertable.Artist.UnitTests`, etc.) — retires the `DynamicProxyGenAssembly2`
+        IVT entries marked TEMPORARY in this stage's AssemblyInfo files, and stops the
+        legacy `Concertable.Infrastructure.UnitTests` / `Concertable.Workers.UnitTests`
+        projects from reaching across module boundaries to mock internals they shouldn't
+        see.
+      - **Payment extraction** — separate plan, triggered now (see Up Next). Resolves
+        the `Concert.Infrastructure → Concertable.Infrastructure` TEMPORARY ref +
+        retires `ArtistTicketPaymentService` / `VenueTicketPaymentService` /
+        `IUnitOfWork` (legacy non-generic).
+      - **Identity precedent retro-fixes** — Identity's auth controllers still bind to
+        `IAuthModule` directly (carryover from pre-Api-pilot shape), Identity's EF
+        configs still live in `Data.Infrastructure/Data/Configurations/`. Both deferred
+        to whenever Auth flows are next touched.
 
 ### 10. Known friction points
 

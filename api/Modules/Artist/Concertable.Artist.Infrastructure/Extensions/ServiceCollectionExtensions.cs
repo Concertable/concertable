@@ -1,7 +1,9 @@
 using Concertable.Artist.Application.Validators;
 using Concertable.Artist.Contracts;
+using Concertable.Artist.Domain.Events;
 using Concertable.Artist.Infrastructure.Data;
 using Concertable.Artist.Infrastructure.Data.Seeders;
+using Concertable.Artist.Infrastructure.Events;
 using Concertable.Artist.Infrastructure.Handlers;
 using Concertable.Artist.Infrastructure.Repositories;
 using Concertable.Artist.Infrastructure.Services;
@@ -33,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistModule, ArtistModule>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ArtistReviewProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<UserLocationUpdatedEvent>, ArtistLocationSyncHandler>();
+        services.AddScoped<IDomainEventHandler<ArtistChangedDomainEvent>, ArtistChangedDomainEventHandler>();
 
         services.AddValidatorsFromAssemblyContaining<CreateArtistRequestValidator>();
 

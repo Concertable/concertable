@@ -1,7 +1,6 @@
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
-using Concertable.Venue.Contracts.Events;
 using Concertable.Venue.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,13 +12,11 @@ internal class VenueTestSeeder : ITestSeeder
 
     private readonly VenueDbContext context;
     private readonly SeedData seed;
-    private readonly IIntegrationEventBus eventBus;
 
-    public VenueTestSeeder(VenueDbContext context, SeedData seed, IIntegrationEventBus eventBus)
+    public VenueTestSeeder(VenueDbContext context, SeedData seed)
     {
         this.context = context;
         this.seed = seed;
-        this.eventBus = eventBus;
     }
 
     public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
@@ -36,16 +33,6 @@ internal class VenueTestSeeder : ITestSeeder
 
             context.Venues.Add(seed.Venue);
             await context.SaveChangesAsync(ct);
-
-            await eventBus.PublishAsync(new VenueChangedEvent(
-                seed.Venue.Id,
-                seed.Venue.UserId,
-                seed.Venue.Name,
-                seed.Venue.About,
-                seed.Venue.Address?.County,
-                seed.Venue.Address?.Town,
-                seed.Venue.Location?.Y,
-                seed.Venue.Location?.X), ct);
         });
     }
 }
