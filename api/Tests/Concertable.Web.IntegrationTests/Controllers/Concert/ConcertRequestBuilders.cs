@@ -2,7 +2,7 @@ using Concertable.Application.Requests;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Concert;
 
-public static class ConcertRequestBuilders
+internal static class ConcertRequestBuilders
 {
     public static UpdateConcertRequest BuildPostRequest(
         string name = "Test Concert",

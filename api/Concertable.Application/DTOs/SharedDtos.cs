@@ -32,6 +32,17 @@ public record EmailDto
 
 public record CoordinatesDto(double Latitude, double Longitude);
 
+public record TicketConcertDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public decimal Price { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public required string VenueName { get; set; }
+    public required string ArtistName { get; set; }
+}
+
 public record TicketDto
 {
     public Guid Id { get; set; }

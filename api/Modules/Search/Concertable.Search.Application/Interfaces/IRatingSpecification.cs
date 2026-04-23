@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Core.Projections;
 
 namespace Concertable.Search.Application.Interfaces;

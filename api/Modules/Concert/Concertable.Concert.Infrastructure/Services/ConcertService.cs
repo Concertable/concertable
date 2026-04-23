@@ -1,0 +1,157 @@
+using Concertable.Application.Interfaces.Geometry;
+using Concertable.Concert.Application.Interfaces.Reviews;
+using Concertable.Shared.Exceptions;
+using FluentResults;
+
+namespace Concertable.Concert.Infrastructure.Services;
+
+internal class ConcertService : IConcertService
+{
+    private readonly IConcertRepository concertRepository;
+    private readonly IConcertHeaderModule concertHeaderModule;
+    private readonly IConcertValidator concertValidator;
+    private readonly ICurrentUser currentUser;
+    private readonly IOpportunityApplicationValidator applicationValidator;
+    private readonly IMessageService messageService;
+    private readonly IEmailService emailService;
+    private readonly IConcertReviewRepository concertReviewRepository;
+    private readonly IPreferenceService preferenceService;
+    private readonly IGeometryCalculator geometryCalculator;
+    private readonly IConcertDraftService concertDraftService;
+    private readonly IConcertNotificationService concertNotificationService;
+    private readonly TimeProvider timeProvider;
+
+    public ConcertService(
+        IConcertRepository concertRepository,
+        IConcertHeaderModule concertHeaderModule,
+        IConcertValidator concertValidator,
+        ICurrentUser currentUser,
+        IOpportunityApplicationValidator applicationValidator,
+        IMessageService messageService,
+        IEmailService emailService,
+        IConcertReviewRepository concertReviewRepository,
+        IPreferenceService preferenceService,
+        IGeometryCalculator geometryCalculator,
+        IConcertDraftService concertDraftService,
+        IConcertNotificationService concertNotificationService,
+        TimeProvider timeProvider)
+    {
+        this.concertRepository = concertRepository;
+        this.concertHeaderModule = concertHeaderModule;
+        this.concertValidator = concertValidator;
+        this.currentUser = currentUser;
+        this.applicationValidator = applicationValidator;
+        this.messageService = messageService;
+        this.emailService = emailService;
+        this.concertReviewRepository = concertReviewRepository;
+        this.preferenceService = preferenceService;
+        this.geometryCalculator = geometryCalculator;
+        this.concertDraftService = concertDraftService;
+        this.concertNotificationService = concertNotificationService;
+        this.timeProvider = timeProvider;
+    }
+
+    public Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByVenueIdAsync(int id) =>
+        concertRepository.GetUpcomingByVenueIdAsync(id);
+
+    public Task<IEnumerable<ConcertSummaryDto>> GetUpcomingByArtistIdAsync(int id) =>
+        concertRepository.GetUpcomingByArtistIdAsync(id);
+
+    public Task<IEnumerable<ConcertSummaryDto>> GetHistoryByArtistIdAsync(int id) =>
+        concertRepository.GetHistoryByArtistIdAsync(id);
+
+    public Task<IEnumerable<ConcertSummaryDto>> GetHistoryByVenueIdAsync(int id) =>
+        concertRepository.GetHistoryByVenueIdAsync(id);
+
+    public async Task<ConcertDto> GetDetailsByIdAsync(int id)
+    {
+        return await concertRepository.GetDtoByIdAsync(id)
+            ?? throw new NotFoundException("Concert not found");
+    }
+
+    public Task<Result<ConcertEntity>> CreateDraftAsync(int applicationId) =>
+        concertDraftService.CreateAsync(applicationId);
+
+    public async Task<ConcertDto> GetDetailsByApplicationIdAsync(int applicationId)
+    {
+        return await concertRepository.GetDtoByApplicationIdAsync(applicationId)
+            ?? throw new NotFoundException($"No concert found for Application ID {applicationId}");
+    }
+
+    public async Task<ConcertUpdateResponse> UpdateAsync(int id, UpdateConcertRequest request)
+    {
+        var concertEntity = await concertRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException("Concert not found");
+
+        var result = await concertValidator.CanUpdateAsync(concertEntity, request.TotalTickets);
+        if (result.IsFailed)
+            throw new BadRequestException(result.Errors);
+
+        concertEntity.Update(request.Name, request.About, request.Price, request.TotalTickets);
+
+        await concertRepository.SaveChangesAsync();
+
+        return new ConcertUpdateResponse
+        {
+            Id = concertEntity.Id,
+            Name = concertEntity.Name,
+            About = concertEntity.About,
+            Price = concertEntity.Price,
+            TotalTickets = concertEntity.TotalTickets,
+            AvailableTickets = concertEntity.AvailableTickets
+        };
+    }
+
+    public async Task<ConcertPostResponse> PostAsync(int id, UpdateConcertRequest request)
+    {
+        var concertEntity = await concertRepository.GetFullByIdAsync(id)
+            ?? throw new NotFoundException("Concert not found");
+
+        var result = await concertValidator.CanPostAsync(concertEntity);
+        if (result.IsFailed)
+            throw new BadRequestException(result.Errors);
+
+        concertEntity.Post(request.Name, request.About, request.Price, request.TotalTickets, timeProvider.GetUtcNow().DateTime);
+
+        await concertRepository.SaveChangesAsync();
+
+        var concertHeaderDto = concertEntity.ToSnapshotDto();
+        concertHeaderDto = concertHeaderDto with { Rating = (await concertReviewRepository.GetSummaryByConcertAsync(id)).AverageRating };
+
+        var location = concertEntity.Booking.Application.Opportunity.Venue.Location;
+
+        if (location is null)
+            return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = [] };
+
+        var preferences = await preferenceService.GetAsync();
+        var genreIds = concertEntity.ConcertGenres.Select(cg => cg.GenreId).ToHashSet();
+
+        var userIdsToNotify = preferences
+            .Where(preference =>
+            {
+                if (preference.User.Latitude is null || preference.User.Longitude is null)
+                    return false;
+
+                var inRange = geometryCalculator.IsWithinRadius(
+                    preference.User.Latitude.Value,
+                    preference.User.Longitude.Value,
+                    location.Y,
+                    location.X,
+                    preference.RadiusKm);
+
+                var hasMatchingGenre = preference.Genres.Any(g => genreIds.Contains(g.Id));
+
+                return inRange && hasMatchingGenre;
+            })
+            .Select(preference => preference.User.Id)
+            .ToList();
+
+        return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = userIdsToNotify };
+    }
+
+    public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id) =>
+        concertRepository.GetUnpostedByArtistIdAsync(id);
+
+    public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByVenueIdAsync(int id) =>
+        concertRepository.GetUnpostedByVenueIdAsync(id);
+}

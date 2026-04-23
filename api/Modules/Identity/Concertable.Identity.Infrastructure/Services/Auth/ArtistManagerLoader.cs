@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Identity.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

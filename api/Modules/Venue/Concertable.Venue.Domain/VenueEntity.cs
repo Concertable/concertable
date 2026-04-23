@@ -1,10 +1,12 @@
+using Concertable.Venue.Domain.Events;
 using NetTopologySuite.Geometries;
-using System.Linq.Expressions;
 
 namespace Concertable.Venue.Domain;
 
-public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>
+public class VenueEntity : IIdEntity, IHasName, IHasLocation, IEventRaiser
 {
+    private readonly EventRaiser _events = new();
+
     private VenueEntity() { }
 
     public int Id { get; private set; }
@@ -17,12 +19,16 @@ public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>
     public Address? Address { get; set; }
     public string? Avatar { get; set; }
     public string? Email { get; set; }
-    public static Expression<Func<VenueEntity, Point?>> LocationExpression => v => v.Location;
+
+    public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
+    public void ClearDomainEvents() => _events.Clear();
 
     public static VenueEntity Create(Guid userId, string name, string about, string bannerUrl)
     {
         ValidateFields(name, about, bannerUrl);
-        return new() { UserId = userId, Name = name, About = about, BannerUrl = bannerUrl };
+        var venue = new VenueEntity { UserId = userId, Name = name, About = about, BannerUrl = bannerUrl };
+        venue._events.Raise(new VenueChangedDomainEvent(venue));
+        return venue;
     }
 
     public void Update(string name, string about, string bannerUrl)
@@ -31,9 +37,14 @@ public class VenueEntity : IIdEntity, IHasName, ILocatable<VenueEntity>
         Name = name;
         About = about;
         BannerUrl = bannerUrl;
+        _events.Raise(new VenueChangedDomainEvent(this));
     }
 
-    public void Approve() => Approved = true;
+    public void Approve()
+    {
+        Approved = true;
+        _events.Raise(new VenueChangedDomainEvent(this));
+    }
 
     private static void ValidateFields(string name, string about, string bannerUrl)
     {

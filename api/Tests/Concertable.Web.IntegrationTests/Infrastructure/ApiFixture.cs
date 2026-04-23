@@ -2,10 +2,12 @@ using Concertable.Application.Interfaces;
 using Concertable.Core.Enums;
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
-using Concertable.Core.Entities;
 using Concertable.Artist.Infrastructure.Extensions;
+using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
+using Concertable.Data.Application;
+using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Application.Interfaces.Payment;
@@ -29,12 +31,13 @@ public class ApiFixture : IAsyncLifetime
     private WebApplicationFactory<Program> factory = null!;
     private IServiceScope? scope;
 
-    public IMockNotificationService NotificationService { get; } = new MockNotificationService();
+    internal IMockNotificationService NotificationService { get; } = new MockNotificationService();
     public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
     public ApplicationDbContext DbContext { get; private set; } = null!;
+    public IReadDbContext ReadDbContext { get; private set; } = null!;
 
 public async Task InitializeAsync()
     {
@@ -77,9 +80,11 @@ public async Task InitializeAsync()
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
                 services.AddScoped<SeedData>();
                 services.AddScoped<ILocationFaker, LocationFaker>();
+                services.AddSharedTestSeeder();
                 services.AddIdentityTestSeeder();
                 services.AddArtistTestSeeder();
                 services.AddVenueTestSeeder();
+                services.AddConcertTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {
@@ -118,6 +123,7 @@ public async Task InitializeAsync()
         await initializer.InitializeAsync();
         SeedData = scope.ServiceProvider.GetRequiredService<SeedData>();
         DbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        ReadDbContext = scope.ServiceProvider.GetRequiredService<IReadDbContext>();
     }
 
     public HttpClient CreateClient(UserEntity user)

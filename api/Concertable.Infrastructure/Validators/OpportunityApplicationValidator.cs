@@ -1,11 +1,10 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Identity.Contracts;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
 
-public class OpportunityApplicationValidator : IOpportunityApplicationValidator
+internal class OpportunityApplicationValidator : IOpportunityApplicationValidator
 {
     private readonly IConcertRepository concertRepository;
     private readonly IOpportunityRepository opportunityRepository;

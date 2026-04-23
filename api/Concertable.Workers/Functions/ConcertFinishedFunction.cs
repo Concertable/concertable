@@ -1,10 +1,9 @@
-using Concertable.Application.Interfaces.Concert;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace Workers.Functions;
 
-public class ConcertFinishedFunction
+internal class ConcertFinishedFunction
 {
     private readonly IConcertRepository concertRepository;
     private readonly IFinishedDispatcher finishedDispatcher;

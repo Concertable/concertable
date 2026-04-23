@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Application;

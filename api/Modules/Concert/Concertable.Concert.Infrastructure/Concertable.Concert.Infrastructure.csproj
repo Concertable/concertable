@@ -7,13 +7,40 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentResults" Version="4.0.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="10.0.3" />
+    <PackageReference Include="Stripe.net" Version="47.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
+    <ProjectReference Include="..\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Artist\Concertable.Artist.Contracts\Concertable.Artist.Contracts.csproj" />
+    <ProjectReference Include="..\..\Venue\Concertable.Venue.Contracts\Concertable.Venue.Contracts.csproj" />
+    <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
+    <ProjectReference Include="..\..\Payment\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
+    <!-- TEMPORARY: rating specs (IRatingSpecification) live in Search.Application; Concert repositories
+         consume them for review-aggregate projection. Removed during the rating-pipeline rewrite
+         (MM_NORTH_STAR §5). -->
+    <ProjectReference Include="..\..\Search\Concertable.Search.Application\Concertable.Search.Application.csproj" />
+    <!-- TEMPORARY: payment services (ICustomerPaymentService, IManagerPaymentService keyed,
+         IStripeAccountService, IBackgroundTaskQueue, IWebhookStrategyFactory, etc.) still live
+         in legacy Concertable.Infrastructure. Removed during Payment Stage 1 (replaced with
+         Concertable.Payment.Contracts ref). See CONCERT_MODULE_REFACTOR.md §3 + §10d. -->
+    <ProjectReference Include="..\..\..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

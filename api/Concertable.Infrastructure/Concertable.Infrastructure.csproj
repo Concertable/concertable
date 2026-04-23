@@ -41,6 +41,7 @@
 		<ProjectReference Include="..\Modules\Identity\Concertable.Identity.Application\Concertable.Identity.Application.csproj" />
 		<ProjectReference Include="..\Modules\Artist\Concertable.Artist.Application\Concertable.Artist.Application.csproj" />
 		<ProjectReference Include="..\Modules\Venue\Concertable.Venue.Application\Concertable.Venue.Application.csproj" />
+		<ProjectReference Include="..\Modules\Concert\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
 		<ProjectReference Include="..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
 		<ProjectReference Include="..\Modules\Search\Concertable.Search.Application\Concertable.Search.Application.csproj" />
 		<ProjectReference Include="..\Concertable.Seeding\Concertable.Seeding.csproj" />

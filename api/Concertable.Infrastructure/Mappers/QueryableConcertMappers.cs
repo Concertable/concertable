@@ -1,19 +1,17 @@
 using Concertable.Application.DTOs;
 using Concertable.Core.Projections;
-using Concertable.Core.Entities;
 using LinqKit;
 
 namespace Concertable.Infrastructure.Mappers;
 
-public static class QueryableConcertMappers
+internal static class QueryableConcertMappers
 {
     public static IQueryable<ConcertDto> ToDto(
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> concertRatings,
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
-        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null
-                                 && c.Booking.Application.Opportunity.Venue.Address != null).AsExpandable()
+        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null).AsExpandable()
         join cr in concertRatings on c.Id equals cr.EntityId into crg
         from concertRating in crg.DefaultIfEmpty()
         join ar in artistRatings on c.Booking.Application.ArtistId equals ar.EntityId into arg
@@ -40,8 +38,8 @@ public static class QueryableConcertMappers
                 Id = c.Booking.Application.Opportunity.Venue.Id,
                 Name = c.Booking.Application.Opportunity.Venue.Name,
                 Rating = (double?)venueRating.AverageRating ?? 0.0,
-                County = c.Booking.Application.Opportunity.Venue.Address!.County,
-                Town = c.Booking.Application.Opportunity.Venue.Address!.Town,
+                County = c.Booking.Application.Opportunity.Venue.County ?? string.Empty,
+                Town = c.Booking.Application.Opportunity.Venue.Town ?? string.Empty,
                 Latitude = c.Booking.Application.Opportunity.Venue.Location!.Y,
                 Longitude = c.Booking.Application.Opportunity.Venue.Location!.X
             },
@@ -50,10 +48,10 @@ public static class QueryableConcertMappers
                 Id = c.Booking.Application.Artist.Id,
                 Name = c.Booking.Application.Artist.Name,
                 Avatar = c.Booking.Application.Artist.Avatar,
-                County = c.Booking.Application.Artist.Address.County ?? string.Empty,
-                Town = c.Booking.Application.Artist.Address.Town ?? string.Empty,
+                County = c.Booking.Application.Artist.County ?? string.Empty,
+                Town = c.Booking.Application.Artist.Town ?? string.Empty,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
-                Genres = GenreSelectors.FromArtist.Invoke(c.Booking.Application.Artist)
+                Genres = GenreSelectors.FromArtistReadModel.Invoke(c.Booking.Application.Artist)
             }
         };
 
@@ -61,8 +59,7 @@ public static class QueryableConcertMappers
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> artistRatings,
         IQueryable<RatingAggregate> venueRatings) =>
-        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null
-                                 && c.Booking.Application.Opportunity.Venue.Address != null).AsExpandable()
+        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null).AsExpandable()
         join ar in artistRatings on c.Booking.Application.ArtistId equals ar.EntityId into arg
         from artistRating in arg.DefaultIfEmpty()
         join vr in venueRatings on c.Booking.Application.Opportunity.VenueId equals vr.EntityId into vrg
@@ -89,7 +86,7 @@ public static class QueryableConcertMappers
                 Id = c.Booking.Application.Artist.Id,
                 Name = c.Booking.Application.Artist.Name,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
-                Genres = GenreSelectors.FromArtist.Invoke(c.Booking.Application.Artist)
+                Genres = GenreSelectors.FromArtistReadModel.Invoke(c.Booking.Application.Artist)
             }
         };
 

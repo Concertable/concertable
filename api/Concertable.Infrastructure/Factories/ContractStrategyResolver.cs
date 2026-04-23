@@ -1,10 +1,9 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Factories;
 
-public class ContractStrategyResolver<T> : IContractStrategyResolver<T> where T : IContractStrategy
+internal class ContractStrategyResolver<T> : IContractStrategyResolver<T> where T : IContractStrategy
 {
     private readonly IContractRepository contractRepository;
     private readonly IContractStrategyFactory<T> factory;

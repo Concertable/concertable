@@ -1,11 +1,10 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Core.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Factories;
 
-public class ContractStrategyFactory<T> : IContractStrategyFactory<T> where T : IContractStrategy
+internal class ContractStrategyFactory<T> : IContractStrategyFactory<T> where T : IContractStrategy
 {
     private readonly IServiceProvider serviceProvider;
 

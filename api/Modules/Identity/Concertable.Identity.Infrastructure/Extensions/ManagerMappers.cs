@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 
 namespace Concertable.Identity.Infrastructure.Extensions;
 

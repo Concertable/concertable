@@ -20,7 +20,7 @@ public class StripeCustomerValidator : IStripeValidationStrategy
     {
         var userId = currentUser.GetId();
 
-        var manager = await managerModule.GetManagerAsync(userId);
+        var manager = await managerModule.GetByIdAsync(userId);
         if (manager is not null) return !string.IsNullOrEmpty(manager.StripeCustomerId);
 
         var customer = await authModule.GetCustomerAsync(userId);

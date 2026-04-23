@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Identity.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

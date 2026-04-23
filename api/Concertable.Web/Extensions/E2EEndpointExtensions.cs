@@ -1,5 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
+using Concertable.Data.Application;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding;
 using Microsoft.EntityFrameworkCore;
@@ -38,14 +38,14 @@ public static class E2EEndpointExtensions
             });
         });
 
-        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, IFinishedDispatcher finishedDispatcher, ApplicationDbContext db) =>
+        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, IFinishedDispatcher finishedDispatcher, IReadDbContext readDb, ApplicationDbContext db) =>
         {
             var result = await finishedDispatcher.FinishedAsync(concertId);
 
             if (result.IsFailed)
                 return Results.BadRequest(result.Errors.Select(e => e.Message));
 
-            var bookingId = await db.ConcertBookings
+            var bookingId = await readDb.ConcertBookings
                 .Where(b => b.Concert!.Id == concertId)
                 .Select(b => b.Id)
                 .FirstOrDefaultAsync();
@@ -61,9 +61,9 @@ public static class E2EEndpointExtensions
                 : Results.Ok();
         });
 
-        app.MapGet("/e2e/payment-intent/{applicationId:int}", async (int applicationId, ApplicationDbContext db) =>
+        app.MapGet("/e2e/payment-intent/{applicationId:int}", async (int applicationId, IReadDbContext readDb, ApplicationDbContext db) =>
         {
-            var bookingId = await db.ConcertBookings
+            var bookingId = await readDb.ConcertBookings
                 .Where(b => b.ApplicationId == applicationId)
                 .Select(b => b.Id)
                 .FirstOrDefaultAsync();

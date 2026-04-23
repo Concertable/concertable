@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Core.Projections;
 using Concertable.Infrastructure.Mappers;
 using LinqKit;
@@ -10,8 +9,7 @@ internal static class QueryableConcertHeaderMappers
     public static IQueryable<ConcertHeaderDto> ToHeaderDtos(
         this IQueryable<ConcertEntity> query,
         IQueryable<RatingAggregate> ratings) =>
-        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null
-                                 && c.Booking.Application.Opportunity.Venue.Address != null).AsExpandable()
+        from c in query.Where(c => c.Booking.Application.Opportunity.Venue.Location != null).AsExpandable()
         join r in ratings on c.Id equals r.EntityId into rg
         from rating in rg.DefaultIfEmpty()
         select new ConcertHeaderDto
@@ -23,8 +21,8 @@ internal static class QueryableConcertHeaderMappers
             StartDate = c.Booking.Application.Opportunity.Period.Start,
             EndDate = c.Booking.Application.Opportunity.Period.End,
             DatePosted = c.DatePosted,
-            County = c.Booking.Application.Opportunity.Venue.Address.County ?? string.Empty,
-            Town = c.Booking.Application.Opportunity.Venue.Address.Town ?? string.Empty,
+            County = c.Booking.Application.Opportunity.Venue.County ?? string.Empty,
+            Town = c.Booking.Application.Opportunity.Venue.Town ?? string.Empty,
             Genres = GenreSelectors.FromConcert.Invoke(c)
         };
 }

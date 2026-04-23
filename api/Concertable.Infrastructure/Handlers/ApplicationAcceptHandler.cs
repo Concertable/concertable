@@ -1,11 +1,9 @@
 using Concertable.Application.Interfaces;
-using Concertable.Core.Entities;
 using Concertable.Shared.Exceptions;
-using Concertable.Application.Interfaces.Concert;
 
 namespace Concertable.Infrastructure.Handlers;
 
-public class ApplicationAcceptHandler : IApplicationAcceptHandler
+internal class ApplicationAcceptHandler : IApplicationAcceptHandler
 {
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IBackgroundTaskRunner taskRunner;

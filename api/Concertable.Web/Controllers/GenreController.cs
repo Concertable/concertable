@@ -1,4 +1,3 @@
-﻿using Concertable.Core.Entities;
 using Concertable.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Concertable.Application.DTOs;

@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
-using Concertable.Infrastructure.Services.Complete;
+using Concertable.Concert.Infrastructure.Services.Complete;
 using Moq;
 using Xunit;
 

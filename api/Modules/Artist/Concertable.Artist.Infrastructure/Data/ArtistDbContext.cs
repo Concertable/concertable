@@ -1,6 +1,3 @@
-using Concertable.Artist.Domain;
-using Concertable.Data.Infrastructure;
-using Concertable.Data.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Artist.Infrastructure.Data;
@@ -14,13 +11,8 @@ internal class ArtistDbContext(DbContextOptions<ArtistDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new ArtistEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ArtistGenreEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ArtistRatingProjectionConfiguration());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ArtistDbContext).Assembly);
 
-        // GenreEntity is shared reference data owned by ApplicationDbContext; the
-        // ArtistGenreEntity.Genre nav pulls it into this model for query joins, but the
-        // Genres table schema must not be duplicated in ArtistDbContext migrations.
         modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
     }
 }

@@ -1,4 +1,3 @@
-using Concertable.Data.Application;
 using Concertable.Identity.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,12 +6,10 @@ namespace Concertable.Identity.Infrastructure.Repositories;
 internal class UserRepository : IUserRepository
 {
     private readonly IdentityDbContext context;
-    private readonly IReadDbContext readDb;
 
-    public UserRepository(IdentityDbContext context, IReadDbContext readDb)
+    public UserRepository(IdentityDbContext context)
     {
         this.context = context;
-        this.readDb = readDb;
     }
 
     public async Task<UserEntity> AddAsync(UserEntity entity)
@@ -46,34 +43,4 @@ internal class UserRepository : IUserRepository
 
     public Task<UserEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
-
-    public async Task<UserEntity?> GetByApplicationIdAsync(int applicationId)
-    {
-        var userId = await readDb.OpportunityApplications
-            .Where(a => a.Id == applicationId)
-            .Select(a => (Guid?)a.Artist.UserId)
-            .FirstOrDefaultAsync();
-        return userId.HasValue ? await context.Users.FirstOrDefaultAsync(u => u.Id == userId) : null;
-    }
-
-    public async Task<UserEntity?> GetByConcertIdAsync(int concertId)
-    {
-        var userId = await readDb.Concerts
-            .Where(e => e.Id == concertId)
-            .Select(e => (Guid?)e.Booking.Application.Artist.UserId)
-            .FirstOrDefaultAsync();
-        return userId.HasValue ? await context.Users.FirstOrDefaultAsync(u => u.Id == userId) : null;
-    }
-
-    public Task<Guid?> GetIdByApplicationIdAsync(int applicationId) =>
-        readDb.OpportunityApplications
-            .Where(a => a.Id == applicationId)
-            .Select(a => (Guid?)a.Artist.UserId)
-            .FirstOrDefaultAsync();
-
-    public Task<Guid?> GetIdByConcertIdAsync(int concertId) =>
-        readDb.Concerts
-            .Where(e => e.Id == concertId)
-            .Select(e => (Guid?)e.Booking.Application.Artist.UserId)
-            .FirstOrDefaultAsync();
 }

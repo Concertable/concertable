@@ -1,8 +1,7 @@
 using System.Net;
 using Concertable.Application.DTOs;
 using Concertable.Application.Responses;
-using Concertable.Web.Responses;
-using Concertable.Application.Interfaces.Concert;
+using Concertable.Concert.Api.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Core.Enums;
 using Xunit;
@@ -11,7 +10,7 @@ using static Concertable.Web.IntegrationTests.Controllers.Opportunity.Opportunit
 namespace Concertable.Web.IntegrationTests.Controllers.Opportunity;
 
 [Collection("Integration")]
-public class OpportunityApiTests : IAsyncLifetime
+internal class OpportunityApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;
 

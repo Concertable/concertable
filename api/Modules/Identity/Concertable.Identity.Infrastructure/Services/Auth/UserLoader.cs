@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;

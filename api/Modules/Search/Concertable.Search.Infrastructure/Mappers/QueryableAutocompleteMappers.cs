@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 
 namespace Concertable.Search.Infrastructure.Mappers;
 

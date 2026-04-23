@@ -27,10 +27,6 @@ public class TicketTransactionEntityConfiguration : IEntityTypeConfiguration<Tic
     public void Configure(EntityTypeBuilder<TicketTransactionEntity> builder)
     {
         builder.ToTable("TicketTransactions");
-        builder.HasOne(t => t.Concert)
-            .WithMany()
-            .HasForeignKey(t => t.ConcertId)
-            .OnDelete(DeleteBehavior.NoAction);
     }
 }
 
@@ -39,9 +35,5 @@ public class SettlementTransactionEntityConfiguration : IEntityTypeConfiguration
     public void Configure(EntityTypeBuilder<SettlementTransactionEntity> builder)
     {
         builder.ToTable("SettlementTransactions");
-        builder.HasOne(t => t.Booking)
-            .WithMany()
-            .HasForeignKey(t => t.BookingId)
-            .OnDelete(DeleteBehavior.NoAction);
     }
 }

@@ -3,9 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 
-public static class ServiceCollectionExtensions
+internal static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddResettables(
+    internal static IServiceCollection AddResettables(
         this IServiceCollection services,
         IMockNotificationService notificationService,
         IMockStripePaymentClient stripePaymentClient,

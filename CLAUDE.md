@@ -61,9 +61,19 @@ controllers for those unextracted modules — that's expected, not drift.
   (`Guid`, `int`) with no nav property and no foreign `DbSet` on that context.
 - `IReadDbContext` (in `Concertable.Data.Application`) is the cross-module read shim — it projects
   `IQueryable<TEntity>` for every module. Use it for reads that span modules.
-- EF `IEntityTypeConfiguration<T>` files stay in `Concertable.Data.Infrastructure/Data/Configurations/`
-  (matches Identity precedent — keeps `ReadDbContext`'s single `ApplyConfigurationsFromAssembly`
-  call working). Module DbContexts import + apply them explicitly.
+- EF `IEntityTypeConfiguration<T>` files **live in the module that owns the entity**, under
+  `Module.Infrastructure/Data/Configurations/`, declared `internal`. Module DbContexts apply
+  them explicitly via `modelBuilder.ApplyConfiguration(new XConfiguration())` — not via
+  `ApplyConfigurationsFromAssembly`. **Do not** add new module-owned configs to
+  `Concertable.Data.Infrastructure/Data/Configurations/` "for symmetry with what's there." The
+  configs sitting in `Data.Infrastructure/Data/Configurations/` today are pre-extraction
+  carryover, applied by `ApplicationDbContext` via `ApplyConfigurationsFromAssembly` and by
+  `ReadDbContext` the same way; they retire alongside `ApplicationDbContext` (Concert Step 13
+  and equivalents). When you author a NEW config or extract an existing one, it goes to the
+  owning module's Infrastructure project. The only configs that should remain in
+  `Data.Infrastructure/Data/Configurations/` are ones for entities still owned by
+  `ApplicationDbContext` (Message, Transaction, Preference, StripeEvent, etc., until those
+  modules extract).
 - Composite keys, owned types, `geography` columns, etc. configured via Fluent API so Domain stays
   free of EF Core attributes beyond `System.ComponentModel.DataAnnotations.Schema` BCL attributes.
 
@@ -105,6 +115,31 @@ controllers for those unextracted modules — that's expected, not drift.
   that's carryover from the pre-Api-pilot shape. `IAuthModule` should shrink to cross-module auth
   lookups only; controller-facing concerns belong on an internal `IAuthService` in
   `Identity.Application`. Deferred until we touch Auth flows again.)
+
+## Integration events come from domain events
+
+Cross-module integration events (`XChangedEvent`, etc.) must be raised from an entity domain event,
+not published directly from service or seeder code.
+
+- Entities implement `IEventRaiser` (`private readonly EventRaiser _events = new();`).
+- State-change methods (`Create` / `Update` / `Approve` / `SyncGenres`) raise
+  `XChangedDomainEvent(this)` after mutating. The domain event carries the entity reference, not an
+  ID primitive — on `Create` the `Id` is 0 at raise time and only gets populated during
+  `SaveChanges`; the handler reads live state at dispatch time.
+- `internal class XChangedDomainEventHandler(IIntegrationEventBus bus) : IDomainEventHandler<XChangedDomainEvent>`
+  in `Module.Infrastructure/Events/` translates to the integration event. Registered in
+  `AddXModule()`.
+- `DomainEventDispatchInterceptor` is wired on every module `DbContext`, so every
+  `SaveChangesAsync` — service, seeder, worker — fires the handler exactly once.
+- Seeders construct entities via the factory method so the event raises. `VenueFaker` / `ArtistFaker`
+  use `.CustomInstantiator(f => XEntity.Create(...))`, not the reflection `New<XEntity>()` path.
+- A service-layer `eventBus.PublishAsync(new XChangedEvent(...))` is a bug — the entity should be
+  raising it. The only legitimate `eventBus.PublishAsync` callers are domain-event handlers.
+
+Reference impls: `VenueEntity` + `VenueChangedDomainEvent` + `VenueChangedDomainEventHandler` in
+the Venue module; same shape for Artist; `UserEntity.UpdateLocation` +
+`UserLocationUpdatedDomainEventHandler` in Identity (primitive payload — works there because the
+entity already has an Id at raise time).
 
 ## When in doubt
 

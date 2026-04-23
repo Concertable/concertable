@@ -1,10 +1,9 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;
 
-public class TicketValidator : ITicketValidator
+internal class TicketValidator : ITicketValidator
 {
     private readonly IConcertRepository concertRepository;
     private readonly TimeProvider timeProvider;

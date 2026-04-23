@@ -1,8 +1,10 @@
 using Concertable.Concert.Contracts.Events;
 using Concertable.Identity.Contracts.Events;
 using Concertable.Venue.Application.Validators;
+using Concertable.Venue.Domain.Events;
 using Concertable.Venue.Infrastructure.Data;
 using Concertable.Venue.Infrastructure.Data.Seeders;
+using Concertable.Venue.Infrastructure.Events;
 using Concertable.Venue.Infrastructure.Handlers;
 using Concertable.Venue.Infrastructure.Repositories;
 using Concertable.Venue.Infrastructure.Services;
@@ -26,10 +28,12 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.AddScoped<IVenueService, VenueService>();
+        services.AddScoped<IVenueReviewService, VenueReviewService>();
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IVenueModule, VenueModule>();
         services.AddScoped<IIntegrationEventHandler<UserLocationUpdatedEvent>, VenueLocationSyncHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, VenueReviewProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<VenueChangedDomainEvent>, VenueChangedDomainEventHandler>();
 
         services.AddValidatorsFromAssemblyContaining<CreateVenueRequestValidator>();
 

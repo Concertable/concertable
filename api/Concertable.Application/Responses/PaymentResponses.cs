@@ -1,11 +1,6 @@
-namespace Concertable.Application.Responses;
+using Concertable.Payment.Contracts;
 
-public record PaymentResponse
-{
-    public bool RequiresAction { get; set; }
-    public string? ClientSecret { get; set; }
-    public string? TransactionId { get; set; }
-}
+namespace Concertable.Application.Responses;
 
 public record TicketPaymentResponse : PaymentResponse
 {

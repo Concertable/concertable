@@ -1,20 +1,17 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Identity.Contracts;
 using Concertable.Application.Mappers;
 using Concertable.Application.Responses;
-using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Shared.Exceptions;
 using Concertable.Core.Parameters;
 using FluentResults;
 
-public class TicketService : ITicketService
+internal class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;
-    private readonly IUnitOfWork unitOfWork;
     private readonly ITicketPaymentDispatcher ticketPaymentDispatcher;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
@@ -25,7 +22,6 @@ public class TicketService : ITicketService
     public TicketService(
         ITicketRepository ticketRepository,
         ITicketValidator ticketValidator,
-        IUnitOfWork unitOfWork,
         ITicketPaymentDispatcher ticketPaymentDispatcher,
         IEmailService emailService,
         IQrCodeService qrCodeService,
@@ -35,7 +31,6 @@ public class TicketService : ITicketService
     {
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
-        this.unitOfWork = unitOfWork;
         this.ticketPaymentDispatcher = ticketPaymentDispatcher;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
@@ -78,8 +73,6 @@ public class TicketService : ITicketService
         if (concertEntity is null)
             return Result.Fail("Concert not found");
 
-        using var transaction = await unitOfWork.BeginTransactionAsync();
-
         int quantity = purchaseCompleteDto.Quantity ?? 1;
         var tickets = new List<TicketEntity>();
 
@@ -95,12 +88,10 @@ public class TicketService : ITicketService
             concertEntity.SellTickets(quantity);
             concertRepository.Update(concertEntity);
 
-            await unitOfWork.SaveChangesAsync();
-            await transaction.CommitAsync();
+            await ticketRepository.SaveChangesAsync();
         }
         catch (Exception)
         {
-            await transaction.RollbackAsync();
             return Result.Fail("Failed to create ticket. Please contact support.");
         }
 
@@ -122,13 +113,13 @@ public class TicketService : ITicketService
 public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
         var tickets = await ticketRepository.GetUpcomingByUserIdAsync(currentUser.GetId());
-        return tickets.ToDtos();
+        return tickets.ToDtos(currentUser.Email ?? string.Empty);
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserHistoryAsync()
     {
         var tickets = await ticketRepository.GetHistoryByUserIdAsync(currentUser.GetId());
-        return tickets.ToDtos();
+        return tickets.ToDtos(currentUser.Email ?? string.Empty);
     }
 
     private TicketEntity BuildTicket(Guid userId, int concertId)

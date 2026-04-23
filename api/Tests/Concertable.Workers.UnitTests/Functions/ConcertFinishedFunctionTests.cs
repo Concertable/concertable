@@ -1,4 +1,3 @@
-using Concertable.Application.Interfaces.Concert;
 using Concertable.Application.Responses;
 using FluentResults;
 using Microsoft.Extensions.Logging;

@@ -25,11 +25,11 @@ internal class ArtistTestSeeder : ITestSeeder
         await context.Artists.SeedIfEmptyAsync(async () =>
         {
             seed.Artist = ArtistFaker.GetFaker(seed.ArtistManager.Id, "Test Artist", "artist.jpg").Generate();
-            seed.Artist.SyncGenres([seed.Rock.Id]);
             seed.Artist.Location = seed.ArtistManager.Location;
             seed.Artist.Address = seed.ArtistManager.Address;
             seed.Artist.Avatar = seed.ArtistManager.Avatar;
             seed.Artist.Email = seed.ArtistManager.Email;
+            seed.Artist.SyncGenres([seed.Rock.Id]);
 
             context.Artists.Add(seed.Artist);
             await context.SaveChangesAsync(ct);

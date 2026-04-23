@@ -15,6 +15,10 @@ moves toward this target. `IDENTITY_COMPLETION.md` records the known gaps.
 > needed from another module is either (a) duplicated locally as a read projection, kept current
 > via domain events, or (b) requested via a command that the owning module executes.
 
+**Search is the structural exception.** Search owns no write tables; its `SearchDbContext` is
+a pure read layer consisting entirely of `ExcludeFromMigrations` mappings over the source
+modules' tables. No events, no duplication — because there's no owned side to populate from.
+
 Everything else is a corollary.
 
 ---
@@ -51,15 +55,30 @@ They do **not** expose "get me X about Y" query methods in the north-star state.
 inside the module that owns the data, answered from its own store.
 
 ### 5. Each module owns its own read projections.
-If a module needs `Email`, `StripeAccountId`, `Avatar`, `DisplayName`, etc. from another module, it
-maintains its own table for those fields, populated from events. Storage is cheap; boundaries are
-not.
 
-**Restricted per consumer.** A projection carries **only** the fields the consuming module
-actually needs — never the full foreign aggregate. When the same source entity is needed by two
-different consumers with different concerns, each consumer gets its **own** projection table,
-shaped to its own view. A projection is a contract between the source module's events and one
-consumer; it is not a shared dataset. The canonical example is reviews:
+> **TL;DR.** Pure-consumer modules (Search — no writes, no workflows) use `ExcludeFromMigrations`
+> mappings over source tables. Every other consumer (Concert, Payment, Notification, ...) owns
+> a physical projection table populated by integration events. The deciding factor is whether
+> the module has write paths that need a transactionally consistent local view.
+
+If a consumer module needs `Email`, `StripeAccountId`, `Avatar`, `DisplayName`, `Name`, etc.
+from another module, **the consumer owns its own table** carrying those fields, populated from
+the source module's integration events via an in-module handler. Storage is cheap; boundaries
+are not.
+
+- **Owned physical table** in the consumer's schema — the consumer's DbContext creates +
+  migrates it (NOT `ExcludeFromMigrations`). Concert's `ArtistReadModel` is a real owned
+  table, not a view over Artist's table.
+- **Populated by event handler**, never by direct cross-module writes. Source module raises
+  `XCreated`/`XUpdated` integration events; consumer module's handler upserts its local
+  projection table.
+- **Idempotent upserts** — events can redeliver.
+- **Restricted per consumer.** A projection carries only the fields the consuming module
+  actually needs — never the full foreign aggregate. When the same source entity is needed by
+  two different consumers with different concerns, each consumer gets its own projection table,
+  shaped to its own view.
+
+Canonical example — reviews:
 
 - `ReviewEntity` lives in Concert. `ReviewSubmittedEvent` carries `ArtistId`, `VenueId`, `Stars`,
   `Comment`, `CreatedAt`, `ReviewerUserId`.
@@ -68,22 +87,48 @@ consumer; it is not a shared dataset. The canonical example is reviews:
 - **Venue** maintains `VenueReviewProjection` (`ReviewId`, `VenueId`, `Stars`, `Comment`,
   `CreatedAt`, `ReviewerUserId`) — **no `ArtistId`**.
 - Each handler writes only the slice its module is allowed to see. Artist never learns which
-  venue a review is attached to; Venue never learns which artist. Association data that isn't
-  the consumer's concern stays out of the consumer's database.
+  venue a review is attached to; Venue never learns which artist.
 
 The same principle covers **aggregates-over-that-data**: `ArtistRatingProjection` and
-`VenueRatingProjection` are two separate tables, each owned by the module whose display it drives,
-each fed from the same `ReviewSubmittedEvent` by an in-module handler. Neither module reads the
-other's aggregate.
+`VenueRatingProjection` are two separate tables, each owned by the module whose display it
+drives, each fed from the same `ReviewSubmittedEvent` by an in-module handler.
 
-**Search follows the same pattern when Artist/Venue/Concert finish extracting.** Each source
-module will publish its own `ArtistSearchModel` / `VenueSearchModel` / `ConcertSearchModel` as a
-search-shaped projection populated via events, and Search consumes them as the source of its
-search index. Search only sees search-relevant fields — raw writable fields do not leak through.
+#### Search is the exception — `ExcludeFromMigrations`, not owned projections
 
-**Applies only to module-owned facts.** See §6 below for shared reference data — that's a different
-category and does *not* get duplicated.
+Search owns **zero write tables**. `SearchDbContext` is entirely a collection of
+`ExcludeFromMigrations` mappings over the source modules' own tables:
 
+```csharp
+// In Search.Domain — Search's restricted view of Artist's rows
+public class ArtistSearchModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string? Avatar { get; set; }
+    public Point? Location { get; set; }
+    public decimal Rating { get; set; }
+    public int ReviewCount { get; set; }
+}
+
+// In SearchDbContext
+modelBuilder.Entity<ArtistSearchModel>(e =>
+{
+    e.ToTable("Artists", t => t.ExcludeFromMigrations());
+    e.HasKey(a => a.Id);
+});
+```
+
+Because Search has no owned side, **nothing is duplicated** — its mappings are just restricted
+C# views of rows that other modules own. No events, no handlers, no backfill. This shape works
+for Search specifically because Search is a pure-consumer module: no writes, no workflow
+ownership, nothing to keep consistent with its own transactional state.
+
+Every other module (Concert, Identity, Payment, Notification, etc.) owns its own projection
+tables populated by events — because they *do* have write paths that need a transactionally
+consistent local view.
+
+**Applies only to module-owned facts.** See §6 below for shared reference data — that's a
+different category and does *not* get duplicated.
 ### 6. Shared reference data lives in one place and is read via FK.
 Reference data that no module owns writes for — `GenreEntity`, and any future `CountryEntity` /
 `CurrencyEntity` / similar static vocabulary — lives in a dedicated **`SharedDbContext`** owned by
@@ -147,7 +192,13 @@ DB-level integrity, zero runtime lookup overhead, less ceremony.
 - **Concert** — opportunities, applications, bookings, concerts. The orchestration domain.
 - **Payment** — Stripe accounts, payouts, ticket purchases, refunds.
 - **Notification** — email + in-app messages, user contact preferences.
-- **Search** — cross-module read-only projection for search results. Already extracted.
+- **Search** — cross-module read-only module for search results. Already extracted. **Owns zero
+  write tables.** `SearchDbContext` is purely `ExcludeFromMigrations` mappings
+  (`ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`) over tables owned by Artist/
+  Venue/Concert. Search has no migrations of its own and no event handlers — it reads source
+  rows live. Canonical "pure consumer" module. `IReadDbContext` retires when `SearchDbContext`
+  stands up. **Unlike every other module**, Search doesn't own projection tables populated by
+  events — it has no owned side to maintain, so there's no need.
 
 ### Who owns what data
 | Fact | Source of truth | Who else has a copy |
@@ -308,21 +359,29 @@ This is the multi-year target. Today is mid-extraction. Rough order:
    first module where eventual consistency matters enough to justify the infrastructure. Formalize
    the distinction between domain events (intra-module) and integration events (cross-module).
 
-3. **Stand up per-module projections, one hot path at a time.**
-   - Payment: `PayoutAccount` projection (first, because it pays off biggest — replaces the current
-     `ArtistManagerRepository.GetByConcertIdAsync` hack completely).
-   - Notification: extract it, give it `UserContactProjection`. Now Concert stops carrying email
-     around.
-   - Search: already has its own projection pattern; formalize the event-driven sync.
+3. **Stand up per-module projections, one hot path at a time.** Each consumer module that
+   needs foreign data owns its own projection table, populated from integration events.
+   - Concert: `ArtistReadModel` + `VenueReadModel` — owned tables on `ConcertDbContext`,
+     populated by `ArtistCreated`/`ArtistUpdated` + venue equivalents from Artist/Venue
+     contracts.
+   - Payment: `PayoutAccount` projection (replaces the deprecated
+     `ArtistManagerRepository.GetByConcertIdAsync` hack).
+   - Notification: extract it, give it `UserContactProjection`.
+   - Artist/Venue rating projections — already landed.
 
-4. **Retire `IReadDbContext`.** Each non-Search use site gets replaced with a local projection
-   read or a command dispatch. Search is the last consumer — once Search stands up its own
-   `SearchDbContext` + projections fed by events, `IReadDbContext` and the
-   `Concertable.Data.Application` project are deleted.
+4. **Retire `IReadDbContext`.** Each non-Search use site gets replaced with an owned projection
+   read or a command dispatch. Search is the last consumer — once `SearchDbContext` stands up
+   with its `ExcludeFromMigrations` mappings over Artist/Venue/Concert tables, `IReadDbContext`
+   and the `Concertable.Data.Application` project are deleted.
 
-5. **Delete nav properties across module boundaries.** FKs between *modules* become plain
-   primitives (`Guid UserId`, `int ArtistId`). EF configs in each module's context stop
-   configuring relationships to other modules' entities. FKs into **shared reference data**
+5. **Delete nav properties pointing at foreign-module types.** FKs between *modules* become plain
+   primitives (`Guid UserId`, `int ArtistId`) wherever a consumer doesn't need join-shape reads.
+   Where a consumer *does* need to JOIN (Concert needs `OpportunityApplication.Artist.Name` for
+   DTOs), the nav is retyped against the consumer's own owned projection class (e.g.
+   `OpportunityApplicationEntity.Artist : ArtistReadModel` — a Concert.Domain type mapped to
+   Concert's own `ArtistReadModels` table, not `Artist.Domain.ArtistEntity`). EF configs in each
+   module's context stop configuring relationships to other modules' Domain types.
+   Concert.Domain / Search.Domain never reference Artist.Domain / Venue.Domain. FKs into **shared reference data**
    (`GenreEntity` etc. — see §6) stay as real EF relationships, pointing at `SharedDbContext`.
    At this point `ApplicationDbContext` has shrunk to just reference-data tables; rename it
    `SharedDbContext` (same process, same DB, semantically accurate). The Artist/Identity/etc.
@@ -335,7 +394,8 @@ This is the multi-year target. Today is mid-extraction. Rough order:
    first and every module's FK into `Genres` works naturally — no circular dependency.
 
 6. **Retire query-shaped facades.** `IArtistModule.GetSummaryAsync` etc. either go away (callers
-   got their own projection) or remain as narrow, documented synchronous-consistency exceptions.
+   read via their owned projection) or remain as narrow, documented synchronous-consistency
+   exceptions.
 
 At each step: previous work isn't undone, it's refined. The 80% version is a valid stopping point
 if priorities change. The north star is worth climbing toward only as long as the team values the
@@ -348,8 +408,12 @@ boundary.
 When adding new code: does this change add a cross-module read, nav, or query-shaped facade call?
 
 - **Yes, and there's no projection for this data in the caller's module:** pause. Add the event +
-  projection, or document an explicit exception. Don't silently add the leak.
+  owned projection (§5), or document an explicit exception. Don't silently add the leak.
 - **Yes, but a projection exists:** you're reading from your own context. Fine.
+- **Yes, and you're Search:** use `ExcludeFromMigrations` mapping on `SearchDbContext` over the
+  source table. Search is the structural exception.
+- **Yes, via `IReadDbContext`:** transitional only. Allowed while Search hasn't fully migrated.
+  Everywhere else, prefer owned projections.
 - **No, it's a command:** fine.
 - **No, it's an intra-module read:** fine.
 

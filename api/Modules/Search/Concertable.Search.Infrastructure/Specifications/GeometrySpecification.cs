@@ -1,15 +1,12 @@
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Infrastructure.Expressions;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Search.Application;
 using Microsoft.Extensions.DependencyInjection;
-using NetTopologySuite.Geometries;
-using System.Linq.Expressions;
 
 namespace Concertable.Search.Infrastructure.Specifications;
 
 internal class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
-    where TEntity : class, IIdEntity, ILocatable<TEntity>
+    where TEntity : class, IIdEntity, IHasLocation
 {
     private readonly IGeometryProvider geometryProvider;
 
@@ -30,8 +27,6 @@ internal class GeometrySpecification<TEntity> : IGeometrySpecification<TEntity>
 
         var radiusMeters = (geoParams.RadiusKm ?? 10) * 1000;
 
-        Expression<Func<Point?, bool>> condition = p => p != null && p.Distance(center) <= radiusMeters;
-
-        return query.Where(TEntity.LocationExpression.Substitute(condition));
+        return query.Where(e => e.Location != null && e.Location.Distance(center) <= radiusMeters);
     }
 }

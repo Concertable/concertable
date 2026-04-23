@@ -1,17 +1,20 @@
 using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
 
 namespace Concertable.Application.Mappers;
 
 public static class TicketMappers
 {
-    public static TicketDto ToDto(this TicketEntity ticket) => new()
+    public static TicketDto ToDto(this TicketEntity ticket, string email) => new()
     {
         Id = ticket.Id,
         PurchaseDate = ticket.PurchaseDate,
         QrCode = ticket.QrCode,
         Concert = ToTicketConcertDto(ticket.Concert),
-        User = ticket.User.ToDto()
+        User = new UserDto
+        {
+            Id = ticket.UserId,
+            Email = email
+        }
     };
 
     private static TicketConcertDto ToTicketConcertDto(ConcertEntity concert) => new()
@@ -25,6 +28,6 @@ public static class TicketMappers
         ArtistName = concert.Booking.Application.Artist.Name
     };
 
-    public static IEnumerable<TicketDto> ToDtos(this IEnumerable<TicketEntity> tickets) =>
-        tickets.Select(t => t.ToDto());
+    public static IEnumerable<TicketDto> ToDtos(this IEnumerable<TicketEntity> tickets, string email) =>
+        tickets.Select(t => t.ToDto(email));
 }

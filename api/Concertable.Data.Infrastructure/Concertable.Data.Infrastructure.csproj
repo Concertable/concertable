@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Data.Application\Concertable.Data.Application.csproj" />
     <ProjectReference Include="..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+    <ProjectReference Include="..\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
   </ItemGroup>
 
