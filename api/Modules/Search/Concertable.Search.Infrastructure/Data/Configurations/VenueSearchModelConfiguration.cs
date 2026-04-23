@@ -1,0 +1,16 @@
+using Concertable.Search.Domain.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Concertable.Search.Infrastructure.Data.Configurations;
+
+internal sealed class VenueSearchModelConfiguration : IEntityTypeConfiguration<VenueSearchModel>
+{
+    public void Configure(EntityTypeBuilder<VenueSearchModel> builder)
+    {
+        builder.ToTable("VenueSearchModels");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Name).IsRequired();
+        builder.Property(x => x.Location).HasColumnType("geography");
+    }
+}

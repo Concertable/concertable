@@ -2,18 +2,25 @@ using Concertable.Core.Enums;
 using Concertable.Search.Application;
 using Concertable.Search.Application.Validators;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Infrastructure.Data;
 using Concertable.Search.Infrastructure.Repositories;
 using Concertable.Search.Application.Services;
 using Concertable.Search.Infrastructure.Specifications;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Search.Infrastructure.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddSearchModule(this IServiceCollection services)
+    public static IServiceCollection AddSearchModule(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddDbContext<SearchDbContext>(opt =>
+            opt.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                sqlOpt => sqlOpt.UseNetTopologySuite()));
         services.AddSingleton<IGeometrySpecification<ArtistEntity>, GeometrySpecification<ArtistEntity>>();
         services.AddSingleton<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
         services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
