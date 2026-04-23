@@ -1553,6 +1553,215 @@ projection handlers).
 13. **`ApplicationDbContext` cleanup** — remove all 14 Concert DbSets + their
     `ApplyConfiguration` calls. Scaffold the paired drop migration.
 
+    ✅ **Done 2026-04-23.**
+
+    **AppDb DbSet removal (`api/Concertable.Infrastructure/Data/ApplicationDbContext.cs`):**
+    - Stripped 14 Concert DbSets (Concerts, ConcertGenres, ConcertImages, Opportunities,
+      OpportunityGenres, OpportunityApplications, ConcertBookings, Reviews, Tickets,
+      Contracts, FlatFeeContracts, DoorSplitContracts, VersusContracts, VenueHireContracts).
+    - Kept 8 AppDb-owned DbSets: Genres, Messages, Transactions, TicketTransactions,
+      SettlementTransactions, Preferences, GenrePreferences, StripeEvents.
+    - AppDomain assembly scan in `OnModelCreating` filtered to **exclude**
+      `Concertable.Concert.Infrastructure` (`&& n != "Concertable.Concert.Infrastructure"`)
+      so Concert configs no longer apply to AppDb's model.
+
+    **Cross-context CLR-nav strip (Payment → Concert):** `TicketTransactionEntity.Concert`
+    (`ConcertEntity` nav) and `SettlementTransactionEntity.Booking` (`ConcertBookingEntity`
+    nav) were the only thing pulling Concert.Domain into AppDb's model after the assembly
+    filter — neither had a single production consumer (verified via grep). Both navs
+    deleted from `Concertable.Core/Entities/{Ticket,Concert}TransactionEntity.cs` and the
+    matching `HasOne(...)` Fluent calls dropped from
+    `Concertable.Data.Infrastructure/Data/Configurations/TransactionConfigurations.cs`.
+    `ConcertId` / `BookingId` int FK columns kept (the FK constraint goes with them — see
+    drop migration below). Cleaner outcome than the §7 `ExcludeFromMigrations`-with-nav
+    plan: Payment.Core stops referencing Concert.Domain entirely.
+
+    **Rating-pipeline rewrite collapsed in (MM_NORTH_STAR §5):** `IRatingRepository`,
+    `IRatingEnricher`, `RatingEnricher`, `ArtistRatingRepository`, `VenueRatingRepository`,
+    `ConcertRatingRepository` all **deleted**. `IRatingRepository` had **zero production
+    consumers** (the only injector was `RatingEnricher`, which itself had no callers and no
+    DI registration). The `ArtistRatingProjection` / `VenueRatingProjection` event-driven
+    projections already exist (Artist/Venue.Domain) and are already consumed via
+    `QueryableArtistMappers.ToHeaderDto/ToSummaryDto/ToDto` and the Venue equivalents
+    reading `rating.AverageRating` directly. Net: §5 done as a side-effect of Step 13.
+
+    **Tickets stay in Concert (legacy repo moved + collapsed):** `TicketRepository` (was
+    `Concertable.Infrastructure/Repositories/TicketRepository.cs`, public, hit
+    `ApplicationDbContext.Tickets`) moved to
+    `api/Modules/Concert/Concertable.Concert.Infrastructure/Repositories/TicketRepository.cs`
+    as `internal`, switched to `GuidModuleRepository<TicketEntity, ConcertDbContext>`,
+    registered in `AddConcertModule()`. Removed from Web's `AddRepositories()`.
+
+    **E2E + integration test cleanup:**
+    - `Concertable.Web/Extensions/E2EEndpointExtensions.cs` `/e2e/finish/{concertId}` and
+      `/e2e/payment-intent/{applicationId}` switched to inject `IReadDbContext readDb` for
+      the `ConcertBookings` query (still inject `ApplicationDbContext db` for
+      `SettlementTransactions`).
+    - `Tests/Concertable.Web.IntegrationTests/Infrastructure/ApiFixture.cs` adds
+      `IReadDbContext ReadDbContext { get; }` alongside the existing `ApplicationDbContext
+      DbContext`. Two failing tests
+      (`OpportunityApplicationFlatFeeApiTests.Accept_ShouldNotCreateDraft_WhenPaymentFails`
+      + the VenueHire equivalent) switched from `fixture.DbContext.Concerts` to
+      `fixture.ReadDbContext.Concerts`.
+
+    **Drop migration scaffolded:**
+    `api/Concertable.Infrastructure/Migrations/20260423095729_DropConcertTables.cs`
+    generated via `dotnet ef migrations add DropConcertTables`. Contains 14 `DropTable`
+    + 2 `DropForeignKey` (FK_SettlementTransactions_ConcertBookings_BookingId,
+    FK_TicketTransactions_Concerts_ConcertId — the cross-context FKs that came along
+    with the now-deleted CLR navs). EF emitted "An operation was scaffolded that may
+    result in the loss of data" — expected. Migration retires alongside the other
+    InitialCreate migrations during the Step 14 close-out reset (per
+    `project_concert_migration_reset.md`).
+
+    **Build:** `dotnet build Concertable.sln` — **0 errors, 91 warnings** (warning growth
+    from CLR-nav removal triggering nullable-ref churn on still-mapped entities;
+    pre-existing nullable-ref + NU1900 NuGet warnings unchanged). Tests RED at runtime
+    on `PendingModelChangesWarning` until Step 14 lands ConcertDbContext InitialCreate.
+
+13b. **Per-module rating projections — finish what Artist/Venue started.** Symmetry
+    cleanup before InitialCreate migrates. Each rated aggregate (Artist, Venue, Concert)
+    owns its own `XRatingProjection` table populated from `ReviewSubmittedEvent`. Concert
+    is the missing one — Artist/Venue projections were added during their Stage 1
+    extractions (cross-module fanout problem); Concert was skipped because
+    `ConcertReviewRepository.GetSummaryAsync` was reading Concert-owned `Reviews` from
+    inside Concert (no fanout). Now that the rating-pipeline rewrite collapsed in at
+    Step 13, Concert needs the same projection for symmetry + so live aggregation dies
+    completely.
+
+    **Concert side:**
+    - Add `ConcertRatingProjection(int ConcertId PK, double AverageRating, int ReviewCount)`
+      to `Concert.Domain/ReadModels/` (alongside `ArtistReadModel`/`VenueReadModel`).
+    - Add `DbSet<ConcertRatingProjection>` to `ConcertDbContext`.
+    - Add `ConcertRatingProjectionConfiguration` (internal) — same shape as
+      `ArtistRatingProjectionConfiguration` (PK on ConcertId, no FK constraint to Concerts
+      since this is an event-sourced projection that survives source deletion).
+    - Add `ConcertReviewProjectionHandler : IIntegrationEventHandler<ReviewSubmittedEvent>`
+      in `Concert.Infrastructure/Handlers/` — upsert-by-ConcertId pattern, mirrors
+      `ArtistReviewProjectionHandler` exactly. Register in `AddConcertModule()`.
+    - Rewrite `ConcertReviewRepository.GetSummaryAsync(int id)` to read
+      `ConcertDbContext.ConcertRatingProjections.FirstOrDefaultAsync(p => p.ConcertId == id)`,
+      project to `ReviewSummaryDto(ReviewCount, AverageRating)`. No more live aggregation.
+
+    **Three endpoint families to modularize, not just summary** — `ReviewController` has
+    Artist/Venue/Concert variants of three things, all routed through Concert today:
+
+    **Family A — Summary (the easy one — projection already exists for Artist + Venue):**
+    - **Delete from Concert.Infrastructure:** `ArtistReviewService.GetSummaryAsync`,
+      `VenueReviewService.GetSummaryAsync` paths (whole keyed services likely retire when
+      Family B + C also move — see below).
+    - **Add to Artist.Api:** `GET /api/Artist/{id}/review-summary` endpoint reading
+      `ArtistDbContext.ArtistRatingProjections` (already populated via existing
+      `ArtistReviewProjectionHandler`). Internal `IArtistReviewService` /
+      `IArtistReviewRepository` (or just inline the repo call) in `Artist.Application` /
+      `Artist.Infrastructure` — same module-internal shape Artist already uses elsewhere.
+    - **Add to Venue.Api:** same for `GET /api/Venue/{id}/review-summary`.
+    - **Add to Concert (read its own new projection):** `ConcertReviewRepository.GetSummaryAsync`
+      reads `ConcertDbContext.ConcertRatingProjections`. Endpoint stays at
+      `/api/Review/summary/concert/{id}` until ReviewController moves into Concert.Api.
+
+    **Family B — Paginated review lists (NEEDS DESIGN CALL):**
+    Today: `GET /api/Review/{venue|artist|concert}/{id}` returns `IPagination<ReviewDto>`.
+    Wrinkle: the source `Reviews` table is Concert-owned; the row PER-REVIEW is what
+    `ReviewDto` projects from. Artist/Venue modules can't read Concert's `Reviews` table
+    directly (CLAUDE rule 2). Two viable shapes — **pick at impl time**:
+
+    - **(B-i) Per-consumer projection (MM_NORTH_STAR §5 pattern):** `ArtistReview`
+      projection table in Artist.Domain (`ReviewId`, `ArtistId`, `Stars`, `Details`,
+      `ReviewerEmail`, `CreatedAt`); populated from `ReviewSubmittedEvent` alongside
+      `ArtistRatingProjection`. Same for `VenueReview` in Venue.Domain. Lists become
+      module-internal queries. Cleanest module boundary; biggest infra add (2 more
+      projection tables + handler updates).
+    - **(B-ii) Cross-module facade:** `IConcertModule.GetReviewsByArtistAsync(int artistId,
+      PageParams)` + `GetReviewsByVenueAsync(int venueId, PageParams)`. Artist.Api /
+      Venue.Api controllers thin-proxy through to Concert. Concert keeps the source-of-
+      truth read. Less new infra; expands `IConcertModule` facade surface; data still
+      crosses the boundary at request time (vs. at event time in B-i).
+
+    **Default recommendation: B-ii** — these endpoints are not on the search/listing
+    hot path (they fire on detail-page review-list scrolls), so the cross-module hop is
+    cheap; per-consumer projections for cold-read endpoints is over-investment until we
+    see a perf signal.
+
+    **Family C — Can-review validation (similar wrinkle to B):**
+    Today: `GET /api/Review/{concert|artist|venue}/can-review/{id}` returns `bool`.
+    Source data is even more Concert-tangled — checks tickets/concerts/bookings/
+    applications to determine "has this user actually attended this thing". All
+    Concert-owned. Same two shapes as B:
+
+    - **(C-i)** Per-consumer projection: `UserArtistAttendance` /
+      `UserVenueAttendance` projection tables (sparse boolean matrix) populated from a
+      `ConcertAttendedEvent` (would need to be introduced — fired when a ticket is
+      validated/used or simply at booking time, depending on policy). Heavyweight.
+    - **(C-ii)** Cross-module facade: `IConcertModule.CanUserReviewArtistAsync(Guid userId,
+      int artistId)` + `CanUserReviewVenueAsync` + `CanUserReviewConcertAsync`. Concert
+      keeps the validator; Artist.Api / Venue.Api controllers proxy through. Same
+      cost/benefit as B-ii.
+
+    **Default recommendation: C-ii** — same reasoning as B. Can-review is cold (one call
+    per detail-page render). Don't invest in projections until the data shape forces it.
+
+    **What gets deleted from Concert in 13b regardless of which path B+C take:**
+    - `IArtistReviewRepository`, `IVenueReviewRepository` interfaces — Artist/Venue own
+      their reads now (B-i: read their own projection; B-ii: facade is the only consumer
+      and it lives on Concert side).
+    - `ArtistReviewRepository`, `VenueReviewRepository` impls.
+    - `ArtistReviewService`, `VenueReviewService` (the keyed `IReviewService` variants).
+    - The `IReviewService` keyed factory collapses — either keep keyed-by-`ReviewType.Concert`
+      only, or replace with a plain `IConcertReviewService` and retire the factory entirely.
+    - `IReviewValidator.CanUserReviewArtist/Venue` methods if C-ii (they move to a Concert-
+      internal method on `IConcertModule`); the bool-returning controller actions move to
+      Artist.Api/Venue.Api as thin facade-callers.
+    - `ReviewController.GetSummaryByArtistId`, `GetSummaryByVenueId`, `GetByVenueId`,
+      `GetByArtistId`, `CanUserReviewArtistId`, `CanUserReviewVenueId` from
+      `Concertable.Web/Controllers/` — only the Concert-suffixed actions + the single
+      `POST /api/Review` (Create, already Concert-scoped) survive there.
+
+    **URL shape (locked in) — symmetric per-module nesting for ALL three families:**
+    Web's `ReviewController` is **deleted entirely** at the end of 13b — every endpoint
+    relocates to its owning module's controller under a per-aggregate URL. Frontend
+    updates ~10 fetch sites in lockstep with this commit.
+
+    | Old route | New route | New owner |
+    |---|---|---|
+    | `POST /api/Review` (always Concert) | `POST /api/Concert/{id}/reviews` | Concert.Api |
+    | `GET /api/Review/concert/summary/{id}` | `GET /api/Concert/{id}/review-summary` | Concert.Api |
+    | `GET /api/Review/artist/summary/{id}` | `GET /api/Artist/{id}/review-summary` | Artist.Api |
+    | `GET /api/Review/venue/summary/{id}` | `GET /api/Venue/{id}/review-summary` | Venue.Api |
+    | `GET /api/Review/concert/{id}` (list) | `GET /api/Concert/{id}/reviews` | Concert.Api |
+    | `GET /api/Review/artist/{id}` (list) | `GET /api/Artist/{id}/reviews` | Artist.Api |
+    | `GET /api/Review/venue/{id}` (list) | `GET /api/Venue/{id}/reviews` | Venue.Api |
+    | `GET /api/Review/concert/can-review/{concertId}` | `GET /api/Concert/{id}/can-review` | Concert.Api |
+    | `GET /api/Review/artist/can-review/{artistId}` | `GET /api/Artist/{id}/can-review` | Artist.Api |
+    | `GET /api/Review/venue/can-review/{venueId}` | `GET /api/Venue/{id}/can-review` | Venue.Api |
+
+    **`Concertable.Web/Controllers/ReviewController.cs` deletes entirely** at end of 13b
+    — every endpoint has a new home. Same for `IReviewServiceFactory` registration in
+    Web (the factory itself is already proposed to retire in favour of plain
+    `IConcertReviewService`). No extra facade surface needed for the Concert-side reads
+    (Concert.Api controllers inject Concert internal services directly). Cross-module
+    facade surface for B-ii / C-ii adds `IConcertModule.GetReviewsByArtistAsync` etc. as
+    detailed above.
+
+    **Cleanup:**
+    - Delete `QueryableReviewMappers.ToSummaryDto` (in `Concertable.Infrastructure/Mappers/`)
+      — only callers are the deleted Artist/Venue/Concert review repos.
+    - Audit `IReviewService` keyed factory — likely collapses to `IConcertReviewService`
+      (Concert is the only remaining keyed registration).
+
+    **Out of scope for 13b** (stays for a Search rewrite later):
+    - Search `ConcertHeaderRepository` / `ArtistHeaderRepository` / `VenueHeaderRepository`
+      still call `IRatingSpecification<T>.ApplyAggregate(context.Reviews)` per page-load —
+      same wasted compute the rating-pipeline rewrite was supposed to kill on the listing
+      hot path. Switching them to the projections requires `IReadDbContext` to expose
+      `IQueryable<ArtistRatingProjection>` / `IQueryable<VenueRatingProjection>` /
+      `IQueryable<ConcertRatingProjection>` (Domain-leak via the read shim, fine per
+      CLAUDE rule 3). Tracked separately under MM_NORTH_STAR §5; do not bundle into 13b.
+
+    **Done before Step 14** so the new `ConcertRatingProjection` lands in `ConcertDbContext`
+    `InitialCreate` rather than as a follow-up `AddConcertRatingProjection` migration that
+    would get wiped by the Step 14 close-out reset anyway.
+
 14. **Scaffold `ConcertDbContext` `InitialCreate` migration.** Inspect for outbound FKs:
     strip `FK_ConcertGenres_Genres_GenreId`, `FK_OpportunityGenres_Genres_GenreId`, and any
     Artist/Venue/Identity FKs (per §7 directional rule). Keep CLR navs where §3 option (a)

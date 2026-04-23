@@ -12,5 +12,5 @@ public sealed class ArtistView : IIdEntity
     public string? County { get; set; }
     public string? Town { get; set; }
     public string? Email { get; set; }
-    public ICollection<ArtistGenreView> Genres { get; set; } = [];
+    public ICollection<ArtistViewGenre> Genres { get; set; } = [];
 }

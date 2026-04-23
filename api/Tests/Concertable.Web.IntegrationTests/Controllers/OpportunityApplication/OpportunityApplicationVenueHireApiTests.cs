@@ -99,7 +99,7 @@ public class OpportunityApplicationVenueHireApiTests : IAsyncLifetime
         await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
 
         // Assert
-        var draft = await fixture.DbContext.Concerts.FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.VenueHireApp.Id);
+        var draft = await fixture.ReadDbContext.Concerts.FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.VenueHireApp.Id);
         Assert.Null(draft);
     }
 }

@@ -99,7 +99,7 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
 
         // Assert
-        var draft = await fixture.DbContext.Concerts.FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.FlatFeeApp.Id);
+        var draft = await fixture.ReadDbContext.Concerts.FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.FlatFeeApp.Id);
         Assert.Null(draft);
     }
 }

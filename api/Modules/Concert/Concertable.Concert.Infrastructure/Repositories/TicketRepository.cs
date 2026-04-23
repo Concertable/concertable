@@ -1,14 +1,15 @@
 using Concertable.Application.Interfaces;
-using Concertable.Infrastructure.Data;
+using Concertable.Concert.Infrastructure.Data;
+using Concertable.Data.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.Infrastructure.Repositories;
+namespace Concertable.Concert.Infrastructure.Repositories;
 
-public class TicketRepository : GuidRepository<TicketEntity>, ITicketRepository
+internal class TicketRepository : GuidModuleRepository<TicketEntity, ConcertDbContext>, ITicketRepository
 {
     private readonly TimeProvider timeProvider;
 
-    public TicketRepository(ApplicationDbContext context, TimeProvider timeProvider) : base(context)
+    public TicketRepository(ConcertDbContext context, TimeProvider timeProvider) : base(context)
     {
         this.timeProvider = timeProvider;
     }

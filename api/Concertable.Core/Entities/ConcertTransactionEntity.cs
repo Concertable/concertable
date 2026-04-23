@@ -1,4 +1,3 @@
-using Concertable.Concert.Domain;
 using Concertable.Core.Enums;
 
 namespace Concertable.Core.Entities;
@@ -15,7 +14,6 @@ public class SettlementTransactionEntity : TransactionEntity
 
     public override TransactionType TransactionType => TransactionType.Settlement;
     public int BookingId { get; private set; }
-    public ConcertBookingEntity Booking { get; set; } = null!;
 
     public static SettlementTransactionEntity Create(Guid fromUserId, Guid toUserId, string paymentIntentId, long amount, TransactionStatus status, int bookingId)
         => new(fromUserId, toUserId, paymentIntentId, amount, status, bookingId);

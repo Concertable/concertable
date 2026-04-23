@@ -3,7 +3,6 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Interfaces.Rating;
 using Concertable.Application.Mappers;
 using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
@@ -17,7 +16,6 @@ using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Infrastructure.Mappers;
 using Concertable.Infrastructure.Repositories;
-using Concertable.Infrastructure.Repositories.Rating;
 using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Identity.Contracts.Events;
@@ -25,7 +23,6 @@ using Concertable.Infrastructure.Services.Blob;
 using Concertable.Infrastructure.Services.Email;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Infrastructure.Services.Payment;
-using Concertable.Infrastructure.Services.Rating;
 using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
 using Concertable.Core.Enums;
@@ -208,25 +205,14 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         // IVenueRepository registered by AddVenueModule() via AddVenueApi()
-        // Concert/Opportunity/OpportunityApplication/Contract/ConcertBooking/Review repos registered by AddConcertApi()
+        // Concert/Opportunity/OpportunityApplication/Contract/ConcertBooking/Review/Ticket/Rating repos registered by AddConcertApi()
         services.AddScoped<IMessageRepository, MessageRepository>();
-        services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
-        services.AddRatingRepositories();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDapperRepository, DapperRepository>();
-
-        return services;
-    }
-
-    private static IServiceCollection AddRatingRepositories(this IServiceCollection services)
-    {
-        services.AddKeyedScoped<IRatingRepository, ArtistRatingRepository>(HeaderType.Artist);
-        services.AddKeyedScoped<IRatingRepository, ConcertRatingRepository>(HeaderType.Concert);
-        services.AddKeyedScoped<IRatingRepository, VenueRatingRepository>(HeaderType.Venue);
 
         return services;
     }

@@ -147,7 +147,8 @@
       "Bash(awk 'NR==1,/^### 5\\\\. Each module/{next}; /^### 6\\\\./{p=1} p' MM_NORTH_STAR.md)",
       "Bash(awk '/^### 5\\\\. Each module/{exit} {print}' MM_NORTH_STAR.md)",
       "Read(//tmp/**)",
-      "Bash(rm MM_NORTH_STAR.md.tmp_section5.md /tmp/mm_after.md /tmp/mm_before.md)"
+      "Bash(rm MM_NORTH_STAR.md.tmp_section5.md /tmp/mm_after.md /tmp/mm_before.md)",
+      "Bash(xargs -I {} grep -E \"class \\\\w+\\(Configuration|Configurations\\)\" {})"
     ]
   }
 }

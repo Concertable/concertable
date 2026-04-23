@@ -6,6 +6,7 @@ using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
+using Concertable.Data.Application;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Interfaces;
 using Concertable.Application.Interfaces.Payment;
@@ -35,6 +36,7 @@ public class ApiFixture : IAsyncLifetime
     public IStripeClient StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
     public ApplicationDbContext DbContext { get; private set; } = null!;
+    public IReadDbContext ReadDbContext { get; private set; } = null!;
 
 public async Task InitializeAsync()
     {
@@ -119,6 +121,7 @@ public async Task InitializeAsync()
         await initializer.InitializeAsync();
         SeedData = scope.ServiceProvider.GetRequiredService<SeedData>();
         DbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        ReadDbContext = scope.ServiceProvider.GetRequiredService<IReadDbContext>();
     }
 
     public HttpClient CreateClient(UserEntity user)
