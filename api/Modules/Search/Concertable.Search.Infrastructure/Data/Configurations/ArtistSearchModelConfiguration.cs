@@ -8,8 +8,19 @@ internal sealed class ArtistSearchModelConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<ArtistSearchModel> builder)
     {
-        builder.ToTable("ArtistSearchModels");
+        builder.ToTable("Artists");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
+        builder.Property(x => x.Location).HasColumnType("geography");
+        builder.OwnsOne(x => x.Address, a =>
+        {
+            a.Property(x => x.County).HasColumnName("County");
+            a.Property(x => x.Town).HasColumnName("Town");
+        });
+        builder.HasMany(x => x.ArtistGenres)
+            .WithOne(x => x.Artist)
+            .HasForeignKey(x => x.ArtistId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
     }
 }

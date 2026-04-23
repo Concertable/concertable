@@ -1,5 +1,5 @@
 using Concertable.Core.Projections;
-using Concertable.Infrastructure.Mappers;
+using Concertable.Search.Domain.Models;
 using LinqKit;
 
 namespace Concertable.Search.Infrastructure.Mappers;
@@ -7,7 +7,7 @@ namespace Concertable.Search.Infrastructure.Mappers;
 internal static class QueryableArtistHeaderMappers
 {
     public static IQueryable<ArtistHeaderDto> ToHeaderDtos(
-        this IQueryable<ArtistEntity> query,
+        this IQueryable<ArtistSearchModel> query,
         IQueryable<RatingAggregate> ratings) =>
         from a in query.AsExpandable()
         where a.Address != null
@@ -21,6 +21,6 @@ internal static class QueryableArtistHeaderMappers
             Rating = rating.AverageRating,
             County = a.Address!.County,
             Town = a.Address!.Town,
-            Genres = GenreSelectors.FromArtist.Invoke(a)
+            Genres = ArtistSearchGenreSelectors.FromArtist.Invoke(a)
         };
 }

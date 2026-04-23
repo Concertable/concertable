@@ -17,3 +17,4 @@ using System.Runtime.CompilerServices;
 // TEMPORARY: legacy Concertable.Infrastructure still hosts Payment services that need to inject IConcertBookingRepository
 // for the read-model UserId hop. Removed when Payment Stage 1 extracts those services.
 [assembly: InternalsVisibleTo("Concertable.Infrastructure")]
+[assembly: InternalsVisibleTo("Concertable.Search.Infrastructure")]

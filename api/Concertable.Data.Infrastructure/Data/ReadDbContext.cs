@@ -46,7 +46,8 @@ internal class ReadDbContext(DbContextOptions<ReadDbContext> options)
         foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name is string n
                      && n.StartsWith("Concertable.")
-                     && n.EndsWith(".Infrastructure")))
+                     && n.EndsWith(".Infrastructure")
+                     && n != "Concertable.Search.Infrastructure"))
         {
             modelBuilder.ApplyConfigurationsFromAssembly(asm);
         }

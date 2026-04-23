@@ -1,18 +1,19 @@
 using Concertable.Core.Parameters;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Domain.Models;
 
 namespace Concertable.Search.Infrastructure.Specifications;
 
 internal class ArtistSearchSpecification : IArtistSearchSpecification
 {
-    private readonly ISearchSpecification<ArtistEntity> searchSpecification;
+    private readonly ISearchSpecification<ArtistSearchModel> searchSpecification;
 
-    public ArtistSearchSpecification(ISearchSpecification<ArtistEntity> searchSpecification)
+    public ArtistSearchSpecification(ISearchSpecification<ArtistSearchModel> searchSpecification)
     {
         this.searchSpecification = searchSpecification;
     }
 
-    public IQueryable<ArtistEntity> Apply(IQueryable<ArtistEntity> query, SearchParams searchParams)
+    public IQueryable<ArtistSearchModel> Apply(IQueryable<ArtistSearchModel> query, SearchParams searchParams)
     {
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(a => a.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));

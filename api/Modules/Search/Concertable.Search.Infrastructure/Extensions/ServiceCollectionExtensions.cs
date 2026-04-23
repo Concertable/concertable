@@ -1,5 +1,6 @@
 using Concertable.Core.Enums;
 using Concertable.Search.Application;
+using Concertable.Search.Domain.Models;
 using Concertable.Search.Application.Validators;
 using Concertable.Search.Application.Interfaces;
 using Concertable.Search.Infrastructure.Data;
@@ -21,16 +22,16 @@ public static class ServiceCollectionExtensions
             opt.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
                 sqlOpt => sqlOpt.UseNetTopologySuite()));
-        services.AddSingleton<IGeometrySpecification<ArtistEntity>, GeometrySpecification<ArtistEntity>>();
-        services.AddSingleton<IGeometrySpecification<VenueEntity>, GeometrySpecification<VenueEntity>>();
+        services.AddSingleton<IGeometrySpecification<ArtistSearchModel>, GeometrySpecification<ArtistSearchModel>>();
+        services.AddSingleton<IGeometrySpecification<VenueSearchModel>, GeometrySpecification<VenueSearchModel>>();
         services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
 
-        services.AddSingleton<IRatingSpecification<ArtistEntity>, ArtistRatingSpecification>();
-        services.AddSingleton<IRatingSpecification<VenueEntity>, VenueRatingSpecification>();
+        services.AddSingleton<IRatingSpecification<ArtistSearchModel>, ArtistRatingSpecification>();
+        services.AddSingleton<IRatingSpecification<VenueSearchModel>, VenueRatingSpecification>();
         services.AddSingleton<IRatingSpecification<ConcertEntity>, ConcertRatingSpecification>();
 
-        services.AddSingleton<ISearchSpecification<ArtistEntity>, SearchSpecification<ArtistEntity>>();
-        services.AddSingleton<ISearchSpecification<VenueEntity>, SearchSpecification<VenueEntity>>();
+        services.AddSingleton<ISearchSpecification<ArtistSearchModel>, SearchSpecification<ArtistSearchModel>>();
+        services.AddSingleton<ISearchSpecification<VenueSearchModel>, SearchSpecification<VenueSearchModel>>();
         services.AddSingleton<ISearchSpecification<ConcertEntity>, SearchSpecification<ConcertEntity>>();
 
         services.AddSingleton<IArtistSearchSpecification, ArtistSearchSpecification>();

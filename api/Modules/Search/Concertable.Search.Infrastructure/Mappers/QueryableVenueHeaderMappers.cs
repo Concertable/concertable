@@ -1,11 +1,12 @@
 using Concertable.Core.Projections;
+using Concertable.Search.Domain.Models;
 
 namespace Concertable.Search.Infrastructure.Mappers;
 
 internal static class QueryableVenueHeaderMappers
 {
     public static IQueryable<VenueHeaderDto> ToHeaderDtos(
-        this IQueryable<VenueEntity> query,
+        this IQueryable<VenueSearchModel> query,
         IQueryable<RatingAggregate> ratings) =>
         from v in query.Where(v => v.Location != null && v.Address != null)
         join r in ratings on v.Id equals r.EntityId into rg

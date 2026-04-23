@@ -1,17 +1,18 @@
 using Concertable.Core.Parameters;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Domain.Models;
 
 namespace Concertable.Search.Infrastructure.Specifications;
 
 internal class VenueSearchSpecification : IVenueSearchSpecification
 {
-    private readonly ISearchSpecification<VenueEntity> searchSpecification;
+    private readonly ISearchSpecification<VenueSearchModel> searchSpecification;
 
-    public VenueSearchSpecification(ISearchSpecification<VenueEntity> searchSpecification)
+    public VenueSearchSpecification(ISearchSpecification<VenueSearchModel> searchSpecification)
     {
         this.searchSpecification = searchSpecification;
     }
 
-    public IQueryable<VenueEntity> Apply(IQueryable<VenueEntity> query, SearchParams searchParams) =>
+    public IQueryable<VenueSearchModel> Apply(IQueryable<VenueSearchModel> query, SearchParams searchParams) =>
         searchSpecification.Apply(query, searchParams.SearchTerm);
 }

@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
-using Concertable.Data.Application;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Infrastructure.Data;
 using Concertable.Search.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,18 +9,18 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class VenueHeaderRepository : IVenueHeaderRepository
 {
-    private readonly IReadDbContext context;
+    private readonly SearchDbContext context;
     private readonly IVenueSearchSpecification searchSpecification;
-    private readonly IGeometrySpecification<VenueEntity> geometrySpecification;
+    private readonly IGeometrySpecification<VenueSearchModel> geometrySpecification;
     private readonly ISortSpecification<VenueHeaderDto> sortSpecification;
-    private readonly IRatingSpecification<VenueEntity> ratingSpecification;
+    private readonly IRatingSpecification<VenueSearchModel> ratingSpecification;
 
     public VenueHeaderRepository(
-        IReadDbContext context,
+        SearchDbContext context,
         IVenueSearchSpecification searchSpecification,
-        IGeometrySpecification<VenueEntity> geometrySpecification,
+        IGeometrySpecification<VenueSearchModel> geometrySpecification,
         ISortSpecification<VenueHeaderDto> sortSpecification,
-        IRatingSpecification<VenueEntity> ratingSpecification)
+        IRatingSpecification<VenueSearchModel> ratingSpecification)
     {
         this.context = context;
         this.searchSpecification = searchSpecification;
@@ -31,16 +31,16 @@ internal class VenueHeaderRepository : IVenueHeaderRepository
 
     public async Task<IPagination<VenueHeaderDto>> SearchAsync(SearchParams searchParams)
     {
-        var query = searchSpecification.Apply(context.Venues, searchParams);
+        var query = searchSpecification.Apply(context.Venues.AsNoTracking(), searchParams);
         query = geometrySpecification.Apply(query, searchParams);
-        var dtos = sortSpecification.Apply(query.ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews)), searchParams);
+        var dtos = sortSpecification.Apply(query.ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews.AsNoTracking())), searchParams);
         return await dtos.ToPaginationAsync(searchParams);
     }
 
     public async Task<IEnumerable<VenueHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Venues
+        await context.Venues.AsNoTracking()
             .OrderBy(v => v.Id)
-            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews.AsNoTracking()))
             .Take(amount)
             .ToListAsync();
 }

@@ -1,9 +1,10 @@
 using Concertable.Core.Projections;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Domain.Models;
 
 namespace Concertable.Search.Infrastructure.Specifications;
 
-internal class VenueRatingSpecification : IRatingSpecification<VenueEntity>
+internal class VenueRatingSpecification : IRatingSpecification<VenueSearchModel>
 {
     public IQueryable<RatingAggregate> ApplyAggregate(IQueryable<ReviewEntity> reviews) =>
         reviews

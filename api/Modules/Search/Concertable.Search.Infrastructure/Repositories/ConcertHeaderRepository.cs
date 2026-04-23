@@ -1,8 +1,8 @@
 using Concertable.Application.Interfaces;
-using Concertable.Data.Application;
 using Concertable.Infrastructure.Extensions;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Infrastructure.Data;
 using Concertable.Search.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +10,7 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class ConcertHeaderRepository : IConcertHeaderRepository
 {
-    private readonly IReadDbContext context;
+    private readonly SearchDbContext context;
     private readonly IConcertSearchSpecification searchSpecification;
     private readonly IGeometrySpecification<ConcertEntity> geometrySpecification;
     private readonly ISortSpecification<ConcertHeaderDto> sortSpecification;
@@ -18,7 +18,7 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
     private readonly TimeProvider timeProvider;
 
     public ConcertHeaderRepository(
-        IReadDbContext context,
+        SearchDbContext context,
         IConcertSearchSpecification searchSpecification,
         IGeometrySpecification<ConcertEntity> geometrySpecification,
         ISortSpecification<ConcertHeaderDto> sortSpecification,
@@ -37,21 +37,21 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
     {
         var query = searchSpecification.Apply(context.Concerts.AsNoTracking(), searchParams);
         query = geometrySpecification.Apply(query, searchParams);
-        var dtos = sortSpecification.Apply(query.ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews)), searchParams);
+        var dtos = sortSpecification.Apply(query.ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews.AsNoTracking())), searchParams);
         return await dtos.ToPaginationAsync(searchParams);
     }
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Concerts.Active(timeProvider.GetUtcNow().DateTime)
+        await context.Concerts.AsNoTracking().Active(timeProvider.GetUtcNow().DateTime)
             .OrderByDescending(c => c.DatePosted)
-            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews.AsNoTracking()))
             .Take(amount)
             .ToListAsync();
 
     public async Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync() =>
         await context.Concerts.AsNoTracking().Active(timeProvider.GetUtcNow().DateTime)
             .OrderByDescending(c => c.TotalTickets - c.AvailableTickets)
-            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews.AsNoTracking()))
             .Take(10)
             .ToListAsync();
 
@@ -59,7 +59,7 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
         await context.Concerts.AsNoTracking().Active(timeProvider.GetUtcNow().DateTime)
             .Where(c => c.Price == 0)
             .OrderByDescending(c => c.DatePosted)
-            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews.AsNoTracking()))
             .Take(10)
             .ToListAsync();
 
@@ -77,7 +77,7 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
             : query.OrderBy(c => c.Booking.Application.Opportunity.Period.Start);
 
         return await query
-            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews))
+            .ToHeaderDtos(ratingSpecification.ApplyAggregate(context.Reviews.AsNoTracking()))
             .Take(10)
             .ToListAsync();
     }
