@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Geometry;
+using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Shared.Exceptions;
 using FluentResults;
 
@@ -115,7 +116,7 @@ internal class ConcertService : IConcertService
         await concertRepository.SaveChangesAsync();
 
         var concertHeaderDto = concertEntity.ToSnapshotDto();
-        concertHeaderDto = concertHeaderDto with { Rating = (await concertReviewRepository.GetSummaryAsync(id)).AverageRating };
+        concertHeaderDto = concertHeaderDto with { Rating = (await concertReviewRepository.GetSummaryByConcertAsync(id)).AverageRating };
 
         var location = concertEntity.Booking.Application.Opportunity.Venue.Location;
 

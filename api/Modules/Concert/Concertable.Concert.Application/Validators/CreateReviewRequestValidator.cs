@@ -1,9 +1,9 @@
-using Concertable.Application.Requests;
+using Concertable.Concert.Application.Requests;
 using FluentValidation;
 
-namespace Concertable.Application.Validators;
+namespace Concertable.Concert.Application.Validators;
 
-public class CreateReviewRequestValidator : AbstractValidator<CreateReviewRequest>
+internal class CreateReviewRequestValidator : AbstractValidator<CreateReviewRequest>
 {
     public CreateReviewRequestValidator()
     {

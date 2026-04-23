@@ -1,6 +1,6 @@
-using Concertable.Application.DTOs;
+using Concertable.Shared;
 
-namespace Concertable.Application.Mappers;
+namespace Concertable.Concert.Application.Mappers;
 
 public static class ReviewMappers
 {

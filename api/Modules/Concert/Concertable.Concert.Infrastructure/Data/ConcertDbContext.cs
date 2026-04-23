@@ -23,6 +23,7 @@ internal class ConcertDbContext(DbContextOptions<ConcertDbContext> options)
     public DbSet<ReviewEntity> Reviews => Set<ReviewEntity>();
     public DbSet<ArtistReadModel> ArtistReadModels => Set<ArtistReadModel>();
     public DbSet<VenueReadModel> VenueReadModels => Set<VenueReadModel>();
+    public DbSet<ConcertRatingProjection> ConcertRatingProjections => Set<ConcertRatingProjection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

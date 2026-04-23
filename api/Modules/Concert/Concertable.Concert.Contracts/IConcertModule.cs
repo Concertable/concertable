@@ -1,8 +1,11 @@
+using Concertable.Shared;
+
 namespace Concertable.Concert.Contracts;
 
 public interface IConcertModule
 {
-    // Intentionally empty at Stage 1. Add cross-module lookups only when a
-    // foreign caller proves need. See CLAUDE.md facade naming rule and
-    // feedback_module_facade_surface.md.
+    Task<IPagination<ReviewDto>> GetReviewsByArtistAsync(int artistId, IPageParams pageParams);
+    Task<IPagination<ReviewDto>> GetReviewsByVenueAsync(int venueId, IPageParams pageParams);
+    Task<bool> CanUserReviewArtistAsync(Guid userId, int artistId);
+    Task<bool> CanUserReviewVenueAsync(Guid userId, int venueId);
 }

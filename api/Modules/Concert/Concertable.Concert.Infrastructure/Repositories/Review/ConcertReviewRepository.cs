@@ -1,41 +1,41 @@
+using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Infrastructure.Data;
+using Concertable.Concert.Infrastructure.Mappers;
 using Concertable.Infrastructure.Helpers;
-using Concertable.Infrastructure.Mappers;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories.Review;
 
-internal class ConcertReviewRepository : IConcertReviewRepository
+internal class ConcertReviewRepository(ConcertDbContext context, TimeProvider timeProvider)
+    : IConcertReviewRepository
 {
-    private readonly ConcertDbContext context;
-    private readonly TimeProvider timeProvider;
-
-    public ConcertReviewRepository(
-        ConcertDbContext context,
-        TimeProvider timeProvider)
-    {
-        this.context = context;
-        this.timeProvider = timeProvider;
-    }
-
-    public Task<IPagination<ReviewDto>> GetAsync(int id, IPageParams pageParams) =>
+    public Task<IPagination<ReviewDto>> GetByConcertAsync(int concertId, IPageParams pageParams) =>
         context.Reviews
-            .Where(r => r.Ticket.ConcertId == id)
+            .AsNoTracking()
+            .Where(r => r.Ticket.ConcertId == concertId)
             .OrderByDescending(r => r.Id)
             .ToDto()
             .ToPaginationAsync(pageParams);
 
-    public async Task<ReviewSummaryDto> GetSummaryAsync(int id) =>
-        await context.Reviews
-            .Where(r => r.Ticket.ConcertId == id)
-            .ToSummaryDto()
-            .FirstOrDefaultAsync()
-            ?? new ReviewSummaryDto(0, null);
+    public async Task<ReviewSummaryDto> GetSummaryByConcertAsync(int concertId)
+    {
+        var projection = await context.ConcertRatingProjections
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.ConcertId == concertId);
+        return projection is null
+            ? new ReviewSummaryDto(0, null)
+            : new ReviewSummaryDto(projection.ReviewCount, projection.AverageRating);
+    }
 
-    public Task<bool> CanReviewAsync(Guid userId, int id) =>
+    public Task<bool> CanUserReviewConcertAsync(Guid userId, int concertId) =>
         context.Tickets
-            .Where(t => t.UserId == userId && t.Review == null)
-            .AnyAsync(t => t.ConcertId == id && t.Concert.Booking.Application.Opportunity.Period.Start <= timeProvider.GetUtcNow());
+            .AsNoTracking()
+            .AnyAsync(t =>
+                t.UserId == userId &&
+                t.Review == null &&
+                t.ConcertId == concertId &&
+                t.Concert.Booking.Application.Opportunity.Period.Start <= timeProvider.GetUtcNow());
 
     public async Task<ReviewEntity> AddAsync(ReviewEntity review)
     {

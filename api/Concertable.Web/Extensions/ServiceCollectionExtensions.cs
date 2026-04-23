@@ -177,8 +177,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
         services.AddScoped<IGenreService, GenreService>();
-        // IReviewService (keyed Artist/Venue/Concert) registered by AddConcertApi()
-        services.AddScoped<IReviewServiceFactory, ReviewServiceFactory>();
+        // IConcertReviewService + IReviewValidator registered by AddConcertModule()
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IPdfService, PdfService>();
         services.AddSingleton<QRCodeGenerator>();
@@ -197,7 +196,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
         services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
-        services.AddScoped<IReviewValidator, ReviewValidator>();
+        // IReviewValidator registered by AddConcertModule()
 
         return services;
     }

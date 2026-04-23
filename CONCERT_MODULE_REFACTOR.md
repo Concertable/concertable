@@ -1619,7 +1619,68 @@ projection handlers).
     pre-existing nullable-ref + NU1900 NuGet warnings unchanged). Tests RED at runtime
     on `PendingModelChangesWarning` until Step 14 lands ConcertDbContext InitialCreate.
 
-13b. **Per-module rating projections — finish what Artist/Venue started.** Symmetry
+13b. **Per-module rating projections — finish what Artist/Venue started.**
+
+    ✅ **Done 2026-04-23.**
+
+    **Concert side — projection + handler:**
+    - `Concert.Domain/ReadModels/ConcertRatingProjection.cs` (`{ ConcertId PK, AverageRating, ReviewCount }`).
+    - `Concert.Infrastructure/Data/Configurations/ConcertRatingProjectionConfiguration.cs` (`internal`, table `ConcertRatingProjections`, `ValueGeneratedNever` on PK — mirrors `ArtistRatingProjectionConfiguration` exactly).
+    - `ConcertDbContext.ConcertRatingProjections` DbSet added.
+    - `Concert.Infrastructure/Handlers/ConcertReviewProjectionHandler : IIntegrationEventHandler<ReviewSubmittedEvent>` — upsert-by-ConcertId pattern, identical shape to `ArtistReviewProjectionHandler`. Registered in `AddConcertModule()` alongside the Artist/Venue handlers.
+
+    **Per-context split, all internal to Concert (driven by user feedback that EF queries belong in repos, not facades):**
+    - `Concert.Application/Interfaces/Reviews/IConcertReviewRepository` — concert-context: `GetByConcertAsync`, `GetSummaryByConcertAsync` (reads `ConcertRatingProjection`), `CanUserReviewConcertAsync`, `AddAsync`, `SaveChangesAsync`.
+    - `Concert.Application/Interfaces/Reviews/IArtistReviewRepository` — artist-context: `GetByArtistAsync`, `CanUserReviewArtistAsync`. Renamed methods to be context-explicit (was generic `GetAsync`/`CanReviewAsync`).
+    - `Concert.Application/Interfaces/Reviews/IVenueReviewRepository` — venue-context: same shape as artist.
+    - `Concert.Application/Interfaces/Reviews/IReviewValidator` — single entry point for can-review checks across all 3 contexts; thin wrapper over the 3 repos.
+    - `Concert.Application/Interfaces/Reviews/IConcertReviewService` — concert-context current-user operations: `GetAsync`, `GetSummaryAsync`, `CanCurrentUserReviewAsync`, `CreateAsync`. Replaces the keyed `IReviewService` factory.
+    - `Concert.Application/Requests/CreateReviewRequest` + `Concert.Application/Validators/CreateReviewRequestValidator` — moved from legacy `Concertable.Application`, marked `internal`.
+    - `Concert.Application/Mappers/ReviewMappers.ToDto` — moved from legacy. Marked `public` per user feedback (cross-module reviewers may need to project ReviewEntity → ReviewDto; ReviewEntity is already accessible via Concert.Domain reference per CLAUDE rule 3).
+    - `Concert.Infrastructure/Mappers/QueryableReviewMappers.ToDto` — `internal`, only Concert.Infrastructure projects ReviewEntity to ReviewDto via this `IQueryable` extension.
+    - `Concert.Infrastructure/Repositories/Review/{Concert,Artist,Venue}ReviewRepository.cs` — rewrites against the new internal interfaces. ArtistReviewRepository now actually implements `CanUserReviewArtistAsync` (was `throw new NotImplementedException()` in the legacy code — pre-existing bug fixed in passing). All inject `ConcertDbContext + TimeProvider`.
+    - `Concert.Infrastructure/Services/Review/ConcertReviewService.cs` — collapses the 3 keyed `IReviewService` services into one. Wraps `IConcertReviewRepository + ITicketRepository + IReviewValidator + ICurrentUser`.
+    - `Concert.Infrastructure/Validators/ReviewValidator.cs` — uniform validator delegating to the 3 repos. Migrated from legacy `Concertable.Infrastructure/Validators/ReviewValidator.cs` (public) and made `internal`.
+
+    **Cross-module facade (`IConcertModule`) — minimal, delegates only:**
+    ```csharp
+    public interface IConcertModule
+    {
+        Task<IPagination<ReviewDto>> GetReviewsByArtistAsync(int artistId, IPageParams pageParams);
+        Task<IPagination<ReviewDto>> GetReviewsByVenueAsync(int venueId, IPageParams pageParams);
+        Task<bool> CanUserReviewArtistAsync(Guid userId, int artistId);
+        Task<bool> CanUserReviewVenueAsync(Guid userId, int venueId);
+    }
+    ```
+    `ConcertModule` impl injects `IArtistReviewRepository + IVenueReviewRepository + IReviewValidator` and is a one-line passthrough per method. **No EF in the facade** (early draft put queries inline; user pushed back hard, refactored to abstractions). Concert.Contracts.csproj gained `Concertable.Shared.Contracts` ProjectReference (needed for `IPagination<>`/`IPageParams`/`ReviewDto`).
+
+    **Artist/Venue module review surfaces — own services + own controllers:**
+    - `Artist.Application/Interfaces/IArtistReviewService` (`internal`) + `Artist.Infrastructure/Services/ArtistReviewService` impl. Reads `ArtistDbContext.ArtistRatingProjections` directly for `GetSummaryAsync`; delegates to `IConcertModule` for `GetAsync` (lists) and `CanCurrentUserReviewAsync` (which fills in `ICurrentUser.GetId()` then calls `IConcertModule.CanUserReviewArtistAsync`).
+    - `Venue.Application/Interfaces/IVenueReviewService` + `Venue.Infrastructure/Services/VenueReviewService` — symmetric to Artist.
+    - `Artist.Api/Controllers/ArtistReviewController` (`internal`, `[Route("api/Artist")]`) — `GET {id}/review-summary`, `GET {id}/reviews`, `GET {id}/can-review`.
+    - `Venue.Api/Controllers/VenueReviewController` — same shape under `api/Venue`.
+    - `Concert.Api/Controllers/ConcertReviewController` (`internal`, `[Route("api/Concert")]`) — `POST {id}/reviews`, `GET {id}/reviews`, `GET {id}/review-summary`, `GET {id}/can-review`. Per user feedback, **separate controllers per concern** rather than bolting endpoints onto the existing aggregate controllers (Artist/Venue/ConcertController).
+    - All injected services registered in their respective `AddXModule()` extensions.
+
+    **`ReviewDto`/`ReviewSummaryDto` moved to Shared.Contracts** (per user feedback) — was `Concertable.Application/DTOs/ReviewDtos.cs`, now `Concertable.Shared.Contracts/ReviewDtos.cs` in `Concertable.Shared` namespace. The `Concertable.Shared` global using is already in place across modules so the move is transparent.
+
+    **Deleted files:**
+    - `Concertable.Web/Controllers/ReviewController.cs` — entire 67-line controller, replaced by the 3 per-module controllers above.
+    - `Concertable.Application/Interfaces/{IReviewService,IReviewServiceFactory,IReviewValidator,IConcertReviewRepository,IArtistReviewRepository,IVenueReviewRepository}.cs` (6 files).
+    - `Concertable.Application/Mappers/ReviewMappers.cs`, `Concertable.Application/Requests/ReviewRequests.cs`, `Concertable.Application/Validators/ReviewValidators.cs`, `Concertable.Application/DTOs/ReviewDtos.cs` (4 files).
+    - `Concertable.Infrastructure/Validators/ReviewValidator.cs`, `Concertable.Infrastructure/Factories/ReviewServiceFactory.cs`, `Concertable.Infrastructure/Mappers/QueryableReviewMappers.cs` (3 files).
+    - `Concertable.Core/Enums/ReviewType.cs` — was the keyed-factory key, no longer needed.
+    - `Concert.Infrastructure/Services/Review/{Artist,Venue}ReviewService.cs` — keyed siblings of ConcertReviewService.
+
+    **Web DI cleanup:** `Concertable.Web/Extensions/ServiceCollectionExtensions.cs` — dropped `IReviewServiceFactory, ReviewServiceFactory` registration from `AddServices()` and `IReviewValidator, ReviewValidator` from `AddServiceValidators()`. Both replaced by Concert module wiring.
+
+    **Build:** `dotnet build Concertable.sln` — **0 errors, 72 warnings** (down from 91 — ~20 fewer because dead review-pipeline code retired). Tests still RED at runtime on `PendingModelChangesWarning` until Step 14 (ConcertRatingProjection lands in InitialCreate during the close-out reset).
+
+    **Frontend lockstep:** ~10 fetch sites need URL updates to the new per-module routes per the table below. **Out of scope for this server-side commit** — flag at review time so frontend updates ship in the same PR.
+
+    **Default URL choices locked in (per user — option a "per-module nesting"):**
+
+13b-old. **Per-module rating projections — finish what Artist/Venue started.** Symmetry
     cleanup before InitialCreate migrates. Each rated aggregate (Artist, Venue, Concert)
     owns its own `XRatingProjection` table populated from `ReviewSubmittedEvent`. Concert
     is the missing one — Artist/Venue projections were added during their Stage 1

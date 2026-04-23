@@ -1,8 +1,10 @@
 using Concertable.Application.Interfaces;
 using Concertable.Artist.Contracts.Events;
+using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Mappers;
 using Concertable.Concert.Application.Validators;
 using Concertable.Concert.Contracts;
+using Concertable.Concert.Contracts.Events;
 using Concertable.Concert.Domain.Events;
 using Concertable.Concert.Infrastructure.Data;
 using Concertable.Concert.Infrastructure.Data.Seeders;
@@ -17,6 +19,7 @@ using Concertable.Concert.Infrastructure.Services.Complete;
 using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
 using Concertable.Concert.Infrastructure.Services.Webhook;
+using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Infrastructure.Interfaces;
@@ -51,10 +54,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
 
-        // Review services (all three moved to Concert.Infrastructure)
-        services.AddKeyedScoped<IReviewService, ArtistReviewService>(ReviewType.Artist);
-        services.AddKeyedScoped<IReviewService, VenueReviewService>(ReviewType.Venue);
-        services.AddKeyedScoped<IReviewService, ConcertReviewService>(ReviewType.Concert);
+        // Review service + validator (Concert owns reviews; Artist/Venue lists/can-review go through IConcertModule facade)
+        services.AddScoped<IConcertReviewService, ConcertReviewService>();
+        services.AddScoped<IReviewValidator, ReviewValidator>();
 
         // Dispatchers
         services.AddScoped<IAcceptDispatcher, AcceptDispatcher>();
@@ -104,6 +106,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
+        services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
 
         services.AddValidatorsFromAssemblyContaining<OpportunityDtoValidator>();
 

@@ -1,33 +1,29 @@
+using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Infrastructure.Data;
+using Concertable.Concert.Infrastructure.Mappers;
 using Concertable.Infrastructure.Helpers;
-using Concertable.Infrastructure.Mappers;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories.Review;
 
-internal class ArtistReviewRepository : IArtistReviewRepository
+internal class ArtistReviewRepository(ConcertDbContext context, TimeProvider timeProvider)
+    : IArtistReviewRepository
 {
-    private readonly ConcertDbContext context;
-
-    public ArtistReviewRepository(ConcertDbContext context)
-    {
-        this.context = context;
-    }
-
-    public Task<IPagination<ReviewDto>> GetAsync(int id, IPageParams pageParams) =>
+    public Task<IPagination<ReviewDto>> GetByArtistAsync(int artistId, IPageParams pageParams) =>
         context.Reviews
-            .Where(r => r.Ticket.Concert.Booking.Application.ArtistId == id)
+            .AsNoTracking()
+            .Where(r => r.Ticket.Concert.Booking.Application.ArtistId == artistId)
             .OrderByDescending(r => r.Id)
             .ToDto()
             .ToPaginationAsync(pageParams);
 
-    public async Task<ReviewSummaryDto> GetSummaryAsync(int id) =>
-        await context.Reviews
-            .Where(r => r.Ticket.Concert.Booking.Application.ArtistId == id)
-            .ToSummaryDto()
-            .FirstOrDefaultAsync()
-            ?? new ReviewSummaryDto(0, null);
-
-    public Task<bool> CanReviewAsync(Guid userId, int id) =>
-        throw new NotImplementedException();
+    public Task<bool> CanUserReviewArtistAsync(Guid userId, int artistId) =>
+        context.Tickets
+            .AsNoTracking()
+            .AnyAsync(t =>
+                t.UserId == userId &&
+                t.Review == null &&
+                t.Concert.Booking.Application.ArtistId == artistId &&
+                t.Concert.Booking.Application.Opportunity.Period.Start <= timeProvider.GetUtcNow());
 }

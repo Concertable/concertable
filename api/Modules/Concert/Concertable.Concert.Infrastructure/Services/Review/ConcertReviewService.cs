@@ -1,28 +1,26 @@
+using Concertable.Concert.Application.Interfaces.Reviews;
+using Concertable.Concert.Application.Mappers;
+using Concertable.Concert.Application.Requests;
+using Concertable.Identity.Contracts;
+using Concertable.Shared;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Review;
 
-internal class ConcertReviewService : IReviewService
+internal class ConcertReviewService(
+    IConcertReviewRepository reviewRepository,
+    ITicketRepository ticketRepository,
+    IReviewValidator reviewValidator,
+    ICurrentUser currentUser) : IConcertReviewService
 {
-    private readonly IConcertReviewRepository reviewRepository;
-    private readonly ITicketRepository ticketRepository;
-    private readonly ICurrentUser currentUser;
+    public Task<IPagination<ReviewDto>> GetAsync(int concertId, IPageParams pageParams) =>
+        reviewRepository.GetByConcertAsync(concertId, pageParams);
 
-    public ConcertReviewService(
-        IConcertReviewRepository reviewRepository,
-        ITicketRepository ticketRepository,
-        ICurrentUser currentUser)
-    {
-        this.reviewRepository = reviewRepository;
-        this.ticketRepository = ticketRepository;
-        this.currentUser = currentUser;
-    }
+    public Task<ReviewSummaryDto> GetSummaryAsync(int concertId) =>
+        reviewRepository.GetSummaryByConcertAsync(concertId);
 
-    public Task<IPagination<ReviewDto>> GetAsync(int id, IPageParams pageParams) =>
-        reviewRepository.GetAsync(id, pageParams);
-
-    public Task<ReviewSummaryDto> GetSummaryAsync(int id) =>
-        reviewRepository.GetSummaryAsync(id);
+    public Task<bool> CanCurrentUserReviewAsync(int concertId) =>
+        reviewValidator.CanUserReviewConcertAsync(currentUser.GetId(), concertId);
 
     public async Task<ReviewDto> CreateAsync(CreateReviewRequest request)
     {
