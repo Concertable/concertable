@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Concert.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ConcertDbContext))]
-    [Migration("20260423142031_InitialCreate")]
+    [Migration("20260424134248_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,6 +25,25 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Concertable.Artist.Domain.ArtistRatingProjection", b =>
+                {
+                    b.Property<int>("ArtistId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("AverageRating")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("ArtistId");
+
+                    b.ToTable("ArtistRatingProjections", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModel", b =>
                 {
@@ -113,6 +132,9 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ArtistId")
+                        .HasColumnType("int");
+
                     b.Property<int>("AvailableTickets")
                         .HasColumnType("int");
 
@@ -128,6 +150,9 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("DatePosted")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<Point>("Location")
                         .HasColumnType("geography");
 
@@ -138,13 +163,23 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("TotalTickets")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VenueId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ArtistId");
+
                     b.HasIndex("BookingId")
                         .IsUnique();
+
+                    b.HasIndex("VenueId");
 
                     b.ToTable("Concerts", (string)null);
                 });
@@ -388,6 +423,25 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Concertable.Venue.Domain.VenueRatingProjection", b =>
+                {
+                    b.Property<int>("VenueId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("AverageRating")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("VenueId");
+
+                    b.ToTable("VenueRatingProjections", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
             modelBuilder.Entity("Concertable.Concert.Domain.DoorSplitContractEntity", b =>
                 {
                     b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
@@ -463,13 +517,29 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertEntity", b =>
                 {
+                    b.HasOne("Concertable.Concert.Domain.ArtistReadModel", "Artist")
+                        .WithMany()
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Concertable.Concert.Domain.ConcertBookingEntity", "Booking")
                         .WithOne("Concert")
                         .HasForeignKey("Concertable.Concert.Domain.ConcertEntity", "BookingId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Concertable.Concert.Domain.VenueReadModel", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+
                     b.Navigation("Booking");
+
+                    b.Navigation("Venue");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertGenreEntity", b =>

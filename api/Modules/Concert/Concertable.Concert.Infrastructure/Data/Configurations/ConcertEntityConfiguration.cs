@@ -13,5 +13,17 @@ internal class ConcertEntityConfiguration : IEntityTypeConfiguration<ConcertEnti
             .WithOne(b => b.Concert)
             .HasForeignKey<ConcertEntity>(e => e.BookingId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(e => e.Artist)
+            .WithMany()
+            .HasForeignKey(e => e.ArtistId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(e => e.Venue)
+            .WithMany()
+            .HasForeignKey(e => e.VenueId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Property(e => e.Location).HasColumnType("geography");
     }
 }

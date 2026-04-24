@@ -31,10 +31,8 @@ internal class ConcertDevSeeder : IDevSeeder
         var customerIds = seed.CustomerIds;
         var artistManagerIds = seed.ArtistManagerIds;
 
-        await context.Opportunities.SeedIfEmptyAsync(async () =>
+        var opps = new OpportunityEntity[]
         {
-            var opportunities = new OpportunityEntity[]
-            {
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(-60), now.AddDays(-60).AddHours(3)), FlatFeeContractEntity.Create(150, PaymentMethod.Cash)),
                 OpportunityFactory.Create(2, new DateRange(now.AddDays(-55), now.AddDays(-55).AddHours(3)), FlatFeeContractEntity.Create(200, PaymentMethod.Cash)),
                 OpportunityFactory.Create(3, new DateRange(now.AddDays(-50), now.AddDays(-50).AddHours(3)), FlatFeeContractEntity.Create(180, PaymentMethod.Cash)),
@@ -94,8 +92,11 @@ internal class ConcertDevSeeder : IDevSeeder
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(220), now.AddDays(220).AddHours(3)), VersusContractEntity.Create(100, 70, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(15), now.AddDays(15).AddHours(3)), FlatFeeContractEntity.Create(200, PaymentMethod.Transfer)),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(20), now.AddDays(20).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Transfer)),
-            };
-            context.Opportunities.AddRange(opportunities);
+        };
+
+        await context.Opportunities.SeedIfEmptyAsync(async () =>
+        {
+            context.Opportunities.AddRange(opps);
             await context.SaveChangesAsync(ct);
         });
 
@@ -164,19 +165,19 @@ internal class ConcertDevSeeder : IDevSeeder
 
         await context.OpportunityApplications.SeedIfEmptyAsync(async () =>
         {
-            seed.ConfirmedBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Ultimate Dance Party", 27m, 160, 140, now.AddDays(2)).Generate());
+            seed.ConfirmedBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Ultimate Dance Party", 27m, 160, 140, 1, opps[5].VenueId, opps[5].Period.Start, opps[5].Period.End, now.AddDays(2)).Generate());
             seed.ConfirmedApp = OpportunityApplicationFactory.Accepted(1, 6, seed.ConfirmedBooking);
 
-            seed.PostedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie Wonderland", 25m, 120, 100, now.AddDays(150)).Generate());
+            seed.PostedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie Wonderland", 25m, 120, 100, 1, opps[52].VenueId, opps[52].Period.Start, opps[52].Period.End, now.AddDays(150)).Generate());
             seed.PostedDoorSplitApp = OpportunityApplicationFactory.Accepted(1, 53, seed.PostedDoorSplitBooking);
 
-            seed.PostedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Funk it up", 20m, 150, 130, now.AddDays(180)).Generate());
+            seed.PostedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Funk it up", 20m, 150, 130, 2, opps[53].VenueId, opps[53].Period.Start, opps[53].Period.End, now.AddDays(180)).Generate());
             seed.PostedVersusApp = OpportunityApplicationFactory.Accepted(2, 54, seed.PostedVersusBooking);
 
-            seed.PostedFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie it up!", 20m, 150, 130, now.AddDays(-85)).Generate());
+            seed.PostedFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie it up!", 20m, 150, 130, 2, opps[30].VenueId, opps[30].Period.Start, opps[30].Period.End, now.AddDays(-85)).Generate());
             seed.PostedFlatFeeApp = OpportunityApplicationFactory.Accepted(2, 31, seed.PostedFlatFeeBooking);
 
-            seed.PostedVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("VenueHire Spectacular", 30m, 200, 180, now.AddDays(-40)).Generate());
+            seed.PostedVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("VenueHire Spectacular", 30m, 200, 180, 1, opps[20].VenueId, opps[20].Period.Start, opps[20].Period.End, now.AddDays(-40)).Generate());
             seed.PostedVenueHireApp = OpportunityApplicationFactory.Accepted(1, 21, seed.PostedVenueHireBooking);
 
             seed.DoorSplitApp = OpportunityApplicationFactory.Create(1, 56);
@@ -184,51 +185,51 @@ internal class ConcertDevSeeder : IDevSeeder
             seed.VenueHireApp = OpportunityApplicationFactory.Create(1, 52);
             seed.FlatFeeApp = OpportunityApplicationFactory.Create(1, 55);
 
-            seed.AwaitingPaymentBooking = ConcertBookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Awaiting Show", 15m, 100, 80, now.AddDays(3)).Generate());
+            seed.AwaitingPaymentBooking = ConcertBookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Awaiting Show", 15m, 100, 80, 1, opps[32].VenueId, opps[32].Period.Start, opps[32].Period.End, now.AddDays(3)).Generate());
             seed.AwaitingPaymentApp = OpportunityApplicationFactory.Accepted(1, 33, seed.AwaitingPaymentBooking);
 
-            seed.FinishedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("DoorSplit Settlement Show", 20m, 100, 99, now.AddDays(-60)).Generate());
+            seed.FinishedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("DoorSplit Settlement Show", 20m, 100, 99, 1, opps[49].VenueId, opps[49].Period.Start, opps[49].Period.End, now.AddDays(-60)).Generate());
             seed.FinishedDoorSplitApp = OpportunityApplicationFactory.Accepted(1, 50, seed.FinishedDoorSplitBooking);
 
-            seed.FinishedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Versus Settlement Show", 20m, 100, 99, now.AddDays(-90)).Generate());
+            seed.FinishedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Versus Settlement Show", 20m, 100, 99, 1, opps[50].VenueId, opps[50].Period.Start, opps[50].Period.End, now.AddDays(-90)).Generate());
             seed.FinishedVersusApp = OpportunityApplicationFactory.Accepted(1, 51, seed.FinishedVersusBooking);
 
-            seed.UpcomingFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Upcoming FlatFee Show", 20m, 150, 150, now).Generate());
+            seed.UpcomingFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Upcoming FlatFee Show", 20m, 150, 150, 2, opps[57].VenueId, opps[57].Period.Start, opps[57].Period.End, now).Generate());
             seed.UpcomingFlatFeeApp = OpportunityApplicationFactory.Accepted(2, 58, seed.UpcomingFlatFeeBooking);
 
-            seed.UpcomingVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Upcoming VenueHire Show", 30m, 200, 200, now).Generate());
+            seed.UpcomingVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Upcoming VenueHire Show", 30m, 200, 200, 1, opps[58].VenueId, opps[58].Period.Start, opps[58].Period.End, now).Generate());
             seed.UpcomingVenueHireApp = OpportunityApplicationFactory.Accepted(1, 59, seed.UpcomingVenueHireBooking);
 
             var applications = new OpportunityApplicationEntity[]
             {
                 // Apps 1-20: Complete (past concerts)
-                OpportunityApplicationFactory.Accepted(1, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Rockin' all Night", 15m, 120, 80, now.AddDays(-58)).Generate())),
-                OpportunityApplicationFactory.Accepted(2, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Non Stop Party", 12m, 110, 70, now.AddDays(-55)).Generate())),
-                OpportunityApplicationFactory.Accepted(3, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Super Mix", 18m, 130, 100, now.AddDays(-52)).Generate())),
-                OpportunityApplicationFactory.Accepted(4, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Hip-Hop till you flip-flop", 10m, 100, 60, now.AddDays(-49)).Generate())),
-                OpportunityApplicationFactory.Accepted(1, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Dance the night away", 25m, 140, 110, now.AddDays(-46)).Generate())),
-                OpportunityApplicationFactory.Accepted(2, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Dizzy One", 20m, 150, 90, now.AddDays(-43)).Generate())),
-                OpportunityApplicationFactory.Accepted(5, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Beers and Boombox", 30m, 170, 150, now.AddDays(-40)).Generate())),
-                OpportunityApplicationFactory.Accepted(6, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Rockin' Tonight!", 16m, 130, 100, now.AddDays(-37)).Generate())),
-                OpportunityApplicationFactory.Accepted(1, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Groovin' All Night", 14m, 115, 75, now.AddDays(-34)).Generate())),
-                OpportunityApplicationFactory.Accepted(2, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Nonstop Vibes", 22m, 135, 100, now.AddDays(-31)).Generate())),
-                OpportunityApplicationFactory.Accepted(7, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Electric Dreams", 13m, 125, 85, now.AddDays(-28)).Generate())),
-                OpportunityApplicationFactory.Accepted(8, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Beat Drop Frenzy", 11m, 120, 90, now.AddDays(-25)).Generate())),
-                OpportunityApplicationFactory.Accepted(1, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Summer Jam", 19m, 140, 110, now.AddDays(-22)).Generate())),
-                OpportunityApplicationFactory.Accepted(2, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Midnight Madness", 17m, 135, 105, now.AddDays(-19)).Generate())),
-                OpportunityApplicationFactory.Accepted(9, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Like a Boss", 21m, 145, 115, now.AddDays(-16)).Generate())),
-                OpportunityApplicationFactory.Accepted(10, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Lights and Sound", 18m, 140, 120, now.AddDays(-13)).Generate())),
-                OpportunityApplicationFactory.Accepted(1, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Rhythm Nation", 26m, 155, 130, now.AddDays(-10)).Generate())),
-                OpportunityApplicationFactory.Accepted(2, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Bass Drop Party", 15m, 120, 100, now.AddDays(-7)).Generate())),
-                OpportunityApplicationFactory.Accepted(11, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Chill & Thrill", 28m, 160, 145, now.AddDays(-4)).Generate())),
-                OpportunityApplicationFactory.Accepted(12, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Vibin' till Night", 24m, 150, 130, now.AddDays(-1)).Generate())),
+                OpportunityApplicationFactory.Accepted(1, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Rockin' all Night", 15m, 120, 80, 1, opps[0].VenueId, opps[0].Period.Start, opps[0].Period.End, now.AddDays(-58)).Generate())),
+                OpportunityApplicationFactory.Accepted(2, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Non Stop Party", 12m, 110, 70, 2, opps[0].VenueId, opps[0].Period.Start, opps[0].Period.End, now.AddDays(-55)).Generate())),
+                OpportunityApplicationFactory.Accepted(3, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Super Mix", 18m, 130, 100, 3, opps[0].VenueId, opps[0].Period.Start, opps[0].Period.End, now.AddDays(-52)).Generate())),
+                OpportunityApplicationFactory.Accepted(4, 1, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Hip-Hop till you flip-flop", 10m, 100, 60, 4, opps[0].VenueId, opps[0].Period.Start, opps[0].Period.End, now.AddDays(-49)).Generate())),
+                OpportunityApplicationFactory.Accepted(1, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Dance the night away", 25m, 140, 110, 1, opps[1].VenueId, opps[1].Period.Start, opps[1].Period.End, now.AddDays(-46)).Generate())),
+                OpportunityApplicationFactory.Accepted(2, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Dizzy One", 20m, 150, 90, 2, opps[1].VenueId, opps[1].Period.Start, opps[1].Period.End, now.AddDays(-43)).Generate())),
+                OpportunityApplicationFactory.Accepted(5, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Beers and Boombox", 30m, 170, 150, 5, opps[1].VenueId, opps[1].Period.Start, opps[1].Period.End, now.AddDays(-40)).Generate())),
+                OpportunityApplicationFactory.Accepted(6, 2, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Rockin' Tonight!", 16m, 130, 100, 6, opps[1].VenueId, opps[1].Period.Start, opps[1].Period.End, now.AddDays(-37)).Generate())),
+                OpportunityApplicationFactory.Accepted(1, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Groovin' All Night", 14m, 115, 75, 1, opps[2].VenueId, opps[2].Period.Start, opps[2].Period.End, now.AddDays(-34)).Generate())),
+                OpportunityApplicationFactory.Accepted(2, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Nonstop Vibes", 22m, 135, 100, 2, opps[2].VenueId, opps[2].Period.Start, opps[2].Period.End, now.AddDays(-31)).Generate())),
+                OpportunityApplicationFactory.Accepted(7, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Electric Dreams", 13m, 125, 85, 7, opps[2].VenueId, opps[2].Period.Start, opps[2].Period.End, now.AddDays(-28)).Generate())),
+                OpportunityApplicationFactory.Accepted(8, 3, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Beat Drop Frenzy", 11m, 120, 90, 8, opps[2].VenueId, opps[2].Period.Start, opps[2].Period.End, now.AddDays(-25)).Generate())),
+                OpportunityApplicationFactory.Accepted(1, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Summer Jam", 19m, 140, 110, 1, opps[3].VenueId, opps[3].Period.Start, opps[3].Period.End, now.AddDays(-22)).Generate())),
+                OpportunityApplicationFactory.Accepted(2, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Midnight Madness", 17m, 135, 105, 2, opps[3].VenueId, opps[3].Period.Start, opps[3].Period.End, now.AddDays(-19)).Generate())),
+                OpportunityApplicationFactory.Accepted(9, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Like a Boss", 21m, 145, 115, 9, opps[3].VenueId, opps[3].Period.Start, opps[3].Period.End, now.AddDays(-16)).Generate())),
+                OpportunityApplicationFactory.Accepted(10, 4, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Lights and Sound", 18m, 140, 120, 10, opps[3].VenueId, opps[3].Period.Start, opps[3].Period.End, now.AddDays(-13)).Generate())),
+                OpportunityApplicationFactory.Accepted(1, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Rhythm Nation", 26m, 155, 130, 1, opps[4].VenueId, opps[4].Period.Start, opps[4].Period.End, now.AddDays(-10)).Generate())),
+                OpportunityApplicationFactory.Accepted(2, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Bass Drop Party", 15m, 120, 100, 2, opps[4].VenueId, opps[4].Period.Start, opps[4].Period.End, now.AddDays(-7)).Generate())),
+                OpportunityApplicationFactory.Accepted(11, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Chill & Thrill", 28m, 160, 145, 11, opps[4].VenueId, opps[4].Period.Start, opps[4].Period.End, now.AddDays(-4)).Generate())),
+                OpportunityApplicationFactory.Accepted(12, 5, ConcertBookingFactory.Complete(ConcertFaker.GetFaker("Vibin' till Night", 24m, 150, 130, 12, opps[4].VenueId, opps[4].Period.Start, opps[4].Period.End, now.AddDays(-1)).Generate())),
                 // Apps 21-26: Accepted (upcoming concerts)
                 seed.ConfirmedApp,
-                OpportunityApplicationFactory.Accepted(2, 6, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Rock Your Soul", 23m, 130, 100, now.AddDays(5)).Generate())),
-                OpportunityApplicationFactory.Accepted(13, 6, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Danceaway", 29m, 155, 140, now.AddDays(8)).Generate())),
-                OpportunityApplicationFactory.Accepted(14, 6, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Bassline Groove Beats", 10m, 110, 70, now.AddDays(11)).Generate())),
-                OpportunityApplicationFactory.Accepted(1, 7, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Once in a Lifetime!", 15m, 125, 90, now.AddDays(14)).Generate())),
-                OpportunityApplicationFactory.Accepted(2, 7, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Jungle Fever", 30m, 180, 170, now.AddDays(17)).Generate())),
+                OpportunityApplicationFactory.Accepted(2, 6, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Rock Your Soul", 23m, 130, 100, 2, opps[5].VenueId, opps[5].Period.Start, opps[5].Period.End, now.AddDays(5)).Generate())),
+                OpportunityApplicationFactory.Accepted(13, 6, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Danceaway", 29m, 155, 140, 13, opps[5].VenueId, opps[5].Period.Start, opps[5].Period.End, now.AddDays(8)).Generate())),
+                OpportunityApplicationFactory.Accepted(14, 6, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Bassline Groove Beats", 10m, 110, 70, 14, opps[5].VenueId, opps[5].Period.Start, opps[5].Period.End, now.AddDays(11)).Generate())),
+                OpportunityApplicationFactory.Accepted(1, 7, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Once in a Lifetime!", 15m, 125, 90, 1, opps[6].VenueId, opps[6].Period.Start, opps[6].Period.End, now.AddDays(14)).Generate())),
+                OpportunityApplicationFactory.Accepted(2, 7, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Jungle Fever", 30m, 180, 170, 2, opps[6].VenueId, opps[6].Period.Start, opps[6].Period.End, now.AddDays(17)).Generate())),
                 // Apps 27-34: Pending (no concert)
                 OpportunityApplicationFactory.Create(15, 7),
                 OpportunityApplicationFactory.Create(16, 7),
@@ -239,7 +240,7 @@ internal class ConcertDevSeeder : IDevSeeder
                 OpportunityApplicationFactory.Create(17, 40),
                 OpportunityApplicationFactory.Create(18, 41),
                 // App 35: Accepted (upcoming concert)
-                OpportunityApplicationFactory.Accepted(1, 14, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie Nights", 20m, 100, 80, now.AddDays(6)).Generate())),
+                OpportunityApplicationFactory.Accepted(1, 14, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie Nights", 20m, 100, 80, 1, opps[13].VenueId, opps[13].Period.Start, opps[13].Period.End, now.AddDays(6)).Generate())),
                 // Apps 36-38: Pending (no concert)
                 OpportunityApplicationFactory.Create(2, 14),
                 OpportunityApplicationFactory.Create(3, 14),
@@ -250,12 +251,12 @@ internal class ConcertDevSeeder : IDevSeeder
                 seed.DoorSplitApp,
                 OpportunityApplicationFactory.Create(7, 15),
                 // App 42: Accepted (upcoming concert)
-                OpportunityApplicationFactory.Accepted(8, 15, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Bass in the Air", 30m, 140, 120, now.AddDays(18)).Generate())),
+                OpportunityApplicationFactory.Accepted(8, 15, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Bass in the Air", 30m, 140, 120, 8, opps[14].VenueId, opps[14].Period.Start, opps[14].Period.End, now.AddDays(18)).Generate())),
                 // Apps 43-44: Pending (no concert)
                 OpportunityApplicationFactory.Create(9, 16),
                 OpportunityApplicationFactory.Create(10, 16),
                 // App 45: Accepted (upcoming concert)
-                OpportunityApplicationFactory.Accepted(11, 16, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Jumpin and thumpin", 15m, 100, 80, now.AddDays(22)).Generate())),
+                OpportunityApplicationFactory.Accepted(11, 16, ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Jumpin and thumpin", 15m, 100, 80, 11, opps[15].VenueId, opps[15].Period.Start, opps[15].Period.End, now.AddDays(22)).Generate())),
                 // Apps 46-48: Pending (no concert)
                 OpportunityApplicationFactory.Create(12, 16),
                 seed.VersusApp,

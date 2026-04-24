@@ -271,6 +271,8 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BookingId = table.Column<int>(type: "int", nullable: false),
+                    ArtistId = table.Column<int>(type: "int", nullable: false),
+                    VenueId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     About = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BannerUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -278,6 +280,8 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalTickets = table.Column<int>(type: "int", nullable: false),
                     AvailableTickets = table.Column<int>(type: "int", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DatePosted = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Location = table.Column<Point>(type: "geography", nullable: true)
                 },
@@ -285,9 +289,19 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("PK_Concerts", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Concerts_ArtistReadModels_ArtistId",
+                        column: x => x.ArtistId,
+                        principalTable: "ArtistReadModels",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_Concerts_ConcertBookings_BookingId",
                         column: x => x.BookingId,
                         principalTable: "ConcertBookings",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Concerts_VenueReadModels_VenueId",
+                        column: x => x.VenueId,
+                        principalTable: "VenueReadModels",
                         principalColumn: "Id");
                 });
 
@@ -405,10 +419,20 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                 column: "ConcertId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Concerts_ArtistId",
+                table: "Concerts",
+                column: "ArtistId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Concerts_BookingId",
                 table: "Concerts",
                 column: "BookingId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Concerts_VenueId",
+                table: "Concerts",
+                column: "VenueId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Opportunities_VenueId",
@@ -463,6 +487,10 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Concerts_ArtistReadModels_ArtistId",
+                table: "Concerts");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_OpportunityApplications_ArtistReadModels_ArtistId",
                 table: "OpportunityApplications");
@@ -519,13 +547,13 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                 name: "Opportunities");
 
             migrationBuilder.DropTable(
-                name: "VenueReadModels");
-
-            migrationBuilder.DropTable(
                 name: "Concerts");
 
             migrationBuilder.DropTable(
                 name: "ConcertBookings");
+
+            migrationBuilder.DropTable(
+                name: "VenueReadModels");
 
             migrationBuilder.DropTable(
                 name: "Tickets");

@@ -8,13 +8,13 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class ArtistHeaderRepository : IArtistHeaderRepository
 {
-    private readonly SearchDbContext context;
+    private readonly ISearchDbContext context;
     private readonly IArtistSearchSpecification searchSpecification;
     private readonly IGeometrySpecification<ArtistSearchModel> geometrySpecification;
     private readonly ISortSpecification<ArtistHeaderDto> sortSpecification;
 
     public ArtistHeaderRepository(
-        SearchDbContext context,
+        ISearchDbContext context,
         IArtistSearchSpecification searchSpecification,
         IGeometrySpecification<ArtistSearchModel> geometrySpecification,
         ISortSpecification<ArtistHeaderDto> sortSpecification)
@@ -36,8 +36,7 @@ internal class ArtistHeaderRepository : IArtistHeaderRepository
     }
 
     public async Task<IEnumerable<ArtistHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Artists.AsNoTracking()
-            .OrderBy(a => a.Id)
+        await context.Artists            .OrderBy(a => a.Id)
             .ToHeaderDtos(context.ArtistRatingProjections.AsNoTracking())
             .Take(amount)
             .ToListAsync();

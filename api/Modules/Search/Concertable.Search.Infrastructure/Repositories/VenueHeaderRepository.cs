@@ -8,13 +8,13 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class VenueHeaderRepository : IVenueHeaderRepository
 {
-    private readonly SearchDbContext context;
+    private readonly ISearchDbContext context;
     private readonly IVenueSearchSpecification searchSpecification;
     private readonly IGeometrySpecification<VenueSearchModel> geometrySpecification;
     private readonly ISortSpecification<VenueHeaderDto> sortSpecification;
 
     public VenueHeaderRepository(
-        SearchDbContext context,
+        ISearchDbContext context,
         IVenueSearchSpecification searchSpecification,
         IGeometrySpecification<VenueSearchModel> geometrySpecification,
         ISortSpecification<VenueHeaderDto> sortSpecification)
@@ -36,8 +36,7 @@ internal class VenueHeaderRepository : IVenueHeaderRepository
     }
 
     public async Task<IEnumerable<VenueHeaderDto>> GetByAmountAsync(int amount) =>
-        await context.Venues.AsNoTracking()
-            .OrderBy(v => v.Id)
+        await context.Venues            .OrderBy(v => v.Id)
             .ToHeaderDtos(context.VenueRatingProjections.AsNoTracking())
             .Take(amount)
             .ToListAsync();

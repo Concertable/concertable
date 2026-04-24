@@ -1,35 +1,36 @@
 using Concertable.Core.Parameters;
 using Concertable.Search.Application.Interfaces;
+using Concertable.Search.Domain.Models;
 
 namespace Concertable.Search.Infrastructure.Specifications;
 
 internal class ConcertSearchSpecification : IConcertSearchSpecification
 {
-    private readonly ISearchSpecification<ConcertEntity> searchSpecification;
+    private readonly ISearchSpecification<ConcertSearchModel> searchSpecification;
     private readonly TimeProvider timeProvider;
 
     public ConcertSearchSpecification(
-        ISearchSpecification<ConcertEntity> searchSpecification,
+        ISearchSpecification<ConcertSearchModel> searchSpecification,
         TimeProvider timeProvider)
     {
         this.searchSpecification = searchSpecification;
         this.timeProvider = timeProvider;
     }
 
-    public IQueryable<ConcertEntity> Apply(IQueryable<ConcertEntity> query, SearchParams searchParams)
+    public IQueryable<ConcertSearchModel> Apply(IQueryable<ConcertSearchModel> query, SearchParams searchParams)
     {
         query = query
             .Where(e => e.DatePosted != null)
-            .Where(e => e.Booking.Application.Opportunity.Period.End > timeProvider.GetUtcNow());
+            .Where(e => e.EndDate > timeProvider.GetUtcNow());
 
         if (searchParams.From != null)
-            query = query.Where(e => DateOnly.FromDateTime(e.Booking.Application.Opportunity.Period.Start) >= searchParams.From);
+            query = query.Where(e => DateOnly.FromDateTime(e.StartDate) >= searchParams.From);
 
         if (searchParams.GenreIds?.Any() == true)
             query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
 
         if (searchParams.ShowHistory == false)
-            query = query.Where(e => e.Booking.Application.Opportunity.Period.Start >= timeProvider.GetUtcNow());
+            query = query.Where(e => e.StartDate >= timeProvider.GetUtcNow());
 
         if (searchParams.ShowSold == false)
             query = query.Where(e => e.AvailableTickets > 0);

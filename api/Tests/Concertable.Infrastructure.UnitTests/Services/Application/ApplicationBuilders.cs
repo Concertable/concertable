@@ -8,7 +8,7 @@ public static class ApplicationBuilders
     {
         var app = OpportunityApplicationEntity.Create(artistId, opportunityId);
         var booking = ConcertBookingEntity.Create(0);
-        var concert = ConcertEntity.CreateDraft(0, "Test Concert", "Test About", []);
+        var concert = ConcertEntity.CreateDraft(0, artistId, 1, DateTime.UtcNow, DateTime.UtcNow.AddHours(2), "Test Concert", "Test About", []);
         booking.Confirm(concert);
         app.Accept(booking);
         return app;

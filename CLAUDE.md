@@ -76,6 +76,12 @@ controllers for those unextracted modules — that's expected, not drift.
   modules extract).
 - Composite keys, owned types, `geography` columns, etc. configured via Fluent API so Domain stays
   free of EF Core attributes beyond `System.ComponentModel.DataAnnotations.Schema` BCL attributes.
+- **Migration history is disposable during the refactor.** Seeders own fixture data, so migration
+  files don't need to preserve incremental change history. When schema drifts, **delete every
+  module's `Migrations/` folder and re-scaffold a fresh `InitialCreate` per context** rather than
+  adding additive migrations. Scaffold order: Shared → Identity → Artist → Venue → Concert →
+  AppDb (modules before AppDb; AppDb last). This stays in force until production writes matter;
+  at that point switch to additive-only migrations and note it here.
 
 ## Internal enforcement
 

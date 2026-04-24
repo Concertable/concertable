@@ -1,4 +1,3 @@
-using Concertable.Concert.Domain;
 using Concertable.Search.Application.Interfaces;
 using Concertable.Search.Domain.Models;
 using Concertable.Search.Infrastructure.Data;
@@ -9,16 +8,16 @@ namespace Concertable.Search.Infrastructure.Repositories;
 
 internal class HeaderAutocompleteRepository : IHeaderAutocompleteRepository
 {
-    private readonly SearchDbContext context;
+    private readonly ISearchDbContext context;
     private readonly ISearchSpecification<ArtistSearchModel> artistSearchSpecification;
     private readonly ISearchSpecification<VenueSearchModel> venueSearchSpecification;
-    private readonly ISearchSpecification<ConcertEntity> concertSearchSpecification;
+    private readonly ISearchSpecification<ConcertSearchModel> concertSearchSpecification;
 
     public HeaderAutocompleteRepository(
-        SearchDbContext context,
+        ISearchDbContext context,
         ISearchSpecification<ArtistSearchModel> artistSearchSpecification,
         ISearchSpecification<VenueSearchModel> venueSearchSpecification,
-        ISearchSpecification<ConcertEntity> concertSearchSpecification)
+        ISearchSpecification<ConcertSearchModel> concertSearchSpecification)
     {
         this.context = context;
         this.artistSearchSpecification = artistSearchSpecification;
@@ -28,17 +27,17 @@ internal class HeaderAutocompleteRepository : IHeaderAutocompleteRepository
 
     public async Task<IEnumerable<AutocompleteDto>> GetAsync(string? searchTerm) =>
         await artistSearchSpecification
-            .Apply(context.Artists.AsNoTracking(), searchTerm)
+            .Apply(context.Artists, searchTerm)
             .ToAutocompleteDtos()
             .Take(20)
             .Concat(
                 venueSearchSpecification
-                    .Apply(context.Venues.AsNoTracking(), searchTerm)
+                    .Apply(context.Venues, searchTerm)
                     .ToAutocompleteDtos()
                     .Take(20))
             .Concat(
                 concertSearchSpecification
-                    .Apply(context.Concerts.AsNoTracking(), searchTerm)
+                    .Apply(context.Concerts, searchTerm)
                     .ToAutocompleteDtos()
                     .Take(20))
             .OrderBy(r => r.Name)

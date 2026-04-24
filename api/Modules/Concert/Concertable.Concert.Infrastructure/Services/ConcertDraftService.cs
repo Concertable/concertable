@@ -37,6 +37,10 @@ internal class ConcertDraftService : IConcertDraftService
 
         var concert = ConcertEntity.CreateDraft(
             bookingConcert.Id,
+            artist.Id,
+            venue.Id,
+            opportunity.Period.Start,
+            opportunity.Period.End,
             $"{artist.Name} performing at {venue.Name}",
             venue.About,
             matchingGenreIds);

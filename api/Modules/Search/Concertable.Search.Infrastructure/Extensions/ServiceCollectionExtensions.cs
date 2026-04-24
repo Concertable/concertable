@@ -21,13 +21,14 @@ public static class ServiceCollectionExtensions
             opt.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
                 sqlOpt => sqlOpt.UseNetTopologySuite()));
+        services.AddScoped<ISearchDbContext>(sp => sp.GetRequiredService<SearchDbContext>());
         services.AddSingleton<IGeometrySpecification<ArtistSearchModel>, GeometrySpecification<ArtistSearchModel>>();
         services.AddSingleton<IGeometrySpecification<VenueSearchModel>, GeometrySpecification<VenueSearchModel>>();
-        services.AddSingleton<IGeometrySpecification<ConcertEntity>, GeometrySpecification<ConcertEntity>>();
+        services.AddSingleton<IGeometrySpecification<ConcertSearchModel>, GeometrySpecification<ConcertSearchModel>>();
 
         services.AddSingleton<ISearchSpecification<ArtistSearchModel>, SearchSpecification<ArtistSearchModel>>();
         services.AddSingleton<ISearchSpecification<VenueSearchModel>, SearchSpecification<VenueSearchModel>>();
-        services.AddSingleton<ISearchSpecification<ConcertEntity>, SearchSpecification<ConcertEntity>>();
+        services.AddSingleton<ISearchSpecification<ConcertSearchModel>, SearchSpecification<ConcertSearchModel>>();
 
         services.AddSingleton<IArtistSearchSpecification, ArtistSearchSpecification>();
         services.AddSingleton<IVenueSearchSpecification, VenueSearchSpecification>();

@@ -1,8 +1,9 @@
 using Concertable.Core.Parameters;
+using Concertable.Search.Domain.Models;
 
 namespace Concertable.Search.Application.Interfaces;
 
 internal interface IConcertSearchSpecification
 {
-    IQueryable<ConcertEntity> Apply(IQueryable<ConcertEntity> query, SearchParams searchParams);
+    IQueryable<ConcertSearchModel> Apply(IQueryable<ConcertSearchModel> query, SearchParams searchParams);
 }

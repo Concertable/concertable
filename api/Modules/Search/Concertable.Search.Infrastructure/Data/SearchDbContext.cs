@@ -1,7 +1,6 @@
 using Concertable.Artist.Domain;
 using Concertable.Artist.Infrastructure.Data.Configurations;
 using Concertable.Concert.Domain;
-using Concertable.Concert.Infrastructure.Data;
 using Concertable.Data.Infrastructure;
 using Concertable.Search.Domain.Models;
 using Concertable.Shared;
@@ -12,18 +11,35 @@ using Microsoft.EntityFrameworkCore;
 namespace Concertable.Search.Infrastructure.Data;
 
 internal class SearchDbContext(DbContextOptions<SearchDbContext> options)
-    : DbContextBase(options)
+    : DbContextBase(options), ISearchDbContext
 {
-    public DbSet<ArtistSearchModel> Artists => Set<ArtistSearchModel>();
-    public DbSet<VenueSearchModel> Venues => Set<VenueSearchModel>();
-    public DbSet<ConcertEntity> Concerts => Set<ConcertEntity>();
-    public DbSet<ArtistRatingProjection> ArtistRatingProjections => Set<ArtistRatingProjection>();
-    public DbSet<VenueRatingProjection> VenueRatingProjections => Set<VenueRatingProjection>();
-    public DbSet<ConcertRatingProjection> ConcertRatingProjections => Set<ConcertRatingProjection>();
+    IQueryable<ArtistSearchModel> ISearchDbContext.Artists => Set<ArtistSearchModel>();
+    IQueryable<VenueSearchModel> ISearchDbContext.Venues => Set<VenueSearchModel>();
+    IQueryable<ConcertSearchModel> ISearchDbContext.Concerts => Set<ConcertSearchModel>();
+    IQueryable<ArtistRatingProjection> ISearchDbContext.ArtistRatingProjections => Set<ArtistRatingProjection>();
+    IQueryable<VenueRatingProjection> ISearchDbContext.VenueRatingProjections => Set<VenueRatingProjection>();
+    IQueryable<ConcertRatingProjection> ISearchDbContext.ConcertRatingProjections => Set<ConcertRatingProjection>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    }
+
+    public override int SaveChanges() =>
+        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
+        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
+        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) =>
+        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConcertDbContext).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SearchDbContext).Assembly);
         modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
 
@@ -36,5 +52,11 @@ internal class SearchDbContext(DbContextOptions<SearchDbContext> options)
 
         modelBuilder.Entity<ArtistRatingProjection>().ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
         modelBuilder.Entity<VenueRatingProjection>().ToTable("VenueRatingProjections", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ConcertRatingProjection>(b =>
+        {
+            b.ToTable("ConcertRatingProjections", t => t.ExcludeFromMigrations());
+            b.HasKey(p => p.ConcertId);
+        });
     }
 }
