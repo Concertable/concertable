@@ -4,6 +4,7 @@ global using Concertable.Identity.Contracts;
 global using Concertable.Venue.Contracts;
 global using Concertable.Concert.Contracts;
 global using Concertable.Concert.Domain;
+global using Concertable.Contract.Abstractions;
 global using Concertable.Concert.Application.Interfaces;
 global using Concertable.Concert.Application.DTOs;
 global using Concertable.Concert.Application.Requests;

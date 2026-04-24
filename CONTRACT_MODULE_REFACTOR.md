@@ -5,8 +5,15 @@
 > - ✅ Step 1 — 5 Contract projects scaffolded under `api/Modules/Contract/`. IVT from
 >   `Concert.Infrastructure → Contract.Infrastructure` wired (ride-along ConcertDbContext access).
 >   Build green.
-> - ⏭ **Next: Step 2** — Move `ContractType` + `PaymentMethod` enums from
->   `Concert.Domain/Enums/` → `Contract.Abstractions/`.
+> - ✅ Step 2 — `ContractType` + `PaymentMethod` moved from `Concert.Domain/Enums/` to
+>   `Contract.Abstractions/`. Namespace `Concertable.Contract.Abstractions`. Concert.Domain
+>   gained Contract.Abstractions project ref + global using; Concert.Application/Infrastructure/Api
+>   + legacy Application/Infrastructure/Web/Workers/Core + 3 test projects gained
+>   `global using Concertable.Contract.Abstractions;`. Full solution build green (0 errors).
+> - ⏭ **Next: Step 3** — Move `ContractEntity` hierarchy + `IContract` DTOs to
+>   `Contract.Domain` / `Contract.Abstractions`. Drop both nav directions, add explicit
+>   `OpportunityId` column (PK split per second-pass lock), drop `Dto` suffix on subtype
+>   record names.
 >
 > **STATUS: DRAFT — significant redesign 2026-04-24 (afternoon). Working document, still iterating.**
 >

@@ -1,4 +1,4 @@
-namespace Concertable.Concert.Domain;
+namespace Concertable.Contract.Abstractions;
 
 public enum ContractType
 {
