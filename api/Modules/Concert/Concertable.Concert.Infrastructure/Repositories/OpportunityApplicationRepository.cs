@@ -20,8 +20,6 @@ internal class OpportunityApplicationRepository : IdModuleRepository<Opportunity
                 .ThenInclude(a => a.Genres)
                     .ThenInclude(g => g.Genre)
             .Include(ca => ca.Opportunity)
-                .ThenInclude(o => o.Contract)
-            .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.OpportunityGenres)
                     .ThenInclude(og => og.Genre)
             .ToListAsync();
@@ -59,8 +57,6 @@ internal class OpportunityApplicationRepository : IdModuleRepository<Opportunity
             .Include(ca => ca.Artist)
                 .ThenInclude(a => a.Genres)
                     .ThenInclude(g => g.Genre)
-            .Include(ca => ca.Opportunity)
-                .ThenInclude(o => o.Contract)
             .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.OpportunityGenres)
                     .ThenInclude(og => og.Genre)

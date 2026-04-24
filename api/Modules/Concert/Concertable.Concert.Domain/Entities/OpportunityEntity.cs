@@ -8,19 +8,19 @@ public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntit
     public int VenueId { get; set; }
     public DateRange Period { get; private set; } = null!;
     public VenueReadModel Venue { get; set; } = null!;
-    public ContractEntity Contract { get; private set; } = null!;
+    public int ContractId { get; private set; }
     public HashSet<OpportunityApplicationEntity> Applications { get; private set; } = [];
     public HashSet<OpportunityGenreEntity> OpportunityGenres { get; private set; } = [];
 
     HashSet<OpportunityGenreEntity> IHasGenreJoins<OpportunityGenreEntity>.GenreJoins => OpportunityGenres;
 
-    public static OpportunityEntity Create(int venueId, DateRange period, ContractEntity contract, IEnumerable<int>? genreIds = null)
+    public static OpportunityEntity Create(int venueId, DateRange period, int contractId, IEnumerable<int>? genreIds = null)
     {
         var opportunity = new OpportunityEntity
         {
             VenueId = venueId,
             Period = period,
-            Contract = contract
+            ContractId = contractId
         };
 
         if (genreIds is not null)
@@ -29,10 +29,10 @@ public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntit
         return opportunity;
     }
 
-    public void Update(DateRange period, ContractEntity contract, IEnumerable<int> genreIds)
+    public void Update(DateRange period, int contractId, IEnumerable<int> genreIds)
     {
         Period = period;
-        Contract = contract;
+        ContractId = contractId;
         SyncGenres(genreIds);
     }
 

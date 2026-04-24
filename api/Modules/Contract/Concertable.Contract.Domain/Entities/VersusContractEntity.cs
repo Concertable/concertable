@@ -1,4 +1,4 @@
-namespace Concertable.Concert.Domain;
+namespace Concertable.Contract.Domain;
 
 public class VersusContractEntity : ContractEntity
 {
@@ -8,11 +8,11 @@ public class VersusContractEntity : ContractEntity
     public decimal Guarantee { get; private set; }
     public decimal ArtistDoorPercent { get; private set; }
 
-    public static VersusContractEntity Create(decimal guarantee, decimal artistDoorPercent, PaymentMethod paymentMethod)
+    public static VersusContractEntity Create(int opportunityId, decimal guarantee, decimal artistDoorPercent, PaymentMethod paymentMethod)
     {
         ValidateGuarantee(guarantee);
         ValidateArtistDoorPercent(artistDoorPercent);
-        return new() { Guarantee = guarantee, ArtistDoorPercent = artistDoorPercent, PaymentMethod = paymentMethod };
+        return new() { OpportunityId = opportunityId, Guarantee = guarantee, ArtistDoorPercent = artistDoorPercent, PaymentMethod = paymentMethod };
     }
 
     public void Update(decimal guarantee, decimal artistDoorPercent, PaymentMethod paymentMethod)

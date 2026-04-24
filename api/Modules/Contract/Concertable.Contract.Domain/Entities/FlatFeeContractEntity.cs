@@ -1,4 +1,4 @@
-namespace Concertable.Concert.Domain;
+namespace Concertable.Contract.Domain;
 
 public class FlatFeeContractEntity : ContractEntity
 {
@@ -7,10 +7,10 @@ public class FlatFeeContractEntity : ContractEntity
     public override ContractType ContractType => ContractType.FlatFee;
     public decimal Fee { get; private set; }
 
-    public static FlatFeeContractEntity Create(decimal fee, PaymentMethod paymentMethod)
+    public static FlatFeeContractEntity Create(int opportunityId, decimal fee, PaymentMethod paymentMethod)
     {
         ValidateFee(fee);
-        return new() { Fee = fee, PaymentMethod = paymentMethod };
+        return new() { OpportunityId = opportunityId, Fee = fee, PaymentMethod = paymentMethod };
     }
 
     public void Update(decimal fee, PaymentMethod paymentMethod)
