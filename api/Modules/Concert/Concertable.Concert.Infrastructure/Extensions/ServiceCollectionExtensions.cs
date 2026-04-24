@@ -74,10 +74,6 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
         services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
 
-        // Contract strategy factory/resolver (impls still in legacy Infrastructure — TEMPORARY)
-        services.AddScoped(typeof(IContractStrategyFactory<>), typeof(ContractStrategyFactory<>));
-        services.AddScoped(typeof(IContractStrategyResolver<>), typeof(ContractStrategyResolver<>));
-
         // Webhook plumbing (WebhookStrategyFactory still legacy — stays in Web AddContracts)
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
         services.AddScoped<IWebhookQueue, WebhookQueue>();
