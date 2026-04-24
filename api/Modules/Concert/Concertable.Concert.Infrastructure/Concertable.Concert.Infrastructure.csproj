@@ -23,6 +23,12 @@
     <ProjectReference Include="..\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
     <ProjectReference Include="..\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
+    <!-- §3.3 ride-along: Contract entities are configured by ContractEntityConfiguration in
+         Contract.Application, applied here on ConcertDbContext via ConcertConfigurationProvider.
+         Configs live in Contract.Application (not Contract.Infrastructure) to avoid the cycle
+         Concert.Infrastructure ↔ Contract.Infrastructure (Contract.Infrastructure refs Concert
+         .Infrastructure for ConcertDbContext). -->
+    <ProjectReference Include="..\..\Contract\Concertable.Contract.Application\Concertable.Contract.Application.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />

@@ -84,7 +84,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
         services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
-        services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<IConcertBookingRepository, ConcertBookingRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
