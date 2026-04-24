@@ -42,9 +42,20 @@
 >   (impl lands Step 7). Web `Program.cs` + Workers `ServiceCollectionExtensions.cs` call
 >   `AddContractApi()` / `AddContractModule()`. Project refs added: Web→Contract.Api,
 >   Workers→Contract.Infrastructure.
-> - ⏭ **Next: Step 7** — Scaffold `ContractModule` impl + `IContractMapper` / `ContractMapper`
->   in `Contract.Application` (internal). Register both + `IContractModule` in
->   `AddContractModule()`. Per `feedback_no_ef_in_facade.md`, no inline EF.
+> - ✅ Step 7 — `IContractMapper` (internal) + `ContractMapper` impl (single `ToContract`
+>   method, switch on concrete `ContractEntity` subtype → matching `IContract` DTO) added to
+>   `Contract.Application/Interfaces/` + `/Mappers/`. `ContractModule` impl added to
+>   `Contract.Infrastructure/` (primary-ctor `IContractRepository` + `IContractMapper`,
+>   delegates `GetByOpportunityAsync` to repo + maps result; no inline EF per
+>   `feedback_no_ef_in_facade.md`). All three registered in `AddContractModule()`.
+>   Contract.Infrastructure builds green; pre-existing 18 cascade errors remain in
+>   Concert.Application mappers / `Data.Application/IReadDbContext.cs` / Seeding
+>   `OpportunityFactory.cs` (Step 9 work).
+> - ⏭ **Next: Step 8** — Remove `Contract` from `ApplicationDbContext`. Drop
+>   `DbSet<ContractEntity>` (and any subtype DbSets) + `ApplyConfiguration(new
+>   ContractConfigurations())` calls. Decide whether `ApplicationDbContext` retains
+>   `ContractEntity` model awareness (likely yes via `ToTable("Contracts",
+>   t => t.ExcludeFromMigrations())` for `OpportunityEntity.ContractId` FK metadata).
 >
 > **STATUS: DRAFT — significant redesign 2026-04-24 (afternoon). Working document, still iterating.**
 >
