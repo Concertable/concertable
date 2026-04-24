@@ -1,4 +1,5 @@
 using Concertable.Core.Enums;
+using Concertable.Data.Infrastructure.Data;
 using Concertable.Search.Application;
 using Concertable.Search.Domain.Models;
 using Concertable.Search.Application.Validators;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
                 configuration.GetConnectionString("DefaultConnection"),
                 sqlOpt => sqlOpt.UseNetTopologySuite()));
         services.AddScoped<ISearchDbContext>(sp => sp.GetRequiredService<SearchDbContext>());
+        services.AddSingleton<SearchConfigurationProvider>();
         services.AddSingleton<IGeometrySpecification<ArtistSearchModel>, GeometrySpecification<ArtistSearchModel>>();
         services.AddSingleton<IGeometrySpecification<VenueSearchModel>, GeometrySpecification<VenueSearchModel>>();
         services.AddSingleton<IGeometrySpecification<ConcertSearchModel>, GeometrySpecification<ConcertSearchModel>>();

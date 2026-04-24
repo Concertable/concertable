@@ -60,6 +60,9 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IDomainEventHandler<UserLocationUpdatedDomainEvent>, UserLocationUpdatedDomainEventHandler>();
 
+        services.AddSingleton<IdentityConfigurationProvider>();
+        services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<IdentityConfigurationProvider>());
+
         services.AddValidatorsFromAssemblyContaining<UpdateLocationRequestValidator>();
 
         return services;

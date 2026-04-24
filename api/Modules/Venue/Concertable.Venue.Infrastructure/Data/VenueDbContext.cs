@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Venue.Infrastructure.Data;
 
-internal class VenueDbContext(DbContextOptions<VenueDbContext> options)
+internal class VenueDbContext(
+    DbContextOptions<VenueDbContext> options,
+    VenueConfigurationProvider provider)
     : DbContextBase(options)
 {
     public DbSet<VenueEntity> Venues => Set<VenueEntity>();
@@ -13,6 +15,6 @@ internal class VenueDbContext(DbContextOptions<VenueDbContext> options)
     {
         modelBuilder.HasDefaultSchema(Schema.Name);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(VenueDbContext).Assembly);
+        provider.Configure(modelBuilder);
     }
 }

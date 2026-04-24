@@ -100,6 +100,406 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BannerUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("County")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Town")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("ArtistReadModels", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModelGenre", b =>
+                {
+                    b.Property<int>("ArtistReadModelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ArtistReadModelId", "GenreId");
+
+                    b.HasIndex("GenreId");
+
+                    b.ToTable("ArtistReadModelGenres", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertBookingEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentMethodId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId")
+                        .IsUnique();
+
+                    b.ToTable("ConcertBookings", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ArtistId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AvailableTickets")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BannerUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DatePosted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Point>("Location")
+                        .HasColumnType("geography");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TotalTickets")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.HasIndex("BookingId")
+                        .IsUnique();
+
+                    b.HasIndex("VenueId");
+
+                    b.ToTable("Concerts", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertGenreEntity", b =>
+                {
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConcertId", "GenreId");
+
+                    b.HasIndex("GenreId");
+
+                    b.ToTable("ConcertGenres", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertImageEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConcertId");
+
+                    b.ToTable("ConcertImages", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertRatingProjection", b =>
+                {
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("AverageRating")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConcertId");
+
+                    b.ToTable("ConcertRatingProjections", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ContractEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contracts", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+
+                    b.UseTptMappingStrategy();
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityApplicationEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArtistId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OpportunityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.HasIndex("OpportunityId", "ArtistId")
+                        .IsUnique();
+
+                    b.ToTable("OpportunityApplications", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VenueId");
+
+                    b.ToTable("Opportunities", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityGenreEntity", b =>
+                {
+                    b.Property<int>("OpportunityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OpportunityId", "GenreId");
+
+                    b.HasIndex("GenreId");
+
+                    b.ToTable("OpportunityGenres", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ReviewEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Details")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte>("Stars")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("Reviews", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.TicketEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PurchaseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("QrCode")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int?>("ReviewId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConcertId");
+
+                    b.HasIndex("ReviewId");
+
+                    b.ToTable("Tickets", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.VenueReadModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("County")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Point>("Location")
+                        .HasColumnType("geography");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Town")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("VenueReadModels", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
             modelBuilder.Entity("Concertable.Core.Entities.GenrePreferenceEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -491,6 +891,61 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Concertable.Concert.Domain.DoorSplitContractEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+
+                    b.Property<decimal>("ArtistDoorPercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable("DoorSplitContracts", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.FlatFeeContractEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+
+                    b.Property<decimal>("Fee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable("FlatFeeContracts", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.VenueHireContractEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+
+                    b.Property<decimal>("HireFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable("VenueHireContracts", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.VersusContractEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+
+                    b.Property<decimal>("ArtistDoorPercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Guarantee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable("VersusContracts", "concert", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
             modelBuilder.Entity("Concertable.Core.Entities.SettlementTransactionEntity", b =>
                 {
                     b.HasBaseType("Concertable.Core.Entities.TransactionEntity");
@@ -586,6 +1041,205 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Artist");
 
                     b.Navigation("Genre");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModelGenre", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ArtistReadModel", "Artist")
+                        .WithMany("Genres")
+                        .HasForeignKey("ArtistReadModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Shared.GenreEntity", "Genre")
+                        .WithMany()
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+
+                    b.Navigation("Genre");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertBookingEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.OpportunityApplicationEntity", "Application")
+                        .WithOne("Booking")
+                        .HasForeignKey("Concertable.Concert.Domain.ConcertBookingEntity", "ApplicationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Application");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ArtistReadModel", "Artist")
+                        .WithMany()
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Concert.Domain.ConcertBookingEntity", "Booking")
+                        .WithOne("Concert")
+                        .HasForeignKey("Concertable.Concert.Domain.ConcertEntity", "BookingId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Concert.Domain.VenueReadModel", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertGenreEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ConcertEntity", "Concert")
+                        .WithMany("ConcertGenres")
+                        .HasForeignKey("ConcertId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Shared.GenreEntity", "Genre")
+                        .WithMany()
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Concert");
+
+                    b.Navigation("Genre");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertImageEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ConcertEntity", "Concert")
+                        .WithMany("Images")
+                        .HasForeignKey("ConcertId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Concert");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ContractEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.OpportunityEntity", "Opportunity")
+                        .WithOne("Contract")
+                        .HasForeignKey("Concertable.Concert.Domain.ContractEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Opportunity");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityApplicationEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ArtistReadModel", "Artist")
+                        .WithMany()
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Concert.Domain.OpportunityEntity", "Opportunity")
+                        .WithMany("Applications")
+                        .HasForeignKey("OpportunityId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+
+                    b.Navigation("Opportunity");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.VenueReadModel", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.OwnsOne("Concertable.Shared.DateRange", "Period", b1 =>
+                        {
+                            b1.Property<int>("OpportunityEntityId")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTime>("End")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("EndDate");
+
+                            b1.Property<DateTime>("Start")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("StartDate");
+
+                            b1.HasKey("OpportunityEntityId");
+
+                            b1.ToTable("Opportunities", "concert");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OpportunityEntityId");
+                        });
+
+                    b.Navigation("Period")
+                        .IsRequired();
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityGenreEntity", b =>
+                {
+                    b.HasOne("Concertable.Shared.GenreEntity", "Genre")
+                        .WithMany()
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Concert.Domain.OpportunityEntity", "Opportunity")
+                        .WithMany("OpportunityGenres")
+                        .HasForeignKey("OpportunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Genre");
+
+                    b.Navigation("Opportunity");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ReviewEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.TicketEntity", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Ticket");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.TicketEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ConcertEntity", "Concert")
+                        .WithMany("Tickets")
+                        .HasForeignKey("ConcertId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Concert.Domain.ReviewEntity", "Review")
+                        .WithMany()
+                        .HasForeignKey("ReviewId");
+
+                    b.Navigation("Concert");
+
+                    b.Navigation("Review");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.GenrePreferenceEntity", b =>
@@ -756,6 +1410,42 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
+            modelBuilder.Entity("Concertable.Concert.Domain.DoorSplitContractEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                        .WithOne()
+                        .HasForeignKey("Concertable.Concert.Domain.DoorSplitContractEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.FlatFeeContractEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                        .WithOne()
+                        .HasForeignKey("Concertable.Concert.Domain.FlatFeeContractEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.VenueHireContractEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                        .WithOne()
+                        .HasForeignKey("Concertable.Concert.Domain.VenueHireContractEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.VersusContractEntity", b =>
+                {
+                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                        .WithOne()
+                        .HasForeignKey("Concertable.Concert.Domain.VersusContractEntity", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Concertable.Core.Entities.SettlementTransactionEntity", b =>
                 {
                     b.HasOne("Concertable.Core.Entities.TransactionEntity", null)
@@ -777,6 +1467,40 @@ namespace Concertable.Infrastructure.Migrations
             modelBuilder.Entity("Concertable.Artist.Domain.ArtistEntity", b =>
                 {
                     b.Navigation("ArtistGenres");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModel", b =>
+                {
+                    b.Navigation("Genres");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertBookingEntity", b =>
+                {
+                    b.Navigation("Concert");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertEntity", b =>
+                {
+                    b.Navigation("ConcertGenres");
+
+                    b.Navigation("Images");
+
+                    b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityApplicationEntity", b =>
+                {
+                    b.Navigation("Booking");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.OpportunityEntity", b =>
+                {
+                    b.Navigation("Applications");
+
+                    b.Navigation("Contract")
+                        .IsRequired();
+
+                    b.Navigation("OpportunityGenres");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>

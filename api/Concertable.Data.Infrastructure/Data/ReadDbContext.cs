@@ -5,10 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Data.Infrastructure.Data;
 
-internal class ReadDbContext(DbContextOptions<ReadDbContext> options)
+internal class ReadDbContext(
+    DbContextOptions<ReadDbContext> options,
+    IEnumerable<IEntityTypeConfigurationProvider> providers)
     : DbContextBase(options), IReadDbContext
 {
-    public ReadDbContext() : this(new DbContextOptionsBuilder<ReadDbContext>().Options) { }
+    public ReadDbContext() : this(new DbContextOptionsBuilder<ReadDbContext>().Options, []) { }
 
     public IQueryable<UserEntity> Users => Set<UserEntity>().AsNoTracking();
     public IQueryable<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>().AsNoTracking();
@@ -46,14 +48,8 @@ internal class ReadDbContext(DbContextOptions<ReadDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => a.GetName().Name is string n
-                     && n.StartsWith("Concertable.")
-                     && n.EndsWith(".Infrastructure")
-                     && n != "Concertable.Search.Infrastructure"))
-        {
-            modelBuilder.ApplyConfigurationsFromAssembly(asm);
-        }
+        foreach (var provider in providers)
+            provider.Configure(modelBuilder);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)

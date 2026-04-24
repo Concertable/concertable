@@ -3,7 +3,9 @@ using SharedSchema = Concertable.Data.Infrastructure.Schema;
 
 namespace Concertable.Artist.Infrastructure.Data;
 
-internal class ArtistDbContext(DbContextOptions<ArtistDbContext> options)
+internal class ArtistDbContext(
+    DbContextOptions<ArtistDbContext> options,
+    ArtistConfigurationProvider provider)
     : DbContextBase(options)
 {
     public DbSet<ArtistEntity> Artists => Set<ArtistEntity>();
@@ -14,7 +16,7 @@ internal class ArtistDbContext(DbContextOptions<ArtistDbContext> options)
     {
         modelBuilder.HasDefaultSchema(Schema.Name);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ArtistDbContext).Assembly);
+        provider.Configure(modelBuilder);
 
         modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());
     }

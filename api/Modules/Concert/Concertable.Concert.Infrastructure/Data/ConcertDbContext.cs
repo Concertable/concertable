@@ -7,7 +7,9 @@ using SharedSchema = Concertable.Data.Infrastructure.Schema;
 
 namespace Concertable.Concert.Infrastructure.Data;
 
-internal class ConcertDbContext(DbContextOptions<ConcertDbContext> options)
+internal class ConcertDbContext(
+    DbContextOptions<ConcertDbContext> options,
+    ConcertConfigurationProvider provider)
     : DbContextBase(options)
 {
     public DbSet<ConcertEntity> Concerts => Set<ConcertEntity>();
@@ -34,7 +36,7 @@ internal class ConcertDbContext(DbContextOptions<ConcertDbContext> options)
     {
         modelBuilder.HasDefaultSchema(Schema.Name);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConcertDbContext).Assembly);
+        provider.Configure(modelBuilder);
 
         modelBuilder.Entity<ArtistRatingProjection>(b =>
         {

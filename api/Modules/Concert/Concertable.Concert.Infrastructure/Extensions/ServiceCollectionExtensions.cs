@@ -20,6 +20,7 @@ using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
 using Concertable.Concert.Infrastructure.Services.Webhook;
 using Concertable.Concert.Infrastructure.Validators;
+using Concertable.Data.Infrastructure.Data;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Infrastructure.Interfaces;
@@ -107,6 +108,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
+
+        services.AddSingleton<ConcertConfigurationProvider>();
+        services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ConcertConfigurationProvider>());
+        services.AddSingleton<IRatingProjectionConfigurationProvider, ConcertRatingProjectionConfigurationProvider>();
 
         services.AddValidatorsFromAssemblyContaining<OpportunityDtoValidator>();
 
