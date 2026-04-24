@@ -1,6 +1,6 @@
 # Contract Module Extraction — Implementation Plan
 
-> **PROGRESS (2026-04-24, evening):**
+> **PROGRESS (2026-04-25):**
 > - ✅ Step 0 — Discovery sweep complete (Appendix A filled).
 > - ✅ Step 1 — 5 Contract projects scaffolded under `api/Modules/Contract/`. IVT from
 >   `Concert.Infrastructure → Contract.Infrastructure` wired (ride-along ConcertDbContext access).
@@ -10,10 +10,41 @@
 >   gained Contract.Abstractions project ref + global using; Concert.Application/Infrastructure/Api
 >   + legacy Application/Infrastructure/Web/Workers/Core + 3 test projects gained
 >   `global using Concertable.Contract.Abstractions;`. Full solution build green (0 errors).
-> - ⏭ **Next: Step 3** — Move `ContractEntity` hierarchy + `IContract` DTOs to
->   `Contract.Domain` / `Contract.Abstractions`. Drop both nav directions, add explicit
->   `OpportunityId` column (PK split per second-pass lock), drop `Dto` suffix on subtype
->   record names.
+> - ✅ Step 3 — `ContractEntity` hierarchy (5 files) moved to `Contract.Domain/Entities/` with
+>   explicit `int OpportunityId` + factories taking `opportunityId` (PK split). `IContract` + 4
+>   polymorphic DTOs (`FlatFeeContract`, `DoorSplitContract`, `VersusContract`, `VenueHireContract`
+>   — `Dto` suffix dropped) moved to `Contract.Abstractions/`, made `public`. `OpportunityEntity.Contract`
+>   nav dropped → `int ContractId`. `.Include(o => o.Contract)` stripped from 2 repos. Both
+>   Domain projects build green, no mutual refs.
+> - ✅ Step 4 — `IContractRepository` shrunk to single
+>   `GetByOpportunityIdAsync(int, CancellationToken)` method, relocated to
+>   `Contract.Application/Interfaces/`. `IContractStrategy` marker promoted to
+>   `Contract.Abstractions/` (public empty). Deleted: `IContractStrategyFactory<T>`,
+>   `IContractStrategyResolver<T>`, their impls under `Concertable.Infrastructure/Factories/`,
+>   their 2 test files, plus their DI registrations from
+>   `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs`.
+> - ✅ Step 5 — `ContractEntityConfiguration.cs` (single file, base + 4 subtypes TPT) moved to
+>   `Contract.Application/Data/Configurations/`. FK rewrite: dropped nav-based HasOne/WithOne
+>   chain; now `.Property(c => c.OpportunityId).IsRequired()` +
+>   `.HasIndex(c => c.OpportunityId).IsUnique()`. Mirror `ContractId` config added on
+>   `OpportunityEntityConfiguration`. `Contract.Application.csproj` gained
+>   `Microsoft.EntityFrameworkCore.Relational`. `Concert.Infrastructure.csproj` gained ref to
+>   `Contract.Application`. `ConcertConfigurationProvider` imports the new namespace.
+> - ✅ Step 6 — `ContractRepository` impl moved to `Contract.Infrastructure/Repositories/`,
+>   body shrunk to single `context.Contracts.FirstOrDefaultAsync(c => c.OpportunityId == ...)`.
+>   `AddContractModule()` extension created at `Contract.Infrastructure/Extensions/` registering
+>   the repo. DI line removed from Concert.
+> - ✅ Step 6.5 — `IContractService` + `ContractService` (primary-ctor `IContractModule`
+>   consumer, throws on null) moved to `Contract.Application/Interfaces/` + `/Services/`.
+>   `ContractController` + copy of `InternalControllerFeatureProvider` moved to
+>   `Contract.Api/Controllers/` + `/Extensions/`. `AddContractApi()` extension created wiring
+>   controllers + `IContractService`. `IContractModule` interface stub in `Contract.Abstractions/`
+>   (impl lands Step 7). Web `Program.cs` + Workers `ServiceCollectionExtensions.cs` call
+>   `AddContractApi()` / `AddContractModule()`. Project refs added: Web→Contract.Api,
+>   Workers→Contract.Infrastructure.
+> - ⏭ **Next: Step 7** — Scaffold `ContractModule` impl + `IContractMapper` / `ContractMapper`
+>   in `Contract.Application` (internal). Register both + `IContractModule` in
+>   `AddContractModule()`. Per `feedback_no_ef_in_facade.md`, no inline EF.
 >
 > **STATUS: DRAFT — significant redesign 2026-04-24 (afternoon). Working document, still iterating.**
 >

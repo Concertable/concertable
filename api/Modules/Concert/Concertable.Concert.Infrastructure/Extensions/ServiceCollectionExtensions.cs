@@ -51,7 +51,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertDraftService, ConcertDraftService>();
         services.AddScoped<IOpportunityService, OpportunityService>();
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
-        services.AddScoped<IContractService, ContractService>();
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
 

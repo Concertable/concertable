@@ -1,6 +1,7 @@
+using Concertable.Contract.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.Concert.Api.Controllers;
+namespace Concertable.Contract.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
