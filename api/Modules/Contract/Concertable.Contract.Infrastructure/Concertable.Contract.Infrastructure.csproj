@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentResults" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
+    <ProjectReference Include="..\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
+    <ProjectReference Include="..\Concertable.Contract.Application\Concertable.Contract.Application.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
+    <!-- Ride-along (§3.3): ContractRepository injects ConcertDbContext from Concert.Infrastructure.
+         IVT from Concert.Infrastructure to Concertable.Contract.Infrastructure makes the internal
+         context type visible here. No circular ref because Concert.Infrastructure does NOT
+         reference Contract.Infrastructure (it references Contract.Application for configs). -->
+    <ProjectReference Include="..\..\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
+    <!-- TEMPORARY: legacy hosts retire as Payment + remaining Concertable.* extracts. -->
+    <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
+  </ItemGroup>
+
+</Project>

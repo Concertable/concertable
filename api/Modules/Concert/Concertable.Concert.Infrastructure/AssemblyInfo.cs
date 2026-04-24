@@ -18,3 +18,6 @@ using System.Runtime.CompilerServices;
 // for the read-model UserId hop. Removed when Payment Stage 1 extracts those services.
 [assembly: InternalsVisibleTo("Concertable.Infrastructure")]
 [assembly: InternalsVisibleTo("Concertable.Search.Infrastructure")]
+// Ride-along (§3.3 of CONTRACT_MODULE_REFACTOR.md): ContractRepository in Contract.Infrastructure
+// injects ConcertDbContext (Contract entities ride along on the Concert context).
+[assembly: InternalsVisibleTo("Concertable.Contract.Infrastructure")]

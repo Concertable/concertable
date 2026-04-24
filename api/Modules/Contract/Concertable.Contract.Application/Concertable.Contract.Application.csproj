@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
+    <ProjectReference Include="..\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentResults" Version="4.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <!-- Required so ContractEntityConfiguration (TPT) can use IEntityTypeConfiguration<T>
+         + Fluent API. Concert.Infrastructure references this project to apply the configs
+         on ConcertDbContext per the §3.3 ride-along. Convention break vs other modules'
+         Application projects (which have no EF dep) is intentional and unique to Contract. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
+  </ItemGroup>
+
+</Project>
