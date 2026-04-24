@@ -1,8 +1,11 @@
 using Concertable.Artist.Domain;
 using Concertable.Artist.Infrastructure.Data.Configurations;
+using ArtistSchema = Concertable.Artist.Infrastructure.Schema;
+using VenueSchema = Concertable.Venue.Infrastructure.Schema;
 using Concertable.Concert.Domain;
 using Concertable.Data.Infrastructure;
 using Concertable.Search.Domain.Models;
+using SharedSchema = Concertable.Data.Infrastructure.Schema;
 using Concertable.Shared;
 using Concertable.Venue.Domain;
 using Concertable.Venue.Infrastructure.Data.Configurations;
@@ -41,7 +44,7 @@ internal class SearchDbContext(DbContextOptions<SearchDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SearchDbContext).Assembly);
-        modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());
 
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ArtistRatingProjectionConfiguration).Assembly,
@@ -50,12 +53,14 @@ internal class SearchDbContext(DbContextOptions<SearchDbContext> options)
             typeof(VenueRatingProjectionConfiguration).Assembly,
             t => t == typeof(VenueRatingProjectionConfiguration));
 
-        modelBuilder.Entity<ArtistRatingProjection>().ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<VenueRatingProjection>().ToTable("VenueRatingProjections", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<ArtistRatingProjection>()
+            .ToTable("ArtistRatingProjections", ArtistSchema.Name, t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<VenueRatingProjection>()
+            .ToTable("VenueRatingProjections", VenueSchema.Name, t => t.ExcludeFromMigrations());
 
         modelBuilder.Entity<ConcertRatingProjection>(b =>
         {
-            b.ToTable("ConcertRatingProjections", t => t.ExcludeFromMigrations());
+            b.ToTable("ConcertRatingProjections", "concert", t => t.ExcludeFromMigrations());
             b.HasKey(p => p.ConcertId);
         });
     }

@@ -8,7 +8,7 @@ internal class OpportunityGenreEntityConfiguration : IEntityTypeConfiguration<Op
 {
     public void Configure(EntityTypeBuilder<OpportunityGenreEntity> builder)
     {
-        builder.ToTable("OpportunityGenres");
+        builder.ToTable("OpportunityGenres", Schema.Name);
         builder.HasOne(og => og.Opportunity)
             .WithMany(o => o.OpportunityGenres)
             .HasForeignKey(og => og.OpportunityId)

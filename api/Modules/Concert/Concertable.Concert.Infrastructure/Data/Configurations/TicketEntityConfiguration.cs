@@ -8,7 +8,7 @@ internal class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity
 {
     public void Configure(EntityTypeBuilder<TicketEntity> builder)
     {
-        builder.ToTable("Tickets");
+        builder.ToTable("Tickets", Schema.Name);
         builder.HasOne(t => t.Concert)
             .WithMany(e => e.Tickets)
             .HasForeignKey(t => t.ConcertId)

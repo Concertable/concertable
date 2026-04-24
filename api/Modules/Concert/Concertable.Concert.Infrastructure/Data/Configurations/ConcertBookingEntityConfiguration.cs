@@ -8,7 +8,7 @@ internal class ConcertBookingEntityConfiguration : IEntityTypeConfiguration<Conc
 {
     public void Configure(EntityTypeBuilder<ConcertBookingEntity> builder)
     {
-        builder.ToTable("ConcertBookings");
+        builder.ToTable("ConcertBookings", Schema.Name);
         builder.HasOne(b => b.Application)
             .WithOne(a => a.Booking)
             .HasForeignKey<ConcertBookingEntity>(b => b.ApplicationId)

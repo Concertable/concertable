@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Concert.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ConcertDbContext))]
-    [Migration("20260424134248_InitialCreate")]
+    [Migration("20260424151847_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -21,6 +21,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("concert")
                 .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -39,7 +40,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasKey("ArtistId");
 
-                    b.ToTable("ArtistRatingProjections", null, t =>
+                    b.ToTable("ArtistRatingProjections", "artist", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -77,7 +78,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ArtistReadModels", (string)null);
+                    b.ToTable("ArtistReadModels", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModelGenre", b =>
@@ -92,7 +93,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("ArtistReadModelGenres", (string)null);
+                    b.ToTable("ArtistReadModelGenres", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertBookingEntity", b =>
@@ -117,7 +118,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.HasIndex("ApplicationId")
                         .IsUnique();
 
-                    b.ToTable("ConcertBookings", (string)null);
+                    b.ToTable("ConcertBookings", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertEntity", b =>
@@ -181,7 +182,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("Concerts", (string)null);
+                    b.ToTable("Concerts", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertGenreEntity", b =>
@@ -196,7 +197,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("ConcertGenres", (string)null);
+                    b.ToTable("ConcertGenres", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertImageEntity", b =>
@@ -221,7 +222,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("ConcertId");
 
-                    b.ToTable("ConcertImages", (string)null);
+                    b.ToTable("ConcertImages", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertRatingProjection", b =>
@@ -237,7 +238,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasKey("ConcertId");
 
-                    b.ToTable("ConcertRatingProjections", (string)null);
+                    b.ToTable("ConcertRatingProjections", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ContractEntity", b =>
@@ -250,7 +251,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Contracts", (string)null);
+                    b.ToTable("Contracts", "concert");
 
                     b.UseTptMappingStrategy();
                 });
@@ -279,7 +280,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.HasIndex("OpportunityId", "ArtistId")
                         .IsUnique();
 
-                    b.ToTable("OpportunityApplications", (string)null);
+                    b.ToTable("OpportunityApplications", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.OpportunityEntity", b =>
@@ -297,7 +298,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("Opportunities", (string)null);
+                    b.ToTable("Opportunities", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.OpportunityGenreEntity", b =>
@@ -312,7 +313,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("OpportunityGenres", (string)null);
+                    b.ToTable("OpportunityGenres", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ReviewEntity", b =>
@@ -336,7 +337,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.TicketEntity", b =>
@@ -367,7 +368,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasIndex("ReviewId");
 
-                    b.ToTable("Tickets", (string)null);
+                    b.ToTable("Tickets", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.VenueReadModel", b =>
@@ -400,7 +401,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("VenueReadModels", (string)null);
+                    b.ToTable("VenueReadModels", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Shared.GenreEntity", b =>
@@ -417,7 +418,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genres", null, t =>
+                    b.ToTable("Genres", "dbo", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -436,7 +437,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                     b.HasKey("VenueId");
 
-                    b.ToTable("VenueRatingProjections", null, t =>
+                    b.ToTable("VenueRatingProjections", "venue", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -449,7 +450,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<decimal>("ArtistDoorPercent")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("DoorSplitContracts", (string)null);
+                    b.ToTable("DoorSplitContracts", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.FlatFeeContractEntity", b =>
@@ -459,7 +460,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<decimal>("Fee")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("FlatFeeContracts", (string)null);
+                    b.ToTable("FlatFeeContracts", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.VenueHireContractEntity", b =>
@@ -469,7 +470,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<decimal>("HireFee")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("VenueHireContracts", (string)null);
+                    b.ToTable("VenueHireContracts", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.VersusContractEntity", b =>
@@ -482,7 +483,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<decimal>("Guarantee")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("VersusContracts", (string)null);
+                    b.ToTable("VersusContracts", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModelGenre", b =>
@@ -625,7 +626,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
                             b1.HasKey("OpportunityEntityId");
 
-                            b1.ToTable("Opportunities");
+                            b1.ToTable("Opportunities", "concert");
 
                             b1.WithOwner()
                                 .HasForeignKey("OpportunityEntityId");

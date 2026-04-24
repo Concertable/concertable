@@ -8,7 +8,7 @@ internal class ContractEntityConfiguration : IEntityTypeConfiguration<ContractEn
 {
     public void Configure(EntityTypeBuilder<ContractEntity> builder)
     {
-        builder.ToTable("Contracts");
+        builder.ToTable("Contracts", Schema.Name);
         builder.UseTptMappingStrategy()
             .HasOne(c => c.Opportunity)
             .WithOne(o => o.Contract)
@@ -20,23 +20,23 @@ internal class ContractEntityConfiguration : IEntityTypeConfiguration<ContractEn
 internal class FlatFeeContractEntityConfiguration : IEntityTypeConfiguration<FlatFeeContractEntity>
 {
     public void Configure(EntityTypeBuilder<FlatFeeContractEntity> builder)
-        => builder.ToTable("FlatFeeContracts");
+        => builder.ToTable("FlatFeeContracts", Schema.Name);
 }
 
 internal class DoorSplitContractEntityConfiguration : IEntityTypeConfiguration<DoorSplitContractEntity>
 {
     public void Configure(EntityTypeBuilder<DoorSplitContractEntity> builder)
-        => builder.ToTable("DoorSplitContracts");
+        => builder.ToTable("DoorSplitContracts", Schema.Name);
 }
 
 internal class VersusContractEntityConfiguration : IEntityTypeConfiguration<VersusContractEntity>
 {
     public void Configure(EntityTypeBuilder<VersusContractEntity> builder)
-        => builder.ToTable("VersusContracts");
+        => builder.ToTable("VersusContracts", Schema.Name);
 }
 
 internal class VenueHireContractEntityConfiguration : IEntityTypeConfiguration<VenueHireContractEntity>
 {
     public void Configure(EntityTypeBuilder<VenueHireContractEntity> builder)
-        => builder.ToTable("VenueHireContracts");
+        => builder.ToTable("VenueHireContracts", Schema.Name);
 }

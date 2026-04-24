@@ -4,7 +4,7 @@ using NetTopologySuite.Geometries;
 
 #nullable disable
 
-namespace Concertable.Venue.Infrastructure.Data.Migrations
+namespace Concertable.Artist.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -12,21 +12,26 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "artist");
+
             migrationBuilder.CreateTable(
-                name: "VenueRatingProjections",
+                name: "ArtistRatingProjections",
+                schema: "artist",
                 columns: table => new
                 {
-                    VenueId = table.Column<int>(type: "int", nullable: false),
+                    ArtistId = table.Column<int>(type: "int", nullable: false),
                     AverageRating = table.Column<double>(type: "float", nullable: false),
                     ReviewCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_VenueRatingProjections", x => x.VenueId);
+                    table.PrimaryKey("PK_ArtistRatingProjections", x => x.ArtistId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Venues",
+                name: "Artists",
+                schema: "artist",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -35,7 +40,6 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     About = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BannerUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Approved = table.Column<bool>(type: "bit", nullable: false),
                     Location = table.Column<Point>(type: "geography", nullable: true),
                     County = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Town = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -44,46 +48,57 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Venues", x => x.Id);
+                    table.PrimaryKey("PK_Artists", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "VenueImages",
+                name: "ArtistGenres",
+                schema: "artist",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    VenueId = table.Column<int>(type: "int", nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ArtistId = table.Column<int>(type: "int", nullable: false),
+                    GenreId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_VenueImages", x => x.Id);
+                    table.PrimaryKey("PK_ArtistGenres", x => new { x.ArtistId, x.GenreId });
                     table.ForeignKey(
-                        name: "FK_VenueImages_Venues_VenueId",
-                        column: x => x.VenueId,
-                        principalTable: "Venues",
+                        name: "FK_ArtistGenres_Artists_ArtistId",
+                        column: x => x.ArtistId,
+                        principalSchema: "artist",
+                        principalTable: "Artists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ArtistGenres_Genres_GenreId",
+                        column: x => x.GenreId,
+                        principalSchema: "dbo",
+                        principalTable: "Genres",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_VenueImages_VenueId",
-                table: "VenueImages",
-                column: "VenueId");
+                name: "IX_ArtistGenres_GenreId",
+                schema: "artist",
+                table: "ArtistGenres",
+                column: "GenreId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "VenueImages");
+                name: "ArtistGenres",
+                schema: "artist");
 
             migrationBuilder.DropTable(
-                name: "VenueRatingProjections");
+                name: "ArtistRatingProjections",
+                schema: "artist");
 
             migrationBuilder.DropTable(
-                name: "Venues");
+                name: "Artists",
+                schema: "artist");
         }
     }
 }

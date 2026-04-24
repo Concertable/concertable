@@ -12,8 +12,12 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "identity");
+
             migrationBuilder.CreateTable(
                 name: "Users",
+                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -35,6 +39,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "EmailVerificationTokens",
+                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -50,6 +55,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
                     table.ForeignKey(
                         name: "FK_EmailVerificationTokens_Users_UserId",
                         column: x => x.UserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -57,6 +63,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "PasswordResetTokens",
+                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -72,6 +79,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
                     table.ForeignKey(
                         name: "FK_PasswordResetTokens_Users_UserId",
                         column: x => x.UserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -79,6 +87,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "RefreshTokens",
+                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -94,6 +103,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
                     table.ForeignKey(
                         name: "FK_RefreshTokens_Users_UserId",
                         column: x => x.UserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -101,21 +111,25 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_EmailVerificationTokens_UserId",
+                schema: "identity",
                 table: "EmailVerificationTokens",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PasswordResetTokens_UserId",
+                schema: "identity",
                 table: "PasswordResetTokens",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_UserId",
+                schema: "identity",
                 table: "RefreshTokens",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
+                schema: "identity",
                 table: "Users",
                 column: "Email",
                 unique: true);
@@ -125,16 +139,20 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "EmailVerificationTokens");
+                name: "EmailVerificationTokens",
+                schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "PasswordResetTokens");
+                name: "PasswordResetTokens",
+                schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "RefreshTokens");
+                name: "RefreshTokens",
+                schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Users",
+                schema: "identity");
         }
     }
 }

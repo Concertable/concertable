@@ -57,7 +57,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Artists", null, t =>
+                    b.ToTable("Artists", "artist", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -75,7 +75,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("ArtistGenres", null, t =>
+                    b.ToTable("ArtistGenres", "artist", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -94,7 +94,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("ArtistId");
 
-                    b.ToTable("ArtistRatingProjections", null, t =>
+                    b.ToTable("ArtistRatingProjections", "artist", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -270,7 +270,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EmailVerificationTokens", null, t =>
+                    b.ToTable("EmailVerificationTokens", "identity", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -301,7 +301,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetTokens", null, t =>
+                    b.ToTable("PasswordResetTokens", "identity", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -332,7 +332,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", null, t =>
+                    b.ToTable("RefreshTokens", "identity", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -374,7 +374,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", null, t =>
+                    b.ToTable("Users", "identity", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -398,7 +398,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genres", null, t =>
+                    b.ToTable("Genres", "dbo", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -441,7 +441,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Venues", null, t =>
+                    b.ToTable("Venues", "venue", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -466,7 +466,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("VenueImages", null, t =>
+                    b.ToTable("VenueImages", "venue", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -485,7 +485,7 @@ namespace Concertable.Infrastructure.Migrations
 
                     b.HasKey("VenueId");
 
-                    b.ToTable("VenueRatingProjections", null, t =>
+                    b.ToTable("VenueRatingProjections", "venue", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -560,7 +560,7 @@ namespace Concertable.Infrastructure.Migrations
 
                             b1.HasKey("ArtistEntityId");
 
-                            b1.ToTable("Artists");
+                            b1.ToTable("Artists", "artist");
 
                             b1.WithOwner()
                                 .HasForeignKey("ArtistEntityId");
@@ -708,7 +708,7 @@ namespace Concertable.Infrastructure.Migrations
 
                             b1.HasKey("UserEntityId");
 
-                            b1.ToTable("Users");
+                            b1.ToTable("Users", "identity");
 
                             b1.WithOwner()
                                 .HasForeignKey("UserEntityId");
@@ -736,7 +736,7 @@ namespace Concertable.Infrastructure.Migrations
 
                             b1.HasKey("VenueEntityId");
 
-                            b1.ToTable("Venues");
+                            b1.ToTable("Venues", "venue");
 
                             b1.WithOwner()
                                 .HasForeignKey("VenueEntityId");

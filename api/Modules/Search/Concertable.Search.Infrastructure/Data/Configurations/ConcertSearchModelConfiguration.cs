@@ -8,7 +8,7 @@ internal sealed class ConcertSearchModelConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<ConcertSearchModel> builder)
     {
-        builder.ToTable("Concerts", t => t.ExcludeFromMigrations());
+        builder.ToTable("Concerts", "concert", t => t.ExcludeFromMigrations());
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
         builder.Property(x => x.Location).HasColumnType("geography");

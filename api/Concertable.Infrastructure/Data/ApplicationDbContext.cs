@@ -2,6 +2,7 @@ using Concertable.Core.Entities;
 using Concertable.Data.Infrastructure;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
+using SharedSchema = Concertable.Data.Infrastructure.Schema;
 
 namespace Concertable.Infrastructure.Data;
 
@@ -34,23 +35,22 @@ public class ApplicationDbContext : DbContextBase
         }
 
         // Shared reference data — schema managed by SharedDbContext migrations (runs first).
-        // GenrePreferenceEntity.Genre nav pulls GenreEntity into this model, so exclude the table.
-        modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());
 
         // Identity-owned tables — schema managed by IdentityDbContext migrations
-        modelBuilder.Entity<UserEntity>().ToTable("Users", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<RefreshTokenEntity>().ToTable("RefreshTokens", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<EmailVerificationTokenEntity>().ToTable("EmailVerificationTokens", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<PasswordResetTokenEntity>().ToTable("PasswordResetTokens", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<UserEntity>().ToTable("Users", "identity", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<RefreshTokenEntity>().ToTable("RefreshTokens", "identity", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<EmailVerificationTokenEntity>().ToTable("EmailVerificationTokens", "identity", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<PasswordResetTokenEntity>().ToTable("PasswordResetTokens", "identity", t => t.ExcludeFromMigrations());
 
         // Artist-owned tables — schema managed by ArtistDbContext migrations
-        modelBuilder.Entity<ArtistEntity>().ToTable("Artists", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<ArtistGenreEntity>().ToTable("ArtistGenres", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<ArtistRatingProjection>().ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<ArtistEntity>().ToTable("Artists", "artist", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<ArtistGenreEntity>().ToTable("ArtistGenres", "artist", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<ArtistRatingProjection>().ToTable("ArtistRatingProjections", "artist", t => t.ExcludeFromMigrations());
 
         // Venue-owned tables — schema managed by VenueDbContext migrations
-        modelBuilder.Entity<VenueEntity>().ToTable("Venues", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<VenueImageEntity>().ToTable("VenueImages", t => t.ExcludeFromMigrations());
-        modelBuilder.Entity<VenueRatingProjection>().ToTable("VenueRatingProjections", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<VenueEntity>().ToTable("Venues", "venue", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<VenueImageEntity>().ToTable("VenueImages", "venue", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<VenueRatingProjection>().ToTable("VenueRatingProjections", "venue", t => t.ExcludeFromMigrations());
     }
 }

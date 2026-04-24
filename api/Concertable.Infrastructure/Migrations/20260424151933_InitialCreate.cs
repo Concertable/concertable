@@ -30,12 +30,14 @@ namespace Concertable.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Messages_Users_FromUserId",
                         column: x => x.FromUserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Messages_Users_ToUserId",
                         column: x => x.ToUserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -56,6 +58,7 @@ namespace Concertable.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Preferences_Users_UserId",
                         column: x => x.UserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -95,11 +98,13 @@ namespace Concertable.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Transactions_Users_FromUserId",
                         column: x => x.FromUserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Transactions_Users_ToUserId",
                         column: x => x.ToUserId,
+                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id");
                 });
@@ -119,6 +124,7 @@ namespace Concertable.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_GenrePreferences_Genres_GenreId",
                         column: x => x.GenreId,
+                        principalSchema: "dbo",
                         principalTable: "Genres",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);

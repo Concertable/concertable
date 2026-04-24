@@ -11,6 +11,8 @@ internal class VenueDbContext(DbContextOptions<VenueDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema(Schema.Name);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(VenueDbContext).Assembly);
     }
 }

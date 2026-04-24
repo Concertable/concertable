@@ -18,6 +18,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("artist")
                 .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -57,7 +58,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Artists", (string)null);
+                    b.ToTable("Artists", "artist");
                 });
 
             modelBuilder.Entity("Concertable.Artist.Domain.ArtistGenreEntity", b =>
@@ -72,7 +73,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("ArtistGenres", (string)null);
+                    b.ToTable("ArtistGenres", "artist");
                 });
 
             modelBuilder.Entity("Concertable.Artist.Domain.ArtistRatingProjection", b =>
@@ -88,7 +89,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
 
                     b.HasKey("ArtistId");
 
-                    b.ToTable("ArtistRatingProjections", (string)null);
+                    b.ToTable("ArtistRatingProjections", "artist");
                 });
 
             modelBuilder.Entity("Concertable.Shared.GenreEntity", b =>
@@ -105,7 +106,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genres", null, t =>
+                    b.ToTable("Genres", "dbo", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -130,7 +131,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
 
                             b1.HasKey("ArtistEntityId");
 
-                            b1.ToTable("Artists");
+                            b1.ToTable("Artists", "artist");
 
                             b1.WithOwner()
                                 .HasForeignKey("ArtistEntityId");

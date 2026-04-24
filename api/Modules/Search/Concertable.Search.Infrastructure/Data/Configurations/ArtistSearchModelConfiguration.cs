@@ -1,6 +1,7 @@
 using Concertable.Search.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ArtistSchema = Concertable.Artist.Infrastructure.Schema;
 
 namespace Concertable.Search.Infrastructure.Data.Configurations;
 
@@ -8,7 +9,7 @@ internal sealed class ArtistSearchModelConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<ArtistSearchModel> builder)
     {
-        builder.ToTable("Artists");
+        builder.ToTable("Artists", ArtistSchema.Name);
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
         builder.Property(x => x.Location).HasColumnType("geography");

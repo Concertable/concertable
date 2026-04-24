@@ -8,7 +8,7 @@ internal class ConcertGenreEntityConfiguration : IEntityTypeConfiguration<Concer
 {
     public void Configure(EntityTypeBuilder<ConcertGenreEntity> builder)
     {
-        builder.ToTable("ConcertGenres");
+        builder.ToTable("ConcertGenres", Schema.Name);
         builder.HasOne(cg => cg.Concert)
             .WithMany(c => c.ConcertGenres)
             .HasForeignKey(cg => cg.ConcertId)

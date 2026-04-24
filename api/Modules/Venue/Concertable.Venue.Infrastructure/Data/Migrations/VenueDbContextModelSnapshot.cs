@@ -18,6 +18,7 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("venue")
                 .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -60,7 +61,7 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Venues", (string)null);
+                    b.ToTable("Venues", "venue");
                 });
 
             modelBuilder.Entity("Concertable.Venue.Domain.VenueImageEntity", b =>
@@ -82,7 +83,7 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("VenueImages");
+                    b.ToTable("VenueImages", "venue");
                 });
 
             modelBuilder.Entity("Concertable.Venue.Domain.VenueRatingProjection", b =>
@@ -98,7 +99,7 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
 
                     b.HasKey("VenueId");
 
-                    b.ToTable("VenueRatingProjections", (string)null);
+                    b.ToTable("VenueRatingProjections", "venue");
                 });
 
             modelBuilder.Entity("Concertable.Venue.Domain.VenueEntity", b =>
@@ -120,7 +121,7 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
 
                             b1.HasKey("VenueEntityId");
 
-                            b1.ToTable("Venues");
+                            b1.ToTable("Venues", "venue");
 
                             b1.WithOwner()
                                 .HasForeignKey("VenueEntityId");

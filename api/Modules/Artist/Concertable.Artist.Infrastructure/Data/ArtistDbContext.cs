@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SharedSchema = Concertable.Data.Infrastructure.Schema;
 
 namespace Concertable.Artist.Infrastructure.Data;
 
@@ -11,8 +12,10 @@ internal class ArtistDbContext(DbContextOptions<ArtistDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema(Schema.Name);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ArtistDbContext).Assembly);
 
-        modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());
     }
 }

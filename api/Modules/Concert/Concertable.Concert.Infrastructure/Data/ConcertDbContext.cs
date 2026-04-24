@@ -3,6 +3,7 @@ using Concertable.Concert.Domain;
 using Concertable.Data.Infrastructure;
 using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
+using SharedSchema = Concertable.Data.Infrastructure.Schema;
 
 namespace Concertable.Concert.Infrastructure.Data;
 
@@ -31,21 +32,23 @@ internal class ConcertDbContext(DbContextOptions<ConcertDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema(Schema.Name);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConcertDbContext).Assembly);
 
         modelBuilder.Entity<ArtistRatingProjection>(b =>
         {
-            b.ToTable("ArtistRatingProjections", t => t.ExcludeFromMigrations());
+            b.ToTable("ArtistRatingProjections", "artist", t => t.ExcludeFromMigrations());
             b.HasKey(p => p.ArtistId);
             b.Property(p => p.ArtistId).ValueGeneratedNever();
         });
         modelBuilder.Entity<VenueRatingProjection>(b =>
         {
-            b.ToTable("VenueRatingProjections", t => t.ExcludeFromMigrations());
+            b.ToTable("VenueRatingProjections", "venue", t => t.ExcludeFromMigrations());
             b.HasKey(p => p.VenueId);
             b.Property(p => p.VenueId).ValueGeneratedNever();
         });
 
-        modelBuilder.Entity<GenreEntity>().ToTable("Genres", t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());
     }
 }

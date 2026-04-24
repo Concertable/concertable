@@ -8,7 +8,7 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<UserEntity>
 {
     public void Configure(EntityTypeBuilder<UserEntity> builder)
     {
-        builder.ToTable("Users");
+        builder.ToTable("Users", "identity");
         builder.Property(u => u.Location).HasColumnType("geography");
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasDiscriminator(u => u.Role)
@@ -43,6 +43,7 @@ public class RefreshTokenEntityConfiguration : IEntityTypeConfiguration<RefreshT
 {
     public void Configure(EntityTypeBuilder<RefreshTokenEntity> builder)
     {
+        builder.ToTable("RefreshTokens", "identity");
         builder.HasOne(rt => rt.User)
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId)
@@ -54,6 +55,7 @@ public class EmailVerificationTokenEntityConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<EmailVerificationTokenEntity> builder)
     {
+        builder.ToTable("EmailVerificationTokens", "identity");
         builder.HasOne(t => t.User)
             .WithMany(u => u.EmailVerificationTokens)
             .HasForeignKey(t => t.UserId)
@@ -65,6 +67,7 @@ public class PasswordResetTokenEntityConfiguration : IEntityTypeConfiguration<Pa
 {
     public void Configure(EntityTypeBuilder<PasswordResetTokenEntity> builder)
     {
+        builder.ToTable("PasswordResetTokens", "identity");
         builder.HasOne(t => t.User)
             .WithMany(u => u.PasswordResetTokens)
             .HasForeignKey(t => t.UserId)

@@ -18,6 +18,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("identity")
                 .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -48,7 +49,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EmailVerificationTokens");
+                    b.ToTable("EmailVerificationTokens", "identity");
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.PasswordResetTokenEntity", b =>
@@ -76,7 +77,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetTokens");
+                    b.ToTable("PasswordResetTokens", "identity");
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.RefreshTokenEntity", b =>
@@ -104,7 +105,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", "identity");
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.UserEntity", b =>
@@ -143,7 +144,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users", "identity");
 
                     b.HasDiscriminator<int>("Role").HasValue(3);
 
@@ -232,7 +233,7 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
 
                             b1.HasKey("UserEntityId");
 
-                            b1.ToTable("Users");
+                            b1.ToTable("Users", "identity");
 
                             b1.WithOwner()
                                 .HasForeignKey("UserEntityId");
