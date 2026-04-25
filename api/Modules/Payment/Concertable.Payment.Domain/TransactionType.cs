@@ -1,4 +1,4 @@
-namespace Concertable.Core.Enums;
+namespace Concertable.Payment.Domain;
 
 public enum TransactionType
 {

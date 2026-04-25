@@ -1,4 +1,4 @@
-namespace Concertable.Core.Entities;
+namespace Concertable.Payment.Domain;
 
 public class StripeEventEntity
 {

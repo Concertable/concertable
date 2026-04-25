@@ -1,6 +1,4 @@
-using Concertable.Core.Enums;
-
-namespace Concertable.Core.Entities;
+namespace Concertable.Payment.Domain;
 
 public abstract class TransactionEntity : IIdEntity, IAuditable
 {
@@ -18,9 +16,7 @@ public abstract class TransactionEntity : IIdEntity, IAuditable
     public int Id { get; private set; }
     public abstract TransactionType TransactionType { get; }
     public Guid FromUserId { get; private set; }
-    public UserEntity FromUser { get; set; } = null!;
     public Guid ToUserId { get; private set; }
-    public UserEntity ToUser { get; set; } = null!;
     public string PaymentIntentId { get; private set; } = null!;
     public long Amount { get; private set; }
     public TransactionStatus Status { get; private set; }

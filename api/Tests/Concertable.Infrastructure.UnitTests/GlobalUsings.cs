@@ -1,6 +1,7 @@
 global using Concertable.Shared;
 global using Concertable.Payment.Contracts;
 global using Concertable.Identity.Contracts;
+global using Concertable.Payment.Domain;
 global using Concertable.Identity.Domain;
 global using Concertable.Identity.Infrastructure.Services.Auth;
 global using Concertable.Concert.Domain;

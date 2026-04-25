@@ -1,7 +1,4 @@
-using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace Concertable.Core.Parameters;
+namespace Concertable.Payment.Domain;
 
 public class TicketPurchaseParams
 {

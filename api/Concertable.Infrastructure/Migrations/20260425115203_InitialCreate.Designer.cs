@@ -593,7 +593,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("Preferences", (string)null);
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.StripeEventEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.StripeEventEntity", b =>
                 {
                     b.Property<string>("EventId")
                         .HasColumnType("nvarchar(450)");
@@ -606,7 +606,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("StripeEvents", (string)null);
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.TransactionEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.TransactionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -958,9 +958,9 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.SettlementTransactionEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.SettlementTransactionEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Core.Entities.TransactionEntity");
+                    b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
 
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
@@ -968,9 +968,9 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("SettlementTransactions", (string)null);
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.TicketTransactionEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.TicketTransactionEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Core.Entities.TransactionEntity");
+                    b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
 
                     b.Property<int>("ConcertId")
                         .HasColumnType("int");
@@ -1292,7 +1292,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.TransactionEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.TransactionEntity", b =>
                 {
                     b.HasOne("Concertable.Identity.Domain.UserEntity", "FromUser")
                         .WithMany()
@@ -1447,20 +1447,20 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.SettlementTransactionEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.SettlementTransactionEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.TransactionEntity", null)
+                    b.HasOne("Concertable.Payment.Domain.TransactionEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.SettlementTransactionEntity", "Id")
+                        .HasForeignKey("Concertable.Payment.Domain.SettlementTransactionEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.TicketTransactionEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.TicketTransactionEntity", b =>
                 {
-                    b.HasOne("Concertable.Core.Entities.TransactionEntity", null)
+                    b.HasOne("Concertable.Payment.Domain.TransactionEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Core.Entities.TicketTransactionEntity", "Id")
+                        .HasForeignKey("Concertable.Payment.Domain.TicketTransactionEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

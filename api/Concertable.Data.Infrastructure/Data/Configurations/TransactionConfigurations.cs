@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,14 +10,8 @@ public class TransactionEntityConfiguration : IEntityTypeConfiguration<Transacti
         builder.ToTable("Transactions");
         builder.UseTptMappingStrategy();
         builder.HasIndex(t => t.PaymentIntentId).IsUnique();
-        builder.HasOne(p => p.FromUser)
-            .WithMany()
-            .HasForeignKey(p => p.FromUserId)
-            .OnDelete(DeleteBehavior.NoAction);
-        builder.HasOne(p => p.ToUser)
-            .WithMany()
-            .HasForeignKey(p => p.ToUserId)
-            .OnDelete(DeleteBehavior.NoAction);
+        builder.HasIndex(t => t.FromUserId);
+        builder.HasIndex(t => t.ToUserId);
     }
 }
 

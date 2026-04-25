@@ -7,3 +7,4 @@ global using Concertable.Identity.Contracts;
 global using Concertable.Artist.Contracts;
 global using Concertable.Venue.Contracts;
 global using Concertable.Payment.Contracts;
+global using Concertable.Payment.Domain;

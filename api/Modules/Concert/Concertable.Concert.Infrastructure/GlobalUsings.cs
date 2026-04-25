@@ -4,6 +4,7 @@ global using Concertable.Artist.Contracts;
 global using Concertable.Venue.Contracts;
 global using Concertable.Search.Contracts;
 global using Concertable.Payment.Contracts;
+global using Concertable.Payment.Domain;
 global using Concertable.Contract.Abstractions;
 global using Concertable.Concert.Domain;
 global using Concertable.Concert.Contracts;
