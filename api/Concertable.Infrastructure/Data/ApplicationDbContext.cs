@@ -78,5 +78,12 @@ public class ApplicationDbContext : DbContextBase
         modelBuilder.Entity<ArtistReadModel>().ToTable(t => t.ExcludeFromMigrations());
         modelBuilder.Entity<ArtistReadModelGenre>().ToTable(t => t.ExcludeFromMigrations());
         modelBuilder.Entity<VenueReadModel>().ToTable(t => t.ExcludeFromMigrations());
+
+        // Payment-owned tables — schema managed by PaymentDbContext migrations
+        modelBuilder.Entity<TransactionEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<TicketTransactionEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<SettlementTransactionEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<StripeEventEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<PayoutAccountEntity>().ToTable(t => t.ExcludeFromMigrations());
     }
 }

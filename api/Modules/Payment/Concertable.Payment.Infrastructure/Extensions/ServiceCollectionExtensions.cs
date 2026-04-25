@@ -1,3 +1,7 @@
+using Concertable.Data.Infrastructure;
+using Concertable.Data.Infrastructure.Data;
+using Concertable.Payment.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,8 +11,16 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddPaymentModule(this IServiceCollection services, IConfiguration configuration)
     {
-        // Step 1 scaffold — services land in Step 7 (Move Infrastructure layer to Payment.Infrastructure).
-        // Tracked: PAYMENT_MODULE_REFACTOR.md.
+        services.AddDbContext<PaymentDbContext>((sp, opts) =>
+            opts.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .AddInterceptors(
+                    sp.GetRequiredService<AuditInterceptor>(),
+                    sp.GetRequiredService<DomainEventDispatchInterceptor>()));
+
+        services.AddSingleton<PaymentConfigurationProvider>();
+        services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<PaymentConfigurationProvider>());
+
+        // Services + repositories land in Step 7. Tracked: PAYMENT_MODULE_REFACTOR.md.
         return services;
     }
 
