@@ -97,8 +97,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 
-        // Module facade
+        // Module facades
         services.AddScoped<IConcertModule, ConcertModule>();
+        services.AddScoped<IConcertWorkflowModule, ConcertWorkflowModule>();
+        services.AddScoped<ITicketPaymentModule, TicketPaymentModule>();
 
         // Domain event → integration event + read-model projection handlers
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();

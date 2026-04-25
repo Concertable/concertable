@@ -9,7 +9,7 @@
 > - `POST /api/tickets/purchase` lives in **Concert.Api**, not Payment.Api.
 > - `IPaymentModule` exposes exactly two cross-module verbs: `PurchaseTicketsAsync` +
 >   `SettleBookingAsync`. Both take `IContract` as a method parameter (caller owns the read).
-> - `IConcertTicketPaymentModule` is callback-only: `IssueTicketsAsync` + `RefundTicketAsync`.
+> - `ITicketPaymentModule` is callback-only: `IssueTicketsAsync` + `RefundTicketAsync`.
 >   Explicitly rejected: `GetContractAsync`, `GetTicketEligibilityAsync` (would make Concert
 >   a "data provider" for Payment).
 > - Strategies (`ITicketPaymentStrategy`, `IStripeValidationStrategy`) live in
@@ -22,7 +22,7 @@
 >   onboarding) and the only reader. No Identity integration events needed.
 > - Webhook direction is the exception to "Concert orchestrates": Stripe → Payment (Stripe-
 >   shaped HMAC validation belongs to Payment) → callback to Concert via
->   `IConcertTicketPaymentModule.IssueTicketsAsync` and `IConcertLifecycleModule.SettleAsync`.
+>   `ITicketPaymentModule.IssueTicketsAsync` and `IConcertWorkflowModule.SettleAsync`.
 > - Workers DI lock: `"offSession"` keyed only (Workers' only consumer is
 >   `ConcertFinishedFunction`, off-session by definition).
 > - Outbox infrastructure DEFERRED — Stage 1 uses `InProcessIntegrationEventBus` (immediate
@@ -129,7 +129,7 @@ carryover, they're Stripe concerns):**
   session). Under Option B, `TicketService.PurchaseAsync` stays in Concert as the
   orchestrator and calls `IPaymentModule.PurchaseTicketsAsync` instead of the legacy internal
   dispatcher (rewired in Step 7). `CompleteAsync` body becomes
-  `IConcertTicketPaymentModule.IssueTicketsAsync`. `GetUserUpcomingAsync` /
+  `ITicketPaymentModule.IssueTicketsAsync`. `GetUserUpcomingAsync` /
   `GetUserHistoryAsync` stay on `TicketService` (Concert-side reads).
 - `TicketValidator` — stays in Concert (ticket-side eligibility).
 - `ConcertValidator` — stays in Concert. Concert pre-condition; not Payment's job.
@@ -246,13 +246,13 @@ Flip all legacy payment impl classes `public` → `internal` in `Concertable.Inf
 Add to `Concertable.Concert.Contracts`:
 
 ```csharp
-public interface IConcertLifecycleModule
+public interface IConcertWorkflowModule
 {
     Task SettleAsync(int bookingId, CancellationToken ct = default);
     Task FinishAsync(int concertId, CancellationToken ct = default);
 }
 
-public interface IConcertTicketPaymentModule
+public interface ITicketPaymentModule
 {
     Task<IReadOnlyList<Guid>> IssueTicketsAsync(int concertId, Guid userId, int quantity, CancellationToken ct = default);
     Task RefundTicketAsync(Guid ticketId, CancellationToken ct = default);
@@ -322,7 +322,7 @@ Move all services, repositories, factories, validators per the lists above:
 - Webhook handlers (`WebhookService`, `WebhookProcessor`, `WebhookQueue`,
   `TicketWebhookHandler`, `SettlementWebhookHandler`) from
   `Concert.Infrastructure/Services/Webhook/` to `Payment.Infrastructure/Services/Webhook/`.
-  They call Concert via `IConcertLifecycleModule` / `IConcertTicketPaymentModule`.
+  They call Concert via `IConcertWorkflowModule` / `ITicketPaymentModule`.
 
 **`PaymentModule` impl** (`internal sealed class PaymentModule : IPaymentModule`,
 `Payment.Infrastructure/PaymentModule.cs`):
@@ -517,7 +517,7 @@ internal class SettlementWebhookHandler : ISettlementWebhookStrategy
 }
 ```
 
-Step 7 rewrites: `ISettlementDispatcher` → `IConcertLifecycleModule.SettleAsync(bookingId, ct)`.
+Step 7 rewrites: `ISettlementDispatcher` → `IConcertWorkflowModule.SettleAsync(bookingId, ct)`.
 
 ---
 
@@ -526,8 +526,8 @@ Step 7 rewrites: `ISettlementDispatcher` → `IConcertLifecycleModule.SettleAsyn
 | Caller | Dependency | Resolution |
 |--------|-----------|-----------|
 | `TicketService.PurchaseAsync` (Concert post Pre-Step-1) | `ITicketPaymentDispatcher` (legacy) | → `IPaymentModule.PurchaseTicketsAsync(..., contract)` (Step 7) |
-| `TicketService.CompleteAsync` (Concert post Pre-Step-1) | called directly by `TicketWebhookHandler` | → exposed via `IConcertTicketPaymentModule.IssueTicketsAsync` (Step 4) |
-| `SettlementWebhookHandler` (moves to Payment in Step 7) | `ISettlementDispatcher` (Concert-internal) | → `IConcertLifecycleModule.SettleAsync` (Step 4) |
-| `TicketWebhookHandler` (moves to Payment in Step 7) | `TicketService.CompleteAsync` direct call | → `IConcertTicketPaymentModule.IssueTicketsAsync` (Step 4) |
+| `TicketService.CompleteAsync` (Concert post Pre-Step-1) | called directly by `TicketWebhookHandler` | → exposed via `ITicketPaymentModule.IssueTicketsAsync` (Step 4) |
+| `SettlementWebhookHandler` (moves to Payment in Step 7) | `ISettlementDispatcher` (Concert-internal) | → `IConcertWorkflowModule.SettleAsync` (Step 4) |
+| `TicketWebhookHandler` (moves to Payment in Step 7) | `TicketService.CompleteAsync` direct call | → `ITicketPaymentModule.IssueTicketsAsync` (Step 4) |
 | Payment workflows | `UserEntity.StripeAccountId` / `StripeCustomerId` reads | → `PayoutAccountRepository.GetByUserIdAsync` (Step 7); columns dropped from `UserEntity` |
 | Payment workflows | Direct subtype reads on `*ContractEntity` | → `IContract` passed in via `IPaymentModule` boundary (Step 6/7) |
