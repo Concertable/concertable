@@ -47,11 +47,11 @@ internal class ConcertBookingRepository : IdModuleRepository<ConcertBookingEntit
             .FirstOrDefaultAsync();
     }
 
-    public Task<int?> GetOpportunityIdAsync(int bookingId)
+    public Task<int?> GetContractIdByBookingIdAsync(int bookingId)
     {
         return context.ConcertBookings
             .Where(b => b.Id == bookingId)
-            .Select(b => (int?)b.Application.OpportunityId)
+            .Select(b => (int?)b.Application.Opportunity.ContractId)
             .FirstOrDefaultAsync();
     }
 }

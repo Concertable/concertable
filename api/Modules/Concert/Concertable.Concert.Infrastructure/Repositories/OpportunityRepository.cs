@@ -60,11 +60,4 @@ internal class OpportunityRepository : IdModuleRepository<OpportunityEntity, Con
             .FirstOrDefaultAsync();
     }
 
-    public Task<int> GetContractIdAsync(int opportunityId)
-    {
-        return context.Opportunities
-            .Where(o => o.Id == opportunityId)
-            .Select(o => o.ContractId)
-            .FirstOrDefaultAsync();
-    }
 }

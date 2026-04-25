@@ -7,5 +7,4 @@ internal interface IOpportunityRepository : IIdRepository<OpportunityEntity>
     Task<OpportunityEntity?> GetWithVenueByIdAsync(int id);
     Task<OpportunityEntity?> GetByApplicationIdAsync(int id);
     Task<Guid?> GetOwnerByIdAsync(int id);
-    Task<int> GetContractIdAsync(int opportunityId);
 }
