@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Data;

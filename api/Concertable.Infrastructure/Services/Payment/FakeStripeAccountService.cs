@@ -1,10 +1,10 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Core.Enums;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class FakeStripeAccountService : IStripeAccountService
+internal class FakeStripeAccountService : IStripeAccountService
 {
     public Task AddCustomerAsync(UserEntity user)
     {

@@ -14,7 +14,11 @@
     <ProjectReference Include="..\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
     <ProjectReference Include="..\..\Contract\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <!-- TEMPORARY: IStripeAccountService.AddCustomerAsync/AddConnectAccountAsync take
+         UserEntity / ManagerEntity. Step 7 rewrites both to write PayoutAccountEntity. -->
+    <ProjectReference Include="..\..\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
     <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
   </ItemGroup>
@@ -22,6 +26,7 @@
   <ItemGroup>
     <PackageReference Include="FluentResults" Version="4.0.0" />
     <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="Stripe.net" Version="47.3.0" />
   </ItemGroup>
 
 </Project>

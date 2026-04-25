@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Core.Enums;
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
@@ -10,8 +10,8 @@ using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
-using Concertable.Infrastructure.Interfaces;
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces.Webhook;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Infrastructure.Services.Payment;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
@@ -33,7 +33,7 @@ public class ApiFixture : IAsyncLifetime
     private IServiceScope? scope;
 
     internal IMockNotificationService NotificationService { get; } = new MockNotificationService();
-    public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
+    internal IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;

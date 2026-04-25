@@ -1,11 +1,11 @@
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Stripe;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class StripePaymentClient : IStripePaymentClient
+internal class StripePaymentClient : IStripePaymentClient
 {
     public StripePaymentClient(IOptions<StripeSettings> stripeSettings)
     {

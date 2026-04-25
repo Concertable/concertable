@@ -1,14 +1,13 @@
 using Concertable.Application.Interfaces;
 using Concertable.Identity.Contracts;
-using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Core.Enums;
 using Concertable.Shared.Exceptions;
 using Concertable.Core.Parameters;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class TransactionService : ITransactionService
+internal class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository purchaseRepository;
     private readonly ICurrentUser currentUser;

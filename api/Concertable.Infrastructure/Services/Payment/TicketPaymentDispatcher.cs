@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Responses;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Infrastructure.Factories;
 using FluentResults;

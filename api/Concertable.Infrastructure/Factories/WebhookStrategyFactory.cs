@@ -1,10 +1,10 @@
 using Concertable.Core.Enums;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Factories;
 
-public class WebhookStrategyFactory : IWebhookStrategyFactory
+internal class WebhookStrategyFactory : IWebhookStrategyFactory
 {
     private readonly IServiceProvider serviceProvider;
 

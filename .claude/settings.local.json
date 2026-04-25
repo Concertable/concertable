@@ -5,7 +5,9 @@
       "Bash(xargs ls *)",
       "Bash(xargs cat *)",
       "Bash(dotnet build *)",
-      "Bash(dotnet sln *)"
+      "Bash(dotnet sln *)",
+      "Bash(rm api/Concertable.Application/Interfaces/Payment/*.cs api/Concertable.Application/Interfaces/IStripeEventRepository.cs api/Concertable.Infrastructure/Interfaces/*.cs api/Concertable.Application/DTOs/PaymentDtos.cs api/Concertable.Application/Requests/PaymentRequests.cs api/Concertable.Application/Responses/PaymentResponses.cs api/Concertable.Application/Mappers/TransactionMapper.cs api/Concertable.Application/Mappers/TicketTransactionMapper.cs api/Concertable.Application/Mappers/ConcertTransactionMapper.cs api/Modules/Concert/Concertable.Concert.Application/Interfaces/ITicketPaymentStrategy.cs)",
+      "Bash(rmdir api/Concertable.Application/Interfaces/Payment api/Concertable.Infrastructure/Interfaces)"
     ]
   }
 }

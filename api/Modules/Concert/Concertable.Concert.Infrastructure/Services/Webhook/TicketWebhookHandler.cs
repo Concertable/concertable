@@ -1,6 +1,6 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Core.Enums;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Microsoft.Extensions.Logging;
 using Stripe;
 

@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 

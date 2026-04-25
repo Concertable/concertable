@@ -1,13 +1,13 @@
 using Concertable.Core.Enums;
 using Concertable.Infrastructure.Factories;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Factories;
 
-public class WebhookStrategyFactoryTests
+internal class WebhookStrategyFactoryTests
 {
     private static readonly IWebhookStrategy concertStrategy = new Mock<IWebhookStrategy>().Object;
     private static readonly IWebhookStrategy settlementStrategy = new Mock<IWebhookStrategy>().Object;

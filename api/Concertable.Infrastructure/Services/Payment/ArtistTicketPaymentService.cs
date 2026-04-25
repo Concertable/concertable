@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Identity.Contracts;
 using Concertable.Shared.Exceptions;

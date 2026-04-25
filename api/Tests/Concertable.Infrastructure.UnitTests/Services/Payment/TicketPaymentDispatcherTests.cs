@@ -1,4 +1,3 @@
-using Concertable.Application.Responses;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Contract.Abstractions;
 using Concertable.Infrastructure.Factories;

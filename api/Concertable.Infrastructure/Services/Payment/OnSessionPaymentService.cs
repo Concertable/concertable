@@ -1,9 +1,9 @@
-using Concertable.Application.Interfaces.Payment;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class OnSessionPaymentService : PaymentService
+internal class OnSessionPaymentService : PaymentService
 {
     public OnSessionPaymentService(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService)
         : base(stripeClient, stripeAccountService) { }

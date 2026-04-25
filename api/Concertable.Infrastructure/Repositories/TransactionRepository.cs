@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Payment;
-using Concertable.Application.Responses;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Infrastructure.Data;
 using Concertable.Infrastructure.Helpers;
 using Concertable.Core.Entities;
@@ -9,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Repositories;
 
-public class TransactionRepository : Repository<TransactionEntity>, ITransactionRepository
+internal class TransactionRepository : Repository<TransactionEntity>, ITransactionRepository
 {
     public TransactionRepository(ApplicationDbContext context) : base(context) { }
 

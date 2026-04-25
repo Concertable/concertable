@@ -1,10 +1,10 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Core.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Validators;
 
-public class StripeValidationFactory : IStripeValidationFactory
+internal class StripeValidationFactory : IStripeValidationFactory
 {
     private readonly IServiceProvider serviceProvider;
 

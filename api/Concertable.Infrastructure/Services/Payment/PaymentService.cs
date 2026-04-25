@@ -1,15 +1,14 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
 using Concertable.Core.Enums;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Infrastructure.Mappers;
 using FluentResults;
 using Stripe;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public abstract class PaymentService : IPaymentService
+internal abstract class PaymentService : IPaymentService
 {
     private readonly IStripePaymentClient stripeClient;
     private readonly IStripeAccountService stripeAccountService;

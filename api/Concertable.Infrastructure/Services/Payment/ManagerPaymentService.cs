@@ -1,13 +1,12 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class ManagerPaymentService : IManagerPaymentService
+internal class ManagerPaymentService : IManagerPaymentService
 {
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPaymentService paymentService;

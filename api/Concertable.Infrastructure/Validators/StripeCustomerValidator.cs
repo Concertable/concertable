@@ -1,9 +1,9 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Identity.Contracts;
 
 namespace Concertable.Infrastructure.Validators;
 
-public class StripeCustomerValidator : IStripeValidationStrategy
+internal class StripeCustomerValidator : IStripeValidationStrategy
 {
     private readonly IAuthModule authModule;
     private readonly IManagerModule managerModule;

@@ -1,13 +1,7 @@
-using Concertable.Concert.Application.Interfaces;
-using Concertable.Contract.Abstractions;
+using Concertable.Payment.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Factories;
-
-internal interface ITicketPaymentStrategyFactory
-{
-    ITicketPaymentStrategy Create(ContractType type);
-}
 
 internal sealed class TicketPaymentStrategyFactory(IServiceProvider sp) : ITicketPaymentStrategyFactory
 {

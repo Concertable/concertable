@@ -1,7 +1,6 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
-using Concertable.Application.Responses;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Domain;
 using Concertable.Core.Enums;

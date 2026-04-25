@@ -1,5 +1,5 @@
 using System.Transactions;
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Contract.Abstractions;
 using Concertable.Shared.Exceptions;
 

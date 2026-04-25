@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Concertable.Infrastructure.Repositories;
 
-public class StripeEventRepository : IStripeEventRepository
+internal class StripeEventRepository : IStripeEventRepository
 {
     private readonly ApplicationDbContext context;
 

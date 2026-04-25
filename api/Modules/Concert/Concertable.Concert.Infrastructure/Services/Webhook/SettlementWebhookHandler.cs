@@ -1,5 +1,5 @@
-using Concertable.Application.Interfaces.Payment;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Stripe;
 
 namespace Concertable.Concert.Infrastructure.Services.Webhook;

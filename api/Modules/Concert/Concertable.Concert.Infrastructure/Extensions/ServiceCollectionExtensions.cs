@@ -23,7 +23,7 @@ using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Handlers;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Infrastructure.Services.Payment;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;

@@ -1,13 +1,12 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
 using Concertable.Shared.Exceptions;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class CustomerPaymentService : ICustomerPaymentService
+internal class CustomerPaymentService : ICustomerPaymentService
 {
     private readonly IPaymentService paymentService;
     private readonly IStripeAccountService stripeAccountService;

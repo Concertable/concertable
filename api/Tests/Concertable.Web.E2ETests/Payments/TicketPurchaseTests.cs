@@ -1,5 +1,4 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Responses;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;

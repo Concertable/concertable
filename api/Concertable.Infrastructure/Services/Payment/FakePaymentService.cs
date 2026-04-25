@@ -1,13 +1,12 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Application.Requests;
-using Concertable.Application.Responses;
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using FluentResults;
 using Stripe;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class FakePaymentService : IPaymentService
+internal class FakePaymentService : IPaymentService
 {
     private readonly IWebhookQueue webhookQueue;
 

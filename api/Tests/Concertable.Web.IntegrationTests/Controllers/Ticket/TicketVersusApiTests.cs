@@ -1,8 +1,6 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Responses;
-using Concertable.Application.Responses;
 using Concertable.Concert.Api.Responses;
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Core.Enums;
 using Xunit;

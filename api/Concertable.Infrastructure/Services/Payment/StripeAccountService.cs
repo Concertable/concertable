@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Application.DTOs;
 using Concertable.Shared.Exceptions;
 using Concertable.Infrastructure.Settings;
@@ -9,7 +9,7 @@ using Stripe;
 
 namespace Concertable.Infrastructure.Services.Payment;
 
-public class StripeAccountService : IStripeAccountService
+internal class StripeAccountService : IStripeAccountService
 {
     private readonly string baseUri;
     private readonly AccountService accountService;

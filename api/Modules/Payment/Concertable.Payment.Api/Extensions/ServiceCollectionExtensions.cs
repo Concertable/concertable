@@ -1,3 +1,4 @@
+using Concertable.Payment.Api.Controllers;
 using Concertable.Payment.Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +10,10 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddPaymentApi(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddPaymentModule(configuration);
-        // Controllers + InternalControllerFeatureProvider land in Step 8.
+        services.AddControllers()
+            .AddApplicationPart(typeof(PaymentController).Assembly)
+            .ConfigureApplicationPartManager(apm =>
+                apm.FeatureProviders.Add(new InternalControllerFeatureProvider()));
         return services;
     }
 }

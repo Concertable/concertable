@@ -1,8 +1,8 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 
 namespace Concertable.Infrastructure.Validators;
 
-public class StripeValidator : IStripeValidator
+internal class StripeValidator : IStripeValidator
 {
     private readonly StripeAccountValidator accountValidator;
     private readonly StripeCustomerValidator customerValidator;

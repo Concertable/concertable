@@ -1,4 +1,4 @@
-using Concertable.Infrastructure.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Microsoft.Extensions.DependencyInjection;
 using Stripe;
 
