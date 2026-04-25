@@ -1,4 +1,4 @@
-using Concertable.Payment.Application.Interfaces;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +10,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IConcertBookingRepository bookingRepository;
     private readonly IApplicationAcceptHandler acceptHandler;
-    private readonly IManagerPaymentService managerPaymentService;
+    private readonly IManagerPaymentModule managerPaymentModule;
     private readonly IConcertDraftService concertDraftService;
 
     public UpfrontConcertService(
@@ -18,14 +18,14 @@ internal class UpfrontConcertService : IUpfrontConcertService
         IOpportunityApplicationRepository applicationRepository,
         IConcertBookingRepository bookingRepository,
         IApplicationAcceptHandler acceptHandler,
-        [FromKeyedServices("onSession")] IManagerPaymentService managerPaymentService,
+        [FromKeyedServices("onSession")] IManagerPaymentModule managerPaymentModule,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
         this.bookingRepository = bookingRepository;
         this.acceptHandler = acceptHandler;
-        this.managerPaymentService = managerPaymentService;
+        this.managerPaymentModule = managerPaymentModule;
         this.concertDraftService = concertDraftService;
     }
 
@@ -41,7 +41,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         await acceptHandler.HandleAsync(applicationId, bookingConcert);
 
-        var payment = await managerPaymentService.PayAsync(payer, payee, amount, bookingConcert.Id, paymentMethodId);
+        var payment = await managerPaymentModule.PayAsync(payer, payee, amount, bookingConcert.Id, paymentMethodId);
         return new ImmediateAcceptOutcome(payment);
     }
 

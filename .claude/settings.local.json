@@ -13,7 +13,9 @@
       "Bash(cat \"C:\\\\\\\\Users\\\\\\\\TOMMYS~1\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-TommySeery-source-repos-Concertable\\\\\\\\e25a1ec3-8c72-48ef-8b56-2acfa2fa8b3d\\\\\\\\tasks\\\\\\\\b8tcfoj8b.output\")",
       "Bash(dotnet test *)",
       "Bash(grep -E \"^.*error|Build succeeded|Error\\\\\\(s\\\\\\)\" \"C:\\\\\\\\Users\\\\\\\\TOMMYS~1\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-TommySeery-source-repos-Concertable\\\\\\\\e25a1ec3-8c72-48ef-8b56-2acfa2fa8b3d\\\\\\\\tasks\\\\\\\\bpz9h2ol2.output\")",
-      "Bash(tail *)"
+      "Bash(tail *)",
+      "Bash(ls -la \"C:\\\\\\\\Users\\\\\\\\TOMMYS~1\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-TommySeery-source-repos-Concertable\\\\\\\\e25a1ec3-8c72-48ef-8b56-2acfa2fa8b3d\\\\\\\\tasks\\\\\\\\bxe4pjpr5.output\")",
+      "Bash(wc -l \"C:\\\\\\\\Users\\\\\\\\TOMMYS~1\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-TommySeery-source-repos-Concertable\\\\\\\\e25a1ec3-8c72-48ef-8b56-2acfa2fa8b3d\\\\\\\\tasks\\\\\\\\bxe4pjpr5.output\")"
     ]
   }
 }

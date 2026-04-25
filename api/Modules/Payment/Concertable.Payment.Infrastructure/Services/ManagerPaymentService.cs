@@ -1,8 +1,9 @@
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
-internal class ManagerPaymentService : IManagerPaymentService
+internal class ManagerPaymentService : IManagerPaymentService, IManagerPaymentModule
 {
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPaymentService paymentService;

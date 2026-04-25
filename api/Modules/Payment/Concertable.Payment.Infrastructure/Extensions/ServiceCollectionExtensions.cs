@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Payment.Contracts;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Background;
@@ -94,7 +95,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
 
-        // Module facade
+        // Module facades
         services.AddScoped<IPaymentModule, PaymentModule>();
 
         return services;
@@ -118,12 +119,20 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static void AddKeyedManagerPaymentService(IServiceCollection services, string key) =>
-        services.AddKeyedScoped<IManagerPaymentService>(key, (sp, _) =>
+    private static void AddKeyedManagerPaymentService(IServiceCollection services, string key)
+    {
+        services.AddKeyedScoped<ManagerPaymentService>(key, (sp, _) =>
             new ManagerPaymentService(
                 sp.GetRequiredService<IStripeAccountService>(),
                 sp.GetRequiredKeyedService<IPaymentService>(key),
                 sp.GetRequiredService<ITransactionService>(),
                 sp.GetRequiredService<IPayoutAccountRepository>(),
                 sp.GetRequiredService<TimeProvider>()));
+
+        services.AddKeyedScoped<IManagerPaymentService>(key,
+            (sp, _) => sp.GetRequiredKeyedService<ManagerPaymentService>(key));
+
+        services.AddKeyedScoped<IManagerPaymentModule>(key,
+            (sp, _) => sp.GetRequiredKeyedService<ManagerPaymentService>(key));
+    }
 }
