@@ -4,5 +4,4 @@ namespace Concertable.Contract.Application.Interfaces;
 
 internal interface IContractRepository : IIdRepository<ContractEntity>
 {
-    Task<ContractEntity?> GetByOpportunityIdAsync(int opportunityId, CancellationToken ct = default);
 }

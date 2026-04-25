@@ -2,5 +2,8 @@ namespace Concertable.Contract.Abstractions;
 
 public interface IContractModule
 {
-    Task<IContract?> GetByOpportunityAsync(int opportunityId, CancellationToken ct = default);
+    Task<IContract?> GetByIdAsync(int contractId, CancellationToken ct = default);
+    Task<int> CreateAsync(IContract contract, CancellationToken ct = default);
+    Task UpdateAsync(int contractId, IContract contract, CancellationToken ct = default);
+    Task DeleteAsync(int contractId, CancellationToken ct = default);
 }

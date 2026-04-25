@@ -7,10 +7,10 @@ public class VenueHireContractEntity : ContractEntity
     public override ContractType ContractType => ContractType.VenueHire;
     public decimal HireFee { get; private set; }
 
-    public static VenueHireContractEntity Create(int opportunityId, decimal hireFee, PaymentMethod paymentMethod)
+    public static VenueHireContractEntity Create(decimal hireFee, PaymentMethod paymentMethod)
     {
         ValidateFee(hireFee);
-        return new() { OpportunityId = opportunityId, HireFee = hireFee, PaymentMethod = paymentMethod };
+        return new() { HireFee = hireFee, PaymentMethod = paymentMethod };
     }
 
     public void Update(decimal hireFee, PaymentMethod paymentMethod)

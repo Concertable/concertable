@@ -1,3 +1,4 @@
+using Concertable.Contract.Abstractions;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Application;
@@ -5,22 +6,22 @@ namespace Concertable.Concert.Infrastructure.Services.Application;
 internal class VersusConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IDeferredConcertService deferredConcertService;
-    private readonly IContractRepository contractRepository;
     private readonly IConcertRepository concertRepository;
     private readonly IConcertBookingRepository bookingRepository;
+    private readonly IContractLookup contractLookup;
     private readonly IManagerModule managerModule;
 
     public VersusConcertWorkflow(
         IDeferredConcertService deferredConcertService,
-        IContractRepository contractRepository,
         IConcertRepository concertRepository,
         IConcertBookingRepository bookingRepository,
+        IContractLookup contractLookup,
         IManagerModule managerModule)
     {
         this.deferredConcertService = deferredConcertService;
-        this.contractRepository = contractRepository;
         this.concertRepository = concertRepository;
         this.bookingRepository = bookingRepository;
+        this.contractLookup = contractLookup;
         this.managerModule = managerModule;
     }
 
@@ -30,11 +31,8 @@ internal class VersusConcertWorkflow : IConcertWorkflowStrategy
     public Task SettleAsync(int bookingId) =>
         deferredConcertService.SettleAsync(bookingId);
 
-    public async Task<IFinishOutcome> FinishedAsync(int concertId)
+    public async Task<IFinishOutcome> FinishAsync(int concertId)
     {
-        var contract = await contractRepository.GetByConcertIdAsync<VersusContractEntity>(concertId)
-            ?? throw new NotFoundException("Versus contract not found");
-
         var booking = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");
 
@@ -43,8 +41,9 @@ internal class VersusConcertWorkflow : IConcertWorkflowStrategy
         var artistManager = await managerModule.GetByIdAsync(booking.Application.Artist.UserId)
             ?? throw new NotFoundException("Artist manager not found");
 
+        var contract = (VersusContract)await contractLookup.GetByConcertIdAsync(concertId);
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
-        var artistShare = contract.CalculateArtistShare(totalRevenue);
+        var artistShare = contract.Guarantee + (totalRevenue * (contract.ArtistDoorPercent / 100));
 
         return await deferredConcertService.FinishedAsync(concertId, venueManager, artistManager, artistShare);
     }

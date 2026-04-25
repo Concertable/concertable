@@ -17,7 +17,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
     private readonly IManagerModule managerModule;
-    private readonly IAcceptDispatcher acceptDispatcher;
+    private readonly IAcceptanceDispatcher acceptDispatcher;
     private readonly IOpportunityApplicationMapper mapper;
 
     public OpportunityApplicationService(
@@ -31,7 +31,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         IOpportunityService opportunityService,
         IArtistModule artistModule,
         IManagerModule managerModule,
-        IAcceptDispatcher acceptDispatcher,
+        IAcceptanceDispatcher acceptDispatcher,
         IOpportunityApplicationMapper mapper)
     {
         this.applicationRepository = applicationRepository;

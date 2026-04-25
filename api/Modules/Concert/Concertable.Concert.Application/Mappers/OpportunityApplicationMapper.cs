@@ -22,7 +22,6 @@ internal class OpportunityApplicationMapper : IOpportunityApplicationMapper
                 Genres = application.Artist.Genres.Select(g => new GenreDto(g.Genre.Id, g.Genre.Name))
             },
             opportunityMapper.ToDto(application.Opportunity),
-            application.Opportunity.Contract.ContractType,
             application.Status);
 
     public IEnumerable<OpportunityApplicationDto> ToDtos(IEnumerable<OpportunityApplicationEntity> applications) =>

@@ -1,5 +1,6 @@
 using Concertable.Contract.Application.Interfaces;
 using Concertable.Contract.Application.Mappers;
+using Concertable.Contract.Application.Services;
 using Concertable.Contract.Infrastructure.Data;
 using Concertable.Contract.Infrastructure.Repositories;
 using Concertable.Data.Infrastructure;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<IContractMapper, ContractMapper>();
+        services.AddScoped<IContractService, ContractService>();
         services.AddScoped<IContractModule, ContractModule>();
 
         services.AddSingleton<ContractConfigurationProvider>();

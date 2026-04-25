@@ -15,6 +15,6 @@ using System.Runtime.CompilerServices;
 // TEMPORARY: Concertable.Workers re-registers Concert dispatchers/strategies until Step 12 collapses to AddConcertModule().
 [assembly: InternalsVisibleTo("Concertable.Infrastructure")]
 [assembly: InternalsVisibleTo("Concertable.Workers")]
-// TEMPORARY: DevController + E2EEndpointExtensions inject IAcceptDispatcher/IFinishedDispatcher
+// TEMPORARY: DevController + E2EEndpointExtensions inject IAcceptanceDispatcher/ICompletionDispatcher
 // directly. Remove when those routes move into Concert.Api. See CONCERT_MODULE_REFACTOR.md §Stage 0.
 [assembly: InternalsVisibleTo("Concertable.Web")]

@@ -10,22 +10,22 @@ namespace Concertable.Workers.UnitTests.Functions;
 public class ConcertFinishedFunctionTests
 {
     private readonly Mock<IConcertRepository> concertRepository;
-    private readonly Mock<IFinishedDispatcher> finishedDispatcher;
+    private readonly Mock<ICompletionDispatcher> completionDispatcher;
     private readonly Mock<ILogger<ConcertFinishedFunction>> logger;
     private readonly ConcertFinishedFunction sut;
 
     public ConcertFinishedFunctionTests()
     {
         concertRepository = new Mock<IConcertRepository>();
-        finishedDispatcher = new Mock<IFinishedDispatcher>();
+        completionDispatcher = new Mock<ICompletionDispatcher>();
         logger = new Mock<ILogger<ConcertFinishedFunction>>();
-        sut = new ConcertFinishedFunction(concertRepository.Object, finishedDispatcher.Object, logger.Object);
+        sut = new ConcertFinishedFunction(concertRepository.Object, completionDispatcher.Object, logger.Object);
 
-        finishedDispatcher.Setup(p => p.FinishedAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok<IFinishOutcome>(new ImmediateFinishOutcome()));
+        completionDispatcher.Setup(p => p.FinishAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok<IFinishOutcome>(new ImmediateFinishOutcome()));
     }
 
     [Fact]
-    public async Task Run_ShouldCallFinishedAsync_ForEachEndedConcert()
+    public async Task Run_ShouldCallFinishAsync_ForEachEndedConcert()
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([1, 2, 3]);
@@ -34,9 +34,9 @@ public class ConcertFinishedFunctionTests
         await sut.Run(null!);
 
         // Assert
-        finishedDispatcher.Verify(p => p.FinishedAsync(1), Times.Once);
-        finishedDispatcher.Verify(p => p.FinishedAsync(2), Times.Once);
-        finishedDispatcher.Verify(p => p.FinishedAsync(3), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(1), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(2), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(3), Times.Once);
     }
 
     [Fact]
@@ -44,19 +44,19 @@ public class ConcertFinishedFunctionTests
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([1, 2, 3]);
-        finishedDispatcher.Setup(p => p.FinishedAsync(2)).ReturnsAsync(Result.Fail<IFinishOutcome>("Payment failed"));
+        completionDispatcher.Setup(p => p.FinishAsync(2)).ReturnsAsync(Result.Fail<IFinishOutcome>("Payment failed"));
 
         // Act
         await sut.Run(null!);
 
         // Assert
-        finishedDispatcher.Verify(p => p.FinishedAsync(1), Times.Once);
-        finishedDispatcher.Verify(p => p.FinishedAsync(2), Times.Once);
-        finishedDispatcher.Verify(p => p.FinishedAsync(3), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(1), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(2), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(3), Times.Once);
     }
 
     [Fact]
-    public async Task Run_ShouldNotCallFinishedAsync_WhenNoEndedConcerts()
+    public async Task Run_ShouldNotCallFinishAsync_WhenNoEndedConcerts()
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([]);
@@ -65,6 +65,6 @@ public class ConcertFinishedFunctionTests
         await sut.Run(null!);
 
         // Assert
-        finishedDispatcher.Verify(p => p.FinishedAsync(It.IsAny<int>()), Times.Never);
+        completionDispatcher.Verify(p => p.FinishAsync(It.IsAny<int>()), Times.Never);
     }
 }

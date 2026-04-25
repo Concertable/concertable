@@ -24,10 +24,10 @@ internal class OpportunityApiTests : IAsyncLifetime
 
     public static TheoryData<IContract> AllContractTypes =>
     [
-        new FlatFeeContractDto { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
-        new DoorSplitContractDto { PaymentMethod = PaymentMethod.Cash, ArtistDoorPercent = 70 },
-        new VersusContractDto { PaymentMethod = PaymentMethod.Cash, Guarantee = 200, ArtistDoorPercent = 60 },
-        new VenueHireContractDto { PaymentMethod = PaymentMethod.Cash, HireFee = 300 },
+        new FlatFeeContract { PaymentMethod = PaymentMethod.Cash, Fee = 500 },
+        new DoorSplitContract { PaymentMethod = PaymentMethod.Cash, ArtistDoorPercent = 70 },
+        new VersusContract { PaymentMethod = PaymentMethod.Cash, Guarantee = 200, ArtistDoorPercent = 60 },
+        new VenueHireContract { PaymentMethod = PaymentMethod.Cash, HireFee = 300 },
     ];
 
     #region Create

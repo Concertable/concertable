@@ -70,6 +70,14 @@ internal class OpportunityApplicationRepository : IdModuleRepository<Opportunity
             .ExecuteUpdateAsync(s => s.SetProperty(a => a.Status, ApplicationStatus.Rejected));
     }
 
+    public Task<int?> GetOpportunityIdAsync(int applicationId)
+    {
+        return context.OpportunityApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => (int?)a.OpportunityId)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<IEnumerable<OpportunityApplicationEntity>> GetRecentDeniedByArtistIdAsync(int artistId)
     {
         return await context.OpportunityApplications

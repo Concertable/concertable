@@ -33,4 +33,13 @@ internal sealed class ContractMapper : IContractMapper
         },
         _ => throw new InvalidOperationException($"Unknown contract type {entity.GetType().Name}")
     };
+
+    public ContractEntity ToEntity(IContract contract) => contract switch
+    {
+        FlatFeeContract c => FlatFeeContractEntity.Create(c.Fee, c.PaymentMethod),
+        DoorSplitContract c => DoorSplitContractEntity.Create(c.ArtistDoorPercent, c.PaymentMethod),
+        VersusContract c => VersusContractEntity.Create(c.Guarantee, c.ArtistDoorPercent, c.PaymentMethod),
+        VenueHireContract c => VenueHireContractEntity.Create(c.HireFee, c.PaymentMethod),
+        _ => throw new InvalidOperationException($"Unknown contract type {contract.GetType().Name}")
+    };
 }

@@ -139,14 +139,12 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
             .AnyAsync(e => e.Booking.Application.Opportunity.Period.Start.Date == date.Date);
     }
 
-    public async Task<ContractType?> GetTypeByIdAsync(int id)
+    public Task<int?> GetOpportunityIdAsync(int concertId)
     {
-        var contract = await context.Concerts
-            .Where(c => c.Id == id)
-            .Select(c => c.Booking.Application.Opportunity.Contract)
+        return context.Concerts
+            .Where(c => c.Id == concertId)
+            .Select(c => (int?)c.Booking.Application.OpportunityId)
             .FirstOrDefaultAsync();
-
-        return contract?.ContractType;
     }
 
     public async Task<IEnumerable<int>> GetEndedConfirmedIdsAsync()

@@ -1,5 +1,370 @@
 # Contract Module Extraction — Implementation Plan
 
+---
+
+## ▶️ RESUME HERE (post-compact, 2026-04-25)
+
+**You are in the middle of Step 9.** Steps 0–8 are done. Step 9 has been re-architected mid-flight.
+Read this whole RESUME block before touching code.
+
+### The locked design (Direction B + B-split)
+
+**Single FK, single direction, Contract is satellite.**
+
+- `Opportunities.ContractId → Contracts.Id` is the **only** FK between them.
+- `Contracts.OpportunityId` column **does not exist** in the new design (it does in code today
+  — see "Phase B-redux" below for the undo work).
+- `ContractEntity` has **zero outward references**. It's a pure terms-of-deal record. Nothing
+  in `Contract.Domain` knows about Opportunity, Concert, or anything else.
+- 1:1 enforced by `HasIndex(o => o.ContractId).IsUnique()` on `OpportunityEntityConfiguration`
+  (Concert side).
+- **Create flow** (no chicken-and-egg): save Contract first → get `contractId` → save Opportunity
+  with `ContractId = contractId`. Insert order is unambiguous because the FK is one-way.
+- **Atomicity** via `TransactionScope` at `OpportunityService` boundary. Two physical DbContexts
+  (ConcertDbContext + ContractDbContext from Step 8) enroll automatically.
+- **Delete cleanup via event bus.** `OpportunityDeletedDomainEvent` → integration event →
+  Contract module subscriber calls `IContractService.DeleteAsync(contractId)`. Eventual
+  consistency. Orphan rows are harmless audit data if cleanup ever races.
+- **Read flow** via `IContractModule.GetByIdAsync(int contractId)` (renamed from
+  `GetByOpportunityAsync`). Dispatchers do **two PK hops**: `applicationRepo →
+  GetOpportunityIdAsync(appId)` → `opportunityRepo.GetContractIdAsync(oppId)` →
+  `contractModule.GetByIdAsync(contractId)`. Concert owns the relationship traversal because
+  Concert owns the relationships.
+- **`OpportunityDto.Contract` field DROPPED.** Frontend hits `GET /api/contract/{id}` keyed on
+  `opportunity.ContractId`. Contract.Module no longer needs the `/opportunity/{id}` route either.
+
+**Why this shape (1-line):** Contract.Module is a pure satellite — it knows nothing, just
+serves terms when asked by Id. Most module-pure shape in the whole refactor.
+
+### What's superseded from the original plan locks
+
+- **§2.2** PK split — partially. PK split itself stays (`ContractEntity.Id` is its own
+  auto-generated identity). But the explicit `OpportunityId` column on Contract is **gone**.
+- **§3.4** `IContractModule.GetByOpportunityAsync(int)` — replaced by `GetByIdAsync(int)`.
+- **§3.6** `IContractRepository.GetByOpportunityIdAsync` — deleted; use inherited
+  `IIdRepository<ContractEntity>.GetByIdAsync(int)`.
+- Step 9 dispatcher pattern — was one PK hop into Contract; now two PK hops (anchor → opp.id →
+  contract.id), both inside Concert.
+
+### What's still locked from earlier (DO NOT undo)
+
+- §3.1 per-consumer factories (Concert + Payment own their own strategy resolution; no generic
+  `IContractStrategyFactory<T>`).
+- §3.3 dedicated `ContractDbContext` (Step 8 stays — confirmed B-split, no rollback).
+- §3.7 five projects with `.Api`.
+- TPT inheritance over the four contract subtypes (`Contracts` + `FlatFeeContracts` +
+  `DoorSplitContracts` + `VenueHireContracts` + `VersusContracts`).
+- Strategy interfaces accept `IContract` per method (cast subtype at top of method body).
+- Dispatchers stay split + renamed noun-verb (`AcceptanceDispatcher` /
+  `SettlementDispatcher` / `CompletionDispatcher`).
+
+### Current build state (after Step 9 Phase A)
+
+Solution build: **2 reported errors + ~6 cascading behind them.**
+
+- 2 in `Concertable.Infrastructure/Services/Payment/TicketPaymentDispatcher.cs` —
+  `IContractStrategyResolver<>` reference (deleted in Step 4; consumer left for Step 9).
+- ~6 cascading in `Concert.Infrastructure/Services/{Accept,Settlement,Complete}/` dispatchers
+  (same `IContractStrategyResolver<>` ref; gated by `Concertable.Infrastructure` failing first
+  so dotnet doesn't surface them yet).
+
+All other build errors from earlier (21 total) were cleared in Phase A — see "Phase A done"
+section below for the mechanical cleanup detail.
+
+### Phase A — DONE (mechanical compile unblock; do not re-do)
+
+- Deleted from `Concert.Application`: `Mappers/{ContractMapper, FlatFeeContractMapper,
+  DoorSplitContractMapper, VersusContractMapper, VenueHireContractMapper}.cs` +
+  `Interfaces/IContractMapper.cs`.
+- Removed `services.AddSingleton<IContractMapper, ContractMapper>()` from
+  `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs`.
+- `Concertable.Data.Application.csproj`: gained ProjectRef → `Contract.Domain`;
+  `IReadDbContext.cs`: gained `using Concertable.Contract.Domain;`.
+  `Concertable.Data.Infrastructure/Data/ReadDbContext.cs`: same using.
+- `Concertable.Seeding/Factories/OpportunityFactory.cs`: param `ContractEntity contract` →
+  `int contractId`; reflection set switched from `nameof(OpportunityEntity.Contract)` →
+  `nameof(OpportunityEntity.ContractId)`. (Note: this whole factory disappears under the new
+  design — `OpportunityEntity.ContractId` stays, but seeders move to ContractDevSeeder/TestSeeder
+  per Step 10. Phase A keeps it as an interim crutch.)
+- `ConcertDevSeeder` (60 sites) + `ConcertTestSeeder` (10 sites): every
+  `XContractEntity.Create(...)` arg replaced with `contractId: <sequential int>` placeholder
+  via awk regex sub. **Runtime correctness is broken intentionally** until Step 10 reorders
+  contract creation.
+- `Concertable.Core.UnitTests`: gained ProjectRefs → `Contract.Abstractions` + `Contract.Domain`;
+  `GlobalUsings.cs` adds `Contract.Domain`. `DoorSplit/VersusContractEntityTests.cs` updated
+  to pass `opportunityId: 1` first arg (will need to drop that arg again under the redesign;
+  see Phase B-redux item 1).
+- `Web.IntegrationTests` `*ContractDto` → `*Contract` renames in
+  `Controllers/Opportunity/{OpportunityRequestBuilders, OpportunityApiTests}.cs` (sed).
+- `Concert.Application/Mappers/OpportunityMapper.cs`: ctor params dropped (was
+  `IContractMapper`); `Contract = null!` in `ToDto` with TODO. (Under redesign: drop the
+  field entirely from `OpportunityDto` — see Phase B-redux item 10.)
+- `Concert.Application/Mappers/OpportunityApplicationMapper.cs`: replaced
+  `application.Opportunity.Contract.ContractType` with `default` placeholder + TODO.
+- `Concert.Infrastructure/Services/OpportunityService.cs`:
+  `Create/CreateMultiple/UpdateAsync` stubbed `NotImplementedException` with Phase B TODO;
+  `IContractMapper` field removed from ctor.
+
+### Phase B-redux — UNDO + RESHAPE (execute next)
+
+The undo work driven by the redesign — flips the FK direction, drops `OpportunityId` from
+Contract, restructures the facade.
+
+1. **`Contract.Domain/Entities/ContractEntity.cs`** — drop the `OpportunityId` property
+   entirely. Subtype factory methods drop their first param:
+   `FlatFeeContractEntity.Create(int opportunityId, decimal fee, PaymentMethod)` →
+   `FlatFeeContractEntity.Create(decimal fee, PaymentMethod)`. Same for `DoorSplitContractEntity`,
+   `VersusContractEntity`, `VenueHireContractEntity`. Update `Update` methods correspondingly
+   (they don't currently take opportunityId, so likely no change there).
+2. **`Contract.Infrastructure/Data/Configurations/ContractEntityConfiguration.cs`** — drop
+   `Property(c => c.OpportunityId).IsRequired()` + `HasIndex(c => c.OpportunityId).IsUnique()`.
+   Keep the `ToTable("Contracts", Schema.Name)` + `UseTptMappingStrategy()` + the four subtype
+   `ToTable` configs.
+3. **`Concert.Infrastructure/Data/Configurations/OpportunityEntityConfiguration.cs`** — keep
+   `Property(o => o.ContractId).IsRequired()` + `HasIndex(o => o.ContractId).IsUnique()` (the
+   only direction now). Verify already in place from Step 5.
+4. **`Contract.Application/Interfaces/IContractRepository.cs`** — drop
+   `GetByOpportunityIdAsync(int, CancellationToken)`. Inherits `IIdRepository<ContractEntity>`
+   which already provides `GetByIdAsync(int)`. Add `AddAsync(ContractEntity)` /
+   `UpdateAsync(ContractEntity)` / `DeleteAsync(int contractId)` if not inherited (check
+   `IBaseRepository`/`IIdRepository` definitions in `Concertable.Shared.Domain/IIdRepository.cs`).
+5. **`Contract.Infrastructure/Repositories/ContractRepository.cs`** — drop the
+   `GetByOpportunityIdAsync` impl. Body shrinks to ctor + inherited methods. Concrete file
+   may end up with no body methods at all — that's fine.
+6. **`Contract.Abstractions/IContractModule.cs`** — rename method:
+   `Task<IContract?> GetByOpportunityAsync(int opportunityId, CancellationToken ct = default)`
+   → `Task<IContract?> GetByIdAsync(int contractId, CancellationToken ct = default)`.
+7. **`Contract.Infrastructure/ContractModule.cs`** — rename + impl:
+   `await contractRepository.GetByIdAsync(contractId)` → map → return.
+8. **`Contract.Application/Interfaces/IContractService.cs`** — extend:
+   ```csharp
+   Task<IContract> GetByIdAsync(int contractId);          // renamed from GetByOpportunityIdAsync
+   Task<int> CreateAsync(IContract contract);             // returns new contractId
+   Task UpdateAsync(int contractId, IContract contract);
+   Task DeleteAsync(int contractId);
+   ```
+9. **`Contract.Application/Services/ContractService.cs`** — implement the new methods.
+   Calls `IContractRepository.AddAsync/UpdateAsync/DeleteAsync` + maps via `IContractMapper`.
+   Need a new `IContractMapper.ToEntity(IContract)` companion to the existing `ToContract`.
+10. **`Contract.Application/Interfaces/IContractMapper.cs`** + `Mappers/ContractMapper.cs` —
+    add `ContractEntity ToEntity(IContract dto)` method. Switch on `dto.ContractType` →
+    `XContractEntity.Create(...)` (subtype factories now drop the opportunityId param per
+    item 1 above).
+11. **`Contract.Api/Controllers/ContractController.cs`** — route changes:
+    `GET api/contract/opportunity/{id}` → `GET api/contract/{id}`. (Optionally add
+    POST/PUT/DELETE if the frontend needs direct contract endpoints — currently OpportunityController
+    is the entry point so probably not needed.)
+12. **`api/Tests/Concertable.Core.UnitTests/Entities/Contracts/{DoorSplitContractEntityTests,
+    VersusContractEntityTests}.cs`** — drop the `opportunityId: 1` arg I added in Phase A
+    (subtypes' factories no longer take it).
+13. **Concert side: `OpportunityEntity.ContractId` field stays.** No change to Concert.Domain.
+    The existing `int ContractId` property is the right shape.
+14. **`Concert.Application/Interfaces/IOpportunityRepository.cs`** + impl — add
+    `Task<int> GetContractIdAsync(int opportunityId)` projection method. Single-column
+    indexed lookup. Used by Concert dispatchers (Phase C).
+
+### Phase B-bonus — Create/Update/Delete flow rewire
+
+15. **`Concert.Infrastructure/Services/OpportunityService.cs`** — replace the Phase A
+    `NotImplementedException` stubs with real impls using `TransactionScope`:
+    ```csharp
+    public async Task<OpportunityDto> CreateAsync(OpportunityRequest request)
+    {
+        // stripe validation + venue lookup unchanged
+        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+        var contractId = await contractService.CreateAsync(request.Contract);
+        var opp = OpportunityEntity.Create(venueId, period, contractId, request.GenreIds);
+        await opportunityRepository.AddAsync(opp);
+        await opportunityRepository.SaveChangesAsync();
+        scope.Complete();
+        return mapper.ToDto(opp);
+    }
+    ```
+    Same shape for `CreateMultipleAsync` (single scope, loop) and `UpdateAsync`
+    (`contractService.UpdateAsync(opp.ContractId, request.Contract)` instead of `CreateAsync`).
+    Inject `IContractService` (cross-module facade injection — confirm it's already public; it
+    is, since it lives on `Contract.Application` but the *interface* at the public boundary is
+    `IContractService` in Application... actually `IContractService` is `internal` —
+    PROBLEM, see decision below).
+16. **DECISION SURFACE (resolve when executing):** `IContractService` is currently `internal` to
+    `Contract.Application`. Concert.Infrastructure injecting it directly = cross-module reference
+    to another module's Application. **Per CLAUDE.md rule 1, only Contracts/Abstractions is a
+    foreign-callable boundary.** Two options:
+    - **(α)** Promote `CreateAsync` / `UpdateAsync` / `DeleteAsync` / `GetByIdAsync` onto
+      `IContractModule` (in `Contract.Abstractions`, public). The facade gains
+      write-side methods. Slight expansion of the cross-module surface but consistent with
+      "the facade is the cross-module wire shape."
+    - **(β)** Keep `IContractService` internal; add a thin `ContractWriteFacade` to
+      `Contract.Abstractions` that delegates. Two interfaces, narrower surface per consumer.
+    - **Recommendation: (α).** `IContractModule` becomes the unified public surface:
+      `GetByIdAsync` + `CreateAsync` + `UpdateAsync` + `DeleteAsync`. `IContractService`
+      becomes the controller's internal facade.
+17. **Domain event for delete cleanup** —
+    `Concert.Domain/Events/OpportunityDeletedDomainEvent.cs` (NEW) raised by
+    `OpportunityEntity.Delete()` (or wherever opp deletion happens; check current code) carrying
+    `int ContractId`. Handler in `Concert.Infrastructure/Events/`:
+    `OpportunityDeletedDomainEventHandler` translates to integration event
+    `OpportunityDeletedEvent` (carrying `int ContractId`) on `IIntegrationEventBus`.
+    Subscriber in `Contract.Infrastructure/Handlers/`: `OpportunityDeletedEventHandler` calls
+    `IContractService.DeleteAsync(@event.ContractId)`.
+    Per `feedback_domain_events_for_integration.md` pattern — `IEventRaiser` + entity raises
+    domain event, handler → integration event, foreign module subscribes.
+18. **`OpportunityDto`** in `Concert.Application/DTOs/OpportunityDtos.cs` — drop
+    `required IContract Contract` field. Update `OpportunityMapper.ToDto` to remove `Contract = null!`.
+19. **`OpportunityApplicationDto`** in `Concert.Application/DTOs/OpportunityApplicationDtos.cs` —
+    review: it has a `ContractType` field (Phase A set to `default`). Either drop the field
+    or fetch via `IContractModule.GetByIdAsync` in the mapper (mapper goes async + Scoped).
+    Lean: drop. Frontend can fetch contract by id if it needs the type.
+20. **`OpportunityRequest`** in `Concert.Application/Requests/OpportunityRequests.cs` — KEEP
+    `required IContract Contract` field. It's the input shape; service splits it on the way down.
+21. **`Web.IntegrationTests`** — tests asserting `OpportunityDto.Contract` need rework
+    (probably fetch via contract endpoint or removed). Tests that POST `OpportunityRequest`
+    with embedded contract continue working.
+
+### Phase C — Step 9 plan §dispatcher rewrites (final stretch)
+
+22. **Concert repos: 3 projection methods (in addition to the `OpportunityRepository.GetContractIdAsync`
+    from item 14):**
+    - `IOpportunityApplicationRepository.GetOpportunityIdAsync(int applicationId)` — direct
+      column read (`OpportunityApplicationEntity.OpportunityId` already exists).
+    - `IConcertBookingRepository.GetOpportunityIdAsync(int bookingId)` — projects through
+      `Booking.Application.OpportunityId` nav.
+    - `IConcertRepository.GetOpportunityIdAsync(int concertId)` — projects through
+      `Concert.Booking.Application.OpportunityId` nav chain.
+    Each is a 1-column SQL projection.
+    *Optionally:* fold the `→ contractId` step into one combined call per repo
+    (`GetContractIdByApplicationIdAsync` etc.) — fewer round trips. Either shape works.
+23. **`Concert.Application/Interfaces/IConcertWorkflowStrategy.cs`** — interface change:
+    ```csharp
+    internal interface IConcertWorkflowStrategy : IContractStrategy
+    {
+        Task<IAcceptOutcome> InitiateAsync(int applicationId, IContract contract, string? paymentMethodId = null);
+        Task SettleAsync(int bookingId, IContract contract);
+        Task<IFinishOutcome> FinishAsync(int concertId, IContract contract);  // renamed from FinishedAsync
+    }
+    ```
+24. **4 strategy impls** under `Concert.Infrastructure/Services/Application/`:
+    `FlatFeeConcertWorkflow`, `DoorSplitConcertWorkflow`, `VersusConcertWorkflow`,
+    `VenueHireConcertWorkflow`. Each:
+    - Drop `IContractRepository` injection entirely.
+    - Drop `contractRepository.GetByXIdAsync<TSubtype>(...)` lookups (those methods are gone
+      already from Step 4/Step 6).
+    - Add `IContract contract` param to each method.
+    - Cast to expected subtype at top of method body:
+      `var terms = (FlatFeeContract)contract;` then use `terms.Fee`, `terms.PaymentMethod`, etc.
+    - Existing `applicationRepository.GetArtistAndVenueByIdAsync` etc. stay — those are
+      Concert-internal lookups, not Contract concerns.
+25. **NEW: `Concert.Application/Interfaces/IConcertWorkflowStrategyFactory.cs`** —
+    ```csharp
+    internal interface IConcertWorkflowStrategyFactory
+    {
+        IConcertWorkflowStrategy Create(ContractType type);
+    }
+    ```
+26. **NEW: `Concert.Infrastructure/Services/Application/ConcertWorkflowStrategyFactory.cs`** —
+    ```csharp
+    internal sealed class ConcertWorkflowStrategyFactory(IServiceProvider sp) : IConcertWorkflowStrategyFactory
+    {
+        public IConcertWorkflowStrategy Create(ContractType type)
+            => sp.GetRequiredKeyedService<IConcertWorkflowStrategy>(type);
+    }
+    ```
+27. **DI registration** in `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs`:
+    `services.AddScoped<IConcertWorkflowStrategyFactory, ConcertWorkflowStrategyFactory>();`
+    The keyed strategy registrations (lines 71–74) stay.
+28. **Rename and rewrite 3 dispatchers** under `Concert.Infrastructure/Services/`:
+    - `Accept/AcceptDispatcher.cs` → `Accept/AcceptanceDispatcher.cs` (class + interface
+      renames; method `AcceptAsync` keeps name).
+    - `Settlement/SettlementDispatcher.cs` keeps name; method `SettleAsync` keeps name.
+    - `Complete/FinishedDispatcher.cs` → `Complete/CompletionDispatcher.cs` (class + interface
+      renames; method `FinishedAsync` → `FinishAsync`).
+    All three rewrite to the same shape:
+    ```csharp
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
+    {
+        var opportunityId = await applicationRepo.GetOpportunityIdAsync(applicationId)
+            ?? throw new NotFoundException($"Application {applicationId} not found");
+        var contractId = await opportunityRepo.GetContractIdAsync(opportunityId);
+        var contract = await contractModule.GetByIdAsync(contractId)
+            ?? throw new NotFoundException($"No contract for opportunity {opportunityId}");
+        return await strategyFactory.Create(contract.ContractType)
+            .InitiateAsync(applicationId, contract, paymentMethodId);
+    }
+    ```
+    Same shape for SettleAsync (bookingId anchor) and FinishAsync (concertId anchor).
+29. **Update interface files** in `Concert.Application/Interfaces/`:
+    `IAcceptDispatcher.cs` → `IAcceptanceDispatcher.cs` (rename file + interface);
+    `IFinishedDispatcher.cs` → `ICompletionDispatcher.cs` (rename file + interface; method
+    `FinishedAsync` → `FinishAsync`); `ISettlementDispatcher.cs` unchanged.
+30. **DI rename** in `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs`:
+    `services.AddScoped<IAcceptDispatcher, AcceptDispatcher>()` →
+    `services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>()`. Same for
+    `IFinishedDispatcher` → `ICompletionDispatcher`.
+31. **Consumer rewrites** — anywhere `IAcceptDispatcher` / `IFinishedDispatcher` / `FinishedAsync`
+    is referenced. Likely `Concertable.Web/E2EEndpointExtensions.cs` (E2E), `Concert.Api`
+    controllers, `Concertable.Web/Controllers/DevController.cs` (TEMPORARY per IVT comment).
+    grep for `AcceptDispatcher`, `FinishedDispatcher`, `FinishedAsync` and update.
+32. **Legacy `TicketPaymentDispatcher`** at `Concertable.Infrastructure/Services/Payment/TicketPaymentDispatcher.cs` —
+    same pattern with `ITicketPaymentStrategyFactory` (NEW, in `Concertable.Application/Interfaces/Payment/`)
+    + `TicketPaymentStrategyFactory` impl (NEW, in `Concertable.Infrastructure/Factories/`).
+    Inject `IConcertRepository` for the concertId → opportunityId hop, then
+    `IOpportunityRepository.GetContractIdAsync` for the second hop, then `IContractModule.GetByIdAsync`,
+    then `factory.Create(contract.ContractType).PayAsync(concertId, quantity, paymentMethodId, price, contract)`.
+    Note: `ITicketPaymentStrategy.PayAsync` interface needs the `IContract contract` param added too.
+33. **Stripe validation** at `Concertable.Infrastructure/Validators/StripeValidationFactory.cs` —
+    review; likely already keyed-DI shape (`stripeValidationFactory.Create(contract.ContractType).ValidateAsync()`)
+    so no rewrite needed — just confirm it doesn't reference `IContractStrategyResolver<>`.
+34. **Tests** — rename `AcceptDispatcherTests` → `AcceptanceDispatcherTests`,
+    `FinishedDispatcherTests` → `CompletionDispatcherTests` under
+    `Concertable.Infrastructure.UnitTests/Services/`. Update mocks: replace
+    `IContractStrategyResolver<IConcertWorkflowStrategy>` mock with mocks of
+    `IOpportunityApplicationRepository.GetOpportunityIdAsync` +
+    `IOpportunityRepository.GetContractIdAsync` + `IContractModule.GetByIdAsync` +
+    `IConcertWorkflowStrategyFactory.Create`. Same shape for the other dispatcher tests.
+
+### Step 10+ (after Step 9 lands)
+
+- **Step 10** — `ContractDevSeeder` + `ContractTestSeeder` in `Contract.Infrastructure/Data/Seeders/`.
+  Concert seeders create Opportunities; Contract seeders create Contracts; orchestrate via
+  Order. Decide whether contract seeding goes BEFORE opportunity seeding (preferred — saves
+  contract first, references it from opportunity) or as a separate stage that updates
+  `Opportunities.ContractId` after both are seeded. Replace the `contractId: <int>` placeholders
+  in ConcertDevSeeder/TestSeeder with real wiring.
+- **Step 11** — Remove TEMPORARY IVT grants. Audit `Concert.Application/AssemblyInfo.cs`
+  + `Concert.Infrastructure/AssemblyInfo.cs` for `IVT("Concertable.Infrastructure")` /
+  `IVT("Concertable.Application")` / `IVT("Concertable.Web")` / `IVT("Concertable.Workers")`
+  TEMPORARY entries. Drop those that are no longer needed after Step 9 + Step 10 land.
+- **Step 12** — Migration re-scaffold. Delete every module's `Migrations/` folder. Rescaffold
+  `InitialCreate` per context: Shared → Identity → Artist → Venue → Concert → **Contract** →
+  AppDb. Verify the new schema (one FK direction `Opportunities.ContractId → Contracts.Id`).
+  TPT layout for Contracts unchanged.
+- **Step 13** — Full test suite pass. IVT for any newly-mocked internals
+  (`DynamicProxyGenAssembly2` long-form per `feedback_castle_proxy_ivt.md`).
+
+### Memory pointers (read these for context)
+
+- `MEMORY.md` — index.
+- `project_contract_module_facade.md` — Contract extraction memory; Direction-B redesign
+  recorded.
+- `project_modular_monolith.md` — overall MM stage progress; Concert is fully extracted, Contract
+  is the active extraction.
+- `feedback_module_boundaries.md` — CLAUDE.md cross-module rules.
+- `feedback_no_ef_in_facade.md` — `IXModule` impls don't inline EF (delegate to repo).
+- `feedback_module_services_save_own_context.md` — module services use their own
+  `xRepository.SaveChangesAsync()`, not `IUnitOfWork`.
+- `feedback_domain_events_for_integration.md` — domain event → integration event pattern;
+  use this for the OpportunityDeleted → Contract cleanup flow.
+- `feedback_module_facade_surface.md` — Module.Api pattern; controllers internal +
+  `InternalControllerFeatureProvider`.
+- `project_concert_migration_reset.md` — Step 12 scaffold order convention.
+
+### Build expectation after Phase B-redux + Phase B-bonus + Phase C all land
+
+Solution build should be **0 errors**. Tests likely have failures pending Step 10 (seeders)
+and Step 13 (mock IVT) but compilation should be clean.
+
+---
+
 > **PROGRESS (2026-04-25):**
 > - ✅ Step 0 — Discovery sweep complete (Appendix A filled).
 > - ✅ Step 1 — 5 Contract projects scaffolded under `api/Modules/Contract/`. IVT from
@@ -80,9 +445,197 @@
 >   Web `Program.cs` and Workers `ServiceCollectionExtensions.cs` updated to forward
 >   `IConfiguration` to AddContractApi/AddContractModule. Migration scaffold order at
 >   Step 12 becomes: Shared → Identity → Artist → Venue → Concert → **Contract** → AppDb.
-> - ⏭ **Next: Step 9** — Per-module factory + dispatcher rewrites. This also clears the
->   18 pre-existing cascade errors (Concert.Application mappers, `Data.Application/IReadDbContext.cs`,
->   `Concertable.Seeding/Factories/OpportunityFactory.cs`).
+> ## 🔁 REDESIGN LOCK 2026-04-25 (Step 9 architectural rethink)
+>
+> **Aggregate shape redesigned to single-direction FK.** Triggered by Step 9 Phase A surfacing
+> the Opportunity↔Contract circular FK (both `Opportunities.ContractId` and `Contracts.OpportunityId`
+> NOT NULL unique-indexed). Resolution: **Contract has no outward references at all.**
+>
+> - **`Opportunities.ContractId → Contracts.Id` is the ONLY FK.** Direction is one-way.
+> - **`Contracts.OpportunityId` column DROPPED.** `ContractEntity.OpportunityId` field DROPPED.
+>   Subtype factory methods drop the `int opportunityId` first param.
+> - **Contract module is fully independent — knows about nothing.** Other modules reference it;
+>   it references no one. Pure terms-of-deal record.
+> - **1:1 still enforced** via unique index on `Opportunities.ContractId`.
+> - **Create flow (no chicken-and-egg):** save Contract FIRST → get `contractId` → save Opportunity
+>   with `ContractId = contractId`. Single direction; insert order unambiguous; no nullable
+>   placeholder.
+> - **Atomicity via TransactionScope** at `OpportunityService` boundary (B-split locked — dedicated
+>   `ContractDbContext` from Step 8 stays; Step 8 NOT undone).
+> - **Delete flow via event bus.** `OpportunityDeletedDomainEvent` → integration event → Contract
+>   module subscriber calls `IContractService.DeleteAsync(contractId)`. Eventual consistency for
+>   cleanup; orphan rows are harmless audit data if they ever land.
+> - **Read flow via `IContractModule.GetByIdAsync(int contractId)`.** Replaces `GetByOpportunityAsync`.
+>   Dispatcher pattern shifts to two-PK-hop: `applicationRepo.GetOpportunityIdAsync(appId)` →
+>   `opportunityRepo.GetContractIdAsync(oppId)` → `contractModule.GetByIdAsync(contractId)`.
+>   Concert owns the relationship traversal because Concert owns the relationships.
+> - **`OpportunityDto.Contract` field DROPPED.** Frontend hits `GET /api/contract/{id}` keyed on
+>   `opportunity.ContractId`. Cross-module decoupling per `feedback_restricted_projections.md`.
+>
+> **Lock-points superseded:**
+> - **§2.2 PK split** — partially superseded. `ContractEntity.Id` still its own auto-generated
+>   identity (PK split kept for SQL clarity), but explicit `OpportunityId` column on Contract is
+>   GONE. `Opportunities.ContractId` is the one and only FK between them.
+> - **§2.2 "both navs dropped"** — still holds: `OpportunityEntity.Contract` nav stays dropped,
+>   `ContractEntity.Opportunity` nav stays dropped. But `ContractEntity.OpportunityId` field
+>   NEWLY dropped under this redesign.
+> - **§3.4 `IContractModule` shape** — superseded. Was `GetByOpportunityAsync(int)`; now
+>   `GetByIdAsync(int)`. Single PK lookup. The earlier reasoning that "Contract owns the FK
+>   so Contract knows the OpportunityId" no longer applies — Contract owns no FK.
+> - **§3.6 `IContractRepository.GetByOpportunityIdAsync`** — superseded. Replaced by inherited
+>   `IIdRepository.GetByIdAsync(int)`. Method deleted.
+>
+> **Lock-points unchanged:**
+> - §3.1 per-consumer factories (Concert/Payment own their own strategy resolution).
+> - §3.3 dedicated `ContractDbContext` (Step 8 stays — confirmed B-split, no rollback).
+> - §3.7 five projects with `.Api`.
+> - TPT inheritance over the four contract subtypes.
+> - Strategy interfaces accept `IContract` per method (cast subtype at top).
+> - Dispatchers stay split, renamed noun-verb (Acceptance/Settlement/Completion).
+>
+> ## Step 9 Phase A status (compile unblock — DONE)
+>
+>   **Phase A applied (mechanical compile fixes, build 21 → 2 errors + ~6 cascading behind):**
+>   - Deleted 5 orphan mappers + `IContractMapper.cs` from Concert.Application/Mappers + Interfaces.
+>   - Removed `services.AddSingleton<IContractMapper, ContractMapper>()` from
+>     `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs`.
+>   - `Data.Application.csproj` gains ProjectRef → Contract.Domain;
+>     `IReadDbContext.cs` gains `using Concertable.Contract.Domain;`.
+>     `Data.Infrastructure/Data/ReadDbContext.cs` gains the same using (transitively brought via
+>     Data.Application ref).
+>   - `Concertable.Seeding/Factories/OpportunityFactory.cs` rewritten: `int contractId` instead
+>     of `ContractEntity contract`; sets `nameof(OpportunityEntity.ContractId)` instead of nav.
+>   - `ConcertDevSeeder` + `ConcertTestSeeder`: every `XContractEntity.Create(...)` call replaced
+>     with `contractId: <sequential int>` placeholder (60 sites total in DevSeeder, 10 in TestSeeder).
+>     Step 10 reorders properly so contracts seed alongside opportunities.
+>   - `Core.UnitTests` gains ProjectRefs → Contract.Abstractions + Contract.Domain;
+>     `GlobalUsings.cs` adds `Contract.Domain`. `DoorSplit/VersusContractEntityTests` updated to
+>     pass `opportunityId: 1` first arg + dropped stale `Concertable.Core.Enums` import.
+>   - `Web.IntegrationTests` `*ContractDto` → `*Contract` renames in
+>     `OpportunityRequestBuilders.cs` + `OpportunityApiTests.cs` (sed).
+>   - `OpportunityMapper.ToDto`: drops `IContractMapper` dep and the `Contract` assignment;
+>     sets `Contract = null!` with TODO Step 9-followup. Class no longer takes ctor params.
+>   - `OpportunityApplicationMapper.ToDto`: replaces `application.Opportunity.Contract.ContractType`
+>     with `default` (ContractType placeholder) + TODO.
+>   - `OpportunityService.Create/CreateMultiple/UpdateAsync` stubbed to throw
+>     `NotImplementedException` with TODO pointing at Phase B work; `IContractMapper` field
+>     removed from ctor injection.
+>
+>   **Remaining errors (≈6 cascading once TicketPaymentDispatcher compiles):**
+>   `IContractStrategyResolver<>` references in `Concertable.Infrastructure/Services/Payment/TicketPaymentDispatcher.cs`
+>   (2) + `Concert.Infrastructure/Services/{Accept,Settlement,Complete}/` dispatchers (3 files,
+>   ~6 errors) — the legacy resolver was deleted in Step 4 but consumers were left for Step 9.
+>   Concert dispatchers don't surface yet because Concertable.Infrastructure compiles first
+>   and gates them. Phase C handles all of them.
+>
+>   **🛑 PHASE B / PHASE C — pending two architectural decisions:**
+>
+>   **Decision 1 — Opportunity ↔ Contract circular FK (write flow).**
+>   Both `Opportunities.ContractId` and `Contracts.OpportunityId` are NOT NULL with unique
+>   indexes after Step 3 nav drops; create flow needs a resolution.
+>   - (a) **Make `Opportunities.ContractId` nullable.** Save Opportunity → save Contract with
+>     `OpportunityId` → optionally backfill ContractId on Opportunity (or never — Contract is
+>     reachable via the OpportunityId index without it). Cleanest at runtime; schema change at
+>     Step 12 scaffold time. **Recommended.**
+>   - (b) **Two-phase save in transaction.** Opp w/ ContractId=0 placeholder → Contract → update
+>     Opp.ContractId. Briefly invalid FK; schema unchanged.
+>   - (c) **`IContractService.CreateAsync(int opportunityId, IContract dto)` orchestrates (b)
+>     internally.** OpportunityService gets a clean single call.
+>
+>   **Decision 2 — `OpportunityDto.Contract` (read flow).**
+>   Currently `required IContract Contract` on the response DTO; structurally orphaned now.
+>   - (i) **Drop the field.** Frontend hits `GET /api/contract/opportunity/{id}` separately.
+>     Cross-module break per CLAUDE.md spirit + `feedback_restricted_projections.md`. **Recommended.**
+>   - (ii) **Keep it, populate via `IContractModule.GetByOpportunityAsync` in mapper.** Mapper
+>     becomes async + Scoped (not Singleton).
+>   - (iii) **Status quo (TODO stub).** `null!` placeholder; not a final answer.
+>
+>   **Phase C — the actual plan §Step 9 work** (locked once Decisions 1+2 land):
+>   - 3 Concert repos add `GetOpportunityIdAsync(int)` projections (Application, Booking, Concert).
+>   - `IConcertWorkflowStrategy` adds `IContract` param to every method;
+>     `FinishedAsync` → `FinishAsync`; 4 impls cast subtype at top.
+>   - `IConcertWorkflowStrategyFactory` + impl (5-line `GetRequiredKeyedService`).
+>   - 3 Concert dispatchers renamed (`Accept` → `Acceptance`, `Finished` → `Completion`,
+>     `Settlement` keeps name) + rewritten: anchor-id hop → `contractModule.GetByOpportunityAsync`
+>     → `factory.Create(contract.ContractType)` → `strategy.<Phase>Async(anchorId, contract)`.
+>   - Legacy `TicketPaymentDispatcher` mirrors the pattern with `ITicketPaymentStrategyFactory`.
+>   - Stripe validation factory verified.
+>   - DI registrations updated; old `IContractStrategyFactory<>` / `IContractStrategyResolver<>`
+>     already deleted — confirm no DI registrations remain.
+>   - Tests: rename `AcceptDispatcherTests` → `AcceptanceDispatcherTests`,
+>     `FinishedDispatcherTests` → `CompletionDispatcherTests`. Mock the new factory + facade
+>     instead of the deleted resolver.
+>
+> - ⏭ **Awaiting decisions 1+2 to proceed** — recommended (a) + (i).
+>
+> ## ✅ DECISION RESOLVED 2026-04-25 — Direction B + B-split
+>
+> Both decisions superseded by the redesign above. Contract has no `OpportunityId`; FK is
+> one-way `Opportunities.ContractId → Contracts.Id`; create flow saves Contract first then
+> Opportunity (no chicken-and-egg); dedicated `ContractDbContext` stays; TransactionScope
+> handles atomicity; delete cleanup via event bus.
+>
+> **Phase B-redux work (post-decision):**
+> 1. Drop `OpportunityId` from `ContractEntity` + 4 subtypes; subtype factories drop the
+>    first param (`Create(int opportunityId, ...)` → `Create(...)`).
+> 2. Drop `OpportunityId` config from `ContractEntityConfiguration` (in
+>    `Contract.Infrastructure/Data/Configurations/`); drop the unique index.
+> 3. Drop `IContractRepository.GetByOpportunityIdAsync`; impl simplifies to inherited
+>    `IIdRepository<ContractEntity>.GetByIdAsync(int)`. Add `AddAsync` / `UpdateAsync` /
+>    `DeleteAsync` if not already inherited.
+> 4. Rename `IContractModule.GetByOpportunityAsync(int)` → `GetByIdAsync(int)` in Abstractions;
+>    update `ContractModule` impl.
+> 5. Rename `IContractService.GetByOpportunityIdAsync(int)` → `GetByIdAsync(int)` in
+>    Contract.Application/Interfaces. Add `CreateAsync(IContract)` returning new contract id,
+>    `UpdateAsync(int contractId, IContract)`, `DeleteAsync(int contractId)`. Implement in
+>    `ContractService` (calls `IContractRepository.AddAsync/UpdateAsync/DeleteAsync` + maps via
+>    `IContractMapper`; new `IContractMapper.ToEntity(IContract)` companion to `ToContract`).
+> 6. `ContractController` route: `GET api/contract/opportunity/{id}` → `GET api/contract/{id}`.
+>    Add `POST` / `PUT` / `DELETE` if external callers need them (otherwise creation/update flows
+>    through Concert's OpportunityController only).
+> 7. `OpportunityEntity` keeps `ContractId` field. Concert.Domain unchanged from current shape.
+> 8. **Phase C work (Step 9 plan §dispatcher rewrites)** — adapted to new shape:
+>    - Add `GetContractIdByApplicationIdAsync(int)` / `GetContractIdByBookingIdAsync(int)` /
+>      `GetContractIdByConcertIdAsync(int)` to the 3 Concert repos. (Single-step projections —
+>      anchor → opportunityId hop combined with ContractId read.) Or split into the two-hop
+>      pattern (`GetOpportunityIdAsync` + `OpportunityRepository.GetContractIdAsync`); single
+>      combined method is fewer round-trips.
+>    - `IConcertWorkflowStrategy` adds `IContract` param to every method;
+>      `FinishedAsync` → `FinishAsync`; 4 impls cast subtype at top.
+>    - `IConcertWorkflowStrategyFactory` + 5-line `GetRequiredKeyedService` impl.
+>    - 3 dispatchers renamed (Accept→Acceptance, Finished→Completion) + rewritten:
+>      `repo.GetContractIdByXIdAsync(anchorId)` → `contractModule.GetByIdAsync(contractId)` →
+>      `factory.Create(contract.ContractType).<Phase>Async(anchorId, contract)`.
+>    - Legacy `TicketPaymentDispatcher` mirrors the pattern (Concert repo hop +
+>      `ITicketPaymentStrategyFactory`).
+>    - Stripe validation factory verified (likely already keyed-DI shape).
+> 9. **Phase B-bonus** (NEW — was implicit in Direction A but explicit here):
+>    - `OpportunityService.CreateAsync` rewires:
+>      ```
+>      using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+>      var contractId = await contractService.CreateAsync(request.Contract);
+>      var opp = OpportunityEntity.Create(venueId, period, contractId, request.GenreIds);
+>      await opportunityRepository.AddAsync(opp);
+>      await opportunityRepository.SaveChangesAsync();
+>      scope.Complete();
+>      ```
+>    - `OpportunityService.UpdateAsync` similar but updates the existing contract via
+>      `contractService.UpdateAsync(opp.ContractId, request.Contract)`.
+>    - `OpportunityService.CreateMultipleAsync` similar pattern in a loop within one scope.
+>    - `OpportunityCreatedDomainEvent` raised by `OpportunityEntity.Create`. NOT load-bearing
+>      for the create flow (TransactionScope handles atomicity); used elsewhere if needed.
+>    - `OpportunityDeletedDomainEvent` → integration event handler in Contract.Infrastructure
+>      calls `IContractService.DeleteAsync(opportunity.ContractId)`. Eventual consistency.
+> 10. `OpportunityDto`: drop `Contract` field. Update `OpportunityMapper.ToDto` (already returns
+>     `null!` placeholder from Phase A — replace with field deletion).
+> 11. `OpportunityRequest`: KEEP `Contract` field (it's the input shape — frontend submits an
+>     opportunity with embedded contract terms; service splits it on the way down).
+> 12. `OpportunityApplicationMapper`: drop the `application.Opportunity.Contract.ContractType`
+>     reference fully (was Phase A `default` placeholder). Either drop the field from the DTO
+>     or fetch via `IContractModule` per consumer.
+> 13. `Concertable.Web.IntegrationTests`: tests using `OpportunityDto.Contract` need updating
+>     to fetch contract via separate request, OR be rewritten to assert via the contract
+>     endpoint directly.
 >
 > **STATUS: DRAFT — significant redesign 2026-04-24 (afternoon). Working document, still iterating.**
 >

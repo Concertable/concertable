@@ -1,4 +1,5 @@
 using Concertable.Contract.Application.Interfaces;
+using Concertable.Shared.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Concertable.Contract.Api.Controllers;
@@ -14,9 +15,11 @@ internal class ContractController : ControllerBase
         this.contractService = contractService;
     }
 
-    [HttpGet("opportunity/{opportunityId}")]
-    public async Task<IActionResult> GetByOpportunityId(int opportunityId)
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
     {
-        return Ok(await contractService.GetByOpportunityIdAsync(opportunityId));
+        var contract = await contractService.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Contract {id} not found");
+        return Ok(contract);
     }
 }

@@ -13,9 +13,9 @@ using Concertable.Concert.Infrastructure.Handlers;
 using Concertable.Concert.Infrastructure.Repositories;
 using Concertable.Concert.Infrastructure.Repositories.Review;
 using Concertable.Concert.Infrastructure.Services;
-using Concertable.Concert.Infrastructure.Services.Accept;
+using Concertable.Concert.Infrastructure.Services.Acceptance;
 using Concertable.Concert.Infrastructure.Services.Application;
-using Concertable.Concert.Infrastructure.Services.Complete;
+using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
 using Concertable.Concert.Infrastructure.Services.Webhook;
@@ -53,18 +53,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
+        services.AddScoped<IContractLookup, ContractLookup>();
 
         // Review service + validator (Concert owns reviews; Artist/Venue lists/can-review go through IConcertModule facade)
         services.AddScoped<IConcertReviewService, ConcertReviewService>();
         services.AddScoped<IReviewValidator, ReviewValidator>();
 
         // Dispatchers
-        services.AddScoped<IAcceptDispatcher, AcceptDispatcher>();
-        services.AddScoped<IFinishedDispatcher, FinishedDispatcher>();
+        services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
+        services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         // TEMPORARY: TicketPaymentDispatcher + ApplicationAcceptHandler still in legacy
         // Concertable.Infrastructure until Payment extraction moves them.
         services.AddScoped<ITicketPaymentDispatcher, TicketPaymentDispatcher>();
+        services.AddScoped<ITicketPaymentStrategyFactory, TicketPaymentStrategyFactory>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
 
         // Keyed workflow strategies (keys must match ContractType enum values exactly)
@@ -72,6 +74,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);
         services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
         services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
+        services.AddScoped<IConcertWorkflowStrategyFactory, ConcertWorkflowStrategyFactory>();
 
         // Webhook plumbing (WebhookStrategyFactory still legacy — stays in Web AddContracts)
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
@@ -90,7 +93,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertReviewRepository, ConcertReviewRepository>();
 
         // Mappers (Concert.Application singletons)
-        services.AddSingleton<IContractMapper, ContractMapper>();
         services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
         services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 

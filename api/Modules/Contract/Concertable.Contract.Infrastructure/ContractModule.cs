@@ -2,11 +2,17 @@ using Concertable.Contract.Application.Interfaces;
 
 namespace Concertable.Contract.Infrastructure;
 
-internal sealed class ContractModule(IContractRepository contractRepository, IContractMapper mapper) : IContractModule
+internal sealed class ContractModule(IContractService contractService) : IContractModule
 {
-    public async Task<IContract?> GetByOpportunityAsync(int opportunityId, CancellationToken ct = default)
-    {
-        var entity = await contractRepository.GetByOpportunityIdAsync(opportunityId, ct);
-        return entity is null ? null : mapper.ToContract(entity);
-    }
+    public Task<IContract?> GetByIdAsync(int contractId, CancellationToken ct = default)
+        => contractService.GetByIdAsync(contractId, ct);
+
+    public Task<int> CreateAsync(IContract contract, CancellationToken ct = default)
+        => contractService.CreateAsync(contract, ct);
+
+    public Task UpdateAsync(int contractId, IContract contract, CancellationToken ct = default)
+        => contractService.UpdateAsync(contractId, contract, ct);
+
+    public Task DeleteAsync(int contractId, CancellationToken ct = default)
+        => contractService.DeleteAsync(contractId, ct);
 }

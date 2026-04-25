@@ -17,5 +17,5 @@ internal static class OpportunityRequestBuilders
         };
 
     public static OpportunityRequest BuildDefaultRequest(int rockGenreId) =>
-        BuildRequest(new FlatFeeContractDto { PaymentMethod = PaymentMethod.Cash, Fee = 500 }, rockGenreId);
+        BuildRequest(new FlatFeeContract { PaymentMethod = PaymentMethod.Cash, Fee = 500 }, rockGenreId);
 }

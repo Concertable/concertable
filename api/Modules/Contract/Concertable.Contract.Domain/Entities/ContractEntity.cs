@@ -5,7 +5,6 @@ public abstract class ContractEntity : IIdEntity
     protected ContractEntity() { }
 
     public int Id { get; private set; }
-    public int OpportunityId { get; protected set; }
     public PaymentMethod PaymentMethod { get; protected set; }
     public abstract ContractType ContractType { get; }
 }

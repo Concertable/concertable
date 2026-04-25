@@ -7,10 +7,10 @@ public class DoorSplitContractEntity : ContractEntity
     public override ContractType ContractType => ContractType.DoorSplit;
     public decimal ArtistDoorPercent { get; private set; }
 
-    public static DoorSplitContractEntity Create(int opportunityId, decimal artistDoorPercent, PaymentMethod paymentMethod)
+    public static DoorSplitContractEntity Create(decimal artistDoorPercent, PaymentMethod paymentMethod)
     {
         ValidateArtistDoorPercent(artistDoorPercent);
-        return new() { OpportunityId = opportunityId, ArtistDoorPercent = artistDoorPercent, PaymentMethod = paymentMethod };
+        return new() { ArtistDoorPercent = artistDoorPercent, PaymentMethod = paymentMethod };
     }
 
     public void Update(decimal artistDoorPercent, PaymentMethod paymentMethod)

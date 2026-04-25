@@ -9,9 +9,6 @@ internal class ContractEntityConfiguration : IEntityTypeConfiguration<ContractEn
     {
         builder.ToTable("Contracts", Schema.Name);
         builder.UseTptMappingStrategy();
-
-        builder.Property(c => c.OpportunityId).IsRequired();
-        builder.HasIndex(c => c.OpportunityId).IsUnique();
     }
 }
 

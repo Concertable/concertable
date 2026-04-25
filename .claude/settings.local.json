@@ -150,7 +150,9 @@
       "Bash(rm MM_NORTH_STAR.md.tmp_section5.md /tmp/mm_after.md /tmp/mm_before.md)",
       "Bash(xargs -I {} grep -E \"class \\\\w+\\(Configuration|Configurations\\)\" {})",
       "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && head -20 \"{}\"')",
-      "Bash(echo \"EXIT $?\")"
+      "Bash(echo \"EXIT $?\")",
+      "Bash(awk 'BEGIN{n=0} {while \\(match\\($0, /\\(FlatFeeContractEntity|DoorSplitContractEntity|VersusContractEntity|VenueHireContractEntity\\)\\\\.Create\\\\\\([^\\)]*\\\\\\)/\\)\\) { n++; pre = substr\\($0, 1, RSTART-1\\); post = substr\\($0, RSTART+RLENGTH\\); $0 = pre \"contractId: \" n post }} {print}' \"C:/Users/TommySeery/source/repos/Concertable/api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs\")",
+      "Bash(mv \"/tmp/seeder.tmp\" \"C:/Users/TommySeery/source/repos/Concertable/api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs\")"
     ]
   }
 }
