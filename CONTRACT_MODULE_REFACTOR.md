@@ -2,7 +2,118 @@
 
 ---
 
-## ▶️ RESUME HERE (post-compact, 2026-04-25)
+## ▶️ RESUME HERE (post-compact, 2026-04-25 — Step 10 CLOSED)
+
+**Steps 0–10 are DONE. Build is green, 0 errors.** Next up: Step 11 (IVT cleanup),
+12 (migration re-scaffold), 13 (test pass). Read this block before resuming.
+
+### Step 10 final shape
+
+`ContractDevSeeder` + `ContractTestSeeder` live at
+`api/Modules/Contract/Concertable.Contract.Infrastructure/Data/Seeders/`. Both `Order = 3` and inject
+`ContractDbContext` (the dedicated context from Step 8). To make Contract seed BEFORE Concert,
+Concert seeders bumped from `Order = 3` → `Order = 4`. (Plan-file footnote about `Order = 3.5`
+turned out wrong — `IModuleSeeder.Order` is `int`, and the right ordering is just Contract=3,
+Concert=4.)
+
+- `ContractDevSeeder` writes 59 contracts via subtype factories (`FlatFee/DoorSplit/Versus/VenueHire ContractEntity.Create(...)`).
+  Type/value mix lines up with Concert dev seeder's named applications:
+  contract 21 = VenueHire (PostedVenueHire), 31 = FlatFee (PostedFlatFee),
+  50 = DoorSplit @70% (FinishedDoorSplit — E2E expects £14 share),
+  51 = Versus £100 + 70% (FinishedVersus — E2E expects £114 share),
+  53 = DoorSplit (PostedDoorSplit), 54 = Versus (PostedVersus),
+  58 = FlatFee (UpcomingFlatFee), 59 = VenueHire (UpcomingVenueHire).
+- `ContractTestSeeder` writes 10 contracts matching Concert test seeder slots:
+  1–3 FlatFee, 4 Versus, 5 DoorSplit, 6 VenueHire, 7 FlatFee, 8 DoorSplit, 9 Versus, 10 VenueHire.
+- Auto-IDENTITY id generation gives ids 1..N matching insertion order, so the placeholder
+  `contractId: <int>` references already in `ConcertDevSeeder` / `ConcertTestSeeder` are
+  correct — no rewrite needed there beyond removing one stale TODO comment.
+- `AddContractDevSeeder()` / `AddContractTestSeeder()` extensions added to
+  `Concertable.Contract.Infrastructure/Extensions/ServiceCollectionExtensions.cs`. Wired in
+  `Concertable.Web/Program.cs` (between Venue and Concert dev seeders) and
+  `Concertable.Web.IntegrationTests/Infrastructure/ApiFixture.cs` (between Venue and Concert test
+  seeders).
+- `Concertable.Contract.Infrastructure.csproj` gained ProjectReference to
+  `Concertable.Seeding` (for `SeedIfEmptyAsync` extension + `IDevSeeder`/`ITestSeeder` via
+  Concertable.Application transitive).
+
+### Steps still pending
+
+### Step 9 final shape (executed across Phase A → B-redux → B-bonus → C)
+
+**Cross-module write surface:** `IContractModule` is the unified facade — `GetByIdAsync` +
+`CreateAsync` + `UpdateAsync` + `DeleteAsync` (decision α). `IContractService` (Contract.Application,
+internal) is the workhorse; `ContractModule` (Contract.Infrastructure, internal sealed) is a
+thin pass-through.
+
+**Strategy interfaces DO NOT take `IContract` param** — reverted. Earlier lock had every
+strategy method taking `IContract`, but ~half the impls (`SettleAsync` everywhere, both
+`ITicketPaymentStrategy.PayAsync`, FlatFee/VenueHire `FinishAsync`, DoorSplit/Versus
+`InitiateAsync`) ignored it. Leaky-param noise. Reverted to clean signatures.
+
+**`IContractLookup` (Concert.Application, internal, request-scoped memoizing helper) is the
+dedup point.** Three methods: `GetByApplicationIdAsync` / `GetByBookingIdAsync` /
+`GetByConcertIdAsync` → `Task<IContract>`. Casted (not generic — generic would force
+dispatcher to write awkward `<IContract>`). Impl in `Concert.Infrastructure/Services/ContractLookup.cs`
+injects all 3 anchor repos + `IOpportunityRepository` (for opportunityId → contractId hop)
++ `IContractModule` (for the actual fetch). Internal `Dictionary<int, IContract>` cache keyed
+by `contractId`. Both dispatcher AND strategy inject `IContractLookup` — second call hits memory.
+**One contract DB fetch per request.**
+
+**Dispatchers shrank to 2 deps:** `IContractLookup` + `IXStrategyFactory`. Down from 4. No
+inline anchor → opportunity → contract chain in dispatcher code anymore. Renamed: `IAcceptDispatcher`
+→ `IAcceptanceDispatcher`, `IFinishedDispatcher` → `ICompletionDispatcher` (`FinishedAsync` →
+`FinishAsync`). `ISettlementDispatcher` kept name. Legacy `TicketPaymentDispatcher` (in
+`Concertable.Infrastructure`) follows the same pattern with its own `ITicketPaymentStrategyFactory`
+(in `Concertable.Infrastructure/Factories/`, will move to Payment when extracted).
+
+**4 workflow strategy impls** (`FlatFee/DoorSplit/Versus/VenueHire ConcertWorkflow`):
+- Drop `IContractRepository` injection entirely
+- FlatFee/VenueHire `InitiateAsync` casts via `(FlatFeeContract)await contractLookup.GetByApplicationIdAsync(applicationId)` (and similar for VenueHire). Methods that don't need terms don't reference contract at all.
+- DoorSplit/Versus `FinishAsync` similarly cast via `(DoorSplitContract)await contractLookup.GetByConcertIdAsync(concertId)`.
+- 2 ticket payment strategies (`Artist`/`Venue TicketPaymentService`) keep their existing shape — they don't reference contract terms.
+
+**`OpportunityService.Create/Update` use raw `using TransactionScope`** for cross-DbContext
+atomicity (Concert + Contract). One inline usage, no abstraction — discussed wrapping in
+`IAtomicScope` and rejected as ceremony with no payoff. MSDTC promotion is a known production-
+hardening risk; eventual replacement is the **Outbox pattern** (own scope: contract Id strategy
+change, worker infra, idempotency — deferred).
+
+**Schema-level redesign (Direction B + B-split, locked):**
+- `Opportunities.ContractId → Contracts.Id` is the only FK direction.
+- `Contracts.OpportunityId` column DROPPED. `ContractEntity.OpportunityId` field DROPPED.
+- Subtype factories drop the `int opportunityId` first param.
+- Dedicated `ContractDbContext` (Step 8) stays. Default schema `"contract"`.
+- `OpportunityDeletedDomainEvent` flow DEFERRED (`OpportunityEntity.Delete()` doesn't exist
+  yet; pattern locked for when delete is needed).
+
+**`OpportunityDto.Contract` DROPPED + `OpportunityDto.ContractId` ADDED.** Frontend hits
+`GET /api/contract/{id}`. `OpportunityApplicationDto.ContractType` DROPPED.
+
+**Tests landed:**
+- 5 orphan mapper tests + legacy `ContractServiceTests` DELETED (orphan code from Phase A).
+- 3 dispatcher tests + `TicketPaymentDispatcherTests` rewritten to mock `IContractLookup` + factory.
+- 4 workflow `ApplicationServiceCompleteTests` rewritten — drop `IContractRepository`/`IContractModule`
+  mocks, add `IContractLookup` mock, set up `GetByConcertIdAsync` / `GetByApplicationIdAsync`.
+- `ConcertFinishedFunctionTests` updated to mock `ICompletionDispatcher.FinishAsync`. AAA
+  comments preserved (project convention).
+
+### Memory pointers
+
+- `MEMORY.md` — index.
+- `project_contract_module_facade.md` — Step 9 close-out details + historical context.
+- `feedback_request_scoped_lookup.md` — `IContractLookup` pattern (reusable for future module pairs).
+- `feedback_aaa_test_comments.md` — preserve AAA markers when rewriting tests.
+- `feedback_module_boundaries.md` — CLAUDE.md cross-module rules.
+- `feedback_no_ef_in_facade.md` — `IXModule` impls don't inline EF.
+- `feedback_module_facade_surface.md` — Module.Api pattern.
+- `project_concert_migration_reset.md` — Step 12 scaffold order convention.
+
+### Build expectation: 0 errors. Tests not yet run end-to-end — Step 13.
+
+---
+
+## ▶️ Historical RESUME (mid-Step-9, pre-close-out — kept for context)
 
 **You are in the middle of Step 9.** Steps 0–8 are done. Step 9 has been re-architected mid-flight.
 Read this whole RESUME block before touching code.

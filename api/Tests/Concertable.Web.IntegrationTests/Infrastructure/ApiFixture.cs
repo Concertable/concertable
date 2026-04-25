@@ -4,6 +4,7 @@ using Concertable.Application.Interfaces.Payment;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
+using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Data.Application;
@@ -84,6 +85,7 @@ public async Task InitializeAsync()
                 services.AddIdentityTestSeeder();
                 services.AddArtistTestSeeder();
                 services.AddVenueTestSeeder();
+                services.AddContractTestSeeder();
                 services.AddConcertTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>

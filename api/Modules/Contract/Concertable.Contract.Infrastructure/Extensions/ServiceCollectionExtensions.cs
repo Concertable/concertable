@@ -1,7 +1,9 @@
+using Concertable.Application.Interfaces;
 using Concertable.Contract.Application.Interfaces;
 using Concertable.Contract.Application.Mappers;
 using Concertable.Contract.Application.Services;
 using Concertable.Contract.Infrastructure.Data;
+using Concertable.Contract.Infrastructure.Data.Seeders;
 using Concertable.Contract.Infrastructure.Repositories;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
@@ -29,6 +31,18 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ContractConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ContractConfigurationProvider>());
 
+        return services;
+    }
+
+    public static IServiceCollection AddContractDevSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<IDevSeeder, ContractDevSeeder>();
+        return services;
+    }
+
+    public static IServiceCollection AddContractTestSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<ITestSeeder, ContractTestSeeder>();
         return services;
     }
 }

@@ -10,7 +10,7 @@ namespace Concertable.Concert.Infrastructure.Data.Seeders;
 
 internal class ConcertTestSeeder : ITestSeeder
 {
-    public int Order => 3;
+    public int Order => 4;
 
     private readonly ConcertDbContext context;
     private readonly SeedData seed;
@@ -31,8 +31,6 @@ internal class ConcertTestSeeder : ITestSeeder
 
         await context.Opportunities.SeedIfEmptyAsync(async () =>
         {
-            // TODO Step 10: real Contract seeding moves to ContractTestSeeder.
-            // For now, opportunities seed with placeholder contractIds (1..10) — runtime FK is meaningless until Step 10.
             seed.Opportunities =
             [
                 OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(2), now.AddMonths(2).AddHours(3)), contractId: 1, [seed.Rock.Id]),

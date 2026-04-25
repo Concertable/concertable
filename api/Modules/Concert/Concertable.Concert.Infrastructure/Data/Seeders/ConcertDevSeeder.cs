@@ -10,7 +10,7 @@ namespace Concertable.Concert.Infrastructure.Data.Seeders;
 
 internal class ConcertDevSeeder : IDevSeeder
 {
-    public int Order => 3;
+    public int Order => 4;
 
     private readonly ConcertDbContext context;
     private readonly SeedData seed;
