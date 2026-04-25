@@ -92,7 +92,7 @@ services.AddSearchApi(builder.Configuration);
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
 services.AddConcertApi(builder.Configuration);
-services.AddContractApi();
+services.AddContractApi(builder.Configuration);
 services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();

@@ -22,11 +22,6 @@
     <ProjectReference Include="..\Concertable.Contract.Application\Concertable.Contract.Application.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
-    <!-- Ride-along (§3.3): ContractRepository injects ConcertDbContext from Concert.Infrastructure.
-         IVT from Concert.Infrastructure to Concertable.Contract.Infrastructure makes the internal
-         context type visible here. No circular ref because Concert.Infrastructure does NOT
-         reference Contract.Infrastructure (it references Contract.Application for configs). -->
-    <ProjectReference Include="..\..\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
     <!-- TEMPORARY: legacy hosts retire as Payment + remaining Concertable.* extracts. -->
     <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
   </ItemGroup>

@@ -20,13 +20,6 @@
   <ItemGroup>
     <PackageReference Include="FluentResults" Version="4.0.0" />
     <PackageReference Include="FluentValidation" Version="11.11.0" />
-    <!-- Required so ContractEntityConfiguration (TPT) can use IEntityTypeConfiguration<T>
-         + Fluent API. Concert.Infrastructure references this project to apply the configs
-         on ConcertDbContext per the §3.3 ride-along. Convention break vs other modules'
-         Application projects (which have no EF dep) is intentional and unique to Contract.
-         Relational adds ToTable/UseTptMappingStrategy/HasIndex extensions used by the config. -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.1" />
   </ItemGroup>
 
 </Project>

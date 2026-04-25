@@ -2,15 +2,16 @@ using Concertable.Contract.Api.Controllers;
 using Concertable.Contract.Application.Interfaces;
 using Concertable.Contract.Application.Services;
 using Concertable.Contract.Infrastructure.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Contract.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddContractApi(this IServiceCollection services)
+    public static IServiceCollection AddContractApi(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddContractModule();
+        services.AddContractModule(configuration);
         services.AddScoped<IContractService, ContractService>();
         services.AddControllers()
             .AddApplicationPart(typeof(ContractController).Assembly)

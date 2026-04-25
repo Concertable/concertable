@@ -1,5 +1,4 @@
 using Concertable.Concert.Infrastructure.Data.Configurations;
-using Concertable.Contract.Application.Data.Configurations;
 using Concertable.Data.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,11 +16,6 @@ internal sealed class ConcertConfigurationProvider : IEntityTypeConfigurationPro
         modelBuilder.ApplyConfiguration(new OpportunityEntityConfiguration());
         modelBuilder.ApplyConfiguration(new OpportunityApplicationEntityConfiguration());
         modelBuilder.ApplyConfiguration(new OpportunityGenreEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new FlatFeeContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new DoorSplitContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new VersusContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new VenueHireContractEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TicketEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ArtistReadModelConfiguration());

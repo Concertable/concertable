@@ -34,7 +34,7 @@ internal static class ServiceCollectionExtensions
 
         services.AddIdentityModule(configuration);
         services.AddConcertModule(configuration);
-        services.AddContractModule();
+        services.AddContractModule(configuration);
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.AddSingleton(TimeProvider.System);

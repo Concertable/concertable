@@ -51,11 +51,38 @@
 >   Contract.Infrastructure builds green; pre-existing 18 cascade errors remain in
 >   Concert.Application mappers / `Data.Application/IReadDbContext.cs` / Seeding
 >   `OpportunityFactory.cs` (Step 9 work).
-> - ⏭ **Next: Step 8** — Remove `Contract` from `ApplicationDbContext`. Drop
->   `DbSet<ContractEntity>` (and any subtype DbSets) + `ApplyConfiguration(new
->   ContractConfigurations())` calls. Decide whether `ApplicationDbContext` retains
->   `ContractEntity` model awareness (likely yes via `ToTable("Contracts",
->   t => t.ExcludeFromMigrations())` for `OpportunityEntity.ContractId` FK metadata).
+> - ✅ Step 8 — **§3.3 ride-along REVERSED** (2026-04-25 at user request):
+>   `ContractDbContext` created at `Contract.Infrastructure/Data/ContractDbContext.cs`
+>   inheriting `DbContextBase`, default schema `"contract"` (new `Contract.Infrastructure/Schema.cs`),
+>   ctor-injects `ContractConfigurationProvider`. New `ContractConfigurationProvider`
+>   (internal, `IEntityTypeConfigurationProvider`) at `Contract.Infrastructure/Data/`
+>   applying `ContractEntityConfiguration` + 4 subtype configs. `ContractEntityConfiguration`
+>   moved from `Contract.Application/Data/Configurations/` (deleted) to
+>   `Contract.Infrastructure/Data/Configurations/` with `Schema.Name` on every `ToTable`.
+>   `ContractRepository` switched from `ConcertDbContext` to `ContractDbContext`.
+>   `AddContractModule()` now takes `IConfiguration`, registers `ContractDbContext` with
+>   AuditInterceptor + DomainEventDispatchInterceptor + connection string +
+>   `ContractConfigurationProvider` (singleton + as `IEntityTypeConfigurationProvider`).
+>   `AddContractApi()` updated to take + forward `IConfiguration`.
+>   **Cleaned up**: `Contract.Application.csproj` drops `Microsoft.EntityFrameworkCore` +
+>   `…Relational` packages (cycle-avoidance hack retired); `Contract.Infrastructure.csproj`
+>   drops `Concert.Infrastructure` ProjectReference (no longer needs ConcertDbContext);
+>   `Concert.Infrastructure.csproj` drops `Contract.Application` ProjectReference (no longer
+>   applies Contract configs); `Concert.Infrastructure/AssemblyInfo.cs` drops the
+>   `Concertable.Contract.Infrastructure` IVT; `ConcertDbContext` drops 5 Contract DbSets;
+>   `ConcertConfigurationProvider` drops 5 Contract config applies + namespace using.
+>   `ApplicationDbContext` keeps the 5 `Entity<ContractEntity>().ToTable(t => t.ExcludeFromMigrations())`
+>   lines — `ContractConfigurationProvider` is registered as `IEntityTypeConfigurationProvider`
+>   so AppDb's loop applies it (table name + `"contract"` schema set there;
+>   ExcludeFromMigrations layered on top — same pattern as Concert/Venue/Artist tables).
+>   ReadDbContext picks up the same provider via DI; existing `IQueryable<ContractEntity>` +
+>   subtype properties resolve once the IReadDbContext.cs cascade fix lands in Step 9.
+>   Web `Program.cs` and Workers `ServiceCollectionExtensions.cs` updated to forward
+>   `IConfiguration` to AddContractApi/AddContractModule. Migration scaffold order at
+>   Step 12 becomes: Shared → Identity → Artist → Venue → Concert → **Contract** → AppDb.
+> - ⏭ **Next: Step 9** — Per-module factory + dispatcher rewrites. This also clears the
+>   18 pre-existing cascade errors (Concert.Application mappers, `Data.Application/IReadDbContext.cs`,
+>   `Concertable.Seeding/Factories/OpportunityFactory.cs`).
 >
 > **STATUS: DRAFT — significant redesign 2026-04-24 (afternoon). Working document, still iterating.**
 >
@@ -158,7 +185,11 @@
 >   column carries the FK. Standard EF/SQL pattern, removes the PK-as-FK semantic alias.
 >   Cost-free since migrations rescaffold in Step 12 anyway. `ContractEntity.Create(...)`
 >   takes `int opportunityId` as a parameter; subtype factory methods pass it through.
-> - **§3.3 `ContractDbContext` — RIDE-ALONG on `ConcertDbContext`.** Contract entities (TPH base
+> - **§3.3 `ContractDbContext` — RIDE-ALONG on `ConcertDbContext`.** ⚠ **REVERSED 2026-04-25
+>   at user request.** Step 8 created a dedicated `ContractDbContext` in `Contract.Infrastructure`
+>   (default schema `"contract"`); ride-along scaffolding (Concert.Infrastructure → Contract.Application
+>   ref, IVT for ConcertDbContext, EF dep on Contract.Application) was retired. Original
+>   ride-along reasoning preserved below for context. Contract entities (TPH base
 >   + 4 subtypes) are configured on `ConcertDbContext`, not on a dedicated `ContractDbContext`.
 >   Contract aggregate is tightly wedded to Opportunity (1:1 via `OpportunityId` FK); a separate
 >   context for one TPH hierarchy buys little and adds a migration / Respawner / cross-context

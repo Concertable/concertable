@@ -1,17 +1,32 @@
 using Concertable.Contract.Application.Interfaces;
 using Concertable.Contract.Application.Mappers;
+using Concertable.Contract.Infrastructure.Data;
 using Concertable.Contract.Infrastructure.Repositories;
+using Concertable.Data.Infrastructure;
+using Concertable.Data.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Contract.Infrastructure.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddContractModule(this IServiceCollection services)
+    public static IServiceCollection AddContractModule(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddDbContext<ContractDbContext>((sp, opt) =>
+            opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .AddInterceptors(
+                    sp.GetRequiredService<AuditInterceptor>(),
+                    sp.GetRequiredService<DomainEventDispatchInterceptor>()));
+
         services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<IContractMapper, ContractMapper>();
         services.AddScoped<IContractModule, ContractModule>();
+
+        services.AddSingleton<ContractConfigurationProvider>();
+        services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ContractConfigurationProvider>());
+
         return services;
     }
 }
