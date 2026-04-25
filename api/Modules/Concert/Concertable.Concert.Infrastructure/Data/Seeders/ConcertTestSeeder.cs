@@ -33,16 +33,16 @@ internal class ConcertTestSeeder : ITestSeeder
         {
             seed.Opportunities =
             [
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(2), now.AddMonths(2).AddHours(3)), contractId: 1, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(3), now.AddMonths(3).AddHours(3)), contractId: 2, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(4), now.AddMonths(4).AddHours(3)), contractId: 3, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(5), now.AddMonths(5).AddHours(3)), contractId: 4, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(6), now.AddMonths(6).AddHours(3)), contractId: 5, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(7), now.AddMonths(7).AddHours(3)), contractId: 6, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(8), now.AddMonths(8).AddHours(3)), contractId: 7, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(9), now.AddMonths(9).AddHours(3)), contractId: 8, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(10), now.AddMonths(10).AddHours(3)), contractId: 9, [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(11), now.AddMonths(11).AddHours(3)), contractId: 10, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(2), now.AddMonths(2).AddHours(3)), contractId: seed.FlatFeeAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(3), now.AddMonths(3).AddHours(3)), contractId: seed.ConfirmedAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(4), now.AddMonths(4).AddHours(3)), contractId: seed.AwaitingPaymentAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(5), now.AddMonths(5).AddHours(3)), contractId: seed.VersusAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(6), now.AddMonths(6).AddHours(3)), contractId: seed.DoorSplitAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(7), now.AddMonths(7).AddHours(3)), contractId: seed.VenueHireAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(8), now.AddMonths(8).AddHours(3)), contractId: seed.PostedFlatFeeAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(9), now.AddMonths(9).AddHours(3)), contractId: seed.PostedDoorSplitAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(10), now.AddMonths(10).AddHours(3)), contractId: seed.PostedVersusAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(11), now.AddMonths(11).AddHours(3)), contractId: seed.PostedVenueHireAppContract.Id, [seed.Rock.Id]),
             ];
 
             context.Opportunities.AddRange(seed.Opportunities);

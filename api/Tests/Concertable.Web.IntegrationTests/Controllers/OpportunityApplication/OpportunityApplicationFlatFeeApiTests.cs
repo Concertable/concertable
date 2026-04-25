@@ -51,7 +51,7 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         // Assert
         var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.FlatFeeApp.Id}");
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.FlatFeeApp.Id}");
+        var concert = await client.GetAssertAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.FlatFeeApp.Id}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
         var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);

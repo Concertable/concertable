@@ -11,6 +11,7 @@
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
     <ProjectReference Include="..\Modules\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
     <ProjectReference Include="..\Modules\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
+    <ProjectReference Include="..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
     <ProjectReference Include="..\Modules\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
   </ItemGroup>
 

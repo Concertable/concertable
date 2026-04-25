@@ -30,7 +30,7 @@ public class OpportunityApplicationVersusApiTests : IAsyncLifetime
         await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         // Assert
-        var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.VersusApp.Id}");
+        var concert = await client.GetAssertAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.VersusApp.Id}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
         var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);

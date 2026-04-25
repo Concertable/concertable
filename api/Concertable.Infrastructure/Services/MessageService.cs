@@ -6,6 +6,7 @@ using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
 using Concertable.Identity.Contracts;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Services;
 
@@ -14,17 +15,20 @@ public class MessageService : IMessageService
     private readonly IMessageRepository messageRepository;
     private readonly IMessageNotificationService notificationService;
     private readonly ICurrentUser currentUser;
+    private readonly IIdentityModule identityModule;
     private readonly TimeProvider timeProvider;
 
     public MessageService(
         IMessageRepository messageRepository,
         IMessageNotificationService notificationService,
         ICurrentUser currentUser,
+        IIdentityModule identityModule,
         TimeProvider timeProvider)
     {
         this.messageRepository = messageRepository;
         this.notificationService = notificationService;
         this.currentUser = currentUser;
+        this.identityModule = identityModule;
         this.timeProvider = timeProvider;
     }
 
@@ -40,7 +44,22 @@ public class MessageService : IMessageService
 
         await messageRepository.AddAsync(message);
         await messageRepository.SaveChangesAsync();
-        await notificationService.MessageReceivedAsync(toUserId.ToString(), message.ToDto());
+
+        var sender = await identityModule.GetUserByIdAsync(fromUserId)
+            ?? throw new NotFoundException("Message sender not found");
+
+        var fromUser = new UserDto
+        {
+            Id = sender.Id,
+            Email = sender.Email,
+            Role = sender.Role,
+            Latitude = sender.Latitude,
+            Longitude = sender.Longitude,
+            County = sender.County,
+            Town = sender.Town
+        };
+
+        await notificationService.MessageReceivedAsync(toUserId.ToString(), message.ToDto(fromUser));
     }
 
     public async Task<IPagination<MessageDto>> GetForUserAsync(IPageParams pageParams)

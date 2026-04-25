@@ -73,3 +73,4 @@ public record CustomerDto : IUser
     public bool IsEmailVerified { get; set; }
     public string? StripeCustomerId { get; set; }
 }
+

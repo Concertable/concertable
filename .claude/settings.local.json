@@ -153,7 +153,12 @@
       "Bash(echo \"EXIT $?\")",
       "Bash(awk 'BEGIN{n=0} {while \\(match\\($0, /\\(FlatFeeContractEntity|DoorSplitContractEntity|VersusContractEntity|VenueHireContractEntity\\)\\\\.Create\\\\\\([^\\)]*\\\\\\)/\\)\\) { n++; pre = substr\\($0, 1, RSTART-1\\); post = substr\\($0, RSTART+RLENGTH\\); $0 = pre \"contractId: \" n post }} {print}' \"C:/Users/TommySeery/source/repos/Concertable/api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs\")",
       "Bash(mv \"/tmp/seeder.tmp\" \"C:/Users/TommySeery/source/repos/Concertable/api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs\")",
-      "Bash(awk '/\"Concertable.Contract.Domain.ContractEntity\", b =>/,/^            \\\\}\\\\\\);/' /c/Users/TommySeery/source/repos/Concertable/api/Concertable.Infrastructure/Migrations/ApplicationDbContextModelSnapshot.cs)"
+      "Bash(awk '/\"Concertable.Contract.Domain.ContractEntity\", b =>/,/^            \\\\}\\\\\\);/' /c/Users/TommySeery/source/repos/Concertable/api/Concertable.Infrastructure/Migrations/ApplicationDbContextModelSnapshot.cs)",
+      "Bash(docker version *)",
+      "Bash(dotnet test *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(awk 'NR>=9530 && NR<=12990 && /INSERT INTO|UPDATE \\\\[|SaveChanges|Saved \\\\d+|RAISERROR|Microsoft.EntityFrameworkCore.Update|\"INSERT\"|exec sp_executesql/' /tmp/doorsplit_full.log)",
+      "Bash(awk *)"
     ]
   }
 }

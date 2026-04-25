@@ -62,6 +62,17 @@ public static class HttpClientExtensions
         return await client.GetFromJsonAsync<T>(url, JsonOptions);
     }
 
+    public static async Task<T?> GetAssertAsync<T>(this HttpClient client, string url)
+    {
+        var response = await client.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"GET {url} → {(int)response.StatusCode} {response.StatusCode}: {body}");
+        }
+        return await response.Content.ReadFromJsonAsync<T>(JsonOptions);
+    }
+
     public static async Task<HttpResponseMessage> DeleteAsync(this HttpClient client, string url)
     {
         return await client.DeleteAsync(url);

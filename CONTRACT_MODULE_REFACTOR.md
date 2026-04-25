@@ -2,11 +2,58 @@
 
 ---
 
-## ▶️ RESUME HERE (post-compact, 2026-04-25 — Step 12 CLOSED)
+## ▶️ RESUME HERE (post-compact, 2026-04-25 — Step 13 CLOSED, refactor complete)
 
-**Steps 0–12 are DONE. Build is green, 0 errors.** Next up: Step 13 (full test pass +
-DynamicProxyGenAssembly2 IVT additions for any newly-mocked internals). Read this block
-before resuming.
+**Steps 0–13 are DONE. Build green, full integration suite green (122/122).** Contract
+module extraction is finished. Read this block before resuming any follow-up.
+
+### Step 13 final shape
+
+Full integration suite passed after fixing one bug surfaced by the new Contract seeder.
+
+**Bug:** `ContractTestSeeder` originally added 10 mixed-subtype contracts via a single
+`AddRange` + `SaveChangesAsync`, then `ConcertTestSeeder` referenced contracts by literal
+`contractId: 1..10`. EF Core 10 reorders TPT inserts by entity type when batching, so the
+auto-IDENTITY ids did NOT come out in array order — `Contracts.Id = 5` ended up being a
+FlatFee row instead of the expected DoorSplit. Cascading effect: dispatcher resolved the
+WRONG `ContractType` for DoorSplitApp/VersusApp/FlatFeeApp → wrong workflow strategy →
+either no draft concert created (→ GET 404) or no Stripe call (→ webhook throw). All 3
+accept tests failed for this single root cause.
+
+**Fix (named-seed pattern, matches how every other seed entity is referenced):**
+- `Concertable.Core.csproj` — added `Concertable.Contract.Domain` ProjectReference (Core
+  already references the other module Domains; same escape-hatch pattern).
+- `Concertable.Seeding/GlobalUsings.cs` — added `Concertable.Contract.Domain` global using.
+- `SeedData.cs` — added 10 typed contract properties (`FlatFeeAppContract`,
+  `ConfirmedAppContract`, `AwaitingPaymentAppContract`, `VersusAppContract`,
+  `DoorSplitAppContract`, `VenueHireAppContract`, `PostedFlatFeeAppContract`,
+  `PostedDoorSplitAppContract`, `PostedVersusAppContract`, `PostedVenueHireAppContract`).
+- `ContractTestSeeder.cs` — assigns each contract onto `seed.<App>Contract` before
+  `AddRange`, so the real EF-assigned id is captured post-`SaveChangesAsync`. Also
+  injects `SeedData`.
+- `ConcertTestSeeder.cs` — replaced literal `contractId: 1..10` with
+  `seed.<App>Contract.Id` references.
+
+The Step-10 footnote claiming "auto-IDENTITY id generation gives ids 1..N matching
+insertion order" was wrong for TPT — superseded by this fix. **Do NOT** rely on
+insertion-order id assignment for any future TPT seeder; always reference `.Id`
+post-save.
+
+**Test infra additions (kept):**
+- `Concertable.Tests.Common/HttpClientExtensions.cs` — new `GetAssertAsync<T>` helper
+  that surfaces response body on non-2xx (was throwing generic `HttpRequestException`
+  with no body, which made debugging the original 404 harder than it needed to be).
+- 3 accept-test files (`OpportunityApplication{DoorSplit,Versus,FlatFee}ApiTests.cs`)
+  switched their post-Accept GET from `GetAsync<T>` to `GetAssertAsync<T>`.
+
+**ContractDevSeeder NOT touched** — the dev seeder writes 59 contracts in one batch
+with the same TPT-reorder hazard. Dev-mode tests don't exist yet to surface the
+problem, but the seeder's id-coupled comments (`contract 50 = DoorSplit @70%` etc.)
+will silently lie until either (a) the dev seeder is migrated to the named-seed
+pattern, or (b) the assertions are rewritten to look up by type rather than id.
+Track this if/when E2E tests start failing on contract-type-specific behavior.
+
+### Step 12 final shape
 
 ### Step 12 final shape
 
@@ -49,12 +96,6 @@ through cleanly because AppDb migrates last.
 **Build expectation:** `dotnet build Concertable.sln` after re-scaffold — 0 errors, 91
 warnings (decimal-precision noise + duplicate-using cleanup, all pre-existing). Tests not yet
 run — Step 13.
-
-### Steps still pending
-
-- **Step 13** — Full test suite pass. Add `DynamicProxyGenAssembly2` IVT entries to any
-  module whose internals get newly mocked (per `feedback_castle_proxy_ivt.md`). Run Core +
-  Infra + Workers unit tests + full integration suite.
 
 ### Pre-Step-12 state (for context)
 
@@ -198,7 +239,7 @@ change, worker infra, idempotency — deferred).
 - `feedback_module_facade_surface.md` — Module.Api pattern.
 - `project_concert_migration_reset.md` — Step 12 scaffold order convention.
 
-### Build expectation: 0 errors. Tests not yet run end-to-end — Step 13.
+### Build + test status: 0 errors, integration suite 122/122 green.
 
 ---
 

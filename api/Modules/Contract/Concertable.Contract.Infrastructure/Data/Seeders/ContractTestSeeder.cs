@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,12 @@ internal class ContractTestSeeder : ITestSeeder
     public int Order => 3;
 
     private readonly ContractDbContext context;
+    private readonly SeedData seed;
 
-    public ContractTestSeeder(ContractDbContext context)
+    public ContractTestSeeder(ContractDbContext context, SeedData seed)
     {
         this.context = context;
+        this.seed = seed;
     }
 
     public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
@@ -21,21 +24,29 @@ internal class ContractTestSeeder : ITestSeeder
     {
         await context.Contracts.SeedIfEmptyAsync(async () =>
         {
-            var contracts = new ContractEntity[]
-            {
-                FlatFeeContractEntity.Create(100m, PaymentMethod.Cash),         // 1  — FlatFeeApp
-                FlatFeeContractEntity.Create(100m, PaymentMethod.Cash),         // 2  — ConfirmedApp
-                FlatFeeContractEntity.Create(100m, PaymentMethod.Cash),         // 3  — AwaitingPaymentApp
-                VersusContractEntity.Create(100m, 70m, PaymentMethod.Cash),     // 4  — VersusApp
-                DoorSplitContractEntity.Create(70m, PaymentMethod.Cash),        // 5  — DoorSplitApp
-                VenueHireContractEntity.Create(150m, PaymentMethod.Cash),       // 6  — VenueHireApp
-                FlatFeeContractEntity.Create(100m, PaymentMethod.Cash),         // 7  — PostedFlatFeeApp
-                DoorSplitContractEntity.Create(70m, PaymentMethod.Cash),        // 8  — PostedDoorSplitApp
-                VersusContractEntity.Create(100m, 70m, PaymentMethod.Cash),     // 9  — PostedVersusApp
-                VenueHireContractEntity.Create(150m, PaymentMethod.Cash),       // 10 — PostedVenueHireApp
-            };
+            seed.FlatFeeAppContract = FlatFeeContractEntity.Create(100m, PaymentMethod.Cash);
+            seed.ConfirmedAppContract = FlatFeeContractEntity.Create(100m, PaymentMethod.Cash);
+            seed.AwaitingPaymentAppContract = FlatFeeContractEntity.Create(100m, PaymentMethod.Cash);
+            seed.VersusAppContract = VersusContractEntity.Create(100m, 70m, PaymentMethod.Cash);
+            seed.DoorSplitAppContract = DoorSplitContractEntity.Create(70m, PaymentMethod.Cash);
+            seed.VenueHireAppContract = VenueHireContractEntity.Create(150m, PaymentMethod.Cash);
+            seed.PostedFlatFeeAppContract = FlatFeeContractEntity.Create(100m, PaymentMethod.Cash);
+            seed.PostedDoorSplitAppContract = DoorSplitContractEntity.Create(70m, PaymentMethod.Cash);
+            seed.PostedVersusAppContract = VersusContractEntity.Create(100m, 70m, PaymentMethod.Cash);
+            seed.PostedVenueHireAppContract = VenueHireContractEntity.Create(150m, PaymentMethod.Cash);
 
-            context.Contracts.AddRange(contracts);
+            context.Contracts.AddRange(
+                seed.FlatFeeAppContract,
+                seed.ConfirmedAppContract,
+                seed.AwaitingPaymentAppContract,
+                seed.VersusAppContract,
+                seed.DoorSplitAppContract,
+                seed.VenueHireAppContract,
+                seed.PostedFlatFeeAppContract,
+                seed.PostedDoorSplitAppContract,
+                seed.PostedVersusAppContract,
+                seed.PostedVenueHireAppContract);
+
             await context.SaveChangesAsync(ct);
         });
     }
