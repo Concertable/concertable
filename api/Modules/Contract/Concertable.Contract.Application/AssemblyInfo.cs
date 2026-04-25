@@ -10,9 +10,3 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-// TEMPORARY: legacy Concertable.Application / Concertable.Infrastructure still hold consumers that touch Contract internals.
-// Retires in Step 11 once Concert + Payment fully consume IContractModule.
-[assembly: InternalsVisibleTo("Concertable.Application")]
-[assembly: InternalsVisibleTo("Concertable.Infrastructure")]
-[assembly: InternalsVisibleTo("Concertable.Workers")]
-[assembly: InternalsVisibleTo("Concertable.Web")]

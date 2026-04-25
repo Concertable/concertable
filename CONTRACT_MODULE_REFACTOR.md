@@ -2,10 +2,50 @@
 
 ---
 
-## ▶️ RESUME HERE (post-compact, 2026-04-25 — Step 10 CLOSED)
+## ▶️ RESUME HERE (post-compact, 2026-04-25 — Step 11 CLOSED)
 
-**Steps 0–10 are DONE. Build is green, 0 errors.** Next up: Step 11 (IVT cleanup),
-12 (migration re-scaffold), 13 (test pass). Read this block before resuming.
+**Steps 0–11 are DONE. Build is green, 0 errors.** Next up: Step 12 (migration re-scaffold),
+13 (test pass). Read this block before resuming.
+
+### Step 11 final shape
+
+IVT audit covered 4 AssemblyInfo files (Contract.Application, Contract.Infrastructure,
+Concert.Application, Concert.Infrastructure). Method: greppped each suspected legacy host for
+actual usage of internals before removing.
+
+**Removed (no actual consumer):**
+- `Contract.Application/AssemblyInfo.cs` — entire TEMPORARY block (`Concertable.Application`,
+  `.Infrastructure`, `.Workers`, `.Web`). None of those assemblies reference any Contract.Application
+  internal type post-Step-9 — IContractModule (public, in Contracts) covers all cross-module reads.
+- `Contract.Infrastructure/AssemblyInfo.cs` — `Concertable.Workers` and `Concertable.Web`. Both
+  only consume the public `AddContractModule()` extension, not internals.
+- `Concert.Infrastructure/AssemblyInfo.cs` — `Concertable.Workers` (only refs public
+  `Concert.Infrastructure.Extensions`), `Concertable.Infrastructure` (no usage), and
+  `Concertable.Search.Infrastructure` (no usage).
+
+**Kept (still actively consumed):**
+- `Contract.Application/AssemblyInfo.cs` — Contract.Infrastructure, Contract.Api, sibling test
+  projects, DynamicProxyGenAssembly2, Concert.Infrastructure (ride-along EF config registration).
+- `Contract.Infrastructure/AssemblyInfo.cs` — Contract.Api, integration/unit test assemblies,
+  DynamicProxyGenAssembly2 (strong-named).
+- `Concert.Application/AssemblyInfo.cs` — ALL TEMPORARY entries kept; comments updated to drop
+  stale `IContractStrategyResolver` reference and reflect post-Step-9 reality. `Concertable.Infrastructure`
+  still hosts Payment/Ticket services consuming `IConcertRepository`/`IContractLookup`/`ITicketPaymentStrategy`;
+  `Concertable.Workers` still hosts `ConcertFinishedFunction` consuming `IConcertRepository`/`ICompletionDispatcher`;
+  `Concertable.Web` still keyed-registers `ITicketPaymentStrategy` impls + injects `ICompletionDispatcher`
+  in `E2EEndpointExtensions`.
+- `Concert.Infrastructure/AssemblyInfo.cs` — `Concertable.Web` kept (injects internal `WebhookService`);
+  comment updated to reflect that's the sole reason it lingers.
+
+**No build break** — confirmed with `dotnet build`, 0 errors.
+
+### Steps still pending
+
+- **Step 12** — Migration re-scaffold. Delete every module's `Migrations/`. Rescaffold order:
+  Shared → Identity → Artist → Venue → Concert → **Contract** → AppDb. Verify only one FK
+  direction `Opportunities.ContractId → Contracts.Id`.
+- **Step 13** — Full test suite pass. Add `DynamicProxyGenAssembly2` IVT entries to any module
+  whose internals get newly mocked (per `feedback_castle_proxy_ivt.md`).
 
 ### Step 10 final shape
 
