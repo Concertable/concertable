@@ -4,5 +4,5 @@ internal interface IConcertBookingRepository : IIdRepository<ConcertBookingEntit
 {
     Task<ConcertBookingEntity?> GetByApplicationIdAsync(int applicationId);
     Task<ConcertBookingEntity?> GetByConcertIdAsync(int concertId);
-    Task<int?> GetContractIdByBookingIdAsync(int bookingId);
+    Task<int?> GetContractIdByIdAsync(int bookingId);
 }

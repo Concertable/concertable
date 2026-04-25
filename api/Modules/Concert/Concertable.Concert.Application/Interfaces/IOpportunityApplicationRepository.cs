@@ -7,5 +7,5 @@ internal interface IOpportunityApplicationRepository : IIdRepository<Opportunity
     Task<IEnumerable<OpportunityApplicationEntity>> GetRecentDeniedByArtistIdAsync(int id);
     Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id);
     Task RejectAllExceptAsync(int opportunityId, int applicationId);
-    Task<int?> GetContractIdByApplicationIdAsync(int applicationId);
+    Task<int?> GetContractIdByIdAsync(int applicationId);
 }

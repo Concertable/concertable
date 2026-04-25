@@ -47,7 +47,7 @@ internal class ConcertBookingRepository : IdModuleRepository<ConcertBookingEntit
             .FirstOrDefaultAsync();
     }
 
-    public Task<int?> GetContractIdByBookingIdAsync(int bookingId)
+    public Task<int?> GetContractIdByIdAsync(int bookingId)
     {
         return context.ConcertBookings
             .Where(b => b.Id == bookingId)

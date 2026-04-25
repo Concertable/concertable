@@ -70,7 +70,7 @@ internal class OpportunityApplicationRepository : IdModuleRepository<Opportunity
             .ExecuteUpdateAsync(s => s.SetProperty(a => a.Status, ApplicationStatus.Rejected));
     }
 
-    public Task<int?> GetContractIdByApplicationIdAsync(int applicationId)
+    public Task<int?> GetContractIdByIdAsync(int applicationId)
     {
         return context.OpportunityApplications
             .Where(a => a.Id == applicationId)

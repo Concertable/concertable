@@ -86,7 +86,12 @@ controllers for those unextracted modules — that's expected, not drift.
 ## Internal enforcement
 
 - Everything in `Module.Application` and `Module.Infrastructure` should be `internal`. Only
-  `Module.Contracts` and the `AddXModule()` extension are public.
+  `Module.Contracts`, the `AddXModule()` extension, and **controllers in `Module.Api`** are public.
+- Controllers are public because they're an HTTP-shaped public API surface — declaring them
+  `internal` requires copy-pasted `InternalControllerFeatureProvider` boilerplate in every
+  `Module.Api`, and the boundary it enforces is theoretical (no foreign caller would ever
+  `new` a controller anyway). The real cross-module boundary is `IXModule` in Contracts, not
+  controller accessibility.
 - Compiler-enforced boundary, not a naming-convention hope.
 - Remove Identity/Artist/etc internals from `Concertable.Web/GlobalUsings.cs` — Web imports from
   `Module.Contracts` (and optionally `Module.Api` for controller ApplicationPart wiring) only.

@@ -15,13 +15,13 @@ internal sealed class ContractLookup(
     private readonly Dictionary<Key, IContract> cache = [];
 
     public Task<IContract> GetByApplicationIdAsync(int applicationId) =>
-        ResolveAsync(new Key(Kind.Application, applicationId), applicationRepository.GetContractIdByApplicationIdAsync);
+        ResolveAsync(new Key(Kind.Application, applicationId), applicationRepository.GetContractIdByIdAsync);
 
     public Task<IContract> GetByBookingIdAsync(int bookingId) =>
-        ResolveAsync(new Key(Kind.Booking, bookingId), bookingRepository.GetContractIdByBookingIdAsync);
+        ResolveAsync(new Key(Kind.Booking, bookingId), bookingRepository.GetContractIdByIdAsync);
 
     public Task<IContract> GetByConcertIdAsync(int concertId) =>
-        ResolveAsync(new Key(Kind.Concert, concertId), concertRepository.GetContractIdByConcertIdAsync);
+        ResolveAsync(new Key(Kind.Concert, concertId), concertRepository.GetContractIdByIdAsync);
 
     private async Task<IContract> ResolveAsync(Key key, Func<int, Task<int?>> resolveContractId)
     {

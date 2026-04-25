@@ -139,7 +139,7 @@ internal class ConcertRepository : IdModuleRepository<ConcertEntity, ConcertDbCo
             .AnyAsync(e => e.Booking.Application.Opportunity.Period.Start.Date == date.Date);
     }
 
-    public Task<int?> GetContractIdByConcertIdAsync(int concertId)
+    public Task<int?> GetContractIdByIdAsync(int concertId)
     {
         return context.Concerts
             .Where(c => c.Id == concertId)

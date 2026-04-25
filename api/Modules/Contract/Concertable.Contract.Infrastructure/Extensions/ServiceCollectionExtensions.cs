@@ -5,6 +5,7 @@ using Concertable.Contract.Application.Services;
 using Concertable.Contract.Infrastructure.Data;
 using Concertable.Contract.Infrastructure.Data.Seeders;
 using Concertable.Contract.Infrastructure.Repositories;
+using Concertable.Contract.Infrastructure.Services.Updaters;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContractMapper, ContractMapper>();
         services.AddScoped<IContractService, ContractService>();
         services.AddScoped<IContractModule, ContractModule>();
+
+        services.AddSingleton<IContractUpdater, ContractUpdater>();
+        services.AddSingleton<FlatFeeContractUpdater>();
+        services.AddSingleton<DoorSplitContractUpdater>();
+        services.AddSingleton<VersusContractUpdater>();
+        services.AddSingleton<VenueHireContractUpdater>();
 
         services.AddSingleton<ContractConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ContractConfigurationProvider>());
