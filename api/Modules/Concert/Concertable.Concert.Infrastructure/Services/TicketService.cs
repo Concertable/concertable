@@ -1,12 +1,16 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Identity.Contracts;
 using Concertable.Application.Mappers;
 using Concertable.Application.Responses;
+using Concertable.Concert.Application.Interfaces;
+using Concertable.Concert.Domain;
 using Concertable.Core.Enums;
-using Concertable.Shared.Exceptions;
 using Concertable.Core.Parameters;
+using Concertable.Identity.Contracts;
+using Concertable.Shared.Exceptions;
 using FluentResults;
+
+namespace Concertable.Concert.Infrastructure.Services;
 
 internal class TicketService : ITicketService
 {
@@ -110,7 +114,7 @@ internal class TicketService : ITicketService
         });
     }
 
-public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
+    public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
         var tickets = await ticketRepository.GetUpcomingByUserIdAsync(currentUser.GetId());
         return tickets.ToDtos(currentUser.Email ?? string.Empty);

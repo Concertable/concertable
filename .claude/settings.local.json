@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(xargs ls *)",
+      "Bash(xargs cat *)",
+      "Bash(dotnet build *)"
+    ]
+  }
+}

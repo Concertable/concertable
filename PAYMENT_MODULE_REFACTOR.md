@@ -1,133 +1,86 @@
 # Payment Module Extraction — Implementation Plan
 
-> **STATUS: PAUSED (2026-04-24)** — Step 0 (Discovery) complete, Appendix A filled.
-> Payment extraction is blocked pending **Contract module extraction** (see
-> `CONTRACT_MODULE_REFACTOR.md`, in progress). Reason: `IContractStrategy` + its
-> factory/resolver are a cross-module concern, not a Concert-owned or Payment-owned one.
-> If Payment extracts first, it either inherits Concert's anti-pattern (referencing
-> Concert.Application for the marker) or duplicates the resolver. Contract gets extracted
-> first; Payment resumes with a clean boundary.
+> **STATUS: READY (2026-04-25)** — Contract module extraction CLOSED (build green, tests
+> green). Payment is now unblocked.
 >
-> **Updates from Contract extraction in flight (2026-04-24, second pass — refines decisions
-> below):**
-> - **`IContractStrategy` marker now lives in `Concertable.Contract.Abstractions`** (public,
->   empty). `ITicketPaymentStrategy` + `IStripeValidationStrategy` (both Payment-owned) extend
->   this marker — compile-time restriction "this strategy family is keyed by `ContractType`."
->   Marker is NOT consumed by `IContractModule` itself — it's purely a typing constraint on
->   strategy interfaces. Earlier §A.7 option (c) ("delete the marker") REJECTED; option (b)
->   wins (marker promoted to a cross-module location).
-> - **No generic `ResolveFor…Async<T>` on `IContractModule`.** Earlier draft of this plan
->   referenced `IContractModule.ResolveFor*Async<IStripeValidationStrategy>` and similar —
->   that "Shape B" design was rejected during Contract extraction. `IContractModule` exposes
->   exactly one method: `GetByOpportunityAsync(int opportunityId) → IContract?`. Strategy
->   resolution is the consumer's concern, not Contract's.
-> - **Payment writes its own per-strategy-family factories.** Three 5-line internal classes,
->   each wrapping `IServiceProvider.GetRequiredKeyedService<TStrategy>(ContractType)`:
->   - `ITicketPaymentStrategyFactory` (Payment.Application internal) +
->     `TicketPaymentStrategyFactory` (Payment.Infrastructure internal)
->   - `IStripeValidationStrategyFactory` (Payment.Application internal) +
->     `StripeValidationStrategyFactory` (Payment.Infrastructure internal)
->   - These replace the legacy `ContractStrategyFactory<T>` / `ContractStrategyResolver<T>`
->     that are **deleted** during Contract Step 4 — do NOT move them to Payment.
-> - **Concert writes the same shape for `IConcertWorkflowStrategy`** during Contract Step 9
->   (already locked there). Payment mirrors the pattern; nothing in Concert affects Payment.
-> - **`IStripeValidationFactory`** (the legacy class in `Concertable.Infrastructure/Validators/`)
->   is the same redundancy noted in the original lock — deleted during Payment Step 7.
->   Consumers inject `IStripeValidationStrategyFactory` (the new per-Payment factory above)
->   and call `factory.Create(contract.ContractType).ValidateAsync()`.
-> - **Dispatcher pattern for Payment**: `TicketPaymentDispatcher` rewrites to:
->   1. fetch opportunity id from the relevant Concert repo (the same `GetOpportunityIdAsync`
->      methods Contract Step 9 added to Concert),
->   2. call `IContractModule.GetByOpportunityAsync(opportunityId)` to get the `IContract`,
->   3. call `factory.Create(contract.ContractType).PayAsync(concertId, quantity, ...)`,
->   passing the `IContract` through to the strategy as a method parameter (so the strategy
->   doesn't refetch). Payment-owned strategies cast the `IContract` to their expected subtype
->   at the top of each method (safe by construction — keyed registration + `ContractType`
->   switch guarantee the match), per Contract §3.1.
-> - **`TicketService` split — purchase orchestration folds into `CustomerPaymentService`, not
->   a new `TicketPurchaseService` class.** After stripping `ITicketValidator` + direct
->   `IConcertRepository.GetByIdAsync` (both replaced by `IConcertTicketPaymentModule.GetTicketEligibilityAsync`),
->   the purchase orchestrator is ~12 lines: auth check → eligibility facade → payment dispatcher
->   → response build. Not enough to justify its own class. The placeholder name "TicketPurchaseService"
->   in earlier plan revisions is dropped — at Step 7, add a `PurchaseTicketsAsync` method to
->   the existing `CustomerPaymentService` and delete legacy `TicketService` (its `CompleteAsync`
->   half goes to Concert via `IConcertTicketPaymentModule.IssueTicketsAsync`; `GetUserUpcoming`
->   / `GetUserHistoryAsync` placement TBD at Step 7 — likely Concert since they read
->   `TicketEntity` which Concert owns, but borderline).
-> - **Stripe webhook endpoint location**: Contract plan banner notes the *endpoint* (signature
->   validation, event extraction) may live in Payment when Payment extracts — that's a Payment
->   plan question. **Decision: yes, Payment owns the webhook endpoint** (`WebhookController`
->   was already in Step 9's move list). The `SettlementWebhookHandler` body (line A.6) calls
->   `IConcertLifecycleModule.SettleAsync(bookingId, ct)` — Concert owns the booking state
->   transition, Payment owns the webhook entry point.
+> **Design lock:** Option B — Concert orchestrates ticket purchase, Payment is a stateless
+> money-movement service. See `project_payment_module_design.md` for the canonical lock-list.
+> Key consequences:
+> - `POST /api/tickets/purchase` lives in **Concert.Api**, not Payment.Api.
+> - `IPaymentModule` exposes exactly two cross-module verbs: `PurchaseTicketsAsync` +
+>   `SettleBookingAsync`. Both take `IContract` as a method parameter (caller owns the read).
+> - `IConcertTicketPaymentModule` is callback-only: `IssueTicketsAsync` + `RefundTicketAsync`.
+>   Explicitly rejected: `GetContractAsync`, `GetTicketEligibilityAsync` (would make Concert
+>   a "data provider" for Payment).
+> - Strategies (`ITicketPaymentStrategy`, `IStripeValidationStrategy`) live in
+>   `Payment.Application` and are keyed by `ContractType`. Per-method `IContract` parameter
+>   on strategy interfaces was REVERTED 2026-04-25 — half the impls ignored it. Strategies
+>   that need terms either receive primitives via `IPaymentModule` boundary args or self-
+>   fetch via the `IContract` arg passed in.
+> - Stripe IDs MOVE OUT of `UserEntity` to a Payment-owned **system-of-record** entity
+>   `PayoutAccountEntity` (NOT a projection). Payment is the only writer (Stripe Connect
+>   onboarding) and the only reader. No Identity integration events needed.
+> - Webhook direction is the exception to "Concert orchestrates": Stripe → Payment (Stripe-
+>   shaped HMAC validation belongs to Payment) → callback to Concert via
+>   `IConcertTicketPaymentModule.IssueTicketsAsync` and `IConcertLifecycleModule.SettleAsync`.
+> - Workers DI lock: `"offSession"` keyed only (Workers' only consumer is
+>   `ConcertFinishedFunction`, off-session by definition).
+> - Outbox infrastructure DEFERRED — Stage 1 uses `InProcessIntegrationEventBus` (immediate
+>   dispatch). Payment events are idempotent (upsert by PK); a missed event self-heals.
 >
-> **Decisions locked in this session (2026-04-24, original):**
-> - Workers registers `IManagerPaymentService` with `"offSession"` keyed only (not both, not non-keyed).
-> - Workers registers `IPaymentService` with `"offSession"` keyed only (same reason).
-> - `IStripeValidationFactory` is redundant — will be deleted during Payment Step 7; consumers use the new internal `IStripeValidationStrategyFactory` (per-module factory pattern, see banner update above — REPLACES earlier "use `IContractModule.ResolveFor*Async<...>`" plan).
-> - Webhook handlers (`TicketWebhookHandler`, `SettlementWebhookHandler`, `WebhookService`, `WebhookProcessor`, `WebhookQueue`, `WebhookStrategyFactory`) move to `Payment.Infrastructure` in Step 7.
-> - `BackgroundTaskQueue` / `BackgroundTaskRunner` / `QueueHostedService` stay Web-only (no Workers registration) — documented, not a defect.
+> **Pre-Step-1 chore (THIS SESSION):** Relocate `TicketService` from legacy
+> `Concertable.Infrastructure/Services/TicketService.cs` to `Concert.Infrastructure/Services/`.
+> Fixes the silent-save-to-wrong-context bug AND positions Concert as the orchestrator under
+> Option B. Discrete: file move + namespace + DI re-wire + integration test pass.
 >
-> **REOPENED 2026-04-24: `TicketService` placement.** Previously locked to move to
-> `Payment.Infrastructure`. Reversed — `TicketService` **stays in Concert.Infrastructure**.
-> Reasoning: creating `TicketEntity` records + calling `concertEntity.SellTickets()` is
-> concert aggregate lifecycle, not payment work. Payment owns money movement (Stripe
-> `PaymentIntent`, `TicketTransactionEntity`, webhook dispatch). The two are split:
-> - **Concert.Infrastructure** keeps `TicketService`. `CompleteAsync` body (create
->   `TicketEntity` rows, `concert.SellTickets(quantity)`, save via `ConcertDbContext`)
->   runs inside Concert. Exposed cross-module via `IConcertTicketPaymentModule.IssueTicketsAsync`.
-> - **Payment.Infrastructure** gets whatever orchestrator wraps the pre-payment flow
->   (today part of `TicketService.PurchaseAsync` — the `ITicketPaymentStrategy` selection +
->   Stripe intent creation + transaction logging). Likely name: `TicketPurchaseService`
->   or merge into existing `CustomerPaymentService` — decide at Step 7 when the code is
->   on screen.
-> - **`TicketWebhookHandler`** (Payment) calls `IConcertTicketPaymentModule.IssueTicketsAsync`
->   to run Concert's `TicketService.CompleteAsync` body post-settle. Facade method already
->   planned.
->
-> Ancillary benefit: avoids the Concert Step 16 silent-save-to-wrong-context trap
-> (`TicketService` writing via `ConcertDbContext` in the Payment module would be the same
-> bug pattern `feedback_module_service_saves_own_context.md` warns against).
->
-> Successor to `CONCERT_MODULE_REFACTOR.md` (Stage 1 complete 2026-04-23). Payment is the
-> first module where **eventual consistency matters enough to justify outbox infrastructure** —
-> per MM_NORTH_STAR §Event Infrastructure, integration events + outbox should be introduced
-> before or during this extraction.
->
-> Memory: `project_modular_monolith.md` + `project_future_modules.md` tracks stage progress.
+> Memory: `project_modular_monolith.md` + `project_future_modules.md` track stage progress;
+> `project_payment_module_design.md` is the canonical decision lock.
 
 ---
 
-## Starting state (discovery, 2026-04-24)
+## Starting state
 
-`api/Modules/Payment/` already exists with one project: `Concertable.Payment.Contracts`,
-containing only `PaymentResponse.cs` (base Stripe response record). Everything else lives
-in legacy layers.
+`api/Modules/Payment/` exists with `Concertable.Payment.Contracts` (only `PaymentResponse.cs`
+today). Everything else lives in legacy `Concertable.Core` / `Concertable.Application` /
+`Concertable.Infrastructure`.
+
+Contract extraction is closed. `IContractModule` (Contract.Abstractions) is the public read
+surface; `IContractLookup` (Concert.Application internal, request-scoped memoizer) is the
+Concert-side dedup point. Both already in place.
 
 ### What moves to Payment
 
 **Entities (currently `Concertable.Core/Entities/`):**
 - `TransactionEntity` (abstract TPT base) + `TicketTransactionEntity` + `SettlementTransactionEntity`
-  (note: `SettlementTransactionEntity` lives in a file named `ConcertTransactionEntity.cs` — filename mismatch, rename on move)
+  (note: `SettlementTransactionEntity` is in a file misnamed `ConcertTransactionEntity.cs` —
+  rename on move)
 - `StripeEventEntity` (Stripe webhook idempotency log)
 - Enums: `TransactionStatus`, `TransactionType`, `PayoutAccountStatus`, `WebhookType`
 - `TicketPurchaseParams` (from `Concertable.Core/Parameters/`)
 
+**NEW entity (Payment.Domain):**
+- `PayoutAccountEntity` — Payment's system of record for Stripe Connect data. Schema:
+  `Id`, `UserId` (FK-by-primitive into Identity, no nav), `StripeAccountId?`,
+  `StripeCustomerId?`, `Status : PayoutAccountStatus`. Implements `IIdEntity` + `IEventRaiser`.
+  Replaces `UserEntity.StripeAccountId` + `UserEntity.StripeCustomerId` (DROPPED from Identity).
+
 **Application interfaces (currently `Concertable.Application/Interfaces/`):**
 - Payment: `IPaymentService`, `ICustomerPaymentService`, `IManagerPaymentService`, `ITransactionService`
-- Stripe: `IStripeAccountService`, `IStripeValidator`, `IStripeValidationFactory`, `IStripeValidationStrategy`
+- Stripe: `IStripeAccountService`, `IStripeValidator`, `IStripeValidationFactory`,
+  `IStripeValidationStrategy`
 - Transaction: `ITransactionRepository`, `ITransactionMapper`, `ITransactionMapperFactory`
-- Ticket: `ITicketService`, `ITicketRepository`, `ITicketValidator`
-- Webhook (from `Concertable.Infrastructure/Interfaces/`): `IWebhookService`, `IWebhookProcessor`,
+- Ticket payment: `ITicketPaymentStrategy` (currently misplaced in `Concert.Application/Interfaces/`
+  — Contract-extraction-era artifact; relocate here)
+- Webhook (from `Concertable.Infrastructure/Interfaces/` and
+  `Concert.Infrastructure/Services/Webhook/`): `IWebhookService`, `IWebhookProcessor`,
   `IWebhookQueue`, `IWebhookStrategy`, `IWebhookStrategyFactory`, `ITicketWebhookStrategy`,
   `ISettlementWebhookStrategy`, `IStripePaymentClient`
 
 **DTOs / Requests / Responses:**
-- `PaymentDtos.cs` (`TicketTransactionDto`, `SettlementTransactionDto`, `PaymentMethodDto`, `PurchaseCompleteDto`)
+- `PaymentDtos.cs` (`TicketTransactionDto`, `SettlementTransactionDto`, `PaymentMethodDto`,
+  `PurchaseCompleteDto`)
 - `PaymentRequests.cs`, `PaymentResponses.cs`
-- `TicketTransactionMapper`, `ConcertTransactionMapper` (payment-scoped mappers)
-- `TicketMappers`, `TicketValidators`
-- `TicketDto`, `TicketConcertDto` (currently in `SharedDtos.cs`)
+- `TicketTransactionMapper`, `ConcertTransactionMapper`, `PaymentIntentMappers`
 
 **Infrastructure services (currently `Concertable.Infrastructure/Services/Payment/`):**
 - `PaymentService`, `StripePaymentClient`, `StripeAccountService`, `TransactionService`
@@ -135,171 +88,111 @@ in legacy layers.
 - `ArtistTicketPaymentService`, `VenueTicketPaymentService`
 - `OnSessionPaymentService`, `OffSessionPaymentService`
 - `FakePaymentService`, `FakeStripeAccountService`, `FakeWebhookService`
-- `TicketService`
+
+**Webhook handlers (currently `Concert.Infrastructure/Services/Webhook/` — Concert-extraction
+carryover, they're Stripe concerns):**
+- `WebhookService`, `WebhookProcessor`, `WebhookQueue`
+- `TicketWebhookHandler`, `SettlementWebhookHandler`
 
 **Infrastructure repos:**
 - `StripeEventRepository`, `TransactionRepository`
-- `TicketRepository` (currently legacy — deferred from Concert extraction)
 
 **Infrastructure validators / factories:**
 - `StripeValidator`, `StripeValidationFactory`, `StripeAccountValidator`, `StripeCustomerValidator`
-- `WebhookStrategyFactory`, `ContractStrategyFactory`, `ContractStrategyResolver`
-
-**Mappers:**
-- `PaymentIntentMappers`
+- `WebhookStrategyFactory`
+- `ITicketPaymentStrategyFactory` + impl (already exists in `Concertable.Infrastructure/Factories/`,
+  internal, 5-line `GetRequiredKeyedService` wrapper — moves with Payment)
 
 **Infrastructure background / queue:**
 - `BackgroundTaskQueue`, `BackgroundTaskRunner`, `QueueHostedService`, `IBackgroundTaskQueue`,
-  `IBackgroundTaskRunner` — currently used only by `WebhookQueue`. Move to Payment; if a second
-  consumer appears, revisit whether this belongs in `Shared.Infrastructure`.
+  `IBackgroundTaskRunner` — currently used only by `WebhookQueue`. Move to Payment; if a
+  second consumer appears, revisit `Shared.Infrastructure`.
 
-**EF configurations (move out of `Data.Infrastructure/Data/Configurations/`):**
-- `TransactionConfigurations.cs` (owns `Transactions`, `TicketTransactions`, `SettlementTransactions`)
+**EF configurations (currently `Data.Infrastructure/Data/Configurations/`):**
+- `TransactionConfigurations.cs` (owns `Transactions`, `TicketTransactions`,
+  `SettlementTransactions`)
+- `StripeEventEntityConfiguration` (if it exists; otherwise create)
 
 **Controllers (to `Payment.Api`):**
-- `PaymentController`, `StripeAccountController`, `TransactionController`, `WebhookController`, `TicketController`
+- `PaymentController`, `StripeAccountController`, `TransactionController`, `WebhookController`
+
+**Stays in Concert.Api (Option B):**
+- `TicketController` — POST `/api/tickets/purchase` is concert-shaped. Owns the
+  orchestration; calls `IPaymentModule.PurchaseTicketsAsync` for money movement.
 
 ### What stays / goes elsewhere
 
-- `TicketEntity` — stays in `Concert.Domain`. It is a Concert aggregate member (a seat at a
-  show); the financial transaction wrapping it (`TicketTransactionEntity`) is what Payment owns.
-  `Payment.Infrastructure` interacts with tickets via `IConcertModule` / `IConcertTicketPaymentModule`.
-- `PreferenceEntity`, `GenrePreferenceEntity` — **not Payment**. Goes to Customer module later.
-- `MessageEntity` — not Payment. Goes to Messaging module.
-- `AuthSettings`, `BlobStorageSettings`, `StripeSettings`, `UrlSettings` — Settings stay in
-  `Concertable.Infrastructure` for now; `StripeSettings` moves with the module.
-- `ConcertValidator` — lives in `Concertable.Infrastructure/Validators/`. Validates concert
-  eligibility before payment. Moves to Payment (it is a payment pre-condition check).
-- `TicketValidator`, `OpportunityApplicationValidator` — move to Payment and Concert
-  respectively.
+- `TicketEntity` — stays in `Concert.Domain`. Concert aggregate member.
+- `TicketRepository` (manages `TicketEntity` against `ConcertDbContext`) — stays in
+  Concert.Infrastructure.
+- `TicketService` — relocates to `Concert.Infrastructure/Services/` in **Pre-Step-1** (this
+  session). Under Option B, `TicketService.PurchaseAsync` stays in Concert as the
+  orchestrator and calls `IPaymentModule.PurchaseTicketsAsync` instead of the legacy internal
+  dispatcher (rewired in Step 7). `CompleteAsync` body becomes
+  `IConcertTicketPaymentModule.IssueTicketsAsync`. `GetUserUpcomingAsync` /
+  `GetUserHistoryAsync` stay on `TicketService` (Concert-side reads).
+- `TicketValidator` — stays in Concert (ticket-side eligibility).
+- `ConcertValidator` — stays in Concert. Concert pre-condition; not Payment's job.
+- `OpportunityApplicationValidator` — already in Concert.
+- `PreferenceEntity`, `GenrePreferenceEntity` — Customer module (later).
+- `MessageEntity` — Messaging module (later).
+- `AuthSettings`, `BlobStorageSettings`, `UrlSettings` — stay in `Concertable.Infrastructure`.
+- `StripeSettings` — moves with Payment.
+
+### Stripe IDs out of Identity
+
+`UserEntity.StripeAccountId` and `UserEntity.StripeCustomerId` get DROPPED. New home:
+`PayoutAccountEntity` (Payment.Domain). One row per user that has a Stripe Connect account
+(manager) or a Stripe Customer (customer paying). Payment writes during Connect onboarding
+(`StripeAccountService`); Payment reads during purchase / settlement workflows.
+
+No Identity integration events. No projection. System of record.
+
+Backfill via `PaymentDevSeeder` / `PaymentTestSeeder` (Step 9) since migrations are
+re-scaffolded fresh during the refactor.
 
 ---
 
-## Key design decisions
+## Pre-Step-1 — Relocate TicketService to Concert.Infrastructure (THIS SESSION)
 
-### 1. TicketEntity AND TicketService both stay in Concert
+`api/Concertable.Infrastructure/Services/TicketService.cs` →
+`api/Modules/Concert/Concertable.Concert.Infrastructure/Services/TicketService.cs`.
 
-**REVISED 2026-04-24** — earlier draft of this plan moved `TicketService` to Payment with
-the reasoning "TicketService handles ticket purchasing and fulfillment — a payment
-concern." Reversed. Creating `TicketEntity` records and calling `concertEntity.SellTickets()`
-is concert aggregate lifecycle — Concert's job unambiguously. Payment's job is money
-movement (Stripe, transactions).
-
-**Split:**
-
-- **Concert.Infrastructure** owns `TicketService`. `CompleteAsync` body (build
-  `TicketEntity` rows, `concert.SellTickets(quantity)`, save via `ConcertDbContext`)
-  runs here. `TicketRepository` (Concert.Infrastructure, writes `TicketEntity` to
-  `ConcertDbContext`) stays.
-- **Concert.Contracts** gains `IConcertTicketPaymentModule`:
-  - `IssueTicketsAsync(concertId, userId, quantity)` → wraps `TicketService.CompleteAsync`
-    body. Called from Payment-side webhook handler after Stripe settles.
-  - `GetTicketEligibilityAsync(concertId, userId)` → wraps `ITicketValidator.CanPurchaseTicketAsync`
-    + concert price lookup. Called from Payment orchestrator before `PaymentIntent` creation.
-- **Payment.Infrastructure** owns:
-  - Orchestrator wrapping today's `TicketService.PurchaseAsync` body (minus the ticket-issue
-    piece) — calls `IConcertTicketPaymentModule.GetTicketEligibilityAsync`, resolves
-    `ITicketPaymentStrategy` via the Payment-internal `ITicketPaymentStrategyFactory` (after
-    fetching `IContract` via `IContractModule.GetByOpportunityAsync(opportunityId)` — Concert
-    repo gives the `opportunityId` from `concertId`), creates Stripe `PaymentIntent`, logs
-    `TicketTransactionEntity`. Name TBD at Step 7. (Earlier draft referenced
-    `IContractModule.ResolveForConcertAsync<...>` — that API does not exist; replaced by the
-    per-module factory + `GetByOpportunityAsync` pair, see banner update.)
-  - `TransactionRepository` writing `TicketTransactionEntity` / `SettlementTransactionEntity`
-    to `PaymentDbContext`.
-  - `TicketWebhookHandler` — on Stripe `payment_intent.succeeded`, logs transaction, then
-    calls `IConcertTicketPaymentModule.IssueTicketsAsync` to run Concert's issue logic.
-
-Net result: neither module crosses the other's aggregate boundary. Concert owns Tickets +
-Concerts; Payment owns Transactions + Stripe state.
-
-### 2. PayoutAccount projection (replaces deprecated cross-module lookup)
-
-Today `ArtistManagerRepository.GetByConcertIdAsync` (now deleted) + direct `IReadDbContext`
-reads retrieved `StripeAccountId` from Identity. North-star fix: Payment owns a
-`PayoutAccountProjection` table (`UserId`, `StripeAccountId`, `StripeCustomerId`, `Status`)
-populated from Identity integration events (`ManagerStripeAccountLinked`,
-`CustomerStripeAccountLinked`, `ManagerStripeAccountVerified`). Payment workflows read
-locally — no Identity call at payment time.
-
-Identity must emit these events (see Identity TODO below).
-
-### 3. IConcertModule facades crystallise here
-
-Per `project_concert_multi_facade.md`, Concert will ship multiple facades. During Payment
-extraction the following methods become concrete on Concert.Contracts:
-
-**`IConcertLifecycleModule`**:
-- `SettleAsync(int bookingId)` — Payment webhook handler calls after Stripe settles; backed
-  internally by `SettlementDispatcher`
-- `FinishAsync(int concertId)` — Workers' `ConcertFinishedFunction` calls; backed by
-  `FinishedDispatcher`
-
-**`IConcertTicketPaymentModule`:**
-- `GetTicketEligibilityAsync(int concertId, Guid userId)` — wraps `ITicketValidator.CanPurchaseTicketAsync`
-  + `concertRepository.GetByIdAsync` (price). Currently these are called together in
-  `TicketService.PurchaseAsync` lines 47–53. Returns `TicketEligibility` (valid + price +
-  available quantity) in `Concert.Contracts`.
-- `IssueTicketsAsync(int concertId, Guid userId, int quantity)` → `IReadOnlyList<Guid> ticketIds`
-  — wraps the body of `TicketService.CompleteAsync` (lines 78–98): creates `TicketEntity`
-  records, calls `concertEntity.SellTickets(quantity)`, saves, returns ticket IDs. Currently
-  called by `TicketWebhookHandler.HandleAsync`.
-- `RefundTicketAsync(Guid ticketId)` — **backlog, not yet implemented**. Interface stub added
-  now so the ownership is clear.
-
-These replace the current direct Concert service injections inside `TicketService` and
-`SettlementWebhookHandler`.
-
-### 4. Workers DI divergence — reconcile here
-
-Workers currently registers `IManagerPaymentService` **non-keyed** (line 63) while Web uses a
-keyed onSession/offSession pair. This host discrepancy must be reconciled during Payment
-extraction — not left as a silent difference. Likely outcome: Workers adopts the same keyed
-registration; or if Workers only needs a default payment service, document why explicitly.
-
-### 5. Transaction TPT — PaymentDbContext owns all three tables
-
-`TransactionEntity` uses TPT (`UseTptMappingStrategy`). `PaymentDbContext` owns `Transactions`,
-`TicketTransactions`, and `SettlementTransactions`. The `TransactionConfigurations.cs` file
-moves out of `Data.Infrastructure` and into `Payment.Infrastructure/Data/Configurations/`.
-
----
-
-## Identity TODO (prerequisite or parallel)
-
-Payment needs `PayoutAccountProjection` populated from events that Identity doesn't currently
-raise. Before or during Payment Step 6 (integration events), add to `IdentityModule`:
-
-- `ManagerStripeAccountLinked(Guid userId, string stripeAccountId)` domain event +
-  integration event
-- `ManagerStripeAccountVerified(Guid userId)` integration event
-- `CustomerStripeAccountLinked(Guid userId, string stripeCustomerId)` integration event
-
-These can be added to Identity in a thin, focused pass before Payment Step 6.
+- Namespace flip: `Concertable.Concert.Infrastructure.Services`. Class stays `internal`.
+- File-scoped namespace + remove redundant usings.
+- Imports retarget where Concert-extraction-era types now live in
+  `Concertable.Concert.Application.Interfaces` (`IConcertRepository`, `ITicketPaymentDispatcher`).
+  Payment-owned interfaces (`ITicketRepository` for now, `ITicketValidator`) stay on their
+  current legacy namespaces — they get re-homed in Step 3/7 of THIS extraction.
+- DI: remove `services.AddScoped<ITicketService, TicketService>()` from
+  `Concertable.Web/Extensions/ServiceCollectionExtensions.cs`; add to
+  `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs` `AddConcertModule()`.
+- IVT: `ITicketService` interface still lives in legacy `Concertable.Application/Interfaces/`
+  for now, visible to Concert.Infrastructure via the existing
+  `Concertable.Application → Concertable.Concert.Infrastructure` IVT entry. Verify; add if missing.
+- Test: `dotnet build` then run integration ticket suite. The 3
+  `Ticket.*Purchase_ShouldCreateTicketAndReduceAvailabilityAfterWebhook` cases tracked
+  separately as flaky (`VenueReadModel.UserId` projection issue from Concert close-out) —
+  this move should not regress anything else.
 
 ---
 
 ## Stage 1 — Implementation steps
 
-### Step 0 — Discovery (before any code changes)
-- Audit all inbound consumers of payment services in Web + Workers (grep `IPaymentService`,
-  `IManagerPaymentService`, `ICustomerPaymentService`, `ITicketService`, `IWebhookService`,
-  `IStripeAccountService`, `ITransactionService`).
-- Capture full DI snapshot: every payment/ticket/webhook/stripe registration in
-  `Web/Extensions/ServiceCollectionExtensions.cs` + `Workers/ServiceCollectionExtensions.cs`.
-- Record keyed registrations explicitly (ContractType, onSession/offSession, real/fake toggle).
-- Identify the Workers non-keyed `IManagerPaymentService` discrepancy and agree resolution.
-- Output: Appendix A in this document.
+### Step 0 — Discovery (DONE 2026-04-24)
+Appendix A retained at the bottom for reference. Workers DI discrepancy resolution locked
+in design memory: register `"offSession"` keyed only.
 
 ### Step 1 — Scaffold Payment projects
 Scaffold under `api/Modules/Payment/` (Contracts already exists):
 - `Concertable.Payment.Domain` — entities, enums, domain events
-- `Concertable.Payment.Application` — interfaces, DTOs, requests, validators, mappers
+- `Concertable.Payment.Application` — interfaces, DTOs, requests, validators, mappers, strategies
 - `Concertable.Payment.Infrastructure` — EF repos, services, `AddPaymentModule()`
-- `Concertable.Payment.Api` — controllers, `AddPaymentApi()`
+- `Concertable.Payment.Api` — controllers (`PaymentController`, `StripeAccountController`,
+  `TransactionController`, `WebhookController`), `AddPaymentApi()`
 
-Add all four to `Concertable.sln` under `Modules/Payment` folder (see sln duplicate-folder
-gotcha in `feedback_sln_solution_folder_duplicate.md`).
+Add to `Concertable.sln` under `Modules/Payment` solution folder (sln duplicate-folder
+gotcha: `feedback_sln_solution_folder_duplicate.md`).
 
 ### Step 2 — Move entities + enums to Payment.Domain
 Move from `Concertable.Core/Entities/` + `/Enums/`:
@@ -312,28 +205,44 @@ Add `Concertable.Core → Payment.Domain` project ref. Propagate
 `global using Concertable.Payment.Domain` to Core, Application, Infrastructure,
 Data.Infrastructure, Web, Workers + their test projects.
 
-**New:** Add `PayoutAccountProjection` entity to `Payment.Domain` now
-(`UserId`, `StripeAccountId`, `StripeCustomerId`, `Status : PayoutAccountStatus`).
+**New entity (Payment-owned system of record):**
+`PayoutAccountEntity` (`UserId`, `StripeAccountId?`, `StripeCustomerId?`,
+`Status : PayoutAccountStatus`). Implements `IIdEntity` + `IEventRaiser`. Factory method
+`Create(Guid userId)`; `LinkAccount(string stripeAccountId)`,
+`LinkCustomer(string customerId)`, `MarkVerified()`. Domain events optional (Stage 1: omit;
+revisit if downstream consumer appears).
+
+**Drop from `UserEntity`:** `StripeAccountId`, `StripeCustomerId`. All current readers move
+to `PayoutAccountEntity` via Payment-internal repo (Step 7).
 
 ### Step 3 — Move Application layer to Payment.Application
 Move (all `internal`, namespace `Concertable.Payment.Application.*`):
-- All payment/stripe/transaction/ticket/webhook interfaces
+- All payment / stripe / transaction / webhook interfaces listed above
+- `ITicketPaymentStrategy` (relocated from `Concert.Application/Interfaces/`)
+- `IStripeValidationStrategy` (currently `public` and does NOT extend `IContractStrategy`
+  marker — flip to `internal` and add `: IContractStrategy` for symmetry with
+  `ITicketPaymentStrategy`; both keyed by `ContractType`)
 - `PaymentDtos.cs`, `PaymentRequests.cs`, `PaymentResponses.cs`
-- `TicketDto`, `TicketConcertDto` (out of legacy `SharedDtos.cs`)
-- `TicketMappers`, `TicketValidators`, `PaymentIntentMappers`, `TicketTransactionMapper`,
-  `ConcertTransactionMapper`, `TransactionMapper`
+- `PaymentIntentMappers`, `TicketTransactionMapper`, `ConcertTransactionMapper`,
+  `TransactionMapper`
 - `ITransaction` interface + polymorphic DTO types
 
-`Payment.Application/AssemblyInfo.cs`: grant `InternalsVisibleTo` to Payment.Infrastructure,
-Payment.Api, Concertable.Infrastructure (TEMPORARY until Step 7), Concertable.Workers
-(TEMPORARY until Step 13), Concertable.Web (TEMPORARY until Step 9),
-Concertable.Web.IntegrationTests.
+Strategy method signatures: do **NOT** add `IContract contract` per-method param. Strategies
+that need contract terms either receive them through `IPaymentModule` boundary parameters
+(caller passes), or cast the `IContract` argument forwarded from `IPaymentModule.PurchaseTicketsAsync`.
+
+`Payment.Application/AssemblyInfo.cs`: grant `InternalsVisibleTo` to:
+- Payment.Infrastructure (permanent)
+- Payment.Api (permanent)
+- Concertable.Infrastructure (TEMPORARY until Step 7)
+- Concertable.Workers (TEMPORARY until Step 12)
+- Concertable.Web (TEMPORARY until Step 8)
+- Concertable.Web.IntegrationTests (test-only, permanent)
 
 Flip all legacy payment impl classes `public` → `internal` in `Concertable.Infrastructure`
-(same accessibility cascade pattern as Concert Step 5 — see
-`feedback_module_impl_visibility_cascade.md`).
+(accessibility cascade: `feedback_module_impl_visibility_cascade.md`).
 
-### Step 4 — Crystallise IConcertModule facades in Concert.Contracts
+### Step 4 — Crystallise Concert facades for Payment callbacks
 Add to `Concertable.Concert.Contracts`:
 
 ```csharp
@@ -345,20 +254,17 @@ public interface IConcertLifecycleModule
 
 public interface IConcertTicketPaymentModule
 {
-    // Wraps TicketValidator.CanPurchaseTicketAsync + concertRepository.GetByIdAsync (price)
-    Task<TicketEligibility> GetTicketEligibilityAsync(int concertId, Guid userId, CancellationToken ct = default);
-    // Wraps TicketService.CompleteAsync body: creates TicketEntity records, SellTickets, Save
     Task<IReadOnlyList<Guid>> IssueTicketsAsync(int concertId, Guid userId, int quantity, CancellationToken ct = default);
-    // Backlog — not yet implemented; stub added to lock in ownership
     Task RefundTicketAsync(Guid ticketId, CancellationToken ct = default);
 }
 ```
 
-Implement in `Concert.Infrastructure`. Register in `AddConcertModule()`. The DTOs
-(`TicketEligibility`) live in `Concert.Contracts`.
+Implement in `Concert.Infrastructure`. Register in `AddConcertModule()`. Both **callback-only**
+— Payment webhook handlers call them after Stripe settles. No `GetTicketEligibilityAsync` /
+`GetContractAsync` (rejected — would make Concert a data provider for Payment).
 
-This step may surface compilation errors in `TicketService` + workflow services — good,
-those are the callers that need rewiring in Step 7.
+`IssueTicketsAsync` body = current `TicketService.CompleteAsync` body (post Pre-Step-1 move).
+`RefundTicketAsync` is a stub for now (backlog; lock the ownership).
 
 ### Step 5 — Create PaymentDbContext
 `internal class PaymentDbContext : DbContextBase` in `Payment.Infrastructure/Data/`.
@@ -366,123 +272,150 @@ those are the callers that need rewiring in Step 7.
 DbSets:
 - `Transactions`, `TicketTransactions`, `SettlementTransactions` (TPT)
 - `StripeEvents`
-- `PayoutAccountProjections`
+- `PayoutAccounts`
 
 Configs (all `internal`, in `Payment.Infrastructure/Data/Configurations/`):
-- `TransactionEntityConfiguration` (moved from `Data.Infrastructure/Data/Configurations/TransactionConfigurations.cs`)
+- `TransactionEntityConfiguration` (moved from `Data.Infrastructure/Data/Configurations/`)
 - `StripeEventEntityConfiguration`
-- `PayoutAccountProjectionConfiguration`
+- `PayoutAccountEntityConfiguration`
 
-`Payment.Infrastructure.csproj` gets EF Core SqlServer + Data.Infrastructure project ref.
+Default schema `"payment"` (matches per-module schema convention; cf. Contract's `"contract"`).
 
-### Step 6 — Integration events: PayoutAccountProjection
-**Prerequisite:** Identity emits `ManagerStripeAccountLinked`, `ManagerStripeAccountVerified`,
-`CustomerStripeAccountLinked` (see Identity TODO above).
+`Payment.Infrastructure.csproj`: EF Core SqlServer + Data.Infrastructure project ref.
 
-Add to `Payment.Infrastructure/Handlers/`:
+### Step 6 — Lock IPaymentModule shape (Contracts)
+**REVISED from earlier plan** — no `PayoutAccountProjectionHandler`, no Identity events.
+`PayoutAccountEntity` is a Payment-owned system of record; Payment writes directly during
+Stripe Connect onboarding. Step 6 work is locking the boundary shape:
+
 ```csharp
-internal class PayoutAccountProjectionHandler :
-    IIntegrationEventHandler<ManagerStripeAccountLinkedEvent>,
-    IIntegrationEventHandler<ManagerStripeAccountVerifiedEvent>,
-    IIntegrationEventHandler<CustomerStripeAccountLinkedEvent>
+public interface IPaymentModule
+{
+    Task<Result<PaymentResponse>> PurchaseTicketsAsync(int concertId, int quantity,
+        string? paymentMethodId, decimal price, Guid customerUserId, IContract contract,
+        CancellationToken ct = default);
+    Task<Result<PaymentResponse>> SettleBookingAsync(int bookingId, Guid payerUserId,
+        Guid payeeUserId, decimal amount, IContract contract, CancellationToken ct = default);
+}
 ```
 
-Upsert-by-userId, idempotent. Register in `AddPaymentModule()`.
+Caller passes `IContract` as a method parameter — Payment never reads from Concert/Contract.
+Microservice-ready (this becomes the Refit/HTTP contract if Payment ever extracts to its
+own process).
 
-This step retires the remaining cross-module Stripe account lookups in the workflow services.
+`Payment.Contracts.csproj` gains ref to `Contract.Abstractions` (for `IContract`).
+
+`Concert.Contracts.csproj` gains ref to `Payment.Contracts` (for `IPaymentModule`,
+`PaymentResponse`). One-way, no cycle. Same shape as Concert depending on Contract.Abstractions.
 
 ### Step 7 — Move Infrastructure layer to Payment.Infrastructure
-Move all services, repositories, factories, validators from `Concertable.Infrastructure/Services/Payment/`
-and `Concertable.Infrastructure/Repositories/` (payment-scoped) and `Concertable.Infrastructure/Validators/`
-(stripe/ticket validators) and `Concertable.Infrastructure/Factories/`:
+Move all services, repositories, factories, validators per the lists above:
 
 - All payment services + fakes
-- `StripeEventRepository`, `TransactionRepository`
-- Payment-owned `TicketRepository` (manages `TicketTransactionEntity` in `PaymentDbContext` —
-  distinct from `Concert.Infrastructure`'s `TicketRepository` which manages `TicketEntity`)
-- `StripeValidator`, `StripeValidationFactory`, `StripeAccountValidator`, `StripeCustomerValidator`
-- `ConcertValidator`, `TicketValidator` (payment pre-condition validators)
-- `WebhookStrategyFactory` (Payment-owned)
-- ~~`ContractStrategyFactory`, `ContractStrategyResolver`~~ — these were **deleted in Contract
-  extraction Step 4** and are NOT moved to Payment. Replaced by Payment-internal
-  `ITicketPaymentStrategyFactory` + `IStripeValidationStrategyFactory` (each a 5-line
-  `IServiceProvider.GetRequiredKeyedService<TStrategy>(ContractType)` wrapper) authored in
-  this step. See banner update for full pattern.
-- `BackgroundTaskQueue`, `BackgroundTaskRunner`, `QueueHostedService` (from legacy
-  `Concertable.Infrastructure/Background/` + `Services/`)
+- `StripeEventRepository`, `TransactionRepository`, new `PayoutAccountRepository`
+- `StripeValidator`, `StripeValidationFactory`, `StripeAccountValidator`,
+  `StripeCustomerValidator`
+- `WebhookStrategyFactory`
+- `ITicketPaymentStrategyFactory` + impl (5-line `GetRequiredKeyedService` wrapper, already
+  internal; relocate from `Concertable.Infrastructure/Factories/`)
+- `BackgroundTaskQueue`, `BackgroundTaskRunner`, `QueueHostedService`
+- Webhook handlers (`WebhookService`, `WebhookProcessor`, `WebhookQueue`,
+  `TicketWebhookHandler`, `SettlementWebhookHandler`) from
+  `Concert.Infrastructure/Services/Webhook/` to `Payment.Infrastructure/Services/Webhook/`.
+  They call Concert via `IConcertLifecycleModule` / `IConcertTicketPaymentModule`.
 
-**Webhook handlers currently in Concert.Infrastructure** — during Concert extraction,
-`WebhookService`, `WebhookProcessor`, `WebhookQueue`, `TicketWebhookHandler`, and
-`SettlementWebhookHandler` were placed in `Concert.Infrastructure/Services/Webhook/`.
-They are Stripe payment concerns, not Concert concerns; move them to `Payment.Infrastructure`
-in this step. They call Concert via `IConcertLifecycleModule` / `IConcertTicketPaymentModule`
-facades for any concert/ticket side effects.
+**`PaymentModule` impl** (`internal sealed class PaymentModule : IPaymentModule`,
+`Payment.Infrastructure/PaymentModule.cs`):
+- `PurchaseTicketsAsync` → `ITicketPaymentStrategyFactory.Create(contract.ContractType).PayAsync(...)`.
+  Strategy method takes the data it needs as primitive args (no `IContract` per-method
+  param — reverted lock); if a specific strategy needs contract terms it casts the
+  `IContract` arg forwarded by the module.
+- `SettleBookingAsync` → existing settlement service path; same shape.
 
-Rewrite callers of deleted cross-module lookups to use `PayoutAccountProjection` (now
-populated from Step 6 events). `TicketService` rewired to use `IConcertTicketPaymentModule`
-instead of direct Concert service injection.
+**Stripe IDs cutover:** rewrite all `userEntity.StripeAccountId` / `.StripeCustomerId` reads
+to `PayoutAccountRepository.GetByUserIdAsync(userId)`. Remove the two columns from
+`UserEntity` and `IdentityDbContext` config. Identity migration re-scaffold absorbs the drop.
 
-Reconcile Workers DI discrepancy (keyed vs non-keyed `IManagerPaymentService`).
+**Concert wiring (Option B):** rewrite `TicketService.PurchaseAsync` (now in
+Concert.Infrastructure post Pre-Step-1) — replace `ITicketPaymentDispatcher` +
+`IConcertRepository.GetByIdAsync(price)` chain with: `contract = await
+contractLookup.GetByConcertIdAsync(concertId)` →
+`paymentModule.PurchaseTicketsAsync(concertId, quantity, paymentMethodId, price,
+currentUser.GetId(), contract, ct)`. Concert keeps the eligibility validation
+(`TicketValidator`) as part of orchestration.
+
+**`SettlementWebhookHandler`** body → `await transactionService.CompleteAsync(intent.Id);
+await concertLifecycleModule.SettleAsync(int.Parse(intent.Metadata["bookingId"]), ct);`.
+
+**`TicketWebhookHandler`** body → log transaction → `concertTicketPaymentModule.IssueTicketsAsync(...)`.
+
+Reconcile Workers DI: drop non-keyed `IPaymentService` + `IManagerPaymentService`; register
+`"offSession"` keyed only.
 
 `Payment.Infrastructure.csproj` refs:
-- Payment.Application, Payment.Contracts, Concert.Contracts, **Contract.Abstractions** (for
-  `IContractModule`, `IContract`, `IContractStrategy` marker, `ContractType`, `PaymentMethod`),
-  Identity.Contracts (for events)
-- Stripe.net NuGet package
+- Payment.Application, Payment.Contracts, Payment.Domain
+- Concert.Contracts (for callback facades)
+- Contract.Abstractions (for `IContract`, `IContractStrategy` marker, `ContractType`,
+  `PaymentMethod`)
+- Identity.Contracts (for `ICurrentUser` only — no events)
+- Stripe.net NuGet
 
-### Step 8 — Scaffold IPaymentModule facade
-`Payment.Contracts/IPaymentModule.cs` — start minimal; methods crystallise once callers
-are identified. Likely candidates:
-- `GetTransactionsForUserAsync(Guid userId, PageParams)` — cross-module transaction history
-
-`Payment.Infrastructure/PaymentModule.cs` — `internal sealed class PaymentModule : IPaymentModule`.
-`AddPaymentModule()` gains `services.AddScoped<IPaymentModule, PaymentModule>()`.
-
-### Step 9 — Move controllers to Payment.Api
+### Step 8 — Move controllers to Payment.Api
 Move from `Concertable.Web/Controllers/`:
-- `PaymentController`, `StripeAccountController`, `TransactionController`,
-  `WebhookController`, `TicketController`
+- `PaymentController`, `StripeAccountController`, `TransactionController`, `WebhookController`
 
-All `internal`. `Payment.Api` gets `InternalControllerFeatureProvider` (same pattern as
-Venue/Concert). `AddPaymentApi()` calls `AddPaymentModule()` + `AddApplicationPart(...)`.
+`TicketController` STAYS in Concert (already there post Concert extraction; Option B owns
+ticket purchase orchestration there).
 
-`Concertable.Web` drops direct refs to payment controllers; gains `Payment.Api` project ref.
+All `internal` — `Payment.Api` gets `InternalControllerFeatureProvider` (Venue/Concert
+pattern). `AddPaymentApi()` calls `AddPaymentModule()` + `AddApplicationPart(...)`.
 
-### Step 10 — PaymentDevSeeder + PaymentTestSeeder
+`Concertable.Web` drops direct refs to those four controllers; gains `Payment.Api`
+project ref.
+
+### Step 9 — PaymentDevSeeder + PaymentTestSeeder
 `internal class PaymentDevSeeder : IDevSeeder` and `PaymentTestSeeder : ITestSeeder`, both
-`Order=4` (after Concert at 3). Inject `PaymentDbContext`.
+`Order = 5` (after Concert at 4). Inject `PaymentDbContext`.
 
-Seed: `PayoutAccountProjection` rows for seeded managers (so payment workflows have Stripe
-account data without needing Identity events to have fired). Test seeder seeds predictable
-transaction + stripe event fixtures for integration tests.
+Seed: `PayoutAccountEntity` rows for seeded managers + customers (so payment workflows have
+Stripe data on first run, no Connect onboarding required for tests). Test seeder seeds
+predictable transaction + stripe event fixtures for integration tests.
 
-### Step 11 — Remove Payment DbSets from ApplicationDbContext
+`UserEntity` lost `StripeAccountId` / `StripeCustomerId` in Step 2 — seeders that previously
+set those props on user fakers now create matching `PayoutAccountEntity` rows instead.
+
+### Step 10 — Remove Payment DbSets from ApplicationDbContext
 Remove `DbSet<TransactionEntity>`, `DbSet<TicketTransactionEntity>`,
 `DbSet<SettlementTransactionEntity>`, `DbSet<StripeEventEntity>` from `ApplicationDbContext`.
-Add `ExcludeFromMigrations` for all four. Rescaffold `ApplicationDbContext` `InitialCreate`.
+Add `ExcludeFromMigrations` for all four (until AppDb retires).
 
-### Step 12 — Migration scaffolding
+### Step 11 — Migration scaffolding
 Delete all `Migrations/` folders. Rescaffold `InitialCreate` in dependency order:
-`Shared → Identity → Artist → Venue → Concert → Payment → AppDb`
+`Shared → Identity → Artist → Venue → Concert → Contract → Payment → AppDb`
 
-Payment migration: check for cross-context FK issues. `TransactionEntity` has no FK into
-Genres (no cross-context issue). `TicketTransactions` has `TicketId` FK into Concert's
-`Tickets` table — both contexts run before AppDb, but Payment runs after Concert, so this
-FK is safe (Tickets exists when Payment migrates).
+Payment migration:
+- `EnsureSchema("payment")` (matches default context schema)
+- TPT for `Transactions` + `TicketTransactions` + `SettlementTransactions`
+- `StripeEvents`, `PayoutAccounts`
+- Cross-context FK on `TicketTransactions.TicketId → concert.Tickets.Id` is cross-context
+  → strip the `table.ForeignKey(...)` declaration per `feedback_cross_context_fk.md`.
+  Concert migrates first so the principal exists when AppDb runs, but the SQL FK constraint
+  shouldn't be declared in Payment's migration.
+- Identity migration loses `StripeAccountId` + `StripeCustomerId` columns (clean re-scaffold).
 
-### Step 13 — Wire AddPaymentApi() in Web + Workers
-- `Program.cs`: `services.AddPaymentApi(builder.Configuration)`
+### Step 12 — Wire AddPaymentApi() in Web + Workers
+- `Web/Program.cs`: `services.AddPaymentApi(builder.Configuration)`
 - `Workers/ServiceCollectionExtensions.cs`: `services.AddPaymentModule(configuration)`
-  (Workers doesn't need the Api layer)
-- Remove TEMPORARY `InternalsVisibleTo` grants from Payment.Application/AssemblyInfo.cs as
-  callers migrate to proper module boundaries.
+  (no Api)
+- Remove TEMPORARY `InternalsVisibleTo` grants from `Payment.Application/AssemblyInfo.cs`
+  as callers migrate to module boundaries (Step 3 grants now retire).
 
-### Step 14 — Full test suite
-Run Core + Infra + Workers unit tests + full integration suite. Expected issues:
-- Stripe webhook integration tests may need `FakeWebhookService` wired correctly
-- `PayoutAccountProjection` seeding must match what payment workflow tests expect
-- Workers keyed/non-keyed `IManagerPaymentService` discrepancy surfaces here if not
-  caught in Step 7
+### Step 13 — Full test suite
+Run unit + integration suites. Expected issues:
+- Stripe webhook integration tests need `FakeWebhookService` wired correctly through Payment DI.
+- `PayoutAccountEntity` test seed must match what payment workflow tests expect.
+- `DynamicProxyGenAssembly2` IVT for any newly-internal interface that NSubstitute proxies
+  (`feedback_castle_proxy_ivt.md`).
 
 ---
 
@@ -491,11 +424,8 @@ Run Core + Infra + Workers unit tests + full integration suite. Expected issues:
 ### A.1 Web host — `api/Concertable.Web/Extensions/ServiceCollectionExtensions.cs`
 
 **Stripe SDK singletons (real-only, skipped when fake-mode):**
-- `Stripe.AccountService` (Singleton)
-- `Stripe.AccountLinkService` (Singleton)
-- `Stripe.CustomerService` (Singleton)
-- `Stripe.PaymentMethodService` (Singleton)
-- `Stripe.SetupIntentService` (Singleton)
+- `Stripe.AccountService`, `Stripe.AccountLinkService`, `Stripe.CustomerService`,
+  `Stripe.PaymentMethodService`, `Stripe.SetupIntentService` (all Singleton)
 - `IStripePaymentClient → StripePaymentClient` (Singleton, real-only)
 
 **Real/Fake toggle (branch on `UseRealStripe` config):**
@@ -517,15 +447,14 @@ Run Core + Infra + Workers unit tests + full integration suite. Expected issues:
   - `ContractType.Versus → StripeCustomerValidator`
 
 **Manager payment (keyed):**
-- `IManagerPaymentService → ManagerPaymentService` via factory helper `AddKeyedManagerPaymentService(key)`:
-  - keyed `"onSession"`
-  - keyed `"offSession"`
+- `IManagerPaymentService → ManagerPaymentService` via `AddKeyedManagerPaymentService(key)`:
+  keyed `"onSession"`, keyed `"offSession"`
 
 **Customer + ticket + transaction:**
 - `ICustomerPaymentService → CustomerPaymentService` (Scoped)
-- `ITicketService → TicketService` (Scoped)
+- `ITicketService → TicketService` (Scoped) — moves to Concert in Pre-Step-1
 - `ITransactionService → TransactionService` (Scoped)
-- `ITicketValidator → TicketValidator` (Scoped)
+- `ITicketValidator → TicketValidator` (Scoped) — stays Concert
 
 **Ticket payment strategies (keyed by `ContractType`):**
 - `ITicketPaymentStrategy`:
@@ -535,49 +464,34 @@ Run Core + Infra + Workers unit tests + full integration suite. Expected issues:
   - `ContractType.VenueHire → ArtistTicketPaymentService`
 
 **Webhook plumbing:**
-- Registered in Web: `IWebhookStrategyFactory → WebhookStrategyFactory` (Scoped)
-- Registered in **Concert.Infrastructure** `AddConcertModule()`:
+- Web: `IWebhookStrategyFactory → WebhookStrategyFactory` (Scoped)
+- Concert.Infrastructure `AddConcertModule()`:
   - `IWebhookProcessor → WebhookProcessor`
   - `IWebhookQueue → WebhookQueue`
-  - `IWebhookStrategy` keyed: `WebhookType.Concert → TicketWebhookHandler`, `WebhookType.Settlement → SettlementWebhookHandler`
+  - `IWebhookStrategy` keyed: `WebhookType.Concert → TicketWebhookHandler`,
+    `WebhookType.Settlement → SettlementWebhookHandler`
 
 **Background queue (Web-only):**
 - `IBackgroundTaskQueue → BackgroundTaskQueue` (Singleton)
 - `IBackgroundTaskRunner → BackgroundTaskRunner` (Singleton)
-- `services.AddHostedService<QueueHostedService>()` ← Web-only
+- `services.AddHostedService<QueueHostedService>()`
 
 ### A.2 Workers host — `api/Concertable.Workers/ServiceCollectionExtensions.cs`
 
-- `IPaymentService → PaymentService` (Scoped, **non-keyed**) — differs from Web's keyed pair
-- `IStripeAccountService → StripeAccountService` (Scoped) — real only, no fake toggle
-- `IManagerPaymentService → ManagerPaymentService` (Scoped, **non-keyed**) — **discrepancy vs Web's keyed `"onSession"`/`"offSession"`**
-- **No** `IBackgroundTaskQueue` / `IBackgroundTaskRunner` / `QueueHostedService` registration
-- **No** fake-mode toggle (real Stripe only in Workers)
+- `IPaymentService → PaymentService` (Scoped, **non-keyed**) — drift vs Web's keyed pair
+- `IStripeAccountService → StripeAccountService` (Scoped, real only)
+- `IManagerPaymentService → ManagerPaymentService` (Scoped, **non-keyed**) — drift
+- **No** queue/hosted-service registration
+- **No** fake-mode toggle (real Stripe only)
 
-### A.3 Cross-host discrepancies (resolve in Step 7)
+### A.3 Cross-host discrepancies (resolved in Step 7)
 
-1. **Keyed `IManagerPaymentService`** — Web keys by session type; Workers registers plain. Workers currently only consumes `IManagerPaymentService` from `ConcertFinishedFunction`-path code which runs off-session. Resolution: Workers registers `offSession` key only (or both keys pointing to `OffSessionPaymentService`). Document why if Workers keeps non-keyed.
-2. **Keyed `IPaymentService`** — Same split. Workers' non-keyed base `PaymentService` never goes through On/OffSession wrappers. Align with #1.
-3. **`QueueHostedService` missing in Workers** — if Workers ever processes Stripe webhooks (it doesn't today; Web owns `WebhookController`), the queue wouldn't drain. Keep Web-only for now; note explicitly.
-4. **Fake-mode toggle missing in Workers** — integration tests run against Web, not Workers, so this is fine. Document that Workers is real-Stripe-only.
+1. **Keyed `IManagerPaymentService`** — Workers registers `"offSession"` keyed only.
+2. **Keyed `IPaymentService`** — same: `"offSession"` keyed only.
+3. **`QueueHostedService` missing in Workers** — keep Web-only.
+4. **Fake-mode toggle missing in Workers** — fine; integration tests run against Web.
 
-### A.4 Inbound consumers (grep sweep, 60 files total)
-
-**Consumers that survive extraction (stay on Payment interfaces via `InternalsVisibleTo` until own module extracts):**
-- `PaymentController`, `StripeAccountController`, `TransactionController`, `WebhookController`, `TicketController` — move to `Payment.Api` in Step 9
-- `UpfrontConcertService` (Concert), `DeferredConcertService` (Concert) inject keyed `IManagerPaymentService` — stay; they call into Payment via `IManagerPaymentService`
-- `VenueTicketPaymentService`, `ArtistTicketPaymentService` inject `ICustomerPaymentService` — move with Payment
-- `StripeAccountValidator` injects `IStripeAccountService` — moves with Payment
-
-**Consumers that rewire during Step 7:**
-- `TicketService` → uses `IConcertTicketPaymentModule` (replaces direct Concert injection)
-- `SettlementWebhookHandler` → uses `PayoutAccountProjection` + `IConcertLifecycleModule.SettleAsync`
-- `ArtistTicketPaymentService` / `VenueTicketPaymentService` → `IConcertLifecycleModule` for booking lookups
-
-**Test-only consumers (keep `InternalsVisibleTo("Concertable.Web.IntegrationTests")`):**
-- `MockWebhookService`, `ApiFixture` wiring
-
-### A.5 Webhook handler file locations (confirmed)
+### A.4 Webhook handler file locations (confirmed)
 
 - `api/Modules/Concert/Concertable.Concert.Infrastructure/Services/Webhook/TicketWebhookHandler.cs`
 - `api/Modules/Concert/Concertable.Concert.Infrastructure/Services/Webhook/SettlementWebhookHandler.cs`
@@ -585,9 +499,9 @@ Run Core + Infra + Workers unit tests + full integration suite. Expected issues:
 - `api/Modules/Concert/Concertable.Concert.Infrastructure/Services/Webhook/WebhookProcessor.cs`
 - `api/Modules/Concert/Concertable.Concert.Infrastructure/Services/Webhook/WebhookQueue.cs`
 
-All five move to `Payment.Infrastructure/Services/Webhook/` in Step 7. `WebhookStrategyFactory` (legacy `Concertable.Infrastructure/Factories/`) moves with them.
+All five move to `Payment.Infrastructure/Services/Webhook/` in Step 7.
 
-### A.6 `SettlementWebhookHandler` body (verbatim, for Step 7 rewiring reference)
+### A.5 `SettlementWebhookHandler` body (verbatim)
 
 ```csharp
 internal class SettlementWebhookHandler : ISettlementWebhookStrategy
@@ -603,72 +517,7 @@ internal class SettlementWebhookHandler : ISettlementWebhookStrategy
 }
 ```
 
-Step 7 rewrites: `ISettlementDispatcher` → `IConcertLifecycleModule.SettleAsync(bookingId, ct)`. `ITransactionService` stays (co-located in Payment).
-
-### A.7 `ITicketPaymentStrategy` + `IContractStrategy` (for Step 7 relocation)
-
-**RESOLVED 2026-04-24 (during Contract extraction):** option (b) wins — marker promoted to a
-cross-module location, but **`Concertable.Contract.Abstractions`** rather than
-`Concert.Contracts`. Reasoning: Contract is its own bounded module post-extraction;
-`IContractStrategy`'s semantic — "this strategy family is keyed by `ContractType`" — sits in
-the same module as the `ContractType` enum it pairs with.
-
-By Step 7 of this Payment plan, the world looks like:
-
-```csharp
-// Concertable.Contract.Abstractions/IContractStrategy.cs (PUBLIC marker)
-public interface IContractStrategy { }
-
-// Concertable.Payment.Application/Interfaces/ITicketPaymentStrategy.cs (internal)
-internal interface ITicketPaymentStrategy : IContractStrategy
-{
-    Task<Result<PaymentResponse>> PayAsync(int concertId, int quantity, string? paymentMethodId, decimal price, IContract contract);
-    //                                                                                                          ^^^^^^^^^^^^^^^^^^
-    // Strategy receives the IContract from the dispatcher (per Contract §3.1) — casts to
-    // expected subtype DTO at the top of the method body. No second contract lookup.
-}
-
-// Concertable.Payment.Application/Interfaces/IStripeValidationStrategy.cs (internal)
-internal interface IStripeValidationStrategy : IContractStrategy
-{
-    Task<bool> ValidateAsync();
-}
-```
-
-Plus the two Payment-internal factories (5 lines each, Infrastructure):
-
-```csharp
-internal interface ITicketPaymentStrategyFactory
-{
-    ITicketPaymentStrategy Create(ContractType type);
-}
-internal sealed class TicketPaymentStrategyFactory(IServiceProvider sp) : ITicketPaymentStrategyFactory
-{
-    public ITicketPaymentStrategy Create(ContractType type)
-        => sp.GetRequiredKeyedService<ITicketPaymentStrategy>(type);
-}
-// IStripeValidationStrategyFactory mirrors the same shape.
-```
-
-These replace the legacy generic `IContractStrategyFactory<T>` / `IContractStrategyResolver<T>`
-(deleted in Contract extraction Step 4 — do not move to Payment). The `ITicketPaymentStrategy`
-method gains an `IContract contract` parameter passed by the dispatcher (per Contract §3.1
-locked pattern) so the strategy doesn't need its own contract lookup.
-
-`IStripeValidationStrategy` is currently `public` and does NOT inherit `IContractStrategy`
-(see Contract Appendix A surprise #6). On the move to `Payment.Application`, flip to `internal`
-and add `: IContractStrategy` for symmetry — it's keyed by `ContractType` just like
-`ITicketPaymentStrategy`, the marker is the right type-system signal.
-
-(Earlier "(c)" recommendation — delete the marker — REJECTED. The marker is genuinely useful
-as a compile-time hint on factory signatures and prevents accidentally registering a non-
-ContractType-keyed strategy. The fix to "marker is Concert-owned" is to move it, not delete it.)
-
-### A.8 Extraction blockers / open decisions
-
-- **Workers DI reconciliation (#A.3.1–2):** proposal = register keyed `offSession` in Workers (same helper), drop non-keyed. Confirm with user at Step 7.
-- ~~**`IContractStrategy` marker fate (#A.7):** lean toward delete. Revisit at Step 7.~~ — RESOLVED 2026-04-24: marker moves to `Contract.Abstractions` (public). See updated §A.7.
-- **`QueueHostedService` stays Web-only:** documented, not a blocker.
+Step 7 rewrites: `ISettlementDispatcher` → `IConcertLifecycleModule.SettleAsync(bookingId, ct)`.
 
 ---
 
@@ -676,13 +525,9 @@ ContractType-keyed strategy. The fix to "marker is Concert-owned" is to move it,
 
 | Caller | Dependency | Resolution |
 |--------|-----------|-----------|
-| `TicketService` | Direct Concert service injection | → `IConcertTicketPaymentModule` (Step 4) |
-| `TicketPaymentDispatcher` (today) / orchestrator (post-Step 7) | Legacy `IContractStrategyResolver<ITicketPaymentStrategy>` | → Payment-internal `ITicketPaymentStrategyFactory` + `IContractModule.GetByOpportunityAsync` (Step 7); legacy resolver is deleted by Contract Step 4 |
-| `StripeValidator` (legacy `IStripeValidationFactory`) | Legacy keyed-DI lookup via redundant factory | → Payment-internal `IStripeValidationStrategyFactory` + `IContractModule.GetByOpportunityAsync` (Step 7) |
-| `SettlementWebhookHandler` | `IManagerPaymentService` cross-context lookup | → `PayoutAccountProjection` (Step 6) |
-| `SettlementWebhookHandler` | `ISettlementDispatcher` (Concert-internal) | → `IConcertLifecycleModule.SettleAsync` (Step 4) |
-| `TicketWebhookHandler` | Direct `TicketService.CompleteAsync` call | → `IConcertTicketPaymentModule.IssueTicketsAsync` (Step 4) |
-| `ArtistTicketPaymentService` | `IConcertBookingRepository` | → `IConcertLifecycleModule` (Step 4) |
-| `VenueTicketPaymentService` | `IConcertBookingRepository` | → `IConcertLifecycleModule` (Step 4) |
-| Payment workflows | Direct `IReadDbContext` Identity lookups | → `PayoutAccountProjection` (Step 6) |
-| Payment workflows | Direct subtype reads on `*ContractEntity` | → `IContractModule.GetByOpportunityAsync(opportunityId) → IContract` (post-Contract-extraction; strategies cast to expected subtype DTO at the top of each method) |
+| `TicketService.PurchaseAsync` (Concert post Pre-Step-1) | `ITicketPaymentDispatcher` (legacy) | → `IPaymentModule.PurchaseTicketsAsync(..., contract)` (Step 7) |
+| `TicketService.CompleteAsync` (Concert post Pre-Step-1) | called directly by `TicketWebhookHandler` | → exposed via `IConcertTicketPaymentModule.IssueTicketsAsync` (Step 4) |
+| `SettlementWebhookHandler` (moves to Payment in Step 7) | `ISettlementDispatcher` (Concert-internal) | → `IConcertLifecycleModule.SettleAsync` (Step 4) |
+| `TicketWebhookHandler` (moves to Payment in Step 7) | `TicketService.CompleteAsync` direct call | → `IConcertTicketPaymentModule.IssueTicketsAsync` (Step 4) |
+| Payment workflows | `UserEntity.StripeAccountId` / `StripeCustomerId` reads | → `PayoutAccountRepository.GetByUserIdAsync` (Step 7); columns dropped from `UserEntity` |
+| Payment workflows | Direct subtype reads on `*ContractEntity` | → `IContract` passed in via `IPaymentModule` boundary (Step 6/7) |

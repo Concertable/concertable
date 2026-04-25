@@ -54,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
         services.AddScoped<IContractLookup, ContractLookup>();
+        services.AddScoped<ITicketService, TicketService>();
 
         // Review service + validator (Concert owns reviews; Artist/Venue lists/can-review go through IConcertModule facade)
         services.AddScoped<IConcertReviewService, ConcertReviewService>();

@@ -174,7 +174,7 @@ public static class ServiceCollectionExtensions
         // IVenueService registered by AddVenueModule() via AddVenueApi()
         // IConcertService/IConcertDraftService/IOpportunityService/IOpportunityApplicationService registered by AddConcertApi()
         services.AddScoped<IMessageService, MessageService>();
-        services.AddScoped<ITicketService, TicketService>();
+        // ITicketService registered by AddConcertModule()
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
         services.AddScoped<IGenreService, GenreService>();
