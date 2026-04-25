@@ -13,6 +13,14 @@ public static class MessageMappers
         Action = message.Action
     };
 
+    public static MessageDto ToDto(this MessageEntity message, UserDto fromUser) => new()
+    {
+        Id = message.Id,
+        Content = message.Content,
+        FromUser = fromUser,
+        Action = message.Action
+    };
+
     public static IEnumerable<MessageDto> ToDtos(this IEnumerable<MessageEntity> messages) =>
         messages.Select(m => m.ToDto());
 }

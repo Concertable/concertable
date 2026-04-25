@@ -11,9 +11,9 @@ internal class DevController : ControllerBase
     [HttpPost("accept")]
     public async Task<IActionResult> Accept(
         [FromQuery] int applicationId,
-        [FromServices] IAcceptDispatcher acceptDispatcher)
+        [FromServices] IAcceptanceDispatcher acceptanceDispatcher)
     {
-        var outcome = await acceptDispatcher.AcceptAsync(applicationId);
+        var outcome = await acceptanceDispatcher.AcceptAsync(applicationId);
         return Ok(outcome);
     }
 
@@ -21,9 +21,9 @@ internal class DevController : ControllerBase
     [HttpPost("complete")]
     public async Task<IActionResult> Complete(
         [FromQuery] int concertId,
-        [FromServices] IFinishedDispatcher finishedDispatcher)
+        [FromServices] ICompletionDispatcher completionDispatcher)
     {
-        var result = await finishedDispatcher.FinishedAsync(concertId);
+        var result = await completionDispatcher.FinishAsync(concertId);
 
         if (result.IsFailed)
             return BadRequest(result.Errors.Select(e => e.Message));

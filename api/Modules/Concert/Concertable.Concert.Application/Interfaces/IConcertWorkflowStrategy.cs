@@ -6,5 +6,5 @@ internal interface IConcertWorkflowStrategy : IContractStrategy
 {
     Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null);
     Task SettleAsync(int bookingId);
-    Task<IFinishOutcome> FinishedAsync(int concertId);
+    Task<IFinishOutcome> FinishAsync(int concertId);
 }

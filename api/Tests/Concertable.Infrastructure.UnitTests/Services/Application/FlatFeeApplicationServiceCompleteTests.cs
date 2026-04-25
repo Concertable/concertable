@@ -1,5 +1,5 @@
-using Concertable.Application.Interfaces;
 using Concertable.Concert.Infrastructure.Services.Application;
+using Concertable.Contract.Abstractions;
 using Moq;
 using Xunit;
 
@@ -15,15 +15,15 @@ public class FlatFeeConcertWorkflowCompleteTests
         upfrontConcertService = new Mock<IUpfrontConcertService>();
         sut = new FlatFeeConcertWorkflow(
             upfrontConcertService.Object,
-            new Mock<IContractRepository>().Object,
             new Mock<IOpportunityApplicationRepository>().Object,
+            new Mock<IContractLookup>().Object,
             new Mock<IManagerModule>().Object);
     }
 
     [Fact]
-    public async Task FinishedAsync_ShouldDelegateToUpfrontConcertService()
+    public async Task FinishAsync_ShouldDelegateToUpfrontConcertService()
     {
-        await sut.FinishedAsync(10);
+        await sut.FinishAsync(10);
 
         upfrontConcertService.Verify(s => s.FinishedAsync(10), Times.Once);
     }

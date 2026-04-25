@@ -44,6 +44,7 @@
 		<ProjectReference Include="..\Modules\Venue\Concertable.Venue.Application\Concertable.Venue.Application.csproj" />
 		<ProjectReference Include="..\Modules\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
 		<ProjectReference Include="..\Modules\Concert\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
+		<ProjectReference Include="..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
 		<ProjectReference Include="..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
 		<ProjectReference Include="..\Concertable.Seeding\Concertable.Seeding.csproj" />
 	</ItemGroup>

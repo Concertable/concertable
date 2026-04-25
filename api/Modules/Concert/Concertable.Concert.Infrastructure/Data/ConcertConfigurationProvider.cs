@@ -16,11 +16,6 @@ internal sealed class ConcertConfigurationProvider : IEntityTypeConfigurationPro
         modelBuilder.ApplyConfiguration(new OpportunityEntityConfiguration());
         modelBuilder.ApplyConfiguration(new OpportunityApplicationEntityConfiguration());
         modelBuilder.ApplyConfiguration(new OpportunityGenreEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new FlatFeeContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new DoorSplitContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new VersusContractEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new VenueHireContractEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TicketEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ArtistReadModelConfiguration());

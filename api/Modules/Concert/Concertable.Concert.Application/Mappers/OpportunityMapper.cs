@@ -5,21 +5,14 @@ namespace Concertable.Concert.Application.Mappers;
 
 internal class OpportunityMapper : IOpportunityMapper
 {
-    private readonly IContractMapper contractMapper;
-
-    public OpportunityMapper(IContractMapper contractMapper)
-    {
-        this.contractMapper = contractMapper;
-    }
-
     public OpportunityDto ToDto(OpportunityEntity opportunity) => new()
     {
         Id = opportunity.Id,
         VenueId = opportunity.VenueId,
+        ContractId = opportunity.ContractId,
         StartDate = opportunity.Period.Start,
         EndDate = opportunity.Period.End,
-        Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto()),
-        Contract = contractMapper.ToDto(opportunity.Contract)
+        Genres = opportunity.OpportunityGenres.Select(og => og.Genre.ToDto())
     };
 
     public IPagination<OpportunityDto> ToDtos(IPagination<OpportunityEntity> opportunities) =>

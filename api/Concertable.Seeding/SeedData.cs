@@ -27,6 +27,17 @@ public class SeedData
 
     public IReadOnlyList<OpportunityEntity> Opportunities { get; set; } = [];
 
+    public FlatFeeContractEntity FlatFeeAppContract { get; set; } = null!;
+    public FlatFeeContractEntity ConfirmedAppContract { get; set; } = null!;
+    public FlatFeeContractEntity AwaitingPaymentAppContract { get; set; } = null!;
+    public VersusContractEntity VersusAppContract { get; set; } = null!;
+    public DoorSplitContractEntity DoorSplitAppContract { get; set; } = null!;
+    public VenueHireContractEntity VenueHireAppContract { get; set; } = null!;
+    public FlatFeeContractEntity PostedFlatFeeAppContract { get; set; } = null!;
+    public DoorSplitContractEntity PostedDoorSplitAppContract { get; set; } = null!;
+    public VersusContractEntity PostedVersusAppContract { get; set; } = null!;
+    public VenueHireContractEntity PostedVenueHireAppContract { get; set; } = null!;
+
     // Pending applications (no booking)
     public OpportunityApplicationEntity FlatFeeApp { get; set; } = null!;
     public OpportunityApplicationEntity VersusApp { get; set; } = null!;

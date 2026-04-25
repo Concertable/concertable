@@ -18,7 +18,6 @@ internal class OpportunityRepository : IdModuleRepository<OpportunityEntity, Con
         var query = context.Opportunities
             .Where(o => o.VenueId == id && o.Period.Start >= timeProvider.GetUtcNow())
             .Where(o => !context.ConcertBookings.Any(b => b.Application.OpportunityId == o.Id))
-            .Include(o => o.Contract)
             .Include(o => o.OpportunityGenres)
             .ThenInclude(og => og.Genre)
             .OrderBy(o => o.Period.Start);
@@ -38,7 +37,6 @@ internal class OpportunityRepository : IdModuleRepository<OpportunityEntity, Con
     {
         return await context.Opportunities
             .Where(o => o.Id == id)
-            .Include(o => o.Contract)
             .Include(o => o.OpportunityGenres)
                 .ThenInclude(og => og.Genre)
             .FirstOrDefaultAsync();
@@ -61,4 +59,5 @@ internal class OpportunityRepository : IdModuleRepository<OpportunityEntity, Con
             .Where(o => o.Applications.Any(a => a.Id == id))
             .FirstOrDefaultAsync();
     }
+
 }

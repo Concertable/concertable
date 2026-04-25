@@ -1,4 +1,3 @@
-using Concertable.Core.Enums;
 using Xunit;
 
 namespace Concertable.Core.UnitTests.Entities.Contracts;

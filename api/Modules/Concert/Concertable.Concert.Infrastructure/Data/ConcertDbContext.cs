@@ -19,11 +19,6 @@ internal class ConcertDbContext(
     public DbSet<OpportunityEntity> Opportunities => Set<OpportunityEntity>();
     public DbSet<OpportunityApplicationEntity> OpportunityApplications => Set<OpportunityApplicationEntity>();
     public DbSet<OpportunityGenreEntity> OpportunityGenres => Set<OpportunityGenreEntity>();
-    public DbSet<ContractEntity> Contracts => Set<ContractEntity>();
-    public DbSet<FlatFeeContractEntity> FlatFeeContracts => Set<FlatFeeContractEntity>();
-    public DbSet<DoorSplitContractEntity> DoorSplitContracts => Set<DoorSplitContractEntity>();
-    public DbSet<VersusContractEntity> VersusContracts => Set<VersusContractEntity>();
-    public DbSet<VenueHireContractEntity> VenueHireContracts => Set<VenueHireContractEntity>();
     public DbSet<TicketEntity> Tickets => Set<TicketEntity>();
     public DbSet<ReviewEntity> Reviews => Set<ReviewEntity>();
     public DbSet<ArtistReadModel> ArtistReadModels => Set<ArtistReadModel>();

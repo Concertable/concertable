@@ -10,7 +10,7 @@ namespace Concertable.Concert.Infrastructure.Data.Seeders;
 
 internal class ConcertTestSeeder : ITestSeeder
 {
-    public int Order => 3;
+    public int Order => 4;
 
     private readonly ConcertDbContext context;
     private readonly SeedData seed;
@@ -33,16 +33,16 @@ internal class ConcertTestSeeder : ITestSeeder
         {
             seed.Opportunities =
             [
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(2), now.AddMonths(2).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(3), now.AddMonths(3).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(4), now.AddMonths(4).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(5), now.AddMonths(5).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(6), now.AddMonths(6).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(7), now.AddMonths(7).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(8), now.AddMonths(8).AddHours(3)), FlatFeeContractEntity.Create(500, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(9), now.AddMonths(9).AddHours(3)), DoorSplitContractEntity.Create(70, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(10), now.AddMonths(10).AddHours(3)), VersusContractEntity.Create(200, 50, PaymentMethod.Cash), [seed.Rock.Id]),
-                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(11), now.AddMonths(11).AddHours(3)), VenueHireContractEntity.Create(300, PaymentMethod.Cash), [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(2), now.AddMonths(2).AddHours(3)), contractId: seed.FlatFeeAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(3), now.AddMonths(3).AddHours(3)), contractId: seed.ConfirmedAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(4), now.AddMonths(4).AddHours(3)), contractId: seed.AwaitingPaymentAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(5), now.AddMonths(5).AddHours(3)), contractId: seed.VersusAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(6), now.AddMonths(6).AddHours(3)), contractId: seed.DoorSplitAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(7), now.AddMonths(7).AddHours(3)), contractId: seed.VenueHireAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(8), now.AddMonths(8).AddHours(3)), contractId: seed.PostedFlatFeeAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(9), now.AddMonths(9).AddHours(3)), contractId: seed.PostedDoorSplitAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(10), now.AddMonths(10).AddHours(3)), contractId: seed.PostedVersusAppContract.Id, [seed.Rock.Id]),
+                OpportunityFactory.Create(seed.Venue.Id, new DateRange(now.AddMonths(11), now.AddMonths(11).AddHours(3)), contractId: seed.PostedVenueHireAppContract.Id, [seed.Rock.Id]),
             ];
 
             context.Opportunities.AddRange(seed.Opportunities);

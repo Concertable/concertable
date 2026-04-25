@@ -10,3 +10,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Concertable.Web")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
+// TEMPORARY: Castle Core dynamic proxy IVT — Concertable.Infrastructure.UnitTests mocks internal
+// `ITicketPaymentStrategyFactory` (Concertable.Infrastructure.Factories). Retires when payment
+// internals migrate into Concertable.Payment.Infrastructure under Payment Stage 1.
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

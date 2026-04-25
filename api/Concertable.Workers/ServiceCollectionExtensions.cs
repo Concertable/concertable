@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces.Payment;
 using Concertable.Concert.Infrastructure.Extensions;
+using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
@@ -33,6 +34,7 @@ internal static class ServiceCollectionExtensions
 
         services.AddIdentityModule(configuration);
         services.AddConcertModule(configuration);
+        services.AddContractModule(configuration);
 
         services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
         services.AddSingleton(TimeProvider.System);

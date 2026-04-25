@@ -2,16 +2,18 @@ namespace Concertable.Concert.Infrastructure.Services.Settlement;
 
 internal class SettlementDispatcher : ISettlementDispatcher
 {
-    private readonly IContractStrategyResolver<IConcertWorkflowStrategy> resolver;
+    private readonly IContractLookup contractLookup;
+    private readonly IConcertWorkflowStrategyFactory strategyFactory;
 
-    public SettlementDispatcher(IContractStrategyResolver<IConcertWorkflowStrategy> resolver)
+    public SettlementDispatcher(IContractLookup contractLookup, IConcertWorkflowStrategyFactory strategyFactory)
     {
-        this.resolver = resolver;
+        this.contractLookup = contractLookup;
+        this.strategyFactory = strategyFactory;
     }
 
     public async Task SettleAsync(int bookingId)
     {
-        var strategy = await resolver.ResolveForBookingAsync(bookingId);
-        await strategy.SettleAsync(bookingId);
+        var contract = await contractLookup.GetByBookingIdAsync(bookingId);
+        await strategyFactory.Create(contract.ContractType).SettleAsync(bookingId);
     }
 }

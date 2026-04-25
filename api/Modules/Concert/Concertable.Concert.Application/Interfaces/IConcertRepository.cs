@@ -17,7 +17,7 @@ internal interface IConcertRepository : IIdRepository<ConcertEntity>
     Task<bool> ArtistHasConcertOnDateAsync(int artistId, DateTime date);
     Task<bool> OpportunityHasConcertAsync(int opportunityId);
     Task<bool> VenueHasConcertOnDateAsync(int venueId, DateTime date);
-    Task<ContractType?> GetTypeByIdAsync(int id);
     Task<IEnumerable<int>> GetEndedConfirmedIdsAsync();
     Task<decimal> GetTotalRevenueByConcertIdAsync(int concertId);
+    Task<int?> GetContractIdByIdAsync(int concertId);
 }

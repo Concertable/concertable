@@ -11,4 +11,5 @@ internal static class ManagerMappers
         StripeAccountId = manager.StripeAccountId,
         StripeCustomerId = manager.StripeCustomerId
     };
+
 }

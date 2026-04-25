@@ -20,8 +20,6 @@ internal class OpportunityApplicationRepository : IdModuleRepository<Opportunity
                 .ThenInclude(a => a.Genres)
                     .ThenInclude(g => g.Genre)
             .Include(ca => ca.Opportunity)
-                .ThenInclude(o => o.Contract)
-            .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.OpportunityGenres)
                     .ThenInclude(og => og.Genre)
             .ToListAsync();
@@ -60,8 +58,6 @@ internal class OpportunityApplicationRepository : IdModuleRepository<Opportunity
                 .ThenInclude(a => a.Genres)
                     .ThenInclude(g => g.Genre)
             .Include(ca => ca.Opportunity)
-                .ThenInclude(o => o.Contract)
-            .Include(ca => ca.Opportunity)
                 .ThenInclude(o => o.OpportunityGenres)
                     .ThenInclude(og => og.Genre)
             .FirstOrDefaultAsync();
@@ -72,6 +68,14 @@ internal class OpportunityApplicationRepository : IdModuleRepository<Opportunity
         await context.OpportunityApplications
             .Where(a => a.OpportunityId == opportunityId && a.Id != applicationId && a.Status == ApplicationStatus.Pending)
             .ExecuteUpdateAsync(s => s.SetProperty(a => a.Status, ApplicationStatus.Rejected));
+    }
+
+    public Task<int?> GetContractIdByIdAsync(int applicationId)
+    {
+        return context.OpportunityApplications
+            .Where(a => a.Id == applicationId)
+            .Select(a => (int?)a.Opportunity.ContractId)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<OpportunityApplicationEntity>> GetRecentDeniedByArtistIdAsync(int artistId)

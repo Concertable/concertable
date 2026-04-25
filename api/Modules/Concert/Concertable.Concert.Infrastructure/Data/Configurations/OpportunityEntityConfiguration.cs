@@ -19,6 +19,8 @@ internal class OpportunityEntityConfiguration : IEntityTypeConfiguration<Opportu
             .HasForeignKey(o => o.VenueId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
+        builder.Property(o => o.ContractId).IsRequired();
+        builder.HasIndex(o => o.ContractId).IsUnique();
     }
 }
 
