@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Concertable.Payment.Infrastructure")]
 [assembly: InternalsVisibleTo("Concertable.Payment.Api")]
 // TEMPORARY: legacy hosts still consume Payment internals until Steps 7/8/12 retire them.
-[assembly: InternalsVisibleTo("Concertable.Infrastructure")]
+// Concertable.Infrastructure entry retired Step 10 (legacy payment service files all deleted).
 [assembly: InternalsVisibleTo("Concertable.Web")]
 [assembly: InternalsVisibleTo("Concertable.Workers")]
 [assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]

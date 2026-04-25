@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Identity.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260425114930_InitialCreate")]
+    [Migration("20260425205622_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -138,10 +138,6 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<string>("StripeCustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -164,10 +160,6 @@ namespace Concertable.Identity.Infrastructure.Data.Migrations
             modelBuilder.Entity("Concertable.Identity.Domain.ManagerEntity", b =>
                 {
                     b.HasBaseType("Concertable.Identity.Domain.UserEntity");
-
-                    b.Property<string>("StripeAccountId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.ArtistManagerEntity", b =>

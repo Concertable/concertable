@@ -38,7 +38,7 @@ public static class E2EEndpointExtensions
             });
         });
 
-        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionDispatcher completionDispatcher, IReadDbContext readDb, ApplicationDbContext db) =>
+        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionDispatcher completionDispatcher, IReadDbContext readDb) =>
         {
             var result = await completionDispatcher.FinishAsync(concertId);
 
@@ -50,7 +50,7 @@ public static class E2EEndpointExtensions
                 .Select(b => b.Id)
                 .FirstOrDefaultAsync();
 
-            var paymentIntentId = await db.SettlementTransactions
+            var paymentIntentId = await readDb.SettlementTransactions
                 .Where(t => t.BookingId == bookingId)
                 .OrderByDescending(t => t.CreatedAt)
                 .Select(t => t.PaymentIntentId)
@@ -61,14 +61,14 @@ public static class E2EEndpointExtensions
                 : Results.Ok();
         });
 
-        app.MapGet("/e2e/payment-intent/{applicationId:int}", async (int applicationId, IReadDbContext readDb, ApplicationDbContext db) =>
+        app.MapGet("/e2e/payment-intent/{applicationId:int}", async (int applicationId, IReadDbContext readDb) =>
         {
             var bookingId = await readDb.ConcertBookings
                 .Where(b => b.ApplicationId == applicationId)
                 .Select(b => b.Id)
                 .FirstOrDefaultAsync();
 
-            var paymentIntentId = await db.SettlementTransactions
+            var paymentIntentId = await readDb.SettlementTransactions
                 .Where(t => t.BookingId == bookingId)
                 .OrderByDescending(t => t.CreatedAt)
                 .Select(t => t.PaymentIntentId)

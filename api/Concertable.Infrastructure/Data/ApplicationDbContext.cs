@@ -1,6 +1,7 @@
 using Concertable.Core.Entities;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Payment.Domain;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 using SharedSchema = Concertable.Data.Infrastructure.Schema;
@@ -26,12 +27,8 @@ public class ApplicationDbContext : DbContextBase
     }
 
     public DbSet<MessageEntity> Messages { get; set; }
-    public DbSet<TransactionEntity> Transactions { get; set; }
-    public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
-    public DbSet<SettlementTransactionEntity> SettlementTransactions { get; set; }
     public DbSet<PreferenceEntity> Preferences { get; set; }
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
-    public DbSet<StripeEventEntity> StripeEvents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

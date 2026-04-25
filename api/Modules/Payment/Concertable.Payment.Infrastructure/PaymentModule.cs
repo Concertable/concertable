@@ -2,6 +2,7 @@ using Concertable.Contract.Abstractions;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Payment.Infrastructure;
 
@@ -14,7 +15,7 @@ internal class PaymentModule : IPaymentModule
 
     public PaymentModule(
         ITicketPaymentStrategyFactory ticketPaymentStrategyFactory,
-        IManagerPaymentService managerPaymentService,
+        [FromKeyedServices("offSession")] IManagerPaymentService managerPaymentService,
         IManagerModule managerModule,
         IStripeAccountService stripeAccountService)
     {

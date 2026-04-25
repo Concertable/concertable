@@ -65,51 +65,6 @@ namespace Concertable.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StripeEvents",
-                columns: table => new
-                {
-                    EventId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StripeEvents", x => x.EventId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Transactions",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FromUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ToUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PaymentIntentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Amount = table.Column<long>(type: "bigint", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Transactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Users_FromUserId",
-                        column: x => x.FromUserId,
-                        principalSchema: "identity",
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Transactions_Users_ToUserId",
-                        column: x => x.ToUserId,
-                        principalSchema: "identity",
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "GenrePreferences",
                 columns: table => new
                 {
@@ -132,42 +87,6 @@ namespace Concertable.Infrastructure.Migrations
                         name: "FK_GenrePreferences_Preferences_PreferenceId",
                         column: x => x.PreferenceId,
                         principalTable: "Preferences",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SettlementTransactions",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    BookingId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SettlementTransactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SettlementTransactions_Transactions_Id",
-                        column: x => x.Id,
-                        principalTable: "Transactions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TicketTransactions",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    ConcertId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TicketTransactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TicketTransactions_Transactions_Id",
-                        column: x => x.Id,
-                        principalTable: "Transactions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -197,22 +116,6 @@ namespace Concertable.Infrastructure.Migrations
                 table: "Preferences",
                 column: "UserId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_FromUserId",
-                table: "Transactions",
-                column: "FromUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_PaymentIntentId",
-                table: "Transactions",
-                column: "PaymentIntentId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_ToUserId",
-                table: "Transactions",
-                column: "ToUserId");
         }
 
         /// <inheritdoc />
@@ -225,19 +128,7 @@ namespace Concertable.Infrastructure.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "SettlementTransactions");
-
-            migrationBuilder.DropTable(
-                name: "StripeEvents");
-
-            migrationBuilder.DropTable(
-                name: "TicketTransactions");
-
-            migrationBuilder.DropTable(
                 name: "Preferences");
-
-            migrationBuilder.DropTable(
-                name: "Transactions");
         }
     }
 }

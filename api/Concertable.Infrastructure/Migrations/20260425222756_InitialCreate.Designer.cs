@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260425115203_InitialCreate")]
+    [Migration("20260425222756_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -593,70 +593,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("Preferences", (string)null);
                 });
 
-            modelBuilder.Entity("Concertable.Payment.Domain.StripeEventEntity", b =>
-                {
-                    b.Property<string>("EventId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("EventProcessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("EventId");
-
-                    b.ToTable("StripeEvents", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Payment.Domain.TransactionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<long>("Amount")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("FromUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentIntentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ToUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FromUserId");
-
-                    b.HasIndex("PaymentIntentId")
-                        .IsUnique();
-
-                    b.HasIndex("ToUserId");
-
-                    b.ToTable("Transactions", (string)null);
-
-                    b.UseTptMappingStrategy();
-                });
-
             modelBuilder.Entity("Concertable.Identity.Domain.EmailVerificationTokenEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -777,10 +713,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<string>("StripeCustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -794,6 +726,111 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasDiscriminator<int>("Role").HasValue(3);
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.PayoutAccountEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StripeAccountId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("StripeCustomerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StripeAccountId");
+
+                    b.HasIndex("StripeCustomerId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("PayoutAccounts", "payment", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.StripeEventEntity", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("EventProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("StripeEvents", "payment", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.TransactionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("FromUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentIntentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ToUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("PaymentIntentId")
+                        .IsUnique();
+
+                    b.HasIndex("ToUserId");
+
+                    b.ToTable("Transactions", "payment", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Concertable.Shared.GenreEntity", b =>
@@ -958,26 +995,6 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Payment.Domain.SettlementTransactionEntity", b =>
-                {
-                    b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
-                    b.ToTable("SettlementTransactions", (string)null);
-                });
-
-            modelBuilder.Entity("Concertable.Payment.Domain.TicketTransactionEntity", b =>
-                {
-                    b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
-
-                    b.Property<int>("ConcertId")
-                        .HasColumnType("int");
-
-                    b.ToTable("TicketTransactions", (string)null);
-                });
-
             modelBuilder.Entity("Concertable.Identity.Domain.CustomerEntity", b =>
                 {
                     b.HasBaseType("Concertable.Identity.Domain.UserEntity");
@@ -988,10 +1005,32 @@ namespace Concertable.Infrastructure.Migrations
             modelBuilder.Entity("Concertable.Identity.Domain.ManagerEntity", b =>
                 {
                     b.HasBaseType("Concertable.Identity.Domain.UserEntity");
+                });
 
-                    b.Property<string>("StripeAccountId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+            modelBuilder.Entity("Concertable.Payment.Domain.SettlementTransactionEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.ToTable("SettlementTransactions", "payment", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.TicketTransactionEntity", b =>
+                {
+                    b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
+
+                    b.Property<int>("ConcertId")
+                        .HasColumnType("int");
+
+                    b.ToTable("TicketTransactions", "payment", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.ArtistManagerEntity", b =>
@@ -1290,25 +1329,6 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Concertable.Payment.Domain.TransactionEntity", b =>
-                {
-                    b.HasOne("Concertable.Identity.Domain.UserEntity", "FromUser")
-                        .WithMany()
-                        .HasForeignKey("FromUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Concertable.Identity.Domain.UserEntity", "ToUser")
-                        .WithMany()
-                        .HasForeignKey("ToUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("FromUser");
-
-                    b.Navigation("ToUser");
                 });
 
             modelBuilder.Entity("Concertable.Identity.Domain.EmailVerificationTokenEntity", b =>

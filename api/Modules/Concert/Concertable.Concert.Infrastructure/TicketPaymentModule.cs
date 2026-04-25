@@ -1,3 +1,4 @@
+using Concertable.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Contracts;
 using Concertable.Identity.Contracts;
@@ -7,7 +8,8 @@ namespace Concertable.Concert.Infrastructure;
 
 internal sealed class TicketPaymentModule(
     ITicketService ticketService,
-    ICustomerModule customerModule) : ITicketPaymentModule
+    ICustomerModule customerModule,
+    ITicketNotificationService notificationService) : ITicketPaymentModule
 {
     public async Task<IReadOnlyList<Guid>> IssueTicketsAsync(int concertId, Guid userId, int quantity, CancellationToken ct = default)
     {
@@ -25,6 +27,8 @@ internal sealed class TicketPaymentModule(
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
+
+        await notificationService.TicketPurchasedAsync(userId.ToString(), result.Value);
 
         return [.. result.Value.TicketIds];
     }
