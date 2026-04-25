@@ -7,12 +7,13 @@ using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
+using Concertable.Payment.Infrastructure.Extensions;
+using Concertable.Payment.Infrastructure.Services;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Payment.Application.Interfaces;
-using Concertable.Infrastructure.Services.Payment;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
 using Microsoft.AspNetCore.Authentication;
@@ -87,6 +88,7 @@ public async Task InitializeAsync()
                 services.AddVenueTestSeeder();
                 services.AddContractTestSeeder();
                 services.AddConcertTestSeeder();
+                services.AddPaymentTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {

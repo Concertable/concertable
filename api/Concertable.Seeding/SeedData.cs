@@ -17,6 +17,9 @@ public class SeedData
     public IReadOnlyList<Guid> ArtistManagerIds { get; set; } = [];
     public IReadOnlyList<Guid> VenueManagerIds { get; set; } = [];
 
+    public string VenueManager1StripeAccountId { get; set; } = null!;
+    public string ArtistManagerStripeAccountId { get; set; } = null!;
+
     public GenreEntity Rock { get; set; } = null!;
     public GenreEntity Jazz { get; set; } = null!;
     public GenreEntity HipHop { get; set; } = null!;

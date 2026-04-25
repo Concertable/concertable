@@ -89,6 +89,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddVenueDevSeeder();
     services.AddContractDevSeeder();
     services.AddConcertDevSeeder();
+    services.AddPaymentDevSeeder();
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();

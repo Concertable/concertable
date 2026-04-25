@@ -1,7 +1,9 @@
+using Concertable.Application.Interfaces;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Background;
 using Concertable.Payment.Infrastructure.Data;
+using Concertable.Payment.Infrastructure.Data.Seeders;
 using Concertable.Payment.Infrastructure.Repositories;
 using Concertable.Payment.Infrastructure.Services;
 using Concertable.Payment.Infrastructure.Services.Webhook;
@@ -106,13 +108,13 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddPaymentDevSeeder(this IServiceCollection services)
     {
-        // PaymentDevSeeder lands in Step 9.
+        services.AddScoped<IDevSeeder, PaymentDevSeeder>();
         return services;
     }
 
     public static IServiceCollection AddPaymentTestSeeder(this IServiceCollection services)
     {
-        // PaymentTestSeeder lands in Step 9.
+        services.AddScoped<ITestSeeder, PaymentTestSeeder>();
         return services;
     }
 
