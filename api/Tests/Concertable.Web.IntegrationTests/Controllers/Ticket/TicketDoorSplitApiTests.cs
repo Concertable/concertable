@@ -1,3 +1,4 @@
+using System.Net;
 using Concertable.Application.DTOs;
 using Concertable.Application.Responses;
 using Concertable.Application.Responses;
@@ -36,7 +37,7 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
-        Assert.True(response.IsSuccessStatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         Assert.NotNull(result!.TransactionId);
         var tickets = await client.GetAsync<IEnumerable<TicketDto>>("/api/Ticket/upcoming/user");
         Assert.Single(tickets!);

@@ -1,3 +1,4 @@
+using System.Net;
 using Concertable.Application.DTOs;
 using Concertable.Concert.Api.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
@@ -25,7 +26,8 @@ public class OpportunityApplicationVersusApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VersusApp.Id}", (object?)null);
+        var acceptResponse = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.VersusApp.Id}", (object?)null);
+        await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         // Assert
         var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.VersusApp.Id}");

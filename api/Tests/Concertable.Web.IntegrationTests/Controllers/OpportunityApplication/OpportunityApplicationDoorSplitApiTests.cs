@@ -41,9 +41,10 @@ public class OpportunityApplicationDoorSplitApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
-        await client.PostAsync(
+        var acceptResponse = await client.PostAsync(
             $"/api/OpportunityApplication/accept/{fixture.SeedData.DoorSplitApp.Id}",
             (object?)null);
+        await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         var application = await client.GetAsync<OpportunityApplicationDto>(
             $"/api/OpportunityApplication/{fixture.SeedData.DoorSplitApp.Id}");

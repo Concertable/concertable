@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260424164045_InitialCreate")]
+    [Migration("20260425115203_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -319,24 +319,6 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.ContractEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Contracts", "concert", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-
-                    b.UseTptMappingStrategy();
-                });
-
             modelBuilder.Entity("Concertable.Concert.Domain.OpportunityApplicationEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -375,10 +357,16 @@ namespace Concertable.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ContractId")
+                        .HasColumnType("int");
+
                     b.Property<int>("VenueId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ContractId")
+                        .IsUnique();
 
                     b.HasIndex("VenueId");
 
@@ -501,6 +489,27 @@ namespace Concertable.Infrastructure.Migrations
                         {
                             t.ExcludeFromMigrations();
                         });
+                });
+
+            modelBuilder.Entity("Concertable.Contract.Domain.ContractEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contracts", "contract", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.GenrePreferenceEntity", b =>
@@ -894,48 +903,48 @@ namespace Concertable.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.DoorSplitContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.DoorSplitContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+                    b.HasBaseType("Concertable.Contract.Domain.ContractEntity");
 
                     b.Property<decimal>("ArtistDoorPercent")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("DoorSplitContracts", "concert", t =>
+                    b.ToTable("DoorSplitContracts", "contract", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.FlatFeeContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.FlatFeeContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+                    b.HasBaseType("Concertable.Contract.Domain.ContractEntity");
 
                     b.Property<decimal>("Fee")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("FlatFeeContracts", "concert", t =>
+                    b.ToTable("FlatFeeContracts", "contract", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.VenueHireContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.VenueHireContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+                    b.HasBaseType("Concertable.Contract.Domain.ContractEntity");
 
                     b.Property<decimal>("HireFee")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("VenueHireContracts", "concert", t =>
+                    b.ToTable("VenueHireContracts", "contract", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.VersusContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.VersusContractEntity", b =>
                 {
-                    b.HasBaseType("Concertable.Concert.Domain.ContractEntity");
+                    b.HasBaseType("Concertable.Contract.Domain.ContractEntity");
 
                     b.Property<decimal>("ArtistDoorPercent")
                         .HasColumnType("decimal(18,2)");
@@ -943,7 +952,7 @@ namespace Concertable.Infrastructure.Migrations
                     b.Property<decimal>("Guarantee")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToTable("VersusContracts", "concert", t =>
+                    b.ToTable("VersusContracts", "contract", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -1131,17 +1140,6 @@ namespace Concertable.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Concert");
-                });
-
-            modelBuilder.Entity("Concertable.Concert.Domain.ContractEntity", b =>
-                {
-                    b.HasOne("Concertable.Concert.Domain.OpportunityEntity", "Opportunity")
-                        .WithOne("Contract")
-                        .HasForeignKey("Concertable.Concert.Domain.ContractEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Opportunity");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.OpportunityApplicationEntity", b =>
@@ -1413,38 +1411,38 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.DoorSplitContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.DoorSplitContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                    b.HasOne("Concertable.Contract.Domain.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Concert.Domain.DoorSplitContractEntity", "Id")
+                        .HasForeignKey("Concertable.Contract.Domain.DoorSplitContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.FlatFeeContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.FlatFeeContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                    b.HasOne("Concertable.Contract.Domain.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Concert.Domain.FlatFeeContractEntity", "Id")
+                        .HasForeignKey("Concertable.Contract.Domain.FlatFeeContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.VenueHireContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.VenueHireContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                    b.HasOne("Concertable.Contract.Domain.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Concert.Domain.VenueHireContractEntity", "Id")
+                        .HasForeignKey("Concertable.Contract.Domain.VenueHireContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Concertable.Concert.Domain.VersusContractEntity", b =>
+            modelBuilder.Entity("Concertable.Contract.Domain.VersusContractEntity", b =>
                 {
-                    b.HasOne("Concertable.Concert.Domain.ContractEntity", null)
+                    b.HasOne("Concertable.Contract.Domain.ContractEntity", null)
                         .WithOne()
-                        .HasForeignKey("Concertable.Concert.Domain.VersusContractEntity", "Id")
+                        .HasForeignKey("Concertable.Contract.Domain.VersusContractEntity", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1499,9 +1497,6 @@ namespace Concertable.Infrastructure.Migrations
             modelBuilder.Entity("Concertable.Concert.Domain.OpportunityEntity", b =>
                 {
                     b.Navigation("Applications");
-
-                    b.Navigation("Contract")
-                        .IsRequired();
 
                     b.Navigation("OpportunityGenres");
                 });

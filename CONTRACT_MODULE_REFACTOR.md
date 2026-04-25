@@ -2,10 +2,61 @@
 
 ---
 
-## ▶️ RESUME HERE (post-compact, 2026-04-25 — Step 11 CLOSED)
+## ▶️ RESUME HERE (post-compact, 2026-04-25 — Step 12 CLOSED)
 
-**Steps 0–11 are DONE. Build is green, 0 errors.** Next up: Step 12 (migration re-scaffold),
-13 (test pass). Read this block before resuming.
+**Steps 0–12 are DONE. Build is green, 0 errors.** Next up: Step 13 (full test pass +
+DynamicProxyGenAssembly2 IVT additions for any newly-mocked internals). Read this block
+before resuming.
+
+### Step 12 final shape
+
+All 7 module migration folders deleted and re-scaffolded `InitialCreate` in dependency order:
+Shared → Identity → Artist → Venue → Concert → **Contract** → AppDb. Timestamps fall in that
+exact order (`11:48:53` Shared → `11:52:03` AppDb). Files now live at:
+
+- `Concertable.Data.Infrastructure/Data/Migrations/20260425114853_InitialCreate.{cs,Designer.cs}` + `SharedDbContextModelSnapshot.cs`
+- `Modules/Identity/Concertable.Identity.Infrastructure/Data/Migrations/20260425114930_InitialCreate.{cs,Designer.cs}`
+- `Modules/Artist/Concertable.Artist.Infrastructure/Data/Migrations/20260425114956_InitialCreate.{cs,Designer.cs}`
+- `Modules/Venue/Concertable.Venue.Infrastructure/Data/Migrations/20260425115036_InitialCreate.{cs,Designer.cs}`
+- `Modules/Concert/Concertable.Concert.Infrastructure/Data/Migrations/20260425115103_InitialCreate.{cs,Designer.cs}`
+- `Modules/Contract/Concertable.Contract.Infrastructure/Data/Migrations/20260425115132_InitialCreate.{cs,Designer.cs}` (NEW — first Contract migration)
+- `Concertable.Infrastructure/Migrations/20260425115203_InitialCreate.{cs,Designer.cs}` + `ApplicationDbContextModelSnapshot.cs`
+
+**Concert migration** confirms post-Step-9 schema:
+- `Opportunities.ContractId` column present (`int NOT NULL`), no FK constraint declared
+  (cross-context — principal `Contracts.Id` lives in Contract migration; matches
+  `feedback_cross_context_fk.md` rule that module-context FKs to other modules' principals
+  drop the SQL FK but keep the CLR property/index).
+- `IX_Opportunities_ContractId` is a UNIQUE index (1:1 enforcement per
+  `OpportunityEntityConfiguration` line 23).
+- **Zero** `Contracts` / `FlatFeeContracts` / `DoorSplitContracts` / `VersusContracts` /
+  `VenueHireContracts` table creates — Concert no longer owns those.
+
+**Contract migration** (NEW) confirms post-Step-8 ownership:
+- `EnsureSchema("contract")`.
+- 5 tables (`Contracts` base + 4 subtypes) all in `contract` schema, TPT-style.
+- `Contracts.Id` is `SqlServer:Identity` (1, 1) — auto-IDENTITY drives Step-10 seeder
+  insertion-order matching for the `contractId: 1..N` references in
+  `ConcertDevSeeder` / `ConcertTestSeeder`.
+- Subtype tables (`PK_DoorSplitContracts` etc.) use `Id` as both PK and FK back to
+  `Contracts.Id` (intra-context, full FK constraint declared).
+
+**AppDb migration** stayed Contract-free — only creates `Messages`, `Preferences`,
+`StripeEvents`, `Transactions`, `GenrePreferences`, `SettlementTransactions`,
+`TicketTransactions`. Cross-schema FKs to `Users` (identity) and `Genres` (dbo/shared) ride
+through cleanly because AppDb migrates last.
+
+**Build expectation:** `dotnet build Concertable.sln` after re-scaffold — 0 errors, 91
+warnings (decimal-precision noise + duplicate-using cleanup, all pre-existing). Tests not yet
+run — Step 13.
+
+### Steps still pending
+
+- **Step 13** — Full test suite pass. Add `DynamicProxyGenAssembly2` IVT entries to any
+  module whose internals get newly mocked (per `feedback_castle_proxy_ivt.md`). Run Core +
+  Infra + Workers unit tests + full integration suite.
+
+### Pre-Step-12 state (for context)
 
 ### Step 11 final shape
 
@@ -39,13 +90,11 @@ actual usage of internals before removing.
 
 **No build break** — confirmed with `dotnet build`, 0 errors.
 
-### Steps still pending
+### Steps closed at this point (Step 11)
 
-- **Step 12** — Migration re-scaffold. Delete every module's `Migrations/`. Rescaffold order:
-  Shared → Identity → Artist → Venue → Concert → **Contract** → AppDb. Verify only one FK
-  direction `Opportunities.ContractId → Contracts.Id`.
+- **Step 12** — Migration re-scaffold. **DONE 2026-04-25.** See "Step 12 final shape" block above.
 - **Step 13** — Full test suite pass. Add `DynamicProxyGenAssembly2` IVT entries to any module
-  whose internals get newly mocked (per `feedback_castle_proxy_ivt.md`).
+  whose internals get newly mocked (per `feedback_castle_proxy_ivt.md`). PENDING.
 
 ### Step 10 final shape
 

@@ -28,7 +28,8 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        var firstResponse = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        await firstResponse.ShouldBe(HttpStatusCode.OK);
         await fixture.StripeClient.SendWebhookAsync();
         var response = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
 
@@ -43,7 +44,8 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        var acceptResponse = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        await acceptResponse.ShouldBe(HttpStatusCode.OK);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
@@ -64,7 +66,8 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        var acceptResponse = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        await acceptResponse.ShouldBe(HttpStatusCode.OK);
         await fixture.StripeClient.SendWebhookAsync();
         await fixture.StripeClient.SendWebhookAsync();
 
@@ -80,7 +83,8 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        var acceptResponse = await client.PostAsync($"/api/OpportunityApplication/accept/{fixture.SeedData.FlatFeeApp.Id}", (object?)null);
+        await acceptResponse.ShouldBe(HttpStatusCode.OK);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert

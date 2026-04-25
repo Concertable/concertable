@@ -4,6 +4,7 @@ $dirs = @(
     "Modules\Artist\Concertable.Artist.Infrastructure\Data\Migrations",
     "Modules\Venue\Concertable.Venue.Infrastructure\Data\Migrations",
     "Modules\Concert\Concertable.Concert.Infrastructure\Data\Migrations",
+    "Modules\Contract\Concertable.Contract.Infrastructure\Data\Migrations",
     "Concertable.Infrastructure\Migrations"
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
@@ -21,6 +22,9 @@ dotnet ef migrations add InitialCreate --context VenueDbContext --project Module
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context ConcertDbContext --project Modules/Concert/Concertable.Concert.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context ContractDbContext --project Modules/Contract/Concertable.Contract.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context ApplicationDbContext --project Concertable.Infrastructure --startup-project Concertable.Web --output-dir Migrations
