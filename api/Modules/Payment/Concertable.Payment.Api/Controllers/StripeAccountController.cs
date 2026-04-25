@@ -13,58 +13,71 @@ internal class StripeAccountController : ControllerBase
     private readonly IStripeAccountService stripeAccountService;
     private readonly ICurrentUser currentUser;
     private readonly IManagerModule managerModule;
-    private readonly IAuthModule authModule;
+    private readonly ICustomerModule customerModule;
+    private readonly IPayoutAccountRepository payoutAccountRepository;
 
     public StripeAccountController(
         IStripeAccountService stripeAccountService,
         ICurrentUser currentUser,
         IManagerModule managerModule,
-        IAuthModule authModule)
+        ICustomerModule customerModule,
+        IPayoutAccountRepository payoutAccountRepository)
     {
         this.stripeAccountService = stripeAccountService;
         this.currentUser = currentUser;
         this.managerModule = managerModule;
-        this.authModule = authModule;
+        this.customerModule = customerModule;
+        this.payoutAccountRepository = payoutAccountRepository;
     }
 
     [HttpGet("onboarding-link")]
     public async Task<ActionResult<string>> GetOnboardingLink()
     {
-        var manager = await managerModule.GetByIdAsync(currentUser.GetId())
+        _ = await managerModule.GetByIdAsync(currentUser.GetId())
             ?? throw new UnauthorizedAccessException("Manager not found.");
 
-        return Ok(await stripeAccountService.GetOnboardingLinkAsync(manager.StripeAccountId));
+        var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
+        if (account?.StripeAccountId is null) return BadRequest("No Stripe connect account found.");
+
+        return Ok(await stripeAccountService.GetOnboardingLinkAsync(account.StripeAccountId));
     }
 
     [HttpGet("account-status")]
     public async Task<ActionResult<PayoutAccountStatus>> GetAccountStatus()
     {
-        var manager = await managerModule.GetByIdAsync(currentUser.GetId())
+        _ = await managerModule.GetByIdAsync(currentUser.GetId())
             ?? throw new UnauthorizedAccessException("Manager not found.");
 
-        return Ok(await stripeAccountService.GetAccountStatusAsync(manager.StripeAccountId));
+        var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
+        if (account?.StripeAccountId is null) return Ok(PayoutAccountStatus.NotVerified);
+
+        return Ok(await stripeAccountService.GetAccountStatusAsync(account.StripeAccountId));
     }
 
     [HttpGet("payment-method")]
     public async Task<ActionResult<PaymentMethodDto?>> GetPaymentMethod()
     {
-        var customer = await authModule.GetCustomerAsync(currentUser.GetId());
-        if (customer is null || string.IsNullOrWhiteSpace(customer.StripeCustomerId))
-            return Ok(null);
-        return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(customer.StripeCustomerId));
+        var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
+        if (account?.StripeCustomerId is null) return Ok(null);
+
+        return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(account.StripeCustomerId));
     }
 
     [HttpPost("setup-intent")]
     public async Task<ActionResult<string>> CreateSetupIntent()
     {
-        var customer = await authModule.GetCustomerAsync(currentUser.GetId());
+        var customer = await customerModule.GetCustomerAsync(currentUser.GetId());
         if (customer is null) return Unauthorized();
 
-        var stripeCustomerId = customer.StripeCustomerId;
+        var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
+        var stripeCustomerId = account?.StripeCustomerId;
+
         if (string.IsNullOrWhiteSpace(stripeCustomerId))
         {
-            stripeCustomerId = await stripeAccountService.CreateCustomerAsync(customer.Email!);
-            await authModule.SetStripeCustomerIdAsync(currentUser.GetId(), stripeCustomerId);
+            await stripeAccountService.ProvisionCustomerAsync(currentUser.GetId(), customer.Email!);
+            account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
+            stripeCustomerId = account?.StripeCustomerId
+                ?? throw new InvalidOperationException("Failed to provision Stripe customer.");
         }
 
         return Ok(await stripeAccountService.CreateSetupIntentAsync(stripeCustomerId));

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Concertable.Infrastructure.Background;
 
-using Concertable.Application.Interfaces;
+using Concertable.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
 public class BackgroundTaskRunner : IBackgroundTaskRunner

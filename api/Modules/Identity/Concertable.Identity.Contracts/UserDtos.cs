@@ -71,6 +71,5 @@ public record CustomerDto : IUser
     public string? Town { get; set; }
     public string BaseUrl { get; set; } = "/";
     public bool IsEmailVerified { get; set; }
-    public string? StripeCustomerId { get; set; }
 }
 

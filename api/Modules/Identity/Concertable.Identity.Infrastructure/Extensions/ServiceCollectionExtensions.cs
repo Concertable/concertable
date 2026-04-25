@@ -59,6 +59,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IdentityModule>();
         services.AddScoped<IManagerModule>(sp => sp.GetRequiredService<IdentityModule>());
         services.AddScoped<IIdentityModule>(sp => sp.GetRequiredService<IdentityModule>());
+        services.AddScoped<ICustomerModule, CustomerModule>();
 
         services.AddScoped<IDomainEventHandler<UserLocationUpdatedDomainEvent>, UserLocationUpdatedDomainEventHandler>();
 

@@ -98,6 +98,7 @@ services.AddVenueApi(builder.Configuration);
 services.AddConcertApi(builder.Configuration);
 services.AddContractApi(builder.Configuration);
 services.AddPaymentApi(builder.Configuration);
+services.AddPaymentQueueHostedService();
 services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();

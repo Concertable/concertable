@@ -7,11 +7,11 @@ namespace Concertable.Concert.Infrastructure;
 
 internal sealed class TicketPaymentModule(
     ITicketService ticketService,
-    IAuthModule authModule) : ITicketPaymentModule
+    ICustomerModule customerModule) : ITicketPaymentModule
 {
     public async Task<IReadOnlyList<Guid>> IssueTicketsAsync(int concertId, Guid userId, int quantity, CancellationToken ct = default)
     {
-        var customer = await authModule.GetCustomerAsync(userId)
+        var customer = await customerModule.GetCustomerAsync(userId)
             ?? throw new NotFoundException($"Customer {userId} not found");
 
         var result = await ticketService.CompleteAsync(new()

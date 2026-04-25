@@ -13,7 +13,6 @@ builder.Services
     .ConfigureFunctionsApplicationInsights();
 
 builder.Services
-    .AddInfrastructure(builder.Configuration)
-    .AddServices();
+    .AddInfrastructure(builder.Configuration);
 
 builder.Build().Run();

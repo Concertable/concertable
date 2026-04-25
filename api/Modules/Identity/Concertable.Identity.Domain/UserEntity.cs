@@ -22,7 +22,6 @@ public class UserEntity : IGuidEntity, IEventRaiser
     public Role Role { get; private set; }
     public Address? Address { get; private set; }
     public Point? Location { get; private set; }
-    public string StripeCustomerId { get; set; } = string.Empty;
     public string Avatar { get; set; } = string.Empty;
     public bool IsEmailVerified { get; private set; }
 
@@ -50,7 +49,6 @@ public abstract class ManagerEntity : UserEntity
     protected ManagerEntity(string email, string passwordHash, Role role)
         : base(email, passwordHash, role) { }
 
-    public string StripeAccountId { get; set; } = string.Empty;
 }
 
 public class VenueManagerEntity : ManagerEntity

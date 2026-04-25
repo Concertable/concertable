@@ -18,13 +18,9 @@ using Concertable.Concert.Infrastructure.Services.Application;
 using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
-using Concertable.Concert.Infrastructure.Services.Webhook;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Infrastructure.Factories;
 using Concertable.Infrastructure.Handlers;
-using Concertable.Payment.Application.Interfaces.Webhook;
-using Concertable.Infrastructure.Services.Payment;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
 using FluentValidation;
@@ -64,10 +60,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
-        // TEMPORARY: TicketPaymentDispatcher + ApplicationAcceptHandler still in legacy
-        // Concertable.Infrastructure until Payment extraction moves them.
-        services.AddScoped<ITicketPaymentDispatcher, TicketPaymentDispatcher>();
-        services.AddScoped<ITicketPaymentStrategyFactory, TicketPaymentStrategyFactory>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
 
         // Keyed workflow strategies (keys must match ContractType enum values exactly)
@@ -76,12 +68,6 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
         services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
         services.AddScoped<IConcertWorkflowStrategyFactory, ConcertWorkflowStrategyFactory>();
-
-        // Webhook plumbing (WebhookStrategyFactory still legacy — stays in Web AddContracts)
-        services.AddScoped<IWebhookProcessor, WebhookProcessor>();
-        services.AddScoped<IWebhookQueue, WebhookQueue>();
-        services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>(WebhookType.Concert);
-        services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>(WebhookType.Settlement);
 
         // Repositories
         services.AddScoped<IConcertRepository, ConcertRepository>();

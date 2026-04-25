@@ -3,9 +3,11 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Domain;
+using Concertable.Contract.Abstractions;
 using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
 using Concertable.Identity.Contracts;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
 
@@ -15,30 +17,33 @@ internal class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;
-    private readonly ITicketPaymentDispatcher ticketPaymentDispatcher;
     private readonly IEmailService emailService;
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUser currentUser;
     private readonly IConcertRepository concertRepository;
+    private readonly IContractLookup contractLookup;
+    private readonly IPaymentModule paymentModule;
     private readonly TimeProvider timeProvider;
 
     public TicketService(
         ITicketRepository ticketRepository,
         ITicketValidator ticketValidator,
-        ITicketPaymentDispatcher ticketPaymentDispatcher,
         IEmailService emailService,
         IQrCodeService qrCodeService,
         ICurrentUser currentUser,
         IConcertRepository concertRepository,
+        IContractLookup contractLookup,
+        IPaymentModule paymentModule,
         TimeProvider timeProvider)
     {
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
-        this.ticketPaymentDispatcher = ticketPaymentDispatcher;
         this.emailService = emailService;
         this.qrCodeService = qrCodeService;
         this.currentUser = currentUser;
         this.concertRepository = concertRepository;
+        this.contractLookup = contractLookup;
+        this.paymentModule = paymentModule;
         this.timeProvider = timeProvider;
     }
 
@@ -48,14 +53,21 @@ internal class TicketService : ITicketService
             throw new ForbiddenException("Only Customers can buy tickets");
 
         var validationResult = await ticketValidator.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
-
         if (validationResult.IsFailed)
             throw new BadRequestException(validationResult.Errors);
 
-        var concert = await concertRepository.GetByIdAsync(purchaseParams.ConcertId)
+        var concert = await concertRepository.GetFullByIdAsync(purchaseParams.ConcertId)
             ?? throw new NotFoundException("Concert not found");
 
-        var paymentResult = await ticketPaymentDispatcher.PayAsync(purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId, concert.Price);
+        var contract = await contractLookup.GetByConcertIdAsync(purchaseParams.ConcertId);
+
+        var payeeUserId = contract.ContractType == ContractType.VenueHire
+            ? concert.Booking.Application.Artist.UserId
+            : concert.Booking.Application.Opportunity.Venue.UserId;
+
+        var paymentResult = await paymentModule.PurchaseTicketsAsync(
+            purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId,
+            concert.Price, currentUser.GetId(), payeeUserId, contract);
 
         if (paymentResult.IsFailed)
             return Result.Fail(paymentResult.Errors);

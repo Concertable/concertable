@@ -9,11 +9,15 @@ internal class AuthController : ControllerBase
 {
     private readonly IAuthModule authModule;
     private readonly ICurrentUser currentUser;
+    private readonly IUserService userService;
+    private readonly IUserMapper userMapper;
 
-    public AuthController(IAuthModule authModule, ICurrentUser currentUser)
+    public AuthController(IAuthModule authModule, ICurrentUser currentUser, IUserService userService, IUserMapper userMapper)
     {
         this.authModule = authModule;
         this.currentUser = currentUser;
+        this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     [HttpPost("register")]
@@ -47,9 +51,9 @@ internal class AuthController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<IUser>> Me()
     {
-        var user = await authModule.GetCurrentUserAsync(currentUser.GetId());
-        if (user is null) return Unauthorized();
-        return Ok(user);
+        var entity = await userService.GetUserEntityByIdAsync(currentUser.GetId());
+        if (entity is null) return Unauthorized();
+        return Ok(userMapper.ToDto(entity));
     }
 
     [HttpPost("send-verification")]

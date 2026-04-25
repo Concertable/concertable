@@ -26,17 +26,12 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<UserEntity>
 
 public class CustomerEntityConfiguration : IEntityTypeConfiguration<CustomerEntity>
 {
-    public void Configure(EntityTypeBuilder<CustomerEntity> builder)
-        => builder.Property(u => u.StripeCustomerId).IsRequired();
+    public void Configure(EntityTypeBuilder<CustomerEntity> builder) { }
 }
 
 public class ManagerEntityConfiguration : IEntityTypeConfiguration<ManagerEntity>
 {
-    public void Configure(EntityTypeBuilder<ManagerEntity> builder)
-    {
-        builder.Property(u => u.StripeCustomerId).IsRequired();
-        builder.Property(u => u.StripeAccountId).IsRequired();
-    }
+    public void Configure(EntityTypeBuilder<ManagerEntity> builder) { }
 }
 
 public class RefreshTokenEntityConfiguration : IEntityTypeConfiguration<RefreshTokenEntity>
