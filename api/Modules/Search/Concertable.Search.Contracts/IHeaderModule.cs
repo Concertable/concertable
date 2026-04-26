@@ -1,7 +1,3 @@
-using Concertable.Application.Interfaces;
-using Concertable.Core.Enums;
-using Concertable.Core.Parameters;
-
 namespace Concertable.Search.Contracts;
 
 public interface IHeaderModule

@@ -1,28 +1,16 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.Mappers;
-using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
-using Concertable.Infrastructure.Data;
+using Concertable.Identity.Contracts;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
-using Concertable.Infrastructure.Repositories;
-using Concertable.Infrastructure.Services;
-using Concertable.Infrastructure.Handlers;
-using Concertable.Identity.Contracts.Events;
-using Concertable.Infrastructure.Services.Blob;
-using Concertable.Infrastructure.Services.Email;
-using Concertable.Infrastructure.Services.Geometry;
-using Concertable.Infrastructure.Settings;
-using Concertable.Infrastructure.Validators;
-using Concertable.Core.Enums;
+using Concertable.Shared.Infrastructure.Repositories;
+using Concertable.Identity.Infrastructure.Settings;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Web.Authorization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
@@ -30,7 +18,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using QRCoder;
 using QuestPDF.Infrastructure;
 using System.Data;
 
@@ -50,24 +37,16 @@ public static class ServiceCollectionExtensions
             new MetricGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857)));
 
         services.AddDatabase(configuration);
-        services.AddExternalServices(configuration);
 
         return services;
     }
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSharedInfrastructure();
+        services.AddSharedInfrastructure(configuration);
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
         services.AddSharedDbContext(configuration);
-        services.AddDbContext<ApplicationDbContext>((sp, opt) =>
-            opt.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    sqlOpt => sqlOpt.UseNetTopologySuite())
-                .AddInterceptors(
-                    sp.GetRequiredService<AuditInterceptor>(),
-                    sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.AddReadDbContext(configuration);
 
@@ -77,65 +56,15 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddExternalServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
-
-        var external = configuration.GetSection("ExternalServices");
-
-        if (external.GetValue<bool>("UseRealBlob"))
-            services.AddScoped<IBlobStorageService, BlobStorageService>();
-        else
-            services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
-
-        if (external.GetValue<bool>("UseRealEmail"))
-            services.AddScoped<IEmailService, EmailService>();
-        else
-            services.AddScoped<IEmailService, FakeEmailService>();
-
-        if (external.GetValue<bool>("UseRealImages"))
-            services.AddScoped<IImageService, ImageService>();
-        else
-            services.AddScoped<IImageService, FakeImageService>();
-
-        services.AddHttpClient("Geocoding", client =>
-        {
-            client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
-        });
-        services.AddScoped<IGeocodingService, GeocodingService>();
-
-        return services;
-    }
-
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IGenreService, GenreService>();
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
-        services.AddScoped<IPdfService, PdfService>();
-        services.AddSingleton<QRCodeGenerator>();
-        services.AddScoped<IQrCodeService, QrCodeService>();
-        services.AddScoped<IPreferenceService, PreferenceService>();
-        services.Configure<UrlSettings>(configuration.GetSection("Urls"));
-        services.AddScoped<IUriService, UriService>();
-        services.AddServiceValidators();
-
-        return services;
-    }
-
-    public static IServiceCollection AddServiceValidators(this IServiceCollection services)
-    {
-        services.AddSingleton<IConcertValidator, ConcertValidator>();
-        services.AddScoped<ITicketValidator, TicketValidator>();
-        services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
 
         return services;
     }
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IGenreRepository, GenreRepository>();
-        services.AddScoped<IPreferenceRepository, PreferenceRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDapperRepository, DapperRepository>();
 
         return services;

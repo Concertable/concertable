@@ -1,4 +1,3 @@
-using Concertable.Core.Parameters;
 using Concertable.Payment.Infrastructure.Data;
 using Concertable.Shared;
 using Concertable.Shared.Infrastructure;

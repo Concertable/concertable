@@ -1,4 +1,3 @@
-using Concertable.Core.Parameters;
 using Concertable.Search.Application.Interfaces;
 using Concertable.Search.Domain.Models;
 

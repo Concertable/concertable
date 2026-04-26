@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Concertable.Infrastructure.Settings;
+using Concertable.Identity.Infrastructure.Settings;
 
 namespace Concertable.Identity.Infrastructure.Services.Auth;
 

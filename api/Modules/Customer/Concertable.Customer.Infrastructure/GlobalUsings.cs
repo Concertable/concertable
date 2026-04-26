@@ -1,0 +1,9 @@
+global using Concertable.Customer.Application.DTOs;
+global using Concertable.Customer.Application.Interfaces;
+global using Concertable.Customer.Application.Mappers;
+global using Concertable.Customer.Application.Requests;
+global using Concertable.Customer.Domain;
+global using Concertable.Data.Infrastructure;
+global using Concertable.Identity.Contracts;
+global using Concertable.Shared;
+global using Concertable.Shared.Infrastructure;

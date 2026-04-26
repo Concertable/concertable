@@ -17,4 +17,7 @@ internal class IdentityModule(IUserRepository userRepository, IUserMapper userMa
         var user = await userRepository.GetByIdAsync(userId);
         return user is null ? null : userMapper.ToDto(user);
     }
+
+    public async Task<IReadOnlyCollection<IUser>> GetUsersByIdsAsync(IEnumerable<Guid> ids) =>
+        userMapper.ToDtos(await userRepository.GetByIdsAsync(ids)).ToList();
 }

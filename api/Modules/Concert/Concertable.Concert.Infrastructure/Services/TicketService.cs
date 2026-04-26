@@ -1,11 +1,6 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
-using Concertable.Application.Mappers;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Domain;
 using Concertable.Contract.Abstractions;
-using Concertable.Core.Enums;
-using Concertable.Core.Parameters;
 using Concertable.Identity.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;

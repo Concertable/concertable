@@ -4,7 +4,6 @@ using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Payment.Infrastructure.Background;
 using Concertable.Payment.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Data.Seeders;
 using Concertable.Payment.Infrastructure.Events;
@@ -80,10 +79,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
         services.AddScoped<IWebhookQueue, WebhookQueue>();
 
-        // Background queue (Singleton; QueueHostedService registered in Web host via AddPaymentQueueHostedService)
-        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-        services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
-
         // Module facades — public Payment.Contracts surface
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
         services.AddKeyedScoped<IManagerPaymentModule, OnSessionManagerPaymentModule>(PaymentSession.OnSession);
@@ -96,12 +91,6 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<ITransactionStrategy, TicketTransactionService>("ticket");
         services.AddKeyedScoped<ITransactionStrategy, SettlementTransactionService>("settlement");
 
-        return services;
-    }
-
-    public static IServiceCollection AddPaymentQueueHostedService(this IServiceCollection services)
-    {
-        services.AddHostedService<QueueHostedService>();
         return services;
     }
 

@@ -1,4 +1,3 @@
-using Concertable.Core.Enums;
 using Concertable.Search.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 

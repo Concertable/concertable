@@ -1,4 +1,4 @@
-using Concertable.Application.DTOs;
+using Concertable.Concert.Application.DTOs;
 using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Responses;
 using FluentResults;

@@ -1,6 +1,5 @@
 ﻿using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Blob;
-using Concertable.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 

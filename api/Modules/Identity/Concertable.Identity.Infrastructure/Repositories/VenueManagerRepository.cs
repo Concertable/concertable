@@ -5,7 +5,7 @@ using Concertable.Identity.Infrastructure.Data;
 namespace Concertable.Identity.Infrastructure.Repositories;
 
 internal class VenueManagerRepository(IdentityDbContext context)
-    : GuidModuleRepository<VenueManagerEntity, IdentityDbContext>(context),
+    : GuidRepository<VenueManagerEntity, IdentityDbContext>(context),
       IManagerRepository<VenueManagerEntity>
 {
 }

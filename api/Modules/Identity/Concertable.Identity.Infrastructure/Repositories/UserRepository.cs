@@ -43,4 +43,9 @@ internal class UserRepository : IUserRepository
 
     public Task<UserEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyCollection<UserEntity>> GetByIdsAsync(IEnumerable<Guid> ids)
+    {
+        return await context.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+    }
 }

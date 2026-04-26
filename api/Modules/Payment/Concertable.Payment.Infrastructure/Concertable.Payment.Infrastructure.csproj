@@ -23,12 +23,12 @@
     <ProjectReference Include="..\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
     <ProjectReference Include="..\..\Contract\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
     <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Customer\Concertable.Customer.Contracts\Concertable.Customer.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <!-- TEMPORARY: legacy entity/enum types until Step 2 of Payment refactor. -->
-    <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
   </ItemGroup>
 
 </Project>

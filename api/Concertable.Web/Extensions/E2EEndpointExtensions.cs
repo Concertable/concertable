@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
+using Concertable.Concert.Application.Interfaces;
 using Concertable.Data.Application;
-using Concertable.Infrastructure.Data;
 using Concertable.Seeding;
 using Microsoft.EntityFrameworkCore;
 

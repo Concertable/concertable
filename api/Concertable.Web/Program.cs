@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Serializers;
+using Concertable.Web;
 using Concertable.Artist.Api.Extensions;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Venue.Api.Extensions;
@@ -11,10 +12,12 @@ using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Payment.Api.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
+using Concertable.Customer.Api.Extensions;
+using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Extensions;
-using Concertable.Infrastructure.Data;
+using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Api.Extensions;
 using Concertable.Web.Extensions;
@@ -91,6 +94,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddConcertDevSeeder();
     services.AddPaymentDevSeeder();
     services.AddMessagingDevSeeder();
+    services.AddCustomerDevSeeder();
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();
@@ -102,12 +106,13 @@ services.AddVenueApi(builder.Configuration);
 services.AddConcertApi(builder.Configuration);
 services.AddContractApi(builder.Configuration);
 services.AddPaymentApi(builder.Configuration);
-services.AddPaymentQueueHostedService();
+services.AddCustomerApi(builder.Configuration);
+services.AddQueueHostedService();
 services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();
 
-builder.Services.AddExceptionHandler<Infrastructure.GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();

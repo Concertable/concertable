@@ -21,7 +21,7 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Build solution
-        run: dotnet build Concertable.sln --configuration Release
+        run: dotnet build api/Concertable.sln --configuration Release
 
   unit-tests:
     runs-on: ubuntu-latest

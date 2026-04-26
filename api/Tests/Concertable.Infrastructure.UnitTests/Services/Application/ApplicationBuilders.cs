@@ -1,5 +1,3 @@
-using Concertable.Core.Enums;
-
 namespace Concertable.Infrastructure.UnitTests.Services.Application;
 
 public static class ApplicationBuilders

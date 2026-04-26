@@ -1,4 +1,4 @@
-using Concertable.Identity.Contracts;
+using Concertable.Customer.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;

@@ -1,7 +1,6 @@
 using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Infrastructure.Data;
 using Concertable.Concert.Infrastructure.Mappers;
-using Concertable.Infrastructure.Helpers;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 

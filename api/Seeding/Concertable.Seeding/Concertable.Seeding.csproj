@@ -8,11 +8,18 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Concertable.Core\Concertable.Core.csproj" />
-    <ProjectReference Include="..\..\Concertable.Application\Concertable.Application.csproj" />
+    <ProjectReference Include="..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Payment\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
   </ItemGroup>
 
 </Project>

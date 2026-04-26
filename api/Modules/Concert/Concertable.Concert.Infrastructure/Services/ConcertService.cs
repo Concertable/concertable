@@ -1,5 +1,5 @@
-using Concertable.Application.Interfaces.Geometry;
 using Concertable.Concert.Application.Interfaces.Reviews;
+using Concertable.Customer.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
 
@@ -14,8 +14,7 @@ internal class ConcertService : IConcertService
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IEmailService emailService;
     private readonly IConcertReviewRepository concertReviewRepository;
-    private readonly IPreferenceService preferenceService;
-    private readonly IGeometryCalculator geometryCalculator;
+    private readonly ICustomerModule customerModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly TimeProvider timeProvider;
 
@@ -27,8 +26,7 @@ internal class ConcertService : IConcertService
         IOpportunityApplicationValidator applicationValidator,
         IEmailService emailService,
         IConcertReviewRepository concertReviewRepository,
-        IPreferenceService preferenceService,
-        IGeometryCalculator geometryCalculator,
+        ICustomerModule customerModule,
         IConcertDraftService concertDraftService,
         TimeProvider timeProvider)
     {
@@ -39,8 +37,7 @@ internal class ConcertService : IConcertService
         this.applicationValidator = applicationValidator;
         this.emailService = emailService;
         this.concertReviewRepository = concertReviewRepository;
-        this.preferenceService = preferenceService;
-        this.geometryCalculator = geometryCalculator;
+        this.customerModule = customerModule;
         this.concertDraftService = concertDraftService;
         this.timeProvider = timeProvider;
     }
@@ -117,30 +114,10 @@ internal class ConcertService : IConcertService
         if (location is null)
             return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = [] };
 
-        var preferences = await preferenceService.GetAsync();
-        var genreIds = concertEntity.ConcertGenres.Select(cg => cg.GenreId).ToHashSet();
+        var genreIds = concertEntity.ConcertGenres.Select(cg => cg.GenreId).ToList();
+        var userIdsToNotify = await customerModule.GetUserIdsByLocationAndGenresAsync(location.Y, location.X, genreIds);
 
-        var userIdsToNotify = preferences
-            .Where(preference =>
-            {
-                if (preference.User.Latitude is null || preference.User.Longitude is null)
-                    return false;
-
-                var inRange = geometryCalculator.IsWithinRadius(
-                    preference.User.Latitude.Value,
-                    preference.User.Longitude.Value,
-                    location.Y,
-                    location.X,
-                    preference.RadiusKm);
-
-                var hasMatchingGenre = preference.Genres.Any(g => genreIds.Contains(g.Id));
-
-                return inRange && hasMatchingGenre;
-            })
-            .Select(preference => preference.User.Id)
-            .ToList();
-
-        return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = userIdsToNotify };
+        return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = userIdsToNotify.ToList() };
     }
 
     public Task<IEnumerable<ConcertSummaryDto>> GetUnpostedByArtistIdAsync(int id) =>

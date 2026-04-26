@@ -1,3 +1,2 @@
 global using Concertable.Shared;
-global using Concertable.Identity.Contracts;
-global using Concertable.Concert.Domain;
+global using Concertable.Search.Contracts;

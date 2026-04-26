@@ -5,7 +5,7 @@ using Concertable.Identity.Domain.Events;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Identity.Infrastructure.Data.Seeders;
 using Concertable.Identity.Infrastructure.Events;
-using Concertable.Infrastructure.Settings;
+using Concertable.Identity.Infrastructure.Settings;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -59,7 +59,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IdentityModule>();
         services.AddScoped<IManagerModule>(sp => sp.GetRequiredService<IdentityModule>());
         services.AddScoped<IIdentityModule>(sp => sp.GetRequiredService<IdentityModule>());
-        services.AddScoped<ICustomerModule, CustomerModule>();
 
         services.AddScoped<IDomainEventHandler<UserLocationUpdatedDomainEvent>, UserLocationUpdatedDomainEventHandler>();
         services.AddScoped<IDomainEventHandler<UserCreatedDomainEvent>, UserCreatedDomainEventHandler>();

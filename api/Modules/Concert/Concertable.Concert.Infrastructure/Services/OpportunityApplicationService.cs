@@ -2,13 +2,14 @@ using Concertable.Payment.Application.Interfaces;
 using Concertable.Messaging.Contracts;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
+using Concertable.Shared.Infrastructure.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Services;
 
 internal class OpportunityApplicationService : IOpportunityApplicationService
 {
     private readonly IOpportunityApplicationRepository applicationRepository;
-    private readonly IUnitOfWork unitOfWork;
     private readonly ICurrentUser currentUser;
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IStripeValidator stripeValidator;
@@ -22,7 +23,6 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
 
     public OpportunityApplicationService(
         IOpportunityApplicationRepository applicationRepository,
-        IUnitOfWork unitOfWork,
         ICurrentUser currentUser,
         IOpportunityApplicationValidator applicationValidator,
         IStripeValidator stripeValidator,
@@ -35,7 +35,6 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         IOpportunityApplicationMapper mapper)
     {
         this.applicationRepository = applicationRepository;
-        this.unitOfWork = unitOfWork;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
         this.stripeValidator = stripeValidator;
@@ -115,9 +114,9 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
 
         try
         {
-            await unitOfWork.TrySaveChangesAsync();
+            await applicationRepository.SaveChangesAsync();
         }
-        catch (BadRequestException ex) when (ex.ErrorType == ErrorType.DuplicateKey)
+        catch (DbUpdateException ex) when (ex.IsDuplicateKey())
         {
             throw new BadRequestException("You cannot apply to the same concert opportunity twice");
         }

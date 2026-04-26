@@ -16,6 +16,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="10.0.3" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="QuestPDF" Version="2025.1.3" />
     <PackageReference Include="Stripe.net" Version="47.3.0" />
   </ItemGroup>
 
@@ -26,17 +28,15 @@
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
+    <ProjectReference Include="..\..\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
     <ProjectReference Include="..\..\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
     <ProjectReference Include="..\..\Notification\Concertable.Notification.Contracts\Concertable.Notification.Contracts.csproj" />
     <ProjectReference Include="..\..\Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
-    <!-- TEMPORARY: payment services (ICustomerPaymentService, IManagerPaymentService keyed,
-         IStripeAccountService, IBackgroundTaskQueue, IWebhookStrategyFactory, etc.) still live
-         in legacy Concertable.Infrastructure. Removed during Payment Stage 1 (replaced with
-         Concertable.Payment.Contracts ref). See CONCERT_MODULE_REFACTOR.md Â§3 + Â§10d. -->
-    <ProjectReference Include="..\..\..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Customer\Concertable.Customer.Contracts\Concertable.Customer.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using NetTopologySuite;
 using Xunit;
 
