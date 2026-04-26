@@ -3,6 +3,7 @@ using Concertable.Concert.Domain;
 using Concertable.Contract.Domain;
 using Concertable.Core.Entities;
 using Concertable.Identity.Domain;
+using Concertable.Messaging.Domain;
 using Concertable.Shared;
 using Concertable.Venue.Domain;
 
@@ -28,6 +29,7 @@ public interface IReadDbContext
     IQueryable<ConcertBookingEntity> ConcertBookings { get; }
     IQueryable<ReviewEntity> Reviews { get; }
     IQueryable<TicketEntity> Tickets { get; }
+    IQueryable<MessageEntity> Messages { get; }
     IQueryable<TransactionEntity> Transactions { get; }
     IQueryable<TicketTransactionEntity> TicketTransactions { get; }
     IQueryable<SettlementTransactionEntity> SettlementTransactions { get; }

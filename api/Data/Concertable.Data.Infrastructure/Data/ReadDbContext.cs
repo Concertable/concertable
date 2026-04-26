@@ -1,6 +1,7 @@
 using Concertable.Contract.Domain;
 using Concertable.Core.Entities;
 using Concertable.Data.Application;
+using Concertable.Messaging.Domain;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,7 @@ internal class ReadDbContext(
     public IQueryable<ConcertBookingEntity> ConcertBookings => Set<ConcertBookingEntity>().AsNoTracking();
     public IQueryable<ReviewEntity> Reviews => Set<ReviewEntity>().AsNoTracking();
     public IQueryable<TicketEntity> Tickets => Set<TicketEntity>().AsNoTracking();
+    public IQueryable<MessageEntity> Messages => Set<MessageEntity>().AsNoTracking();
     public IQueryable<TransactionEntity> Transactions => Set<TransactionEntity>().AsNoTracking();
     public IQueryable<TicketTransactionEntity> TicketTransactions => Set<TicketTransactionEntity>().AsNoTracking();
     public IQueryable<SettlementTransactionEntity> SettlementTransactions => Set<SettlementTransactionEntity>().AsNoTracking();
