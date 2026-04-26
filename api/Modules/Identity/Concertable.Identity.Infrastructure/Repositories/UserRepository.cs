@@ -46,7 +46,6 @@ internal class UserRepository : IUserRepository
 
     public async Task<IReadOnlyCollection<UserEntity>> GetByIdsAsync(IEnumerable<Guid> ids)
     {
-        var idArray = ids.ToArray();
-        return await context.Users.Where(u => idArray.Contains(u.Id)).ToListAsync();
+        return await context.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
     }
 }

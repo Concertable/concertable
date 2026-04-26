@@ -1,4 +1,5 @@
 using Concertable.Contract.Domain;
+using Concertable.Customer.Domain;
 using Concertable.Data.Application;
 using Concertable.Messaging.Domain;
 using Concertable.Shared;
@@ -45,6 +46,8 @@ internal class ReadDbContext(
     public IQueryable<ArtistRatingProjection> ArtistRatingProjections => Set<ArtistRatingProjection>().AsNoTracking();
     public IQueryable<VenueRatingProjection> VenueRatingProjections => Set<VenueRatingProjection>().AsNoTracking();
     public IQueryable<ConcertRatingProjection> ConcertRatingProjections => Set<ConcertRatingProjection>().AsNoTracking();
+    public IQueryable<PreferenceEntity> Preferences => Set<PreferenceEntity>().AsNoTracking();
+    public IQueryable<GenrePreferenceEntity> GenrePreferences => Set<GenrePreferenceEntity>().AsNoTracking();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

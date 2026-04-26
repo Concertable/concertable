@@ -9,12 +9,9 @@ internal static class TicketMappers
         Id = ticket.Id,
         PurchaseDate = ticket.PurchaseDate,
         QrCode = ticket.QrCode,
-        Concert = ToTicketConcertDto(ticket.Concert),
-        User = new UserDto
-        {
-            Id = ticket.UserId,
-            Email = email
-        }
+        UserId = ticket.UserId,
+        UserEmail = email,
+        Concert = ToTicketConcertDto(ticket.Concert)
     };
 
     private static TicketConcertDto ToTicketConcertDto(ConcertEntity concert) => new()
