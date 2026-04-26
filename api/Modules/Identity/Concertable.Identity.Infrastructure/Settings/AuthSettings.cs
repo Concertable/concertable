@@ -1,4 +1,4 @@
-namespace Concertable.Infrastructure.Settings;
+namespace Concertable.Identity.Infrastructure.Settings;
 
 public class AuthSettings
 {

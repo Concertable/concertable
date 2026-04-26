@@ -343,8 +343,8 @@ Once Preferences ships:
 - [x] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
 - [x] Step 6 — Remaining utilities
 - [x] Step 7 — Composition (`GlobalExceptionHandler` + `DevDbInitializer` → Web; seeding contracts → Concertable.Seeding)
-- [ ] Step 8 — Update consumers
-- [ ] Step 9 — Owning-module settings (Auth/Stripe/PaymentIntentMappers)
+- [x] Step 8 — Update consumers
+- [x] Step 9 — Owning-module settings (Auth/Stripe/PaymentIntentMappers)
 - [ ] Step 10 — Implement + wire `SearchParamsValidator`
 - [ ] Step 11 — Core cleanup (HeaderType / PageParams / RatingAggregate moves; enum deletions)
 

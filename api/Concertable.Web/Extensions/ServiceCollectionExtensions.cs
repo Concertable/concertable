@@ -16,7 +16,7 @@ using Concertable.Shared.Infrastructure.Repositories;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Identity.Contracts.Events;
 using Concertable.Shared.Infrastructure.Services.Geometry;
-using Concertable.Infrastructure.Settings;
+using Concertable.Identity.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
 using Concertable.Core.Enums;
 using Concertable.Web.Authorization;
