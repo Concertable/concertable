@@ -40,8 +40,6 @@ internal class OnSessionManagerPaymentModule : IManagerPaymentModule
         var payee = await managerModule.GetByIdAsync(payeeUserId)
             ?? throw new NotFoundException($"Payee manager not found for userId {payeeUserId}");
 
-        await stripeAccountService.ProvisionCustomerAsync(payerUserId, payer.Email ?? string.Empty, ct);
-
         var payerAccount = await payoutAccountRepository.GetByUserIdAsync(payerUserId)
             ?? throw new NotFoundException($"Payout account not found for payer {payerUserId}");
         var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeUserId)

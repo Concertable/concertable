@@ -1,10 +1,12 @@
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts.Events;
 using Concertable.Payment.Contracts;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Background;
 using Concertable.Payment.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Data.Seeders;
+using Concertable.Payment.Infrastructure.Handlers;
 using Concertable.Payment.Infrastructure.Repositories;
 using Concertable.Payment.Infrastructure.Services;
 using Concertable.Payment.Infrastructure.Services.Webhook;
@@ -87,6 +89,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
         services.AddKeyedScoped<IManagerPaymentModule, OnSessionManagerPaymentModule>(PaymentSession.OnSession);
         services.AddKeyedScoped<IManagerPaymentModule, OffSessionManagerPaymentModule>(PaymentSession.OffSession);
+
+        // Cross-module integration event handlers
+        services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
 
         return services;
     }

@@ -14,6 +14,7 @@ public class UserEntity : IGuidEntity, IEventRaiser
         Email = email;
         PasswordHash = passwordHash;
         Role = role;
+        _events.Raise(new UserCreatedDomainEvent(this));
     }
 
     public Guid Id { get; private set; }

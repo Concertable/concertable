@@ -39,8 +39,6 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         var customer = await customerModule.GetCustomerAsync(customerUserId)
             ?? throw new ForbiddenException("Only customers can purchase tickets");
 
-        await stripeAccountService.ProvisionCustomerAsync(customerUserId, customer.Email ?? string.Empty, ct);
-
         var payerAccount = await payoutAccountRepository.GetByUserIdAsync(customerUserId)
             ?? throw new NotFoundException($"Payout account not found for payer {customerUserId}");
         var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeUserId)
