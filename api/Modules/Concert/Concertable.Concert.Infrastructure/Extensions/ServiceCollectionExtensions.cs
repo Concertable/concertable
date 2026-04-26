@@ -69,6 +69,11 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
         services.AddScoped<IConcertWorkflowStrategyFactory, ConcertWorkflowStrategyFactory>();
 
+        // Ticket payee — composite dispatches by ContractType to artist vs venue
+        services.AddSingleton<ArtistTicketPayee>();
+        services.AddSingleton<VenueTicketPayee>();
+        services.AddSingleton<ITicketPayee, TicketPayee>();
+
         // Repositories
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();

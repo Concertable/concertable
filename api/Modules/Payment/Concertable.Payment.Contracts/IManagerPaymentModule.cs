@@ -1,13 +1,14 @@
-using Concertable.Identity.Contracts;
+using FluentResults;
 
 namespace Concertable.Payment.Contracts;
 
 public interface IManagerPaymentModule
 {
-    Task<PaymentResponse> PayAsync(
-        ManagerDto payer,
-        ManagerDto payee,
+    Task<Result<PaymentResponse>> PayAsync(
+        Guid payerUserId,
+        Guid payeeUserId,
         decimal amount,
-        int bookingId,
-        string? paymentMethodId = null);
+        int referenceId,
+        string? paymentMethodId,
+        CancellationToken ct = default);
 }

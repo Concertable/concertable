@@ -32,13 +32,13 @@ public class SeededUser
 public class SeededVenueManager
 {
     public string Email { get; set; } = null!;
-    public string? StripeAccountId { get; set; }
+    public string StripeAccountId { get; set; } = null!;
 }
 
 public class SeededArtistManager
 {
     public string Email { get; set; } = null!;
-    public string? StripeAccountId { get; set; }
+    public string StripeAccountId { get; set; } = null!;
 }
 
 public class SeededOpportunityApplication

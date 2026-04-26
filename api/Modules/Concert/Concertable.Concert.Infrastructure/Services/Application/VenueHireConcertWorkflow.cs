@@ -8,18 +8,15 @@ internal class VenueHireConcertWorkflow : IConcertWorkflowStrategy
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IContractLookup contractLookup;
-    private readonly IManagerModule managerModule;
 
     public VenueHireConcertWorkflow(
         IUpfrontConcertService upfrontConcertService,
         IOpportunityApplicationRepository applicationRepository,
-        IContractLookup contractLookup,
-        IManagerModule managerModule)
+        IContractLookup contractLookup)
     {
         this.upfrontConcertService = upfrontConcertService;
         this.applicationRepository = applicationRepository;
         this.contractLookup = contractLookup;
-        this.managerModule = managerModule;
     }
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
@@ -27,14 +24,9 @@ internal class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        var artistManager = await managerModule.GetByIdAsync(artist.UserId)
-            ?? throw new NotFoundException("Artist manager not found");
-        var venueManager = await managerModule.GetByIdAsync(venue.UserId)
-            ?? throw new NotFoundException("Venue manager not found");
-
         var contract = (VenueHireContract)await contractLookup.GetByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, artistManager, venueManager, contract.HireFee, paymentMethodId);
+        return await upfrontConcertService.InitiateAsync(applicationId, artist.UserId, venue.UserId, contract.HireFee, paymentMethodId);
     }
 
     public Task SettleAsync(int bookingId) =>

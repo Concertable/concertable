@@ -12,25 +12,18 @@ public class VersusConcertWorkflowCompleteTests
     private readonly Mock<IConcertRepository> concertRepository;
     private readonly Mock<IConcertBookingRepository> bookingRepository;
     private readonly Mock<IContractLookup> contractLookup;
-    private readonly Mock<IManagerModule> managerModule;
     private readonly VersusConcertWorkflow sut;
 
     private readonly VersusContract contract = new() { Guarantee = 200, ArtistDoorPercent = 50, PaymentMethod = PaymentMethod.Cash };
     private readonly Guid venueUserId = Guid.NewGuid();
     private readonly Guid artistUserId = Guid.NewGuid();
-    private readonly ManagerDto venueManager;
-    private readonly ManagerDto artistManager;
 
     public VersusConcertWorkflowCompleteTests()
     {
-        venueManager = new ManagerDto { Id = venueUserId, Email = "venue@test.com" };
-        artistManager = new ManagerDto { Id = artistUserId, Email = "artist@test.com" };
-
         deferredConcertService = new Mock<IDeferredConcertService>();
         concertRepository = new Mock<IConcertRepository>();
         bookingRepository = new Mock<IConcertBookingRepository>();
         contractLookup = new Mock<IContractLookup>();
-        managerModule = new Mock<IManagerModule>();
 
         var booking = BookingFactory.Create(artistUserId, venueUserId);
 
@@ -38,12 +31,9 @@ public class VersusConcertWorkflowCompleteTests
             deferredConcertService.Object,
             concertRepository.Object,
             bookingRepository.Object,
-            contractLookup.Object,
-            managerModule.Object);
+            contractLookup.Object);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);
-        managerModule.Setup(r => r.GetByIdAsync(venueUserId)).ReturnsAsync(venueManager);
-        managerModule.Setup(r => r.GetByIdAsync(artistUserId)).ReturnsAsync(artistManager);
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
         contractLookup.Setup(l => l.GetByConcertIdAsync(10)).ReturnsAsync(contract);
     }
@@ -54,7 +44,7 @@ public class VersusConcertWorkflowCompleteTests
         // guarantee 200 + 50% of 1000 = 700
         await sut.FinishAsync(10);
 
-        deferredConcertService.Verify(s => s.FinishedAsync(10, venueManager, artistManager, 700m), Times.Once);
+        deferredConcertService.Verify(s => s.FinishedAsync(10, venueUserId, artistUserId, 700m), Times.Once);
     }
 
     internal static class BookingFactory

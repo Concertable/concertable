@@ -70,8 +70,8 @@ public async Task InitializeAsync()
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
-                services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>("onSession");
-                services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>("offSession");
+                services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>(PaymentSession.OnSession);
+                services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>(PaymentSession.OffSession);
                 services.AddResettables(NotificationService, StripePaymentClient, EmailService);
                 services.AddSingleton<IEmailService>(EmailService);
 

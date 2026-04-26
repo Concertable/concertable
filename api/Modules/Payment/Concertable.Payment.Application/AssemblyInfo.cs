@@ -13,9 +13,9 @@ using System.Runtime.CompilerServices;
 // Concert.Application hosts ITicketService (Concert orchestrates ticket purchase per Option B);
 // signature references Payment-internal DTOs/Responses (TicketPaymentResponse, PurchaseCompleteDto).
 [assembly: InternalsVisibleTo("Concertable.Concert.Application")]
-// Concert.Infrastructure implements ITicketService + uses IStripeValidator/IStripeValidationFactory/IManagerPaymentService
-// (Opportunity/Application services validate Stripe state; UpfrontConcertService/DeferredConcertService dispatch payments).
-// TEMPORARY until those concerns route through IPaymentModule facade.
+// Concert.Infrastructure uses IStripeValidator + IStripeValidationFactory in
+// OpportunityService/OpportunityApplicationService for pre-create/pre-apply Stripe eligibility checks.
+// TEMPORARY until eligibility routes through a Payment.Contracts facade.
 [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]
 // Concert.Api hosts TicketController (Concert orchestrates ticket purchase per Option B);
 // signature returns Payment-internal TicketPaymentResponse.

@@ -22,7 +22,8 @@ internal class TicketService : ITicketService
     private readonly ICurrentUser currentUser;
     private readonly IConcertRepository concertRepository;
     private readonly IContractLookup contractLookup;
-    private readonly IPaymentModule paymentModule;
+    private readonly ITicketPayee ticketPayee;
+    private readonly ICustomerPaymentModule customerPaymentModule;
     private readonly TimeProvider timeProvider;
 
     public TicketService(
@@ -33,7 +34,8 @@ internal class TicketService : ITicketService
         ICurrentUser currentUser,
         IConcertRepository concertRepository,
         IContractLookup contractLookup,
-        IPaymentModule paymentModule,
+        ITicketPayee ticketPayee,
+        ICustomerPaymentModule customerPaymentModule,
         TimeProvider timeProvider)
     {
         this.ticketRepository = ticketRepository;
@@ -43,7 +45,8 @@ internal class TicketService : ITicketService
         this.currentUser = currentUser;
         this.concertRepository = concertRepository;
         this.contractLookup = contractLookup;
-        this.paymentModule = paymentModule;
+        this.ticketPayee = ticketPayee;
+        this.customerPaymentModule = customerPaymentModule;
         this.timeProvider = timeProvider;
     }
 
@@ -60,14 +63,13 @@ internal class TicketService : ITicketService
             ?? throw new NotFoundException("Concert not found");
 
         var contract = await contractLookup.GetByConcertIdAsync(purchaseParams.ConcertId);
+        var payeeUserId = ticketPayee.Resolve(concert, contract);
 
-        var payeeUserId = contract.ContractType == ContractType.VenueHire
-            ? concert.Booking.Application.Artist.UserId
-            : concert.Booking.Application.Opportunity.Venue.UserId;
-
-        var paymentResult = await paymentModule.PurchaseTicketsAsync(
-            purchaseParams.ConcertId, purchaseParams.Quantity, purchaseParams.PaymentMethodId,
-            concert.Price, currentUser.GetId(), payeeUserId, contract);
+        var paymentResult = await customerPaymentModule.PayAsync(
+            currentUser.GetId(), payeeUserId,
+            concert.Price * purchaseParams.Quantity,
+            purchaseParams.ConcertId, purchaseParams.Quantity,
+            purchaseParams.PaymentMethodId);
 
         if (paymentResult.IsFailed)
             return Result.Fail(paymentResult.Errors);

@@ -50,19 +50,19 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.SetupIntentService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
-            services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>("onSession");
-            services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>("offSession");
+            services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>(PaymentSession.OnSession);
+            services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>(PaymentSession.OffSession);
             services.AddScoped<IWebhookService, WebhookService>();
         }
         else
         {
             services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
-            services.AddKeyedScoped<IPaymentService, FakePaymentService>("onSession");
-            services.AddKeyedScoped<IPaymentService, FakePaymentService>("offSession");
+            services.AddKeyedScoped<IPaymentService, FakePaymentService>(PaymentSession.OnSession);
+            services.AddKeyedScoped<IPaymentService, FakePaymentService>(PaymentSession.OffSession);
             services.AddScoped<IWebhookService, FakeWebhookService>();
         }
 
-        // Stripe validation (keyed by ContractType)
+        // Stripe validation (keyed by ContractType) — used by Concert eligibility checks
         services.AddScoped<StripeAccountValidator>();
         services.AddScoped<StripeCustomerValidator>();
         services.AddScoped<IStripeValidator, StripeValidator>();
@@ -71,18 +71,6 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IStripeValidationStrategy, StripeCustomerValidator>(ContractType.FlatFee);
         services.AddKeyedScoped<IStripeValidationStrategy, StripeCustomerValidator>(ContractType.DoorSplit);
         services.AddKeyedScoped<IStripeValidationStrategy, StripeCustomerValidator>(ContractType.Versus);
-
-        // Payment services
-        services.AddScoped<ICustomerPaymentService, CustomerPaymentService>();
-        AddKeyedManagerPaymentService(services, "onSession");
-        AddKeyedManagerPaymentService(services, "offSession");
-
-        // Ticket payment strategies (keyed by ContractType)
-        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.FlatFee);
-        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.DoorSplit);
-        services.AddKeyedScoped<ITicketPaymentStrategy, VenueTicketPaymentService>(ContractType.Versus);
-        services.AddKeyedScoped<ITicketPaymentStrategy, ArtistTicketPaymentService>(ContractType.VenueHire);
-        services.AddScoped<ITicketPaymentStrategyFactory, TicketPaymentStrategyFactory>();
 
         // Webhook infrastructure
         services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
@@ -95,8 +83,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
 
-        // Module facades
-        services.AddScoped<IPaymentModule, PaymentModule>();
+        // Module facades — public Payment.Contracts surface
+        services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
+        services.AddKeyedScoped<IManagerPaymentModule, OnSessionManagerPaymentModule>(PaymentSession.OnSession);
+        services.AddKeyedScoped<IManagerPaymentModule, OffSessionManagerPaymentModule>(PaymentSession.OffSession);
 
         return services;
     }
@@ -117,22 +107,5 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<ITestSeeder, PaymentTestSeeder>();
         return services;
-    }
-
-    private static void AddKeyedManagerPaymentService(IServiceCollection services, string key)
-    {
-        services.AddKeyedScoped<ManagerPaymentService>(key, (sp, _) =>
-            new ManagerPaymentService(
-                sp.GetRequiredService<IStripeAccountService>(),
-                sp.GetRequiredKeyedService<IPaymentService>(key),
-                sp.GetRequiredService<ITransactionService>(),
-                sp.GetRequiredService<IPayoutAccountRepository>(),
-                sp.GetRequiredService<TimeProvider>()));
-
-        services.AddKeyedScoped<IManagerPaymentService>(key,
-            (sp, _) => sp.GetRequiredKeyedService<ManagerPaymentService>(key));
-
-        services.AddKeyedScoped<IManagerPaymentModule>(key,
-            (sp, _) => sp.GetRequiredKeyedService<ManagerPaymentService>(key));
     }
 }

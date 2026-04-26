@@ -18,7 +18,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
         IOpportunityApplicationRepository applicationRepository,
         IConcertBookingRepository bookingRepository,
         IApplicationAcceptHandler acceptHandler,
-        [FromKeyedServices("onSession")] IManagerPaymentModule managerPaymentModule,
+        [FromKeyedServices(PaymentSession.OnSession)] IManagerPaymentModule managerPaymentModule,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
@@ -29,7 +29,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
         this.concertDraftService = concertDraftService;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, ManagerDto payer, ManagerDto payee, decimal amount, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerUserId, Guid payeeUserId, decimal amount, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
         if (result.IsFailed)
@@ -41,8 +41,10 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         await acceptHandler.HandleAsync(applicationId, bookingConcert);
 
-        var payment = await managerPaymentModule.PayAsync(payer, payee, amount, bookingConcert.Id, paymentMethodId);
-        return new ImmediateAcceptOutcome(payment);
+        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, bookingConcert.Id, paymentMethodId);
+        if (payment.IsFailed)
+            throw new BadRequestException(payment.Errors);
+        return new ImmediateAcceptOutcome(payment.Value);
     }
 
     public async Task SettleAsync(int bookingId)
