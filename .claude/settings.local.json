@@ -11,7 +11,8 @@
       "Bash(grep -n \"GlobalSection\\(NestedProjects\\)\\\\|EndGlobalSection\\\\|^Global$\" Concertable.sln)",
       "Bash(dotnet ef *)",
       "PowerShell(tail *)",
-      "PowerShell(.\\\\migrations.ps1 2>&1 | Select-Object -Last 60)"
+      "PowerShell(.\\\\migrations.ps1 2>&1 | Select-Object -Last 60)",
+      "Bash(grep -c '\"api\\\\\\\\' Concertable.sln)"
     ]
   }
 }
