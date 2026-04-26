@@ -2,15 +2,16 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
-using Concertable.Seeding.Factories;
-using Concertable.Shared.Infrastructure.Services.Geometry;
+using Concertable.Infrastructure.Data;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
+using Concertable.Seeding.Factories;
 using Concertable.Seeding.Fakers;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Infrastructure.Data;
+namespace Concertable.Web;
 
 public class DevDbInitializer : IDbInitializer
 {
@@ -69,6 +70,5 @@ public class DevDbInitializer : IDbInitializer
             context.GenrePreferences.Add(new GenrePreferenceEntity { PreferenceId = 1, GenreId = 1 });
             await context.SaveChangesAsync();
         });
-
     }
 }

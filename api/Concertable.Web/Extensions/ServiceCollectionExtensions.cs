@@ -22,7 +22,6 @@ using Concertable.Core.Enums;
 using Concertable.Web.Authorization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;

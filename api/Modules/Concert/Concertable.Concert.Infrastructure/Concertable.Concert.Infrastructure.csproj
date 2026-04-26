@@ -37,6 +37,7 @@
          in legacy Concertable.Infrastructure. Removed during Payment Stage 1 (replaced with
          Concertable.Payment.Contracts ref). See CONCERT_MODULE_REFACTOR.md Â§3 + Â§10d. -->
     <ProjectReference Include="..\..\..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
   </ItemGroup>
 

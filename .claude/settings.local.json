@@ -3,7 +3,9 @@
     "allow": [
       "Bash(dotnet build *)",
       "Bash(xargs sed *)",
-      "Bash(dotnet restore *)"
+      "Bash(dotnet restore *)",
+      "Bash(grep -v \"\\\\\\\\bobj\\\\\\\\b\")",
+      "Bash(grep -v \"\\\\\\\\bbin\\\\\\\\b\")"
     ]
   }
 }

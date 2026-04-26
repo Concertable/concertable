@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Serializers;
+using Concertable.Web;
 using Concertable.Artist.Api.Extensions;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Venue.Api.Extensions;
@@ -108,7 +109,7 @@ services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();
 
-builder.Services.AddExceptionHandler<Infrastructure.GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
