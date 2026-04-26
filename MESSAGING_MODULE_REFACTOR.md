@@ -122,7 +122,7 @@ Shared → Identity → Artist → Venue → Concert → Contract → **Messagin
 
 ## Progress
 
-- [ ] Step 1 — Scaffold projects
+- [x] Step 1 — Scaffold projects
 - [ ] Step 2 — Move Domain
 - [ ] Step 3 — Move Application layer
 - [ ] Step 4 — Create `MessagingDbContext`
