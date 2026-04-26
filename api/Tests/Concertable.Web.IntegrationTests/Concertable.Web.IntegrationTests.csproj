@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Concertable.Web\Concertable.Web.csproj" />
-    <ProjectReference Include="..\..\Concertable.Seeding\Concertable.Seeding.csproj" />
+    <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
     <ProjectReference Include="..\..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
   </ItemGroup>

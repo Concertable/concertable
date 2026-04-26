@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Core\Concertable.Core.csproj" />
-    <ProjectReference Include="..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
+    <ProjectReference Include="..\..\Concertable.Core\Concertable.Core.csproj" />
+    <ProjectReference Include="..\..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
   </ItemGroup>
 
 </Project>

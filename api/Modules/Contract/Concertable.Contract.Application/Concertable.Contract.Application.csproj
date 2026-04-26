@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -13,8 +13,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
     <ProjectReference Include="..\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

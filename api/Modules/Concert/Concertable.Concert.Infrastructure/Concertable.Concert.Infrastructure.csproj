@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -23,8 +23,8 @@
     <ProjectReference Include="..\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
     <ProjectReference Include="..\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
     <ProjectReference Include="..\..\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
@@ -33,7 +33,7 @@
     <!-- TEMPORARY: payment services (ICustomerPaymentService, IManagerPaymentService keyed,
          IStripeAccountService, IBackgroundTaskQueue, IWebhookStrategyFactory, etc.) still live
          in legacy Concertable.Infrastructure. Removed during Payment Stage 1 (replaced with
-         Concertable.Payment.Contracts ref). See CONCERT_MODULE_REFACTOR.md §3 + §10d. -->
+         Concertable.Payment.Contracts ref). See CONCERT_MODULE_REFACTOR.md Â§3 + Â§10d. -->
     <ProjectReference Include="..\..\..\Concertable.Infrastructure\Concertable.Infrastructure.csproj" />
   </ItemGroup>
 

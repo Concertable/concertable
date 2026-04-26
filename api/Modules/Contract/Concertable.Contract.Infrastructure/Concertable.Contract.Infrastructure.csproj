@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -20,9 +20,9 @@
     <ProjectReference Include="..\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
     <ProjectReference Include="..\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
     <ProjectReference Include="..\Concertable.Contract.Application\Concertable.Contract.Application.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Seeding\Concertable.Seeding.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <!-- TEMPORARY: legacy hosts retire as Payment + remaining Concertable.* extracts. -->
     <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
   </ItemGroup>

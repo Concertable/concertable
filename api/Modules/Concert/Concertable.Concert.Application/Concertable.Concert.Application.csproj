@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -22,8 +22,8 @@
     <!-- TEMPORARY: TicketDto + TicketConcertDto still in Concertable.Application.DTOs/SharedDtos.cs;
          relocate to Concert.Application during a future cleanup pass and drop this ref. -->
     <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
