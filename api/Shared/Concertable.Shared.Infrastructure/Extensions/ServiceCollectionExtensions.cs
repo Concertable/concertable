@@ -1,3 +1,4 @@
+using Concertable.Shared.Infrastructure.Background;
 using Concertable.Shared.Infrastructure.Events;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,6 +10,14 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IIntegrationEventBus, InProcessIntegrationEventBus>();
+        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+        services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
+        return services;
+    }
+
+    public static IServiceCollection AddQueueHostedService(this IServiceCollection services)
+    {
+        services.AddHostedService<QueueHostedService>();
         return services;
     }
 }

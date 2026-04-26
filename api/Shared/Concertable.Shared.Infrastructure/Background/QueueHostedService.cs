@@ -1,8 +1,7 @@
-﻿using Concertable.Shared;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Shared.Infrastructure.Background;
 
 public class QueueHostedService : BackgroundService
 {

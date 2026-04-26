@@ -1,8 +1,8 @@
 using System.Threading.Channels;
 
-namespace Concertable.Payment.Infrastructure.Background;
+namespace Concertable.Shared.Infrastructure.Background;
 
-internal class BackgroundTaskQueue : IBackgroundTaskQueue
+public class BackgroundTaskQueue : IBackgroundTaskQueue
 {
     private readonly Channel<Func<CancellationToken, Task>> queue;
 

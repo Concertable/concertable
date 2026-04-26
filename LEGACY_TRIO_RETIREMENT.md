@@ -228,9 +228,15 @@ Move `IRepository<T>` to `Shared.Domain`. Skip `IBackgroundTaskQueue`/`IBackgrou
 Namespaces preserved (`Concertable.Application.Interfaces`, `Concertable.Application.DTOs`) for minimum-churn —
 matches the `IBaseRepository`/`IIdRepository`/`IGuidRepository` precedent already sitting in `Shared.Domain`.
 
-### Step 2 — Move Background
+### Step 2 — Move Background ✅
 `BackgroundTaskQueue`, `BackgroundTaskRunner`, `QueueHostedService` →
-`Shared.Infrastructure/Background/`. Register in `AddSharedInfrastructure()`.
+`Shared.Infrastructure/Background/` (public, namespace `Concertable.Shared.Infrastructure.Background`).
+Queue + Runner registered (`Singleton`) in `AddSharedInfrastructure()`. Hosted-service registration
+exposed as separate `AddQueueHostedService()` (Web hosts the drain loop; Workers does not).
+Payment's private duplicates (`Payment.Infrastructure/Background/*`) deleted; their global
+`IBackgroundTaskQueue`/`IBackgroundTaskRunner` registrations removed from
+`AddPaymentInfrastructure()`. `AddPaymentQueueHostedService` collapsed into
+`AddQueueHostedService` in Web/Program.cs.
 
 ### Step 3 — Move Email + Blob + PDF + Geocoding + Image
 Service implementations, fakes, Google API models. Bind settings (`BlobStorageSettings`, `UrlSettings`)
@@ -301,7 +307,7 @@ Once Preferences ships:
 
 ### Shared.Infrastructure extraction
 - [x] Step 1 — Interfaces to Shared.Contracts / Shared.Domain
-- [ ] Step 2 — Background
+- [x] Step 2 — Background
 - [ ] Step 3 — Email + Blob + PDF + Geocoding + Image (incl. Resources/)
 - [ ] Step 4 — Geometry + Helpers
 - [ ] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
