@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;
 
-internal class TicketRepository : GuidModuleRepository<TicketEntity, ConcertDbContext>, ITicketRepository
+internal class TicketRepository : GuidRepository<TicketEntity, ConcertDbContext>, ITicketRepository
 {
     private readonly TimeProvider timeProvider;
 

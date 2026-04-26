@@ -5,7 +5,7 @@ using Concertable.Identity.Infrastructure.Data;
 namespace Concertable.Identity.Infrastructure.Repositories;
 
 internal class ArtistManagerRepository(IdentityDbContext context)
-    : GuidModuleRepository<ArtistManagerEntity, IdentityDbContext>(context),
+    : GuidRepository<ArtistManagerEntity, IdentityDbContext>(context),
       IManagerRepository<ArtistManagerEntity>
 {
 }

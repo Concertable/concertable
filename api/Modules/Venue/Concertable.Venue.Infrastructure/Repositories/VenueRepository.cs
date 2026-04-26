@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Concertable.Venue.Infrastructure.Repositories;
 
 internal class VenueRepository(VenueDbContext context)
-    : IdModuleRepository<VenueEntity, VenueDbContext>(context), IVenueRepository
+    : Repository<VenueEntity, VenueDbContext>(context), IVenueRepository
 {
     public async Task<VenueEntity?> GetFullByIdAsync(int id) =>
         await context.Venues

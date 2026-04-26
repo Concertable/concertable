@@ -9,8 +9,10 @@ using Concertable.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
+using Concertable.Data.Infrastructure.Repositories;
 using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Services;
+using Concertable.Shared.Infrastructure.Repositories;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Identity.Contracts.Events;
 using Concertable.Shared.Infrastructure.Services.Geometry;
@@ -100,7 +102,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDapperRepository, DapperRepository>();

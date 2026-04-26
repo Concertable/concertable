@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;
 
-internal class OpportunityRepository : IdModuleRepository<OpportunityEntity, ConcertDbContext>, IOpportunityRepository
+internal class OpportunityRepository : Repository<OpportunityEntity, ConcertDbContext>, IOpportunityRepository
 {
     private readonly TimeProvider timeProvider;
 

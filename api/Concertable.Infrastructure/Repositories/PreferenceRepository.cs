@@ -1,16 +1,12 @@
 using Concertable.Application.Interfaces;
-using Concertable.Infrastructure.Data;
 using Concertable.Core.Entities;
+using Concertable.Data.Infrastructure;
+using Concertable.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Concertable.Infrastructure.Repositories;
 
-public class PreferenceRepository : Repository<PreferenceEntity>, IPreferenceRepository
+public class PreferenceRepository : Repository<PreferenceEntity, ApplicationDbContext>, IPreferenceRepository
 {
     public PreferenceRepository(ApplicationDbContext context) : base(context) { }
 

@@ -2,6 +2,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data.Seeders;
+using Concertable.Data.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<SharedDbContext>(opt =>
             opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+        services.AddScoped<IGenreRepository, GenreRepository>();
         return services;
     }
 

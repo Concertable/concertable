@@ -153,8 +153,12 @@ by `Data.Infrastructure/ModuleRepository.cs` which is generic over `DbContextBas
    `: ModuleRepository<...>` / `GuidModuleRepository<...>` / `IdModuleRepository<...>` updates
    in the same pass.
 
-`DapperRepository` and `GenreRepository` move separately to `Shared.Infrastructure/Repositories/`
-— verify their context binding (`GenreRepository` likely binds `SharedDbContext`).
+`DapperRepository` → `Shared.Infrastructure/Repositories/`. `GenreRepository` → **`Data.Infrastructure/Repositories/`**
+(deviation from doc: it binds `SharedDbContext` which lives in `Data.Infrastructure`, and `SharedDbContext`
+is `internal` — moving GenreRepository to Shared.Infrastructure would force inverting the
+Data → Shared layer relationship and re-publicising the context. DI registration moved into
+`AddSharedDbContext()` so Web no longer needs visibility into the internal type).
+`PreferenceRepository` updated to extend the new two-arg `Repository<PreferenceEntity, ApplicationDbContext>`.
 
 **Composition-host pulls:**
 | File | Destination |
@@ -336,7 +340,7 @@ Once Preferences ships:
 - [x] Step 2 — Background
 - [x] Step 3 — Email + Blob + Geocoding + Image (incl. Resources/) — PdfService deferred
 - [x] Step 4 — Geometry moved; Helpers deleted (dead code)
-- [ ] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
+- [x] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
 - [ ] Step 6 — Remaining utilities
 - [ ] Step 7 — Composition (`GlobalExceptionHandler` → Web; `DevDbInitializer` + seeding contracts → Concertable.Seeding)
 - [ ] Step 8 — Update consumers

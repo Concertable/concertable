@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;
 
-internal class ConcertBookingRepository : IdModuleRepository<ConcertBookingEntity, ConcertDbContext>, IConcertBookingRepository
+internal class ConcertBookingRepository : Repository<ConcertBookingEntity, ConcertDbContext>, IConcertBookingRepository
 {
     public ConcertBookingRepository(ConcertDbContext context) : base(context) { }
 

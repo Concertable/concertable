@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Data.Infrastructure;
 
-public abstract class ModuleRepository<TEntity, TContext>(TContext context)
+public abstract class BaseRepository<TEntity, TContext>(TContext context)
     : IBaseRepository<TEntity>
     where TEntity : class
     where TContext : DbContextBase
@@ -33,8 +33,8 @@ public abstract class ModuleRepository<TEntity, TContext>(TContext context)
     public Task SaveChangesAsync() => context.SaveChangesAsync();
 }
 
-public abstract class GuidModuleRepository<TEntity, TContext>(TContext context)
-    : ModuleRepository<TEntity, TContext>(context), IGuidRepository<TEntity>
+public abstract class GuidRepository<TEntity, TContext>(TContext context)
+    : BaseRepository<TEntity, TContext>(context), IGuidRepository<TEntity>
     where TEntity : class, IGuidEntity
     where TContext : DbContextBase
 {
@@ -45,8 +45,8 @@ public abstract class GuidModuleRepository<TEntity, TContext>(TContext context)
         context.Set<TEntity>().Any(e => e.Id == id);
 }
 
-public abstract class IdModuleRepository<TEntity, TContext>(TContext context)
-    : ModuleRepository<TEntity, TContext>(context), IIdRepository<TEntity>
+public abstract class Repository<TEntity, TContext>(TContext context)
+    : BaseRepository<TEntity, TContext>(context), IIdRepository<TEntity>
     where TEntity : class, IIdEntity
     where TContext : DbContextBase
 {
