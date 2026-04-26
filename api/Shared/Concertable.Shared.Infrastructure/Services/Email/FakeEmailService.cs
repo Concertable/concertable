@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.Infrastructure.Services.Email;
+namespace Concertable.Shared.Infrastructure.Services.Email;
 
 public class FakeEmailService : IEmailService
 {

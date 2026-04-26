@@ -2,7 +2,7 @@ using Concertable.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Reflection;
 
-namespace Concertable.Infrastructure.Services.Blob;
+namespace Concertable.Shared.Infrastructure.Services.Blob;
 
 public class FakeImageService : IImageService
 {
@@ -19,8 +19,8 @@ public class FakeImageService : IImageService
     public Task<Stream> DownloadAsync(string imageUrl)
     {
         var resourceName = imageUrl.Contains("avatar")
-            ? "Concertable.Infrastructure.Resources.avatar.png"
-            : "Concertable.Infrastructure.Resources.banner.png";
+            ? "Concertable.Shared.Infrastructure.Resources.avatar.png"
+            : "Concertable.Shared.Infrastructure.Resources.banner.png";
 
         var stream = Assembly.GetManifestResourceStream(resourceName)
             ?? Stream.Null;

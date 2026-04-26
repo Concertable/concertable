@@ -1,9 +1,9 @@
-using Concertable.Application.Interfaces.Blob;
 using Azure.Storage.Blobs;
-using Concertable.Infrastructure.Settings;
+using Concertable.Application.Interfaces.Blob;
+using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Concertable.Infrastructure.Services.Blob;
+namespace Concertable.Shared.Infrastructure.Services.Blob;
 
 public class BlobStorageService : IBlobStorageService
 {

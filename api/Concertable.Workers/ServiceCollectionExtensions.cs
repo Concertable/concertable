@@ -20,7 +20,7 @@ internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSharedInfrastructure();
+        services.AddSharedInfrastructure(configuration);
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
 

@@ -1,17 +1,10 @@
-﻿using Concertable.Application.DTOs;
+using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Shared.Exceptions;
-using Concertable.Infrastructure.ApiModels;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Shared.Infrastructure.Services.Geocoding;
 
 public class GeocodingService : IGeocodingService
 {
@@ -28,12 +21,10 @@ public class GeocodingService : IGeocodingService
     {
         var httpClient = httpClientFactory.CreateClient("Geocoding");
         var latLng = $"{latitude},{longitude}";
-        var query = $"latlng={Uri.EscapeDataString(latLng)}&key={Uri.EscapeDataString(apiKey)}"; //Adds latlong to url safely
+        var query = $"latlng={Uri.EscapeDataString(latLng)}&key={Uri.EscapeDataString(apiKey)}";
         var requestUri = new Uri(httpClient.BaseAddress!, $"json?{query}");
 
-        // Send to api
         var response = await httpClient.GetStringAsync(requestUri);
-        // Deserialize response
         var result = JsonConvert.DeserializeObject<GoogleGeocodeResponse>(response);
 
         string? county = null;

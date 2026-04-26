@@ -1,13 +1,8 @@
-﻿using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Blob;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Shared.Infrastructure.Services;
 
 public class ImageService : IImageService
 {
@@ -22,14 +17,14 @@ public class ImageService : IImageService
     {
         if (!string.IsNullOrEmpty(oldImageUrl))
         {
-            await blobStorageService.DeleteAsync(oldImageUrl); // Delete the old image
+            await blobStorageService.DeleteAsync(oldImageUrl);
         }
 
         var extension = Path.GetExtension(newFile.FileName);
         var imageName = $"{Guid.NewGuid()}{extension}";
 
         using var stream = newFile.OpenReadStream();
-        await blobStorageService.UploadAsync(stream, imageName); // Replace with new image
+        await blobStorageService.UploadAsync(stream, imageName);
 
         return imageName;
     }

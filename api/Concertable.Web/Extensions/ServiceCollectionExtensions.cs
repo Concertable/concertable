@@ -13,8 +13,6 @@ using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Identity.Contracts.Events;
-using Concertable.Infrastructure.Services.Blob;
-using Concertable.Infrastructure.Services.Email;
 using Concertable.Infrastructure.Services.Geometry;
 using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
@@ -50,14 +48,13 @@ public static class ServiceCollectionExtensions
             new MetricGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857)));
 
         services.AddDatabase(configuration);
-        services.AddExternalServices(configuration);
 
         return services;
     }
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSharedInfrastructure();
+        services.AddSharedInfrastructure(configuration);
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
         services.AddSharedDbContext(configuration);
@@ -73,36 +70,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IDbConnection>(_ =>
             new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
-
-        return services;
-    }
-
-    private static IServiceCollection AddExternalServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
-
-        var external = configuration.GetSection("ExternalServices");
-
-        if (external.GetValue<bool>("UseRealBlob"))
-            services.AddScoped<IBlobStorageService, BlobStorageService>();
-        else
-            services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
-
-        if (external.GetValue<bool>("UseRealEmail"))
-            services.AddScoped<IEmailService, EmailService>();
-        else
-            services.AddScoped<IEmailService, FakeEmailService>();
-
-        if (external.GetValue<bool>("UseRealImages"))
-            services.AddScoped<IImageService, ImageService>();
-        else
-            services.AddScoped<IImageService, FakeImageService>();
-
-        services.AddHttpClient("Geocoding", client =>
-        {
-            client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
-        });
-        services.AddScoped<IGeocodingService, GeocodingService>();
 
         return services;
     }

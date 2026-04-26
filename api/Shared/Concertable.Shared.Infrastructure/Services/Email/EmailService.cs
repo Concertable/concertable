@@ -1,12 +1,11 @@
-﻿using Concertable.Application.Interfaces;
 using Concertable.Application.DTOs;
+using Concertable.Application.Interfaces;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
-using System.Threading.Tasks;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Shared.Infrastructure.Services.Email;
 
 public class EmailService : IEmailService
 {
@@ -63,7 +62,6 @@ public class EmailService : IEmailService
         await smtp.SendAsync(email);
         await smtp.DisconnectAsync(true);
     }
-
 
     public async Task SendEmailAsync(string toEmail, string subject, string body)
     {

@@ -238,11 +238,26 @@ Payment's private duplicates (`Payment.Infrastructure/Background/*`) deleted; th
 `AddPaymentInfrastructure()`. `AddPaymentQueueHostedService` collapsed into
 `AddQueueHostedService` in Web/Program.cs.
 
-### Step 3 — Move Email + Blob + PDF + Geocoding + Image
-Service implementations, fakes, Google API models. Bind settings (`BlobStorageSettings`, `UrlSettings`)
-in `AddSharedInfrastructure()`. Fakes registered conditionally for dev/test. Move
-`Resources/avatar.png` + `banner.png` with `FakeImageService` and update the embedded resource
-path to `Concertable.Shared.Infrastructure.Resources.<file>`.
+### Step 3 — Move Email + Blob + Geocoding + Image ✅ (PdfService deferred)
+Service implementations, fakes, Google API models moved to `Shared.Infrastructure/Services/{Email,Blob,Geocoding}/`.
+`BlobStorageSettings` → `Shared.Infrastructure/Settings/`. `Resources/avatar.png` + `banner.png`
+moved to `Shared.Infrastructure/Resources/`; embedded resource path updated to
+`Concertable.Shared.Infrastructure.Resources.<file>`.
+
+`AddSharedInfrastructure()` now takes `IConfiguration` and centralises:
+- `Configure<BlobStorageSettings>` bind
+- Conditional fake/real registration for `IBlobStorageService` / `IEmailService` / `IImageService`
+  (driven by `ExternalServices:UseRealBlob` / `UseRealEmail` / `UseRealImages`)
+- `AddHttpClient("Geocoding", ...)` + `IGeocodingService` registration
+
+Web/Workers updated to pass `IConfiguration`. Web/`AddExternalServices` deleted.
+
+**`UrlSettings` bind deferred to Step 6** (UriService still in legacy until Step 6). **PdfService
+deferred** — depends on `IQrCodeService` which is bound for `Concert.Application` per the doc.
+Moving PdfService to `Shared.Infrastructure` would create a Shared→Concert direction. PdfService
+is also ticket-specific (sole method `GenerateTicketReciptAsync`) — likely belongs in
+`Concert.Infrastructure` alongside `QrCodeService`. Final home revisited under owning-module pulls
+or a "TicketReceiptService" rename pass.
 
 ### Step 4 — Move Geometry + Helpers
 `GeometryCalculator`, providers, `GeoApproximatorHelper`, `LocationHelper`.
@@ -308,7 +323,7 @@ Once Preferences ships:
 ### Shared.Infrastructure extraction
 - [x] Step 1 — Interfaces to Shared.Contracts / Shared.Domain
 - [x] Step 2 — Background
-- [ ] Step 3 — Email + Blob + PDF + Geocoding + Image (incl. Resources/)
+- [x] Step 3 — Email + Blob + Geocoding + Image (incl. Resources/) — PdfService deferred
 - [ ] Step 4 — Geometry + Helpers
 - [ ] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
 - [ ] Step 6 — Remaining utilities
