@@ -31,8 +31,7 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         Guid customerUserId,
         Guid payeeUserId,
         decimal amount,
-        int referenceId,
-        int count,
+        IDictionary<string, string>? metadata,
         string? paymentMethodId,
         CancellationToken ct = default)
     {
@@ -53,6 +52,15 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
             ?? await stripeAccountService.GetPaymentMethodAsync(stripeCustomerId)
             ?? throw new BadRequestException("No payment method provided and no saved payment method found");
 
+        var mergedMetadata = new Dictionary<string, string>
+        {
+            ["fromUserId"] = customerUserId.ToString(),
+            ["fromUserEmail"] = customer.Email ?? string.Empty,
+            ["toUserId"] = payeeUserId.ToString(),
+            ["amount"] = ((long)(amount * 100)).ToString()
+        }
+        .Merge(metadata);
+
         return await paymentService.ProcessAsync(new TransactionRequest
         {
             PaymentMethodId = resolvedPaymentMethodId,
@@ -60,15 +68,7 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
             StripeCustomerId = stripeCustomerId,
             DestinationStripeId = stripeAccountId,
             Amount = amount,
-            Metadata = new Dictionary<string, string>
-            {
-                ["fromUserId"] = customerUserId.ToString(),
-                ["fromUserEmail"] = customer.Email ?? string.Empty,
-                ["toUserId"] = payeeUserId.ToString(),
-                ["type"] = "concert",
-                ["concertId"] = referenceId.ToString(),
-                ["quantity"] = count.ToString()
-            }
+            Metadata = mergedMetadata
         });
     }
 }

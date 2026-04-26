@@ -52,7 +52,13 @@ internal class DeferredConcertService : IDeferredConcertService
         bookingConcert.AwaitPayment();
         await bookingRepository.SaveChangesAsync();
 
-        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, bookingConcert.Id, bookingConcert.PaymentMethodId);
+        var settlementMetadata = new Dictionary<string, string>
+        {
+            ["type"] = "settlement",
+            ["bookingId"] = bookingConcert.Id.ToString()
+        };
+
+        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, settlementMetadata, bookingConcert.PaymentMethodId);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
         return new DeferredFinishOutcome(payment.Value);

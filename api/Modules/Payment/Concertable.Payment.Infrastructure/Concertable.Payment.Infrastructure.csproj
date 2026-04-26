@@ -22,7 +22,6 @@
     <ProjectReference Include="..\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
     <ProjectReference Include="..\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
     <ProjectReference Include="..\..\Contract\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Concert\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
     <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />

@@ -10,13 +10,13 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]
-// Concert.Application hosts ITicketService (Concert orchestrates ticket purchase per Option B);
-// signature references Payment-internal DTOs/Responses (TicketPaymentResponse, PurchaseCompleteDto).
+// Concert.Application hosts ITicketService; signature references Payment-internal DTOs/Responses
+// (TicketPaymentResponse, PurchaseCompleteDto).
 [assembly: InternalsVisibleTo("Concertable.Concert.Application")]
 // Concert.Infrastructure uses IStripeValidator + IStripeValidationFactory in
 // OpportunityService/OpportunityApplicationService for pre-create/pre-apply Stripe eligibility checks.
+// Also uses PurchaseCompleteDto in PaymentSucceededEventHandler.
 // TEMPORARY until eligibility routes through a Payment.Contracts facade.
 [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]
-// Concert.Api hosts TicketController (Concert orchestrates ticket purchase per Option B);
-// signature returns Payment-internal TicketPaymentResponse.
+// Concert.Api hosts TicketController; signature returns Payment-internal TicketPaymentResponse.
 [assembly: InternalsVisibleTo("Concertable.Concert.Api")]

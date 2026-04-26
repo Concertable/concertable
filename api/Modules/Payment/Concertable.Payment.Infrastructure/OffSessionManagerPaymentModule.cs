@@ -31,7 +31,7 @@ internal class OffSessionManagerPaymentModule : IManagerPaymentModule
         Guid payerUserId,
         Guid payeeUserId,
         decimal amount,
-        int referenceId,
+        IDictionary<string, string>? metadata,
         string? paymentMethodId,
         CancellationToken ct = default)
     {
@@ -56,6 +56,15 @@ internal class OffSessionManagerPaymentModule : IManagerPaymentModule
         var resolvedPaymentMethodId = paymentMethodId
             ?? await stripeAccountService.GetPaymentMethodAsync(payerStripeCustomerId);
 
+        var mergedMetadata = new Dictionary<string, string>
+        {
+            ["fromUserId"] = payerUserId.ToString(),
+            ["fromUserEmail"] = payer.Email ?? string.Empty,
+            ["toUserId"] = payeeUserId.ToString(),
+            ["amount"] = ((long)(amount * 100)).ToString()
+        }
+        .Merge(metadata);
+
         return await paymentService.ProcessAsync(new TransactionRequest
         {
             PaymentMethodId = resolvedPaymentMethodId,
@@ -63,13 +72,7 @@ internal class OffSessionManagerPaymentModule : IManagerPaymentModule
             StripeCustomerId = payerStripeCustomerId,
             DestinationStripeId = payeeStripeAccountId,
             Amount = amount,
-            Metadata = new Dictionary<string, string>
-            {
-                ["fromUserId"] = payerUserId.ToString(),
-                ["toUserId"] = payeeUserId.ToString(),
-                ["type"] = "settlement",
-                ["bookingId"] = referenceId.ToString()
-            }
+            Metadata = mergedMetadata
         });
     }
 }

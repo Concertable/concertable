@@ -1,11 +1,13 @@
 using Concertable.Application.Interfaces;
 using Concertable.Identity.Contracts.Events;
 using Concertable.Payment.Contracts;
+using Concertable.Payment.Contracts.Events;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Background;
 using Concertable.Payment.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Data.Seeders;
+using Concertable.Payment.Infrastructure.Events;
 using Concertable.Payment.Infrastructure.Handlers;
 using Concertable.Payment.Infrastructure.Repositories;
 using Concertable.Payment.Infrastructure.Services;
@@ -75,11 +77,8 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IStripeValidationStrategy, StripeCustomerValidator>(ContractType.Versus);
 
         // Webhook infrastructure
-        services.AddScoped<IWebhookStrategyFactory, WebhookStrategyFactory>();
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
         services.AddScoped<IWebhookQueue, WebhookQueue>();
-        services.AddKeyedScoped<IWebhookStrategy, TicketWebhookHandler>(WebhookType.Concert);
-        services.AddKeyedScoped<IWebhookStrategy, SettlementWebhookHandler>(WebhookType.Settlement);
 
         // Background queue (Singleton; QueueHostedService registered in Web host via AddPaymentQueueHostedService)
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -90,8 +89,12 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IManagerPaymentModule, OnSessionManagerPaymentModule>(PaymentSession.OnSession);
         services.AddKeyedScoped<IManagerPaymentModule, OffSessionManagerPaymentModule>(PaymentSession.OffSession);
 
-        // Cross-module integration event handlers
+        // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
+        services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentTransactionHandler>();
+        services.AddScoped<ITransactionStrategyFactory, TransactionStrategyFactory>();
+        services.AddKeyedScoped<ITransactionStrategy, TicketTransactionService>("ticket");
+        services.AddKeyedScoped<ITransactionStrategy, SettlementTransactionService>("settlement");
 
         return services;
     }

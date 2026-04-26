@@ -8,7 +8,7 @@ public interface IManagerPaymentModule
         Guid payerUserId,
         Guid payeeUserId,
         decimal amount,
-        int referenceId,
+        IDictionary<string, string>? metadata,
         string? paymentMethodId,
         CancellationToken ct = default);
 }

@@ -19,7 +19,6 @@ global using Concertable.Application.Interfaces;
 global using Concertable.Application.Mappers;
 global using Concertable.Application.Requests;
 global using Concertable.Payment.Application.Interfaces;
-global using Concertable.Payment.Application.Interfaces.Webhook;
 global using Concertable.Payment.Application.DTOs;
 global using Concertable.Payment.Application.Requests;
 global using Concertable.Payment.Application.Responses;

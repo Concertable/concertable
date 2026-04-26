@@ -8,8 +8,7 @@ public interface ICustomerPaymentModule
         Guid customerUserId,
         Guid payeeUserId,
         decimal amount,
-        int referenceId,
-        int count,
+        IDictionary<string, string>? metadata,
         string? paymentMethodId,
         CancellationToken ct = default);
 }
