@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Infrastructure.Helpers;

@@ -13,6 +13,7 @@
     <ProjectReference Include="..\Modules\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
     <ProjectReference Include="..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
     <ProjectReference Include="..\Modules\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
+    <ProjectReference Include="..\Modules\Payment\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

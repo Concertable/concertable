@@ -3,7 +3,7 @@ using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 
 namespace Concertable.Web.IntegrationTests.Infrastructure;
 
-public class MockStripeClientFail : IStripeClient
+internal class MockStripeClientFail : IStripeClient
 {
     private readonly IMockStripePaymentClient paymentClient;
     private readonly IHttpClientFactory httpClientFactory;

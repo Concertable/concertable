@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Core.Enums;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;

@@ -1,12 +1,5 @@
-﻿using Concertable.Application.Interfaces;
-using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Concertable.Shared;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace Concertable.Infrastructure.Background;
 

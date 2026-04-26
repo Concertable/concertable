@@ -7,9 +7,6 @@ internal static class ManagerMappers
     {
         Id = manager.Id,
         Email = manager.Email,
-        Avatar = manager.Avatar,
-        StripeAccountId = manager.StripeAccountId,
-        StripeCustomerId = manager.StripeCustomerId
+        Avatar = manager.Avatar
     };
-
 }

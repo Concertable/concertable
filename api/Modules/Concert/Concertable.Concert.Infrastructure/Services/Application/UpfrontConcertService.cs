@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +10,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IConcertBookingRepository bookingRepository;
     private readonly IApplicationAcceptHandler acceptHandler;
-    private readonly IManagerPaymentService managerPaymentService;
+    private readonly IManagerPaymentModule managerPaymentModule;
     private readonly IConcertDraftService concertDraftService;
 
     public UpfrontConcertService(
@@ -18,18 +18,18 @@ internal class UpfrontConcertService : IUpfrontConcertService
         IOpportunityApplicationRepository applicationRepository,
         IConcertBookingRepository bookingRepository,
         IApplicationAcceptHandler acceptHandler,
-        [FromKeyedServices("onSession")] IManagerPaymentService managerPaymentService,
+        [FromKeyedServices(PaymentSession.OnSession)] IManagerPaymentModule managerPaymentModule,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
         this.bookingRepository = bookingRepository;
         this.acceptHandler = acceptHandler;
-        this.managerPaymentService = managerPaymentService;
+        this.managerPaymentModule = managerPaymentModule;
         this.concertDraftService = concertDraftService;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, ManagerDto payer, ManagerDto payee, decimal amount, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerUserId, Guid payeeUserId, decimal amount, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
         if (result.IsFailed)
@@ -41,8 +41,10 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         await acceptHandler.HandleAsync(applicationId, bookingConcert);
 
-        var payment = await managerPaymentService.PayAsync(payer, payee, amount, bookingConcert.Id, paymentMethodId);
-        return new ImmediateAcceptOutcome(payment);
+        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, bookingConcert.Id, paymentMethodId);
+        if (payment.IsFailed)
+            throw new BadRequestException(payment.Errors);
+        return new ImmediateAcceptOutcome(payment.Value);
     }
 
     public async Task SettleAsync(int bookingId)

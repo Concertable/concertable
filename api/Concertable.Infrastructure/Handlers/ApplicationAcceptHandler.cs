@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.Shared;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Handlers;

@@ -1,6 +1,5 @@
 using System.Net;
 using Concertable.Application.DTOs;
-using Concertable.Application.Responses;
 using Concertable.Concert.Api.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Core.Enums;

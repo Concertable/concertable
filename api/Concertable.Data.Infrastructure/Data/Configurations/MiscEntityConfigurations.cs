@@ -4,15 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Concertable.Data.Infrastructure.Data.Configurations;
 
-public class StripeEventEntityConfiguration : IEntityTypeConfiguration<StripeEventEntity>
-{
-    public void Configure(EntityTypeBuilder<StripeEventEntity> builder)
-    {
-        builder.ToTable("StripeEvents");
-        builder.HasKey(e => e.EventId);
-    }
-}
-
 public class MessageEntityConfiguration : IEntityTypeConfiguration<MessageEntity>
 {
     public void Configure(EntityTypeBuilder<MessageEntity> builder)

@@ -1,18 +1,19 @@
 using Concertable.Application.Interfaces;
 using Concertable.Core.Enums;
-using Concertable.Application.Interfaces.Payment;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
+using Concertable.Payment.Infrastructure.Extensions;
+using Concertable.Payment.Infrastructure.Services;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Infrastructure.Data;
-using Concertable.Infrastructure.Interfaces;
-using Concertable.Application.Interfaces.Payment;
-using Concertable.Infrastructure.Services.Payment;
+using Concertable.Payment.Application.Interfaces.Webhook;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
 using Microsoft.AspNetCore.Authentication;
@@ -33,7 +34,7 @@ public class ApiFixture : IAsyncLifetime
     private IServiceScope? scope;
 
     internal IMockNotificationService NotificationService { get; } = new MockNotificationService();
-    public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
+    internal IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
@@ -69,8 +70,8 @@ public async Task InitializeAsync()
                 services.AddSingleton<ITicketNotificationService>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
-                services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>("onSession");
-                services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>("offSession");
+                services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>(PaymentSession.OnSession);
+                services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>(PaymentSession.OffSession);
                 services.AddResettables(NotificationService, StripePaymentClient, EmailService);
                 services.AddSingleton<IEmailService>(EmailService);
 
@@ -87,6 +88,7 @@ public async Task InitializeAsync()
                 services.AddVenueTestSeeder();
                 services.AddContractTestSeeder();
                 services.AddConcertTestSeeder();
+                services.AddPaymentTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {

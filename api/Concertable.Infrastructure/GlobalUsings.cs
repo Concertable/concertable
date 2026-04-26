@@ -1,5 +1,6 @@
 global using Concertable.Shared;
 global using Concertable.Payment.Contracts;
+global using Concertable.Payment.Domain;
 global using Concertable.Search.Contracts;
 global using Concertable.Identity.Contracts;
 global using Concertable.Identity.Domain;
@@ -16,3 +17,9 @@ global using Concertable.Concert.Application.Requests;
 global using Concertable.Concert.Application.Responses;
 global using Concertable.Concert.Application.Validators;
 global using Concertable.Concert.Application.Mappers;
+global using Concertable.Payment.Application.Interfaces;
+global using Concertable.Payment.Application.Interfaces.Webhook;
+global using Concertable.Payment.Application.DTOs;
+global using Concertable.Payment.Application.Requests;
+global using Concertable.Payment.Application.Responses;
+global using Concertable.Payment.Application.Mappers;

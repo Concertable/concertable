@@ -35,6 +35,7 @@ public interface IReadDbContext
     IQueryable<PreferenceEntity> Preferences { get; }
     IQueryable<GenrePreferenceEntity> GenrePreferences { get; }
     IQueryable<StripeEventEntity> StripeEvents { get; }
+    IQueryable<PayoutAccountEntity> PayoutAccounts { get; }
     IQueryable<ContractEntity> Contracts { get; }
     IQueryable<FlatFeeContractEntity> FlatFeeContracts { get; }
     IQueryable<DoorSplitContractEntity> DoorSplitContracts { get; }

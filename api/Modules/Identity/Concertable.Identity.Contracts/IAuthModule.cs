@@ -11,8 +11,4 @@ public interface IAuthModule
     Task ForgotPasswordAsync(string email);
     Task ResetPasswordAsync(ResetPasswordRequest request);
     Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
-    Task<IUser?> GetCurrentUserAsync(Guid userId);
-    Task<CustomerDto?> GetCustomerAsync(Guid userId);
-    Task<IUser> SaveLocationAsync(Guid userId, double latitude, double longitude);
-    Task SetStripeCustomerIdAsync(Guid userId, string stripeCustomerId);
 }

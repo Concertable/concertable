@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.Shared;
 
 namespace Concertable.Concert.Api.Handlers;
 

@@ -5,3 +5,4 @@ global using Concertable.Artist.Domain;
 global using Concertable.Venue.Domain;
 global using Concertable.Concert.Domain;
 global using Concertable.Contract.Domain;
+global using Concertable.Payment.Domain;

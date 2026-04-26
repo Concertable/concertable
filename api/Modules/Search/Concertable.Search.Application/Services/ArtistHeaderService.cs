@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Responses;
 using Concertable.Core.Parameters;
 using Concertable.Search.Contracts;
 

@@ -1,7 +1,0 @@
-namespace Concertable.Core.Enums;
-
-public enum TransactionStatus
-{
-    Pending,
-    Complete
-}

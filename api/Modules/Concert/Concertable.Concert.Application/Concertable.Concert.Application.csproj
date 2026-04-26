@@ -17,6 +17,11 @@
     <ProjectReference Include="..\..\Artist\Concertable.Artist.Contracts\Concertable.Artist.Contracts.csproj" />
     <ProjectReference Include="..\..\Venue\Concertable.Venue.Contracts\Concertable.Venue.Contracts.csproj" />
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
+    <ProjectReference Include="..\..\Payment\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
+    <ProjectReference Include="..\..\Payment\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
+    <!-- TEMPORARY: TicketDto + TicketConcertDto still in Concertable.Application.DTOs/SharedDtos.cs;
+         relocate to Concert.Application during a future cleanup pass and drop this ref. -->
+    <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
   </ItemGroup>

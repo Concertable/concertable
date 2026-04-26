@@ -49,7 +49,6 @@ internal class IdentityDevSeeder : IDevSeeder
 
             var customerLoc = locationFaker.Next();
             seedData.Customer = UserFactory.Customer("customer1@test.com", hash);
-            seedData.Customer.StripeCustomerId = "cus_UIIy9Gbwfr3uAP";
             seedData.Customer.UpdateLocation(geometryProvider.CreatePoint(customerLoc.Latitude, customerLoc.Longitude), new Address(customerLoc.County, customerLoc.Town));
             seedData.Customer.Avatar = "avatar.jpg";
             context.Users.Add(seedData.Customer);
@@ -65,16 +64,12 @@ internal class IdentityDevSeeder : IDevSeeder
 
             var am1Loc = locationFaker.Next();
             seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
-            seedData.ArtistManager.StripeAccountId = "acct_1TJiMePysoXmht10";
-            seedData.ArtistManager.StripeCustomerId = "cus_UIIy5mCilBtJbR";
             seedData.ArtistManager.UpdateLocation(geometryProvider.CreatePoint(am1Loc.Latitude, am1Loc.Longitude), new Address(am1Loc.County, am1Loc.Town));
             seedData.ArtistManager.Avatar = "avatar.jpg";
             context.Users.Add(seedData.ArtistManager);
 
             var am2Loc = locationFaker.Next();
             var artistManager2 = UserFactory.ArtistManager("artistmanager2@test.com", hash);
-            artistManager2.StripeAccountId = "acct_1TJiMoPupFslP2qz";
-            artistManager2.StripeCustomerId = "cus_UIIy5415r69RmJ";
             artistManager2.UpdateLocation(geometryProvider.CreatePoint(am2Loc.Latitude, am2Loc.Longitude), new Address(am2Loc.County, am2Loc.Town));
             artistManager2.Avatar = "avatar.jpg";
             context.Users.Add(artistManager2);
@@ -90,16 +85,12 @@ internal class IdentityDevSeeder : IDevSeeder
 
             var vm1Loc = locationFaker.Next();
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
-            seedData.VenueManager1.StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
-            seedData.VenueManager1.StripeCustomerId = "cus_UIIymKfHijbNVO";
             seedData.VenueManager1.UpdateLocation(geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude), new Address(vm1Loc.County, vm1Loc.Town));
             seedData.VenueManager1.Avatar = "avatar.jpg";
             context.Users.Add(seedData.VenueManager1);
 
             var vm2Loc = locationFaker.Next();
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
-            seedData.VenueManager2.StripeAccountId = "acct_1TJiPJLLwGSDilbV";
-            seedData.VenueManager2.StripeCustomerId = "cus_UIJ1qfgxYu624Q";
             seedData.VenueManager2.UpdateLocation(geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude), new Address(vm2Loc.County, vm2Loc.Town));
             seedData.VenueManager2.Avatar = "avatar.jpg";
             context.Users.Add(seedData.VenueManager2);

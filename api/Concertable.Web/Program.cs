@@ -9,6 +9,8 @@ using Concertable.Concert.Api.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Api.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
+using Concertable.Payment.Api.Extensions;
+using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Extensions;
@@ -87,6 +89,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddVenueDevSeeder();
     services.AddContractDevSeeder();
     services.AddConcertDevSeeder();
+    services.AddPaymentDevSeeder();
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();
@@ -95,6 +98,8 @@ services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
 services.AddConcertApi(builder.Configuration);
 services.AddContractApi(builder.Configuration);
+services.AddPaymentApi(builder.Configuration);
+services.AddPaymentQueueHostedService();
 services.AddIdentityApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();

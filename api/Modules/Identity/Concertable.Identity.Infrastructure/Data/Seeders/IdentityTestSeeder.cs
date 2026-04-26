@@ -44,24 +44,16 @@ internal class IdentityTestSeeder : ITestSeeder
 
             var vm1Loc = locationFaker.Next();
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
-            seedData.VenueManager1.StripeAccountId = "acct_test_venuemanager";
-            seedData.VenueManager1.StripeCustomerId = "cus_test_venuemanager";
             seedData.VenueManager1.UpdateLocation(geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude), new Address(vm1Loc.County, vm1Loc.Town));
 
             var vm2Loc = locationFaker.Next();
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
-            seedData.VenueManager2.StripeAccountId = "acct_test_venuemanager2";
-            seedData.VenueManager2.StripeCustomerId = "cus_test_venuemanager2";
             seedData.VenueManager2.UpdateLocation(geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude), new Address(vm2Loc.County, vm2Loc.Town));
 
             seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
-            seedData.ArtistManager.StripeAccountId = "acct_test_artistmanager";
-            seedData.ArtistManager.StripeCustomerId = "cus_test_artistmanager";
             seedData.ArtistManager.UpdateLocation(geometryProvider.CreatePoint(51, 0), new Address("Test County", "Test Town"));
 
             seedData.ArtistManagerNoArtist = UserFactory.ArtistManager("artistmanager2@test.com", hash);
-            seedData.ArtistManagerNoArtist.StripeAccountId = "acct_test_artistmanager2";
-            seedData.ArtistManagerNoArtist.StripeCustomerId = "cus_test_artistmanager2";
             seedData.ArtistManagerNoArtist.UpdateLocation(geometryProvider.CreatePoint(51, 0), new Address("Test County", "Test Town"));
 
             seedData.Customer = UserFactory.Customer("customer@test.com", hash);

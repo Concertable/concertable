@@ -1,5 +1,4 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Responses;
 using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
 

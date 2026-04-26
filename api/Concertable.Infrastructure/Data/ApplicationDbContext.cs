@@ -1,6 +1,7 @@
 using Concertable.Core.Entities;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Payment.Domain;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 using SharedSchema = Concertable.Data.Infrastructure.Schema;
@@ -26,12 +27,8 @@ public class ApplicationDbContext : DbContextBase
     }
 
     public DbSet<MessageEntity> Messages { get; set; }
-    public DbSet<TransactionEntity> Transactions { get; set; }
-    public DbSet<TicketTransactionEntity> TicketTransactions { get; set; }
-    public DbSet<SettlementTransactionEntity> SettlementTransactions { get; set; }
     public DbSet<PreferenceEntity> Preferences { get; set; }
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
-    public DbSet<StripeEventEntity> StripeEvents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,5 +75,12 @@ public class ApplicationDbContext : DbContextBase
         modelBuilder.Entity<ArtistReadModel>().ToTable(t => t.ExcludeFromMigrations());
         modelBuilder.Entity<ArtistReadModelGenre>().ToTable(t => t.ExcludeFromMigrations());
         modelBuilder.Entity<VenueReadModel>().ToTable(t => t.ExcludeFromMigrations());
+
+        // Payment-owned tables — schema managed by PaymentDbContext migrations
+        modelBuilder.Entity<TransactionEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<TicketTransactionEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<SettlementTransactionEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<StripeEventEntity>().ToTable(t => t.ExcludeFromMigrations());
+        modelBuilder.Entity<PayoutAccountEntity>().ToTable(t => t.ExcludeFromMigrations());
     }
 }
