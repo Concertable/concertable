@@ -1,5 +1,4 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
+using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Payment.Application.Responses;
 using Concertable.Payment.Domain;

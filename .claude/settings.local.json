@@ -8,7 +8,10 @@
       "Bash(grep -v \"\\\\\\\\bbin\\\\\\\\b\")",
       "Bash(xargs grep *)",
       "Bash(dotnet sln *)",
-      "Bash(grep -n \"GlobalSection\\(NestedProjects\\)\\\\|EndGlobalSection\\\\|^Global$\" Concertable.sln)"
+      "Bash(grep -n \"GlobalSection\\(NestedProjects\\)\\\\|EndGlobalSection\\\\|^Global$\" Concertable.sln)",
+      "Bash(dotnet ef *)",
+      "PowerShell(tail *)",
+      "PowerShell(.\\\\migrations.ps1 2>&1 | Select-Object -Last 60)"
     ]
   }
 }

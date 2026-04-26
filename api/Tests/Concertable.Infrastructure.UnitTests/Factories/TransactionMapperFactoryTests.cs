@@ -1,5 +1,3 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Mappers;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Factories;

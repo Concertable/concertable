@@ -29,7 +29,6 @@
     <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <!-- TEMPORARY: legacy entity/enum types until Step 2 of Payment refactor. -->
-    <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
   </ItemGroup>
 
 </Project>

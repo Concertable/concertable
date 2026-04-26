@@ -9,7 +9,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Search.Domain\Concertable.Search.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
+    <ProjectReference Include="..\..\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
+    <ProjectReference Include="..\..\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
+    <ProjectReference Include="..\..\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
   </ItemGroup>
 

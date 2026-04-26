@@ -1,13 +1,44 @@
 # Legacy Trio Retirement — Vision and Cleanup Plan
 
-`Concertable.Core`, `Concertable.Application`, and `Concertable.Infrastructure` are the legacy
-monolith layer. Each module extraction pulls files out; when the last domain-specific file
-leaves a project, the project is deleted. This document tracks what remains after each planned
-extraction and where it goes.
+`Concertable.Core`, `Concertable.Application`, and `Concertable.Infrastructure` were the legacy
+monolith layer. They have been **deleted** (2026-04-26). Each module extraction pulled files out;
+the last extraction (Customer) closed the loop.
 
-**Last refreshed: 2026-04-26** — corrected against current ground truth after Messaging shipped.
-Module status: Search ✅, Identity ✅, Artist ✅, Venue ✅, Concert ✅, Contract ✅, Payment ✅,
-Notification ✅, Messaging ✅. Remaining: Shared.Infrastructure cleanup + Preferences extraction.
+**Status: ✅ COMPLETE (2026-04-26).** All 9 modules shipped (Search, Identity, Artist, Venue,
+Concert, Contract, Payment, Notification, Messaging, Customer). `ApplicationDbContext` deleted.
+All 3 legacy trio `.csproj` files deleted. Migrations re-scaffolded cleanly per-module:
+Shared → Identity → Artist → Venue → Concert → Contract → Payment → Customer → Messaging
+(no AppDb migration — context no longer exists). Build green across Web, Workers, IntegrationTests,
+E2ETests, Infrastructure.UnitTests, Core.UnitTests.
+
+**Final per-module pulls in this pass** (deferred from earlier extractions):
+- Concert: `IQrCodeService`/`ITicketRepository`/`ITicketValidator`/`TicketMappers`/
+  `TicketPurchaseParamsValidator`/`OpportunityApplicationWithStatus` → `Concert.Application` (internal);
+  `ConcertValidator`/`OpportunityApplicationValidator`/`TicketValidator`/`PdfService`/`QrCodeService`/
+  `ApplicationAcceptHandler`/`QueryableConcertMappers` → `Concert.Infrastructure` (internal);
+  `TicketDto`/`TicketConcertDto`/`UserDto` → `Concert.Application/DTOs/TicketDtos.cs` (internal record).
+  Concert.Infrastructure gained QRCoder + QuestPDF package refs and Artist.Domain + Venue.Domain
+  project refs (for rating-projection types in QueryableConcertMappers).
+- Identity: `UserMappers` deleted as dead code (no consumers).
+- `IUnitOfWork`/`UnitOfWork` deleted (per `project_generic_uow`); `OpportunityApplicationService`
+  now calls `applicationRepository.SaveChangesAsync()` directly with a `DbUpdateException` catch
+  (per `feedback_module_service_saves_own_context`).
+- `Concertable.Web/Extensions/ServiceCollectionExtensions.cs`: dropped
+  `AddDbContext<ApplicationDbContext>`, `AddServiceValidators`, `AddScoped<IPdfService>`,
+  `AddScoped<IQrCodeService>`, `AddSingleton<QRCodeGenerator>`, `IUnitOfWork` registration.
+  Concert validators + QR/PDF + QRCodeGenerator now live inside `AddConcertModule`.
+- `Concertable.Web/DevDbInitializer` + `Tests/.../TestDbInitializer`: shed `ApplicationDbContext`
+  injection and `context.Database.MigrateAsync()` (each module seeder calls its own MigrateAsync).
+- `Tests/.../ApiFixture`: dropped `public ApplicationDbContext DbContext` (was unused; tests use
+  `fixture.ReadDbContext`).
+- Project ref fan-out: Concertable.Seeding (gained Shared/Identity/Artist/Venue/Concert/Contract/
+  Payment Domain refs + Microsoft.EntityFrameworkCore package ref); Concertable.Data.Application
+  (gained Shared/Identity/Artist/Venue/Concert/Payment Domain refs); Identity/Artist/Venue
+  Infrastructure (gained Concertable.Shared.Infrastructure ref for Geometry types); Identity.Infrastructure
+  (gained BCrypt.Net-Next package ref); Search.Application (gained Identity.Contracts +
+  Artist/Venue/Concert.Domain refs); Search.Infrastructure (gained LinqKit.Microsoft.EntityFrameworkCore
+  package ref); Tests/Concertable.Core.UnitTests (gained Shared.Domain + Identity Contracts/Domain +
+  Concert.Domain + Payment.Domain refs).
 
 ---
 
@@ -310,21 +341,54 @@ Move `HeaderType` → `Search.Contracts`. Move `PageParams` → `Shared.Contract
 
 ---
 
-## Preferences module extraction — collapses the trio
+## Customer module extraction — collapses the trio
 
-After Shared.Infrastructure is done, Preferences is the last extraction. It pulls:
-- `PreferenceEntity` + `GenrePreferenceEntity` (Concertable.Core) → `Preferences.Domain`
-- `PreferenceDtos`/`PreferenceRequests`/`PreferenceMappers`/`PreferenceValidators` (Concertable.Application) → `Preferences.Application`
-- `IPreferenceRepository`/`IPreferenceService` (Concertable.Application) → `Preferences.Application`
-- `PreferenceService` + `PreferenceRepository` (Concertable.Infrastructure) → `Preferences.Infrastructure`
-- `PreferenceEntityConfiguration` (Data.Infrastructure) → `Preferences.Infrastructure/Data/Configurations/`
-- Inline Preferences seeding (DevDbInitializer 50-71) → `PreferenceDevSeeder`
+After Shared.Infrastructure is done, the Customer module is the last extraction (decided 2026-04-26: not "Preferences" — Customer is the destination for any future customer-aggregate state too).
 
-Once Preferences ships:
-- `ApplicationDbContext` deletes (no entities left to own).
-- `AppDbConfigurationProvider` deletes (only `PreferenceEntityConfiguration` consumer).
-- `DevDbInitializer` (in `Concertable.Web`) **stays** — still orchestrates per-module `IDevSeeder` Migrate+Seed. It just sheds the AppDbContext migrate call, the inline Preferences seeding block (L50–71 → moves to `CustomerDevSeeder`), and the `Concertable.Core.Entities` import.
-- `Concertable.Core`, `Concertable.Application`, `Concertable.Infrastructure` `.csproj` files removed; references stripped.
+**Module layout shipped:** 5 projects under `api/Modules/Customer/`:
+- `Concertable.Customer.Contracts/` — `ICustomerModule` facade (consolidates `GetCustomerAsync` + `GetUserIdsByLocationAndGenresAsync`)
+- `Concertable.Customer.Domain/` — `PreferenceEntity` + `GenrePreferenceEntity` (User nav dropped — UserId only since Identity is cross-module)
+- `Concertable.Customer.Application/` — internal: DTOs, Requests, Mappers, Validators, IPreferenceRepository, IPreferenceService. `AssemblyInfo.cs` exposes IVT to Customer.Infrastructure / Customer.Api / Web.IntegrationTests / DynamicProxyGenAssembly2
+- `Concertable.Customer.Infrastructure/` — `CustomerDbContext` (schema `customer`) + `CustomerConfigurationProvider` + EF configs (Preference + GenrePreference) + `PreferenceRepository : Repository<PreferenceEntity, CustomerDbContext>` + `PreferenceService` + `CustomerModule` facade impl + `CustomerDevSeeder`/`CustomerTestSeeder` (Order=7) + `AddCustomerModule()` DI extension
+- `Concertable.Customer.Api/` — `PreferenceController` (`internal` + `InternalControllerFeatureProvider` to match Messaging precedent) + `AddCustomerApi()`
+
+**Cross-module facade consolidation (2026-04-26):** Identity's old `ICustomerModule` (a user-subtype lookup, not a real facade) deleted. Both methods now live on `Concertable.Customer.Contracts.ICustomerModule`:
+- `GetCustomerAsync(Guid userId)` — implementation calls `IIdentityModule.GetUserByIdAsync` then pattern-matches `as CustomerDto`. Was a misnamed Identity concern; Customer module is the real owner.
+- `GetUserIdsByLocationAndGenresAsync(double lat, double lng, IEnumerable<int> genreIds)` — implementation calls `PreferenceService.GetByMatchingGenresAsync` then `IIdentityModule.GetUsersByIdsAsync` (new — batched user lookup added to IIdentityModule for this purpose) then in-memory radius filter via `IGeometryCalculator`. **No `IReadDbContext` use** (user vetoed — IReadDbContext is hacky workaround that will be removed).
+
+The earlier rename of Identity's interface to `ICustomerLookup` was reverted: "Lookup" in this codebase means a request-scoped memoizing cache (cf. `IContractLookup` per `feedback_request_scoped_lookup`), not a generic user lookup. Wrong suffix → consolidate onto Customer.Contracts.ICustomerModule instead.
+
+**Concert/Payment consumer rewrites:**
+- `Concert.Infrastructure/Services/ConcertService.PostAsync` — was `await preferenceService.GetAsync()` then in-memory iteration with `IGeometryCalculator`. Now one call: `await customerModule.GetUserIdsByLocationAndGenresAsync(...)`. `IPreferenceService` + `IGeometryCalculator` deps removed from ConcertService.
+- `Payment.Api/Controllers/StripeAccountController` + `Payment.Infrastructure/CustomerPaymentModule` — switched from `Identity.Contracts.ICustomerModule` to `Customer.Contracts.ICustomerModule`. Payment.Api + Payment.Infrastructure csprojs gained `Customer.Contracts` ProjectReference.
+- Concert.Infrastructure csproj gained `Customer.Contracts` ProjectReference.
+
+**Legacy file deletions (consequences of Customer extraction):**
+- `Concertable.Core/Entities/PreferenceEntity.cs` + `GenrePreferenceEntity.cs`
+- `Concertable.Application/Interfaces/{IPreferenceRepository,IPreferenceService}.cs`
+- `Concertable.Application/DTOs/PreferenceDtos.cs` / `Mappers/PreferenceMappers.cs` / `Requests/PreferenceRequests.cs` / `Validators/PreferenceValidators.cs`
+- `Concertable.Infrastructure/Repositories/PreferenceRepository.cs` / `Services/PreferenceService.cs` / `Data/AppDbConfigurationProvider.cs`
+- `Concertable.Web/Controllers/PreferenceController.cs`
+- `Data/Concertable.Data.Infrastructure/Data/Configurations/MiscEntityConfigurations.cs` (only held `PreferenceEntityConfiguration`)
+- `Identity.Contracts/ICustomerModule.cs` + `Identity.Infrastructure/CustomerModule.cs` (consolidated onto Customer)
+- `Seeding/Concertable.Seeding/Factories/PreferenceFactory.cs` (use `PreferenceEntity.Create(...)` directly)
+
+**Other surfaces touched:**
+- `ApplicationDbContext` — Preferences/GenrePreferences DbSets dropped; `AppDbConfigurationProvider().Configure(...)` line dropped; now only ExcludeFromMigrations carryover (deletes in next stage).
+- `IReadDbContext` — `Preferences`/`GenrePreferences` IQueryables removed (no consumers — Concert was the only one and it no longer needs them).
+- `DevDbInitializer` (Web) — `AppDbContext.Migrate()` call dropped; inline Preferences seeding (L50–71) gone (moved to `CustomerDevSeeder`); `Concertable.Core.Entities` import removed. Stays as the per-module `IDevSeeder` orchestrator.
+- `Concertable.Web/Extensions/ServiceCollectionExtensions.cs` — `IPreferenceService`/`IPreferenceRepository` registrations dropped from `AddServices`/`AddRepositories`.
+- `Concertable.Seeding.csproj` — `Concertable.Core` ProjectReference removed (no consumers after PreferenceFactory deletion).
+- `Web/Program.cs` — `services.AddCustomerApi(builder.Configuration)` + `services.AddCustomerDevSeeder()`.
+- `Concertable.Web.csproj` — added Customer.Api + Customer.Infrastructure ProjectReferences.
+- `ApiFixture` (IntegrationTests) — `services.AddCustomerTestSeeder()`.
+- `IIdentityModule` gained `GetUsersByIdsAsync(IEnumerable<Guid>)` — batched lookup. `IUserRepository` + `UserRepository` gained `GetByIdsAsync(IEnumerable<Guid>)`.
+- Test files updated: `AuthApiTests` (`Concertable.Application.Requests` → `Concertable.Identity.Contracts`), `ConcertRequestBuilders` (→ `Concertable.Concert.Application.Requests`), `OpportunityRequestBuilders` (→ same).
+
+**Once final stage ships:**
+- `ApplicationDbContext.cs` deletes (no entities left to own).
+- `Concertable.Core`, `Concertable.Application`, `Concertable.Infrastructure` `.csproj` files removed; references stripped from all consumers.
+- `DevDbInitializer` (in `Concertable.Web`) **stays** — still the per-module `IDevSeeder` orchestrator; just no longer touches AppDbContext.
 
 ---
 
@@ -349,9 +413,26 @@ Once Preferences ships:
 - [x] Step 10 — Implement + wire `SearchParamsValidator`
 - [x] Step 11 — Core cleanup (HeaderType / PageParams / RatingAggregate moves; enum deletions)
 
-### Preferences extraction
-- [ ] Domain + Application + Infrastructure scaffolded
-- [ ] DbContext + InitialCreate migration
-- [ ] DevSeeder + TestSeeder
-- [ ] AppDbContext / AppDbConfigurationProvider / DevDbInitializer deleted
-- [ ] Legacy trio `.csproj` files removed
+### Customer module extraction
+- [x] 5 projects scaffolded under `api/Modules/Customer/` + added to .sln (auto-nested under Modules folder)
+- [x] PreferenceEntity + GenrePreferenceEntity → Customer.Domain (User nav dropped)
+- [x] Application layer moved as `internal` + `AssemblyInfo` IVT
+- [x] CustomerDbContext + CustomerConfigurationProvider + EF configs + PreferenceRepository + PreferenceService
+- [x] PreferencesController moved to Customer.Api (`internal` + InternalControllerFeatureProvider)
+- [x] CustomerDevSeeder + CustomerTestSeeder (Order=7) — inline Preferences seeding from DevDbInitializer extracted
+- [x] `ICustomerModule` facade in Customer.Contracts (consolidates `GetCustomerAsync` + `GetUserIdsByLocationAndGenresAsync`)
+- [x] Identity's old `ICustomerModule` deleted; `IIdentityModule.GetUsersByIdsAsync` added for batched user lookup
+- [x] Concert + Payment cross-module references rewired through Customer.Contracts
+- [x] AppDbConfigurationProvider deleted, ApplicationDbContext.Preferences/GenrePreferences DbSets dropped, IReadDbContext.Preferences/GenrePreferences dropped
+- [x] DevDbInitializer (Web) shed AppDb migrate + inline Preferences seeding (stays as orchestrator)
+- [x] Build green
+
+### Final trio retirement (2026-04-26)
+- [x] Per-module pulls completed: Concert validators/services/mappers/handler/QrCode/Pdf/Tickets+UserDto,
+      Identity UserMappers (dead code), IUnitOfWork retired
+- [x] OpportunityApplicationService switched off IUnitOfWork → repo.SaveChangesAsync + DbUpdateException catch
+- [x] ApplicationDbContext deleted (all entities now ExcludeFromMigrations and module-owned)
+- [x] Legacy 3 `.csproj` files deleted (`Concertable.Core`, `Concertable.Application`, `Concertable.Infrastructure`)
+- [x] All consumer ProjectReferences stripped + downstream package + project refs added
+- [x] Migrations re-scaffolded: 9 module InitialCreate migrations, no AppDb migration
+- [x] Build green: Web, Workers, IntegrationTests, E2ETests, Infrastructure.UnitTests, Core.UnitTests

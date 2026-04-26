@@ -1,17 +1,12 @@
 using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Serializers;
 using Concertable.Identity.Contracts;
-using Concertable.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
-using Concertable.Infrastructure.Repositories;
-using Concertable.Infrastructure.Services;
 using Concertable.Shared.Infrastructure.Repositories;
 using Concertable.Identity.Infrastructure.Settings;
-using Concertable.Infrastructure.Validators;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Web.Authorization;
 using FluentValidation;
@@ -23,7 +18,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using QRCoder;
 using QuestPDF.Infrastructure;
 using System.Data;
 
@@ -53,13 +47,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
         services.AddSharedDbContext(configuration);
-        services.AddDbContext<ApplicationDbContext>((sp, opt) =>
-            opt.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    sqlOpt => sqlOpt.UseNetTopologySuite())
-                .AddInterceptors(
-                    sp.GetRequiredService<AuditInterceptor>(),
-                    sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.AddReadDbContext(configuration);
 
@@ -72,26 +59,12 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
-        services.AddScoped<IPdfService, PdfService>();
-        services.AddSingleton<QRCodeGenerator>();
-        services.AddScoped<IQrCodeService, QrCodeService>();
-        services.AddServiceValidators();
-
-        return services;
-    }
-
-    public static IServiceCollection AddServiceValidators(this IServiceCollection services)
-    {
-        services.AddSingleton<IConcertValidator, ConcertValidator>();
-        services.AddScoped<ITicketValidator, TicketValidator>();
-        services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
 
         return services;
     }
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDapperRepository, DapperRepository>();
 
         return services;

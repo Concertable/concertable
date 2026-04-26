@@ -7,8 +7,6 @@ using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Notification.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
-using Concertable.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Concertable.Data.Infrastructure;
@@ -24,11 +22,6 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<DomainEventDispatchInterceptor>();
 
         services.AddSharedDbContext(configuration);
-        services.AddDbContext<ApplicationDbContext>(opt =>
-            opt.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                sqlOpt => sqlOpt.UseNetTopologySuite()));
-
         services.AddReadDbContext(configuration);
 
         services.AddIdentityModule(configuration);

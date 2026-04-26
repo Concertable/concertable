@@ -13,7 +13,6 @@ using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Services;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Extensions;
-using Concertable.Infrastructure.Data;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Seeding;
@@ -40,7 +39,6 @@ public class ApiFixture : IAsyncLifetime
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
-    public ApplicationDbContext DbContext { get; private set; } = null!;
     public IReadDbContext ReadDbContext { get; private set; } = null!;
 
 public async Task InitializeAsync()
@@ -128,7 +126,6 @@ public async Task InitializeAsync()
         var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
         await initializer.InitializeAsync();
         SeedData = scope.ServiceProvider.GetRequiredService<SeedData>();
-        DbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         ReadDbContext = scope.ServiceProvider.GetRequiredService<IReadDbContext>();
     }
 

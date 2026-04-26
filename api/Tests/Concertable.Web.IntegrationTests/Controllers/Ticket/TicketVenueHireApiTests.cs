@@ -1,5 +1,5 @@
 using System.Net;
-using Concertable.Application.DTOs;
+using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Api.Responses;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure;

@@ -18,7 +18,6 @@ using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
-using Concertable.Infrastructure.Data;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Api.Extensions;
 using Concertable.Web.Extensions;

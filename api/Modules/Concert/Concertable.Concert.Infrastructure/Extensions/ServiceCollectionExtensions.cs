@@ -21,7 +21,6 @@ using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Infrastructure.Handlers;
 using Concertable.Payment.Contracts.Events;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
@@ -59,6 +58,16 @@ public static class ServiceCollectionExtensions
         // Review service + validator (Concert owns reviews; Artist/Venue lists/can-review go through IConcertModule facade)
         services.AddScoped<IConcertReviewService, ConcertReviewService>();
         services.AddScoped<IReviewValidator, ReviewValidator>();
+
+        // Business-rule validators (interfaces in Concert.Application, impls in Concert.Infrastructure.Validators)
+        services.AddSingleton<IConcertValidator, ConcertValidator>();
+        services.AddScoped<ITicketValidator, TicketValidator>();
+        services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
+
+        // Ticket QR + PDF (Concert-owned, were in legacy Concertable.Infrastructure)
+        services.AddSingleton<QRCoder.QRCodeGenerator>();
+        services.AddScoped<IQrCodeService, QrCodeService>();
+        services.AddScoped<IPdfService, PdfService>();
 
         // Dispatchers
         services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
