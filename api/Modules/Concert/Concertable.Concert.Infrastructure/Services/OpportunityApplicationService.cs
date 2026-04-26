@@ -1,5 +1,5 @@
 using Concertable.Payment.Application.Interfaces;
-using Concertable.Core.Enums;
+using Concertable.Messaging.Contracts;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
 
@@ -12,7 +12,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
     private readonly ICurrentUser currentUser;
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IStripeValidator stripeValidator;
-    private readonly IMessageService messageService;
+    private readonly IMessagingModule messagingModule;
     private readonly IEmailService emailService;
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
@@ -26,7 +26,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         ICurrentUser currentUser,
         IOpportunityApplicationValidator applicationValidator,
         IStripeValidator stripeValidator,
-        IMessageService messageService,
+        IMessagingModule messagingModule,
         IEmailService emailService,
         IOpportunityService opportunityService,
         IArtistModule artistModule,
@@ -39,7 +39,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
         this.stripeValidator = stripeValidator;
-        this.messageService = messageService;
+        this.messagingModule = messagingModule;
         this.emailService = emailService;
         this.opportunityService = opportunityService;
         this.artistModule = artistModule;
@@ -105,7 +105,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
 
         await applicationRepository.AddAsync(application);
 
-        await messageService.SendAsync(
+        await messagingModule.SendAsync(
             fromUserId: currentUser.GetId(),
             toUserId: opportunityOwner.Id,
             content: $"{currentUser.Email} has applied to your concert opportunity",
@@ -132,7 +132,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");
 
-        await messageService.SendAndSaveAsync(
+        await messagingModule.SendAndNotifyAsync(
             fromUserId: venue.UserId,
             toUserId: artist.UserId,
             content: "Your application has been accepted!",

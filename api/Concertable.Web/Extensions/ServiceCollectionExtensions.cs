@@ -109,8 +109,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IMessageNotifier, MessageNotifier>();
-        services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IPdfService, PdfService>();
@@ -135,7 +133,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();

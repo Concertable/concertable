@@ -12,7 +12,6 @@ internal class ConcertService : IConcertService
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IOpportunityApplicationValidator applicationValidator;
-    private readonly IMessageService messageService;
     private readonly IEmailService emailService;
     private readonly IConcertReviewRepository concertReviewRepository;
     private readonly IPreferenceService preferenceService;
@@ -26,7 +25,6 @@ internal class ConcertService : IConcertService
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IOpportunityApplicationValidator applicationValidator,
-        IMessageService messageService,
         IEmailService emailService,
         IConcertReviewRepository concertReviewRepository,
         IPreferenceService preferenceService,
@@ -39,7 +37,6 @@ internal class ConcertService : IConcertService
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
-        this.messageService = messageService;
         this.emailService = emailService;
         this.concertReviewRepository = concertReviewRepository;
         this.preferenceService = preferenceService;

@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Concertable.Core\Concertable.Core.csproj" />
     <ProjectReference Include="..\..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj" />
   </ItemGroup>
 
 </Project>

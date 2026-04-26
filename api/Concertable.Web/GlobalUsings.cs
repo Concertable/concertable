@@ -8,6 +8,7 @@ global using Concertable.Payment.Application.Requests;
 global using Concertable.Payment.Application.Responses;
 global using Concertable.Payment.Application.Mappers;
 global using Concertable.Identity.Contracts;
+global using Concertable.Messaging.Api.Extensions;
 global using Concertable.Venue.Contracts;
 global using Concertable.Concert.Contracts;
 global using Concertable.Concert.Domain;

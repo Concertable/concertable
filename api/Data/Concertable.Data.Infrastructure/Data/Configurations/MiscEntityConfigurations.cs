@@ -4,22 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Concertable.Data.Infrastructure.Data.Configurations;
 
-public class MessageEntityConfiguration : IEntityTypeConfiguration<MessageEntity>
-{
-    public void Configure(EntityTypeBuilder<MessageEntity> builder)
-    {
-        builder.ToTable("Messages");
-        builder.HasOne(m => m.FromUser)
-            .WithMany()
-            .HasForeignKey(m => m.FromUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne(m => m.ToUser)
-            .WithMany()
-            .HasForeignKey(m => m.ToUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-}
-
 public class PreferenceEntityConfiguration : IEntityTypeConfiguration<PreferenceEntity>
 {
     public void Configure(EntityTypeBuilder<PreferenceEntity> builder)
@@ -31,4 +15,3 @@ public class PreferenceEntityConfiguration : IEntityTypeConfiguration<Preference
             .IsRequired();
     }
 }
-

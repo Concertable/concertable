@@ -3,6 +3,7 @@ using Concertable.Concert.Domain;
 using Concertable.Contract.Domain;
 using Concertable.Core.Entities;
 using Concertable.Identity.Domain;
+using Concertable.Messaging.Domain;
 using Concertable.Shared;
 using Concertable.Venue.Domain;
 

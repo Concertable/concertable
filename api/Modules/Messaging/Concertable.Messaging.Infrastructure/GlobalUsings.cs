@@ -1,0 +1,11 @@
+global using Concertable.Data.Infrastructure;
+global using Concertable.Messaging.Application.DTOs;
+global using Concertable.Messaging.Application.Interfaces;
+global using Concertable.Messaging.Application.Mappers;
+global using Concertable.Messaging.Application.Requests;
+global using Concertable.Messaging.Contracts;
+global using Concertable.Messaging.Domain;
+global using Concertable.Identity.Contracts;
+global using Concertable.Notification.Contracts;
+global using Concertable.Shared;
+global using Concertable.Shared.Infrastructure;

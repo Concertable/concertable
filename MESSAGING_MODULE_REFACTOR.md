@@ -122,13 +122,13 @@ Shared → Identity → Artist → Venue → Concert → Contract → **Messagin
 
 ## Progress
 
-- [ ] Step 1 — Scaffold projects
-- [ ] Step 2 — Move Domain
-- [ ] Step 3 — Move Application layer
-- [ ] Step 4 — Create `MessagingDbContext`
-- [ ] Step 5 — Move Infrastructure layer
-- [ ] Step 6 — Move Api
-- [ ] Step 7 — Seeders
-- [ ] Step 8 — Remove Messages from `ApplicationDbContext`
-- [ ] Step 9 — Re-scaffold migrations
-- [ ] Step 10 — Wire in Web + Workers; test suite
+- [x] Step 1 — Scaffold projects
+- [x] Step 2 — Move Domain
+- [x] Step 3 — Move Application layer
+- [x] Step 4 — Create `MessagingDbContext`
+- [x] Step 5 — Move Infrastructure layer
+- [x] Step 6 — Move Api
+- [x] Step 7 — Seeders
+- [x] Step 8 — Remove Messages from `ApplicationDbContext`
+- [x] Step 9 — Re-scaffold migrations
+- [x] Step 10 — Wire in Web + Workers; test suite
