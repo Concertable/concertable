@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
     <ProjectReference Include="..\..\Notification\Concertable.Notification.Contracts\Concertable.Notification.Contracts.csproj" />
     <ProjectReference Include="..\..\Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj" />
+    <ProjectReference Include="..\..\Customer\Concertable.Customer.Contracts\Concertable.Customer.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
     <!-- TEMPORARY: payment services (ICustomerPaymentService, IManagerPaymentService keyed,

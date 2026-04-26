@@ -1,21 +1,15 @@
-using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Blob;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Application.Mappers;
-using Concertable.Application.Requests;
 using Concertable.Application.Serializers;
+using Concertable.Identity.Contracts;
 using Concertable.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
-using Concertable.Data.Infrastructure.Repositories;
 using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Services;
 using Concertable.Shared.Infrastructure.Repositories;
-using Concertable.Infrastructure.Handlers;
-using Concertable.Identity.Contracts.Events;
-using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Identity.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
 using Concertable.Shared.Infrastructure.Services.Geometry;
@@ -81,7 +75,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPdfService, PdfService>();
         services.AddSingleton<QRCodeGenerator>();
         services.AddScoped<IQrCodeService, QrCodeService>();
-        services.AddScoped<IPreferenceService, PreferenceService>();
         services.AddServiceValidators();
 
         return services;
@@ -98,7 +91,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDapperRepository, DapperRepository>();
 

@@ -8,6 +8,7 @@ using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
+using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Services;
 using Concertable.Data.Application;
@@ -89,6 +90,7 @@ public async Task InitializeAsync()
                 services.AddConcertTestSeeder();
                 services.AddPaymentTestSeeder();
                 services.AddMessagingTestSeeder();
+                services.AddCustomerTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {

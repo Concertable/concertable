@@ -19,7 +19,6 @@ global using Concertable.Concert.Application.Validators;
 global using Concertable.Application.DTOs;
 global using Concertable.Application.Interfaces;
 global using Concertable.Application.Mappers;
-global using Concertable.Application.Requests;
 global using Concertable.Payment.Application.Interfaces;
 global using Concertable.Payment.Application.DTOs;
 global using Concertable.Payment.Application.Requests;

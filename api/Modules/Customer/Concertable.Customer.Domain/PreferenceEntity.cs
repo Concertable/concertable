@@ -1,5 +1,4 @@
-
-namespace Concertable.Core.Entities;
+namespace Concertable.Customer.Domain;
 
 public class PreferenceEntity : IIdEntity, IHasGenreJoins<GenrePreferenceEntity>
 {
@@ -8,7 +7,6 @@ public class PreferenceEntity : IIdEntity, IHasGenreJoins<GenrePreferenceEntity>
     public int Id { get; private set; }
     public Guid UserId { get; private set; }
     public double RadiusKm { get; private set; }
-    public CustomerEntity User { get; set; } = null!;
     public HashSet<GenrePreferenceEntity> GenrePreferences { get; private set; } = [];
 
     HashSet<GenrePreferenceEntity> IHasGenreJoins<GenrePreferenceEntity>.GenreJoins => GenrePreferences;

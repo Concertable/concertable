@@ -1,16 +1,15 @@
-using Concertable.Application.DTOs;
-using Concertable.Core.Entities;
+using Concertable.Customer.Application.DTOs;
 
-namespace Concertable.Application.Mappers;
+namespace Concertable.Customer.Application.Mappers;
 
-public static class PreferenceMappers
+internal static class PreferenceMappers
 {
     public static PreferenceDto ToDto(this PreferenceEntity preference) => new()
     {
         Id = preference.Id,
         RadiusKm = (int)preference.RadiusKm,
-        User = preference.User.ToDto(),
-        Genres = preference.GenrePreferences.Select(gp => gp.Genre.ToDto())
+        UserId = preference.UserId,
+        Genres = preference.GenrePreferences.Select(gp => new GenreDto(gp.Genre.Id, gp.Genre.Name))
     };
 
     public static IEnumerable<PreferenceDto> ToDtos(this IEnumerable<PreferenceEntity> preferences) =>

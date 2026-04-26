@@ -1,0 +1,13 @@
+using Concertable.Identity.Contracts;
+
+namespace Concertable.Customer.Contracts;
+
+public interface ICustomerModule
+{
+    Task<CustomerDto?> GetCustomerAsync(Guid userId);
+
+    Task<IReadOnlyCollection<Guid>> GetUserIdsByLocationAndGenresAsync(
+        double latitude,
+        double longitude,
+        IEnumerable<int> genreIds);
+}

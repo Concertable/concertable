@@ -1,7 +1,6 @@
 using Concertable.Artist.Domain;
 using Concertable.Concert.Domain;
 using Concertable.Contract.Domain;
-using Concertable.Core.Entities;
 using Concertable.Identity.Domain;
 using Concertable.Messaging.Domain;
 using Concertable.Shared;
@@ -33,8 +32,6 @@ public interface IReadDbContext
     IQueryable<TransactionEntity> Transactions { get; }
     IQueryable<TicketTransactionEntity> TicketTransactions { get; }
     IQueryable<SettlementTransactionEntity> SettlementTransactions { get; }
-    IQueryable<PreferenceEntity> Preferences { get; }
-    IQueryable<GenrePreferenceEntity> GenrePreferences { get; }
     IQueryable<StripeEventEntity> StripeEvents { get; }
     IQueryable<PayoutAccountEntity> PayoutAccounts { get; }
     IQueryable<ContractEntity> Contracts { get; }

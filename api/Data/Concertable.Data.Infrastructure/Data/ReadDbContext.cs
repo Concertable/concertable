@@ -1,5 +1,4 @@
 using Concertable.Contract.Domain;
-using Concertable.Core.Entities;
 using Concertable.Data.Application;
 using Concertable.Messaging.Domain;
 using Concertable.Shared;
@@ -36,8 +35,6 @@ internal class ReadDbContext(
     public IQueryable<TransactionEntity> Transactions => Set<TransactionEntity>().AsNoTracking();
     public IQueryable<TicketTransactionEntity> TicketTransactions => Set<TicketTransactionEntity>().AsNoTracking();
     public IQueryable<SettlementTransactionEntity> SettlementTransactions => Set<SettlementTransactionEntity>().AsNoTracking();
-    public IQueryable<PreferenceEntity> Preferences => Set<PreferenceEntity>().AsNoTracking();
-    public IQueryable<GenrePreferenceEntity> GenrePreferences => Set<GenrePreferenceEntity>().AsNoTracking();
     public IQueryable<StripeEventEntity> StripeEvents => Set<StripeEventEntity>().AsNoTracking();
     public IQueryable<PayoutAccountEntity> PayoutAccounts => Set<PayoutAccountEntity>().AsNoTracking();
     public IQueryable<ContractEntity> Contracts => Set<ContractEntity>().AsNoTracking();

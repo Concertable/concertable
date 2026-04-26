@@ -323,6 +323,7 @@ After Shared.Infrastructure is done, Preferences is the last extraction. It pull
 Once Preferences ships:
 - `ApplicationDbContext` deletes (no entities left to own).
 - `AppDbConfigurationProvider` deletes (only `PreferenceEntityConfiguration` consumer).
+- `DevDbInitializer` (in `Concertable.Web`) **stays** — still orchestrates per-module `IDevSeeder` Migrate+Seed. It just sheds the AppDbContext migrate call, the inline Preferences seeding block (L50–71 → moves to `CustomerDevSeeder`), and the `Concertable.Core.Entities` import.
 - `Concertable.Core`, `Concertable.Application`, `Concertable.Infrastructure` `.csproj` files removed; references stripped.
 
 ---

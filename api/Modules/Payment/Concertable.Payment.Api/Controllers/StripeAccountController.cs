@@ -1,3 +1,4 @@
+using Concertable.Customer.Contracts;
 using Concertable.Identity.Contracts;
 using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Interfaces;

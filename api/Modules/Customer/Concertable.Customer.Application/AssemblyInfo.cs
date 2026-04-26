@@ -1,0 +1,6 @@
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Concertable.Customer.Infrastructure")]
+[assembly: InternalsVisibleTo("Concertable.Customer.Api")]
+[assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

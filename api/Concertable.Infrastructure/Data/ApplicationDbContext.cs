@@ -1,4 +1,3 @@
-using Concertable.Core.Entities;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Messaging.Domain;
@@ -27,15 +26,10 @@ public class ApplicationDbContext : DbContextBase
         _moduleProviders = [];
     }
 
-    public DbSet<PreferenceEntity> Preferences { get; set; }
-    public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         foreach (var provider in _moduleProviders)
             provider.Configure(modelBuilder);
-
-        new AppDbConfigurationProvider().Configure(modelBuilder);
 
         // Shared reference data — schema managed by SharedDbContext migrations (runs first).
         modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());

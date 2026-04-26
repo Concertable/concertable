@@ -1,10 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Core.Entities;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding;
-using Concertable.Seeding.Extensions;
-using Concertable.Seeding.Factories;
 using Concertable.Seeding.Fakers;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
@@ -46,28 +43,5 @@ public class DevDbInitializer : IDbInitializer
 
         foreach (var seeder in seeders.OrderBy(s => s.Order))
             await seeder.SeedAsync();
-
-        var now = timeProvider.GetUtcNow().UtcDateTime;
-        var customerIds = seedData.CustomerIds;
-        var artistManagerIds = seedData.ArtistManagerIds;
-        var venueManagerIds = seedData.VenueManagerIds;
-
-        await context.Preferences.SeedIfEmptyAsync(async () =>
-        {
-            var preferences = new PreferenceEntity[]
-            {
-                PreferenceFactory.Create(customerIds[0], 10),
-                PreferenceFactory.Create(customerIds[1], 25),
-                PreferenceFactory.Create(customerIds[2], 50),
-            };
-            context.Preferences.AddRange(preferences);
-            await context.SaveChangesAsync();
-        });
-
-        await context.GenrePreferences.SeedIfEmptyAsync(async () =>
-        {
-            context.GenrePreferences.Add(new GenrePreferenceEntity { PreferenceId = 1, GenreId = 1 });
-            await context.SaveChangesAsync();
-        });
     }
 }

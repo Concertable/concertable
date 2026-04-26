@@ -1,9 +1,9 @@
-namespace Concertable.Application.DTOs;
+namespace Concertable.Customer.Application.DTOs;
 
-public record PreferenceDto
+internal record PreferenceDto
 {
     public int Id { get; set; }
-    public required UserDto User { get; set; }
+    public Guid UserId { get; set; }
     public int RadiusKm { get; set; }
     public IEnumerable<GenreDto> Genres { get; set; } = [];
 }

@@ -6,7 +6,9 @@
       "Bash(dotnet restore *)",
       "Bash(grep -v \"\\\\\\\\bobj\\\\\\\\b\")",
       "Bash(grep -v \"\\\\\\\\bbin\\\\\\\\b\")",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(dotnet sln *)",
+      "Bash(grep -n \"GlobalSection\\(NestedProjects\\)\\\\|EndGlobalSection\\\\|^Global$\" Concertable.sln)"
     ]
   }
 }

@@ -1,4 +1,4 @@
-using Concertable.Application.Requests;
+using Concertable.Concert.Application.Requests;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Concert;
 
