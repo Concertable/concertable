@@ -1,9 +1,10 @@
 # Messaging Module Extraction — Implementation Plan
 
-Planned after Payment extraction. Messaging is a self-contained domain: persistent
-user-to-user inbox with its own aggregate, REST surface, and read/unread lifecycle.
+Full 4-layer module — owns its own aggregate and DB table. User-to-user inbox with persistent
+messages, read/unread lifecycle, and real-time push on delivery.
 
-Memory: `project_future_modules.md` documents the module boundary decisions.
+Planned after Notification module: Messaging.Infrastructure references Notification.Contracts
+for `INotificationModule`.
 
 ---
 
@@ -11,75 +12,123 @@ Memory: `project_future_modules.md` documents the module boundary decisions.
 
 **Messaging owns:**
 - `MessageEntity` (`Id`, `FromUserId`, `ToUserId`, `Content`, `SentDate`, `Read`, `MessageAction?`)
+- `MessageAction` enum
 - `MessageService` — `SendAsync`, `SendAndSaveAsync`, `GetForUserAsync`, `GetSummaryForUser`,
   `GetUnreadCountForUserAsync`, `MarkAsReadAsync`
 - `MessageRepository`
-- `MessageController` (endpoints: GET summary, GET paginated, GET unread count, POST mark-read)
-- `MessageDtos.cs`, `MessageRequests.cs`, `MessageMappers.cs`
-- `IMessageService`, `IMessageRepository`
-- `MessageAction` enum (from `Concertable.Core/Enums/`)
+- `MessageController` (GET summary, GET paginated, GET unread count, POST mark-read)
+- `MessageDto`, `MessageSummaryDto`, mappers, requests, validators
+- `MessagingDbContext` — owns the `Messages` table
 
 **Not Messaging:**
-- `IMessageNotificationService` / `SignalRMessageNotificationService` — that is the **Notification**
-  module's concern. Messaging calls into `INotificationModule` (or raises an integration event)
-  to trigger the real-time push when a message is saved. The two are decoupled: Messaging is
-  the inbox, Notification is the delivery mechanism.
-- Email — `Shared.Infrastructure`.
+- Real-time push — Messaging calls `INotificationModule.SendAsync(...)` from Notification.Contracts
+- Email
 
 ---
 
-## Key design decision — how Messaging triggers SignalR push
+## Cross-module facade
 
-Currently `MessageService.SendAndSaveAsync()` directly injects `IMessageNotificationService`
-and calls `MessageReceivedAsync`. Two options at extraction time:
-
-**Option A (simpler, acceptable for now):** `IMessageNotificationService` stays a Contracts-
-level interface in Notification.Contracts; Messaging.Infrastructure injects it to trigger the
-push after save. Cross-module call via Contracts — acceptable per CLAUDE.md rule 1.
-
-**Option B (north-star):** Messaging raises a `MessageSentEvent` integration event.
-Notification handles it and pushes via SignalR. Fully decoupled.
-
-Option A is the right call for the extraction step. Option B is a follow-up once the outbox
-is in place.
+`IMessagingModule` in Contracts is minimal. Currently nothing reads messages cross-module, but the
+unread-count header badge is a likely consumer — expose `Task<int> GetUnreadCountAsync(Guid userId)`
+and nothing else. If no cross-module consumer materialises before extraction, ship an empty shell
+and fill it when needed.
 
 ---
 
-## Stage 1 — Implementation steps
+## Steps
 
-### Step 1 — Scaffold Messaging projects
-- `Concertable.Messaging.Domain` — `MessageEntity`, `MessageAction` enum
-- `Concertable.Messaging.Application` — interfaces, DTOs, requests, validators, mappers
-- `Concertable.Messaging.Infrastructure` — EF repo, service, `AddMessagingModule()`
-- `Concertable.Messaging.Api` — `MessageController`, `AddMessagingApi()`
-- `Concertable.Messaging.Contracts` — `IMessagingModule` (minimal facade; cross-module
-  need is low — possibly just `GetUnreadCountAsync(Guid userId)` for header badge)
+### Step 1 — Scaffold projects
+Create:
+- `Concertable.Messaging.Contracts`
+- `Concertable.Messaging.Domain`
+- `Concertable.Messaging.Application`
+- `Concertable.Messaging.Infrastructure`
+- `Concertable.Messaging.Api`
 
-### Step 2 — Move entity + enum to Messaging.Domain
-Move `MessageEntity` from `Concertable.Core/Entities/` and `MessageAction` from
-`Concertable.Core/Enums/`. Add `Core → Messaging.Domain` project ref.
+Add to solution under `Modules/Messaging`.
+
+### Step 2 — Move Domain
+- `MessageEntity` from `Concertable.Core/Entities/` → `Messaging.Domain/`
+- `MessageAction` from `Concertable.Core/Enums/` → `Messaging.Domain/`
+- Update namespaces to `Concertable.Messaging.Domain`
+- Add `Concertable.Core` → `Messaging.Domain` project ref so Core still compiles until it retires
 
 ### Step 3 — Move Application layer
-Move interfaces, DTOs, requests, mappers to `Messaging.Application`. All `internal`.
-`AssemblyInfo.cs` with standard `InternalsVisibleTo` grants.
+Move to `Messaging.Application`, update namespaces to `Concertable.Messaging.Application`:
+- `IMessageService` + `IMessageRepository` (from `Concertable.Application.Interfaces/`)
+- `MessageDto`, `MessageSummaryDto` (from `Concertable.Application.DTOs/`)
+- `MessageMappers` (from `Concertable.Application.Mappers/`)
+- `MarkMessagesReadRequest` (from `Concertable.Application.Requests/`)
+- `MessageValidators` (from `Concertable.Application.Validators/`)
 
-### Step 4 — Create MessagingDbContext
+All `internal`. Add `AssemblyInfo.cs`:
+```csharp
+[assembly: InternalsVisibleTo("Concertable.Messaging.Infrastructure")]
+[assembly: InternalsVisibleTo("Concertable.Messaging.Api")]
+[assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+```
+
+### Step 4 — Create `MessagingDbContext`
 `internal class MessagingDbContext : DbContextBase`. Owns `Messages` DbSet.
-Config: `MessageEntityConfiguration` (FK to Users — plain primitives `FromUserId`,
-`ToUserId` as `Guid`; no nav properties into Identity.Domain).
 
-`MessageEntity` has FKs to `UserEntity` (from Identity.Domain). Since Messaging runs
-before AppDb but after Identity, the FK into `Users` is safe. No cross-context gotcha.
+`MessageEntityConfiguration` under `Messaging.Infrastructure/Data/Configurations/`:
+- `FromUserId` and `ToUserId` as plain `Guid` columns — no FK nav into Identity.Domain
+- FK constraints to `Users` table are safe: Messaging scaffolds after Identity
 
 ### Step 5 — Move Infrastructure layer
-Move `MessageService`, `MessageRepository` to `Messaging.Infrastructure`. Rewrite
-`IMessageNotificationService` injection to reference `Notification.Contracts` (Option A).
+Move to `Messaging.Infrastructure`, update namespaces:
+- `MessageRepository` (from `Concertable.Infrastructure/Repositories/`) — repoint to `MessagingDbContext`
+- `MessageService` (from `Concertable.Infrastructure/Services/`) — replace `IMessageNotificationService`
+  with `INotificationModule` from Notification.Contracts:
+  ```csharp
+  private const string MessageReceivedEvent = "MessageReceived";
+  // ...
+  await notificationModule.SendAsync(toUserId.ToString(), MessageReceivedEvent, message.ToDto(fromUser));
+  ```
 
-### Step 6 — Move controller to Messaging.Api
+`AddMessagingModule()` registers:
+- `IMessageService` → `MessageService`
+- `IMessageRepository` → `MessageRepository`
+- `IMessagingModule` → `MessagingModule`
+- `MessagingDbContext`
 
-### Step 7 — MessagingDevSeeder + MessagingTestSeeder
-Seed a handful of messages between seeded users for dev/test fixture.
+### Step 6 — Move Api
+Move `MessageController` from `Concertable.Web/Controllers/` → `Messaging.Api/`.
+Update namespace. Controller is `public`.
 
-### Step 8 — Remove Message DbSets from ApplicationDbContext + rescaffold migrations
+`AddMessagingApi()` in `Messaging.Api` — called by Web to wire the ApplicationPart.
 
-### Step 9 — Wire AddMessagingApi() in Web. Full test suite.
+### Step 7 — Seeders
+`MessagingDevSeeder` + `MessagingTestSeeder`: seed messages between seeded users.
+`Order` value after Identity (users must exist first).
+
+### Step 8 — Remove Messages from `ApplicationDbContext`
+- Remove `DbSet<MessageEntity> Messages` from `ApplicationDbContext`
+- Remove `MessageEntityConfiguration` from `Data.Infrastructure/Data/Configurations/`
+  (applied there today via `ApplyConfigurationsFromAssembly`)
+
+### Step 9 — Re-scaffold migrations
+Delete all `Migrations/` folders, re-scaffold `InitialCreate` in dependency order:
+
+Shared → Identity → Artist → Venue → Concert → Contract → **Messaging** → AppDb
+
+### Step 10 — Wire in Web + Workers; test suite
+- Add `AddMessagingModule()` + `AddMessagingApi()` in Web and Workers
+- Remove `MessageController` usings from `Concertable.Web/GlobalUsings.cs`
+- Full test suite: build + integration tests
+
+---
+
+## Progress
+
+- [ ] Step 1 — Scaffold projects
+- [ ] Step 2 — Move Domain
+- [ ] Step 3 — Move Application layer
+- [ ] Step 4 — Create `MessagingDbContext`
+- [ ] Step 5 — Move Infrastructure layer
+- [ ] Step 6 — Move Api
+- [ ] Step 7 — Seeders
+- [ ] Step 8 — Remove Messages from `ApplicationDbContext`
+- [ ] Step 9 — Re-scaffold migrations
+- [ ] Step 10 — Wire in Web + Workers; test suite

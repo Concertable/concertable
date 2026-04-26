@@ -23,7 +23,7 @@ internal class MockStripeClient : IStripeClient
 
         var json = $$"""
         {
-            "id": "evt_test_{{Guid.NewGuid():N}}",
+            "id": "{{paymentClient.LastEventId}}",
             "object": "event",
             "type": "payment_intent.succeeded",
             "data": {

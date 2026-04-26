@@ -16,11 +16,13 @@ using Concertable.Concert.Infrastructure.Services;
 using Concertable.Concert.Infrastructure.Services.Acceptance;
 using Concertable.Concert.Infrastructure.Services.Application;
 using Concertable.Concert.Infrastructure.Services.Completion;
+using Concertable.Concert.Infrastructure.Services.Payment;
 using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Infrastructure.Handlers;
+using Concertable.Payment.Contracts.Events;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
 using FluentValidation;
@@ -91,13 +93,16 @@ public static class ServiceCollectionExtensions
         // Module facades
         services.AddScoped<IConcertModule, ConcertModule>();
         services.AddScoped<IConcertWorkflowModule, ConcertWorkflowModule>();
-        services.AddScoped<ITicketPaymentModule, TicketPaymentModule>();
 
         // Domain event → integration event + read-model projection handlers
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
+        services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentSucceededEventHandler>();
+        services.AddScoped<IPaymentSucceededStrategyFactory, PaymentSucceededStrategyFactory>();
+        services.AddKeyedScoped<IPaymentSucceededStrategy, TicketPaymentService>("ticket");
+        services.AddKeyedScoped<IPaymentSucceededStrategy, SettlementPaymentService>("settlement");
 
         services.AddSingleton<ConcertConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ConcertConfigurationProvider>());

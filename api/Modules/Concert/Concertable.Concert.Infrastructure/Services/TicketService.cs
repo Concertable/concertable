@@ -65,10 +65,17 @@ internal class TicketService : ITicketService
         var contract = await contractLookup.GetByConcertIdAsync(purchaseParams.ConcertId);
         var payeeUserId = ticketPayee.Resolve(concert, contract);
 
+        var metadata = new Dictionary<string, string>
+        {
+            ["type"] = "ticket",
+            ["concertId"] = purchaseParams.ConcertId.ToString(),
+            ["quantity"] = purchaseParams.Quantity.ToString()
+        };
+
         var paymentResult = await customerPaymentModule.PayAsync(
             currentUser.GetId(), payeeUserId,
             concert.Price * purchaseParams.Quantity,
-            purchaseParams.ConcertId, purchaseParams.Quantity,
+            metadata,
             purchaseParams.PaymentMethodId);
 
         if (paymentResult.IsFailed)

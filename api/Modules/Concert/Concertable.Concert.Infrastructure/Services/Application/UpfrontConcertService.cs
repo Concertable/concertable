@@ -41,7 +41,13 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         await acceptHandler.HandleAsync(applicationId, bookingConcert);
 
-        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, bookingConcert.Id, paymentMethodId);
+        var settlementMetadata = new Dictionary<string, string>
+        {
+            ["type"] = "settlement",
+            ["bookingId"] = bookingConcert.Id.ToString()
+        };
+
+        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, settlementMetadata, paymentMethodId);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
         return new ImmediateAcceptOutcome(payment.Value);

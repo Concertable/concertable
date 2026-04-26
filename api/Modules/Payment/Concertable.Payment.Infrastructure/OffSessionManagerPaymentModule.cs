@@ -28,22 +28,22 @@ internal class OffSessionManagerPaymentModule : IManagerPaymentModule
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
-        Guid payerUserId,
-        Guid payeeUserId,
+        Guid payerId,
+        Guid payeeId,
         decimal amount,
-        int referenceId,
+        IDictionary<string, string>? metadata,
         string? paymentMethodId,
         CancellationToken ct = default)
     {
-        var payer = await managerModule.GetByIdAsync(payerUserId)
-            ?? throw new NotFoundException($"Payer manager not found for userId {payerUserId}");
-        var payee = await managerModule.GetByIdAsync(payeeUserId)
-            ?? throw new NotFoundException($"Payee manager not found for userId {payeeUserId}");
+        var payer = await managerModule.GetByIdAsync(payerId)
+            ?? throw new NotFoundException($"Payer manager not found for userId {payerId}");
+        var payee = await managerModule.GetByIdAsync(payeeId)
+            ?? throw new NotFoundException($"Payee manager not found for userId {payeeId}");
 
-        var payerAccount = await payoutAccountRepository.GetByUserIdAsync(payerUserId)
-            ?? throw new NotFoundException($"Payout account not found for payer {payerUserId}");
-        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeUserId)
-            ?? throw new NotFoundException($"Payout account not found for payee {payeeUserId}");
+        var payerAccount = await payoutAccountRepository.GetByUserIdAsync(payerId)
+            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
+        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeId)
+            ?? throw new NotFoundException($"Payout account not found for payee {payeeId}");
 
         var payerStripeCustomerId = payerAccount.StripeCustomerId
             ?? throw new BadRequestException("Payer has no Stripe customer ID");
@@ -56,6 +56,15 @@ internal class OffSessionManagerPaymentModule : IManagerPaymentModule
         var resolvedPaymentMethodId = paymentMethodId
             ?? await stripeAccountService.GetPaymentMethodAsync(payerStripeCustomerId);
 
+        var mergedMetadata = new Dictionary<string, string>
+        {
+            ["fromUserId"] = payerId.ToString(),
+            ["fromUserEmail"] = payer.Email ?? string.Empty,
+            ["toUserId"] = payeeId.ToString(),
+            ["amount"] = ((long)(amount * 100)).ToString()
+        }
+        .Merge(metadata);
+
         return await paymentService.ProcessAsync(new TransactionRequest
         {
             PaymentMethodId = resolvedPaymentMethodId,
@@ -63,13 +72,7 @@ internal class OffSessionManagerPaymentModule : IManagerPaymentModule
             StripeCustomerId = payerStripeCustomerId,
             DestinationStripeId = payeeStripeAccountId,
             Amount = amount,
-            Metadata = new Dictionary<string, string>
-            {
-                ["fromUserId"] = payerUserId.ToString(),
-                ["toUserId"] = payeeUserId.ToString(),
-                ["type"] = "settlement",
-                ["bookingId"] = referenceId.ToString()
-            }
+            Metadata = mergedMetadata
         });
     }
 }
