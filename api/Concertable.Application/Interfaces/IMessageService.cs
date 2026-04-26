@@ -1,6 +1,6 @@
 using Concertable.Application.DTOs;
-using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
+using Concertable.Messaging.Domain;
 
 namespace Concertable.Application.Interfaces;
 

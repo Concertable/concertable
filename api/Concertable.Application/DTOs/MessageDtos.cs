@@ -1,4 +1,4 @@
-using Concertable.Core.Enums;
+using Concertable.Messaging.Domain;
 
 namespace Concertable.Application.DTOs;
 

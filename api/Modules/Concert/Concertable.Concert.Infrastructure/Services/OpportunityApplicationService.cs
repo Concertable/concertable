@@ -1,5 +1,5 @@
 using Concertable.Payment.Application.Interfaces;
-using Concertable.Core.Enums;
+using Concertable.Messaging.Domain;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
 

@@ -1,6 +1,7 @@
 using Concertable.Core.Entities;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Messaging.Domain;
 using Concertable.Payment.Domain;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;

@@ -1,10 +1,9 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Application.Mappers;
-using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Concertable.Core.Parameters;
 using Concertable.Identity.Contracts;
+using Concertable.Messaging.Domain;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Infrastructure.Services;
@@ -44,20 +43,7 @@ public class MessageService : IMessageService
         await messageRepository.AddAsync(message);
         await messageRepository.SaveChangesAsync();
 
-        var sender = await identityModule.GetUserByIdAsync(fromUserId)
-            ?? throw new NotFoundException("Message sender not found");
-
-        var fromUser = new UserDto
-        {
-            Id = sender.Id,
-            Email = sender.Email,
-            Role = sender.Role,
-            Latitude = sender.Latitude,
-            Longitude = sender.Longitude,
-            County = sender.County,
-            Town = sender.Town
-        };
-
+        var fromUser = await GetSenderDtoAsync(fromUserId);
         await notifier.MessageReceivedAsync(toUserId.ToString(), message.ToDto(fromUser));
     }
 
@@ -65,9 +51,10 @@ public class MessageService : IMessageService
     {
         var userId = currentUser.GetId();
         var messages = await messageRepository.GetByUserIdAsync(userId, pageParams);
+        var senders = await GetSenderDtosAsync(messages.Data);
 
         return new Pagination<MessageDto>(
-            messages.Data.Select(m => m.ToDto()),
+            messages.Data.Select(m => m.ToDto(senders[m.FromUserId])),
             messages.TotalCount,
             messages.PageNumber,
             messages.PageSize);
@@ -80,9 +67,10 @@ public class MessageService : IMessageService
         var userId = currentUser.GetId();
         var messages = await messageRepository.GetByUserIdAsync(userId, pageParams);
         var unreadCount = await messageRepository.GetUnreadCountByUserIdAsync(userId);
+        var senders = await GetSenderDtosAsync(messages.Data);
 
         var pagination = new Pagination<MessageDto>(
-            messages.Data.Select(m => m.ToDto()),
+            messages.Data.Select(m => m.ToDto(senders[m.FromUserId])),
             messages.TotalCount,
             messages.PageNumber,
             messages.PageSize
@@ -98,5 +86,30 @@ public class MessageService : IMessageService
     public async Task MarkAsReadAsync(List<int> ids)
     {
         await messageRepository.MarkAsReadAsync(ids);
+    }
+
+    private async Task<UserDto> GetSenderDtoAsync(Guid fromUserId)
+    {
+        var sender = await identityModule.GetUserByIdAsync(fromUserId)
+            ?? throw new NotFoundException("Message sender not found");
+
+        return new UserDto
+        {
+            Id = sender.Id,
+            Email = sender.Email,
+            Role = sender.Role,
+            Latitude = sender.Latitude,
+            Longitude = sender.Longitude,
+            County = sender.County,
+            Town = sender.Town
+        };
+    }
+
+    private async Task<Dictionary<Guid, UserDto>> GetSenderDtosAsync(IEnumerable<MessageEntity> messages)
+    {
+        var dict = new Dictionary<Guid, UserDto>();
+        foreach (var fromUserId in messages.Select(m => m.FromUserId).Distinct())
+            dict[fromUserId] = await GetSenderDtoAsync(fromUserId);
+        return dict;
     }
 }

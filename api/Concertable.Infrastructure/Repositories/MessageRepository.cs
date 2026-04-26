@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
-using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
+using Concertable.Messaging.Domain;
 using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -20,7 +20,6 @@ public class MessageRepository : Repository<MessageEntity>, IMessageRepository
     public async Task<IPagination<MessageEntity>> GetByUserIdAsync(Guid id, IPageParams pageParams)
     {
         var query = context.Messages
-            .Include(m => m.FromUser)
             .Where(m => m.ToUserId == id)
             .OrderByDescending(m => m.SentDate);
 

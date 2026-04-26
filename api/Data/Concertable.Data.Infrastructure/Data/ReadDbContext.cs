@@ -1,6 +1,7 @@
 using Concertable.Contract.Domain;
 using Concertable.Core.Entities;
 using Concertable.Data.Application;
+using Concertable.Messaging.Domain;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 

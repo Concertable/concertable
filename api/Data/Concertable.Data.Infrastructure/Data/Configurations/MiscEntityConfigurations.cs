@@ -1,4 +1,5 @@
 using Concertable.Core.Entities;
+using Concertable.Messaging.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,14 +10,6 @@ public class MessageEntityConfiguration : IEntityTypeConfiguration<MessageEntity
     public void Configure(EntityTypeBuilder<MessageEntity> builder)
     {
         builder.ToTable("Messages");
-        builder.HasOne(m => m.FromUser)
-            .WithMany()
-            .HasForeignKey(m => m.FromUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne(m => m.ToUser)
-            .WithMany()
-            .HasForeignKey(m => m.ToUserId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 

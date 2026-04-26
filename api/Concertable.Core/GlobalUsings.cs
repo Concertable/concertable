@@ -6,3 +6,4 @@ global using Concertable.Venue.Domain;
 global using Concertable.Concert.Domain;
 global using Concertable.Contract.Abstractions;
 global using Concertable.Payment.Domain;
+global using Concertable.Messaging.Domain;

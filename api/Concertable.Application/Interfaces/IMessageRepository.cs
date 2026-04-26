@@ -1,5 +1,6 @@
 using Concertable.Core.Entities;
 using Concertable.Core.Parameters;
+using Concertable.Messaging.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;

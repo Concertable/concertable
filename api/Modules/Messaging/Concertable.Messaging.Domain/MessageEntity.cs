@@ -1,6 +1,6 @@
-using Concertable.Core.Enums;
+using Concertable.Shared;
 
-namespace Concertable.Core.Entities;
+namespace Concertable.Messaging.Domain;
 
 public class MessageEntity : IIdEntity
 {
@@ -13,8 +13,6 @@ public class MessageEntity : IIdEntity
     public MessageAction? Action { get; private set; }
     public DateTime SentDate { get; private set; }
     public bool Read { get; private set; }
-    public UserEntity FromUser { get; set; } = null!;
-    public UserEntity ToUser { get; set; } = null!;
 
     public static MessageEntity Create(Guid fromUserId, Guid toUserId, string content, DateTime sentDate, MessageAction? action = null) => new()
     {

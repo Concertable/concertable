@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Concertable.Core.Enums;
+namespace Concertable.Messaging.Domain;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MessageAction

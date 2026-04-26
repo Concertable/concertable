@@ -123,7 +123,7 @@ Shared → Identity → Artist → Venue → Concert → Contract → **Messagin
 ## Progress
 
 - [x] Step 1 — Scaffold projects
-- [ ] Step 2 — Move Domain
+- [x] Step 2 — Move Domain
 - [ ] Step 3 — Move Application layer
 - [ ] Step 4 — Create `MessagingDbContext`
 - [ ] Step 5 — Move Infrastructure layer
