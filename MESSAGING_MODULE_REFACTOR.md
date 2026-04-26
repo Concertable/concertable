@@ -131,4 +131,4 @@ Shared → Identity → Artist → Venue → Concert → Contract → **Messagin
 - [x] Step 7 — Seeders
 - [x] Step 8 — Remove Messages from `ApplicationDbContext`
 - [x] Step 9 — Re-scaffold migrations
-- [ ] Step 10 — Wire in Web + Workers; test suite
+- [x] Step 10 — Wire in Web + Workers; test suite
