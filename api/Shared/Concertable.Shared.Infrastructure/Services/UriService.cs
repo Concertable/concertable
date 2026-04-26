@@ -1,8 +1,8 @@
 using Concertable.Application.Interfaces;
-using Concertable.Infrastructure.Settings;
+using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Shared.Infrastructure.Services;
 
 public class UriService : IUriService
 {

@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Search.Domain\Concertable.Search.Domain.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Application\Concertable.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

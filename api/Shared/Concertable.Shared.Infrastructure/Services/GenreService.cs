@@ -1,8 +1,8 @@
-using Concertable.Application.Interfaces;
 using Concertable.Application.DTOs;
-using Concertable.Application.Mappers;
+using Concertable.Application.Interfaces;
+using Concertable.Shared;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Shared.Infrastructure.Services;
 
 public class GenreService : IGenreService
 {

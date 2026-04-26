@@ -9,6 +9,7 @@ using Concertable.Shared.Infrastructure.Services.Geocoding;
 using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Concertable.Shared.Infrastructure.Extensions;
 
@@ -45,6 +46,10 @@ public static class ServiceCollectionExtensions
             client.BaseAddress = new Uri("https://maps.googleapis.com/maps/api/geocode/");
         });
         services.AddScoped<IGeocodingService, GeocodingService>();
+
+        services.Configure<UrlSettings>(configuration.GetSection("Urls"));
+        services.AddScoped<IUriService, UriService>();
+        services.AddScoped<IGenreService, GenreService>();
 
         return services;
     }

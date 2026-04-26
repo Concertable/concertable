@@ -1,4 +1,4 @@
-namespace Concertable.Infrastructure.Settings;
+namespace Concertable.Shared.Infrastructure.Settings;
 
 public class UrlSettings
 {

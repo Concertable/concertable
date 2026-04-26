@@ -78,14 +78,11 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IGenreService, GenreService>();
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IPdfService, PdfService>();
         services.AddSingleton<QRCodeGenerator>();
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPreferenceService, PreferenceService>();
-        services.Configure<UrlSettings>(configuration.GetSection("Urls"));
-        services.AddScoped<IUriService, UriService>();
         services.AddServiceValidators();
 
         return services;

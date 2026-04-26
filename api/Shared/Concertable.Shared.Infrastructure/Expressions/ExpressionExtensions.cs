@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Concertable.Infrastructure.Expressions;
+namespace Concertable.Shared.Infrastructure.Expressions;
 
 public static class ExpressionExtensions
 {

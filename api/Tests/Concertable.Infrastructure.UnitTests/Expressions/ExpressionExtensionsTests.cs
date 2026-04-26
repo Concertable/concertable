@@ -1,4 +1,4 @@
-using Concertable.Infrastructure.Expressions;
+using Concertable.Shared.Infrastructure.Expressions;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 using Xunit;

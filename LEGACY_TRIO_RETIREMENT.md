@@ -341,7 +341,7 @@ Once Preferences ships:
 - [x] Step 3 — Email + Blob + Geocoding + Image (incl. Resources/) — PdfService deferred
 - [x] Step 4 — Geometry moved; Helpers deleted (dead code)
 - [x] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
-- [ ] Step 6 — Remaining utilities
+- [x] Step 6 — Remaining utilities
 - [ ] Step 7 — Composition (`GlobalExceptionHandler` → Web; `DevDbInitializer` + seeding contracts → Concertable.Seeding)
 - [ ] Step 8 — Update consumers
 - [ ] Step 9 — Owning-module settings (Auth/Stripe/PaymentIntentMappers)

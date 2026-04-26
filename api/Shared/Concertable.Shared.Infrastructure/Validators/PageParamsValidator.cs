@@ -1,3 +1,4 @@
+using Concertable.Shared;
 using FluentValidation;
 
 namespace Concertable.Application.Validators.Parameters;
