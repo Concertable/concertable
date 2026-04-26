@@ -15,7 +15,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10.0" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -41,6 +40,7 @@
     <ProjectReference Include="..\Modules\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Contract\Concertable.Contract.Api\Concertable.Contract.Api.csproj" />
     <ProjectReference Include="..\Modules\Payment\Concertable.Payment.Api\Concertable.Payment.Api.csproj" />
+    <ProjectReference Include="..\Modules\Notification\Concertable.Notification.Infrastructure\Concertable.Notification.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Application\Concertable.Application.csproj" />
     <ProjectReference Include="..\Modules\Search\Concertable.Search.Api\Concertable.Search.Api.csproj" />
     <ProjectReference Include="..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />

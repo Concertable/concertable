@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Core.Enums;
+using Concertable.Notification.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
@@ -65,9 +66,7 @@ public async Task InitializeAsync()
 
             builder.ConfigureTestServices(services =>
             {
-                services.AddSingleton<IConcertNotificationService>(NotificationService);
-                services.AddSingleton<IApplicationNotificationService>(NotificationService);
-                services.AddSingleton<ITicketNotificationService>(NotificationService);
+                services.AddSingleton<INotificationModule>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
                 services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>(PaymentSession.OnSession);

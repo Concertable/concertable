@@ -6,14 +6,14 @@ namespace Concertable.Concert.Infrastructure.Services;
 internal class ConcertDraftService : IConcertDraftService
 {
     private readonly IConcertBookingRepository bookingRepository;
-    private readonly IConcertNotificationService concertNotificationService;
+    private readonly IConcertNotifier notifier;
 
     public ConcertDraftService(
         IConcertBookingRepository bookingRepository,
-        IConcertNotificationService concertNotificationService)
+        IConcertNotifier notifier)
     {
         this.bookingRepository = bookingRepository;
-        this.concertNotificationService = concertNotificationService;
+        this.notifier = notifier;
     }
 
     public async Task<Result<ConcertEntity>> CreateAsync(int bookingId)
@@ -48,7 +48,7 @@ internal class ConcertDraftService : IConcertDraftService
         bookingConcert.Confirm(concert);
         await bookingRepository.SaveChangesAsync();
 
-        await concertNotificationService.ConcertDraftCreatedAsync(artist.UserId.ToString(), concert.Id);
+        await notifier.ConcertDraftCreatedAsync(artist.UserId.ToString(), concert.Id);
 
         return Result.Ok(concert);
     }

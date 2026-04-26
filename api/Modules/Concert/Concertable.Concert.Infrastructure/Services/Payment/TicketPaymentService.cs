@@ -6,12 +6,12 @@ namespace Concertable.Concert.Infrastructure.Services.Payment;
 internal class TicketPaymentService : IPaymentSucceededStrategy
 {
     private readonly ITicketService ticketService;
-    private readonly ITicketNotificationService notificationService;
+    private readonly ITicketNotifier notifier;
 
-    public TicketPaymentService(ITicketService ticketService, ITicketNotificationService notificationService)
+    public TicketPaymentService(ITicketService ticketService, ITicketNotifier notifier)
     {
         this.ticketService = ticketService;
-        this.notificationService = notificationService;
+        this.notifier = notifier;
     }
 
     public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct)
@@ -29,6 +29,6 @@ internal class TicketPaymentService : IPaymentSucceededStrategy
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        await notificationService.TicketPurchasedAsync(meta["fromUserId"], result.Value);
+        await notifier.TicketPurchasedAsync(meta["fromUserId"], result.Value);
     }
 }

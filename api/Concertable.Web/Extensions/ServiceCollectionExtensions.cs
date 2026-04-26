@@ -20,7 +20,6 @@ using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
 using Concertable.Core.Enums;
 using Concertable.Web.Authorization;
-using Concertable.Web.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure;
@@ -52,7 +51,6 @@ public static class ServiceCollectionExtensions
 
         services.AddDatabase(configuration);
         services.AddExternalServices(configuration);
-        services.AddSignalR();
 
         return services;
     }
@@ -111,10 +109,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IConcertNotificationService, SignalRConcertNotificationService>();
-        services.AddScoped<IApplicationNotificationService, SignalRApplicationNotificationService>();
-        services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
-        services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
+        services.AddScoped<IMessageNotifier, MessageNotifier>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();

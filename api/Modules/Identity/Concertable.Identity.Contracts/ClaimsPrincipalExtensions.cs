@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 
-namespace Concertable.Web.Extentions;
+namespace Concertable.Identity.Contracts;
 
 public static class ClaimsPrincipalExtensions
 {
