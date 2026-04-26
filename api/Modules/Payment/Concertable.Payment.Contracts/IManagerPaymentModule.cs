@@ -5,8 +5,8 @@ namespace Concertable.Payment.Contracts;
 public interface IManagerPaymentModule
 {
     Task<Result<PaymentResponse>> PayAsync(
-        Guid payerUserId,
-        Guid payeeUserId,
+        Guid payerId,
+        Guid payeeId,
         decimal amount,
         IDictionary<string, string>? metadata,
         string? paymentMethodId,

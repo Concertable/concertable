@@ -28,20 +28,20 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
-        Guid customerUserId,
-        Guid payeeUserId,
+        Guid payerId,
+        Guid payeeId,
         decimal amount,
         IDictionary<string, string>? metadata,
         string? paymentMethodId,
         CancellationToken ct = default)
     {
-        var customer = await customerModule.GetCustomerAsync(customerUserId)
+        var customer = await customerModule.GetCustomerAsync(payerId)
             ?? throw new ForbiddenException("Only customers can purchase tickets");
 
-        var payerAccount = await payoutAccountRepository.GetByUserIdAsync(customerUserId)
-            ?? throw new NotFoundException($"Payout account not found for payer {customerUserId}");
-        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeUserId)
-            ?? throw new NotFoundException($"Payout account not found for payee {payeeUserId}");
+        var payerAccount = await payoutAccountRepository.GetByUserIdAsync(payerId)
+            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
+        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeId)
+            ?? throw new NotFoundException($"Payout account not found for payee {payeeId}");
 
         var stripeCustomerId = payerAccount.StripeCustomerId
             ?? throw new BadRequestException("Payer has no Stripe customer ID");
@@ -54,9 +54,9 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
 
         var mergedMetadata = new Dictionary<string, string>
         {
-            ["fromUserId"] = customerUserId.ToString(),
+            ["fromUserId"] = payerId.ToString(),
             ["fromUserEmail"] = customer.Email ?? string.Empty,
-            ["toUserId"] = payeeUserId.ToString(),
+            ["toUserId"] = payeeId.ToString(),
             ["amount"] = ((long)(amount * 100)).ToString()
         }
         .Merge(metadata);
