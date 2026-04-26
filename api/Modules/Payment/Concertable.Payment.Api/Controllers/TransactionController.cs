@@ -1,4 +1,3 @@
-using Concertable.Core.Parameters;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Shared;
 using Microsoft.AspNetCore.Mvc;

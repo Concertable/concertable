@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.Core.Enums;
 using Concertable.Notification.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;

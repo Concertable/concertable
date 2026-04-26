@@ -3,7 +3,6 @@ using Concertable.Application.DTOs;
 using Concertable.Concert.Api.Responses;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure;
-using Concertable.Core.Enums;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Ticket.TicketRequestBuilders;
 

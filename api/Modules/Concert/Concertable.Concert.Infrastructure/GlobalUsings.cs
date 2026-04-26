@@ -25,7 +25,5 @@ global using Concertable.Payment.Application.DTOs;
 global using Concertable.Payment.Application.Requests;
 global using Concertable.Payment.Application.Responses;
 global using Concertable.Payment.Application.Mappers;
-global using Concertable.Core.Parameters;
 global using Concertable.Data.Infrastructure;
-global using Concertable.Core.Enums;
 global using Concertable.Data.Infrastructure.Data;

@@ -332,7 +332,7 @@ Once Preferences ships:
 ### Cheap deletions
 - [x] `ILatLong.cs`
 - [x] `Enums/ImageType.cs` / `ManagerType.cs` / `ZoneType.cs`
-- [ ] Empty `Validators/Parameters/SearchParamsValidator.cs` (when superseded by Step 10 impl)
+- [x] Empty `Validators/Parameters/SearchParamsValidator.cs` (when superseded by Step 10 impl)
 - [x] `Helpers/PaginationExtensions.cs` (duplicate) — Search.Infrastructure + Concert.Infrastructure now ProjectReference + global-using `Concertable.Shared.Infrastructure`
 
 ### Shared.Infrastructure extraction
@@ -345,8 +345,8 @@ Once Preferences ships:
 - [x] Step 7 — Composition (`GlobalExceptionHandler` + `DevDbInitializer` → Web; seeding contracts → Concertable.Seeding)
 - [x] Step 8 — Update consumers
 - [x] Step 9 — Owning-module settings (Auth/Stripe/PaymentIntentMappers)
-- [ ] Step 10 — Implement + wire `SearchParamsValidator`
-- [ ] Step 11 — Core cleanup (HeaderType / PageParams / RatingAggregate moves; enum deletions)
+- [x] Step 10 — Implement + wire `SearchParamsValidator`
+- [x] Step 11 — Core cleanup (HeaderType / PageParams / RatingAggregate moves; enum deletions)
 
 ### Preferences extraction
 - [ ] Domain + Application + Infrastructure scaffolded

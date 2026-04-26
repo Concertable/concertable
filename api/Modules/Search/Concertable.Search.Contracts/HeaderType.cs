@@ -1,4 +1,4 @@
-namespace Concertable.Core.Enums;
+namespace Concertable.Search.Contracts;
 
 public enum HeaderType
 {

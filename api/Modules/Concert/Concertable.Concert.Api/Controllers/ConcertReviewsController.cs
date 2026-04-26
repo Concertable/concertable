@@ -1,6 +1,5 @@
 using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Requests;
-using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Concertable.Concert.Api.Controllers;

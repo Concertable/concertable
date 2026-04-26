@@ -5,7 +5,8 @@
       "Bash(xargs sed *)",
       "Bash(dotnet restore *)",
       "Bash(grep -v \"\\\\\\\\bobj\\\\\\\\b\")",
-      "Bash(grep -v \"\\\\\\\\bbin\\\\\\\\b\")"
+      "Bash(grep -v \"\\\\\\\\bbin\\\\\\\\b\")",
+      "Bash(xargs grep *)"
     ]
   }
 }

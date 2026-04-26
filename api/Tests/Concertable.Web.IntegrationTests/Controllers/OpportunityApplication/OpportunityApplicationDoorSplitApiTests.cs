@@ -2,7 +2,6 @@ using System.Net;
 using Concertable.Application.DTOs;
 using Concertable.Concert.Api.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
-using Concertable.Core.Enums;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Controllers.OpportunityApplication;

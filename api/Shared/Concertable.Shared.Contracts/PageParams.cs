@@ -1,5 +1,4 @@
-
-namespace Concertable.Core.Parameters;
+namespace Concertable.Shared;
 
 public class PageParams : IPageParams
 {

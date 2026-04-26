@@ -1,7 +1,5 @@
 using Concertable.Application.DTOs;
 using Concertable.Application.Mappers;
-using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Factories;

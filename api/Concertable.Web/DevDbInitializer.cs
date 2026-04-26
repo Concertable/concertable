@@ -1,7 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
-using Concertable.Core.Enums;
 using Concertable.Infrastructure.Data;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;

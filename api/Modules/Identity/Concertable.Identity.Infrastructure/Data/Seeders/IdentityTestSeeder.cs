@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Core.Parameters;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;

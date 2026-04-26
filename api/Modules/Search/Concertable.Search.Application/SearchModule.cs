@@ -1,7 +1,3 @@
-using Concertable.Application.Interfaces;
-using Concertable.Core.Enums;
-using Concertable.Core.Parameters;
-using Concertable.Search.Contracts;
 using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Search.Application;

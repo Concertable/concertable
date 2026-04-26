@@ -1,4 +1,3 @@
-using Concertable.Core.Parameters;
 using Concertable.Messaging.Application.DTOs;
 using Concertable.Messaging.Application.Interfaces;
 using Concertable.Messaging.Application.Requests;

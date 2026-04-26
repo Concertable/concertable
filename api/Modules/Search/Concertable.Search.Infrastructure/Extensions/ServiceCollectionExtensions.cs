@@ -1,4 +1,3 @@
-using Concertable.Core.Enums;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Search.Application;
 using Concertable.Search.Domain.Models;

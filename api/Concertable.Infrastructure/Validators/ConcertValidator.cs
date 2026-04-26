@@ -1,4 +1,3 @@
-using Concertable.Core.Enums;
 using FluentResults;
 
 namespace Concertable.Infrastructure.Validators;

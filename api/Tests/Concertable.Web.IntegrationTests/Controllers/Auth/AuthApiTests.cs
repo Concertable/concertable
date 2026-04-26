@@ -1,6 +1,5 @@
 using System.Net;
 using Concertable.Application.Requests;
-using Concertable.Core.Enums;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
 

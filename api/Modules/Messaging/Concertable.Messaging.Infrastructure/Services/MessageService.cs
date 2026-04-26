@@ -1,4 +1,3 @@
-using Concertable.Core.Parameters;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Messaging.Infrastructure.Services;

@@ -24,8 +24,6 @@
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
-    <!-- TEMPORARY: PageParams concrete type still lives in Concertable.Core. -->
-    <ProjectReference Include="..\..\..\Concertable.Core\Concertable.Core.csproj" />
   </ItemGroup>
 
 </Project>

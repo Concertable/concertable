@@ -1,7 +1,3 @@
-using Concertable.Application.Interfaces;
-using Concertable.Core.Parameters;
-using Concertable.Search.Contracts;
-
 namespace Concertable.Search.Application.Interfaces;
 
 internal interface IHeaderService

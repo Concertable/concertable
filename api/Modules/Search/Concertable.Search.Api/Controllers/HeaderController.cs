@@ -1,5 +1,3 @@
-using Concertable.Core.Enums;
-using Concertable.Core.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,6 +1,4 @@
-using Concertable.Application.Interfaces;
 using Concertable.Identity.Contracts;
-using Concertable.Core.Parameters;
 
 namespace Concertable.Payment.Infrastructure.Services;
 

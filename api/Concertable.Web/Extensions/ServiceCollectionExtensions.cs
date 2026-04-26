@@ -18,7 +18,7 @@ using Concertable.Identity.Contracts.Events;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Identity.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
-using Concertable.Core.Enums;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Web.Authorization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
