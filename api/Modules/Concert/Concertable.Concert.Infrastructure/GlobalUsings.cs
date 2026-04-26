@@ -1,4 +1,5 @@
 global using Concertable.Shared;
+global using Concertable.Shared.Infrastructure;
 global using Concertable.Identity.Contracts;
 global using Concertable.Artist.Contracts;
 global using Concertable.Venue.Contracts;

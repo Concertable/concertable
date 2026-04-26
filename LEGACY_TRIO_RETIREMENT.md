@@ -5,6 +5,10 @@ monolith layer. Each module extraction pulls files out; when the last domain-spe
 leaves a project, the project is deleted. This document tracks what remains after each planned
 extraction and where it goes.
 
+**Last refreshed: 2026-04-26** — corrected against current ground truth after Messaging shipped.
+Module status: Search ✅, Identity ✅, Artist ✅, Venue ✅, Concert ✅, Contract ✅, Payment ✅,
+Notification ✅, Messaging ✅. Remaining: Shared.Infrastructure cleanup + Preferences extraction.
+
 ---
 
 ## End-state project layout
@@ -19,18 +23,20 @@ api/
     Contract/       ✅
     Payment/        ✅
     Search/         ✅
-    Notification/   (planned — see NOTIFICATION_MODULE_REFACTOR.md)
-    Messaging/      (planned — see MESSAGING_MODULE_REFACTOR.md)
-    Preferences/    (future — home not yet decided per CLAUDE.md)
+    Notification/   ✅
+    Messaging/      ✅
+    Preferences/    (planned — gating task; collapses AppDbContext + AppDbConfigurationProvider + DevDbInitializer Preferences seeding)
   Shared/
-    Concertable.Shared.Domain/         (exists)
-    Concertable.Shared.Contracts/      (exists — grows with shared interfaces below)
-    Concertable.Shared.Infrastructure/ (exists — grows with Email/Blob/PDF/Geocoding/etc.)
+    Concertable.Shared.Domain/         (exists — `IRepository<T>` joins existing IBaseRepository/IGuidRepository/IIdRepository)
+    Concertable.Shared.Contracts/      (exists — grows with Email/Blob/Geocoding/etc. interfaces)
+    Concertable.Shared.Infrastructure/ (exists — grows with Email/Blob/PDF/Geocoding/etc. impls)
     Concertable.Shared.Validation/     (exists)
   Data/
     Concertable.Data.Application/      (IReadDbContext — retires when modules stop using it)
-    Concertable.Data.Infrastructure/   (ApplicationDbContext — retires when all tables extracted)
-  Concertable.Web     (composition host — permanent)
+    Concertable.Data.Infrastructure/   (ApplicationDbContext lives here today; retires when Preferences extracts)
+  Seeding/
+    Concertable.Seeding/               (IModuleSeeder/IDevSeeder/ITestSeeder/IDbInitializer move here)
+  Concertable.Web     (composition host — permanent; GlobalExceptionHandler moves here)
   Concertable.Workers (background host — permanent)
 ```
 
@@ -39,152 +45,274 @@ in this layout — they are retired, not renamed.
 
 ---
 
-## Remaining files after Notification + Messaging extraction
+## Current legacy footprint (verified 2026-04-26)
 
-### `Concertable.Infrastructure` → `Shared.Infrastructure`
+### `Concertable.Core` — 7 source files
 
-Cross-cutting utilities with no domain owner. Moved as a standalone step (see Steps below).
+| File | Destination | Notes |
+|------|-------------|-------|
+| `Entities/PreferenceEntity.cs` + `GenrePreferenceEntity.cs` | `Preferences.Domain/` | Blocks AppDbContext retirement |
+| `Enums/HeaderType.cs` | `Search.Contracts/` | Only Search consumes it |
+| `Enums/ImageType.cs` | **DELETE** | Empty enum, no consumers |
+| `Enums/ManagerType.cs` | **DELETE** | No consumers |
+| `Enums/ZoneType.cs` | **DELETE** | No consumers (re-add in `Concert.Domain` when ticket zones land) |
+| `Parameters/PageParams.cs` | `Shared.Contracts/` | Sits next to existing `IPageParams`; 38 files reference it |
+| `Projections/RatingAggregate.cs` | `Shared.Domain/` | Primitive `(int, double)` record; consumed by Artist/Venue/Concert review services. Final home decided during the rating-pipeline rewrite (`project_search_rating_projection_ownership`); Shared.Domain is the safe interim |
 
+### `Concertable.Application`
+
+**Deletions (dead code):**
+| File | Reason |
+|------|--------|
+| `Interfaces/ILatLong.cs` | Declared, never used |
+| `Interfaces/IUnitOfWork.cs` | Retiring per `project_generic_uow` |
+
+**`Validators/Parameters/SearchParamsValidator.cs` — restore, don't delete.** File is empty in
+legacy; move skeleton to `Search.Application/Validators/` and **implement it** to validate
+`SearchParams` (page bounds via PageParamsValidator inheritance, sort field allowlist,
+lat/long range, radius bounds). Wire into Search FluentValidation registration.
+
+**`DTOs/SharedDtos.cs` — split per type:**
+| Type | Destination |
+|------|-------------|
+| `EmailDto`, `AttachmentDto` | `Shared.Contracts/` (email infra contract) |
+| `CoordinatesDto` | `Shared.Contracts/` (geocoding contract) |
+| `UserDto`, `LocationDto` | `Identity.Contracts/` — verify against existing Identity DTOs first; likely duplicates |
+| `TicketConcertDto`, `TicketDto` | `Concert.Application/` |
+
+**Generic repository contracts:**
 | File | Destination |
 |------|-------------|
-| `Services/EmailService.cs` + `FakeEmailService.cs` | `Shared.Infrastructure/Services/Email/` |
-| `Services/ImageService.cs` | `Shared.Infrastructure/Services/` |
-| `Services/Blob/BlobStorageService.cs` + `FakeBlobStorageService.cs` | `Shared.Infrastructure/Services/Blob/` |
-| `Services/PdfService.cs` | `Shared.Infrastructure/Services/` |
-| `Services/GeocodingService.cs` + `ApiModels/Google*.cs` | `Shared.Infrastructure/Services/Geocoding/` |
-| `Services/GeometryCalculator.cs` + `Geometry/` providers | `Shared.Infrastructure/Services/Geometry/` |
-| `Services/UriService.cs` | `Shared.Infrastructure/Services/` |
-| `Services/GenreService.cs` | `Shared.Infrastructure/Services/` |
-| `Background/BackgroundTaskQueue.cs` + `BackgroundTaskRunner.cs` | `Shared.Infrastructure/Background/` |
-| `Services/QueueHostedService.cs` | `Shared.Infrastructure/Background/` |
-| `Helpers/GeoApproximatorHelper.cs` + `LocationHelper.cs` | `Shared.Infrastructure/Helpers/` |
-| `Helpers/PaginationExtensions.cs` | **DELETE** — duplicate of `Shared.Infrastructure/Extensions/PaginationExtensions.cs` |
-| `Expressions/ExpressionExtensions.cs` + `ParameterReplacer.cs` | `Shared.Infrastructure/Expressions/` |
-| `Repositories/BaseRepository.cs`, `Repository.cs`, `GuidRepository.cs` | `Shared.Infrastructure/Repositories/` |
-| `Repositories/DapperRepository.cs` | `Shared.Infrastructure/Repositories/` |
-| `Repositories/GenreRepository.cs` | `Shared.Infrastructure/Repositories/` (SharedDbContext-backed) |
-| `Extensions/DbUpdateExceptionExtensions.cs` | `Shared.Infrastructure/Extensions/` |
-| `Settings/BlobStorageSettings.cs` | `Shared.Infrastructure/Settings/` |
-| `Settings/UrlSettings.cs` | `Shared.Infrastructure/Settings/` |
+| `Interfaces/IRepository.cs` | `Shared.Domain/` (alongside `IBaseRepository`/`IGuidRepository`/`IIdRepository`) |
+| `Interfaces/IDapperRepository.cs` | `Shared.Contracts/` |
+| `Interfaces/IGenreRepository.cs` | `Shared.Contracts/` (`GenreEntity` already shared) |
 
-### `Concertable.Infrastructure` → owning modules (during those modules' cleanup)
+**Cross-cutting service interfaces → `Shared.Contracts/`:**
+| File |
+|------|
+| `Interfaces/IEmailService.cs` |
+| `Interfaces/IImageService.cs` |
+| `Interfaces/Blob/IBlobStorageService.cs` |
+| `Interfaces/IPdfService.cs` |
+| `Interfaces/IGeocodingService.cs` |
+| `Interfaces/Geometry/IGeometryCalculator.cs` + `IGeometryProvider.cs` |
+| `Interfaces/IUriService.cs` |
+| `Interfaces/IGenreService.cs` |
 
-| File | Destination | When |
-|------|-------------|------|
-| `Validators/ConcertValidator.cs` | `Concert.Infrastructure/Validators/` | Concert cleanup |
-| `Validators/OpportunityApplicationValidator.cs` | `Concert.Infrastructure/Validators/` | Concert cleanup |
-| `Validators/TicketValidator.cs` | `Concert.Infrastructure/Validators/` | Concert cleanup |
-| `Mappers/QueryableConcertMappers.cs` | `Concert.Infrastructure/Mappers/` | Concert cleanup |
-| `Mappers/GenreSelectors.cs` | `Concert.Infrastructure/Mappers/` (verify consumers) | Concert cleanup |
-| `Extensions/QueryableConcertExtensions.cs` | `Concert.Infrastructure/Extensions/` | Concert cleanup |
-| `Handlers/ApplicationAcceptHandler.cs` | `Concert.Infrastructure/Handlers/` | Concert cleanup |
-| `Services/QrCodeService.cs` | `Concert.Infrastructure/Services/` (ticket-specific with DB) | Concert cleanup |
-| `Mappers/PaymentIntentMappers.cs` | `Payment.Infrastructure/` (check if already there) | Payment cleanup |
-| `Settings/StripeSettings.cs` | `Payment.Infrastructure/` (check if already there) | Payment cleanup |
-| `Settings/AuthSettings.cs` | `Identity.Infrastructure/` (check if already there) | Identity cleanup |
-| `Services/PreferenceService.cs` | `Preferences.Infrastructure/` | Preferences module |
-| `Repositories/PreferenceRepository.cs` | `Preferences.Infrastructure/` | Preferences module |
-| `Repositories/UnitOfWork.cs` | Retires with `IUnitOfWork<TContext>` per `project_generic_uow.md` | — |
+(`IBackgroundTaskQueue` + `IBackgroundTaskRunner` already in `Shared.Contracts` — skip.)
 
----
+**Seeding contracts → `Concertable.Seeding/`:**
+| File |
+|------|
+| `Interfaces/IModuleSeeder.cs` (with `IDevSeeder`/`ITestSeeder`) |
+| `Interfaces/IDbInitializer.cs` |
 
-### `Concertable.Application` → `Shared.Contracts` (interfaces)
-
+**Owning-module pulls:**
 | File | Destination |
 |------|-------------|
-| `Interfaces/IEmailService.cs` | `Shared.Contracts/` |
-| `Interfaces/IImageService.cs` | `Shared.Contracts/` |
-| `Interfaces/Blob/IBlobStorageService.cs` | `Shared.Contracts/` |
-| `Interfaces/IPdfService.cs` | `Shared.Contracts/` |
-| `Interfaces/IQrCodeService.cs` | `Shared.Contracts/` or `Concert.Application` (check consumers) |
-| `Interfaces/IGeocodingService.cs` | `Shared.Contracts/` |
-| `Interfaces/Geometry/IGeometryCalculator.cs` + `IGeometryProvider.cs` | `Shared.Contracts/` |
-| `Interfaces/IUriService.cs` | `Shared.Contracts/` |
-| `Interfaces/IGenreService.cs` | `Shared.Contracts/` |
+| `Interfaces/IPreferenceRepository.cs` + `IPreferenceService.cs` | `Preferences.Application/` |
+| `Interfaces/ITicketRepository.cs` + `ITicketValidator.cs` | `Concert.Application/` |
+| `Interfaces/IQrCodeService.cs` | `Concert.Application/` (ticket-specific) |
+| `Mappers/TicketMappers.cs` | `Concert.Application/Mappers/` |
+| `Validators/TicketValidators.cs` | `Concert.Application/Validators/` |
+| `Models/OpportunityApplicationWithStatus.cs` | `Concert.Application/Models/` |
+| `Mappers/UserMappers.cs` | `Identity.Application/Mappers/` |
+| `DTOs/PreferenceDtos.cs` | `Preferences.Application/` |
+| `Mappers/PreferenceMappers.cs` | `Preferences.Application/` |
+| `Requests/PreferenceRequests.cs` | `Preferences.Application/` |
+| `Validators/PreferenceValidators.cs` | `Preferences.Application/` |
 
-(Note: `IBackgroundTaskQueue` + `IBackgroundTaskRunner` already in `Shared.Contracts` — skip.)
-
-### `Concertable.Application` → `Shared.Infrastructure`
-
+**Shared.Infrastructure pulls:**
 | File | Destination |
 |------|-------------|
 | `Validators/Parameters/PageParamsValidator.cs` | `Shared.Infrastructure/Validators/` |
 | `Serializers/TimeOnlyJsonConverter.cs` | `Shared.Infrastructure/Serializers/` |
 
-### `Concertable.Application` → owning modules
+### `Concertable.Infrastructure`
 
-| File | Destination | When |
-|------|-------------|------|
-| `Mappers/TicketMappers.cs` | `Concert.Application/Mappers/` | Concert cleanup |
-| `Validators/TicketValidators.cs` | `Concert.Application/Validators/` | Concert cleanup |
-| `Models/OpportunityApplicationWithStatus.cs` | `Concert.Application/Models/` | Concert cleanup |
-| `Mappers/UserMappers.cs` | `Identity.Application/Mappers/` | Identity cleanup |
-| `DTOs/PreferenceDto.cs` | `Preferences.Application/` | Preferences module |
-| `Mappers/PreferenceMappers.cs` | `Preferences.Application/` | Preferences module |
-| `Requests/PreferenceRequests.cs` | `Preferences.Application/` | Preferences module |
-| `Validators/PreferenceValidators.cs` | `Preferences.Application/` | Preferences module |
+**Deletions:**
+| File | Reason |
+|------|--------|
+| `Repositories/BaseRepository.cs`, `Repository.cs`, `GuidRepository.cs` | Tied to `ApplicationDbContext`; superseded by `Data.Infrastructure/ModuleRepository.cs` (see Repository consolidation below) |
+| `Repositories/UnitOfWork.cs` | Retires with `IUnitOfWork` per `project_generic_uow` |
+| `Helpers/PaginationExtensions.cs` | Duplicate of `Shared.Infrastructure/PaginationExtensions.cs` |
+| `Data/ApplicationDbContext.cs` | Only owns `Preferences`/`GenrePreferences`; retires when Preferences extracts. Lines 41-87 are pure `ExcludeFromMigrations` carryover |
+| `Data/AppDbConfigurationProvider.cs` | Only applies `PreferenceEntityConfiguration` — moves to Preferences module |
+| `Migrations/` | Per `project_concert_migration_reset` rule |
+
+**Repository consolidation (Step 5 — replaces "move to Shared.Infrastructure"):**
+The legacy `BaseRepository`/`Repository`/`GuidRepository` are AppDbContext-bound and superseded
+by `Data.Infrastructure/ModuleRepository.cs` which is generic over `DbContextBase`. Plan:
+1. Delete the three legacy classes.
+2. Rename the `Data.Infrastructure` types to drop the `Module` prefix:
+   - `ModuleRepository<TEntity, TContext>` → `BaseRepository<TEntity, TContext>`
+   - `GuidModuleRepository<TEntity, TContext>` → `GuidRepository<TEntity, TContext>`
+   - `IdModuleRepository<TEntity, TContext>` → `Repository<TEntity, TContext>`
+3. Rename the file `Data.Infrastructure/ModuleRepository.cs` → `BaseRepository.cs`.
+4. Audit module repos (Identity/Artist/Venue/Concert/Contract/Payment/Messaging) — every
+   `: ModuleRepository<...>` / `GuidModuleRepository<...>` / `IdModuleRepository<...>` updates
+   in the same pass.
+
+`DapperRepository` and `GenreRepository` move separately to `Shared.Infrastructure/Repositories/`
+— verify their context binding (`GenreRepository` likely binds `SharedDbContext`).
+
+**Composition-host pulls:**
+| File | Destination |
+|------|-------------|
+| `GlobalExceptionHandler.cs` | `Concertable.Web/` |
+| `Data/DevDbInitializer.cs` | `Concertable.Seeding/` (Preferences seeding lines 50-71 extract into a `PreferenceDevSeeder`) |
+| `Resources/avatar.png` + `banner.png` | `Shared.Infrastructure/Resources/` (used by `FakeImageService`; update embedded resource path to `Concertable.Shared.Infrastructure.Resources.<file>`) |
+
+**Shared.Infrastructure pulls (cross-cutting impls):**
+| File | Destination |
+|------|-------------|
+| `Services/EmailService.cs` + `Email/FakeEmailService.cs` | `Shared.Infrastructure/Services/Email/` |
+| `Services/ImageService.cs` + `Blob/FakeImageService.cs` | `Shared.Infrastructure/Services/` |
+| `Services/Blob/BlobStorageService.cs` + `FakeBlobStorageService.cs` | `Shared.Infrastructure/Services/Blob/` |
+| `Services/PdfService.cs` | `Shared.Infrastructure/Services/` |
+| `Services/GeocodingService.cs` + `ApiModels/Google*.cs` | `Shared.Infrastructure/Services/Geocoding/` |
+| `Services/Geometry/*.cs` (Calculator + providers + ProviderType) | `Shared.Infrastructure/Services/Geometry/` |
+| `Services/UriService.cs` | `Shared.Infrastructure/Services/` |
+| `Services/GenreService.cs` | `Shared.Infrastructure/Services/` |
+| `Background/BackgroundTaskQueue.cs` + `BackgroundTaskRunner.cs` | `Shared.Infrastructure/Background/` |
+| `Services/QueueHostedService.cs` | `Shared.Infrastructure/Background/` |
+| `Helpers/GeoApproximatorHelper.cs` + `LocationHelper.cs` | `Shared.Infrastructure/Helpers/` |
+| `Expressions/ExpressionExtensions.cs` + `ParameterReplacer.cs` | `Shared.Infrastructure/Expressions/` |
+| `Repositories/DapperRepository.cs` | `Shared.Infrastructure/Repositories/` |
+| `Repositories/GenreRepository.cs` | `Shared.Infrastructure/Repositories/` (verify `SharedDbContext`-backed) |
+| `Extensions/DbUpdateExceptionExtensions.cs` | `Shared.Infrastructure/Extensions/` |
+| `Settings/BlobStorageSettings.cs` | `Shared.Infrastructure/Settings/` |
+| `Settings/UrlSettings.cs` | `Shared.Infrastructure/Settings/` |
+
+**Owning-module pulls (verified NOT yet there as of 2026-04-26):**
+| File | Destination |
+|------|-------------|
+| `Validators/ConcertValidator.cs` | `Concert.Infrastructure/Validators/` |
+| `Validators/OpportunityApplicationValidator.cs` | `Concert.Infrastructure/Validators/` |
+| `Validators/TicketValidator.cs` | `Concert.Infrastructure/Validators/` |
+| `Mappers/QueryableConcertMappers.cs` | `Concert.Infrastructure/Mappers/` |
+| `Mappers/GenreSelectors.cs` | `Concert.Infrastructure/Mappers/` (verify consumers) |
+| `Extensions/QueryableConcertExtensions.cs` | `Concert.Infrastructure/Extensions/` (verify still exists) |
+| `Handlers/ApplicationAcceptHandler.cs` | `Concert.Infrastructure/Handlers/` |
+| `Services/QrCodeService.cs` | `Concert.Infrastructure/Services/` |
+| `Mappers/PaymentIntentMappers.cs` | `Payment.Infrastructure/` |
+| `Settings/StripeSettings.cs` | `Payment.Infrastructure/` |
+| `Settings/AuthSettings.cs` | `Identity.Infrastructure/` |
+| `Services/PreferenceService.cs` | `Preferences.Infrastructure/` |
+| `Repositories/PreferenceRepository.cs` | `Preferences.Infrastructure/` |
 
 ---
 
-### `Concertable.Core` — remaining entities
+## Execution order
 
-| Entity / Enum | Destination | When |
-|---------------|-------------|------|
-| `MessageEntity`, `MessageAction` | `Messaging.Domain/` | Messaging extraction |
-| `PreferenceEntity` + enums | `Preferences.Domain/` | Preferences module |
-| Concert/Opportunity/Ticket entities | `Concert.Domain/` | Check — may already be there |
-| `StripeEventEntity`, `TransactionEntity` | `Payment.Domain/` | Check — may already be there |
+Preferences extraction is the **gating task** that collapses AppDbContext, AppDbConfigurationProvider,
+and the inline Preferences seeding in `DevDbInitializer` together.
+
+1. **Cheap deletions** — `ILotLong`, `ImageType`, `ManagerType`, `ZoneType`, `Helpers/PaginationExtensions` (duplicate). Reduces churn for the moves below.
+2. **Shared.Infrastructure extraction** (Steps below) — most of the cross-cutting volume.
+3. **Per-module pulls** during each module's cleanup pass — Concert/Identity/Payment grab their leftover validators/mappers/settings.
+4. **`SearchParamsValidator` move + implement** in Search.
+5. **Preferences module extraction** — last; kills all three legacy projects together.
 
 ---
 
 ## Shared.Infrastructure extraction — steps
 
-This is a standalone step, independent of any single module extraction. Recommended after
-Payment is complete and before Messaging begins (cleans up base classes modules depend on).
+Standalone effort, runs before Preferences.
 
 ### Step 1 — Move interfaces to `Shared.Contracts`
 Add `IEmailService`, `IBlobStorageService`, `IImageService`, `IPdfService`, `IGeocodingService`,
-`IGeometryCalculator`, `IGeometryProvider`, `IUriService`, `IGenreService`.
-(Skip `IBackgroundTaskQueue` + `IBackgroundTaskRunner` — already there.)
+`IGeometryCalculator`, `IGeometryProvider`, `IUriService`, `IGenreService`,
+`IDapperRepository`, `IGenreRepository`, `EmailDto`/`AttachmentDto`/`CoordinatesDto`.
+Move `IRepository<T>` to `Shared.Domain`. Skip `IBackgroundTaskQueue`/`IBackgroundTaskRunner` (already there).
 
 ### Step 2 — Move Background
 `BackgroundTaskQueue`, `BackgroundTaskRunner`, `QueueHostedService` →
 `Shared.Infrastructure/Background/`. Register in `AddSharedInfrastructure()`.
 
-### Step 3 — Move Email + Blob + PDF + Geocoding
-Service implementations, Google API models, fakes. Bind settings in `AddSharedInfrastructure()`.
-Fakes registered conditionally for dev/test environments.
+### Step 3 — Move Email + Blob + PDF + Geocoding + Image
+Service implementations, fakes, Google API models. Bind settings (`BlobStorageSettings`, `UrlSettings`)
+in `AddSharedInfrastructure()`. Fakes registered conditionally for dev/test. Move
+`Resources/avatar.png` + `banner.png` with `FakeImageService` and update the embedded resource
+path to `Concertable.Shared.Infrastructure.Resources.<file>`.
 
 ### Step 4 — Move Geometry + Helpers
 `GeometryCalculator`, providers, `GeoApproximatorHelper`, `LocationHelper`.
 
-### Step 5 — Move shared repositories
-`BaseRepository`, `Repository`, `GuidRepository`, `DapperRepository`, `GenreRepository`.
-These are base classes used by module repos — update module Infrastructure project refs from
-`Concertable.Infrastructure` → `Shared.Infrastructure`.
+### Step 5 — Repository consolidation (delete + rename, NOT move)
+- DELETE legacy `BaseRepository`/`Repository`/`GuidRepository` (AppDbContext-bound).
+- Rename `Data.Infrastructure/ModuleRepository.cs` types: drop `Module` prefix
+  (`ModuleRepository` → `BaseRepository`, `GuidModuleRepository` → `GuidRepository`,
+  `IdModuleRepository` → `Repository`). Rename file to `BaseRepository.cs`.
+- Update every module repo's base-class reference in the same pass.
+- Move `DapperRepository` + `GenreRepository` to `Shared.Infrastructure/Repositories/`.
 
 ### Step 6 — Move remaining utilities
 `ExpressionExtensions`, `ParameterReplacer`, `DbUpdateExceptionExtensions`, `UriService`,
-`GenreService`, `TimeOnlyJsonConverter`, `PageParamsValidator`, settings.
-**DELETE** `PaginationExtensions` (already in Shared.Infrastructure).
+`GenreService`, `TimeOnlyJsonConverter`, `PageParamsValidator`, `BlobStorageSettings`, `UrlSettings`.
 
-### Step 7 — Update all consumers
+### Step 7 — Composition + seeding moves
+`GlobalExceptionHandler` → `Concertable.Web`. `DevDbInitializer` + `IDbInitializer` +
+`IModuleSeeder`/`IDevSeeder`/`ITestSeeder` → `Concertable.Seeding`.
+
+### Step 8 — Update consumers
 Modules still referencing `Concertable.Infrastructure` or `Concertable.Application` for
-these utilities switch to `Shared.Infrastructure` / `Shared.Contracts`.
+these utilities switch to `Shared.Infrastructure` / `Shared.Contracts` / `Shared.Domain`.
 
-### Step 8 — Verify owning-module settings
-Confirm `AuthSettings` is in `Identity.Infrastructure`, `StripeSettings` in `Payment.Infrastructure`.
-Move any that are still in the legacy Infrastructure.
+### Step 9 — Owning-module settings
+Move `AuthSettings` to `Identity.Infrastructure`, `StripeSettings` + `PaymentIntentMappers` to
+`Payment.Infrastructure`. Verify nothing else still depends on them in legacy.
+
+### Step 10 — Search params validator
+Move + implement `SearchParamsValidator` in `Search.Application/Validators/`. Wire registration.
+
+### Step 11 — Core cleanup
+Move `HeaderType` → `Search.Contracts`. Move `PageParams` → `Shared.Contracts`. Move
+`RatingAggregate` → `Shared.Domain`. Delete `ImageType`/`ManagerType`/`ZoneType`.
 
 ---
 
-## Progress — Shared.Infrastructure extraction
+## Preferences module extraction — collapses the trio
 
-- [ ] Step 1 — Move interfaces to `Shared.Contracts`
-- [ ] Step 2 — Move Background
-- [ ] Step 3 — Move Email + Blob + PDF + Geocoding
-- [ ] Step 4 — Move Geometry + Helpers
-- [ ] Step 5 — Move shared repositories
-- [ ] Step 6 — Move remaining utilities; delete `PaginationExtensions` duplicate
-- [ ] Step 7 — Update all consumers
-- [ ] Step 8 — Verify owning-module settings
+After Shared.Infrastructure is done, Preferences is the last extraction. It pulls:
+- `PreferenceEntity` + `GenrePreferenceEntity` (Concertable.Core) → `Preferences.Domain`
+- `PreferenceDtos`/`PreferenceRequests`/`PreferenceMappers`/`PreferenceValidators` (Concertable.Application) → `Preferences.Application`
+- `IPreferenceRepository`/`IPreferenceService` (Concertable.Application) → `Preferences.Application`
+- `PreferenceService` + `PreferenceRepository` (Concertable.Infrastructure) → `Preferences.Infrastructure`
+- `PreferenceEntityConfiguration` (Data.Infrastructure) → `Preferences.Infrastructure/Data/Configurations/`
+- Inline Preferences seeding (DevDbInitializer 50-71) → `PreferenceDevSeeder`
+
+Once Preferences ships:
+- `ApplicationDbContext` deletes (no entities left to own).
+- `AppDbConfigurationProvider` deletes (only `PreferenceEntityConfiguration` consumer).
+- `Concertable.Core`, `Concertable.Application`, `Concertable.Infrastructure` `.csproj` files removed; references stripped.
+
+---
+
+## Progress
+
+### Cheap deletions
+- [x] `ILatLong.cs`
+- [x] `Enums/ImageType.cs` / `ManagerType.cs` / `ZoneType.cs`
+- [ ] Empty `Validators/Parameters/SearchParamsValidator.cs` (when superseded by Step 10 impl)
+- [x] `Helpers/PaginationExtensions.cs` (duplicate) — Search.Infrastructure + Concert.Infrastructure now ProjectReference + global-using `Concertable.Shared.Infrastructure`
+
+### Shared.Infrastructure extraction
+- [ ] Step 1 — Interfaces to Shared.Contracts / Shared.Domain
+- [ ] Step 2 — Background
+- [ ] Step 3 — Email + Blob + PDF + Geocoding + Image (incl. Resources/)
+- [ ] Step 4 — Geometry + Helpers
+- [ ] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
+- [ ] Step 6 — Remaining utilities
+- [ ] Step 7 — Composition (`GlobalExceptionHandler` → Web; `DevDbInitializer` + seeding contracts → Concertable.Seeding)
+- [ ] Step 8 — Update consumers
+- [ ] Step 9 — Owning-module settings (Auth/Stripe/PaymentIntentMappers)
+- [ ] Step 10 — Implement + wire `SearchParamsValidator`
+- [ ] Step 11 — Core cleanup (HeaderType / PageParams / RatingAggregate moves; enum deletions)
+
+### Preferences extraction
+- [ ] Domain + Application + Infrastructure scaffolded
+- [ ] DbContext + InitialCreate migration
+- [ ] DevSeeder + TestSeeder
+- [ ] AppDbContext / AppDbConfigurationProvider / DevDbInitializer deleted
+- [ ] Legacy trio `.csproj` files removed
