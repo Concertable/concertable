@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Customer.Infrastructure.Repositories;
 
-internal class PreferenceRepository : Repository<PreferenceEntity, CustomerDbContext>, IPreferenceRepository
+internal class PreferenceRepository : Repository<PreferenceEntity>, IPreferenceRepository
 {
     public PreferenceRepository(CustomerDbContext context) : base(context) { }
 

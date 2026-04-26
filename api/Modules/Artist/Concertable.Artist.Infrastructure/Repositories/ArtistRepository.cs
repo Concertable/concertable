@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Concertable.Artist.Infrastructure.Repositories;
 
 internal class ArtistRepository(ArtistDbContext context)
-    : Repository<ArtistEntity, ArtistDbContext>(context), IArtistRepository
+    : Repository<ArtistEntity>(context), IArtistRepository
 {
     public async Task<ArtistEntity?> GetByUserIdAsync(Guid id) =>
         await context.Artists
