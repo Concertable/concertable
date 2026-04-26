@@ -12,38 +12,6 @@ namespace Concertable.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Messages",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FromUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ToUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Action = table.Column<int>(type: "int", nullable: true),
-                    SentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Read = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Messages", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_FromUserId",
-                        column: x => x.FromUserId,
-                        principalSchema: "identity",
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_ToUserId",
-                        column: x => x.ToUserId,
-                        principalSchema: "identity",
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Preferences",
                 columns: table => new
                 {
@@ -102,16 +70,6 @@ namespace Concertable.Infrastructure.Migrations
                 column: "PreferenceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_FromUserId",
-                table: "Messages",
-                column: "FromUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_ToUserId",
-                table: "Messages",
-                column: "ToUserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Preferences_UserId",
                 table: "Preferences",
                 column: "UserId",
@@ -123,9 +81,6 @@ namespace Concertable.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "GenrePreferences");
-
-            migrationBuilder.DropTable(
-                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Preferences");

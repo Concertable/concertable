@@ -1,17 +1,8 @@
 using Concertable.Core.Entities;
-using Concertable.Messaging.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Concertable.Data.Infrastructure.Data.Configurations;
-
-public class MessageEntityConfiguration : IEntityTypeConfiguration<MessageEntity>
-{
-    public void Configure(EntityTypeBuilder<MessageEntity> builder)
-    {
-        builder.ToTable("Messages");
-    }
-}
 
 public class PreferenceEntityConfiguration : IEntityTypeConfiguration<PreferenceEntity>
 {
@@ -24,4 +15,3 @@ public class PreferenceEntityConfiguration : IEntityTypeConfiguration<Preference
             .IsRequired();
     }
 }
-

@@ -7,7 +7,6 @@ internal sealed class AppDbConfigurationProvider
 {
     public void Configure(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new MessageEntityConfiguration());
         modelBuilder.ApplyConfiguration(new PreferenceEntityConfiguration());
     }
 }

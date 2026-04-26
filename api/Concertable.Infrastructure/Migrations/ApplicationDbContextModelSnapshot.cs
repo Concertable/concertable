@@ -532,42 +532,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.ToTable("GenrePreferences");
                 });
 
-            modelBuilder.Entity("Concertable.Core.Entities.MessageEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("Action")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("FromUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Read")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("SentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ToUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FromUserId");
-
-                    b.HasIndex("ToUserId");
-
-                    b.ToTable("Messages", (string)null);
-                });
-
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -723,6 +687,45 @@ namespace Concertable.Infrastructure.Migrations
                     b.HasDiscriminator<int>("Role").HasValue(3);
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Concertable.Messaging.Domain.MessageEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Action")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("FromUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ToUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("ToUserId");
+
+                    b.ToTable("Messages", "messaging", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Payment.Domain.PayoutAccountEntity", b =>
@@ -1296,25 +1299,6 @@ namespace Concertable.Infrastructure.Migrations
                     b.Navigation("Genre");
 
                     b.Navigation("Preference");
-                });
-
-            modelBuilder.Entity("Concertable.Core.Entities.MessageEntity", b =>
-                {
-                    b.HasOne("Concertable.Identity.Domain.UserEntity", "FromUser")
-                        .WithMany()
-                        .HasForeignKey("FromUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Concertable.Identity.Domain.UserEntity", "ToUser")
-                        .WithMany()
-                        .HasForeignKey("ToUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("FromUser");
-
-                    b.Navigation("ToUser");
                 });
 
             modelBuilder.Entity("Concertable.Core.Entities.PreferenceEntity", b =>

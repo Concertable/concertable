@@ -27,7 +27,6 @@ public class ApplicationDbContext : DbContextBase
         _moduleProviders = [];
     }
 
-    public DbSet<MessageEntity> Messages { get; set; }
     public DbSet<PreferenceEntity> Preferences { get; set; }
     public DbSet<GenrePreferenceEntity> GenrePreferences { get; set; }
 
@@ -83,5 +82,8 @@ public class ApplicationDbContext : DbContextBase
         modelBuilder.Entity<SettlementTransactionEntity>().ToTable(t => t.ExcludeFromMigrations());
         modelBuilder.Entity<StripeEventEntity>().ToTable(t => t.ExcludeFromMigrations());
         modelBuilder.Entity<PayoutAccountEntity>().ToTable(t => t.ExcludeFromMigrations());
+
+        // Messaging-owned tables — schema managed by MessagingDbContext migrations
+        modelBuilder.Entity<MessageEntity>().ToTable(t => t.ExcludeFromMigrations());
     }
 }
