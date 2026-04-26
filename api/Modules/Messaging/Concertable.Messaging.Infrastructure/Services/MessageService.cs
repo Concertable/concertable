@@ -1,30 +1,27 @@
-using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
-using Concertable.Application.Mappers;
 using Concertable.Core.Parameters;
-using Concertable.Identity.Contracts;
-using Concertable.Messaging.Domain;
 using Concertable.Shared.Exceptions;
 
-namespace Concertable.Infrastructure.Services;
+namespace Concertable.Messaging.Infrastructure.Services;
 
-public class MessageService : IMessageService
+internal class MessageService : IMessageService
 {
+    private const string MessageReceivedEvent = "MessageReceived";
+
     private readonly IMessageRepository messageRepository;
-    private readonly IMessageNotifier notifier;
+    private readonly INotificationModule notificationModule;
     private readonly ICurrentUser currentUser;
     private readonly IIdentityModule identityModule;
     private readonly TimeProvider timeProvider;
 
     public MessageService(
         IMessageRepository messageRepository,
-        IMessageNotifier notifier,
+        INotificationModule notificationModule,
         ICurrentUser currentUser,
         IIdentityModule identityModule,
         TimeProvider timeProvider)
     {
         this.messageRepository = messageRepository;
-        this.notifier = notifier;
+        this.notificationModule = notificationModule;
         this.currentUser = currentUser;
         this.identityModule = identityModule;
         this.timeProvider = timeProvider;
@@ -34,9 +31,10 @@ public class MessageService : IMessageService
     {
         var message = MessageEntity.Create(fromUserId, toUserId, content, timeProvider.GetUtcNow().DateTime, action);
         await messageRepository.AddAsync(message);
+        await messageRepository.SaveChangesAsync();
     }
 
-    public async Task SendAndSaveAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null)
+    public async Task SendAndNotifyAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null)
     {
         var message = MessageEntity.Create(fromUserId, toUserId, content, timeProvider.GetUtcNow().DateTime, action);
 
@@ -44,7 +42,7 @@ public class MessageService : IMessageService
         await messageRepository.SaveChangesAsync();
 
         var fromUser = await GetSenderDtoAsync(fromUserId);
-        await notifier.MessageReceivedAsync(toUserId.ToString(), message.ToDto(fromUser));
+        await notificationModule.SendAsync(toUserId.ToString(), MessageReceivedEvent, message.ToDto(fromUser));
     }
 
     public async Task<IPagination<MessageDto>> GetForUserAsync(IPageParams pageParams)
@@ -73,41 +71,27 @@ public class MessageService : IMessageService
             messages.Data.Select(m => m.ToDto(senders[m.FromUserId])),
             messages.TotalCount,
             messages.PageNumber,
-            messages.PageSize
-        );
+            messages.PageSize);
+
         return new MessageSummaryDto(pagination, unreadCount);
     }
 
-    public async Task<int> GetUnreadCountForUserAsync()
-    {
-        return await messageRepository.GetUnreadCountByUserIdAsync(currentUser.GetId());
-    }
+    public Task<int> GetUnreadCountForUserAsync() =>
+        messageRepository.GetUnreadCountByUserIdAsync(currentUser.GetId());
 
-    public async Task MarkAsReadAsync(List<int> ids)
-    {
-        await messageRepository.MarkAsReadAsync(ids);
-    }
+    public Task MarkAsReadAsync(List<int> ids) =>
+        messageRepository.MarkAsReadAsync(ids);
 
-    private async Task<UserDto> GetSenderDtoAsync(Guid fromUserId)
+    private async Task<MessageUserDto> GetSenderDtoAsync(Guid fromUserId)
     {
         var sender = await identityModule.GetUserByIdAsync(fromUserId)
             ?? throw new NotFoundException("Message sender not found");
-
-        return new UserDto
-        {
-            Id = sender.Id,
-            Email = sender.Email,
-            Role = sender.Role,
-            Latitude = sender.Latitude,
-            Longitude = sender.Longitude,
-            County = sender.County,
-            Town = sender.Town
-        };
+        return sender.ToMessageUserDto();
     }
 
-    private async Task<Dictionary<Guid, UserDto>> GetSenderDtosAsync(IEnumerable<MessageEntity> messages)
+    private async Task<Dictionary<Guid, MessageUserDto>> GetSenderDtosAsync(IEnumerable<MessageEntity> messages)
     {
-        var dict = new Dictionary<Guid, UserDto>();
+        var dict = new Dictionary<Guid, MessageUserDto>();
         foreach (var fromUserId in messages.Select(m => m.FromUserId).Distinct())
             dict[fromUserId] = await GetSenderDtoAsync(fromUserId);
         return dict;

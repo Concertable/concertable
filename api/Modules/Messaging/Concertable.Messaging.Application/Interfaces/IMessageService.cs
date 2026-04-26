@@ -1,13 +1,11 @@
-using Concertable.Application.DTOs;
-using Concertable.Core.Parameters;
-using Concertable.Messaging.Domain;
+using Concertable.Messaging.Application.DTOs;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.Messaging.Application.Interfaces;
 
-public interface IMessageService
+internal interface IMessageService
 {
     Task SendAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null);
-    Task SendAndSaveAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null);
+    Task SendAndNotifyAsync(Guid fromUserId, Guid toUserId, string content, MessageAction? action = null);
     Task<MessageSummaryDto> GetSummaryForUser();
     Task<IPagination<MessageDto>> GetForUserAsync(IPageParams pageParams);
     Task<int> GetUnreadCountForUserAsync();

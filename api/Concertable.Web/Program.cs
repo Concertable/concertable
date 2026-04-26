@@ -93,6 +93,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 services.AddServices(builder.Configuration);
 services.AddRepositories();
 services.AddNotificationModule();
+services.AddMessagingApi(builder.Configuration);
 services.AddSearchApi(builder.Configuration);
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
