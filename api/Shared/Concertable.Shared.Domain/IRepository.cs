@@ -1,4 +1,6 @@
-﻿namespace Concertable.Application.Interfaces;
+using Concertable.Shared;
+
+namespace Concertable.Application.Interfaces;
 
 public interface IRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class, IIdEntity
 {

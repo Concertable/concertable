@@ -75,9 +75,9 @@ lat/long range, radius bounds). Wire into Search FluentValidation registration.
 **`DTOs/SharedDtos.cs` — split per type:**
 | Type | Destination |
 |------|-------------|
-| `EmailDto`, `AttachmentDto` | `Shared.Contracts/` (email infra contract) |
-| `CoordinatesDto` | `Shared.Contracts/` (geocoding contract) |
-| `UserDto`, `LocationDto` | `Identity.Contracts/` — verify against existing Identity DTOs first; likely duplicates |
+| `EmailDto`, `AttachmentDto` | `Shared.Contracts/` (email infra contract) ✅ |
+| `CoordinatesDto`, `LocationDto` | `Shared.Contracts/` (geocoding contract — `LocationDto` reassigned from `Identity.Contracts/` 2026-04-26: it's a geocoding response type, not an identity type, and Identity already exposes `County`/`Town` on `IUser`) ✅ |
+| `UserDto` | `Identity.Contracts/` — verify against existing Identity DTOs first; likely duplicate of the `IUser` hierarchy |
 | `TicketConcertDto`, `TicketDto` | `Concert.Application/` |
 
 **Generic repository contracts:**
@@ -220,11 +220,13 @@ and the inline Preferences seeding in `DevDbInitializer` together.
 
 Standalone effort, runs before Preferences.
 
-### Step 1 — Move interfaces to `Shared.Contracts`
+### Step 1 — Move interfaces to `Shared.Contracts` ✅
 Add `IEmailService`, `IBlobStorageService`, `IImageService`, `IPdfService`, `IGeocodingService`,
 `IGeometryCalculator`, `IGeometryProvider`, `IUriService`, `IGenreService`,
-`IDapperRepository`, `IGenreRepository`, `EmailDto`/`AttachmentDto`/`CoordinatesDto`.
+`IDapperRepository`, `IGenreRepository`, `EmailDto`/`AttachmentDto`/`CoordinatesDto`/`LocationDto`.
 Move `IRepository<T>` to `Shared.Domain`. Skip `IBackgroundTaskQueue`/`IBackgroundTaskRunner` (already there).
+Namespaces preserved (`Concertable.Application.Interfaces`, `Concertable.Application.DTOs`) for minimum-churn —
+matches the `IBaseRepository`/`IIdRepository`/`IGuidRepository` precedent already sitting in `Shared.Domain`.
 
 ### Step 2 — Move Background
 `BackgroundTaskQueue`, `BackgroundTaskRunner`, `QueueHostedService` →
@@ -298,7 +300,7 @@ Once Preferences ships:
 - [x] `Helpers/PaginationExtensions.cs` (duplicate) — Search.Infrastructure + Concert.Infrastructure now ProjectReference + global-using `Concertable.Shared.Infrastructure`
 
 ### Shared.Infrastructure extraction
-- [ ] Step 1 — Interfaces to Shared.Contracts / Shared.Domain
+- [x] Step 1 — Interfaces to Shared.Contracts / Shared.Domain
 - [ ] Step 2 — Background
 - [ ] Step 3 — Email + Blob + PDF + Geocoding + Image (incl. Resources/)
 - [ ] Step 4 — Geometry + Helpers
