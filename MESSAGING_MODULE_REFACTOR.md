@@ -128,7 +128,7 @@ Shared → Identity → Artist → Venue → Concert → Contract → **Messagin
 - [x] Step 4 — Create `MessagingDbContext`
 - [x] Step 5 — Move Infrastructure layer
 - [x] Step 6 — Move Api
-- [ ] Step 7 — Seeders
+- [x] Step 7 — Seeders
 - [ ] Step 8 — Remove Messages from `ApplicationDbContext`
 - [ ] Step 9 — Re-scaffold migrations
 - [ ] Step 10 — Wire in Web + Workers; test suite

@@ -1,8 +1,10 @@
+using Concertable.Application.Interfaces;
 using Concertable.Data.Infrastructure;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Messaging.Application.Interfaces;
 using Concertable.Messaging.Contracts;
 using Concertable.Messaging.Infrastructure.Data;
+using Concertable.Messaging.Infrastructure.Data.Seeders;
 using Concertable.Messaging.Infrastructure.Repositories;
 using Concertable.Messaging.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +30,18 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IMessagingModule, MessagingModule>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddMessagingDevSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<IDevSeeder, MessagingDevSeeder>();
+        return services;
+    }
+
+    public static IServiceCollection AddMessagingTestSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<ITestSeeder, MessagingTestSeeder>();
         return services;
     }
 }
