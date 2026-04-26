@@ -18,7 +18,6 @@ internal class ConcertService : IConcertService
     private readonly IPreferenceService preferenceService;
     private readonly IGeometryCalculator geometryCalculator;
     private readonly IConcertDraftService concertDraftService;
-    private readonly IConcertNotificationService concertNotificationService;
     private readonly TimeProvider timeProvider;
 
     public ConcertService(
@@ -33,7 +32,6 @@ internal class ConcertService : IConcertService
         IPreferenceService preferenceService,
         IGeometryCalculator geometryCalculator,
         IConcertDraftService concertDraftService,
-        IConcertNotificationService concertNotificationService,
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
@@ -47,7 +45,6 @@ internal class ConcertService : IConcertService
         this.preferenceService = preferenceService;
         this.geometryCalculator = geometryCalculator;
         this.concertDraftService = concertDraftService;
-        this.concertNotificationService = concertNotificationService;
         this.timeProvider = timeProvider;
     }
 

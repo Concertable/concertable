@@ -11,16 +11,16 @@ namespace Concertable.Concert.Api.Controllers;
 internal class ConcertController : ControllerBase
 {
     private readonly IConcertService concertService;
-    private readonly IConcertNotificationService notificationService;
+    private readonly IConcertNotifier notifier;
     private readonly IConcertPostedHandler concertPostedHandler;
 
     public ConcertController(
         IConcertService concertService,
-        IConcertNotificationService notificationService,
+        IConcertNotifier notifier,
         IConcertPostedHandler concertPostedHandler)
     {
         this.concertService = concertService;
-        this.notificationService = notificationService;
+        this.notifier = notifier;
         this.concertPostedHandler = concertPostedHandler;
     }
 
@@ -107,7 +107,7 @@ internal class ConcertController : ControllerBase
             DatePosted = DateTime.UtcNow
         };
 
-        await notificationService.ConcertPostedAsync(userId.ToString(), concertSnapshot);
+        await notifier.ConcertPostedAsync(userId.ToString(), concertSnapshot);
 
         return Ok($"SignalR test message sent to User {userId}");
     }

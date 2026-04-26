@@ -17,7 +17,8 @@ using Concertable.Infrastructure.Data;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Api.Extensions;
 using Concertable.Web.Extensions;
-using Concertable.Web.Hubs;
+using Concertable.Notification.Infrastructure.Hubs;
+using Concertable.Notification.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +92,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();
+services.AddNotificationModule();
 services.AddSearchApi(builder.Configuration);
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);

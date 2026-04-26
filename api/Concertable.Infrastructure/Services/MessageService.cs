@@ -12,20 +12,20 @@ namespace Concertable.Infrastructure.Services;
 public class MessageService : IMessageService
 {
     private readonly IMessageRepository messageRepository;
-    private readonly IMessageNotificationService notificationService;
+    private readonly IMessageNotifier notifier;
     private readonly ICurrentUser currentUser;
     private readonly IIdentityModule identityModule;
     private readonly TimeProvider timeProvider;
 
     public MessageService(
         IMessageRepository messageRepository,
-        IMessageNotificationService notificationService,
+        IMessageNotifier notifier,
         ICurrentUser currentUser,
         IIdentityModule identityModule,
         TimeProvider timeProvider)
     {
         this.messageRepository = messageRepository;
-        this.notificationService = notificationService;
+        this.notifier = notifier;
         this.currentUser = currentUser;
         this.identityModule = identityModule;
         this.timeProvider = timeProvider;
@@ -58,7 +58,7 @@ public class MessageService : IMessageService
             Town = sender.Town
         };
 
-        await notificationService.MessageReceivedAsync(toUserId.ToString(), message.ToDto(fromUser));
+        await notifier.MessageReceivedAsync(toUserId.ToString(), message.ToDto(fromUser));
     }
 
     public async Task<IPagination<MessageDto>> GetForUserAsync(IPageParams pageParams)

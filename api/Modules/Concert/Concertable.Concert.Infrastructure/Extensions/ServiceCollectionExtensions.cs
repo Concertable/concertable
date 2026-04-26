@@ -47,6 +47,8 @@ public static class ServiceCollectionExtensions
         // Services
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IConcertDraftService, ConcertDraftService>();
+        services.AddScoped<IConcertNotifier, ConcertNotifier>();
+        services.AddScoped<ITicketNotifier, TicketNotifier>();
         services.AddScoped<IOpportunityService, OpportunityService>();
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
