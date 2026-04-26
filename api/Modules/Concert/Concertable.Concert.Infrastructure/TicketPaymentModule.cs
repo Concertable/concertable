@@ -21,8 +21,7 @@ internal sealed class TicketPaymentModule(
             EntityId = concertId,
             FromUserId = userId,
             FromEmail = customer.Email ?? string.Empty,
-            Quantity = quantity,
-            TransactionId = string.Empty
+            Quantity = quantity
         });
 
         if (result.IsFailed)
@@ -30,7 +29,7 @@ internal sealed class TicketPaymentModule(
 
         await notificationService.TicketPurchasedAsync(userId.ToString(), result.Value);
 
-        return [.. result.Value.TicketIds];
+        return result.Value;
     }
 
     public Task RefundTicketAsync(Guid ticketId, CancellationToken ct = default)

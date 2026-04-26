@@ -46,6 +46,5 @@ internal record PurchaseCompleteDto
     public required string TransactionId { get; set; }
     public Guid FromUserId { get; set; }
     public required string FromEmail { get; set; }
-    public Guid ToUserId { get; set; }
     public int? Quantity { get; set; }
 }
