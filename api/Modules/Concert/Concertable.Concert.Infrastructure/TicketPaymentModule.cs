@@ -29,7 +29,7 @@ internal sealed class TicketPaymentModule(
 
         await notificationService.TicketPurchasedAsync(userId.ToString(), result.Value);
 
-        return result.Value;
+        return result.Value.TicketIds.ToList();
     }
 
     public Task RefundTicketAsync(Guid ticketId, CancellationToken ct = default)

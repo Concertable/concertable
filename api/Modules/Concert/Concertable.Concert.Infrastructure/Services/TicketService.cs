@@ -122,7 +122,6 @@ internal class TicketService : ITicketService
             PurchaseDate = tickets[0].PurchaseDate,
             Amount = concertEntity.Price,
             Currency = "GBP",
-            TransactionId = purchaseCompleteDto.TransactionId,
             UserEmail = purchaseCompleteDto.FromEmail
         });
     }
