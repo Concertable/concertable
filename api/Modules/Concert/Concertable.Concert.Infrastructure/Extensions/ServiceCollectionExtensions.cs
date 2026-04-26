@@ -43,6 +43,9 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<AuditInterceptor>(),
                     sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
+        services.AddScoped<IUnitOfWork<ConcertDbContext>, UnitOfWork<ConcertDbContext>>();
+        services.AddScoped<IUnitOfWorkBehavior, UnitOfWorkBehavior>();
+
         // Services
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IConcertDraftService, ConcertDraftService>();

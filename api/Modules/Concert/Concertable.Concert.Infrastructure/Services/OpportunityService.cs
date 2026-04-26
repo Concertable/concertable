@@ -1,4 +1,3 @@
-using System.Transactions;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Contract.Abstractions;
 using Concertable.Shared.Exceptions;
@@ -13,6 +12,7 @@ internal class OpportunityService : IOpportunityService
     private readonly IContractModule contractModule;
     private readonly IOpportunityMapper mapper;
     private readonly ICurrentUser currentUser;
+    private readonly IUnitOfWorkBehavior uowBehavior;
 
     public OpportunityService(
         IOpportunityRepository opportunityRepository,
@@ -20,7 +20,8 @@ internal class OpportunityService : IOpportunityService
         IVenueModule venueModule,
         IContractModule contractModule,
         IOpportunityMapper mapper,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        IUnitOfWorkBehavior uowBehavior)
     {
         this.opportunityRepository = opportunityRepository;
         this.stripeValidationFactory = stripeValidationFactory;
@@ -28,6 +29,7 @@ internal class OpportunityService : IOpportunityService
         this.contractModule = contractModule;
         this.mapper = mapper;
         this.currentUser = currentUser;
+        this.uowBehavior = uowBehavior;
     }
 
     public async Task<OpportunityDto> CreateAsync(OpportunityRequest request)
@@ -38,19 +40,17 @@ internal class OpportunityService : IOpportunityService
         var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
 
-        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-
-        var contractId = await contractModule.CreateAsync(request.Contract);
-        var opportunity = OpportunityEntity.Create(
-            venueId,
-            new DateRange(request.StartDate, request.EndDate),
-            contractId,
-            request.GenreIds);
-
-        await opportunityRepository.AddAsync(opportunity);
-        await opportunityRepository.SaveChangesAsync();
-
-        scope.Complete();
+        var opportunity = await uowBehavior.ExecuteAsync(async () =>
+        {
+            var contractId = await contractModule.CreateAsync(request.Contract);
+            var entity = OpportunityEntity.Create(
+                venueId,
+                new DateRange(request.StartDate, request.EndDate),
+                contractId,
+                request.GenreIds);
+            await opportunityRepository.AddAsync(entity);
+            return entity;
+        });
 
         var saved = await opportunityRepository.GetByIdAsync(opportunity.Id)
             ?? throw new NotFoundException("Opportunity not found after save");
@@ -69,21 +69,19 @@ internal class OpportunityService : IOpportunityService
         var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
 
-        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-
-        foreach (var request in requestList)
+        await uowBehavior.ExecuteAsync(async () =>
         {
-            var contractId = await contractModule.CreateAsync(request.Contract);
-            var opportunity = OpportunityEntity.Create(
-                venueId,
-                new DateRange(request.StartDate, request.EndDate),
-                contractId,
-                request.GenreIds);
-            await opportunityRepository.AddAsync(opportunity);
-        }
-
-        await opportunityRepository.SaveChangesAsync();
-        scope.Complete();
+            foreach (var request in requestList)
+            {
+                var contractId = await contractModule.CreateAsync(request.Contract);
+                var opportunity = OpportunityEntity.Create(
+                    venueId,
+                    new DateRange(request.StartDate, request.EndDate),
+                    contractId,
+                    request.GenreIds);
+                await opportunityRepository.AddAsync(opportunity);
+            }
+        });
     }
 
     public async Task<OpportunityDto> UpdateAsync(int id, OpportunityRequest request)
@@ -100,16 +98,14 @@ internal class OpportunityService : IOpportunityService
         if (opportunity.VenueId != venueId)
             throw new ForbiddenException("You do not own this concert opportunity");
 
-        using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        await uowBehavior.ExecuteAsync(async () =>
         {
             await contractModule.UpdateAsync(opportunity.ContractId, request.Contract);
             opportunity.Update(
                 new DateRange(request.StartDate, request.EndDate),
                 opportunity.ContractId,
                 request.GenreIds);
-            await opportunityRepository.SaveChangesAsync();
-            scope.Complete();
-        }
+        });
 
         var updated = await opportunityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity not found");
