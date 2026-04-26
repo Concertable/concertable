@@ -129,5 +129,37 @@ public class HeaderApiTests : IAsyncLifetime
         Assert.Empty(result.Data);
     }
 
+    [Fact]
+    public async Task Search_ShouldReturn200_WithResults_WhenCommaDelimitedGenreIdsContainMatch()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+
+        // Act — comma-delimited binding: Rock matches Test Artist, Jazz does not
+        var response = await client.GetAsync($"/api/Header?headerType=Artist&genreIds={fixture.SeedData.Rock.Id},{fixture.SeedData.Jazz.Id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadAsync<PaginationResponse<ArtistHeaderDto>>();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Data);
+    }
+
+    [Fact]
+    public async Task Search_ShouldReturn200_WithEmptyData_WhenCommaDelimitedGenreIdsHaveNoMatch()
+    {
+        // Arrange
+        var client = fixture.CreateClient();
+
+        // Act — Test Artist only has Rock; Jazz + Electronic should filter it out
+        var response = await client.GetAsync($"/api/Header?headerType=Artist&genreIds={fixture.SeedData.Jazz.Id},{fixture.SeedData.Electronic.Id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadAsync<PaginationResponse<ArtistHeaderDto>>();
+        Assert.NotNull(result);
+        Assert.Empty(result.Data);
+    }
+
     #endregion
 }

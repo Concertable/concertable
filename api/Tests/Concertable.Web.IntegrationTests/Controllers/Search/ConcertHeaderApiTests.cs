@@ -99,5 +99,21 @@ public class ConcertHeaderApiTests : IAsyncLifetime
         Assert.Empty(concerts);
     }
 
+    [Fact]
+    public async Task GetRecommended_ShouldReturn200_WithConcerts_WhenCommaDelimitedGenreIdsContainMatch()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.Customer);
+
+        // Act — comma-delimited binding: Rock matches seeded concerts, Jazz does not
+        var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Rock.Id},{fixture.SeedData.Jazz.Id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
+        Assert.NotNull(concerts);
+        Assert.NotEmpty(concerts);
+    }
+
     #endregion
 }

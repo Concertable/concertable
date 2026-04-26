@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Concertable.Core.ModelBinders;
+namespace Concertable.Search.Api.ModelBinders;
 
-public class CommaDelimitedIntArrayModelBinder : IModelBinder
+internal class CommaDelimitedIntArrayModelBinder : IModelBinder
 {
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
@@ -32,7 +32,7 @@ public class CommaDelimitedIntArrayModelBinder : IModelBinder
     }
 }
 
-public class CommaDelimitedIntArrayBinderProvider : IModelBinderProvider
+internal class CommaDelimitedIntArrayBinderProvider : IModelBinderProvider
 {
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {

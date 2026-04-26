@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Serializers;
-using Concertable.Core.ModelBinders;
 using Concertable.Artist.Api.Extensions;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Venue.Api.Extensions;
@@ -26,8 +25,7 @@ builder.AddServiceDefaults();
 
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddControllers(opts =>
-    opts.ModelBinderProviders.Insert(0, new CommaDelimitedIntArrayBinderProvider()))
+builder.Services.AddControllers()
 .AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.IncludeFields = true;
