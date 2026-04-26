@@ -1,5 +1,4 @@
 using Concertable.Concert.Infrastructure.Data;
-using Concertable.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;

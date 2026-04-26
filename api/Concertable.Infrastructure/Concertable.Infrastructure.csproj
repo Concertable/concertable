@@ -37,6 +37,7 @@
 		<ProjectReference Include="..\Concertable.Core\Concertable.Core.csproj" />
 		<ProjectReference Include="..\Concertable.Application\Concertable.Application.csproj" />
 		<ProjectReference Include="..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
+		<ProjectReference Include="..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
 		<ProjectReference Include="..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
 		<ProjectReference Include="..\Modules\Notification\Concertable.Notification.Contracts\Concertable.Notification.Contracts.csproj" />
 		<ProjectReference Include="..\Modules\Identity\Concertable.Identity.Application\Concertable.Identity.Application.csproj" />

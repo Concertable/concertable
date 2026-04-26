@@ -1,5 +1,5 @@
 using Concertable.Application.Interfaces.Geometry;
-using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Shared.Exceptions;
 using Concertable.Venue.Application.Mappers;
 using Concertable.Venue.Application.Requests;

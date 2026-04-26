@@ -259,8 +259,19 @@ is also ticket-specific (sole method `GenerateTicketReciptAsync`) — likely bel
 `Concert.Infrastructure` alongside `QrCodeService`. Final home revisited under owning-module pulls
 or a "TicketReceiptService" rename pass.
 
-### Step 4 — Move Geometry + Helpers
-`GeometryCalculator`, providers, `GeoApproximatorHelper`, `LocationHelper`.
+### Step 4 — Move Geometry + delete unused Helpers ✅
+`GeometryCalculator`, `GeographicGeometryProvider`, `MetricGeometryProvider`, `GeometryProviderType`
+moved to `Shared.Infrastructure/Services/Geometry/` (namespace `Concertable.Shared.Infrastructure.Services.Geometry`).
+20 consumer using statements updated via sed pass.
+
+`GeoApproximatorHelper` + `LocationHelper` **deleted, not moved** — both were dead code (no callers
+across the codebase; `IGeometryProvider.CreatePoint` already covers `LocationHelper.CreatePoint`'s
+job; `GeoApproximatorHelper.GetBoundingBox`/`IsWithinBoundingBox` had no consumers). Stale
+`using Concertable.Infrastructure.Helpers;` lines stripped from 7 module repos in the same sed pass.
+
+`Concertable.Shared.Infrastructure` ProjectReference added to `Concertable.Infrastructure.csproj`
+so consumers of legacy infra (Identity/Venue/Artist Infrastructure) gain transitive visibility into
+Shared.Infrastructure types during the migration window.
 
 ### Step 5 — Repository consolidation (delete + rename, NOT move)
 - DELETE legacy `BaseRepository`/`Repository`/`GuidRepository` (AppDbContext-bound).
@@ -324,7 +335,7 @@ Once Preferences ships:
 - [x] Step 1 — Interfaces to Shared.Contracts / Shared.Domain
 - [x] Step 2 — Background
 - [x] Step 3 — Email + Blob + Geocoding + Image (incl. Resources/) — PdfService deferred
-- [ ] Step 4 — Geometry + Helpers
+- [x] Step 4 — Geometry moved; Helpers deleted (dead code)
 - [ ] Step 5 — Repository consolidation (delete legacy + rename ModuleRepository types)
 - [ ] Step 6 — Remaining utilities
 - [ ] Step 7 — Composition (`GlobalExceptionHandler` → Web; `DevDbInitializer` + seeding contracts → Concertable.Seeding)

@@ -13,7 +13,7 @@ using Concertable.Infrastructure.Repositories;
 using Concertable.Infrastructure.Services;
 using Concertable.Infrastructure.Handlers;
 using Concertable.Identity.Contracts.Events;
-using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Infrastructure.Settings;
 using Concertable.Infrastructure.Validators;
 using Concertable.Core.Enums;

@@ -1,7 +1,7 @@
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Artist.Application.Mappers;
 using Concertable.Artist.Application.Requests;
-using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 

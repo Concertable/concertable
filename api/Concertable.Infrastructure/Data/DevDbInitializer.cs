@@ -3,7 +3,7 @@ using Concertable.Application.Interfaces.Geometry;
 using Concertable.Core.Entities;
 using Concertable.Core.Enums;
 using Concertable.Seeding.Factories;
-using Concertable.Infrastructure.Services.Geometry;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
