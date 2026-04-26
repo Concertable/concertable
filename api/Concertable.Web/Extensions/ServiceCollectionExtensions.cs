@@ -52,7 +52,7 @@ public static class ServiceCollectionExtensions
 
         services.AddDatabase(configuration);
         services.AddExternalServices(configuration);
-        services.AddBackgroundServices();
+        services.AddSignalR();
 
         return services;
     }
@@ -109,27 +109,14 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
-    {
-        services.AddSignalR();
-        // IBackgroundTaskQueue + IBackgroundTaskRunner + QueueHostedService registered in AddPaymentModule/AddPaymentQueueHostedService.
-        return services;
-    }
-
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IConcertNotificationService, SignalRConcertNotificationService>();
-        // IConcertPostedHandler registered by AddConcertApi()
         services.AddScoped<IApplicationNotificationService, SignalRApplicationNotificationService>();
         services.AddScoped<ITicketNotificationService, SignalRTicketNotificationService>();
         services.AddScoped<IMessageNotificationService, SignalRMessageNotificationService>();
-        // IVenueService registered by AddVenueModule() via AddVenueApi()
-        // IConcertService/IConcertDraftService/IOpportunityService/IOpportunityApplicationService registered by AddConcertApi()
         services.AddScoped<IMessageService, MessageService>();
-        // ITicketService registered by AddConcertModule()
-        // ITransactionService + ITransactionMapper registered by AddPaymentModule()
         services.AddScoped<IGenreService, GenreService>();
-        // IConcertReviewService + IReviewValidator registered by AddConcertModule()
         services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         services.AddScoped<IPdfService, PdfService>();
         services.AddSingleton<QRCodeGenerator>();
@@ -147,17 +134,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
         services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
-        // IReviewValidator registered by AddConcertModule()
 
         return services;
     }
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        // IVenueRepository registered by AddVenueModule() via AddVenueApi()
-        // Concert/Opportunity/OpportunityApplication/Contract/ConcertBooking/Review/Ticket/Rating repos registered by AddConcertApi()
         services.AddScoped<IMessageRepository, MessageRepository>();
-        // ITransactionRepository + IStripeEventRepository registered by AddPaymentModule()
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IPreferenceRepository, PreferenceRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -170,7 +153,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddFluentValidationAutoValidation();
         services.AddValidatorsFromAssemblyContaining<LoginRequest>();
-        // Venue validators registered by AddVenueModule() via AddVenueApi()
 
         return services;
     }
