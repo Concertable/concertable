@@ -4,7 +4,7 @@ import { CheckCircle, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PaymentMethodSection } from "@/components/checkout/PaymentMethodSection";
+import { ImmediatePaymentSection } from "@/components/checkout/ImmediatePaymentSection";
 import { useConcert } from "@/hooks/useConcert";
 import { usePaymentMethodQuery } from "@/hooks/query/useStripeAccountQuery";
 import { useTicketCheckout } from "@/hooks/useTicketCheckout";
@@ -102,8 +102,7 @@ export default function ConcertCheckoutPage() {
 
       <div className="space-y-3">
         <h2 className="font-medium">Payment Method</h2>
-        <PaymentMethodSection
-          timing="immediate"
+        <ImmediatePaymentSection
           savedCard={savedCard}
           isLoading={isPaymentMethodLoading}
           onChange={setPaymentMethodId}

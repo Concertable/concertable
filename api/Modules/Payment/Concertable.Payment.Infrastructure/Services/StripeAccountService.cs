@@ -107,13 +107,13 @@ internal class StripeAccountService : IStripeAccountService
         return paymentMethods.FirstOrDefault()?.Id;
     }
 
-    public async Task<string> CreateSetupIntentAsync(string stripeCustomerId)
+    public async Task<string> CreateSetupIntentAsync(string? stripeCustomerId)
     {
         var intent = await setupIntentService.CreateAsync(new SetupIntentCreateOptions
         {
             Customer = stripeCustomerId,
             PaymentMethodTypes = ["card"],
-            Usage = "off_session",
+            Usage = stripeCustomerId is null ? "on_session" : "off_session",
         });
 
         return intent.ClientSecret;
