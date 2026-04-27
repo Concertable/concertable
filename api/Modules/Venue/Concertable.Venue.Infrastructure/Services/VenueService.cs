@@ -44,6 +44,7 @@ internal class VenueService : IVenueService
             ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);
+        var avatarUrl = await imageService.UploadAsync(request.Avatar);
         var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
         var location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
         var address = new Address(locationDto.County, locationDto.Town);
@@ -53,7 +54,7 @@ internal class VenueService : IVenueService
             request.Name,
             request.About,
             bannerUrl,
-            user.Avatar,
+            avatarUrl,
             location,
             address,
             user.Email);

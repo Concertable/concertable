@@ -154,7 +154,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Created);
         var venue = await response.Content.ReadAsync<VenueDto>();
         Assert.NotNull(venue);
         Assert.True(venue.Id > 0);

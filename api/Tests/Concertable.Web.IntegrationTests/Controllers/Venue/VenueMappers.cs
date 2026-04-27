@@ -17,11 +17,8 @@ internal static class VenueMappers
             { new StringContent(req.Longitude.ToString()), "Longitude" }
         };
 
-        using var bannerStream = new MemoryStream();
-        await req.Banner.CopyToAsync(bannerStream);
-        var bannerContent = new ByteArrayContent(bannerStream.ToArray());
-        bannerContent.Headers.ContentType = MediaTypeHeaderValue.Parse(req.Banner.ContentType);
-        content.Add(bannerContent, "Banner", req.Banner.FileName);
+        await content.AddFileAsync(req.Banner, "Banner");
+        await content.AddFileAsync(req.Avatar, "Avatar");
 
         return content;
     }

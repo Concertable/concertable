@@ -1,7 +1,4 @@
 using Concertable.Artist.Application.Requests;
-using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Artist;
 
@@ -11,28 +8,15 @@ internal static class ArtistRequestBuilders
         string name = "New Artist",
         string about = "About the artist",
         double latitude = 51.5,
-        double longitude = -0.1)
+        double longitude = -0.1) => new()
     {
-        using var image = new Image<Rgba32>(1000, 250);
-        var bannerStream = new MemoryStream();
-        image.SaveAsJpeg(bannerStream);
-        var imageBytes = bannerStream.ToArray();
-        var stream = new MemoryStream(imageBytes);
-        var file = new FormFile(stream, 0, imageBytes.Length, "Banner", "banner.jpg")
-        {
-            Headers = new HeaderDictionary(),
-            ContentType = "image/jpeg"
-        };
-
-        return new CreateArtistRequest
-        {
-            Name = name,
-            About = about,
-            Latitude = latitude,
-            Longitude = longitude,
-            Banner = file
-        };
-    }
+        Name = name,
+        About = about,
+        Latitude = latitude,
+        Longitude = longitude,
+        Banner = ImageFileBuilder.Jpeg("Banner", "banner.jpg"),
+        Avatar = ImageFileBuilder.Jpeg("Avatar", "avatar.jpg")
+    };
 
     internal static UpdateArtistRequest BuildUpdateRequest(
         string name = "Updated Artist",

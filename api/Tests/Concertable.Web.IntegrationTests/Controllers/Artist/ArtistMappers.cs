@@ -1,5 +1,5 @@
-using System.Net.Http.Headers;
 using Concertable.Artist.Application.Requests;
+using Concertable.Web.IntegrationTests.Controllers;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Artist;
 
@@ -15,11 +15,8 @@ internal static class ArtistMappers
             { new StringContent(req.Longitude.ToString()), "Longitude" }
         };
 
-        using var bannerStream = new MemoryStream();
-        await req.Banner.CopyToAsync(bannerStream);
-        var bannerContent = new ByteArrayContent(bannerStream.ToArray());
-        bannerContent.Headers.ContentType = MediaTypeHeaderValue.Parse(req.Banner.ContentType);
-        content.Add(bannerContent, "Banner", req.Banner.FileName);
+        await content.AddFileAsync(req.Banner, "Banner");
+        await content.AddFileAsync(req.Avatar, "Avatar");
 
         return content;
     }

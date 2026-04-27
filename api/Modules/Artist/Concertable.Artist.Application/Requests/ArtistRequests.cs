@@ -10,6 +10,7 @@ internal record CreateArtistRequest
     public required double Longitude { get; init; }
     public IEnumerable<GenreDto> Genres { get; init; } = [];
     public required IFormFile Banner { get; init; }
+    public required IFormFile Avatar { get; init; }
 }
 
 internal record UpdateArtistRequest

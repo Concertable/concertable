@@ -1,7 +1,4 @@
 using Concertable.Venue.Application.Requests;
-using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Venue;
 
@@ -11,28 +8,15 @@ internal static class VenueRequestBuilders
         string name = "New Venue",
         string about = "About the venue",
         double latitude = 51.5,
-        double longitude = -0.1)
+        double longitude = -0.1) => new()
     {
-        using var image = new Image<Rgba32>(1000, 250);
-        var bannerStream = new MemoryStream();
-        image.SaveAsJpeg(bannerStream);
-        var imageBytes = bannerStream.ToArray();
-        var stream = new MemoryStream(imageBytes);
-        var file = new FormFile(stream, 0, imageBytes.Length, "Image", "image.jpg")
-        {
-            Headers = new HeaderDictionary(),
-            ContentType = "image/jpeg"
-        };
-
-        return new CreateVenueRequest
-        {
-            Name = name,
-            About = about,
-            Latitude = latitude,
-            Longitude = longitude,
-            Banner = file
-        };
-    }
+        Name = name,
+        About = about,
+        Latitude = latitude,
+        Longitude = longitude,
+        Banner = ImageFileBuilder.Jpeg(),
+        Avatar = ImageFileBuilder.Jpeg()
+    };
 
     internal static UpdateVenueRequest BuildUpdateRequest(
         string name = "Updated Venue",
