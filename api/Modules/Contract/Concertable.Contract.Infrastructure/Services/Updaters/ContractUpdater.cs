@@ -1,5 +1,5 @@
 using System.Collections.Frozen;
-using Concertable.Contract.Abstractions;
+using Concertable.Contract.Contracts;
 using Concertable.Contract.Application.Interfaces;
 
 namespace Concertable.Contract.Infrastructure.Services.Updaters;

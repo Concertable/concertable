@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Application\Concertable.Shared.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
   </ItemGroup>
 

@@ -9,7 +9,7 @@ global using Concertable.Payment.Application.Mappers;
 global using Concertable.Identity.Domain;
 global using Concertable.Identity.Infrastructure.Services.Auth;
 global using Concertable.Concert.Domain;
-global using Concertable.Contract.Abstractions;
+global using Concertable.Contract.Contracts;
 global using Concertable.Concert.Application.Interfaces;
 global using Concertable.Concert.Application.DTOs;
 global using Concertable.Concert.Application.Requests;

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
+    <ProjectReference Include="..\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
   </ItemGroup>
 

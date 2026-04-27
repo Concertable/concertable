@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\Concertable.Shared.Application\Concertable.Shared.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

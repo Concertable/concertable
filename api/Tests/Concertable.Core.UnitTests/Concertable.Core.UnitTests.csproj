@@ -21,7 +21,7 @@
     <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
-    <ProjectReference Include="..\..\Modules\Contract\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Modules\Contract\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Contract\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Payment\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />

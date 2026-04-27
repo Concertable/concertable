@@ -1,5 +1,5 @@
 using Concertable.Payment.Application.Interfaces;
-using Concertable.Contract.Abstractions;
+using Concertable.Contract.Contracts;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services;

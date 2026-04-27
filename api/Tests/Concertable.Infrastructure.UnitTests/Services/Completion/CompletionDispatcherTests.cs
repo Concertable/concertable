@@ -1,7 +1,7 @@
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Infrastructure.Services.Completion;
-using Concertable.Contract.Abstractions;
+using Concertable.Contract.Contracts;
 using Moq;
 using Xunit;
 

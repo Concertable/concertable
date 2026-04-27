@@ -1,6 +1,6 @@
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Infrastructure.Services.Acceptance;
-using Concertable.Contract.Abstractions;
+using Concertable.Contract.Contracts;
 using Moq;
 using Xunit;
 

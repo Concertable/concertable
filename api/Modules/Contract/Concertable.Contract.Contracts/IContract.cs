@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Concertable.Contract.Abstractions;
+namespace Concertable.Contract.Contracts;
 
 [JsonDerivedType(typeof(FlatFeeContract), "flatFee")]
 [JsonDerivedType(typeof(DoorSplitContract), "doorSplit")]

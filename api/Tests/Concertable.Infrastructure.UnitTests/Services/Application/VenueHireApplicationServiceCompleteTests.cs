@@ -1,5 +1,5 @@
 using Concertable.Concert.Infrastructure.Services.Application;
-using Concertable.Contract.Abstractions;
+using Concertable.Contract.Contracts;
 using Moq;
 using Xunit;
 

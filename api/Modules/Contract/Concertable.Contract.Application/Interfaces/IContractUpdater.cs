@@ -1,4 +1,4 @@
-using Concertable.Contract.Abstractions;
+using Concertable.Contract.Contracts;
 
 namespace Concertable.Contract.Application.Interfaces;
 

@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
-    <ProjectReference Include="..\..\Contract\Concertable.Contract.Abstractions\Concertable.Contract.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Contract\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

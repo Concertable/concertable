@@ -7,7 +7,7 @@ global using Concertable.Search.Contracts;
 global using Concertable.Payment.Contracts;
 global using Concertable.Payment.Domain;
 global using Concertable.Notification.Contracts;
-global using Concertable.Contract.Abstractions;
+global using Concertable.Contract.Contracts;
 global using Concertable.Concert.Domain;
 global using Concertable.Concert.Contracts;
 global using Concertable.Concert.Application.DTOs;

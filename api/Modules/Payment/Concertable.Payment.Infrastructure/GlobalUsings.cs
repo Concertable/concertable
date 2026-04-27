@@ -10,5 +10,5 @@ global using Concertable.Payment.Application.Responses;
 global using Concertable.Identity.Contracts;
 global using Concertable.Payment.Infrastructure.Repositories;
 global using Concertable.Payment.Infrastructure.Validators;
-global using Concertable.Contract.Abstractions;
+global using Concertable.Contract.Contracts;
 global using Concertable.Data.Infrastructure;

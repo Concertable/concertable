@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Concertable.Contract.Abstractions;
+namespace Concertable.Contract.Contracts;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PaymentMethod
