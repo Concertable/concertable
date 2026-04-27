@@ -7,7 +7,8 @@ public record VenueChangedEvent(
     Guid UserId,
     string Name,
     string About,
-    string? County,
-    string? Town,
-    double? Latitude,
-    double? Longitude) : IIntegrationEvent;
+    string Avatar,
+    string County,
+    string Town,
+    double Latitude,
+    double Longitude) : IIntegrationEvent;

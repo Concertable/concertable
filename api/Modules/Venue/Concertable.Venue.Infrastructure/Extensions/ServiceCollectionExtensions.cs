@@ -1,6 +1,5 @@
 using Concertable.Concert.Contracts.Events;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Identity.Contracts.Events;
 using Concertable.Venue.Application.Validators;
 using Concertable.Venue.Domain.Events;
 using Concertable.Venue.Infrastructure.Data;
@@ -32,7 +31,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueReviewService, VenueReviewService>();
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IVenueModule, VenueModule>();
-        services.AddScoped<IIntegrationEventHandler<UserLocationUpdatedEvent>, VenueLocationSyncHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, VenueReviewProjectionHandler>();
         services.AddScoped<IDomainEventHandler<VenueChangedDomainEvent>, VenueChangedDomainEventHandler>();
 

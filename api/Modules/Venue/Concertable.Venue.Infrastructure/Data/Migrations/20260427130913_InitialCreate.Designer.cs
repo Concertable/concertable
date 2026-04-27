@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.Venue.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(VenueDbContext))]
-    [Migration("20260426205324_InitialCreate")]
+    [Migration("20260427130913_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -43,6 +43,7 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Avatar")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BannerUrl")
@@ -50,9 +51,11 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Point>("Location")
+                        .IsRequired()
                         .HasColumnType("geography");
 
                     b.Property<string>("Name")
@@ -130,7 +133,8 @@ namespace Concertable.Venue.Infrastructure.Data.Migrations
                                 .HasForeignKey("VenueEntityId");
                         });
 
-                    b.Navigation("Address");
+                    b.Navigation("Address")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Concertable.Venue.Domain.VenueImageEntity", b =>

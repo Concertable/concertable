@@ -46,13 +46,20 @@ internal class ArtistService : IArtistService
             ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);
-        var artist = ArtistEntity.Create(user.Id, request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
-
         var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
-        artist.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
-        artist.Address = new Address(locationDto.County, locationDto.Town);
-        artist.Avatar = user.Avatar;
-        artist.Email = user.Email;
+        var location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
+        var address = new Address(locationDto.County, locationDto.Town);
+
+        var artist = ArtistEntity.Create(
+            user.Id,
+            request.Name,
+            request.About,
+            bannerUrl,
+            user.Avatar,
+            location,
+            address,
+            user.Email,
+            request.Genres.Select(g => g.Id));
 
         var createdArtist = await artistRepository.AddAsync(artist);
         await artistRepository.SaveChangesAsync();
@@ -75,11 +82,12 @@ internal class ArtistService : IArtistService
         artist.Update(request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
 
         var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
-        artist.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
-        artist.Address = new Address(locationDto.County, locationDto.Town);
+        artist.UpdateLocation(
+            geometryProvider.CreatePoint(request.Latitude, request.Longitude),
+            new Address(locationDto.County, locationDto.Town));
 
         if (request.Avatar is not null)
-            artist.Avatar = await imageService.ReplaceAsync(request.Avatar, artist.Avatar);
+            artist.UpdateAvatar(await imageService.ReplaceAsync(request.Avatar, artist.Avatar));
 
         await artistRepository.SaveChangesAsync();
 

@@ -17,10 +17,7 @@ internal class VenueReadModelProjectionHandler(ConcertDbContext db)
     public async Task HandleAsync(VenueChangedEvent e, CancellationToken ct = default)
     {
         var venue = await db.VenueReadModels.FirstOrDefaultAsync(v => v.Id == e.VenueId, ct);
-
-        var location = e.Latitude.HasValue && e.Longitude.HasValue
-            ? GeometryFactory.CreatePoint(new Coordinate(e.Longitude.Value, e.Latitude.Value))
-            : null;
+        var location = GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude));
 
         if (venue is null)
         {

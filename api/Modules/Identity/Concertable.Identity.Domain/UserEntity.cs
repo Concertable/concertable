@@ -23,7 +23,7 @@ public class UserEntity : IGuidEntity, IEventRaiser
     public Role Role { get; private set; }
     public Address? Address { get; private set; }
     public Point? Location { get; private set; }
-    public string Avatar { get; set; } = string.Empty;
+    public string Avatar { get; private set; } = string.Empty;
     public bool IsEmailVerified { get; private set; }
 
     public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
@@ -39,7 +39,18 @@ public class UserEntity : IGuidEntity, IEventRaiser
     {
         Location = location;
         Address = address;
-        _events.Raise(new UserLocationUpdatedDomainEvent(Id, location, address));
+    }
+
+    public void UpdateAvatar(string avatar)
+    {
+        Avatar = avatar;
+    }
+
+    public void SyncFromManager(string avatar, Point location, Address address)
+    {
+        Avatar = avatar;
+        Location = location;
+        Address = address;
     }
 }
 

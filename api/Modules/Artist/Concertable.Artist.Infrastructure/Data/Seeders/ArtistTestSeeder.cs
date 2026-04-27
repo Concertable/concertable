@@ -1,7 +1,10 @@
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Artist.Infrastructure.Data.Seeders;
 
@@ -11,11 +14,16 @@ internal class ArtistTestSeeder : ITestSeeder
 
     private readonly ArtistDbContext context;
     private readonly SeedData seed;
+    private readonly IGeometryProvider geometryProvider;
 
-    public ArtistTestSeeder(ArtistDbContext context, SeedData seed)
+    public ArtistTestSeeder(
+        ArtistDbContext context,
+        SeedData seed,
+        [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.context = context;
         this.seed = seed;
+        this.geometryProvider = geometryProvider;
     }
 
     public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
@@ -24,12 +32,15 @@ internal class ArtistTestSeeder : ITestSeeder
     {
         await context.Artists.SeedIfEmptyAsync(async () =>
         {
-            seed.Artist = ArtistFaker.GetFaker(seed.ArtistManager.Id, "Test Artist", "artist.jpg").Generate();
-            seed.Artist.Location = seed.ArtistManager.Location;
-            seed.Artist.Address = seed.ArtistManager.Address;
-            seed.Artist.Avatar = seed.ArtistManager.Avatar;
-            seed.Artist.Email = seed.ArtistManager.Email;
-            seed.Artist.SyncGenres([seed.Rock.Id]);
+            seed.Artist = ArtistFaker.GetFaker(
+                seed.ArtistManager.Id,
+                "Test Artist",
+                "artist.jpg",
+                "avatar.jpg",
+                geometryProvider.CreatePoint(51, 0),
+                new Address("Test County", "Test Town"),
+                seed.ArtistManager.Email,
+                [seed.Rock.Id]).Generate();
 
             context.Artists.Add(seed.Artist);
             await context.SaveChangesAsync(ct);

@@ -9,7 +9,6 @@ using Concertable.Artist.Infrastructure.Handlers;
 using Concertable.Artist.Infrastructure.Repositories;
 using Concertable.Artist.Infrastructure.Services;
 using Concertable.Concert.Contracts.Events;
-using Concertable.Identity.Contracts.Events;
 using Concertable.Shared;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +34,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistRepository, ArtistRepository>();
         services.AddScoped<IArtistModule, ArtistModule>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ArtistReviewProjectionHandler>();
-        services.AddScoped<IIntegrationEventHandler<UserLocationUpdatedEvent>, ArtistLocationSyncHandler>();
         services.AddScoped<IDomainEventHandler<ArtistChangedDomainEvent>, ArtistChangedDomainEventHandler>();
 
         services.AddSingleton<ArtistConfigurationProvider>();

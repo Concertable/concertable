@@ -37,56 +37,60 @@ internal class ArtistDevSeeder : IDevSeeder
 
         await context.Artists.SeedIfEmptyAsync(async () =>
         {
-            var artistsWithGenres = new (ArtistEntity Artist, int[] GenreIds)[]
+            var bands = new (string Name, string Banner, int[] GenreIds)[]
             {
-                (ArtistFaker.GetFaker(artistManagerIds[0], "The Rockers", "rockers.jpg").Generate(), [1, 2, 3]),
-                (ArtistFaker.GetFaker(artistManagerIds[1], "Indie Vibes", "indievibes.jpg").Generate(), [1, 5, 4]),
-                (ArtistFaker.GetFaker(artistManagerIds[2], "Electronic Pulse", "electronicpulse.jpg").Generate(), [5, 3]),
-                (ArtistFaker.GetFaker(artistManagerIds[3], "Hip-Hop Flow", "hiphopflow.jpg").Generate(), [4]),
-                (ArtistFaker.GetFaker(artistManagerIds[4], "Jazz Masters", "jazzmaster.jpg").Generate(), [6, 3]),
-                (ArtistFaker.GetFaker(artistManagerIds[5], "Always Punks", "alwayspunks.jpg").Generate(), [1, 6]),
-                (ArtistFaker.GetFaker(artistManagerIds[6], "The Hollow Frequencies", "hollowfrequencies.jpg").Generate(), [2]),
-                (ArtistFaker.GetFaker(artistManagerIds[7], "Neon Foxes", "neonfoxes.jpg").Generate(), [4, 2]),
-                (ArtistFaker.GetFaker(artistManagerIds[8], "Velvet Static", "velvetstatic.jpg").Generate(), [5, 3]),
-                (ArtistFaker.GetFaker(artistManagerIds[9], "Echo Bloom", "echobloom.jpg").Generate(), [1, 7]),
-                (ArtistFaker.GetFaker(artistManagerIds[10], "The Wild Chords", "wildchords.jpg").Generate(), [6, 1]),
-                (ArtistFaker.GetFaker(artistManagerIds[11], "Glitch & Glow", "glitchandglow.jpg").Generate(), [2]),
-                (ArtistFaker.GetFaker(artistManagerIds[12], "Sonic Mirage", "sonicmirage.jpg").Generate(), [6, 5]),
-                (ArtistFaker.GetFaker(artistManagerIds[13], "Neon Echoes", "neonechoes.jpg").Generate(), [4]),
-                (ArtistFaker.GetFaker(artistManagerIds[14], "Dreamwave Collective", "dreamwavecollective.jpg").Generate(), [7]),
-                (ArtistFaker.GetFaker(artistManagerIds[15], "Synth Pulse", "synthpulse.jpg").Generate(), [1]),
-                (ArtistFaker.GetFaker(artistManagerIds[16], "The Brass Poets", "brasspoets.jpg").Generate(), [3]),
-                (ArtistFaker.GetFaker(artistManagerIds[17], "Groove Alchemy", "groovealchemy.jpg").Generate(), [6]),
-                (ArtistFaker.GetFaker(artistManagerIds[18], "Velvet Rhymes", "velvetrhymes.jpg").Generate(), [4]),
-                (ArtistFaker.GetFaker(artistManagerIds[19], "The Lo-Fi Syndicate", "lofisyndicate.jpg").Generate(), [7]),
-                (ArtistFaker.GetFaker(artistManagerIds[20], "Beats & Blue Notes", "beatsbluenotes.jpg").Generate(), [8]),
-                (ArtistFaker.GetFaker(artistManagerIds[21], "Bass Pilots", "basspilots.jpg").Generate(), [1]),
-                (ArtistFaker.GetFaker(artistManagerIds[22], "The Digital Prophets", "digitalprophets.jpg").Generate(), [5]),
-                (ArtistFaker.GetFaker(artistManagerIds[23], "Neon Bass Theory", "neonbasstheory.jpg").Generate(), [6]),
-                (ArtistFaker.GetFaker(artistManagerIds[24], "Wavelength 303", "wavelength303.jpg").Generate(), [2]),
-                (ArtistFaker.GetFaker(artistManagerIds[25], "Gravity Loops", "gravityloops.jpg").Generate(), [1]),
-                (ArtistFaker.GetFaker(artistManagerIds[26], "The Golden Reverie", "goldenreverie.jpg").Generate(), [8]),
-                (ArtistFaker.GetFaker(artistManagerIds[27], "Fable Sound", "fablesound.jpg").Generate(), [5]),
-                (ArtistFaker.GetFaker(artistManagerIds[28], "Moonlight Static", "moonlightstatic.jpg").Generate(), [7]),
-                (ArtistFaker.GetFaker(artistManagerIds[29], "The Chromatics", "thechromatics.jpg").Generate(), [3]),
-                (ArtistFaker.GetFaker(artistManagerIds[30], "Echo Reverberation", "echoreverberation.jpg").Generate(), [6]),
-                (ArtistFaker.GetFaker(artistManagerIds[31], "Midnight Reverie", "midnightreverie.jpg").Generate(), [1]),
-                (ArtistFaker.GetFaker(artistManagerIds[32], "Static Wolves", "staticwolves.jpg").Generate(), [4]),
-                (ArtistFaker.GetFaker(artistManagerIds[33], "Echo Collapse", "echocollapse.jpg").Generate(), [2]),
-                (ArtistFaker.GetFaker(artistManagerIds[34], "Violet Sundown", "violetsundown.jpg").Generate(), [8])
+                ("The Rockers", "rockers.jpg", [1, 2, 3]),
+                ("Indie Vibes", "indievibes.jpg", [1, 5, 4]),
+                ("Electronic Pulse", "electronicpulse.jpg", [5, 3]),
+                ("Hip-Hop Flow", "hiphopflow.jpg", [4]),
+                ("Jazz Masters", "jazzmaster.jpg", [6, 3]),
+                ("Always Punks", "alwayspunks.jpg", [1, 6]),
+                ("The Hollow Frequencies", "hollowfrequencies.jpg", [2]),
+                ("Neon Foxes", "neonfoxes.jpg", [4, 2]),
+                ("Velvet Static", "velvetstatic.jpg", [5, 3]),
+                ("Echo Bloom", "echobloom.jpg", [1, 7]),
+                ("The Wild Chords", "wildchords.jpg", [6, 1]),
+                ("Glitch & Glow", "glitchandglow.jpg", [2]),
+                ("Sonic Mirage", "sonicmirage.jpg", [6, 5]),
+                ("Neon Echoes", "neonechoes.jpg", [4]),
+                ("Dreamwave Collective", "dreamwavecollective.jpg", [7]),
+                ("Synth Pulse", "synthpulse.jpg", [1]),
+                ("The Brass Poets", "brasspoets.jpg", [3]),
+                ("Groove Alchemy", "groovealchemy.jpg", [6]),
+                ("Velvet Rhymes", "velvetrhymes.jpg", [4]),
+                ("The Lo-Fi Syndicate", "lofisyndicate.jpg", [7]),
+                ("Beats & Blue Notes", "beatsbluenotes.jpg", [8]),
+                ("Bass Pilots", "basspilots.jpg", [1]),
+                ("The Digital Prophets", "digitalprophets.jpg", [5]),
+                ("Neon Bass Theory", "neonbasstheory.jpg", [6]),
+                ("Wavelength 303", "wavelength303.jpg", [2]),
+                ("Gravity Loops", "gravityloops.jpg", [1]),
+                ("The Golden Reverie", "goldenreverie.jpg", [8]),
+                ("Fable Sound", "fablesound.jpg", [5]),
+                ("Moonlight Static", "moonlightstatic.jpg", [7]),
+                ("The Chromatics", "thechromatics.jpg", [3]),
+                ("Echo Reverberation", "echoreverberation.jpg", [6]),
+                ("Midnight Reverie", "midnightreverie.jpg", [1]),
+                ("Static Wolves", "staticwolves.jpg", [4]),
+                ("Echo Collapse", "echocollapse.jpg", [2]),
+                ("Violet Sundown", "violetsundown.jpg", [8])
             };
 
-            foreach (var (artist, genreIds) in artistsWithGenres)
+            var artists = bands.Select((b, i) =>
             {
                 var loc = locationFaker.Next();
-                artist.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
-                artist.Address = new Address(loc.County, loc.Town);
-                artist.Avatar = "avatar.jpg";
-                artist.Email = string.Empty;
-                artist.SyncGenres(genreIds);
-            }
+                return ArtistFaker.GetFaker(
+                    artistManagerIds[i],
+                    b.Name,
+                    b.Banner,
+                    "avatar.jpg",
+                    geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
+                    new Address(loc.County, loc.Town),
+                    $"{b.Name.ToLowerInvariant().Replace(" ", "")}@test.com",
+                    b.GenreIds).Generate();
+            }).ToArray();
 
-            context.Artists.AddRange(artistsWithGenres.Select(x => x.Artist));
+            context.Artists.AddRange(artists);
             await context.SaveChangesAsync(ct);
         });
     }

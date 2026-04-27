@@ -44,13 +44,19 @@ internal class VenueService : IVenueService
             ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);
-        var venue = VenueEntity.Create(user.Id, request.Name, request.About, bannerUrl);
-
         var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
-        venue.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
-        venue.Address = new Address(locationDto.County, locationDto.Town);
-        venue.Avatar = user.Avatar;
-        venue.Email = user.Email;
+        var location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
+        var address = new Address(locationDto.County, locationDto.Town);
+
+        var venue = VenueEntity.Create(
+            user.Id,
+            request.Name,
+            request.About,
+            bannerUrl,
+            user.Avatar,
+            location,
+            address,
+            user.Email);
 
         var createdVenue = await venueRepository.AddAsync(venue);
         await venueRepository.SaveChangesAsync();
@@ -73,11 +79,12 @@ internal class VenueService : IVenueService
         venue.Update(request.Name, request.About, bannerUrl);
 
         var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
-        venue.Location = geometryProvider.CreatePoint(request.Latitude, request.Longitude);
-        venue.Address = new Address(locationDto.County, locationDto.Town);
+        venue.UpdateLocation(
+            geometryProvider.CreatePoint(request.Latitude, request.Longitude),
+            new Address(locationDto.County, locationDto.Town));
 
         if (request.Avatar is not null)
-            venue.Avatar = await imageService.ReplaceAsync(request.Avatar, venue.Avatar);
+            venue.UpdateAvatar(await imageService.ReplaceAsync(request.Avatar, venue.Avatar));
 
         await venueRepository.SaveChangesAsync();
 

@@ -1,3 +1,4 @@
+using Concertable.Artist.Contracts.Events;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Identity.Application.Validators;
@@ -6,6 +7,7 @@ using Concertable.Identity.Infrastructure.Data;
 using Concertable.Identity.Infrastructure.Data.Seeders;
 using Concertable.Identity.Infrastructure.Events;
 using Concertable.Identity.Infrastructure.Settings;
+using Concertable.Venue.Contracts.Events;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -60,8 +62,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IManagerModule>(sp => sp.GetRequiredService<IdentityModule>());
         services.AddScoped<IIdentityModule>(sp => sp.GetRequiredService<IdentityModule>());
 
-        services.AddScoped<IDomainEventHandler<UserLocationUpdatedDomainEvent>, UserLocationUpdatedDomainEventHandler>();
         services.AddScoped<IDomainEventHandler<UserCreatedDomainEvent>, UserCreatedDomainEventHandler>();
+        services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistManagerSyncHandler>();
+        services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueManagerSyncHandler>();
 
         services.AddSingleton<IdentityConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<IdentityConfigurationProvider>());

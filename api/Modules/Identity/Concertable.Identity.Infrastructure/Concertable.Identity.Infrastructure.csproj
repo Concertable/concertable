@@ -14,6 +14,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Identity.Application\Concertable.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\Artist\Concertable.Artist.Contracts\Concertable.Artist.Contracts.csproj" />
+    <ProjectReference Include="..\..\Venue\Concertable.Venue.Contracts\Concertable.Venue.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Data\Concertable.Data.Application\Concertable.Data.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />

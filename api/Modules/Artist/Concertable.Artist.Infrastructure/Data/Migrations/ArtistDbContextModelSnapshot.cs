@@ -37,6 +37,7 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Avatar")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BannerUrl")
@@ -44,9 +45,11 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Point>("Location")
+                        .IsRequired()
                         .HasColumnType("geography");
 
                     b.Property<string>("Name")
@@ -137,7 +140,8 @@ namespace Concertable.Artist.Infrastructure.Data.Migrations
                                 .HasForeignKey("ArtistEntityId");
                         });
 
-                    b.Navigation("Address");
+                    b.Navigation("Address")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Concertable.Artist.Domain.ArtistGenreEntity", b =>

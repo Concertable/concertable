@@ -14,9 +14,10 @@ internal class VenueChangedDomainEventHandler(IIntegrationEventBus bus)
             venue.UserId,
             venue.Name,
             venue.About,
-            venue.Address?.County,
-            venue.Address?.Town,
-            venue.Location?.Y,
-            venue.Location?.X), ct);
+            venue.Avatar,
+            venue.Address.County,
+            venue.Address.Town,
+            venue.Location.Y,
+            venue.Location.X), ct);
     }
 }

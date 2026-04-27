@@ -43,13 +43,13 @@ internal class IdentityDevSeeder : IDevSeeder
 
             seedData.Admin = UserFactory.Admin("admin@test.com", hash);
             seedData.Admin.UpdateLocation(geometryProvider.CreatePoint(51.0, -0.5), new Address("Leicestershire", "Loughborough"));
-            seedData.Admin.Avatar = "avatar.jpg";
+            seedData.Admin.UpdateAvatar("avatar.jpg");
             context.Users.Add(seedData.Admin);
 
             var customerLoc = locationFaker.Next();
             seedData.Customer = UserFactory.Customer("customer1@test.com", hash);
             seedData.Customer.UpdateLocation(geometryProvider.CreatePoint(customerLoc.Latitude, customerLoc.Longitude), new Address(customerLoc.County, customerLoc.Town));
-            seedData.Customer.Avatar = "avatar.jpg";
+            seedData.Customer.UpdateAvatar("avatar.jpg");
             context.Users.Add(seedData.Customer);
 
             for (int i = 2; i <= 6; i++)
@@ -57,51 +57,27 @@ internal class IdentityDevSeeder : IDevSeeder
                 var loc = locationFaker.Next();
                 var c = UserFactory.Customer($"customer{i}@test.com", hash);
                 c.UpdateLocation(geometryProvider.CreatePoint(loc.Latitude, loc.Longitude), new Address(loc.County, loc.Town));
-                c.Avatar = "avatar.jpg";
+                c.UpdateAvatar("avatar.jpg");
                 context.Users.Add(c);
             }
 
-            var am1Loc = locationFaker.Next();
             seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
-            seedData.ArtistManager.UpdateLocation(geometryProvider.CreatePoint(am1Loc.Latitude, am1Loc.Longitude), new Address(am1Loc.County, am1Loc.Town));
-            seedData.ArtistManager.Avatar = "avatar.jpg";
             context.Users.Add(seedData.ArtistManager);
 
-            var am2Loc = locationFaker.Next();
             var artistManager2 = UserFactory.ArtistManager("artistmanager2@test.com", hash);
-            artistManager2.UpdateLocation(geometryProvider.CreatePoint(am2Loc.Latitude, am2Loc.Longitude), new Address(am2Loc.County, am2Loc.Town));
-            artistManager2.Avatar = "avatar.jpg";
             context.Users.Add(artistManager2);
 
             for (int i = 3; i <= 35; i++)
-            {
-                var loc = locationFaker.Next();
-                var am = UserFactory.ArtistManager($"artistmanager{i}@test.com", hash);
-                am.UpdateLocation(geometryProvider.CreatePoint(loc.Latitude, loc.Longitude), new Address(loc.County, loc.Town));
-                am.Avatar = "avatar.jpg";
-                context.Users.Add(am);
-            }
+                context.Users.Add(UserFactory.ArtistManager($"artistmanager{i}@test.com", hash));
 
-            var vm1Loc = locationFaker.Next();
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
-            seedData.VenueManager1.UpdateLocation(geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude), new Address(vm1Loc.County, vm1Loc.Town));
-            seedData.VenueManager1.Avatar = "avatar.jpg";
             context.Users.Add(seedData.VenueManager1);
 
-            var vm2Loc = locationFaker.Next();
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
-            seedData.VenueManager2.UpdateLocation(geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude), new Address(vm2Loc.County, vm2Loc.Town));
-            seedData.VenueManager2.Avatar = "avatar.jpg";
             context.Users.Add(seedData.VenueManager2);
 
             for (int i = 3; i <= 35; i++)
-            {
-                var loc = locationFaker.Next();
-                var vm = UserFactory.VenueManager($"venuemanager{i}@test.com", hash);
-                vm.UpdateLocation(geometryProvider.CreatePoint(loc.Latitude, loc.Longitude), new Address(loc.County, loc.Town));
-                vm.Avatar = "avatar.jpg";
-                context.Users.Add(vm);
-            }
+                context.Users.Add(UserFactory.VenueManager($"venuemanager{i}@test.com", hash));
 
             await context.SaveChangesAsync(ct);
         });
