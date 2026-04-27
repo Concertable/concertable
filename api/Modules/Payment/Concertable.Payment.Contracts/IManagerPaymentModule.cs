@@ -9,6 +9,9 @@ public interface IManagerPaymentModule
         Guid payeeId,
         decimal amount,
         IDictionary<string, string>? metadata,
-        string? paymentMethodId,
+        string paymentMethodId,
         CancellationToken ct = default);
+
+    Task<bool> HasStripeCustomerAsync(Guid userId);
+    Task<string?> TryGetSavedPaymentMethodIdAsync(Guid userId);
 }

@@ -94,16 +94,17 @@ internal class StripeAccountService : IStripeAccountService
         return PayoutAccountStatus.NotVerified;
     }
 
-    public async Task<string> GetPaymentMethodAsync(string stripeCustomerId)
+    public async Task<string?> TryGetSavedPaymentMethodAsync(string? stripeCustomerId)
     {
+        if (stripeCustomerId is null) return null;
+
         var paymentMethods = await paymentMethodService.ListAsync(new PaymentMethodListOptions
         {
             Customer = stripeCustomerId,
             Type = "card"
         });
 
-        return paymentMethods.FirstOrDefault()?.Id
-            ?? throw new NotFoundException($"No payment method found for customer {stripeCustomerId}");
+        return paymentMethods.FirstOrDefault()?.Id;
     }
 
     public async Task<string> CreateSetupIntentAsync(string stripeCustomerId)
@@ -131,4 +132,5 @@ internal class StripeAccountService : IStripeAccountService
 
         return new PaymentMethodDto(card.Brand, card.Last4, (int)card.ExpMonth, (int)card.ExpYear);
     }
+
 }

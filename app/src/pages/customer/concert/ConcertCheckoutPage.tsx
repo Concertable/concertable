@@ -103,6 +103,7 @@ export default function ConcertCheckoutPage() {
       <div className="space-y-3">
         <h2 className="font-medium">Payment Method</h2>
         <PaymentMethodSection
+          timing="immediate"
           savedCard={savedCard}
           isLoading={isPaymentMethodLoading}
           onChange={setPaymentMethodId}

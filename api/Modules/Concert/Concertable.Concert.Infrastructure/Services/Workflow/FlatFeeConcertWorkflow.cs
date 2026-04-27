@@ -1,4 +1,6 @@
-﻿using Concertable.Contract.Contracts;
+using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Responses;
+using Concertable.Contract.Contracts;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -6,27 +8,38 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow;
 internal class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IUpfrontConcertService upfrontConcertService;
-    private readonly IOpportunityApplicationRepository applicationRepository;
+    private readonly IPayerLookup payerLookup;
     private readonly IContractLookup contractLookup;
 
     public FlatFeeConcertWorkflow(
         IUpfrontConcertService upfrontConcertService,
-        IOpportunityApplicationRepository applicationRepository,
+        IPayerLookup payerLookup,
         IContractLookup contractLookup)
     {
         this.upfrontConcertService = upfrontConcertService;
-        this.applicationRepository = applicationRepository;
+        this.payerLookup = payerLookup;
         this.contractLookup = contractLookup;
+    }
+
+    public async Task<AcceptPreview> PreviewAsync(int applicationId)
+    {
+        var artist = await payerLookup.GetArtistAsync(applicationId)
+            ?? throw new NotFoundException("Application not found");
+        var contract = (FlatFeeContract)await contractLookup.GetByApplicationIdAsync(applicationId);
+
+        return new AcceptPreview(PaymentTiming.Immediate, new FlatPayment(contract.Fee), artist);
     }
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
     {
-        var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
+        var ids = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
+
+        var (payerId, payeeId) = (ids.VenueManagerId, ids.ArtistManagerId);
 
         var contract = (FlatFeeContract)await contractLookup.GetByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, venue.UserId, artist.UserId, contract.Fee, paymentMethodId);
+        return await upfrontConcertService.InitiateAsync(applicationId, payerId, payeeId, contract.Fee, paymentMethodId);
     }
 
     public Task SettleAsync(int bookingId) =>

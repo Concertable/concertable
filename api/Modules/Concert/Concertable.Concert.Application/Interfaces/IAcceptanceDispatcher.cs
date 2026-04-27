@@ -4,5 +4,6 @@ namespace Concertable.Concert.Application.Interfaces;
 
 internal interface IAcceptanceDispatcher
 {
+    Task<AcceptPreview> PreviewAsync(int applicationId);
     Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null);
 }

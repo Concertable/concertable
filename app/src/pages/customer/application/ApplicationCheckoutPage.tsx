@@ -11,6 +11,7 @@ import { AcceptContractSummary } from "@/components/applications/AcceptContractS
 import {
   useApplicationQuery,
   useAcceptApplicationMutation,
+  useAcceptPreviewQuery,
 } from "@/hooks/query/useApplicationQuery";
 import { usePaymentMethodQuery } from "@/hooks/query/useStripeAccountQuery";
 import type { AcceptOutcome } from "@/types/application";
@@ -26,6 +27,8 @@ export default function ApplicationCheckoutPage() {
     isLoading,
     isError,
   } = useApplicationQuery(applicationId);
+  const { data: preview, isLoading: isPreviewLoading } =
+    useAcceptPreviewQuery(applicationId);
   const { data: savedCard, isLoading: isPaymentMethodLoading } =
     usePaymentMethodQuery();
   const { mutate: accept, isPending } = useAcceptApplicationMutation(
@@ -37,8 +40,8 @@ export default function ApplicationCheckoutPage() {
   const [isAwaiting, setIsAwaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (isLoading) return <CheckoutSkeleton />;
-  if (isError || !application)
+  if (isLoading || isPreviewLoading) return <CheckoutSkeleton />;
+  if (isError || !application || !preview)
     return <div className="text-destructive p-6">Application not found.</div>;
 
   const { artist, opportunity } = application;
@@ -117,6 +120,7 @@ export default function ApplicationCheckoutPage() {
       <div className="space-y-3">
         <h2 className="font-medium">Payment Method</h2>
         <PaymentMethodSection
+          timing={preview.timing}
           savedCard={savedCard}
           isLoading={isPaymentMethodLoading}
           onChange={setPaymentMethodId}

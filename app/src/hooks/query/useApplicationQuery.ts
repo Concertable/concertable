@@ -15,6 +15,13 @@ export function useApplicationQuery(applicationId: number) {
   });
 }
 
+export function useAcceptPreviewQuery(applicationId: number) {
+  return useQuery({
+    queryKey: ["applications", applicationId, "accept-preview"],
+    queryFn: () => applicationApi.getAcceptPreview(applicationId),
+  });
+}
+
 export function useAcceptApplicationMutation(opportunityId: number) {
   const queryClient = useQueryClient();
 

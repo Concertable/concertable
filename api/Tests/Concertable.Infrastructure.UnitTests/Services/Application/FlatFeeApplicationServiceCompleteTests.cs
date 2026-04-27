@@ -15,7 +15,7 @@ public class FlatFeeConcertWorkflowCompleteTests
         upfrontConcertService = new Mock<IUpfrontConcertService>();
         sut = new FlatFeeConcertWorkflow(
             upfrontConcertService.Object,
-            new Mock<IOpportunityApplicationRepository>().Object,
+            new Mock<IPayerLookup>().Object,
             new Mock<IContractLookup>().Object);
     }
 

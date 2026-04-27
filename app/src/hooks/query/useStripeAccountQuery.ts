@@ -26,3 +26,13 @@ export function useStripeOnboardingQuery() {
     throwOnError: false,
   });
 }
+
+export function useSetupIntentQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: ["stripe", "setup-intent"],
+    queryFn: stripeAccountApi.createSetupIntent,
+    enabled,
+    staleTime: Infinity,
+    gcTime: 0,
+  });
+}

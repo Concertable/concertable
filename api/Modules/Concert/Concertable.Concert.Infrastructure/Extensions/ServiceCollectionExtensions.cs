@@ -21,6 +21,7 @@ using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
@@ -55,7 +56,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
+        services.AddKeyedScoped<IConcertPaymentFlow, OnSessionConcertPaymentFlow>(PaymentSession.OnSession);
+        services.AddKeyedScoped<IConcertPaymentFlow, OffSessionConcertPaymentFlow>(PaymentSession.OffSession);
         services.AddScoped<IContractLookup, ContractLookup>();
+        services.AddScoped<IPayerLookup, PayerLookup>();
         services.AddScoped<ITicketService, TicketService>();
 
         // Review service + validator (Concert owns reviews; Artist/Venue lists/can-review go through IConcertModule facade)
@@ -78,11 +82,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
 
-        // Keyed workflow strategies (keys must match ContractType enum values exactly)
-        services.AddKeyedScoped<IConcertWorkflowStrategy, FlatFeeConcertWorkflow>(ContractType.FlatFee);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, DoorSplitConcertWorkflow>(ContractType.DoorSplit);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, VersusConcertWorkflow>(ContractType.Versus);
-        services.AddKeyedScoped<IConcertWorkflowStrategy, VenueHireConcertWorkflow>(ContractType.VenueHire);
+        services.AddConcertWorkflow<FlatFeeConcertWorkflow>(ContractType.FlatFee);
+        services.AddConcertWorkflow<DoorSplitConcertWorkflow>(ContractType.DoorSplit);
+        services.AddConcertWorkflow<VersusConcertWorkflow>(ContractType.Versus);
+        services.AddConcertWorkflow<VenueHireConcertWorkflow>(ContractType.VenueHire);
         services.AddScoped<IConcertWorkflowStrategyFactory, ConcertWorkflowStrategyFactory>();
 
         // Ticket payee — composite dispatches by ContractType to artist vs venue
@@ -137,5 +140,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<ITestSeeder, ConcertTestSeeder>();
         return services;
+    }
+
+    private static IServiceCollection AddConcertWorkflow<TWorkflow>(this IServiceCollection services, ContractType contractType)
+        where TWorkflow : class, IConcertWorkflowStrategy
+    {
+        return services.AddKeyedScoped<IConcertWorkflowStrategy, TWorkflow>(contractType);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Concertable.Payment.Contracts;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +10,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
     private readonly IOpportunityApplicationRepository applicationRepository;
     private readonly IConcertBookingRepository bookingRepository;
     private readonly IApplicationAcceptHandler acceptHandler;
-    private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly IConcertPaymentFlow paymentFlow;
     private readonly IConcertDraftService concertDraftService;
 
     public UpfrontConcertService(
@@ -18,22 +18,24 @@ internal class UpfrontConcertService : IUpfrontConcertService
         IOpportunityApplicationRepository applicationRepository,
         IConcertBookingRepository bookingRepository,
         IApplicationAcceptHandler acceptHandler,
-        [FromKeyedServices(PaymentSession.OnSession)] IManagerPaymentModule managerPaymentModule,
+        [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
         this.applicationRepository = applicationRepository;
         this.bookingRepository = bookingRepository;
         this.acceptHandler = acceptHandler;
-        this.managerPaymentModule = managerPaymentModule;
+        this.paymentFlow = paymentFlow;
         this.concertDraftService = concertDraftService;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerUserId, Guid payeeUserId, decimal amount, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, Guid payeeId, decimal amount, string? paymentMethodId = null)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
+
+        var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, paymentMethodId);
 
         var bookingConcert = ConcertBookingEntity.Create(applicationId);
         bookingConcert.AwaitPayment();
@@ -47,7 +49,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
             ["bookingId"] = bookingConcert.Id.ToString()
         };
 
-        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, settlementMetadata, paymentMethodId);
+        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, resolvedPaymentMethodId, settlementMetadata);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
         return new ImmediateAcceptOutcome(payment.Value);
