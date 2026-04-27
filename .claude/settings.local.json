@@ -13,7 +13,9 @@
       "PowerShell(tail *)",
       "PowerShell(.\\\\migrations.ps1 2>&1 | Select-Object -Last 60)",
       "Bash(grep -c '\"api\\\\\\\\' Concertable.sln)",
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "Bash(git check-ignore *)",
+      "Bash(git rm *)"
     ]
   }
 }

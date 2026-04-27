@@ -55,4 +55,6 @@
     <ProjectReference Include="..\Concertable.ServiceDefaults\Concertable.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://www.unpkg.com/wrangler/config-schema.json" /></VisualStudio></ProjectExtensions>
+
 </Project>
