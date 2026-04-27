@@ -39,8 +39,16 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISortSpecification<VenueHeaderDto>, HeaderSortSpecification<VenueHeaderDto>>();
         services.AddSingleton<ISortSpecification<ConcertHeaderDto>, ConcertSortSpecification>();
 
-        services.AddScoped<IHeaderAutocompleteRepository, HeaderAutocompleteRepository>();
-        services.AddScoped<IHeaderAutocompleteService, HeaderAutocompleteService>();
+        services.AddScoped<IArtistAutocompleteRepository, ArtistAutocompleteRepository>();
+        services.AddScoped<IVenueAutocompleteRepository, VenueAutocompleteRepository>();
+        services.AddScoped<IConcertAutocompleteRepository, ConcertAutocompleteRepository>();
+
+        services.AddKeyedScoped<IAutocompleteService, ArtistAutocompleteService>(HeaderType.Artist);
+        services.AddKeyedScoped<IAutocompleteService, VenueAutocompleteService>(HeaderType.Venue);
+        services.AddKeyedScoped<IAutocompleteService, ConcertAutocompleteService>(HeaderType.Concert);
+        services.AddScoped<IAutocompleteService, AllAutocompleteService>();
+
+        services.AddScoped<IAutocompleteServiceFactory, AutocompleteServiceFactory>();
 
         services.AddScoped<IArtistHeaderRepository, ArtistHeaderRepository>();
         services.AddScoped<IVenueHeaderRepository, VenueHeaderRepository>();
@@ -54,7 +62,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IHeaderServiceFactory, HeaderServiceFactory>();
 
         services.AddScoped<IHeaderModule, SearchModule>();
-        services.AddScoped<IAutocompleteModule, AutocompleteModule>();
 
         services.AddValidatorsFromAssemblyContaining<SearchParamsValidator>();
 

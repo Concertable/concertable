@@ -8,15 +8,13 @@ export interface AutocompleteResult {
 }
 
 const autocompleteApi = {
-  getHeaderAutocomplete: async (
+  getAutocomplete: async (
     searchTerm: string,
+    headerType?: HeaderType,
   ): Promise<AutocompleteResult[]> => {
-    const { data } = await api.get<AutocompleteResult[]>(
-      "/autocomplete/headers",
-      {
-        params: { searchTerm },
-      },
-    );
+    const { data } = await api.get<AutocompleteResult[]>("/autocomplete", {
+      params: { searchTerm, headerType },
+    });
     return data;
   },
 };

@@ -19,7 +19,10 @@
       "Bash(git mv *)",
       "PowerShell(./initial-migrations.ps1 2>&1 | Select-Object -Last 80)",
       "Bash(git -C .. mv CLAUDE.md MODULAR_MONOLITH_RULES.md)",
-      "Bash(git -C .. status --short CLAUDE.md MODULAR_MONOLITH_RULES.md)"
+      "Bash(git -C .. status --short CLAUDE.md MODULAR_MONOLITH_RULES.md)",
+      "Bash(where func *)",
+      "Bash(func *)",
+      "Bash(\"C:\\\\Program Files\\\\Microsoft\\\\Azure Functions Core Tools\\\\func.exe\" --help)"
     ]
   }
 }

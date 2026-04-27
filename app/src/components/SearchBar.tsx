@@ -1,16 +1,24 @@
+import { useNavigate } from "@tanstack/react-router";
 import { MapPin, Search, CalendarIcon } from "lucide-react";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import { useSearchFiltersStore } from "@/store/useSearchFiltersStore";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
+import { useSearchState } from "@/hooks/useSearchState";
 import { LocationPicker } from "@/components/LocationPicker";
 import { DateRangePicker } from "@/components/DateRangePicker";
+import { AutocompleteDropdown } from "@/components/AutocompleteDropdown";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import type { AutocompleteResult } from "@/api/autocompleteApi";
+import type { HeaderType } from "@/types/header";
 
 export function SearchBar() {
   const mapsLoaded = useApiIsLoaded();
   const { filters, setFilters } = useSearchFiltersStore();
   const { updateFilters } = useSearchFilters();
+  const navigate = useNavigate();
+  const { open, close, inputProps } = useSearchState();
+  const query = filters.query ?? "";
 
   function setLocation(newLat: number, newLng: number) {
     setFilters({ ...filters, lat: newLat, lng: newLng });
@@ -21,7 +29,16 @@ export function SearchBar() {
   }
 
   function handleSearch() {
+    close();
     updateFilters(useSearchFiltersStore.getState().filters);
+  }
+
+  function handleSelect(result: AutocompleteResult) {
+    close();
+    navigate({
+      to: `/find/${result.$type}/$id` as `/find/${HeaderType}/$id`,
+      params: { id: result.id },
+    });
   }
 
   return (
@@ -42,13 +59,24 @@ export function SearchBar() {
 
       <Separator orientation="vertical" />
 
-      <input
-        value={filters.query ?? ""}
-        onChange={(e) => setFilters({ ...filters, query: e.target.value })}
-        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        placeholder="Search"
-        className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent px-4 py-3 text-sm outline-none"
-      />
+      <div className="relative flex flex-1">
+        <input
+          value={query}
+          onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          {...inputProps}
+          placeholder="Search"
+          className="text-foreground placeholder:text-muted-foreground w-full bg-transparent px-4 py-3 text-sm outline-none"
+        />
+        {open && (
+          <AutocompleteDropdown
+            searchTerm={query}
+            onSelect={handleSelect}
+            headerType={filters.headerType}
+            className="right-0 left-0 mt-2"
+          />
+        )}
+      </div>
 
       <Separator orientation="vertical" />
 
