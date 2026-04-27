@@ -11,16 +11,18 @@ interface CreateReviewRequest {
   details?: string;
 }
 
+const basePath = (type: ReviewEntityType, id: number) =>
+  `/${type}s/${id}/reviews`;
+
 const reviewApi = {
   getReviews: async (
     type: ReviewEntityType,
     id: number,
     params: PaginationParams,
   ): Promise<Pagination<Review>> => {
-    const { data } = await api.get<Pagination<Review>>(
-      `/review/${type}/${id}`,
-      { params },
-    );
+    const { data } = await api.get<Pagination<Review>>(basePath(type, id), {
+      params,
+    });
     return data;
   },
 
@@ -29,18 +31,24 @@ const reviewApi = {
     id: number,
   ): Promise<ReviewSummary> => {
     const { data } = await api.get<ReviewSummary>(
-      `/review/${type}/summary/${id}`,
+      `${basePath(type, id)}/summary`,
     );
     return data;
   },
 
   canReview: async (type: ReviewEntityType, id: number): Promise<boolean> => {
-    const { data } = await api.get<boolean>(`/review/${type}/can-review/${id}`);
+    const { data } = await api.get<boolean>(
+      `${basePath(type, id)}/eligibility`,
+    );
     return data;
   },
 
   createReview: async (request: CreateReviewRequest): Promise<Review> => {
-    const { data } = await api.post<Review>("/review", request);
+    const { concertId, ...body } = request;
+    const { data } = await api.post<Review>(
+      `${basePath("concert", concertId)}`,
+      body,
+    );
     return data;
   },
 };

@@ -81,6 +81,7 @@ internal class ArtistDevSeeder : IDevSeeder
                 var loc = locationFaker.Next();
                 artist.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
                 artist.Address = new Address(loc.County, loc.Town);
+                artist.Avatar = "avatar.jpg";
                 artist.Email = string.Empty;
                 artist.SyncGenres(genreIds);
             }

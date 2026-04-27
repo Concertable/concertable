@@ -44,22 +44,28 @@ internal class IdentityTestSeeder : ITestSeeder
             var vm1Loc = locationFaker.Next();
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
             seedData.VenueManager1.UpdateLocation(geometryProvider.CreatePoint(vm1Loc.Latitude, vm1Loc.Longitude), new Address(vm1Loc.County, vm1Loc.Town));
+            seedData.VenueManager1.Avatar = "avatar.jpg";
 
             var vm2Loc = locationFaker.Next();
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
             seedData.VenueManager2.UpdateLocation(geometryProvider.CreatePoint(vm2Loc.Latitude, vm2Loc.Longitude), new Address(vm2Loc.County, vm2Loc.Town));
+            seedData.VenueManager2.Avatar = "avatar.jpg";
 
             seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
             seedData.ArtistManager.UpdateLocation(geometryProvider.CreatePoint(51, 0), new Address("Test County", "Test Town"));
+            seedData.ArtistManager.Avatar = "avatar.jpg";
 
             seedData.ArtistManagerNoArtist = UserFactory.ArtistManager("artistmanager2@test.com", hash);
             seedData.ArtistManagerNoArtist.UpdateLocation(geometryProvider.CreatePoint(51, 0), new Address("Test County", "Test Town"));
+            seedData.ArtistManagerNoArtist.Avatar = "avatar.jpg";
 
             seedData.Customer = UserFactory.Customer("customer@test.com", hash);
             seedData.Customer.UpdateLocation(geometryProvider.CreatePoint(51, 0));
+            seedData.Customer.Avatar = "avatar.jpg";
 
             seedData.Admin = UserFactory.Admin("admin@test.com", hash);
             seedData.Admin.UpdateLocation(geometryProvider.CreatePoint(51, 0));
+            seedData.Admin.Avatar = "avatar.jpg";
 
             context.Users.AddRange(
                 seedData.VenueManager1,

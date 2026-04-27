@@ -81,6 +81,7 @@ internal class VenueDevSeeder : IDevSeeder
                 var loc = locationFaker.Next();
                 venue.Location = geometryProvider.CreatePoint(loc.Latitude, loc.Longitude);
                 venue.Address = new Address(loc.County, loc.Town);
+                venue.Avatar = "avatar.jpg";
                 venue.Email = string.Empty;
             }
 
