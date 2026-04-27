@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArtistAutocompleteRepository, ArtistAutocompleteRepository>();
         services.AddScoped<IVenueAutocompleteRepository, VenueAutocompleteRepository>();
         services.AddScoped<IConcertAutocompleteRepository, ConcertAutocompleteRepository>();
+        services.AddScoped<IAllAutocompleteRepository, AllAutocompleteRepository>();
 
         services.AddKeyedScoped<IAutocompleteService, ArtistAutocompleteService>(HeaderType.Artist);
         services.AddKeyedScoped<IAutocompleteService, VenueAutocompleteService>(HeaderType.Venue);

@@ -4,30 +4,13 @@ namespace Concertable.Search.Application.Services;
 
 internal class AllAutocompleteService : IAutocompleteService
 {
-    private readonly IArtistAutocompleteRepository artistAutocompleteRepository;
-    private readonly IVenueAutocompleteRepository venueAutocompleteRepository;
-    private readonly IConcertAutocompleteRepository concertAutocompleteRepository;
+    private readonly IAllAutocompleteRepository repository;
 
-    public AllAutocompleteService(
-        IArtistAutocompleteRepository artistAutocompleteRepository,
-        IVenueAutocompleteRepository venueAutocompleteRepository,
-        IConcertAutocompleteRepository concertAutocompleteRepository)
+    public AllAutocompleteService(IAllAutocompleteRepository repository)
     {
-        this.artistAutocompleteRepository = artistAutocompleteRepository;
-        this.venueAutocompleteRepository = venueAutocompleteRepository;
-        this.concertAutocompleteRepository = concertAutocompleteRepository;
+        this.repository = repository;
     }
 
-    public async Task<IEnumerable<AutocompleteDto>> GetAsync(string? searchTerm)
-    {
-        var artists = await artistAutocompleteRepository.GetAsync(searchTerm);
-        var venues = await venueAutocompleteRepository.GetAsync(searchTerm);
-        var concerts = await concertAutocompleteRepository.GetAsync(searchTerm);
-
-        return artists
-            .Concat(venues)
-            .Concat(concerts)
-            .OrderBy(r => r.Name)
-            .Take(10);
-    }
+    public Task<IEnumerable<AutocompleteDto>> GetAsync(string? searchTerm) =>
+        repository.GetAsync(searchTerm);
 }
