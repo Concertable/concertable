@@ -1,5 +1,5 @@
 using System.Reflection;
-using Concertable.Concert.Infrastructure.Services.Application;
+using Concertable.Concert.Infrastructure.Services.Workflow;
 using Concertable.Contract.Contracts;
 using Moq;
 using Xunit;

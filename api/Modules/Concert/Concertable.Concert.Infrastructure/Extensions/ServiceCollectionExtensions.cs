@@ -14,7 +14,7 @@ using Concertable.Concert.Infrastructure.Repositories;
 using Concertable.Concert.Infrastructure.Repositories.Review;
 using Concertable.Concert.Infrastructure.Services;
 using Concertable.Concert.Infrastructure.Services.Acceptance;
-using Concertable.Concert.Infrastructure.Services.Application;
+using Concertable.Concert.Infrastructure.Services.Workflow;
 using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Payment;
 using Concertable.Concert.Infrastructure.Services.Review;
