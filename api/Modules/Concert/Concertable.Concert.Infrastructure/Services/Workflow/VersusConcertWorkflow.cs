@@ -1,7 +1,7 @@
-using Concertable.Contract.Contracts;
+﻿using Concertable.Contract.Contracts;
 using Concertable.Shared.Exceptions;
 
-namespace Concertable.Concert.Infrastructure.Services.Application;
+namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
 internal class VersusConcertWorkflow : IConcertWorkflowStrategy
 {

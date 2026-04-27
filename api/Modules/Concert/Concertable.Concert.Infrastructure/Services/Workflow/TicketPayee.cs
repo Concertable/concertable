@@ -1,7 +1,7 @@
-using System.Collections.Frozen;
+﻿using System.Collections.Frozen;
 using Concertable.Contract.Contracts;
 
-namespace Concertable.Concert.Infrastructure.Services.Application;
+namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
 internal sealed class TicketPayee : ITicketPayee
 {

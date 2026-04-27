@@ -1,6 +1,6 @@
-using Concertable.Contract.Contracts;
+﻿using Concertable.Contract.Contracts;
 
-namespace Concertable.Concert.Infrastructure.Services.Application;
+namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
 internal sealed class ArtistTicketPayee : ITicketPayee
 {

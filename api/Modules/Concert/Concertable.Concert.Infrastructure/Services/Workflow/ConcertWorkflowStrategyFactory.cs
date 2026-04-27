@@ -1,6 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Concert.Infrastructure.Services.Application;
+namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
 internal sealed class ConcertWorkflowStrategyFactory(IServiceProvider sp) : IConcertWorkflowStrategyFactory
 {

@@ -1,8 +1,8 @@
-using Concertable.Payment.Contracts;
+﻿using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Concert.Infrastructure.Services.Application;
+namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
 internal class UpfrontConcertService : IUpfrontConcertService
 {
