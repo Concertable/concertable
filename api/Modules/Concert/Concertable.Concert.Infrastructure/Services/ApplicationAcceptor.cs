@@ -1,13 +1,13 @@
-﻿using Concertable.Shared.Exceptions;
+using Concertable.Shared.Exceptions;
 
-namespace Concertable.Concert.Infrastructure.Handlers;
+namespace Concertable.Concert.Infrastructure.Services;
 
-internal class ApplicationAcceptHandler : IApplicationAcceptHandler
+internal class ApplicationAcceptor : IApplicationAcceptor
 {
     private readonly IApplicationRepository applicationRepository;
     private readonly IBackgroundTaskRunner taskRunner;
 
-    public ApplicationAcceptHandler(
+    public ApplicationAcceptor(
         IApplicationRepository applicationRepository,
         IBackgroundTaskRunner taskRunner)
     {
@@ -15,12 +15,12 @@ internal class ApplicationAcceptHandler : IApplicationAcceptHandler
         this.taskRunner = taskRunner;
     }
 
-    public async Task HandleAsync(int applicationId, BookingEntity bookingConcert)
+    public async Task AcceptAsync(int applicationId, BookingEntity booking)
     {
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        application.Accept(bookingConcert);
+        application.Accept(booking);
         await applicationRepository.SaveChangesAsync();
 
         await taskRunner.RunAsync<IApplicationRepository>(

@@ -50,6 +50,7 @@ public static class ServiceCollectionExtensions
         // Services
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IConcertDraftService, ConcertDraftService>();
+        services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IConcertNotifier, ConcertNotifier>();
         services.AddScoped<ITicketNotifier, TicketNotifier>();
         services.AddScoped<IOpportunityService, OpportunityService>();
@@ -80,7 +81,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAcceptanceExecutor, AcceptanceExecutor>();
         services.AddScoped<ICompletionExecutor, CompletionExecutor>();
         services.AddScoped<ISettlementExecutor, SettlementExecutor>();
-        services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
+        services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
 
         services.AddConcertWorkflow<FlatFeeConcertWorkflow>(ContractType.FlatFee);
         services.AddConcertWorkflow<DoorSplitConcertWorkflow>(ContractType.DoorSplit);

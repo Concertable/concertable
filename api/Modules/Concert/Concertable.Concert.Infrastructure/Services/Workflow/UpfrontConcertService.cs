@@ -1,4 +1,4 @@
-﻿using Concertable.Payment.Contracts;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,24 +7,18 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow;
 internal class UpfrontConcertService : IUpfrontConcertService
 {
     private readonly IApplicationValidator applicationValidator;
-    private readonly IApplicationRepository applicationRepository;
-    private readonly IBookingRepository bookingRepository;
-    private readonly IApplicationAcceptHandler acceptHandler;
+    private readonly IBookingService bookingService;
     private readonly IConcertPaymentFlow paymentFlow;
     private readonly IConcertDraftService concertDraftService;
 
     public UpfrontConcertService(
         IApplicationValidator applicationValidator,
-        IApplicationRepository applicationRepository,
-        IBookingRepository bookingRepository,
-        IApplicationAcceptHandler acceptHandler,
+        IBookingService bookingService,
         [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
-        this.applicationRepository = applicationRepository;
-        this.bookingRepository = bookingRepository;
-        this.acceptHandler = acceptHandler;
+        this.bookingService = bookingService;
         this.paymentFlow = paymentFlow;
         this.concertDraftService = concertDraftService;
     }
@@ -37,16 +31,12 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, paymentMethodId);
 
-        var bookingConcert = BookingEntity.Create(applicationId);
-        bookingConcert.AwaitPayment();
-        await bookingRepository.AddAsync(bookingConcert);
-
-        await acceptHandler.HandleAsync(applicationId, bookingConcert);
+        var booking = await bookingService.CreateAsync(applicationId);
 
         var settlementMetadata = new Dictionary<string, string>
         {
             ["type"] = "settlement",
-            ["bookingId"] = bookingConcert.Id.ToString()
+            ["bookingId"] = booking.Id.ToString()
         };
 
         var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, resolvedPaymentMethodId, settlementMetadata);
@@ -64,12 +54,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
     public async Task<IFinishOutcome> FinishedAsync(int concertId)
     {
-        var bookingConcert = await bookingRepository.GetByConcertIdAsync(concertId)
-            ?? throw new NotFoundException("Booking not found");
-
-        bookingConcert.Complete();
-        await bookingRepository.SaveChangesAsync();
-
+        await bookingService.CompleteByConcertIdAsync(concertId);
         return new ImmediateFinishOutcome();
     }
 }
