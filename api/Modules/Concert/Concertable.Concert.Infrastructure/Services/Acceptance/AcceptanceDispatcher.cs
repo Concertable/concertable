@@ -4,25 +4,25 @@ namespace Concertable.Concert.Infrastructure.Services.Acceptance;
 
 internal class AcceptanceDispatcher : IAcceptanceDispatcher
 {
-    private readonly IContractLookup contractLookup;
+    private readonly IContractLoader contractLoader;
     private readonly IConcertWorkflowStrategyFactory strategyFactory;
 
-    public AcceptanceDispatcher(IContractLookup contractLookup, IConcertWorkflowStrategyFactory strategyFactory)
+    public AcceptanceDispatcher(IContractLoader contractLoader, IConcertWorkflowStrategyFactory strategyFactory)
     {
-        this.contractLookup = contractLookup;
+        this.contractLoader = contractLoader;
         this.strategyFactory = strategyFactory;
     }
 
     public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
     {
-        var contract = await contractLookup.GetByApplicationIdAsync(applicationId);
+        var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         return await strategyFactory.Create(contract.ContractType)
             .CheckoutAsync(applicationId);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
-        var contract = await contractLookup.GetByApplicationIdAsync(applicationId);
+        var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         return await strategyFactory.Create(contract.ContractType)
             .InitiateAsync(applicationId, paymentMethodId);
     }

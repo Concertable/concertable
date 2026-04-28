@@ -13,7 +13,7 @@ internal class VersusConcertWorkflow : IConcertWorkflowStrategy
     private readonly IConcertRepository concertRepository;
     private readonly IBookingRepository bookingRepository;
     private readonly IPayerLookup payerLookup;
-    private readonly IContractLookup contractLookup;
+    private readonly IContractLoader contractLoader;
     private readonly IConcertPaymentFlow paymentFlow;
 
     public VersusConcertWorkflow(
@@ -21,14 +21,14 @@ internal class VersusConcertWorkflow : IConcertWorkflowStrategy
         IConcertRepository concertRepository,
         IBookingRepository bookingRepository,
         IPayerLookup payerLookup,
-        IContractLookup contractLookup,
+        IContractLoader contractLoader,
         [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow)
     {
         this.deferredConcertService = deferredConcertService;
         this.concertRepository = concertRepository;
         this.bookingRepository = bookingRepository;
         this.payerLookup = payerLookup;
-        this.contractLookup = contractLookup;
+        this.contractLoader = contractLoader;
         this.paymentFlow = paymentFlow;
     }
 
@@ -38,7 +38,7 @@ internal class VersusConcertWorkflow : IConcertWorkflowStrategy
             ?? throw new NotFoundException("Application not found");
         var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
-        var contract = (VersusContract)await contractLookup.GetByApplicationIdAsync(applicationId);
+        var contract = (VersusContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
         var metadata = new Dictionary<string, string>
         {
@@ -70,7 +70,7 @@ internal class VersusConcertWorkflow : IConcertWorkflowStrategy
         var booking = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");
 
-        var contract = (VersusContract)await contractLookup.GetByConcertIdAsync(concertId);
+        var contract = (VersusContract)await contractLoader.LoadByConcertIdAsync(concertId);
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = contract.Guarantee + (totalRevenue * (contract.ArtistDoorPercent / 100));
 

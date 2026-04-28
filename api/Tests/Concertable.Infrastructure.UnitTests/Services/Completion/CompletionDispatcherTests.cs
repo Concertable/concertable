@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Interfaces;
+﻿using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Contract.Contracts;
@@ -9,15 +9,15 @@ namespace Concertable.Infrastructure.UnitTests.Services.Completion;
 
 public class CompletionDispatcherTests
 {
-    private readonly Mock<IContractLookup> contractLookup;
+    private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowStrategyFactory> strategyFactory;
     private readonly CompletionDispatcher sut;
 
     public CompletionDispatcherTests()
     {
-        contractLookup = new Mock<IContractLookup>();
+        contractLoader = new Mock<IContractLoader>();
         strategyFactory = new Mock<IConcertWorkflowStrategyFactory>();
-        sut = new CompletionDispatcher(contractLookup.Object, strategyFactory.Object);
+        sut = new CompletionDispatcher(contractLoader.Object, strategyFactory.Object);
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public class CompletionDispatcherTests
         var strategy = new Mock<IConcertWorkflowStrategy>();
         var outcome = new Mock<IFinishOutcome>().Object;
 
-        contractLookup.Setup(l => l.GetByConcertIdAsync(1)).ReturnsAsync(contract);
+        contractLoader.Setup(l => l.LoadByConcertIdAsync(1)).ReturnsAsync(contract);
         strategyFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(strategy.Object);
         strategy.Setup(s => s.FinishAsync(1)).ReturnsAsync(outcome);
 

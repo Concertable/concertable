@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Interfaces;
+﻿using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Infrastructure.Services.Acceptance;
 using Concertable.Contract.Contracts;
 using Moq;
@@ -8,15 +8,15 @@ namespace Concertable.Infrastructure.UnitTests.Services.Acceptance;
 
 public class AcceptanceDispatcherTests
 {
-    private readonly Mock<IContractLookup> contractLookup;
+    private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowStrategyFactory> strategyFactory;
     private readonly AcceptanceDispatcher sut;
 
     public AcceptanceDispatcherTests()
     {
-        contractLookup = new Mock<IContractLookup>();
+        contractLoader = new Mock<IContractLoader>();
         strategyFactory = new Mock<IConcertWorkflowStrategyFactory>();
-        sut = new AcceptanceDispatcher(contractLookup.Object, strategyFactory.Object);
+        sut = new AcceptanceDispatcher(contractLoader.Object, strategyFactory.Object);
     }
 
     [Fact]
@@ -25,7 +25,7 @@ public class AcceptanceDispatcherTests
         var contract = new FlatFeeContract { Id = 99, Fee = 500, PaymentMethod = PaymentMethod.Cash };
         var strategy = new Mock<IConcertWorkflowStrategy>();
 
-        contractLookup.Setup(l => l.GetByApplicationIdAsync(1)).ReturnsAsync(contract);
+        contractLoader.Setup(l => l.LoadByApplicationIdAsync(1)).ReturnsAsync(contract);
         strategyFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(strategy.Object);
 
         await sut.AcceptAsync(1);

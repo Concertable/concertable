@@ -13,7 +13,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     private readonly IConcertRepository concertRepository;
     private readonly IBookingRepository bookingRepository;
     private readonly IPayerLookup payerLookup;
-    private readonly IContractLookup contractLookup;
+    private readonly IContractLoader contractLoader;
     private readonly IConcertPaymentFlow paymentFlow;
 
     public DoorSplitConcertWorkflow(
@@ -21,14 +21,14 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         IConcertRepository concertRepository,
         IBookingRepository bookingRepository,
         IPayerLookup payerLookup,
-        IContractLookup contractLookup,
+        IContractLoader contractLoader,
         [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow)
     {
         this.deferredConcertService = deferredConcertService;
         this.concertRepository = concertRepository;
         this.bookingRepository = bookingRepository;
         this.payerLookup = payerLookup;
-        this.contractLookup = contractLookup;
+        this.contractLoader = contractLoader;
         this.paymentFlow = paymentFlow;
     }
 
@@ -38,7 +38,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
             ?? throw new NotFoundException("Application not found");
         var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
-        var contract = (DoorSplitContract)await contractLookup.GetByApplicationIdAsync(applicationId);
+        var contract = (DoorSplitContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
         var metadata = new Dictionary<string, string>
         {
@@ -66,7 +66,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
         var booking = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");
 
-        var contract = (DoorSplitContract)await contractLookup.GetByConcertIdAsync(concertId);
+        var contract = (DoorSplitContract)await contractLoader.LoadByConcertIdAsync(concertId);
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = totalRevenue * (contract.ArtistDoorPercent / 100);
 

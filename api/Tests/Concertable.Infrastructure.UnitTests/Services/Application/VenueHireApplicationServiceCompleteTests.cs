@@ -1,4 +1,4 @@
-using Concertable.Concert.Infrastructure.Services.Workflow;
+﻿using Concertable.Concert.Infrastructure.Services.Workflow;
 using Concertable.Contract.Contracts;
 using Moq;
 using Xunit;
@@ -16,7 +16,7 @@ public class VenueHireConcertWorkflowCompleteTests
         sut = new VenueHireConcertWorkflow(
             upfrontConcertService.Object,
             new Mock<IPayerLookup>().Object,
-            new Mock<IContractLookup>().Object,
+            new Mock<IContractLoader>().Object,
             new Mock<IConcertPaymentFlow>().Object);
     }
 

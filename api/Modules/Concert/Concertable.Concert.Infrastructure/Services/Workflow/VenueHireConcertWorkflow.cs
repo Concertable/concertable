@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Enums;
+﻿using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -11,18 +11,18 @@ internal class VenueHireConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IPayerLookup payerLookup;
-    private readonly IContractLookup contractLookup;
+    private readonly IContractLoader contractLoader;
     private readonly IConcertPaymentFlow paymentFlow;
 
     public VenueHireConcertWorkflow(
         IUpfrontConcertService upfrontConcertService,
         IPayerLookup payerLookup,
-        IContractLookup contractLookup,
+        IContractLoader contractLoader,
         [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow)
     {
         this.upfrontConcertService = upfrontConcertService;
         this.payerLookup = payerLookup;
-        this.contractLookup = contractLookup;
+        this.contractLoader = contractLoader;
         this.paymentFlow = paymentFlow;
     }
 
@@ -32,7 +32,7 @@ internal class VenueHireConcertWorkflow : IConcertWorkflowStrategy
             ?? throw new NotFoundException("Application not found");
         var artistManagerId = await payerLookup.GetArtistManagerIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
-        var contract = (VenueHireContract)await contractLookup.GetByApplicationIdAsync(applicationId);
+        var contract = (VenueHireContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
         var metadata = new Dictionary<string, string>
         {
@@ -51,7 +51,7 @@ internal class VenueHireConcertWorkflow : IConcertWorkflowStrategy
         var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        var contract = (VenueHireContract)await contractLookup.GetByApplicationIdAsync(applicationId);
+        var contract = (VenueHireContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
         return await upfrontConcertService.InitiateAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId);
     }

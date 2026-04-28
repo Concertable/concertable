@@ -58,7 +58,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
         services.AddKeyedScoped<IConcertPaymentFlow, OnSessionConcertPaymentFlow>(PaymentSession.OnSession);
         services.AddKeyedScoped<IConcertPaymentFlow, OffSessionConcertPaymentFlow>(PaymentSession.OffSession);
-        services.AddScoped<IContractLookup, ContractLookup>();
+        services.AddScoped<IContractLoader, ContractLoader>();
         services.AddScoped<IPayerLookup, PayerLookup>();
         services.AddScoped<ITicketService, TicketService>();
 

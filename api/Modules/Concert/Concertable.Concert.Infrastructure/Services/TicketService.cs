@@ -16,7 +16,7 @@ internal class TicketService : ITicketService
     private readonly IQrCodeService qrCodeService;
     private readonly ICurrentUser currentUser;
     private readonly IConcertRepository concertRepository;
-    private readonly IContractLookup contractLookup;
+    private readonly IContractLoader contractLoader;
     private readonly ITicketPayee ticketPayee;
     private readonly ICustomerPaymentModule customerPaymentModule;
     private readonly TimeProvider timeProvider;
@@ -28,7 +28,7 @@ internal class TicketService : ITicketService
         IQrCodeService qrCodeService,
         ICurrentUser currentUser,
         IConcertRepository concertRepository,
-        IContractLookup contractLookup,
+        IContractLoader contractLoader,
         ITicketPayee ticketPayee,
         ICustomerPaymentModule customerPaymentModule,
         TimeProvider timeProvider)
@@ -39,7 +39,7 @@ internal class TicketService : ITicketService
         this.qrCodeService = qrCodeService;
         this.currentUser = currentUser;
         this.concertRepository = concertRepository;
-        this.contractLookup = contractLookup;
+        this.contractLoader = contractLoader;
         this.ticketPayee = ticketPayee;
         this.customerPaymentModule = customerPaymentModule;
         this.timeProvider = timeProvider;
@@ -57,7 +57,7 @@ internal class TicketService : ITicketService
         var concert = await concertRepository.GetFullByIdAsync(purchaseParams.ConcertId)
             ?? throw new NotFoundException("Concert not found");
 
-        var contract = await contractLookup.GetByConcertIdAsync(purchaseParams.ConcertId);
+        var contract = await contractLoader.LoadByConcertIdAsync(purchaseParams.ConcertId);
         var payeeUserId = ticketPayee.Resolve(concert, contract);
 
         var metadata = new Dictionary<string, string>
@@ -140,7 +140,7 @@ internal class TicketService : ITicketService
         var concert = await concertRepository.GetFullByIdAsync(concertId)
             ?? throw new NotFoundException("Concert not found");
 
-        var contract = await contractLookup.GetByConcertIdAsync(concertId);
+        var contract = await contractLoader.LoadByConcertIdAsync(concertId);
         var payeeUserId = ticketPayee.Resolve(concert, contract);
 
         var metadata = new Dictionary<string, string>

@@ -11,7 +11,7 @@ public class VersusConcertWorkflowCompleteTests
     private readonly Mock<IDeferredConcertService> deferredConcertService;
     private readonly Mock<IConcertRepository> concertRepository;
     private readonly Mock<IBookingRepository> bookingRepository;
-    private readonly Mock<IContractLookup> contractLookup;
+    private readonly Mock<IContractLoader> contractLoader;
     private readonly VersusConcertWorkflow sut;
 
     private readonly VersusContract contract = new() { Guarantee = 200, ArtistDoorPercent = 50, PaymentMethod = PaymentMethod.Cash };
@@ -23,7 +23,7 @@ public class VersusConcertWorkflowCompleteTests
         deferredConcertService = new Mock<IDeferredConcertService>();
         concertRepository = new Mock<IConcertRepository>();
         bookingRepository = new Mock<IBookingRepository>();
-        contractLookup = new Mock<IContractLookup>();
+        contractLoader = new Mock<IContractLoader>();
 
         var booking = BookingFactory.Create(artistUserId, venueUserId);
 
@@ -32,12 +32,12 @@ public class VersusConcertWorkflowCompleteTests
             concertRepository.Object,
             bookingRepository.Object,
             new Mock<IPayerLookup>().Object,
-            contractLookup.Object,
+            contractLoader.Object,
             new Mock<IConcertPaymentFlow>().Object);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
-        contractLookup.Setup(l => l.GetByConcertIdAsync(10)).ReturnsAsync(contract);
+        contractLoader.Setup(l => l.LoadByConcertIdAsync(10)).ReturnsAsync(contract);
     }
 
     [Fact]
