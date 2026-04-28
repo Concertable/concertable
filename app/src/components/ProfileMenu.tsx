@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserMenu() {
+export function ProfileMenu() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
@@ -59,6 +59,11 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
+        {isCustomer && (
+          <DropdownMenuItem asChild>
+            <Link to="/profile">Profile</Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link to="/settings">Settings</Link>
         </DropdownMenuItem>
@@ -72,15 +77,15 @@ export function UserMenu() {
               <DropdownMenuSubTrigger>My Tickets</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem asChild>
-                  <Link to="/settings/tickets/upcoming">Upcoming</Link>
+                  <Link to="/profile/tickets/upcoming">Upcoming</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/settings/tickets/history">History</Link>
+                  <Link to="/profile/tickets/history">History</Link>
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuItem asChild>
-              <Link to="/settings/preferences">Preferences</Link>
+              <Link to="/profile/preferences">Preferences</Link>
             </DropdownMenuItem>
           </>
         )}

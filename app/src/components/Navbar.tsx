@@ -2,7 +2,7 @@ import { useRef } from "react";
 
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { UserMenu } from "@/components/UserMenu";
+import { ProfileMenu } from "@/components/ProfileMenu";
 import { Mailbox } from "@/components/Mailbox";
 import { NavbarSearch } from "@/components/NavbarSearch";
 import { useRole } from "@/hooks/useRole";
@@ -67,7 +67,7 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
         {routeRole === "customer" && <NavbarSearch />}
         {role && <Mailbox />}
         <ThemeToggle />
-        <UserMenu />
+        <ProfileMenu />
       </div>
     </nav>
   );

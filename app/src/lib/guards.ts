@@ -14,7 +14,10 @@ export function requireAuth({
   return user;
 }
 
-export function requireRole(role: Role) {
-  const user = requireAuth();
+export function requireRole(
+  role: Role,
+  { location }: { location?: { href: string } } = {},
+) {
+  const user = requireAuth({ location });
   if (user.role !== role) throw redirect({ to: "/" });
 }

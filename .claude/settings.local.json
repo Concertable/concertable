@@ -22,7 +22,10 @@
       "Bash(git -C .. status --short CLAUDE.md MODULAR_MONOLITH_RULES.md)",
       "Bash(where func *)",
       "Bash(func *)",
-      "Bash(\"C:\\\\Program Files\\\\Microsoft\\\\Azure Functions Core Tools\\\\func.exe\" --help)"
+      "Bash(\"C:\\\\Program Files\\\\Microsoft\\\\Azure Functions Core Tools\\\\func.exe\" --help)",
+      "Bash(git *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"exit=$?\")"
     ]
   }
 }

@@ -24,26 +24,27 @@ import { Route as CustomerIndexRouteImport } from './routes/_customer/index'
 import { Route as VenueCreateRouteImport } from './routes/venue/create'
 import { Route as ArtistCreateRouteImport } from './routes/artist/create'
 import { Route as CustomerSettingsRouteRouteImport } from './routes/_customer/settings/route'
+import { Route as CustomerProfileRouteRouteImport } from './routes/_customer/profile/route'
 import { Route as VenueMyIndexRouteImport } from './routes/venue/my/index'
 import { Route as VenueFindIndexRouteImport } from './routes/venue/find/index'
 import { Route as ArtistMyIndexRouteImport } from './routes/artist/my/index'
 import { Route as ArtistFindIndexRouteImport } from './routes/artist/find/index'
 import { Route as CustomerSettingsIndexRouteImport } from './routes/_customer/settings/index'
+import { Route as CustomerProfileIndexRouteImport } from './routes/_customer/profile/index'
 import { Route as CustomerFindIndexRouteImport } from './routes/_customer/find/index'
 import { Route as VenueAcceptApplicationIdRouteImport } from './routes/venue/accept/$applicationId'
 import { Route as CustomerSettingsPaymentRouteImport } from './routes/_customer/settings/payment'
-import { Route as CustomerSettingsMyRouteImport } from './routes/_customer/settings/my'
-import { Route as CustomerSettingsLocationRouteImport } from './routes/_customer/settings/location'
-import { Route as CustomerSettingsTicketsIndexRouteImport } from './routes/_customer/settings/tickets/index'
-import { Route as CustomerSettingsPreferencesIndexRouteImport } from './routes/_customer/settings/preferences/index'
+import { Route as CustomerProfileLocationRouteImport } from './routes/_customer/profile/location'
+import { Route as CustomerProfileTicketsIndexRouteImport } from './routes/_customer/profile/tickets/index'
+import { Route as CustomerProfilePreferencesIndexRouteImport } from './routes/_customer/profile/preferences/index'
 import { Route as VenueMyApplicationsIdRouteImport } from './routes/venue/my/applications.$id'
 import { Route as VenueFindArtistIdRouteImport } from './routes/venue/find/artist.$id'
 import { Route as VenueApplicationCheckoutApplicationIdRouteImport } from './routes/venue/application/checkout.$applicationId'
 import { Route as ArtistFindVenueIdRouteImport } from './routes/artist/find/venue.$id'
 import { Route as ArtistApplicationCheckoutApplicationIdRouteImport } from './routes/artist/application/checkout.$applicationId'
-import { Route as CustomerSettingsTicketsUpcomingRouteImport } from './routes/_customer/settings/tickets/upcoming'
-import { Route as CustomerSettingsTicketsHistoryRouteImport } from './routes/_customer/settings/tickets/history'
-import { Route as CustomerSettingsPreferencesCreateRouteImport } from './routes/_customer/settings/preferences/create'
+import { Route as CustomerProfileTicketsUpcomingRouteImport } from './routes/_customer/profile/tickets/upcoming'
+import { Route as CustomerProfileTicketsHistoryRouteImport } from './routes/_customer/profile/tickets/history'
+import { Route as CustomerProfilePreferencesCreateRouteImport } from './routes/_customer/profile/preferences/create'
 import { Route as CustomerFindVenueIdRouteImport } from './routes/_customer/find/venue.$id'
 import { Route as CustomerFindConcertIdRouteImport } from './routes/_customer/find/concert.$id'
 import { Route as CustomerFindArtistIdRouteImport } from './routes/_customer/find/artist.$id'
@@ -125,6 +126,11 @@ const CustomerSettingsRouteRoute = CustomerSettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => CustomerRouteRoute,
 } as any)
+const CustomerProfileRouteRoute = CustomerProfileRouteRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => CustomerRouteRoute,
+} as any)
 const VenueMyIndexRoute = VenueMyIndexRouteImport.update({
   id: '/my/',
   path: '/my/',
@@ -150,6 +156,11 @@ const CustomerSettingsIndexRoute = CustomerSettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CustomerSettingsRouteRoute,
 } as any)
+const CustomerProfileIndexRoute = CustomerProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CustomerProfileRouteRoute,
+} as any)
 const CustomerFindIndexRoute = CustomerFindIndexRouteImport.update({
   id: '/find/',
   path: '/find/',
@@ -166,28 +177,22 @@ const CustomerSettingsPaymentRoute = CustomerSettingsPaymentRouteImport.update({
   path: '/payment',
   getParentRoute: () => CustomerSettingsRouteRoute,
 } as any)
-const CustomerSettingsMyRoute = CustomerSettingsMyRouteImport.update({
-  id: '/my',
-  path: '/my',
-  getParentRoute: () => CustomerSettingsRouteRoute,
+const CustomerProfileLocationRoute = CustomerProfileLocationRouteImport.update({
+  id: '/location',
+  path: '/location',
+  getParentRoute: () => CustomerProfileRouteRoute,
 } as any)
-const CustomerSettingsLocationRoute =
-  CustomerSettingsLocationRouteImport.update({
-    id: '/location',
-    path: '/location',
-    getParentRoute: () => CustomerSettingsRouteRoute,
-  } as any)
-const CustomerSettingsTicketsIndexRoute =
-  CustomerSettingsTicketsIndexRouteImport.update({
+const CustomerProfileTicketsIndexRoute =
+  CustomerProfileTicketsIndexRouteImport.update({
     id: '/tickets/',
     path: '/tickets/',
-    getParentRoute: () => CustomerSettingsRouteRoute,
+    getParentRoute: () => CustomerProfileRouteRoute,
   } as any)
-const CustomerSettingsPreferencesIndexRoute =
-  CustomerSettingsPreferencesIndexRouteImport.update({
+const CustomerProfilePreferencesIndexRoute =
+  CustomerProfilePreferencesIndexRouteImport.update({
     id: '/preferences/',
     path: '/preferences/',
-    getParentRoute: () => CustomerSettingsRouteRoute,
+    getParentRoute: () => CustomerProfileRouteRoute,
   } as any)
 const VenueMyApplicationsIdRoute = VenueMyApplicationsIdRouteImport.update({
   id: '/my/applications/$id',
@@ -216,23 +221,23 @@ const ArtistApplicationCheckoutApplicationIdRoute =
     path: '/application/checkout/$applicationId',
     getParentRoute: () => ArtistRouteRoute,
   } as any)
-const CustomerSettingsTicketsUpcomingRoute =
-  CustomerSettingsTicketsUpcomingRouteImport.update({
+const CustomerProfileTicketsUpcomingRoute =
+  CustomerProfileTicketsUpcomingRouteImport.update({
     id: '/tickets/upcoming',
     path: '/tickets/upcoming',
-    getParentRoute: () => CustomerSettingsRouteRoute,
+    getParentRoute: () => CustomerProfileRouteRoute,
   } as any)
-const CustomerSettingsTicketsHistoryRoute =
-  CustomerSettingsTicketsHistoryRouteImport.update({
+const CustomerProfileTicketsHistoryRoute =
+  CustomerProfileTicketsHistoryRouteImport.update({
     id: '/tickets/history',
     path: '/tickets/history',
-    getParentRoute: () => CustomerSettingsRouteRoute,
+    getParentRoute: () => CustomerProfileRouteRoute,
   } as any)
-const CustomerSettingsPreferencesCreateRoute =
-  CustomerSettingsPreferencesCreateRouteImport.update({
+const CustomerProfilePreferencesCreateRoute =
+  CustomerProfilePreferencesCreateRouteImport.update({
     id: '/preferences/create',
     path: '/preferences/create',
-    getParentRoute: () => CustomerSettingsRouteRoute,
+    getParentRoute: () => CustomerProfileRouteRoute,
   } as any)
 const CustomerFindVenueIdRoute = CustomerFindVenueIdRouteImport.update({
   id: '/find/venue/$id',
@@ -278,16 +283,17 @@ export interface FileRoutesByFullPath {
   '/stripe-refresh': typeof StripeRefreshRoute
   '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
+  '/profile': typeof CustomerProfileRouteRouteWithChildren
   '/settings': typeof CustomerSettingsRouteRouteWithChildren
   '/artist/create': typeof ArtistCreateRoute
   '/venue/create': typeof VenueCreateRoute
   '/artist/': typeof ArtistIndexRoute
   '/venue/': typeof VenueIndexRoute
-  '/settings/location': typeof CustomerSettingsLocationRoute
-  '/settings/my': typeof CustomerSettingsMyRoute
+  '/profile/location': typeof CustomerProfileLocationRoute
   '/settings/payment': typeof CustomerSettingsPaymentRoute
   '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/find/': typeof CustomerFindIndexRoute
+  '/profile/': typeof CustomerProfileIndexRoute
   '/settings/': typeof CustomerSettingsIndexRoute
   '/artist/find/': typeof ArtistFindIndexRoute
   '/artist/my/': typeof ArtistMyIndexRoute
@@ -297,16 +303,16 @@ export interface FileRoutesByFullPath {
   '/find/artist/$id': typeof CustomerFindArtistIdRoute
   '/find/concert/$id': typeof CustomerFindConcertIdRoute
   '/find/venue/$id': typeof CustomerFindVenueIdRoute
-  '/settings/preferences/create': typeof CustomerSettingsPreferencesCreateRoute
-  '/settings/tickets/history': typeof CustomerSettingsTicketsHistoryRoute
-  '/settings/tickets/upcoming': typeof CustomerSettingsTicketsUpcomingRoute
+  '/profile/preferences/create': typeof CustomerProfilePreferencesCreateRoute
+  '/profile/tickets/history': typeof CustomerProfileTicketsHistoryRoute
+  '/profile/tickets/upcoming': typeof CustomerProfileTicketsUpcomingRoute
   '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
   '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
-  '/settings/preferences/': typeof CustomerSettingsPreferencesIndexRoute
-  '/settings/tickets/': typeof CustomerSettingsTicketsIndexRoute
+  '/profile/preferences/': typeof CustomerProfilePreferencesIndexRoute
+  '/profile/tickets/': typeof CustomerProfileTicketsIndexRoute
   '/artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
   '/venue/my/concerts/concert/$id': typeof VenueMyConcertsConcertIdRoute
 }
@@ -322,11 +328,11 @@ export interface FileRoutesByTo {
   '/': typeof CustomerIndexRoute
   '/artist': typeof ArtistIndexRoute
   '/venue': typeof VenueIndexRoute
-  '/settings/location': typeof CustomerSettingsLocationRoute
-  '/settings/my': typeof CustomerSettingsMyRoute
+  '/profile/location': typeof CustomerProfileLocationRoute
   '/settings/payment': typeof CustomerSettingsPaymentRoute
   '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/find': typeof CustomerFindIndexRoute
+  '/profile': typeof CustomerProfileIndexRoute
   '/settings': typeof CustomerSettingsIndexRoute
   '/artist/find': typeof ArtistFindIndexRoute
   '/artist/my': typeof ArtistMyIndexRoute
@@ -336,16 +342,16 @@ export interface FileRoutesByTo {
   '/find/artist/$id': typeof CustomerFindArtistIdRoute
   '/find/concert/$id': typeof CustomerFindConcertIdRoute
   '/find/venue/$id': typeof CustomerFindVenueIdRoute
-  '/settings/preferences/create': typeof CustomerSettingsPreferencesCreateRoute
-  '/settings/tickets/history': typeof CustomerSettingsTicketsHistoryRoute
-  '/settings/tickets/upcoming': typeof CustomerSettingsTicketsUpcomingRoute
+  '/profile/preferences/create': typeof CustomerProfilePreferencesCreateRoute
+  '/profile/tickets/history': typeof CustomerProfileTicketsHistoryRoute
+  '/profile/tickets/upcoming': typeof CustomerProfileTicketsUpcomingRoute
   '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
   '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
-  '/settings/preferences': typeof CustomerSettingsPreferencesIndexRoute
-  '/settings/tickets': typeof CustomerSettingsTicketsIndexRoute
+  '/profile/preferences': typeof CustomerProfilePreferencesIndexRoute
+  '/profile/tickets': typeof CustomerProfileTicketsIndexRoute
   '/artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
   '/venue/my/concerts/concert/$id': typeof VenueMyConcertsConcertIdRoute
 }
@@ -360,17 +366,18 @@ export interface FileRoutesById {
   '/stripe-refresh': typeof StripeRefreshRoute
   '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
+  '/_customer/profile': typeof CustomerProfileRouteRouteWithChildren
   '/_customer/settings': typeof CustomerSettingsRouteRouteWithChildren
   '/artist/create': typeof ArtistCreateRoute
   '/venue/create': typeof VenueCreateRoute
   '/_customer/': typeof CustomerIndexRoute
   '/artist/': typeof ArtistIndexRoute
   '/venue/': typeof VenueIndexRoute
-  '/_customer/settings/location': typeof CustomerSettingsLocationRoute
-  '/_customer/settings/my': typeof CustomerSettingsMyRoute
+  '/_customer/profile/location': typeof CustomerProfileLocationRoute
   '/_customer/settings/payment': typeof CustomerSettingsPaymentRoute
   '/venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/_customer/find/': typeof CustomerFindIndexRoute
+  '/_customer/profile/': typeof CustomerProfileIndexRoute
   '/_customer/settings/': typeof CustomerSettingsIndexRoute
   '/artist/find/': typeof ArtistFindIndexRoute
   '/artist/my/': typeof ArtistMyIndexRoute
@@ -380,16 +387,16 @@ export interface FileRoutesById {
   '/_customer/find/artist/$id': typeof CustomerFindArtistIdRoute
   '/_customer/find/concert/$id': typeof CustomerFindConcertIdRoute
   '/_customer/find/venue/$id': typeof CustomerFindVenueIdRoute
-  '/_customer/settings/preferences/create': typeof CustomerSettingsPreferencesCreateRoute
-  '/_customer/settings/tickets/history': typeof CustomerSettingsTicketsHistoryRoute
-  '/_customer/settings/tickets/upcoming': typeof CustomerSettingsTicketsUpcomingRoute
+  '/_customer/profile/preferences/create': typeof CustomerProfilePreferencesCreateRoute
+  '/_customer/profile/tickets/history': typeof CustomerProfileTicketsHistoryRoute
+  '/_customer/profile/tickets/upcoming': typeof CustomerProfileTicketsUpcomingRoute
   '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
   '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
-  '/_customer/settings/preferences/': typeof CustomerSettingsPreferencesIndexRoute
-  '/_customer/settings/tickets/': typeof CustomerSettingsTicketsIndexRoute
+  '/_customer/profile/preferences/': typeof CustomerProfilePreferencesIndexRoute
+  '/_customer/profile/tickets/': typeof CustomerProfileTicketsIndexRoute
   '/artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
   '/venue/my/concerts/concert/$id': typeof VenueMyConcertsConcertIdRoute
 }
@@ -405,16 +412,17 @@ export interface FileRouteTypes {
     | '/stripe-refresh'
     | '/stripe-return'
     | '/success'
+    | '/profile'
     | '/settings'
     | '/artist/create'
     | '/venue/create'
     | '/artist/'
     | '/venue/'
-    | '/settings/location'
-    | '/settings/my'
+    | '/profile/location'
     | '/settings/payment'
     | '/venue/accept/$applicationId'
     | '/find/'
+    | '/profile/'
     | '/settings/'
     | '/artist/find/'
     | '/artist/my/'
@@ -424,16 +432,16 @@ export interface FileRouteTypes {
     | '/find/artist/$id'
     | '/find/concert/$id'
     | '/find/venue/$id'
-    | '/settings/preferences/create'
-    | '/settings/tickets/history'
-    | '/settings/tickets/upcoming'
+    | '/profile/preferences/create'
+    | '/profile/tickets/history'
+    | '/profile/tickets/upcoming'
     | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
     | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
-    | '/settings/preferences/'
-    | '/settings/tickets/'
+    | '/profile/preferences/'
+    | '/profile/tickets/'
     | '/artist/my/concerts/concert/$id'
     | '/venue/my/concerts/concert/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -449,11 +457,11 @@ export interface FileRouteTypes {
     | '/'
     | '/artist'
     | '/venue'
-    | '/settings/location'
-    | '/settings/my'
+    | '/profile/location'
     | '/settings/payment'
     | '/venue/accept/$applicationId'
     | '/find'
+    | '/profile'
     | '/settings'
     | '/artist/find'
     | '/artist/my'
@@ -463,16 +471,16 @@ export interface FileRouteTypes {
     | '/find/artist/$id'
     | '/find/concert/$id'
     | '/find/venue/$id'
-    | '/settings/preferences/create'
-    | '/settings/tickets/history'
-    | '/settings/tickets/upcoming'
+    | '/profile/preferences/create'
+    | '/profile/tickets/history'
+    | '/profile/tickets/upcoming'
     | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
     | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
-    | '/settings/preferences'
-    | '/settings/tickets'
+    | '/profile/preferences'
+    | '/profile/tickets'
     | '/artist/my/concerts/concert/$id'
     | '/venue/my/concerts/concert/$id'
   id:
@@ -486,17 +494,18 @@ export interface FileRouteTypes {
     | '/stripe-refresh'
     | '/stripe-return'
     | '/success'
+    | '/_customer/profile'
     | '/_customer/settings'
     | '/artist/create'
     | '/venue/create'
     | '/_customer/'
     | '/artist/'
     | '/venue/'
-    | '/_customer/settings/location'
-    | '/_customer/settings/my'
+    | '/_customer/profile/location'
     | '/_customer/settings/payment'
     | '/venue/accept/$applicationId'
     | '/_customer/find/'
+    | '/_customer/profile/'
     | '/_customer/settings/'
     | '/artist/find/'
     | '/artist/my/'
@@ -506,16 +515,16 @@ export interface FileRouteTypes {
     | '/_customer/find/artist/$id'
     | '/_customer/find/concert/$id'
     | '/_customer/find/venue/$id'
-    | '/_customer/settings/preferences/create'
-    | '/_customer/settings/tickets/history'
-    | '/_customer/settings/tickets/upcoming'
+    | '/_customer/profile/preferences/create'
+    | '/_customer/profile/tickets/history'
+    | '/_customer/profile/tickets/upcoming'
     | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
     | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
-    | '/_customer/settings/preferences/'
-    | '/_customer/settings/tickets/'
+    | '/_customer/profile/preferences/'
+    | '/_customer/profile/tickets/'
     | '/artist/my/concerts/concert/$id'
     | '/venue/my/concerts/concert/$id'
   fileRoutesById: FileRoutesById
@@ -639,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerSettingsRouteRouteImport
       parentRoute: typeof CustomerRouteRoute
     }
+    '/_customer/profile': {
+      id: '/_customer/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof CustomerProfileRouteRouteImport
+      parentRoute: typeof CustomerRouteRoute
+    }
     '/venue/my/': {
       id: '/venue/my/'
       path: '/my'
@@ -674,6 +690,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerSettingsIndexRouteImport
       parentRoute: typeof CustomerSettingsRouteRoute
     }
+    '/_customer/profile/': {
+      id: '/_customer/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof CustomerProfileIndexRouteImport
+      parentRoute: typeof CustomerProfileRouteRoute
+    }
     '/_customer/find/': {
       id: '/_customer/find/'
       path: '/find'
@@ -695,33 +718,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerSettingsPaymentRouteImport
       parentRoute: typeof CustomerSettingsRouteRoute
     }
-    '/_customer/settings/my': {
-      id: '/_customer/settings/my'
-      path: '/my'
-      fullPath: '/settings/my'
-      preLoaderRoute: typeof CustomerSettingsMyRouteImport
-      parentRoute: typeof CustomerSettingsRouteRoute
-    }
-    '/_customer/settings/location': {
-      id: '/_customer/settings/location'
+    '/_customer/profile/location': {
+      id: '/_customer/profile/location'
       path: '/location'
-      fullPath: '/settings/location'
-      preLoaderRoute: typeof CustomerSettingsLocationRouteImport
-      parentRoute: typeof CustomerSettingsRouteRoute
+      fullPath: '/profile/location'
+      preLoaderRoute: typeof CustomerProfileLocationRouteImport
+      parentRoute: typeof CustomerProfileRouteRoute
     }
-    '/_customer/settings/tickets/': {
-      id: '/_customer/settings/tickets/'
+    '/_customer/profile/tickets/': {
+      id: '/_customer/profile/tickets/'
       path: '/tickets'
-      fullPath: '/settings/tickets/'
-      preLoaderRoute: typeof CustomerSettingsTicketsIndexRouteImport
-      parentRoute: typeof CustomerSettingsRouteRoute
+      fullPath: '/profile/tickets/'
+      preLoaderRoute: typeof CustomerProfileTicketsIndexRouteImport
+      parentRoute: typeof CustomerProfileRouteRoute
     }
-    '/_customer/settings/preferences/': {
-      id: '/_customer/settings/preferences/'
+    '/_customer/profile/preferences/': {
+      id: '/_customer/profile/preferences/'
       path: '/preferences'
-      fullPath: '/settings/preferences/'
-      preLoaderRoute: typeof CustomerSettingsPreferencesIndexRouteImport
-      parentRoute: typeof CustomerSettingsRouteRoute
+      fullPath: '/profile/preferences/'
+      preLoaderRoute: typeof CustomerProfilePreferencesIndexRouteImport
+      parentRoute: typeof CustomerProfileRouteRoute
     }
     '/venue/my/applications/$id': {
       id: '/venue/my/applications/$id'
@@ -758,26 +774,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtistApplicationCheckoutApplicationIdRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
-    '/_customer/settings/tickets/upcoming': {
-      id: '/_customer/settings/tickets/upcoming'
+    '/_customer/profile/tickets/upcoming': {
+      id: '/_customer/profile/tickets/upcoming'
       path: '/tickets/upcoming'
-      fullPath: '/settings/tickets/upcoming'
-      preLoaderRoute: typeof CustomerSettingsTicketsUpcomingRouteImport
-      parentRoute: typeof CustomerSettingsRouteRoute
+      fullPath: '/profile/tickets/upcoming'
+      preLoaderRoute: typeof CustomerProfileTicketsUpcomingRouteImport
+      parentRoute: typeof CustomerProfileRouteRoute
     }
-    '/_customer/settings/tickets/history': {
-      id: '/_customer/settings/tickets/history'
+    '/_customer/profile/tickets/history': {
+      id: '/_customer/profile/tickets/history'
       path: '/tickets/history'
-      fullPath: '/settings/tickets/history'
-      preLoaderRoute: typeof CustomerSettingsTicketsHistoryRouteImport
-      parentRoute: typeof CustomerSettingsRouteRoute
+      fullPath: '/profile/tickets/history'
+      preLoaderRoute: typeof CustomerProfileTicketsHistoryRouteImport
+      parentRoute: typeof CustomerProfileRouteRoute
     }
-    '/_customer/settings/preferences/create': {
-      id: '/_customer/settings/preferences/create'
+    '/_customer/profile/preferences/create': {
+      id: '/_customer/profile/preferences/create'
       path: '/preferences/create'
-      fullPath: '/settings/preferences/create'
-      preLoaderRoute: typeof CustomerSettingsPreferencesCreateRouteImport
-      parentRoute: typeof CustomerSettingsRouteRoute
+      fullPath: '/profile/preferences/create'
+      preLoaderRoute: typeof CustomerProfilePreferencesCreateRouteImport
+      parentRoute: typeof CustomerProfileRouteRoute
     }
     '/_customer/find/venue/$id': {
       id: '/_customer/find/venue/$id'
@@ -824,29 +840,37 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface CustomerProfileRouteRouteChildren {
+  CustomerProfileLocationRoute: typeof CustomerProfileLocationRoute
+  CustomerProfileIndexRoute: typeof CustomerProfileIndexRoute
+  CustomerProfilePreferencesCreateRoute: typeof CustomerProfilePreferencesCreateRoute
+  CustomerProfileTicketsHistoryRoute: typeof CustomerProfileTicketsHistoryRoute
+  CustomerProfileTicketsUpcomingRoute: typeof CustomerProfileTicketsUpcomingRoute
+  CustomerProfilePreferencesIndexRoute: typeof CustomerProfilePreferencesIndexRoute
+  CustomerProfileTicketsIndexRoute: typeof CustomerProfileTicketsIndexRoute
+}
+
+const CustomerProfileRouteRouteChildren: CustomerProfileRouteRouteChildren = {
+  CustomerProfileLocationRoute: CustomerProfileLocationRoute,
+  CustomerProfileIndexRoute: CustomerProfileIndexRoute,
+  CustomerProfilePreferencesCreateRoute: CustomerProfilePreferencesCreateRoute,
+  CustomerProfileTicketsHistoryRoute: CustomerProfileTicketsHistoryRoute,
+  CustomerProfileTicketsUpcomingRoute: CustomerProfileTicketsUpcomingRoute,
+  CustomerProfilePreferencesIndexRoute: CustomerProfilePreferencesIndexRoute,
+  CustomerProfileTicketsIndexRoute: CustomerProfileTicketsIndexRoute,
+}
+
+const CustomerProfileRouteRouteWithChildren =
+  CustomerProfileRouteRoute._addFileChildren(CustomerProfileRouteRouteChildren)
+
 interface CustomerSettingsRouteRouteChildren {
-  CustomerSettingsLocationRoute: typeof CustomerSettingsLocationRoute
-  CustomerSettingsMyRoute: typeof CustomerSettingsMyRoute
   CustomerSettingsPaymentRoute: typeof CustomerSettingsPaymentRoute
   CustomerSettingsIndexRoute: typeof CustomerSettingsIndexRoute
-  CustomerSettingsPreferencesCreateRoute: typeof CustomerSettingsPreferencesCreateRoute
-  CustomerSettingsTicketsHistoryRoute: typeof CustomerSettingsTicketsHistoryRoute
-  CustomerSettingsTicketsUpcomingRoute: typeof CustomerSettingsTicketsUpcomingRoute
-  CustomerSettingsPreferencesIndexRoute: typeof CustomerSettingsPreferencesIndexRoute
-  CustomerSettingsTicketsIndexRoute: typeof CustomerSettingsTicketsIndexRoute
 }
 
 const CustomerSettingsRouteRouteChildren: CustomerSettingsRouteRouteChildren = {
-  CustomerSettingsLocationRoute: CustomerSettingsLocationRoute,
-  CustomerSettingsMyRoute: CustomerSettingsMyRoute,
   CustomerSettingsPaymentRoute: CustomerSettingsPaymentRoute,
   CustomerSettingsIndexRoute: CustomerSettingsIndexRoute,
-  CustomerSettingsPreferencesCreateRoute:
-    CustomerSettingsPreferencesCreateRoute,
-  CustomerSettingsTicketsHistoryRoute: CustomerSettingsTicketsHistoryRoute,
-  CustomerSettingsTicketsUpcomingRoute: CustomerSettingsTicketsUpcomingRoute,
-  CustomerSettingsPreferencesIndexRoute: CustomerSettingsPreferencesIndexRoute,
-  CustomerSettingsTicketsIndexRoute: CustomerSettingsTicketsIndexRoute,
 }
 
 const CustomerSettingsRouteRouteWithChildren =
@@ -855,6 +879,7 @@ const CustomerSettingsRouteRouteWithChildren =
   )
 
 interface CustomerRouteRouteChildren {
+  CustomerProfileRouteRoute: typeof CustomerProfileRouteRouteWithChildren
   CustomerSettingsRouteRoute: typeof CustomerSettingsRouteRouteWithChildren
   CustomerIndexRoute: typeof CustomerIndexRoute
   CustomerFindIndexRoute: typeof CustomerFindIndexRoute
@@ -865,6 +890,7 @@ interface CustomerRouteRouteChildren {
 }
 
 const CustomerRouteRouteChildren: CustomerRouteRouteChildren = {
+  CustomerProfileRouteRoute: CustomerProfileRouteRouteWithChildren,
   CustomerSettingsRouteRoute: CustomerSettingsRouteRouteWithChildren,
   CustomerIndexRoute: CustomerIndexRoute,
   CustomerFindIndexRoute: CustomerFindIndexRoute,

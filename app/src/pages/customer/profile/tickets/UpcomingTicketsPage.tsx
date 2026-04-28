@@ -1,3 +1,37 @@
+import { useUpcomingTicketsQuery } from "@/hooks/query/useTicketsQuery";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TicketCard } from "./TicketCard";
+
 export default function UpcomingTicketsPage() {
-  return <div>Upcoming Tickets</div>;
+  const { data, isLoading, isError } = useUpcomingTicketsQuery();
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold">Upcoming Tickets</h2>
+        <p className="text-muted-foreground text-sm">
+          Tickets for concerts you have yet to attend
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-44 w-full rounded-lg" />
+          <Skeleton className="h-44 w-full rounded-lg" />
+        </div>
+      ) : isError ? (
+        <p className="text-destructive text-sm">Failed to load tickets.</p>
+      ) : !data?.length ? (
+        <p className="text-muted-foreground text-sm">
+          You don't have any upcoming tickets yet.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {data.map((t) => (
+            <TicketCard key={t.id} ticket={t} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

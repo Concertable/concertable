@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import type { Ticket } from "@/types/ticket";
 
 interface TicketPurchaseRequest {
   concertId: number;
@@ -26,6 +27,14 @@ const ticketApi = {
       "/ticket/purchase",
       request,
     );
+    return data;
+  },
+  getUpcoming: async (): Promise<Ticket[]> => {
+    const { data } = await api.get<Ticket[]>("/ticket/upcoming/user");
+    return data;
+  },
+  getHistory: async (): Promise<Ticket[]> => {
+    const { data } = await api.get<Ticket[]>("/ticket/history/user");
     return data;
   },
 };

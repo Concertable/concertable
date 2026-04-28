@@ -3,6 +3,12 @@ import qs from "qs";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 
+type ProblemDetails = {
+  title?: string;
+  detail?: string;
+  errors?: string[];
+};
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
@@ -22,27 +28,25 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res,
-  async (error: unknown) => {
-    if (
-      error instanceof AxiosError &&
-      error.response?.status === 401 &&
-      error.config?.url !== "/auth/refresh"
-    ) {
+  async (error: AxiosError<ProblemDetails>) => {
+    const { config, response } = error;
+
+    if (response?.status === 401 && config?.url !== "/auth/refresh") {
       await useAuthStore.getState().refresh();
       const token = useAuthStore.getState().accessToken;
-      if (error.config && token) {
-        error.config.headers.Authorization = `Bearer ${token}`;
-        return api(error.config);
+      if (config && token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        return api(config);
       }
     }
 
-    if (error instanceof AxiosError && error.response) {
-      const { title, detail, errors } = error.response.data ?? {};
+    if (response) {
+      const { title, detail, errors } = response.data ?? {};
       if (errors?.length) {
         toast.error(title ?? "Error", {
           description: (
             <ul className="list-disc space-y-1 pl-4">
-              {errors.map((e: string, i: number) => (
+              {errors.map((e, i) => (
                 <li key={i}>{e}</li>
               ))}
             </ul>
@@ -53,9 +57,7 @@ api.interceptors.response.use(
       }
     }
 
-    return Promise.reject(
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    return Promise.reject(error);
   },
 );
 

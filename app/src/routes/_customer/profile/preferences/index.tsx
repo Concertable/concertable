@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import PreferencesPage from "@/pages/customer/profile/preferences/PreferencesPage";
-import { requireRole } from "@/lib/guards";
 
-export const Route = createFileRoute("/_customer/settings/preferences/")({
-  beforeLoad: () => requireRole("Customer"),
+export const Route = createFileRoute("/_customer/profile/preferences/")({
   component: PreferencesPage,
 });

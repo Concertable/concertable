@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
-import { useAuthStore } from "@/store/useAuthStore";
 import { requireAuth } from "@/lib/guards";
 import {
   Sidebar,
@@ -14,22 +13,12 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 
-const baseLinks = [
-  { label: "Account", to: "/settings" },
+const links = [
+  { label: "Settings", to: "/settings" },
   { label: "Payment / Billing", to: "/settings/payment" },
 ];
 
-const customerLinks = [
-  { label: "Location", to: "/settings/location" },
-  { label: "Preferences", to: "/settings/preferences" },
-  { label: "My Tickets", to: "/settings/tickets" },
-];
-
 function SettingsLayout() {
-  const user = useAuthStore((s) => s.user);
-  const isCustomer = user?.role === "Customer";
-  const links = isCustomer ? [...baseLinks, ...customerLinks] : baseLinks;
-
   return (
     <SidebarProvider
       style={{ "--sidebar-width": "220px" } as React.CSSProperties}
