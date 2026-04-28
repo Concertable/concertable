@@ -1,12 +1,12 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Serializers;
-using Concertable.Identity.Contracts;
+using Concertable.Auth.Contracts;
+using Concertable.Auth.Infrastructure.Settings;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Repositories;
-using Concertable.Identity.Infrastructure.Settings;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Web.Authorization;
 using FluentValidation;

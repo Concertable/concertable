@@ -2,7 +2,7 @@ using Concertable.Artist.Application.Interfaces;
 using Concertable.Artist.Infrastructure.Data;
 using Concertable.Artist.Infrastructure.Mappers;
 using Concertable.Concert.Contracts;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 

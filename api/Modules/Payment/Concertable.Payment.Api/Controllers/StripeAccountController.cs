@@ -1,5 +1,6 @@
+﻿using Concertable.Authorization.Contracts;
 using Concertable.Customer.Contracts;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Domain;
@@ -13,20 +14,20 @@ internal class StripeAccountController : ControllerBase
 {
     private readonly IStripeAccountService stripeAccountService;
     private readonly ICurrentUser currentUser;
-    private readonly IManagerModule managerModule;
+    private readonly IUserModule userModule;
     private readonly ICustomerModule customerModule;
     private readonly IPayoutAccountRepository payoutAccountRepository;
 
     public StripeAccountController(
         IStripeAccountService stripeAccountService,
         ICurrentUser currentUser,
-        IManagerModule managerModule,
+        IUserModule userModule,
         ICustomerModule customerModule,
         IPayoutAccountRepository payoutAccountRepository)
     {
         this.stripeAccountService = stripeAccountService;
         this.currentUser = currentUser;
-        this.managerModule = managerModule;
+        this.userModule = userModule;
         this.customerModule = customerModule;
         this.payoutAccountRepository = payoutAccountRepository;
     }
@@ -34,7 +35,7 @@ internal class StripeAccountController : ControllerBase
     [HttpGet("onboarding-link")]
     public async Task<ActionResult<string>> GetOnboardingLink()
     {
-        _ = await managerModule.GetByIdAsync(currentUser.GetId())
+        _ = await userModule.GetManagerByIdAsync(currentUser.GetId())
             ?? throw new UnauthorizedAccessException("Manager not found.");
 
         var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
@@ -46,7 +47,7 @@ internal class StripeAccountController : ControllerBase
     [HttpGet("account-status")]
     public async Task<ActionResult<PayoutAccountStatus>> GetAccountStatus()
     {
-        _ = await managerModule.GetByIdAsync(currentUser.GetId())
+        _ = await userModule.GetManagerByIdAsync(currentUser.GetId())
             ?? throw new UnauthorizedAccessException("Manager not found.");
 
         var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());

@@ -1,4 +1,4 @@
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +8,7 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<UserEntity>
 {
     public void Configure(EntityTypeBuilder<UserEntity> builder)
     {
-        builder.ToTable("Users", "identity");
+        builder.ToTable("Users", "user");
         builder.Property(u => u.Location).HasColumnType("geography");
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasDiscriminator(u => u.Role)
@@ -32,40 +32,4 @@ public class CustomerEntityConfiguration : IEntityTypeConfiguration<CustomerEnti
 public class ManagerEntityConfiguration : IEntityTypeConfiguration<ManagerEntity>
 {
     public void Configure(EntityTypeBuilder<ManagerEntity> builder) { }
-}
-
-public class RefreshTokenEntityConfiguration : IEntityTypeConfiguration<RefreshTokenEntity>
-{
-    public void Configure(EntityTypeBuilder<RefreshTokenEntity> builder)
-    {
-        builder.ToTable("RefreshTokens", "identity");
-        builder.HasOne(rt => rt.User)
-            .WithMany(u => u.RefreshTokens)
-            .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-    }
-}
-
-public class EmailVerificationTokenEntityConfiguration : IEntityTypeConfiguration<EmailVerificationTokenEntity>
-{
-    public void Configure(EntityTypeBuilder<EmailVerificationTokenEntity> builder)
-    {
-        builder.ToTable("EmailVerificationTokens", "identity");
-        builder.HasOne(t => t.User)
-            .WithMany(u => u.EmailVerificationTokens)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-    }
-}
-
-public class PasswordResetTokenEntityConfiguration : IEntityTypeConfiguration<PasswordResetTokenEntity>
-{
-    public void Configure(EntityTypeBuilder<PasswordResetTokenEntity> builder)
-    {
-        builder.ToTable("PasswordResetTokens", "identity");
-        builder.HasOne(t => t.User)
-            .WithMany(u => u.PasswordResetTokens)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-    }
 }

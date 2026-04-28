@@ -1,6 +1,6 @@
-using Concertable.Concert.Application.Responses;
+﻿using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Infrastructure.Data;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -8,12 +8,12 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow;
 internal class PayerLookup : IPayerLookup
 {
     private readonly ConcertDbContext context;
-    private readonly IManagerModule managerModule;
+    private readonly IUserModule userModule;
 
-    public PayerLookup(ConcertDbContext context, IManagerModule managerModule)
+    public PayerLookup(ConcertDbContext context, IUserModule userModule)
     {
         this.context = context;
-        this.managerModule = managerModule;
+        this.userModule = userModule;
     }
 
     public Task<Guid?> GetVenueManagerIdAsync(int applicationId) =>
@@ -57,7 +57,7 @@ internal class PayerLookup : IPayerLookup
 
         if (venue is null) return null;
 
-        var manager = await managerModule.GetByIdAsync(venue.UserId);
+        var manager = await userModule.GetManagerByIdAsync(venue.UserId);
         return new PayeeSummary(venue.Name, manager?.Email);
     }
 }

@@ -16,7 +16,9 @@
     <ProjectReference Include="..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\Shared\Concertable.Shared.Application\Concertable.Shared.Application.csproj" />
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
-    <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\User\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Authorization\Concertable.Authorization.Contracts\Concertable.Authorization.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Auth\Concertable.Auth.Domain\Concertable.Auth.Domain.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,9 @@
 using Concertable.Artist.Contracts;
+using Concertable.Authorization.Contracts;
 using Concertable.Concert.Api.Mappers;
 using Concertable.Concert.Api.Requests;
 using Concertable.Concert.Api.Responses;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

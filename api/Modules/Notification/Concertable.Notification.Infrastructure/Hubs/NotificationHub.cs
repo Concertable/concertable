@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Concertable.Identity.Contracts;
+using Concertable.Authorization.Contracts;
 
 namespace Concertable.Notification.Infrastructure.Hubs;
 

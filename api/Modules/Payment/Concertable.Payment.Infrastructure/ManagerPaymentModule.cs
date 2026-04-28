@@ -1,4 +1,4 @@
-using Concertable.Identity.Contracts;
+﻿using Concertable.User.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
@@ -12,18 +12,18 @@ internal class ManagerPaymentModule : IManagerPaymentModule
     private readonly IPaymentService paymentService;
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
-    private readonly IManagerModule managerModule;
+    private readonly IUserModule userModule;
 
     public ManagerPaymentModule(
         IPaymentService paymentService,
         IStripeAccountService stripeAccountService,
         IPayoutAccountRepository payoutAccountRepository,
-        IManagerModule managerModule)
+        IUserModule userModule)
     {
         this.paymentService = paymentService;
         this.stripeAccountService = stripeAccountService;
         this.payoutAccountRepository = payoutAccountRepository;
-        this.managerModule = managerModule;
+        this.userModule = userModule;
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
@@ -34,9 +34,9 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         string paymentMethodId,
         CancellationToken ct = default)
     {
-        var payer = await managerModule.GetByIdAsync(payerId)
+        var payer = await userModule.GetManagerByIdAsync(payerId)
             ?? throw new NotFoundException($"Payer manager not found for userId {payerId}");
-        var payee = await managerModule.GetByIdAsync(payeeId)
+        var payee = await userModule.GetManagerByIdAsync(payeeId)
             ?? throw new NotFoundException($"Payee manager not found for userId {payeeId}");
 
         var payerAccount = await payoutAccountRepository.GetByUserIdAsync(payerId)
@@ -106,7 +106,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         if (account?.StripeCustomerId is not null)
             return account.StripeCustomerId;
 
-        var manager = await managerModule.GetByIdAsync(userId)
+        var manager = await userModule.GetManagerByIdAsync(userId)
             ?? throw new NotFoundException($"Manager not found for userId {userId}");
 
         await stripeAccountService.ProvisionCustomerAsync(userId, manager.Email ?? string.Empty, ct);

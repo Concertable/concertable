@@ -1,6 +1,6 @@
 using System.Net;
 using Concertable.Concert.Application.DTOs;
-using Concertable.Identity.Application.Requests;
+using Concertable.User.Application.Requests;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
 
@@ -28,7 +28,7 @@ public class UserApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         // Act
-        var response = await client.PutAsync("/api/Users/location", new UpdateLocationRequest(51.5, -0.1));
+        var response = await client.PutAsync("/api/User/location", new UpdateLocationRequest(51.5, -0.1));
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -41,7 +41,7 @@ public class UserApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
         // Act
-        var response = await client.PutAsync("/api/Users/location", new UpdateLocationRequest(51.5, -0.1));
+        var response = await client.PutAsync("/api/User/location", new UpdateLocationRequest(51.5, -0.1));
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -59,7 +59,7 @@ public class UserApiTests : IAsyncLifetime
         const double longitude = -2.2426;
 
         // Act
-        var response = await client.PutAsync("/api/Users/location", new UpdateLocationRequest(latitude, longitude));
+        var response = await client.PutAsync("/api/User/location", new UpdateLocationRequest(latitude, longitude));
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

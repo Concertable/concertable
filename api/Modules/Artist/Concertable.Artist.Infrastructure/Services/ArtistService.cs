@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Geometry;
+﻿using Concertable.Application.Interfaces.Geometry;
 using Concertable.Artist.Application.Mappers;
 using Concertable.Artist.Application.Requests;
 using Concertable.Shared.Infrastructure.Services.Geometry;
@@ -12,7 +12,7 @@ internal class ArtistService : IArtistService
     private readonly IArtistRepository artistRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
-    private readonly IManagerModule managerModule;
+    private readonly IUserModule userModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
 
@@ -20,14 +20,14 @@ internal class ArtistService : IArtistService
         IArtistRepository artistRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        IManagerModule managerModule,
+        IUserModule userModule,
         IGeocodingService geocodingService,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.artistRepository = artistRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
-        this.managerModule = managerModule;
+        this.userModule = userModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
     }
@@ -42,7 +42,7 @@ internal class ArtistService : IArtistService
 
     public async Task<ArtistDto> CreateAsync(CreateArtistRequest request)
     {
-        var user = await managerModule.GetByIdAsync(currentUser.GetId())
+        var user = await userModule.GetManagerByIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);

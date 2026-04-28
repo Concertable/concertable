@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Infrastructure\Concertable.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\User\Concertable.User.Infrastructure\Concertable.User.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Auth\Concertable.Auth.Infrastructure\Concertable.Auth.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Search\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />

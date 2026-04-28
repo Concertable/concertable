@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
-    <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Contracts\Concertable.Identity.Contracts.csproj" />
-    <ProjectReference Include="..\..\Modules\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\User\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\User\Concertable.User.Domain\Concertable.User.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />

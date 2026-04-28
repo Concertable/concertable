@@ -1,7 +1,7 @@
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Domain;
 using Concertable.Contract.Contracts;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;

@@ -1,6 +1,7 @@
 $dirs = @(
     "Data\Concertable.Data.Infrastructure\Data\Migrations",
-    "Modules\Identity\Concertable.Identity.Infrastructure\Data\Migrations",
+    "Modules\User\Concertable.User.Infrastructure\Data\Migrations",
+    "Modules\Auth\Concertable.Auth.Infrastructure\Data\Migrations",
     "Modules\Artist\Concertable.Artist.Infrastructure\Data\Migrations",
     "Modules\Venue\Concertable.Venue.Infrastructure\Data\Migrations",
     "Modules\Concert\Concertable.Concert.Infrastructure\Data\Migrations",
@@ -14,7 +15,7 @@ foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinu
 dotnet ef migrations add InitialCreate --context SharedDbContext --project Data/Concertable.Data.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context IdentityDbContext --project Modules/Identity/Concertable.Identity.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context UserDbContext --project Modules/User/Concertable.User.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context ArtistDbContext --project Modules/Artist/Concertable.Artist.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
@@ -27,6 +28,9 @@ dotnet ef migrations add InitialCreate --context ConcertDbContext --project Modu
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context ContractDbContext --project Modules/Contract/Concertable.Contract.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context AuthDbContext --project Modules/Auth/Concertable.Auth.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context PaymentDbContext --project Modules/Payment/Concertable.Payment.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations

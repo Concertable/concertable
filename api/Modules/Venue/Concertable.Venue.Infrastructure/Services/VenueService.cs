@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Geometry;
+﻿using Concertable.Application.Interfaces.Geometry;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Shared.Exceptions;
 using Concertable.Venue.Application.Mappers;
@@ -12,7 +12,7 @@ internal class VenueService : IVenueService
     private readonly IVenueRepository venueRepository;
     private readonly IImageService imageService;
     private readonly ICurrentUser currentUser;
-    private readonly IManagerModule managerModule;
+    private readonly IUserModule userModule;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
 
@@ -20,14 +20,14 @@ internal class VenueService : IVenueService
         IVenueRepository venueRepository,
         IImageService imageService,
         ICurrentUser currentUser,
-        IManagerModule managerModule,
+        IUserModule userModule,
         IGeocodingService geocodingService,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider)
     {
         this.venueRepository = venueRepository;
         this.imageService = imageService;
         this.currentUser = currentUser;
-        this.managerModule = managerModule;
+        this.userModule = userModule;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
     }
@@ -40,7 +40,7 @@ internal class VenueService : IVenueService
 
     public async Task<VenueDto> CreateAsync(CreateVenueRequest request)
     {
-        var user = await managerModule.GetByIdAsync(currentUser.GetId())
+        var user = await userModule.GetManagerByIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("Manager not found");
 
         var bannerUrl = await imageService.UploadAsync(request.Banner);

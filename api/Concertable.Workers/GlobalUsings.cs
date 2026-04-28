@@ -1,7 +1,9 @@
-global using Concertable.Identity.Contracts;
+global using Concertable.Auth.Contracts;
+global using Concertable.Authorization.Contracts;
+global using Concertable.User.Contracts;
 global using Concertable.Payment.Domain;
-global using Concertable.Identity.Application.Interfaces;
-global using Concertable.Identity.Domain;
+global using Concertable.User.Application.Interfaces;
+global using Concertable.User.Domain;
 global using Concertable.Concert.Domain;
 global using Concertable.Contract.Contracts;
 global using Concertable.Concert.Application.Interfaces;

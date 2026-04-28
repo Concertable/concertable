@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Geometry;
+﻿using Concertable.Application.Interfaces.Geometry;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Customer.Infrastructure.Services;
@@ -7,18 +7,18 @@ internal class PreferenceService : IPreferenceService
 {
     private readonly IPreferenceRepository preferenceRepository;
     private readonly ICurrentUser currentUser;
-    private readonly IIdentityModule identityModule;
+    private readonly IUserModule userModule;
     private readonly IGeometryCalculator geometryCalculator;
 
     public PreferenceService(
         IPreferenceRepository preferenceRepository,
         ICurrentUser currentUser,
-        IIdentityModule identityModule,
+        IUserModule userModule,
         IGeometryCalculator geometryCalculator)
     {
         this.preferenceRepository = preferenceRepository;
         this.currentUser = currentUser;
-        this.identityModule = identityModule;
+        this.userModule = userModule;
         this.geometryCalculator = geometryCalculator;
     }
 
@@ -72,7 +72,7 @@ internal class PreferenceService : IPreferenceService
         var preferences = (await preferenceRepository.GetByMatchingGenresAsync(genreIds)).ToList();
         if (preferences.Count == 0) return [];
 
-        var users = await identityModule.GetUsersByIdsAsync(preferences.Select(p => p.UserId));
+        var users = await userModule.GetByIdsAsync(preferences.Select(p => p.UserId));
         var usersById = users.ToDictionary(u => u.Id);
 
         return preferences

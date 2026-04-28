@@ -1,5 +1,5 @@
-using Concertable.Identity.Contracts;
-using Concertable.Identity.Contracts.Events;
+using Concertable.User.Contracts;
+using Concertable.User.Contracts.Events;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Shared;
 

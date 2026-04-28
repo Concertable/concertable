@@ -1,6 +1,6 @@
-using Concertable.Application.Interfaces;
-using Concertable.Identity.Contracts;
-using Concertable.Identity.Contracts.Events;
+﻿using Concertable.Application.Interfaces;
+using Concertable.User.Contracts;
+using Concertable.User.Contracts.Events;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
@@ -69,7 +69,7 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IWebhookService, FakeWebhookService>();
         }
 
-        // Stripe validation (keyed by ContractType) — used by Concert eligibility checks
+        // Stripe validation (keyed by ContractType) â€” used by Concert eligibility checks
         services.AddScoped<StripeAccountValidator>();
         services.AddScoped<StripeCustomerValidator>();
         services.AddScoped<IStripeValidator, StripeValidator>();
@@ -83,20 +83,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
         services.AddScoped<IWebhookQueue, WebhookQueue>();
 
-        // Module facades — public Payment.Contracts surface
+        // Module facades â€” public Payment.Contracts surface
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
         services.AddKeyedScoped<IManagerPaymentModule>(PaymentSession.OnSession, (sp, _) =>
             new ManagerPaymentModule(
                 sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OnSession),
                 sp.GetRequiredService<IStripeAccountService>(),
                 sp.GetRequiredService<IPayoutAccountRepository>(),
-                sp.GetRequiredService<IManagerModule>()));
+                sp.GetRequiredService<IUserModule>()));
         services.AddKeyedScoped<IManagerPaymentModule>(PaymentSession.OffSession, (sp, _) =>
             new ManagerPaymentModule(
                 sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OffSession),
                 sp.GetRequiredService<IStripeAccountService>(),
                 sp.GetRequiredService<IPayoutAccountRepository>(),
-                sp.GetRequiredService<IManagerModule>()));
+                sp.GetRequiredService<IUserModule>()));
 
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
