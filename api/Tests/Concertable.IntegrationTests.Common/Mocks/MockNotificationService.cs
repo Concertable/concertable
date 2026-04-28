@@ -1,6 +1,4 @@
-using Concertable.Web.IntegrationTests.Infrastructure;
-
-namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+namespace Concertable.IntegrationTests.Common.Mocks;
 
 public class MockNotificationService : IMockNotificationService
 {

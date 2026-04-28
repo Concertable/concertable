@@ -1,6 +1,6 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Shared;
-using Concertable.Web.IntegrationTests.Infrastructure;
+using Concertable.IntegrationTests.Common;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Search;
@@ -105,7 +105,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
-        // Act — comma-delimited binding: Rock matches seeded concerts, Jazz does not
+        // Act â€” comma-delimited binding: Rock matches seeded concerts, Jazz does not
         var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Rock.Id},{fixture.SeedData.Jazz.Id}");
 
         // Assert

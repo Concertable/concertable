@@ -23,12 +23,15 @@
     <ProjectReference Include="..\..\Concertable.Web\Concertable.Web.csproj" />
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
+    <ProjectReference Include="..\Concertable.IntegrationTests.Common\Concertable.IntegrationTests.Common.csproj" />
     <ProjectReference Include="..\..\Modules\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Concertable.Seeding" />
     <Using Include="Concertable.Tests.Common" />
+    <Using Include="Concertable.IntegrationTests.Common" />
+    <Using Include="Concertable.IntegrationTests.Common.Mocks" />
     <Using Include="Concertable.Search.Contracts" />
   </ItemGroup>
 

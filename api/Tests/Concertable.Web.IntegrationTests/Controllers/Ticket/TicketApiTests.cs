@@ -1,5 +1,5 @@
-using System.Net;
-using Concertable.Web.IntegrationTests.Infrastructure;
+﻿using System.Net;
+using Concertable.IntegrationTests.Common;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Ticket.TicketRequestBuilders;
 

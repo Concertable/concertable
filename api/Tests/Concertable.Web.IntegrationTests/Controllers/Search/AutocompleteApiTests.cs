@@ -1,6 +1,6 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Shared;
-using Concertable.Web.IntegrationTests.Infrastructure;
+using Concertable.IntegrationTests.Common;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Search;

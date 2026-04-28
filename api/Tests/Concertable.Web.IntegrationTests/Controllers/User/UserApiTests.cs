@@ -1,7 +1,7 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
 using Concertable.User.Application.Requests;
-using Concertable.Web.IntegrationTests.Infrastructure;
+using Concertable.IntegrationTests.Common;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Controllers.User;

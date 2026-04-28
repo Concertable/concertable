@@ -1,8 +1,8 @@
 using Concertable.Notification.Contracts;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+namespace Concertable.IntegrationTests.Common.Mocks;
 
-internal interface IMockNotificationService : INotificationModule, IResettable
+public interface IMockNotificationService : INotificationModule, IResettable
 {
     List<(string UserId, object Payload)> DraftCreated { get; }
     List<(string UserId, object Payload)> ConcertPosted { get; }

@@ -1,7 +1,7 @@
-using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+using Concertable.IntegrationTests.Common.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
 internal static class ServiceCollectionExtensions
 {

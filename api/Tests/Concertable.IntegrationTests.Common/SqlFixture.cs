@@ -4,7 +4,7 @@ using Respawn;
 using Testcontainers.MsSql;
 using Xunit;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
 public class SqlFixture : IAsyncLifetime
 {
@@ -27,7 +27,7 @@ public class SqlFixture : IAsyncLifetime
         {
             TablesToIgnore = ["__EFMigrationsHistory"],
             DbAdapter = DbAdapter.SqlServer,
-            WithReseed = true // resets IDENTITY counters to 0 (next insert = 1) so hardcoded IDs in TestDbInitializer remain valid after each reset
+            WithReseed = true
         });
     }
 

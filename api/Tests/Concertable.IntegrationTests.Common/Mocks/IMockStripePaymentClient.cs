@@ -1,8 +1,8 @@
 using Concertable.Payment.Application.Interfaces.Webhook;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+namespace Concertable.IntegrationTests.Common.Mocks;
 
-internal interface IMockStripePaymentClient : IStripePaymentClient, IResettable
+public interface IMockStripePaymentClient : IStripePaymentClient, IResettable
 {
     string LastPaymentIntentId { get; }
     string LastEventId { get; }

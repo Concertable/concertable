@@ -1,7 +1,10 @@
 using Concertable.Application.Interfaces;
 using Concertable.Notification.Contracts;
+using Concertable.Payment.Contracts;
+using Concertable.User.Contracts;
+using Concertable.User.Domain;
 using Concertable.Payment.Application.Interfaces;
-using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+using Concertable.IntegrationTests.Common.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Auth.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
@@ -15,7 +18,6 @@ using Concertable.Payment.Infrastructure.Services;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Payment.Application.Interfaces.Webhook;
-using Concertable.Payment.Application.Interfaces;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
 using Microsoft.AspNetCore.Authentication;
@@ -27,7 +29,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
 public class ApiFixture : IAsyncLifetime
 {
@@ -35,8 +37,8 @@ public class ApiFixture : IAsyncLifetime
     private WebApplicationFactory<Program> factory = null!;
     private IServiceScope? scope;
 
-    internal IMockNotificationService NotificationService { get; } = new MockNotificationService();
-    internal IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
+    public IMockNotificationService NotificationService { get; } = new MockNotificationService();
+    public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
     public IStripeClient StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;

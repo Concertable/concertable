@@ -1,14 +1,14 @@
 using System.Text;
-using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+using Concertable.IntegrationTests.Common.Mocks;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
-internal class MockStripeClientFail : IStripeClient
+internal class MockStripeClient : IStripeClient
 {
     private readonly IMockStripePaymentClient paymentClient;
     private readonly IHttpClientFactory httpClientFactory;
 
-    public MockStripeClientFail(IMockStripePaymentClient paymentClient, IHttpClientFactory httpClientFactory)
+    public MockStripeClient(IMockStripePaymentClient paymentClient, IHttpClientFactory httpClientFactory)
     {
         this.paymentClient = paymentClient;
         this.httpClientFactory = httpClientFactory;
@@ -23,17 +23,14 @@ internal class MockStripeClientFail : IStripeClient
 
         var json = $$"""
         {
-            "id": "evt_test_{{Guid.NewGuid():N}}",
+            "id": "{{paymentClient.LastEventId}}",
             "object": "event",
-            "type": "payment_intent.payment_failed",
+            "type": "payment_intent.succeeded",
             "data": {
                 "object": {
                     "id": "{{paymentClient.LastPaymentIntentId}}",
                     "object": "payment_intent",
-                    "status": "requires_payment_method",
-                    "last_payment_error": {
-                        "message": "Your card was declined."
-                    },
+                    "status": "succeeded",
                     "metadata": { {{metadataJson}} }
                 }
             }

@@ -1,6 +1,6 @@
 using Concertable.Application.Interfaces;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+namespace Concertable.IntegrationTests.Common.Mocks;
 
 public record SentEmail(string To, string Subject, string Body);
 

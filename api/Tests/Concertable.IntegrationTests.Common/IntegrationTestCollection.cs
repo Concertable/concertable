@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
 [CollectionDefinition("Integration")]
 public class IntegrationTestCollection : ICollectionFixture<ApiFixture>;

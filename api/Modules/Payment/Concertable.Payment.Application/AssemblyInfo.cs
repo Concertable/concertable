@@ -6,6 +6,7 @@
 // Concertable.Infrastructure entry retired Step 10 (legacy payment service files all deleted).
 [assembly: InternalsVisibleTo("Concertable.Web")]
 [assembly: InternalsVisibleTo("Concertable.Workers")]
+[assembly: InternalsVisibleTo("Concertable.IntegrationTests.Common")]
 [assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]

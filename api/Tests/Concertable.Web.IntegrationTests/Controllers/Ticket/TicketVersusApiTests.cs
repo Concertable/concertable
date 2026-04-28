@@ -1,7 +1,7 @@
-using Concertable.Concert.Application.DTOs;
+﻿using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Api.Responses;
 using Concertable.Payment.Application.Interfaces;
-using Concertable.Web.IntegrationTests.Infrastructure;
+using Concertable.IntegrationTests.Common;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Ticket.TicketRequestBuilders;
 

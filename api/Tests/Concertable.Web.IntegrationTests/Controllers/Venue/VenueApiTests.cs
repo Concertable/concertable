@@ -1,7 +1,7 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Venue.Application.DTOs;
 using Concertable.Venue.Api.Responses;
-using Concertable.Web.IntegrationTests.Infrastructure;
+using Concertable.IntegrationTests.Common;
 using Xunit;
 using static Concertable.Web.IntegrationTests.Controllers.Venue.VenueRequestBuilders;
 

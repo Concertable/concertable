@@ -2,7 +2,7 @@ using Concertable.Application.DTOs;
 using Concertable.Application.Interfaces;
 using Concertable.Shared.Exceptions;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+namespace Concertable.IntegrationTests.Common.Mocks;
 
 public class MockGeocodingServiceFail : IGeocodingService
 {

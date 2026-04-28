@@ -5,7 +5,7 @@ using Concertable.Seeding.Fakers;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
 public class TestDbInitializer : IDbInitializer
 {

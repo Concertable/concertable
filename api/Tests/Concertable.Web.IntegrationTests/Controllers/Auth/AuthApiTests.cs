@@ -1,7 +1,7 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Auth.Contracts;
 using Concertable.User.Contracts;
-using Concertable.Web.IntegrationTests.Infrastructure;
+using Concertable.IntegrationTests.Common;
 using Xunit;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Auth;
@@ -178,7 +178,7 @@ public class AuthApiTests : IAsyncLifetime
         // Arrange
         var client = fixture.CreateClient();
 
-        // Act — should not reveal whether user exists
+        // Act â€” should not reveal whether user exists
         var response = await client.PostAsync("/api/Auth/send-verification", new ForgotPasswordRequest
         {
             Email = "doesnotexist@test.com"
@@ -286,7 +286,7 @@ public class AuthApiTests : IAsyncLifetime
         // Arrange
         var client = fixture.CreateClient();
 
-        // Act — should not reveal whether user exists
+        // Act â€” should not reveal whether user exists
         var response = await client.PostAsync("/api/Auth/forgot-password", new ForgotPasswordRequest
         {
             Email = "doesnotexist@test.com"
@@ -425,13 +425,13 @@ public class AuthApiTests : IAsyncLifetime
             RefreshToken = loginResponse.RefreshToken
         });
 
-        // Act — attempt to use the invalidated refresh token
+        // Act â€” attempt to use the invalidated refresh token
         var response = await client.PostAsync("/api/Auth/refresh", new RefreshTokenRequest
         {
             RefreshToken = loginResponse.RefreshToken
         });
 
-        // Assert — invalidated token is treated as unauthorized, not bad request
+        // Assert â€” invalidated token is treated as unauthorized, not bad request
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 

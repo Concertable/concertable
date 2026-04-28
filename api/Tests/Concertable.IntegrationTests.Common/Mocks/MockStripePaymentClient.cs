@@ -1,8 +1,7 @@
-using Concertable.Web.IntegrationTests.Infrastructure;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Stripe;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+namespace Concertable.IntegrationTests.Common.Mocks;
 
 internal class MockStripePaymentClient : IMockStripePaymentClient
 {

@@ -1,5 +1,5 @@
-using Concertable.Concert.Application.Requests;
-using Concertable.Web.IntegrationTests.Infrastructure;
+﻿using Concertable.Concert.Application.Requests;
+using Concertable.IntegrationTests.Common;
 
 namespace Concertable.Web.IntegrationTests.Controllers.Opportunity;
 

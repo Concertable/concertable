@@ -11,7 +11,7 @@ public class DoorSplitConcertWorkflowCompleteTests
     private readonly Mock<IDeferredConcertService> deferredConcertService;
     private readonly Mock<IConcertRepository> concertRepository;
     private readonly Mock<IBookingRepository> bookingRepository;
-    private readonly Mock<IContractLoader> contractLoader;
+    private readonly Mock<IContractLoader> contractLookup;
     private readonly DoorSplitConcertWorkflow sut;
 
     private readonly DoorSplitContract contract = new() { ArtistDoorPercent = 50, PaymentMethod = PaymentMethod.Cash };
@@ -23,7 +23,7 @@ public class DoorSplitConcertWorkflowCompleteTests
         deferredConcertService = new Mock<IDeferredConcertService>();
         concertRepository = new Mock<IConcertRepository>();
         bookingRepository = new Mock<IBookingRepository>();
-        contractLoader = new Mock<IContractLoader>();
+        contractLookup = new Mock<IContractLoader>();
 
         var booking = BookingFactory.Create(artistUserId, venueUserId);
 
@@ -32,12 +32,12 @@ public class DoorSplitConcertWorkflowCompleteTests
             concertRepository.Object,
             bookingRepository.Object,
             new Mock<IPayerLookup>().Object,
-            contractLoader.Object,
+            contractLookup.Object,
             new Mock<IConcertPaymentFlow>().Object);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);
-        contractLoader.Setup(l => l.LoadByConcertIdAsync(10)).ReturnsAsync(contract);
+        contractLookup.Setup(l => l.LoadByConcertIdAsync(10)).ReturnsAsync(contract);
     }
 
     [Fact]

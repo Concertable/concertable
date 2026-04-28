@@ -1,4 +1,4 @@
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
 public class MockStripeClientSilent : IStripeClient
 {

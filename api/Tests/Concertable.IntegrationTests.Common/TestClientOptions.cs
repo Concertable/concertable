@@ -1,11 +1,11 @@
 using Concertable.Application.Interfaces;
-using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
+using Concertable.IntegrationTests.Common.Mocks;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Concertable.Web.IntegrationTests.Infrastructure;
+namespace Concertable.IntegrationTests.Common;
 
 public class TestClientOptions
 {
