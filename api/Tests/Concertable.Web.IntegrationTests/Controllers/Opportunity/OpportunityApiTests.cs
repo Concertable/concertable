@@ -1,5 +1,6 @@
 using System.Net;
 using Concertable.Concert.Application.DTOs;
+
 using Concertable.Concert.Api.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;

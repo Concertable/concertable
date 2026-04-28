@@ -1,0 +1,20 @@
+using Concertable.Concert.Api.Responses;
+using Concertable.Concert.Application.DTOs;
+
+namespace Concertable.Concert.Api.Mappers;
+
+internal static class OpportunityApplicationResponseMappers
+{
+    public static OpportunityApplicationResponse ToResponse(this OpportunityApplicationDto dto) =>
+        new(dto.Id,
+            dto.Artist,
+            new OpportunitySummaryResponse(
+                dto.Opportunity.Id,
+                dto.Opportunity.StartDate,
+                dto.Opportunity.EndDate,
+                dto.Opportunity.Contract),
+            dto.Status);
+
+    public static IEnumerable<OpportunityApplicationResponse> ToResponses(this IEnumerable<OpportunityApplicationDto> dtos) =>
+        dtos.Select(d => d.ToResponse());
+}

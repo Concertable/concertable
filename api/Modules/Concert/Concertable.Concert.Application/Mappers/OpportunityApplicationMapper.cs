@@ -12,18 +12,33 @@ internal class OpportunityApplicationMapper : IOpportunityApplicationMapper
         this.opportunityMapper = opportunityMapper;
     }
 
-    public OpportunityApplicationDto ToDto(OpportunityApplicationEntity application) =>
+    public async Task<OpportunityApplicationDto> ToDtoAsync(OpportunityApplicationEntity application) =>
         new(application.Id,
-            new ArtistSummaryDto
-            {
-                Id = application.Artist.Id,
-                Name = application.Artist.Name,
-                Avatar = application.Artist.Avatar,
-                Genres = application.Artist.Genres.Select(g => new GenreDto(g.Genre.Id, g.Genre.Name))
-            },
-            opportunityMapper.ToDto(application.Opportunity),
+            BuildArtistSummary(application),
+            await opportunityMapper.ToDtoAsync(application.Opportunity),
             application.Status);
 
-    public IEnumerable<OpportunityApplicationDto> ToDtos(IEnumerable<OpportunityApplicationEntity> applications) =>
-        applications.Select(ToDto);
+    public async Task<IEnumerable<OpportunityApplicationDto>> ToDtosAsync(IEnumerable<OpportunityApplicationEntity> applications)
+    {
+        var applicationList = applications.ToList();
+        var opportunityPage = new Pagination<OpportunityEntity>(
+            applicationList.Select(a => a.Opportunity), applicationList.Count, 1, applicationList.Count);
+        var opportunityDtos = (await opportunityMapper.ToDtosAsync(opportunityPage)).Data
+            .ToDictionary(o => o.Id);
+
+        return applicationList.Select(a =>
+            new OpportunityApplicationDto(
+                a.Id,
+                BuildArtistSummary(a),
+                opportunityDtos[a.Opportunity.Id],
+                a.Status));
+    }
+
+    private static ArtistSummaryDto BuildArtistSummary(OpportunityApplicationEntity application) => new()
+    {
+        Id = application.Artist.Id,
+        Name = application.Artist.Name,
+        Avatar = application.Artist.Avatar,
+        Genres = application.Artist.Genres.Select(g => new GenreDto(g.Genre.Id, g.Genre.Name))
+    };
 }

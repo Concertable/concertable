@@ -15,6 +15,5 @@ internal class OpportunityDtoValidator : AbstractValidator<OpportunityDto>
             .Must((dto, endDate) => (endDate - dto.StartDate).TotalHours <= 24)
             .WithMessage("EndDate can be at most 24 hours after StartDate.")
             .When(x => x.EndDate > x.StartDate);
-
     }
 }

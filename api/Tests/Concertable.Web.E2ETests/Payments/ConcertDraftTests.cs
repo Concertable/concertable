@@ -1,4 +1,5 @@
 using Concertable.Concert.Application.DTOs;
+using Concertable.Concert.Api.Responses;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,7 +45,7 @@ public class ConcertDraftTests : IAsyncLifetime
 
         // Webhook fires SettleAsync → draft concert created
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationResponse>(
                 $"/api/OpportunityApplication/{fixture.SeedData.PendingFlatFeeApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
@@ -67,7 +68,7 @@ public class ConcertDraftTests : IAsyncLifetime
 
         // Webhook fires SettleAsync → draft concert created
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationResponse>(
                 $"/api/OpportunityApplication/{fixture.SeedData.PendingVenueHireApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
@@ -80,7 +81,7 @@ public class ConcertDraftTests : IAsyncLifetime
             $"/api/OpportunityApplication/accept/{fixture.SeedData.PendingDoorSplitApp.ApplicationId}");
 
         // No upfront payment — draft created immediately
-        var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
+        var application = await fixture.Client.GetAsync<OpportunityApplicationResponse>(
             $"/api/OpportunityApplication/{fixture.SeedData.PendingDoorSplitApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
@@ -93,7 +94,7 @@ public class ConcertDraftTests : IAsyncLifetime
             $"/api/OpportunityApplication/accept/{fixture.SeedData.PendingVersusApp.ApplicationId}");
 
         // No upfront payment — draft created immediately
-        var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
+        var application = await fixture.Client.GetAsync<OpportunityApplicationResponse>(
             $"/api/OpportunityApplication/{fixture.SeedData.PendingVersusApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);

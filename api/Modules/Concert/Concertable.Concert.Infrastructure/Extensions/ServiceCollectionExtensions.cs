@@ -103,9 +103,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVenueReviewRepository, VenueReviewRepository>();
         services.AddScoped<IConcertReviewRepository, ConcertReviewRepository>();
 
-        // Mappers (Concert.Application singletons)
-        services.AddSingleton<IOpportunityMapper, OpportunityMapper>();
-        services.AddSingleton<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
+        // Mappers
+        services.AddScoped<IOpportunityMapper, OpportunityMapper>();
+        services.AddScoped<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
 
         // Module facades
         services.AddScoped<IConcertModule, ConcertModule>();

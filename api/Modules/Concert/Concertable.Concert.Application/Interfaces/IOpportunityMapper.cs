@@ -4,6 +4,6 @@ namespace Concertable.Concert.Application.Interfaces;
 
 internal interface IOpportunityMapper
 {
-    OpportunityDto ToDto(OpportunityEntity opportunity);
-    IPagination<OpportunityDto> ToDtos(IPagination<OpportunityEntity> opportunities);
+    Task<OpportunityDto> ToDtoAsync(OpportunityEntity opportunity);
+    Task<IPagination<OpportunityDto>> ToDtosAsync(IPagination<OpportunityEntity> opportunities);
 }

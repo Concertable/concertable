@@ -1,5 +1,7 @@
 using Concertable.Artist.Contracts;
+using Concertable.Concert.Api.Mappers;
 using Concertable.Concert.Api.Requests;
+using Concertable.Concert.Api.Responses;
 using Concertable.Identity.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,9 +34,10 @@ internal class OpportunityApplicationController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpGet("opportunity/{id}")]
-    public async Task<ActionResult<IEnumerable<OpportunityApplicationDto>>> GetAllByOpportunityId(int id)
+    public async Task<ActionResult<IEnumerable<OpportunityApplicationResponse>>> GetAllByOpportunityId(int id)
     {
-        return Ok(await applicationService.GetByOpportunityIdAsync(id));
+        var applications = await applicationService.GetByOpportunityIdAsync(id);
+        return Ok(applications.ToResponses());
     }
 
     [Authorize(Roles = "ArtistManager")]
@@ -42,27 +45,30 @@ internal class OpportunityApplicationController : ControllerBase
     public async Task<IActionResult> Apply(int opportunityId)
     {
         var application = await applicationService.ApplyAsync(opportunityId);
-        return CreatedAtAction(nameof(GetById), new { id = application.Id }, application);
+        return CreatedAtAction(nameof(GetById), new { id = application.Id }, application.ToResponse());
     }
 
     [HttpGet("artist/pending")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<OpportunityApplicationDto>>> GetPendingForArtist()
+    public async Task<ActionResult<IEnumerable<OpportunityApplicationResponse>>> GetPendingForArtist()
     {
-        return Ok(await applicationService.GetPendingForArtistAsync());
+        var applications = await applicationService.GetPendingForArtistAsync();
+        return Ok(applications.ToResponses());
     }
 
     [HttpGet("artist/recently-denied")]
     [Authorize(Roles = "ArtistManager")]
-    public async Task<ActionResult<IEnumerable<OpportunityApplicationDto>>> GetRecentDeniedForArtist()
+    public async Task<ActionResult<IEnumerable<OpportunityApplicationResponse>>> GetRecentDeniedForArtist()
     {
-        return Ok(await applicationService.GetRecentDeniedForArtistAsync());
+        var applications = await applicationService.GetRecentDeniedForArtistAsync();
+        return Ok(applications.ToResponses());
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<OpportunityApplicationEntity>> GetById(int id)
+    public async Task<ActionResult<OpportunityApplicationResponse>> GetById(int id)
     {
-        return Ok(await applicationService.GetByIdAsync(id));
+        var application = await applicationService.GetByIdAsync(id);
+        return Ok(application.ToResponse());
     }
 
     [Authorize(Roles = "ArtistManager")]

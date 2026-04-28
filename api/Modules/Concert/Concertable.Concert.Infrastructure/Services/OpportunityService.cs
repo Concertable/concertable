@@ -54,7 +54,7 @@ internal class OpportunityService : IOpportunityService
 
         var saved = await opportunityRepository.GetByIdAsync(opportunity.Id)
             ?? throw new NotFoundException("Opportunity not found after save");
-        return mapper.ToDto(saved);
+        return await mapper.ToDtoAsync(saved);
     }
 
     public async Task CreateMultipleAsync(IEnumerable<OpportunityRequest> requests)
@@ -109,20 +109,20 @@ internal class OpportunityService : IOpportunityService
 
         var updated = await opportunityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity not found");
-        return mapper.ToDto(updated);
+        return await mapper.ToDtoAsync(updated);
     }
 
     public async Task<IPagination<OpportunityDto>> GetActiveByVenueIdAsync(int id, IPageParams pageParams)
     {
         var opportunities = await opportunityRepository.GetActiveByVenueIdAsync(id, pageParams);
-        return mapper.ToDtos(opportunities);
+        return await mapper.ToDtosAsync(opportunities);
     }
 
     public async Task<OpportunityDto> GetByIdAsync(int id)
     {
         var opportunity = await opportunityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert Opportunity not found");
-        return mapper.ToDto(opportunity);
+        return await mapper.ToDtoAsync(opportunity);
     }
 
     public async Task<Guid?> GetOwnerByIdAsync(int id)

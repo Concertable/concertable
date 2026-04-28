@@ -1,5 +1,6 @@
 using System.Net;
 using Concertable.Concert.Application.DTOs;
+
 using Concertable.Concert.Api.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +49,7 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
-        var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.FlatFeeApp.Id}");
+        var application = await client.GetAsync<OpportunityApplicationResponse>($"/api/OpportunityApplication/{fixture.SeedData.FlatFeeApp.Id}");
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
         var concert = await client.GetAssertAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.FlatFeeApp.Id}");
         Assert.NotNull(concert);
@@ -87,7 +88,7 @@ public class OpportunityApplicationFlatFeeApiTests : IAsyncLifetime
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
-        var application = await client.GetAsync<OpportunityApplicationDto>($"/api/OpportunityApplication/{fixture.SeedData.FlatFeeApp.Id}");
+        var application = await client.GetAsync<OpportunityApplicationResponse>($"/api/OpportunityApplication/{fixture.SeedData.FlatFeeApp.Id}");
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
         Assert.Empty(fixture.NotificationService.DraftCreated);
     }

@@ -1,5 +1,6 @@
 using System.Net;
 using Concertable.Concert.Application.DTOs;
+
 using Concertable.Concert.Api.Responses;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;
@@ -45,7 +46,7 @@ public class OpportunityApplicationDoorSplitApiTests : IAsyncLifetime
             (object?)null);
         await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
-        var application = await client.GetAsync<OpportunityApplicationDto>(
+        var application = await client.GetAsync<OpportunityApplicationResponse>(
             $"/api/OpportunityApplication/{fixture.SeedData.DoorSplitApp.Id}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);

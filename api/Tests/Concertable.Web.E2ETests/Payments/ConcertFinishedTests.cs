@@ -1,4 +1,5 @@
 using Concertable.Concert.Application.DTOs;
+using Concertable.Concert.Api.Responses;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -32,7 +33,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     {
         await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.PostedFlatFeeApp.ConcertId!.Value}");
 
-        var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
+        var application = await fixture.Client.GetAsync<OpportunityApplicationResponse>(
             $"/api/OpportunityApplication/{fixture.SeedData.PostedFlatFeeApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
@@ -43,7 +44,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     {
         await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.PostedVenueHireApp.ConcertId!.Value}");
 
-        var application = await fixture.Client.GetAsync<OpportunityApplicationDto>(
+        var application = await fixture.Client.GetAsync<OpportunityApplicationResponse>(
             $"/api/OpportunityApplication/{fixture.SeedData.PostedVenueHireApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
@@ -61,7 +62,7 @@ public class ConcertFinishedTests : IAsyncLifetime
         Assert.Equal(1400L, intent.Amount);
 
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationResponse>(
                 $"/api/OpportunityApplication/{fixture.SeedData.FinishedDoorSplitApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
@@ -79,7 +80,7 @@ public class ConcertFinishedTests : IAsyncLifetime
         Assert.Equal(11400L, intent.Amount);
 
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<OpportunityApplicationDto>(
+            async () => await fixture.Client.GetAsync<OpportunityApplicationResponse>(
                 $"/api/OpportunityApplication/{fixture.SeedData.FinishedVersusApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));

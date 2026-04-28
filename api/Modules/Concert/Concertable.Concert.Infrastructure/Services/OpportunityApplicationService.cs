@@ -57,7 +57,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
 
         var applications = await applicationRepository.GetByOpportunityIdAsync(id);
 
-        return mapper.ToDtos(applications);
+        return await mapper.ToDtosAsync(applications);
     }
 
     public async Task<IEnumerable<OpportunityApplicationDto>> GetPendingForArtistAsync()
@@ -65,7 +65,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("You must have an Artist account");
         var applications = await applicationRepository.GetPendingByArtistIdAsync(artistId);
-        return mapper.ToDtos(applications);
+        return await mapper.ToDtosAsync(applications);
     }
 
     public async Task<IEnumerable<OpportunityApplicationDto>> GetRecentDeniedForArtistAsync()
@@ -73,7 +73,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("You must have an Artist account");
         var applications = await applicationRepository.GetRecentDeniedByArtistIdAsync(artistId);
-        return mapper.ToDtos(applications);
+        return await mapper.ToDtosAsync(applications);
     }
 
     public async Task<OpportunityApplicationDto> ApplyAsync(int opportunityId)
@@ -122,7 +122,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
             throw new BadRequestException("You cannot apply to the same concert opportunity twice");
         }
 
-        return mapper.ToDto(application);
+        return await mapper.ToDtoAsync(application);
     }
 
     public Task<AcceptPreview> GetAcceptPreviewAsync(int applicationId) =>
@@ -153,6 +153,6 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
     {
         var application = await applicationRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Application not found");
-        return mapper.ToDto(application);
+        return await mapper.ToDtoAsync(application);
     }
 }

@@ -1,3 +1,9 @@
+using Concertable.Artist.Contracts;
+
 namespace Concertable.Concert.Application.DTOs;
 
-internal record OpportunityApplicationDto(int Id, ArtistSummaryDto Artist, OpportunityDto Opportunity, ApplicationStatus Status);
+internal record OpportunityApplicationDto(
+    int Id,
+    ArtistSummaryDto Artist,
+    OpportunityDto Opportunity,
+    ApplicationStatus Status);
