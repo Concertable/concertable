@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ImmediatePaymentSection } from "@/components/checkout/ImmediatePaymentSection";
 import { CheckoutLayout } from "@/components/checkout/CheckoutLayout";
 import { CheckoutSection } from "@/components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
 import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
 import { QuantitySelector } from "@/components/checkout/QuantitySelector";
 import { CheckoutSuccessView } from "@/components/checkout/CheckoutSuccessView";
@@ -42,6 +43,13 @@ export default function ConcertCheckoutPage() {
 
   return (
     <CheckoutLayout
+      banner={
+        <CheckoutEventBanner
+          title={concert.name}
+          subtitle={`${concert.venue.name} · ${concert.venue.town}`}
+          meta={dayjs(concert.startDate).format("dddd, D MMM YYYY · HH:mm")}
+        />
+      }
       summary={
         <OrderSummaryCard
           lines={[
@@ -49,7 +57,17 @@ export default function ConcertCheckoutPage() {
               label: "Price per ticket",
               value: `£${concert.price.toFixed(2)}`,
             },
-            { label: "Quantity", value: `×${quantity}` },
+            {
+              label: "Quantity",
+              value: (
+                <QuantitySelector
+                  value={quantity}
+                  onChange={setQuantity}
+                  max={concert.availableTickets}
+                  disabled={isDisabled}
+                />
+              ),
+            },
           ]}
           total={{ label: "Total", value: `£${total}` }}
           action={
@@ -68,27 +86,6 @@ export default function ConcertCheckoutPage() {
         />
       }
     >
-      <CheckoutSection
-        title={concert.name}
-        description={`${concert.venue.name} · ${concert.venue.town}`}
-      >
-        <p className="text-muted-foreground text-sm">
-          {dayjs(concert.startDate).format("dddd, D MMM YYYY · HH:mm")}
-        </p>
-      </CheckoutSection>
-
-      <CheckoutSection
-        title="Quantity"
-        description={`${concert.availableTickets} ticket(s) available`}
-      >
-        <QuantitySelector
-          value={quantity}
-          onChange={setQuantity}
-          max={concert.availableTickets}
-          disabled={isDisabled}
-        />
-      </CheckoutSection>
-
       <CheckoutSection title="Payment Method">
         <ImmediatePaymentSection
           savedCard={savedCard}
@@ -150,15 +147,12 @@ function ConcertSuccessView({
 
 function CheckoutSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 lg:py-12">
-      <Skeleton className="h-9 w-40" />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
-        <div className="space-y-6">
-          <Skeleton className="h-28 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-44 w-full rounded-xl" />
-        </div>
-        <Skeleton className="h-60 w-full rounded-xl" />
+    <div className="mx-auto max-w-6xl space-y-6 px-6 py-8 lg:px-10 lg:py-10">
+      <Skeleton className="h-8 w-32" />
+      <Skeleton className="h-16 w-full" />
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-16">
+        <Skeleton className="h-44 w-full rounded-lg" />
+        <Skeleton className="h-72 w-full rounded-lg" />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentMethodSection } from "@/components/checkout/PaymentMethodSection";
 import { CheckoutLayout } from "@/components/checkout/CheckoutLayout";
 import { CheckoutSection } from "@/components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
 import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
 import { CheckoutSuccessView } from "@/components/checkout/CheckoutSuccessView";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
@@ -100,6 +101,13 @@ export default function ApplicationCheckoutPage() {
 
   return (
     <CheckoutLayout
+      banner={
+        <CheckoutEventBanner
+          title={artist.name}
+          subtitle={`${dayjs(opportunity.startDate).format("D MMM YYYY")} – ${dayjs(opportunity.endDate).format("D MMM YYYY")}`}
+          meta={`Paying ${preview.payee.name}${preview.payee.email ? ` · ${preview.payee.email}` : ""}`}
+        />
+      }
       summary={
         <OrderSummaryCard
           title={preview.timing === "deferred" ? "Settlement" : "Summary"}
@@ -119,16 +127,6 @@ export default function ApplicationCheckoutPage() {
         />
       }
     >
-      <CheckoutSection
-        title={artist.name}
-        description={`${dayjs(opportunity.startDate).format("D MMM YYYY")} – ${dayjs(opportunity.endDate).format("D MMM YYYY")}`}
-      >
-        <div className="text-muted-foreground text-sm">
-          Paying {preview.payee.name}
-          {preview.payee.email && ` · ${preview.payee.email}`}
-        </div>
-      </CheckoutSection>
-
       <CheckoutSection title="Contract Terms">
         <AcceptContractSummary contract={opportunity.contract} />
       </CheckoutSection>

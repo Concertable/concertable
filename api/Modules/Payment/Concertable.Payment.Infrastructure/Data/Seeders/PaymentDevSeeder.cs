@@ -28,14 +28,23 @@ internal class PaymentDevSeeder : IDevSeeder
     {
         await context.PayoutAccounts.SeedIfEmptyAsync(async () =>
         {
-            foreach (var customerId in seedData.CustomerIds)
-            {
-                var account = PayoutAccountEntity.Create(customerId);
-                account.LinkCustomer($"cus_dev_{customerId:N}");
-                context.PayoutAccounts.Add(account);
-            }
+            var firstCustomer = PayoutAccountEntity.Create(seedData.CustomerIds[0]);
+            firstCustomer.LinkCustomer("cus_UIIy9Gbwfr3uAP");
+            context.PayoutAccounts.Add(firstCustomer);
 
-            for (int i = 0; i < seedData.ArtistManagerIds.Count; i++)
+            var artistManager1 = PayoutAccountEntity.Create(seedData.ArtistManagerIds[0]);
+            artistManager1.LinkAccount("acct_1TJiMePysoXmht10");
+            artistManager1.LinkCustomer("cus_UIIy5mCilBtJbR");
+            artistManager1.MarkVerified();
+            context.PayoutAccounts.Add(artistManager1);
+
+            var artistManager2 = PayoutAccountEntity.Create(seedData.ArtistManagerIds[1]);
+            artistManager2.LinkAccount("acct_1TJiMoPupFslP2qz");
+            artistManager2.LinkCustomer("cus_UIIy5415r69RmJ");
+            artistManager2.MarkVerified();
+            context.PayoutAccounts.Add(artistManager2);
+
+            for (int i = 2; i < seedData.ArtistManagerIds.Count; i++)
             {
                 var managerId = seedData.ArtistManagerIds[i];
                 var account = PayoutAccountEntity.Create(managerId);
@@ -45,7 +54,19 @@ internal class PaymentDevSeeder : IDevSeeder
                 context.PayoutAccounts.Add(account);
             }
 
-            for (int i = 0; i < seedData.VenueManagerIds.Count; i++)
+            var venueManager1 = PayoutAccountEntity.Create(seedData.VenueManagerIds[0]);
+            venueManager1.LinkAccount("acct_1TJiMjLxk4aCq1Ui");
+            venueManager1.LinkCustomer("cus_UIIymKfHijbNVO");
+            venueManager1.MarkVerified();
+            context.PayoutAccounts.Add(venueManager1);
+
+            var venueManager2 = PayoutAccountEntity.Create(seedData.VenueManagerIds[1]);
+            venueManager2.LinkAccount("acct_1TJiPJLLwGSDilbV");
+            venueManager2.LinkCustomer("cus_UIJ1qfgxYu624Q");
+            venueManager2.MarkVerified();
+            context.PayoutAccounts.Add(venueManager2);
+
+            for (int i = 2; i < seedData.VenueManagerIds.Count; i++)
             {
                 var managerId = seedData.VenueManagerIds[i];
                 var account = PayoutAccountEntity.Create(managerId);

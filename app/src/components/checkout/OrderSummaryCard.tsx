@@ -22,8 +22,8 @@ export function OrderSummaryCard({
   footer,
 }: Props) {
   return (
-    <div className="bg-muted/30 space-y-5 rounded-lg border p-6">
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    <div className="bg-muted/30 space-y-4 rounded-lg border p-5">
+      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
       <div className="space-y-2">
         {lines.map((l) => (
           <div key={l.label} className="flex justify-between text-sm">
