@@ -1,6 +1,6 @@
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface ISettlementDispatcher
+internal interface ISettlementExecutor
 {
     Task SettleAsync(int bookingId);
 }

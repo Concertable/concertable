@@ -76,10 +76,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPdfService, PdfService>();
 
-        // Dispatchers
-        services.AddScoped<IAcceptanceExecutor, AcceptanceDispatcher>();
-        services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
-        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
+        // Executors
+        services.AddScoped<IAcceptanceExecutor, AcceptanceExecutor>();
+        services.AddScoped<ICompletionExecutor, CompletionExecutor>();
+        services.AddScoped<ISettlementExecutor, SettlementExecutor>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
 
         services.AddConcertWorkflow<FlatFeeConcertWorkflow>(ContractType.FlatFee);

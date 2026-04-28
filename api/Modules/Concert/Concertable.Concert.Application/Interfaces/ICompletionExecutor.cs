@@ -3,7 +3,7 @@ using FluentResults;
 
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface ICompletionDispatcher
+internal interface ICompletionExecutor
 {
     Task<Result<IFinishOutcome>> FinishAsync(int concertId);
 }

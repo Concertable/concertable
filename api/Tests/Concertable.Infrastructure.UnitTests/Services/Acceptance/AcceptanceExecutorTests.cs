@@ -6,17 +6,17 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Acceptance;
 
-public class AcceptanceDispatcherTests
+public class AcceptanceExecutorTests
 {
     private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowFactory> workflowFactory;
-    private readonly AcceptanceDispatcher sut;
+    private readonly AcceptanceExecutor sut;
 
-    public AcceptanceDispatcherTests()
+    public AcceptanceExecutorTests()
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new AcceptanceDispatcher(contractLoader.Object, workflowFactory.Object);
+        sut = new AcceptanceExecutor(contractLoader.Object, workflowFactory.Object);
     }
 
     [Fact]

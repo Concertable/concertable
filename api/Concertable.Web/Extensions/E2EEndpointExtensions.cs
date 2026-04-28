@@ -1,4 +1,4 @@
-﻿using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Data.Application;
 using Concertable.Seeding;
@@ -38,9 +38,9 @@ public static class E2EEndpointExtensions
             });
         });
 
-        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionDispatcher completionDispatcher, IReadDbContext readDb) =>
+        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionExecutor CompletionExecutor, IReadDbContext readDb) =>
         {
-            var result = await completionDispatcher.FinishAsync(concertId);
+            var result = await CompletionExecutor.FinishAsync(concertId);
 
             if (result.IsFailed)
                 return Results.BadRequest(result.Errors.Select(e => e.Message));

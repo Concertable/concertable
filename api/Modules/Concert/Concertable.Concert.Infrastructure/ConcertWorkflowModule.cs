@@ -5,15 +5,15 @@ using Concertable.Shared.Exceptions;
 namespace Concertable.Concert.Infrastructure;
 
 internal sealed class ConcertWorkflowModule(
-    ISettlementDispatcher settlementDispatcher,
-    ICompletionDispatcher completionDispatcher) : IConcertWorkflowModule
+    ISettlementExecutor SettlementExecutor,
+    ICompletionExecutor CompletionExecutor) : IConcertWorkflowModule
 {
     public Task SettleAsync(int bookingId, CancellationToken ct = default)
-        => settlementDispatcher.SettleAsync(bookingId);
+        => SettlementExecutor.SettleAsync(bookingId);
 
     public async Task FinishAsync(int concertId, CancellationToken ct = default)
     {
-        var result = await completionDispatcher.FinishAsync(concertId);
+        var result = await CompletionExecutor.FinishAsync(concertId);
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
     }

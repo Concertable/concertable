@@ -1,11 +1,11 @@
 namespace Concertable.Concert.Infrastructure.Services.Settlement;
 
-internal class SettlementDispatcher : ISettlementDispatcher
+internal class SettlementExecutor : ISettlementExecutor
 {
     private readonly IContractLoader contractLoader;
     private readonly IConcertWorkflowFactory workflowFactory;
 
-    public SettlementDispatcher(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory)
+    public SettlementExecutor(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory)
     {
         this.contractLoader = contractLoader;
         this.workflowFactory = workflowFactory;

@@ -1,4 +1,4 @@
-﻿using Concertable.Concert.Application.Responses;
+using Concertable.Concert.Application.Responses;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Messaging.Contracts;
 using Concertable.Shared.Enums;
@@ -19,7 +19,7 @@ internal class ApplicationService : IApplicationService
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
     private readonly IUserModule userModule;
-    private readonly IAcceptanceDispatcher acceptDispatcher;
+    private readonly IAcceptanceExecutor acceptanceExecutor;
     private readonly IApplicationMapper mapper;
 
     public ApplicationService(
@@ -32,7 +32,7 @@ internal class ApplicationService : IApplicationService
         IOpportunityService opportunityService,
         IArtistModule artistModule,
         IUserModule userModule,
-        IAcceptanceDispatcher acceptDispatcher,
+        IAcceptanceExecutor acceptanceExecutor,
         IApplicationMapper mapper)
     {
         this.applicationRepository = applicationRepository;
@@ -44,7 +44,7 @@ internal class ApplicationService : IApplicationService
         this.opportunityService = opportunityService;
         this.artistModule = artistModule;
         this.userModule = userModule;
-        this.acceptDispatcher = acceptDispatcher;
+        this.acceptanceExecutor = acceptanceExecutor;
         this.mapper = mapper;
     }
 
@@ -126,11 +126,11 @@ internal class ApplicationService : IApplicationService
     }
 
     public Task<AcceptCheckout> CheckoutAsync(int applicationId) =>
-        acceptDispatcher.CheckoutAsync(applicationId);
+        acceptanceExecutor.CheckoutAsync(applicationId);
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
-        var outcome = await acceptDispatcher.AcceptAsync(applicationId, paymentMethodId);
+        var outcome = await acceptanceExecutor.AcceptAsync(applicationId, paymentMethodId);
 
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");

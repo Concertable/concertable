@@ -6,17 +6,17 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Settlement;
 
-public class SettlementDispatcherTests
+public class SettlementExecutorTests
 {
     private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowFactory> workflowFactory;
-    private readonly SettlementDispatcher sut;
+    private readonly SettlementExecutor sut;
 
-    public SettlementDispatcherTests()
+    public SettlementExecutorTests()
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new SettlementDispatcher(contractLoader.Object, workflowFactory.Object);
+        sut = new SettlementExecutor(contractLoader.Object, workflowFactory.Object);
     }
 
     [Fact]

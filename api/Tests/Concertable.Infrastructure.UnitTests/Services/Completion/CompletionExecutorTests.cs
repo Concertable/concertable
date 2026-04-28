@@ -7,17 +7,17 @@ using Xunit;
 
 namespace Concertable.Infrastructure.UnitTests.Services.Completion;
 
-public class CompletionDispatcherTests
+public class CompletionExecutorTests
 {
     private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowFactory> workflowFactory;
-    private readonly CompletionDispatcher sut;
+    private readonly CompletionExecutor sut;
 
-    public CompletionDispatcherTests()
+    public CompletionExecutorTests()
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new CompletionDispatcher(contractLoader.Object, workflowFactory.Object);
+        sut = new CompletionExecutor(contractLoader.Object, workflowFactory.Object);
     }
 
     [Fact]
