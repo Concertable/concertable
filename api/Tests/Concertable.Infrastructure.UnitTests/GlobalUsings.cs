@@ -8,7 +8,7 @@ global using Concertable.Payment.Application.Interfaces.Webhook;
 global using Concertable.Payment.Application.DTOs;
 global using Concertable.Payment.Application.Mappers;
 global using Concertable.Identity.Domain;
-global using Concertable.Identity.Infrastructure.Services.Auth;
+global using Concertable.Auth.Infrastructure.Services;
 global using Concertable.Concert.Domain;
 global using Concertable.Contract.Contracts;
 global using Concertable.Concert.Application.Interfaces;

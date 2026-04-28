@@ -11,6 +11,6 @@ internal class UserRegister : IUserRegister
         this.serviceProvider = serviceProvider;
     }
 
-    public Task RegisterAsync(RegisterRequest request, string passwordHash) =>
-        serviceProvider.GetRequiredKeyedService<IUserRegister>(request.Role).RegisterAsync(request, passwordHash);
+    public Task RegisterAsync(string email, string passwordHash, Role role) =>
+        serviceProvider.GetRequiredKeyedService<IUserRegister>(role).RegisterAsync(email, passwordHash, role);
 }

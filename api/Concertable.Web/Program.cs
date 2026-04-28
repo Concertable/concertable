@@ -14,6 +14,7 @@ using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Customer.Api.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
+using Concertable.Auth.Api.Extensions;
 using Concertable.Authorization.Infrastructure.Extensions;
 using Concertable.Identity.Api.Extensions;
 using Concertable.Identity.Infrastructure.Extensions;
@@ -111,6 +112,7 @@ services.AddCustomerApi(builder.Configuration);
 services.AddQueueHostedService();
 services.AddAuthorizationModule();
 services.AddIdentityApi(builder.Configuration);
+services.AddAuthApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();
 

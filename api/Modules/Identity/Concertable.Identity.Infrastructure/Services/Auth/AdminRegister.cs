@@ -11,9 +11,9 @@ internal class AdminRegister : IUserRegister
         this.context = context;
     }
 
-    public async Task RegisterAsync(RegisterRequest request, string passwordHash)
+    public async Task RegisterAsync(string email, string passwordHash, Role role)
     {
-        var admin = AdminEntity.Create(request.Email, passwordHash);
+        var admin = AdminEntity.Create(email, passwordHash);
         context.Users.Add(admin);
         await context.SaveChangesAsync();
     }

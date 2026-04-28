@@ -39,6 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Authorization\Concertable.Authorization.Infrastructure\Concertable.Authorization.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Auth\Concertable.Auth.Api\Concertable.Auth.Api.csproj" />
     <ProjectReference Include="..\Modules\Identity\Concertable.Identity.Api\Concertable.Identity.Api.csproj" />
     <ProjectReference Include="..\Modules\Artist\Concertable.Artist.Api\Concertable.Artist.Api.csproj" />
     <ProjectReference Include="..\Modules\Venue\Concertable.Venue.Api\Concertable.Venue.Api.csproj" />

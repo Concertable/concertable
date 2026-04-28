@@ -9,9 +9,6 @@ internal class IdentityDbContext(
     : DbContextBase(options)
 {
     public DbSet<UserEntity> Users => Set<UserEntity>();
-    public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();
-    public DbSet<EmailVerificationTokenEntity> EmailVerificationTokens => Set<EmailVerificationTokenEntity>();
-    public DbSet<PasswordResetTokenEntity> PasswordResetTokens => Set<PasswordResetTokenEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

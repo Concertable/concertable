@@ -6,14 +6,11 @@ using Concertable.Identity.Domain.Events;
 using Concertable.Identity.Infrastructure.Data;
 using Concertable.Identity.Infrastructure.Data.Seeders;
 using Concertable.Identity.Infrastructure.Events;
-using Concertable.Identity.Infrastructure.Settings;
 using Concertable.Venue.Contracts.Events;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
 
 namespace Concertable.Identity.Infrastructure.Extensions;
 
@@ -29,14 +26,9 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<AuditInterceptor>(),
                     sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
-        services.Configure<AuthSettings>(configuration.GetSection("Auth"));
-
-        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUserValidator, UserValidator>();
         services.AddSingleton<IUserMapper, UserMapper>();
-        services.AddScoped<IAuthUriService, AuthUriService>();
 
         services.AddScoped<IUserLoader, UserLoader>();
         services.AddKeyedScoped<IUserLoader, VenueManagerLoader>(Role.VenueManager);
@@ -50,11 +42,8 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IUserRegister, CustomerRegister>(Role.Customer);
         services.AddKeyedScoped<IUserRegister, AdminRegister>(Role.Admin);
 
-        services.AddSingleton<JwtSecurityTokenHandler>();
-        services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
-        services.AddSingleton<ITokenService, JwtTokenService>();
-        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-        services.AddScoped<IAuthModule, AuthModule>();
+        services.AddScoped<IAuthUserSeam, AuthUserSeam>();
+
         services.AddScoped<IdentityModule>();
         services.AddScoped<IManagerModule>(sp => sp.GetRequiredService<IdentityModule>());
         services.AddScoped<IIdentityModule>(sp => sp.GetRequiredService<IdentityModule>());

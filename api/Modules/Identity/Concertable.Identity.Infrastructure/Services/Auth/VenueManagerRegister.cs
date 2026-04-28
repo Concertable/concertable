@@ -11,9 +11,9 @@ internal class VenueManagerRegister : IUserRegister
         this.context = context;
     }
 
-    public async Task RegisterAsync(RegisterRequest request, string passwordHash)
+    public async Task RegisterAsync(string email, string passwordHash, Role role)
     {
-        var manager = VenueManagerEntity.Create(request.Email, passwordHash);
+        var manager = VenueManagerEntity.Create(email, passwordHash);
         context.Users.Add(manager);
         await context.SaveChangesAsync();
     }

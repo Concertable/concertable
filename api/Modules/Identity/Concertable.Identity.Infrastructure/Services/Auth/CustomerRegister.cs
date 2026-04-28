@@ -11,9 +11,9 @@ internal class CustomerRegister : IUserRegister
         this.context = context;
     }
 
-    public async Task RegisterAsync(RegisterRequest request, string passwordHash)
+    public async Task RegisterAsync(string email, string passwordHash, Role role)
     {
-        var user = CustomerEntity.Create(request.Email, passwordHash);
+        var user = CustomerEntity.Create(email, passwordHash);
         context.Users.Add(user);
         await context.SaveChangesAsync();
     }

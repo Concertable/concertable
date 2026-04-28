@@ -1,3 +1,4 @@
+using Concertable.Auth.Domain;
 using Concertable.Contract.Domain;
 using Concertable.Customer.Domain;
 using Concertable.Data.Application;

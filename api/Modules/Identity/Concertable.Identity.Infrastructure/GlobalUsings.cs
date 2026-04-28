@@ -10,4 +10,3 @@ global using Concertable.Identity.Application.Mappers;
 global using Concertable.Identity.Infrastructure.Repositories;
 global using Concertable.Identity.Infrastructure.Services;
 global using Concertable.Identity.Infrastructure.Services.Auth;
-global using Concertable.Identity.Infrastructure.Validators;

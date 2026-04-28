@@ -1,4 +1,5 @@
 using System.Net;
+using Concertable.Auth.Contracts;
 using Concertable.Identity.Contracts;
 using Concertable.Web.IntegrationTests.Infrastructure;
 using Xunit;

@@ -15,20 +15,17 @@ internal class IdentityTestSeeder : ITestSeeder
 
     private readonly IdentityDbContext context;
     private readonly SeedData seedData;
-    private readonly IPasswordHasher passwordHasher;
     private readonly IGeometryProvider geometryProvider;
     private readonly ILocationFaker locationFaker;
 
     public IdentityTestSeeder(
         IdentityDbContext context,
         SeedData seedData,
-        IPasswordHasher passwordHasher,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
         ILocationFaker locationFaker)
     {
         this.context = context;
         this.seedData = seedData;
-        this.passwordHasher = passwordHasher;
         this.geometryProvider = geometryProvider;
         this.locationFaker = locationFaker;
     }
@@ -39,7 +36,7 @@ internal class IdentityTestSeeder : ITestSeeder
     {
         await context.Users.SeedIfEmptyAsync(async () =>
         {
-            var hash = passwordHasher.Hash(SeedData.TestPassword);
+            var hash = BCrypt.Net.BCrypt.HashPassword(SeedData.TestPassword);
 
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);

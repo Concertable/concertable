@@ -1,4 +1,5 @@
 global using Concertable.Shared;
+global using Concertable.Auth.Domain;
 global using Concertable.Authorization.Contracts;
 global using Concertable.Identity.Contracts;
 global using Concertable.Identity.Domain;

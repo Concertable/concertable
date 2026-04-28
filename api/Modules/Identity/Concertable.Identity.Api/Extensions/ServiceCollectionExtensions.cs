@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddIdentityModule(configuration);
         services.AddControllers()
-            .AddApplicationPart(typeof(AuthController).Assembly)
+            .AddApplicationPart(typeof(UserController).Assembly)
             .ConfigureApplicationPartManager(apm =>
                 apm.FeatureProviders.Add(new InternalControllerFeatureProvider()));
         return services;

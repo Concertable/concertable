@@ -29,10 +29,6 @@ public class UserEntity : IGuidEntity, IEventRaiser
     public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
     public void ClearDomainEvents() => _events.Clear();
 
-    public ICollection<RefreshTokenEntity> RefreshTokens { get; private set; } = [];
-    public ICollection<EmailVerificationTokenEntity> EmailVerificationTokens { get; private set; } = [];
-    public ICollection<PasswordResetTokenEntity> PasswordResetTokens { get; private set; } = [];
-
     public void VerifyEmail() => IsEmailVerified = true;
 
     public void UpdateLocation(Point location, Address? address = null)

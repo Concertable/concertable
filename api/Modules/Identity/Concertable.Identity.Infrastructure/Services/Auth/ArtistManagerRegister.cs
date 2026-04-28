@@ -11,9 +11,9 @@ internal class ArtistManagerRegister : IUserRegister
         this.context = context;
     }
 
-    public async Task RegisterAsync(RegisterRequest request, string passwordHash)
+    public async Task RegisterAsync(string email, string passwordHash, Role role)
     {
-        var manager = ArtistManagerEntity.Create(request.Email, passwordHash);
+        var manager = ArtistManagerEntity.Create(email, passwordHash);
         context.Users.Add(manager);
         await context.SaveChangesAsync();
     }

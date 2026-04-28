@@ -15,20 +15,17 @@ internal class IdentityDevSeeder : IDevSeeder
 
     private readonly IdentityDbContext context;
     private readonly SeedData seedData;
-    private readonly IPasswordHasher passwordHasher;
     private readonly IGeometryProvider geometryProvider;
     private readonly ILocationFaker locationFaker;
 
     public IdentityDevSeeder(
         IdentityDbContext context,
         SeedData seedData,
-        IPasswordHasher passwordHasher,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
         ILocationFaker locationFaker)
     {
         this.context = context;
         this.seedData = seedData;
-        this.passwordHasher = passwordHasher;
         this.geometryProvider = geometryProvider;
         this.locationFaker = locationFaker;
     }
@@ -39,7 +36,7 @@ internal class IdentityDevSeeder : IDevSeeder
     {
         await context.Users.SeedIfEmptyAsync(async () =>
         {
-            var hash = passwordHasher.Hash(SeedData.TestPassword);
+            var hash = BCrypt.Net.BCrypt.HashPassword(SeedData.TestPassword);
 
             seedData.Admin = UserFactory.Admin("admin@test.com", hash);
             seedData.Admin.UpdateLocation(geometryProvider.CreatePoint(51.0, -0.5), new Address("Leicestershire", "Loughborough"));
