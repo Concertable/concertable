@@ -13,11 +13,11 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
         this.strategyFactory = strategyFactory;
     }
 
-    public async Task<AcceptPreview> PreviewAsync(int applicationId)
+    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
     {
         var contract = await contractLookup.GetByApplicationIdAsync(applicationId);
         return await strategyFactory.Create(contract.ContractType)
-            .PreviewAsync(applicationId);
+            .CheckoutAsync(applicationId);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)

@@ -125,8 +125,8 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         return await mapper.ToDtoAsync(application);
     }
 
-    public Task<AcceptPreview> GetAcceptPreviewAsync(int applicationId) =>
-        acceptDispatcher.PreviewAsync(applicationId);
+    public Task<AcceptCheckout> CheckoutAsync(int applicationId) =>
+        acceptDispatcher.CheckoutAsync(applicationId);
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {

@@ -23,7 +23,7 @@ internal class TicketPaymentService : IPaymentSucceededStrategy
             EntityId = int.Parse(meta["concertId"]),
             FromUserId = Guid.Parse(meta["fromUserId"]),
             FromEmail = meta.GetValueOrDefault("fromUserEmail", string.Empty),
-            Quantity = int.Parse(meta["quantity"])
+            Quantity = meta.TryGetValue("quantity", out var q) ? int.Parse(q) : null
         });
 
         if (result.IsFailed)

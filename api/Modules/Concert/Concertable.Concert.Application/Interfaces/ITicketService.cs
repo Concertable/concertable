@@ -9,6 +9,7 @@ internal interface ITicketService
 {
     Task<Result<TicketPaymentResponse>> PurchaseAsync(TicketPurchaseParams purchaseParams);
     Task<Result<TicketPaymentResponse>> CompleteAsync(PurchaseCompleteDto purchaseCompleteDto);
+    Task<Result<TicketCheckout>> CheckoutAsync(int concertId);
     Task<IEnumerable<TicketDto>> GetUserUpcomingAsync();
     Task<IEnumerable<TicketDto>> GetUserHistoryAsync();
 }

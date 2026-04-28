@@ -1,3 +1,5 @@
+import type { CheckoutSession } from "@/types/checkoutSession";
+
 export type PaymentTiming = "immediate" | "deferred";
 
 export interface FlatPayment {
@@ -26,8 +28,9 @@ export interface PayeeSummary {
   email: string | null;
 }
 
-export interface AcceptPreview {
+export interface AcceptCheckout {
   timing: PaymentTiming;
   amount: PaymentAmount;
   payee: PayeeSummary;
+  session: CheckoutSession;
 }

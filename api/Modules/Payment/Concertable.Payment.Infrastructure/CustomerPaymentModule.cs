@@ -71,4 +71,40 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
             Metadata = mergedMetadata
         });
     }
+
+    public async Task<CheckoutSession> CreatePaymentSessionAsync(
+        Guid payerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        var customer = await customerModule.GetCustomerAsync(payerId)
+            ?? throw new ForbiddenException("Only customers can purchase tickets");
+
+        var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
+
+        var mergedMetadata = new Dictionary<string, string>
+        {
+            ["fromUserId"] = payerId.ToString(),
+            ["fromUserEmail"] = customer.Email ?? string.Empty
+        }
+        .Merge(metadata);
+
+        return await stripeAccountService.CreatePaymentSessionAsync(stripeCustomerId, mergedMetadata, ct);
+    }
+
+    private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
+        if (account?.StripeCustomerId is not null)
+            return account.StripeCustomerId;
+
+        var customer = await customerModule.GetCustomerAsync(userId)
+            ?? throw new ForbiddenException("Only customers can purchase tickets");
+
+        await stripeAccountService.ProvisionCustomerAsync(userId, customer.Email ?? string.Empty, ct);
+
+        account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
+        return account?.StripeCustomerId
+            ?? throw new InvalidOperationException("Failed to provision Stripe customer.");
+    }
 }

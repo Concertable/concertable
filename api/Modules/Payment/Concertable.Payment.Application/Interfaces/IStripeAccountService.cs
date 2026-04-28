@@ -1,4 +1,5 @@
 using Concertable.Payment.Application.DTOs;
+using Concertable.Payment.Contracts;
 
 namespace Concertable.Payment.Application.Interfaces;
 
@@ -11,4 +12,14 @@ internal interface IStripeAccountService
     Task<string?> TryGetPaymentMethodAsync(string? stripeCustomerId);
     Task<string> CreateSetupIntentAsync(string? stripeCustomerId);
     Task<PaymentMethodDto?> GetPaymentMethodDetailsAsync(string stripeCustomerId);
+
+    Task<CheckoutSession> CreatePaymentSessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default);
+
+    Task<CheckoutSession> CreateSavedCardSessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default);
 }

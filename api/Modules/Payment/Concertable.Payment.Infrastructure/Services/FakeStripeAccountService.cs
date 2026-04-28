@@ -1,4 +1,5 @@
 using Concertable.Payment.Application.DTOs;
+using Concertable.Payment.Contracts;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
@@ -24,4 +25,16 @@ internal class FakeStripeAccountService : IStripeAccountService
 
     public Task<PaymentMethodDto?> GetPaymentMethodDetailsAsync(string stripeCustomerId) =>
         Task.FromResult<PaymentMethodDto?>(new PaymentMethodDto("visa", "4242", 12, 2030));
+
+    public Task<CheckoutSession> CreatePaymentSessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default) =>
+        Task.FromResult(new CheckoutSession("pi_fake_secret", "cuss_fake_secret", stripeCustomerId));
+
+    public Task<CheckoutSession> CreateSavedCardSessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default) =>
+        Task.FromResult(new CheckoutSession("seti_fake_secret", "cuss_fake_secret", stripeCustomerId));
 }

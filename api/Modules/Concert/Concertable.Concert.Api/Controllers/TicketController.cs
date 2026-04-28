@@ -1,3 +1,4 @@
+using Concertable.Concert.Api.Requests;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Payment.Application.Responses;
@@ -25,6 +26,17 @@ internal class TicketController : ControllerBase
     public async Task<ActionResult<TicketPaymentResponse>> Purchase([FromBody] TicketPurchaseParams purchaseParams)
     {
         var result = await ticketService.PurchaseAsync(purchaseParams);
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors.Select(e => e.Message));
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("checkout")]
+    public async Task<ActionResult<TicketCheckout>> Checkout([FromBody] TicketCheckoutRequest request)
+    {
+        var result = await ticketService.CheckoutAsync(request.ConcertId);
 
         if (result.IsFailed)
             return BadRequest(result.Errors.Select(e => e.Message));

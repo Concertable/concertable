@@ -101,10 +101,10 @@ internal class OpportunityApplicationController : ControllerBase
     }
 
     [Authorize(Roles = "VenueManager")]
-    [HttpGet("accept/preview/{applicationId}")]
-    public async Task<IActionResult> GetAcceptPreview(int applicationId)
+    [HttpPost("{applicationId}/checkout")]
+    public async Task<IActionResult> Checkout(int applicationId)
     {
-        return Ok(await applicationService.GetAcceptPreviewAsync(applicationId));
+        return Ok(await applicationService.CheckoutAsync(applicationId));
     }
 
     [Authorize(Roles = "VenueManager")]

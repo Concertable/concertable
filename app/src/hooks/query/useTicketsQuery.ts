@@ -14,3 +14,11 @@ export function useTicketHistoryQuery() {
     queryFn: ticketApi.getHistory,
   });
 }
+
+export function useTicketCheckoutQuery(concertId: number) {
+  return useQuery({
+    queryKey: ["tickets", "checkout", concertId],
+    queryFn: () => ticketApi.checkout(concertId),
+    staleTime: Infinity,
+  });
+}

@@ -15,10 +15,10 @@ export function useApplicationQuery(applicationId: number) {
   });
 }
 
-export function useAcceptPreviewQuery(applicationId: number) {
+export function useCheckoutQuery(applicationId: number) {
   return useQuery({
-    queryKey: ["applications", applicationId, "accept-preview"],
-    queryFn: () => applicationApi.getAcceptPreview(applicationId),
+    queryKey: ["applications", applicationId, "checkout"],
+    queryFn: () => applicationApi.checkout(applicationId),
   });
 }
 

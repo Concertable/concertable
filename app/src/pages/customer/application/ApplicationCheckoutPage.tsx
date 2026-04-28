@@ -1,26 +1,19 @@
 import { useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { loadStripe } from "@stripe/stripe-js";
 import dayjs from "dayjs";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PaymentMethodSection } from "@/components/checkout/PaymentMethodSection";
 import { CheckoutLayout } from "@/components/checkout/CheckoutLayout";
 import { CheckoutSection } from "@/components/checkout/CheckoutSection";
 import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
 import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
-import { CheckoutSuccessView } from "@/components/checkout/CheckoutSuccessView";
+import { CheckoutSuccess } from "@/components/checkout/CheckoutSuccess";
+import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
 import {
   useApplicationQuery,
-  useAcceptApplicationMutation,
-  useAcceptPreviewQuery,
+  useCheckoutQuery,
 } from "@/hooks/query/useApplicationQuery";
-import { usePaymentMethodQuery } from "@/hooks/query/useStripeAccountQuery";
-import type { AcceptOutcome } from "@/types/application";
-import { summaryFor } from "@/lib/acceptPreviewFormat";
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+import { summaryFor } from "@/lib/acceptCheckoutFormat";
 
 export default function ApplicationCheckoutPage() {
   const { applicationId } = useParams({ strict: false }) as {
@@ -31,60 +24,26 @@ export default function ApplicationCheckoutPage() {
     isLoading,
     isError,
   } = useApplicationQuery(applicationId);
-  const { data: preview, isLoading: isPreviewLoading } =
-    useAcceptPreviewQuery(applicationId);
-  const { data: savedCard, isLoading: isPaymentMethodLoading } =
-    usePaymentMethodQuery();
-  const { mutate: accept, isPending } = useAcceptApplicationMutation(
-    application?.opportunity.id ?? 0,
-  );
-  const [paymentMethodId, setPaymentMethodId] = useState<
-    string | null | undefined
-  >(undefined);
+  const {
+    data: checkout,
+    isLoading: isCheckoutLoading,
+    isError: isCheckoutError,
+  } = useCheckoutQuery(applicationId);
   const [isAwaiting, setIsAwaiting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  if (isLoading || isPreviewLoading) return <CheckoutSkeleton />;
-  if (isError || !application || !preview)
+  if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
+  if (isError || !application)
     return <div className="text-destructive p-6">Application not found.</div>;
+  if (isCheckoutError || !checkout)
+    return (
+      <div className="text-destructive p-6">Could not start checkout.</div>
+    );
 
   const { artist, opportunity } = application;
 
-  async function handleOutcome(outcome: AcceptOutcome) {
-    if (outcome.$type === "deferred") {
-      setIsAwaiting(true);
-      return;
-    }
-
-    if (outcome.payment.requiresAction && outcome.payment.clientSecret) {
-      const stripe = await stripePromise;
-      const { error } = await stripe!.handleNextAction({
-        clientSecret: outcome.payment.clientSecret,
-      });
-      if (error) {
-        setError(error.message ?? "Payment authentication failed.");
-        return;
-      }
-    }
-
-    setIsAwaiting(true);
-  }
-
-  function handleAccept() {
-    setError(null);
-    accept(
-      { applicationId: application!.id, paymentMethodId },
-      {
-        onSuccess: handleOutcome,
-        onError: () =>
-          setError("Failed to accept application. Please try again."),
-      },
-    );
-  }
-
   if (isAwaiting) {
     return (
-      <CheckoutSuccessView
+      <CheckoutSuccess
         title="Application Accepted"
         description={
           <>
@@ -97,8 +56,9 @@ export default function ApplicationCheckoutPage() {
     );
   }
 
-  const ctaLabel = preview.timing === "deferred" ? "Confirm" : "Confirm & Pay";
-  const summary = summaryFor(preview.amount);
+  const summary = summaryFor(checkout.amount);
+  const submitLabel =
+    checkout.timing === "deferred" ? "Confirm" : "Confirm & Pay";
 
   return (
     <CheckoutLayout
@@ -106,25 +66,14 @@ export default function ApplicationCheckoutPage() {
         <CheckoutEventBanner
           title={artist.name}
           subtitle={`${dayjs(opportunity.startDate).format("D MMM YYYY")} – ${dayjs(opportunity.endDate).format("D MMM YYYY")}`}
-          meta={`Paying ${preview.payee.name}${preview.payee.email ? ` · ${preview.payee.email}` : ""}`}
+          meta={`Paying ${checkout.payee.name}${checkout.payee.email ? ` · ${checkout.payee.email}` : ""}`}
         />
       }
       summary={
         <OrderSummaryCard
-          title={preview.timing === "deferred" ? "Settlement" : "Summary"}
+          title={checkout.timing === "deferred" ? "Settlement" : "Summary"}
           lines={summary.lines}
           total={summary.total}
-          action={
-            <Button
-              className="w-full"
-              size="lg"
-              disabled={isPending || paymentMethodId === undefined}
-              onClick={handleAccept}
-            >
-              {isPending ? "Processing..." : ctaLabel}
-            </Button>
-          }
-          footer={error && <p className="text-destructive text-sm">{error}</p>}
         />
       }
     >
@@ -135,16 +84,16 @@ export default function ApplicationCheckoutPage() {
       <CheckoutSection
         title="Payment Method"
         description={
-          preview.timing === "deferred"
+          checkout.timing === "deferred"
             ? "Saved card required for settlement after the concert."
             : undefined
         }
       >
-        <PaymentMethodSection
-          timing={preview.timing}
-          savedCard={savedCard}
-          isLoading={isPaymentMethodLoading}
-          onChange={setPaymentMethodId}
+        <StripePaymentForm
+          session={checkout.session}
+          kind={checkout.timing === "deferred" ? "setup" : "payment"}
+          submitLabel={submitLabel}
+          onSuccess={() => setIsAwaiting(true)}
         />
       </CheckoutSection>
     </CheckoutLayout>

@@ -81,4 +81,38 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         var account = await payoutAccountRepository.GetByUserIdAsync(userId);
         return await stripeAccountService.TryGetPaymentMethodAsync(account?.StripeCustomerId);
     }
+
+    public async Task<CheckoutSession> CreatePaymentSessionAsync(
+        Guid payerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
+        return await stripeAccountService.CreatePaymentSessionAsync(stripeCustomerId, metadata, ct);
+    }
+
+    public async Task<CheckoutSession> CreateSavedCardSessionAsync(
+        Guid payerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
+        return await stripeAccountService.CreateSavedCardSessionAsync(stripeCustomerId, metadata, ct);
+    }
+
+    private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
+        if (account?.StripeCustomerId is not null)
+            return account.StripeCustomerId;
+
+        var manager = await managerModule.GetByIdAsync(userId)
+            ?? throw new NotFoundException($"Manager not found for userId {userId}");
+
+        await stripeAccountService.ProvisionCustomerAsync(userId, manager.Email ?? string.Empty, ct);
+
+        account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
+        return account?.StripeCustomerId
+            ?? throw new InvalidOperationException("Failed to provision Stripe customer.");
+    }
 }

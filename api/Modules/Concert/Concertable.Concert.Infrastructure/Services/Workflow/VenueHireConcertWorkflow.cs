@@ -1,7 +1,9 @@
 using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
@@ -10,24 +12,38 @@ internal class VenueHireConcertWorkflow : IConcertWorkflowStrategy
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLookup contractLookup;
+    private readonly IConcertPaymentFlow paymentFlow;
 
     public VenueHireConcertWorkflow(
         IUpfrontConcertService upfrontConcertService,
         IPayerLookup payerLookup,
-        IContractLookup contractLookup)
+        IContractLookup contractLookup,
+        [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow)
     {
         this.upfrontConcertService = upfrontConcertService;
         this.payerLookup = payerLookup;
         this.contractLookup = contractLookup;
+        this.paymentFlow = paymentFlow;
     }
 
-    public async Task<AcceptPreview> PreviewAsync(int applicationId)
+    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
     {
         var venue = await payerLookup.GetVenueAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
+        var artistManagerId = await payerLookup.GetArtistManagerIdAsync(applicationId)
+            ?? throw new NotFoundException("Application not found");
         var contract = (VenueHireContract)await contractLookup.GetByApplicationIdAsync(applicationId);
 
-        return new AcceptPreview(PaymentTiming.Immediate, new FlatPayment(contract.HireFee), venue);
+        var metadata = new Dictionary<string, string>
+        {
+            ["type"] = "applicationAccept",
+            ["applicationId"] = applicationId.ToString(),
+            ["amount"] = ((long)(contract.HireFee * 100)).ToString(),
+            ["currency"] = "gbp"
+        };
+
+        var session = await paymentFlow.CreateSessionAsync(artistManagerId, metadata);
+        return new AcceptCheckout(PaymentTiming.Immediate, new FlatPayment(contract.HireFee), venue, session);
     }
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
