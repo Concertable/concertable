@@ -1,5 +1,5 @@
 using Concertable.Concert.Contracts;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Concertable.Shared;
 using Concertable.Venue.Application.Interfaces;
 using Concertable.Venue.Infrastructure.Data;

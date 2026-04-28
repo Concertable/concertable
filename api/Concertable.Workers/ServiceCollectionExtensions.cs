@@ -5,7 +5,7 @@ using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
-using Concertable.Identity.Infrastructure.Extensions;
+using Concertable.User.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Notification.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
@@ -27,7 +27,7 @@ internal static class ServiceCollectionExtensions
         services.AddReadDbContext(configuration);
 
         services.AddAuthorizationModule();
-        services.AddIdentityModule(configuration);
+        services.AddUserModule(configuration);
         services.AddAuthModule(configuration);
         services.AddConcertModule(configuration);
         services.AddContractModule(configuration);

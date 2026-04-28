@@ -8,7 +8,7 @@ global using Concertable.Payment.Application.Mappers;
 global using Concertable.Payment.Application.Requests;
 global using Concertable.Payment.Application.Responses;
 global using Concertable.Authorization.Contracts;
-global using Concertable.Identity.Contracts;
+global using Concertable.User.Contracts;
 global using Concertable.Payment.Infrastructure.Repositories;
 global using Concertable.Payment.Infrastructure.Validators;
 global using Concertable.Contract.Contracts;

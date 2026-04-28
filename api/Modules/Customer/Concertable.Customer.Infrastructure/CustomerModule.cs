@@ -1,23 +1,23 @@
-using Concertable.Customer.Application.Interfaces;
+﻿using Concertable.Customer.Application.Interfaces;
 using Concertable.Customer.Contracts;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 
 namespace Concertable.Customer.Infrastructure;
 
 internal class CustomerModule : ICustomerModule
 {
     private readonly IPreferenceService preferenceService;
-    private readonly IIdentityModule identityModule;
+    private readonly IUserModule userModule;
 
-    public CustomerModule(IPreferenceService preferenceService, IIdentityModule identityModule)
+    public CustomerModule(IPreferenceService preferenceService, IUserModule userModule)
     {
         this.preferenceService = preferenceService;
-        this.identityModule = identityModule;
+        this.userModule = userModule;
     }
 
     public async Task<CustomerDto?> GetCustomerAsync(Guid userId)
     {
-        var user = await identityModule.GetUserByIdAsync(userId);
+        var user = await userModule.GetByIdAsync(userId);
         return user as CustomerDto;
     }
 

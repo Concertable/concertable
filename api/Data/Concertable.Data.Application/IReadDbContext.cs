@@ -3,7 +3,7 @@ using Concertable.Auth.Domain;
 using Concertable.Concert.Domain;
 using Concertable.Contract.Domain;
 using Concertable.Customer.Domain;
-using Concertable.Identity.Domain;
+using Concertable.User.Domain;
 using Concertable.Messaging.Domain;
 using Concertable.Shared;
 using Concertable.Venue.Domain;

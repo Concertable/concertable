@@ -1,7 +1,7 @@
 using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Mappers;
 using Concertable.Concert.Application.Requests;
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 using Concertable.Shared;
 using Concertable.Shared.Exceptions;
 

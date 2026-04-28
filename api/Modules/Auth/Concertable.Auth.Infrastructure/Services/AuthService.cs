@@ -1,5 +1,4 @@
-using Concertable.Auth.Infrastructure.Settings;
-using Concertable.Identity.Application.Interfaces;
+﻿using Concertable.Auth.Infrastructure.Settings;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Options;
 
@@ -7,7 +6,7 @@ namespace Concertable.Auth.Infrastructure.Services;
 
 internal class AuthService : IAuthService
 {
-    private readonly IAuthUserSeam users;
+    private readonly IUserModule users;
     private readonly IRefreshTokenRepository refreshTokens;
     private readonly IEmailVerificationTokenRepository emailVerificationTokens;
     private readonly IPasswordResetTokenRepository passwordResetTokens;
@@ -18,7 +17,7 @@ internal class AuthService : IAuthService
     private readonly IAuthUriService authUriService;
 
     public AuthService(
-        IAuthUserSeam users,
+        IUserModule users,
         IRefreshTokenRepository refreshTokens,
         IEmailVerificationTokenRepository emailVerificationTokens,
         IPasswordResetTokenRepository passwordResetTokens,
@@ -48,7 +47,7 @@ internal class AuthService : IAuthService
             throw new BadRequestException("Email already exists");
 
         var passwordHash = passwordHasher.Hash(request.Password);
-        await users.CreateUserAsync(request.Email, passwordHash, request.Role);
+        await users.CreateAsync(request.Email, passwordHash, request.Role);
 
         await SendVerificationEmailAsync(request.Email);
     }
@@ -157,9 +156,9 @@ internal class AuthService : IAuthService
         await users.SetPasswordHashAsync(userId, passwordHasher.Hash(request.NewPassword));
     }
 
-    private async Task<LoginResponse> IssueTokensAsync(AuthUserCredentials creds)
+    private async Task<LoginResponse> IssueTokensAsync(UserCredentials creds)
     {
-        var user = await users.GetUserAsync(creds.Id)
+        var user = await users.GetByIdAsync(creds.Id)
             ?? throw new UnauthorizedException("User not found.");
 
         var accessToken = tokenService.CreateAccessToken(creds.Id, creds.Email, creds.Role);

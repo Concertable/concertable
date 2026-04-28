@@ -1,5 +1,5 @@
-using Concertable.Identity.Application.Interfaces;
-using Concertable.Identity.Domain;
+using Concertable.User.Application.Interfaces;
+using Concertable.User.Domain;
 
 namespace Concertable.Authorization.Infrastructure;
 

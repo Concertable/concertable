@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Responses;
+﻿using Concertable.Concert.Application.Responses;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Messaging.Contracts;
 using Concertable.Shared.Enums;
@@ -18,7 +18,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
     private readonly IEmailService emailService;
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
-    private readonly IManagerModule managerModule;
+    private readonly IUserModule userModule;
     private readonly IAcceptanceDispatcher acceptDispatcher;
     private readonly IOpportunityApplicationMapper mapper;
 
@@ -31,7 +31,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         IEmailService emailService,
         IOpportunityService opportunityService,
         IArtistModule artistModule,
-        IManagerModule managerModule,
+        IUserModule userModule,
         IAcceptanceDispatcher acceptDispatcher,
         IOpportunityApplicationMapper mapper)
     {
@@ -43,7 +43,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
         this.emailService = emailService;
         this.opportunityService = opportunityService;
         this.artistModule = artistModule;
-        this.managerModule = managerModule;
+        this.userModule = userModule;
         this.acceptDispatcher = acceptDispatcher;
         this.mapper = mapper;
     }
@@ -88,7 +88,7 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
 
         var opportunityOwnerId = await opportunityService.GetOwnerByIdAsync(opportunityId)
             ?? throw new NotFoundException("Concert Opportunity owner not found");
-        var opportunityOwner = await managerModule.GetByIdAsync(opportunityOwnerId)
+        var opportunityOwner = await userModule.GetManagerByIdAsync(opportunityOwnerId)
             ?? throw new NotFoundException("Venue manager not found for opportunity owner");
         var opportunity = await opportunityService.GetByIdAsync(opportunityId);
 

@@ -1,3 +1,4 @@
+using Concertable.User.Contracts;
 using Microsoft.AspNetCore.Http;
 
 namespace Concertable.Authorization.Infrastructure;

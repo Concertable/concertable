@@ -1,4 +1,4 @@
-using Concertable.Authorization.Contracts;
+using Concertable.User.Contracts;
 
 namespace Concertable.Auth.Contracts;
 

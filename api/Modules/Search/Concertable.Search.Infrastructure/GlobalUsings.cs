@@ -5,5 +5,5 @@ global using Concertable.Search.Contracts;
 global using Concertable.Search.Application.Interfaces;
 global using Concertable.Search.Infrastructure.Mappers;
 global using Concertable.Authorization.Contracts;
-global using Concertable.Identity.Contracts;
+global using Concertable.User.Contracts;
 global using Concertable.Concert.Domain;

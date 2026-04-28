@@ -1,4 +1,4 @@
-using Concertable.Identity.Contracts;
+using Concertable.User.Contracts;
 
 namespace Concertable.Customer.Contracts;
 

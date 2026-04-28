@@ -1,4 +1,4 @@
-using Concertable.Shared.Exceptions;
+﻿using Concertable.Shared.Exceptions;
 
 namespace Concertable.Messaging.Infrastructure.Services;
 
@@ -9,20 +9,20 @@ internal class MessageService : IMessageService
     private readonly IMessageRepository messageRepository;
     private readonly INotificationModule notificationModule;
     private readonly ICurrentUser currentUser;
-    private readonly IIdentityModule identityModule;
+    private readonly IUserModule userModule;
     private readonly TimeProvider timeProvider;
 
     public MessageService(
         IMessageRepository messageRepository,
         INotificationModule notificationModule,
         ICurrentUser currentUser,
-        IIdentityModule identityModule,
+        IUserModule userModule,
         TimeProvider timeProvider)
     {
         this.messageRepository = messageRepository;
         this.notificationModule = notificationModule;
         this.currentUser = currentUser;
-        this.identityModule = identityModule;
+        this.userModule = userModule;
         this.timeProvider = timeProvider;
     }
 
@@ -83,7 +83,7 @@ internal class MessageService : IMessageService
 
     private async Task<MessageUserDto> GetSenderDtoAsync(Guid fromUserId)
     {
-        var sender = await identityModule.GetUserByIdAsync(fromUserId)
+        var sender = await userModule.GetByIdAsync(fromUserId)
             ?? throw new NotFoundException("Message sender not found");
         return sender.ToMessageUserDto();
     }

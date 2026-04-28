@@ -12,8 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Authorization.Contracts\Concertable.Authorization.Contracts.csproj" />
-    <ProjectReference Include="..\..\Identity\Concertable.Identity.Application\Concertable.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\Identity\Concertable.Identity.Domain\Concertable.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\User\Concertable.User.Application\Concertable.User.Application.csproj" />
+    <ProjectReference Include="..\..\User\Concertable.User.Domain\Concertable.User.Domain.csproj" />
   </ItemGroup>
 
 </Project>

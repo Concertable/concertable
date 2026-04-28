@@ -1,3 +1,5 @@
+using Concertable.User.Contracts;
+
 namespace Concertable.Authorization.Contracts;
 
 public interface ICurrentUser

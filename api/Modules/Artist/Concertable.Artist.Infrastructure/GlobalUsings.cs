@@ -7,4 +7,4 @@ global using Concertable.Data.Infrastructure;
 global using Concertable.Data.Infrastructure.Data;
 global using Concertable.Application.Interfaces;
 global using Concertable.Authorization.Contracts;
-global using Concertable.Identity.Contracts;
+global using Concertable.User.Contracts;
