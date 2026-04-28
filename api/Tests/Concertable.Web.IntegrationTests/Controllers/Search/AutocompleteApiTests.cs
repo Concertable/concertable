@@ -19,7 +19,7 @@ public class AutocompleteApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient();
 
-        var response = await client.GetAsync("/api/Autocomplete/headers?searchTerm=Test");
+        var response = await client.GetAsync("/api/Autocomplete?searchTerm=Test");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
@@ -32,7 +32,7 @@ public class AutocompleteApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient();
 
-        var response = await client.GetAsync("/api/Autocomplete/headers?searchTerm=zzznomatch");
+        var response = await client.GetAsync("/api/Autocomplete?searchTerm=zzznomatch");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
@@ -45,7 +45,7 @@ public class AutocompleteApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient();
 
-        var response = await client.GetAsync("/api/Autocomplete/headers");
+        var response = await client.GetAsync("/api/Autocomplete");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
@@ -58,7 +58,7 @@ public class AutocompleteApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient();
 
-        var response = await client.GetAsync("/api/Autocomplete/headers?searchTerm=Test Artist");
+        var response = await client.GetAsync("/api/Autocomplete?searchTerm=Test Artist");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
