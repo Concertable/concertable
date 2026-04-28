@@ -35,4 +35,12 @@ internal class OffSessionConcertPaymentFlow : IConcertPaymentFlow
     {
         return managerPaymentModule.PayAsync(payerId, payeeId, amount, metadata, paymentMethodId, ct);
     }
+
+    public Task<CheckoutSession> CreateSessionAsync(
+        Guid payerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        return managerPaymentModule.CreateSavedCardSessionAsync(payerId, metadata, ct);
+    }
 }

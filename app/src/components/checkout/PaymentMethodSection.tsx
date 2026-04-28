@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import { ImmediatePaymentSection } from "@/components/checkout/ImmediatePaymentSection";
 import { DeferredPaymentSection } from "@/components/checkout/DeferredPaymentSection";
 import type { PaymentMethod } from "@/api/stripeAccountApi";
-import type { PaymentTiming } from "@/types/acceptPreview";
+import type { PaymentTiming } from "@/types/acceptCheckout";
 
 export interface PaymentSectionProps {
   savedCard: PaymentMethod | null | undefined;

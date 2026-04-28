@@ -18,6 +18,8 @@ shadow every Dto with a Response.
 
 Validators stay named `XValidators` regardless.
 
+Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).
+
 ## Module rules
 
 See [MODULAR_MONOLITH_RULES.md](./MODULAR_MONOLITH_RULES.md).

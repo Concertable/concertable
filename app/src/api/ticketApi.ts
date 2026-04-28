@@ -1,5 +1,6 @@
 import api from "@/lib/axios";
 import type { Ticket } from "@/types/ticket";
+import type { TicketCheckout } from "@/types/ticketCheckout";
 
 interface TicketPurchaseRequest {
   concertId: number;
@@ -27,6 +28,12 @@ const ticketApi = {
       "/ticket/purchase",
       request,
     );
+    return data;
+  },
+  checkout: async (concertId: number): Promise<TicketCheckout> => {
+    const { data } = await api.post<TicketCheckout>("/ticket/checkout", {
+      concertId,
+    });
     return data;
   },
   getUpcoming: async (): Promise<Ticket[]> => {

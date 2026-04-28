@@ -32,7 +32,8 @@ public class DoorSplitConcertWorkflowCompleteTests
             concertRepository.Object,
             bookingRepository.Object,
             new Mock<IPayerLookup>().Object,
-            contractLookup.Object);
+            contractLookup.Object,
+            new Mock<IConcertPaymentFlow>().Object);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);

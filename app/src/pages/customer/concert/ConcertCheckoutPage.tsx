@@ -1,45 +1,109 @@
-import { useParams } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ImmediatePaymentSection } from "@/components/checkout/ImmediatePaymentSection";
 import { CheckoutLayout } from "@/components/checkout/CheckoutLayout";
 import { CheckoutSection } from "@/components/checkout/CheckoutSection";
 import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
 import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
 import { QuantitySelector } from "@/components/checkout/QuantitySelector";
-import { CheckoutSuccessView } from "@/components/checkout/CheckoutSuccessView";
+import { CheckoutSuccess } from "@/components/checkout/CheckoutSuccess";
+import {
+  CheckoutAwaiting,
+  type AwaitingStep,
+} from "@/components/checkout/CheckoutAwaiting";
+import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
 import { useConcert } from "@/hooks/useConcert";
-import { usePaymentMethodQuery } from "@/hooks/query/useStripeAccountQuery";
-import { useTicketCheckout } from "@/hooks/useTicketCheckout";
+import { useTicketCheckoutQuery } from "@/hooks/query/useTicketsQuery";
+import { notificationConnection } from "@/lib/signalr";
 import type { TicketPurchasedPayload } from "@/types/notification";
 import type { Concert } from "@/types/concert";
 
+type CheckoutPhase = "form" | "awaiting" | "success" | "timeout";
+
 export default function ConcertCheckoutPage() {
   const { id } = useParams({ from: "/_customer/concert/checkout/$id" });
+  const router = useRouter();
   const { concert, isLoading, isError } = useConcert(id);
-  const { data: savedCard, isLoading: isPaymentMethodLoading } =
-    usePaymentMethodQuery();
   const {
-    quantity,
-    setQuantity,
-    paymentMethodId,
-    setPaymentMethodId,
-    state,
-    error,
-    result,
-    purchase,
-  } = useTicketCheckout(id);
+    data: checkout,
+    isLoading: isCheckoutLoading,
+    isError: isCheckoutError,
+  } = useTicketCheckoutQuery(id);
 
-  if (isLoading) return <CheckoutSkeleton />;
+  const [quantity, setQuantity] = useState(1);
+  const [phase, setPhase] = useState<CheckoutPhase>("form");
+  const [ticketCount, setTicketCount] = useState(0);
+
+  useEffect(() => {
+    if (phase !== "awaiting") return;
+
+    function handleTicketPurchased(payload: TicketPurchasedPayload) {
+      if (payload.concertId !== id) return;
+      setTicketCount(payload.ticketIds.length);
+      setPhase("success");
+    }
+
+    notificationConnection.on("TicketPurchased", handleTicketPurchased);
+    const timeoutId = setTimeout(() => {
+      setPhase((current) => (current === "awaiting" ? "timeout" : current));
+    }, 30_000);
+
+    return () => {
+      notificationConnection.off("TicketPurchased", handleTicketPurchased);
+      clearTimeout(timeoutId);
+    };
+  }, [phase, id]);
+
+  if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
   if (isError || !concert)
     return <div className="text-destructive p-6">Concert not found.</div>;
+  if (isCheckoutError || !checkout)
+    return (
+      <div className="text-destructive p-6">Could not start checkout.</div>
+    );
 
-  if (state === "success" && result)
-    return <ConcertSuccessView result={result} concert={concert} />;
+  if (phase === "awaiting") {
+    const steps: AwaitingStep[] = [
+      { label: "Payment authorised", status: "done" },
+      { label: "Confirming with our system", status: "active" },
+      { label: "Issuing your tickets", status: "pending" },
+    ];
+    return (
+      <CheckoutAwaiting
+        title="Processing your payment"
+        description="This usually takes a few seconds. Please don't close this page."
+        steps={steps}
+      />
+    );
+  }
 
-  const total = (concert.price * quantity).toFixed(2);
-  const isDisabled = state === "pending" || state === "processing";
+  if (phase === "success") {
+    return (
+      <ConcertSuccess
+        concert={concert}
+        ticketCount={ticketCount}
+        onView={() => void router.navigate({ to: "/profile/tickets/upcoming" })}
+      />
+    );
+  }
+
+  if (phase === "timeout") {
+    return (
+      <CheckoutAwaiting
+        title="Still confirming your payment"
+        description="This is taking longer than usual. Your tickets will appear in your profile shortly — feel free to keep using the app."
+        steps={[
+          { label: "Payment authorised", status: "done" },
+          { label: "Confirming with our system", status: "active" },
+          { label: "Issuing your tickets", status: "pending" },
+        ]}
+      />
+    );
+  }
+
+  const total = concert.price * quantity;
 
   return (
     <CheckoutLayout
@@ -64,82 +128,49 @@ export default function ConcertCheckoutPage() {
                   value={quantity}
                   onChange={setQuantity}
                   max={concert.availableTickets}
-                  disabled={isDisabled}
                 />
               ),
             },
           ]}
-          total={{ label: "Total", value: `£${total}` }}
-          action={
-            <Button
-              className="w-full"
-              size="lg"
-              disabled={paymentMethodId === undefined || isDisabled}
-              onClick={purchase}
-            >
-              {state === "pending" || state === "processing"
-                ? "Processing..."
-                : `Pay £${total}`}
-            </Button>
-          }
-          footer={error && <p className="text-destructive text-sm">{error}</p>}
+          total={{ label: "Total", value: `£${total.toFixed(2)}` }}
         />
       }
     >
       <CheckoutSection title="Payment Method">
-        <ImmediatePaymentSection
-          savedCard={savedCard}
-          isLoading={isPaymentMethodLoading}
-          onChange={setPaymentMethodId}
+        <StripePaymentForm
+          session={checkout.session}
+          kind="payment"
+          submitLabel={`Pay £${total.toFixed(2)}`}
+          onSuccess={() => setPhase("awaiting")}
         />
       </CheckoutSection>
     </CheckoutLayout>
   );
 }
 
-function ConcertSuccessView({
-  result,
+function ConcertSuccess({
   concert,
+  ticketCount,
+  onView,
 }: {
-  result: TicketPurchasedPayload;
   concert: Concert;
+  ticketCount: number;
+  onView: () => void;
 }) {
   return (
-    <CheckoutSuccessView
-      title="Payment Successful"
+    <CheckoutSuccess
+      title="Tickets confirmed"
       description={
         <>
-          Your tickets for{" "}
+          Your {ticketCount > 1 ? `${ticketCount} tickets` : "ticket"} for{" "}
           <span className="text-foreground font-medium">{concert.name}</span>{" "}
-          are confirmed.
+          {ticketCount > 1 ? "are" : "is"} ready.
         </>
       }
-      details={
-        <div className="bg-card space-y-2 rounded-xl border p-5 text-left">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Tickets</span>
-            <span>{result.ticketIds.length}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Total paid</span>
-            <span>£{result.amount.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Concert date</span>
-            <span>{dayjs(concert.startDate).format("D MMM YYYY")}</span>
-          </div>
-          {result.transactionId && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Reference</span>
-              <span className="font-mono text-xs">
-                {result.transactionId.slice(0, 12)}...
-              </span>
-            </div>
-          )}
-        </div>
-      }
       footer={
-        result.userEmail && <>Tickets have been sent to {result.userEmail}</>
+        <Button onClick={onView} className="mt-2">
+          View tickets
+        </Button>
       }
     />
   );

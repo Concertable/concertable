@@ -25,7 +25,8 @@
       "Bash(\"C:\\\\Program Files\\\\Microsoft\\\\Azure Functions Core Tools\\\\func.exe\" --help)",
       "Bash(git *)",
       "Bash(npx tsc *)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(powershell -Command '[Reflection.Assembly]::LoadFile\\('\\\\''C:\\\\Users\\\\TommySeery\\\\.nuget\\\\packages\\\\stripe.net\\\\47.3.0\\\\lib\\\\net8.0\\\\Stripe.net.dll'\\\\''\\).GetType\\('\\\\''Stripe.RequestOptions'\\\\''\\).GetProperties\\(\\) | ForEach-Object { Write-Output $_.Name }')"
     ]
   }
 }

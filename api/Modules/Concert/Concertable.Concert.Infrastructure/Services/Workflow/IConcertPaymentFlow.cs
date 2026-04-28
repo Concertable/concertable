@@ -14,4 +14,9 @@ internal interface IConcertPaymentFlow
         string paymentMethodId,
         IDictionary<string, string>? metadata,
         CancellationToken ct = default);
+
+    Task<CheckoutSession> CreateSessionAsync(
+        Guid payerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default);
 }

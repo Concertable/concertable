@@ -1,9 +1,10 @@
 using System.Text.Json.Serialization;
 using Concertable.Concert.Application.Enums;
+using Concertable.Payment.Contracts;
 
 namespace Concertable.Concert.Application.Responses;
 
-internal record AcceptPreview(PaymentTiming Timing, IPaymentAmount Amount, PayeeSummary Payee);
+internal record AcceptCheckout(PaymentTiming Timing, IPaymentAmount Amount, PayeeSummary Payee, CheckoutSession Session);
 
 internal record PayeeSummary(string Name, string? Email);
 

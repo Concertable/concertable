@@ -1,4 +1,5 @@
 using Concertable.Payment.Application.DTOs;
+using Concertable.Payment.Contracts;
 using Concertable.Payment.Infrastructure.Settings;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,8 @@ internal class StripeAccountService : IStripeAccountService
     private readonly CustomerService customerService;
     private readonly PaymentMethodService paymentMethodService;
     private readonly SetupIntentService setupIntentService;
+    private readonly PaymentIntentService paymentIntentService;
+    private readonly Stripe.CustomerSessionService customerSessionService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
 
     public StripeAccountService(
@@ -25,6 +28,8 @@ internal class StripeAccountService : IStripeAccountService
         CustomerService customerService,
         PaymentMethodService paymentMethodService,
         SetupIntentService setupIntentService,
+        PaymentIntentService paymentIntentService,
+        Stripe.CustomerSessionService customerSessionService,
         IPayoutAccountRepository payoutAccountRepository)
     {
         StripeConfiguration.ApiKey = stripeSettings.Value.SecretKey;
@@ -34,6 +39,8 @@ internal class StripeAccountService : IStripeAccountService
         this.customerService = customerService;
         this.paymentMethodService = paymentMethodService;
         this.setupIntentService = setupIntentService;
+        this.paymentIntentService = paymentIntentService;
+        this.customerSessionService = customerSessionService;
         this.payoutAccountRepository = payoutAccountRepository;
     }
 
@@ -133,4 +140,62 @@ internal class StripeAccountService : IStripeAccountService
         return new PaymentMethodDto(card.Brand, card.Last4, (int)card.ExpMonth, (int)card.ExpYear);
     }
 
+    public async Task<CheckoutSession> CreatePaymentSessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        var intent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions
+        {
+            Amount = long.Parse(metadata["amount"]),
+            Currency = metadata.TryGetValue("currency", out var c) ? c : "GBP",
+            Customer = stripeCustomerId,
+            SetupFutureUsage = "off_session",
+            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions { Enabled = true },
+            Metadata = metadata.ToDictionary(kv => kv.Key, kv => kv.Value),
+        }, cancellationToken: ct);
+
+        var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
+    }
+
+    public async Task<CheckoutSession> CreateSavedCardSessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        var intent = await setupIntentService.CreateAsync(new SetupIntentCreateOptions
+        {
+            Customer = stripeCustomerId,
+            PaymentMethodTypes = ["card"],
+            Usage = "off_session",
+            Metadata = metadata.ToDictionary(kv => kv.Key, kv => kv.Value),
+        }, cancellationToken: ct);
+
+        var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
+    }
+
+    private async Task<string> CreateCustomerSessionAsync(string stripeCustomerId, CancellationToken ct)
+    {
+        var session = await customerSessionService.CreateAsync(new CustomerSessionCreateOptions
+        {
+            Customer = stripeCustomerId,
+            Components = new CustomerSessionComponentsOptions
+            {
+                PaymentElement = new CustomerSessionComponentsPaymentElementOptions
+                {
+                    Enabled = true,
+                    Features = new CustomerSessionComponentsPaymentElementFeaturesOptions
+                    {
+                        PaymentMethodSave = "enabled",
+                        PaymentMethodRemove = "enabled",
+                        PaymentMethodRedisplay = "enabled",
+                        PaymentMethodAllowRedisplayFilters = ["always", "limited", "unspecified"],
+                    },
+                },
+            },
+        }, cancellationToken: ct);
+        return session.ClientSecret;
+    }
 }

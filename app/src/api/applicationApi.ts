@@ -3,7 +3,7 @@ import type {
   AcceptOutcome,
   OpportunityApplication,
 } from "@/types/application";
-import type { AcceptPreview } from "@/types/acceptPreview";
+import type { AcceptCheckout } from "@/types/acceptCheckout";
 
 const applicationApi = {
   applyToOpportunity: async (
@@ -51,9 +51,9 @@ const applicationApi = {
     return data;
   },
 
-  getAcceptPreview: async (applicationId: number): Promise<AcceptPreview> => {
-    const { data } = await api.get<AcceptPreview>(
-      `/opportunityapplication/accept/preview/${applicationId}`,
+  checkout: async (applicationId: number): Promise<AcceptCheckout> => {
+    const { data } = await api.post<AcceptCheckout>(
+      `/opportunityapplication/${applicationId}/checkout`,
     );
     return data;
   },

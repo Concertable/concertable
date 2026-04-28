@@ -1,7 +1,9 @@
 using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
@@ -12,28 +14,40 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     private readonly IConcertBookingRepository bookingRepository;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLookup contractLookup;
+    private readonly IConcertPaymentFlow paymentFlow;
 
     public DoorSplitConcertWorkflow(
         IDeferredConcertService deferredConcertService,
         IConcertRepository concertRepository,
         IConcertBookingRepository bookingRepository,
         IPayerLookup payerLookup,
-        IContractLookup contractLookup)
+        IContractLookup contractLookup,
+        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow)
     {
         this.deferredConcertService = deferredConcertService;
         this.concertRepository = concertRepository;
         this.bookingRepository = bookingRepository;
         this.payerLookup = payerLookup;
         this.contractLookup = contractLookup;
+        this.paymentFlow = paymentFlow;
     }
 
-    public async Task<AcceptPreview> PreviewAsync(int applicationId)
+    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
     {
         var artist = await payerLookup.GetArtistAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
+        var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
+            ?? throw new NotFoundException("Application not found");
         var contract = (DoorSplitContract)await contractLookup.GetByApplicationIdAsync(applicationId);
 
-        return new AcceptPreview(PaymentTiming.Deferred, new DoorSharePayment(contract.ArtistDoorPercent), artist);
+        var metadata = new Dictionary<string, string>
+        {
+            ["type"] = "applicationAccept",
+            ["applicationId"] = applicationId.ToString()
+        };
+
+        var session = await paymentFlow.CreateSessionAsync(venueManagerId, metadata);
+        return new AcceptCheckout(PaymentTiming.Deferred, new DoorSharePayment(contract.ArtistDoorPercent), artist, session);
     }
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)

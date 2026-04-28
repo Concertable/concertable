@@ -1,4 +1,11 @@
+using Concertable.Payment.Contracts;
+
 namespace Concertable.Concert.Application.DTOs;
+
+internal record TicketCheckout(
+    CheckoutSession Session,
+    decimal Price,
+    int ConcertId);
 
 internal record TicketConcertDto
 {
