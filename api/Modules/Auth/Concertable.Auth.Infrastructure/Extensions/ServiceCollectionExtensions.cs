@@ -1,5 +1,6 @@
 using Concertable.Auth.Application.Validators;
 using Concertable.Auth.Infrastructure.Data;
+using Concertable.Auth.Infrastructure.Data.Seeders;
 using Concertable.Auth.Infrastructure.Repositories;
 using Concertable.Auth.Infrastructure.Services;
 using Concertable.Auth.Infrastructure.Settings;
@@ -41,6 +42,18 @@ public static class ServiceCollectionExtensions
 
         services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddAuthDevSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<Concertable.Application.Interfaces.IDevSeeder, AuthDevSeeder>();
+        return services;
+    }
+
+    public static IServiceCollection AddAuthTestSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<Concertable.Application.Interfaces.ITestSeeder, AuthTestSeeder>();
         return services;
     }
 }

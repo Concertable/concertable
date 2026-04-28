@@ -8,7 +8,7 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<UserEntity>
 {
     public void Configure(EntityTypeBuilder<UserEntity> builder)
     {
-        builder.ToTable("Users", "identity");
+        builder.ToTable("Users", "user");
         builder.Property(u => u.Location).HasColumnType("geography");
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasDiscriminator(u => u.Role)

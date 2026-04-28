@@ -3,6 +3,7 @@ using Concertable.Notification.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Web.IntegrationTests.Infrastructure.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
+using Concertable.Auth.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
@@ -82,6 +83,7 @@ public async Task InitializeAsync()
                 services.AddScoped<ILocationFaker, LocationFaker>();
                 services.AddSharedTestSeeder();
                 services.AddUserTestSeeder();
+                services.AddAuthTestSeeder();
                 services.AddArtistTestSeeder();
                 services.AddVenueTestSeeder();
                 services.AddContractTestSeeder();
