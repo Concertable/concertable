@@ -2,11 +2,11 @@ using Concertable.Payment.Contracts.Events;
 
 namespace Concertable.Payment.Infrastructure.Events;
 
-internal class SettlementTransactionService : ITransactionStrategy
+internal class SettlementTransactionHandler : ITransactionHandler
 {
     private readonly ITransactionService transactionService;
 
-    public SettlementTransactionService(ITransactionService transactionService)
+    public SettlementTransactionHandler(ITransactionService transactionService)
     {
         this.transactionService = transactionService;
     }

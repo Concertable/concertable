@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
 // TEMPORARY: Castle Core dynamic proxy IVT — needed by Concertable.Infrastructure.UnitTests / Concertable.Workers.UnitTests
-// to mock internal interfaces (IConcertRepository, IContractLoader, IConcertWorkflowStrategyFactory, etc.).
+// to mock internal interfaces (IConcertRepository, IContractLoader, IConcertWorkflowFactory, etc.).
 // Retires when those unit tests migrate into per-module test projects (Concertable.Concert.UnitTests etc.)
 // and stop mocking another module's internals.
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

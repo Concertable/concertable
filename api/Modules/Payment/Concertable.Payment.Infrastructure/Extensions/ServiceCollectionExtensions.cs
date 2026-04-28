@@ -1,4 +1,4 @@
-﻿using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.User.Contracts;
 using Concertable.User.Contracts.Events;
 using Concertable.Payment.Application.Interfaces;
@@ -101,9 +101,9 @@ public static class ServiceCollectionExtensions
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentTransactionHandler>();
-        services.AddScoped<ITransactionStrategyFactory, TransactionStrategyFactory>();
-        services.AddKeyedScoped<ITransactionStrategy, TicketTransactionService>("ticket");
-        services.AddKeyedScoped<ITransactionStrategy, SettlementTransactionService>("settlement");
+        services.AddScoped<ITransactionHandlerFactory, TransactionHandlerFactory>();
+        services.AddKeyedScoped<ITransactionHandler, TicketTransactionHandler>("ticket");
+        services.AddKeyedScoped<ITransactionHandler, SettlementTransactionHandler>("settlement");
 
         return services;
     }

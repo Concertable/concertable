@@ -30,7 +30,12 @@
       "PowerShell(Set-Location \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Modules\\\\Identity\"; Get-ChildItem -Directory | ForEach-Object { Write-Output \"$\\($_.Name\\)\" })",
       "PowerShell(Rename-Item *)",
       "Bash(pwsh -File ./initial-migrations.ps1)",
-      "Bash(xargs -I {} rm -rf {})"
+      "Bash(xargs -I {} rm -rf {})",
+      "Bash(mv \"Modules/Concert/Concertable.Concert.Application/Interfaces/IConcertWorkflowStrategy.cs\" \"Modules/Concert/Concertable.Concert.Application/Interfaces/IConcertWorkflow.cs\")",
+      "Bash(mv \"Modules/Concert/Concertable.Concert.Application/Interfaces/IConcertWorkflowStrategyFactory.cs\" \"Modules/Concert/Concertable.Concert.Application/Interfaces/IConcertWorkflowFactory.cs\")",
+      "Bash(mv \"Modules/Concert/Concertable.Concert.Infrastructure/Services/Workflow/ConcertWorkflowStrategyFactory.cs\" \"Modules/Concert/Concertable.Concert.Infrastructure/Services/Workflow/ConcertWorkflowFactory.cs\")",
+      "Bash(mv \"Modules/Concert/Concertable.Concert.Application/Interfaces/IPaymentSucceededStrategy.cs\" \"Modules/Concert/Concertable.Concert.Application/Interfaces/IPaymentSucceededProcessor.cs\")",
+      "Bash(mv \"Modules/Concert/Concertable.Concert.Application/Interfaces/IPaymentSucceededStrategyFactory.cs\" \"Modules/Concert/Concertable.Concert.Application/Interfaces/IPaymentSucceededProcessorFactory.cs\")"
     ]
   }
 }

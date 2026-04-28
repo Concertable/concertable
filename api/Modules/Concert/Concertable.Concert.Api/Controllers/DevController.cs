@@ -11,7 +11,7 @@ internal class DevController : ControllerBase
     [HttpPost("accept")]
     public async Task<IActionResult> Accept(
         [FromQuery] int applicationId,
-        [FromServices] IAcceptanceDispatcher acceptanceDispatcher)
+        [FromServices] IAcceptanceExecutor acceptanceDispatcher)
     {
         var outcome = await acceptanceDispatcher.AcceptAsync(applicationId);
         return Ok(outcome);

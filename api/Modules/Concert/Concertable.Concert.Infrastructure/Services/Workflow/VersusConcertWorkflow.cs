@@ -1,4 +1,4 @@
-﻿using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class VersusConcertWorkflow : IConcertWorkflowStrategy
+internal class VersusConcertWorkflow : IConcertWorkflow
 {
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IConcertRepository concertRepository;

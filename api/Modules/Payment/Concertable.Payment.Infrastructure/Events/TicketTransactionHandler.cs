@@ -2,12 +2,12 @@ using Concertable.Payment.Contracts.Events;
 
 namespace Concertable.Payment.Infrastructure.Events;
 
-internal class TicketTransactionService : ITransactionStrategy
+internal class TicketTransactionHandler : ITransactionHandler
 {
     private readonly ITransactionService transactionService;
     private readonly TimeProvider timeProvider;
 
-    public TicketTransactionService(ITransactionService transactionService, TimeProvider timeProvider)
+    public TicketTransactionHandler(ITransactionService transactionService, TimeProvider timeProvider)
     {
         this.transactionService = transactionService;
         this.timeProvider = timeProvider;

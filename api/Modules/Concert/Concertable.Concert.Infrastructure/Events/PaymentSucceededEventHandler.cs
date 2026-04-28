@@ -4,17 +4,17 @@ namespace Concertable.Concert.Infrastructure.Events;
 
 internal class PaymentSucceededEventHandler : IIntegrationEventHandler<PaymentSucceededEvent>
 {
-    private readonly IPaymentSucceededStrategyFactory strategyFactory;
+    private readonly IPaymentSucceededProcessorFactory processorFactory;
 
-    public PaymentSucceededEventHandler(IPaymentSucceededStrategyFactory strategyFactory)
+    public PaymentSucceededEventHandler(IPaymentSucceededProcessorFactory processorFactory)
     {
-        this.strategyFactory = strategyFactory;
+        this.processorFactory = processorFactory;
     }
 
     public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct)
     {
         var type = @event.Metadata.GetValueOrDefault("type", string.Empty);
-        var strategy = strategyFactory.Create(type);
-        await strategy.HandleAsync(@event, ct);
+        var processor = processorFactory.Create(type);
+        await processor.HandleAsync(@event, ct);
     }
 }

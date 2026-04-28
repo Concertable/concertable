@@ -3,17 +3,17 @@ namespace Concertable.Concert.Infrastructure.Services.Settlement;
 internal class SettlementDispatcher : ISettlementDispatcher
 {
     private readonly IContractLoader contractLoader;
-    private readonly IConcertWorkflowStrategyFactory strategyFactory;
+    private readonly IConcertWorkflowFactory workflowFactory;
 
-    public SettlementDispatcher(IContractLoader contractLoader, IConcertWorkflowStrategyFactory strategyFactory)
+    public SettlementDispatcher(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory)
     {
         this.contractLoader = contractLoader;
-        this.strategyFactory = strategyFactory;
+        this.workflowFactory = workflowFactory;
     }
 
     public async Task SettleAsync(int bookingId)
     {
         var contract = await contractLoader.LoadByBookingIdAsync(bookingId);
-        await strategyFactory.Create(contract.ContractType).SettleAsync(bookingId);
+        await workflowFactory.Create(contract.ContractType).SettleAsync(bookingId);
     }
 }

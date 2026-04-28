@@ -5,12 +5,12 @@ namespace Concertable.Concert.Infrastructure.Services.Completion;
 internal class CompletionDispatcher : ICompletionDispatcher
 {
     private readonly IContractLoader contractLoader;
-    private readonly IConcertWorkflowStrategyFactory strategyFactory;
+    private readonly IConcertWorkflowFactory workflowFactory;
 
-    public CompletionDispatcher(IContractLoader contractLoader, IConcertWorkflowStrategyFactory strategyFactory)
+    public CompletionDispatcher(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory)
     {
         this.contractLoader = contractLoader;
-        this.strategyFactory = strategyFactory;
+        this.workflowFactory = workflowFactory;
     }
 
     public async Task<Result<IFinishOutcome>> FinishAsync(int concertId)
@@ -18,7 +18,7 @@ internal class CompletionDispatcher : ICompletionDispatcher
         try
         {
             var contract = await contractLoader.LoadByConcertIdAsync(concertId);
-            var outcome = await strategyFactory.Create(contract.ContractType).FinishAsync(concertId);
+            var outcome = await workflowFactory.Create(contract.ContractType).FinishAsync(concertId);
             return Result.Ok(outcome);
         }
         catch (Exception ex)

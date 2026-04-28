@@ -1,4 +1,4 @@
-﻿using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
+internal class FlatFeeConcertWorkflow : IConcertWorkflow
 {
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IPayerLookup payerLookup;

@@ -2,7 +2,7 @@ using Concertable.Payment.Contracts.Events;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
 
-internal class SettlementPaymentService : IPaymentSucceededStrategy
+internal class SettlementPaymentService : IPaymentSucceededProcessor
 {
     private readonly IConcertWorkflowModule concertWorkflowModule;
 

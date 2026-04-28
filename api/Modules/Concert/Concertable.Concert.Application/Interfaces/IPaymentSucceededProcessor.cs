@@ -1,8 +1,8 @@
 using Concertable.Payment.Contracts.Events;
 
-namespace Concertable.Payment.Application.Interfaces;
+namespace Concertable.Concert.Application.Interfaces;
 
-internal interface ITransactionStrategy
+internal interface IPaymentSucceededProcessor
 {
     Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct);
 }

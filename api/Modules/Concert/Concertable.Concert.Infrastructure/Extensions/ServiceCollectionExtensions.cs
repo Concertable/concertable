@@ -1,4 +1,4 @@
-﻿using Concertable.Application.Interfaces;
+using Concertable.Application.Interfaces;
 using Concertable.Artist.Contracts.Events;
 using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Mappers;
@@ -77,7 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPdfService, PdfService>();
 
         // Dispatchers
-        services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
+        services.AddScoped<IAcceptanceExecutor, AcceptanceDispatcher>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddScoped<IApplicationAcceptHandler, ApplicationAcceptHandler>();
@@ -86,7 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddConcertWorkflow<DoorSplitConcertWorkflow>(ContractType.DoorSplit);
         services.AddConcertWorkflow<VersusConcertWorkflow>(ContractType.Versus);
         services.AddConcertWorkflow<VenueHireConcertWorkflow>(ContractType.VenueHire);
-        services.AddScoped<IConcertWorkflowStrategyFactory, ConcertWorkflowStrategyFactory>();
+        services.AddScoped<IConcertWorkflowFactory, ConcertWorkflowFactory>();
 
         // Ticket payee â€” composite dispatches by ContractType to artist vs venue
         services.AddSingleton<ArtistTicketPayee>();
@@ -117,9 +117,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentSucceededEventHandler>();
-        services.AddScoped<IPaymentSucceededStrategyFactory, PaymentSucceededStrategyFactory>();
-        services.AddKeyedScoped<IPaymentSucceededStrategy, TicketPaymentService>("ticket");
-        services.AddKeyedScoped<IPaymentSucceededStrategy, SettlementPaymentService>("settlement");
+        services.AddScoped<IPaymentSucceededProcessorFactory, PaymentSucceededProcessorFactory>();
+        services.AddKeyedScoped<IPaymentSucceededProcessor, TicketPaymentService>("ticket");
+        services.AddKeyedScoped<IPaymentSucceededProcessor, SettlementPaymentService>("settlement");
 
         services.AddSingleton<ConcertConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ConcertConfigurationProvider>());
@@ -143,8 +143,8 @@ public static class ServiceCollectionExtensions
     }
 
     private static IServiceCollection AddConcertWorkflow<TWorkflow>(this IServiceCollection services, ContractType contractType)
-        where TWorkflow : class, IConcertWorkflowStrategy
+        where TWorkflow : class, IConcertWorkflow
     {
-        return services.AddKeyedScoped<IConcertWorkflowStrategy, TWorkflow>(contractType);
+        return services.AddKeyedScoped<IConcertWorkflow, TWorkflow>(contractType);
     }
 }

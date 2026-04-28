@@ -3,7 +3,7 @@ using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
 
-internal class TicketPaymentService : IPaymentSucceededStrategy
+internal class TicketPaymentService : IPaymentSucceededProcessor
 {
     private readonly ITicketService ticketService;
     private readonly ITicketNotifier notifier;
