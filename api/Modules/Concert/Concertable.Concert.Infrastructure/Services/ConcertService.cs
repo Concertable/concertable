@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Interfaces.Reviews;
+﻿using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Customer.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
@@ -11,7 +11,7 @@ internal class ConcertService : IConcertService
     private readonly IConcertHeaderModule concertHeaderModule;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
-    private readonly IOpportunityApplicationValidator applicationValidator;
+    private readonly IApplicationValidator applicationValidator;
     private readonly IEmailService emailService;
     private readonly IConcertReviewRepository concertReviewRepository;
     private readonly ICustomerModule customerModule;
@@ -23,7 +23,7 @@ internal class ConcertService : IConcertService
         IConcertHeaderModule concertHeaderModule,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
-        IOpportunityApplicationValidator applicationValidator,
+        IApplicationValidator applicationValidator,
         IEmailService emailService,
         IConcertReviewRepository concertReviewRepository,
         ICustomerModule customerModule,

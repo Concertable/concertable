@@ -1,4 +1,4 @@
-using Concertable.Artist.Domain;
+﻿using Concertable.Artist.Domain;
 using Concertable.Concert.Domain;
 using Concertable.Data.Infrastructure;
 using Concertable.Venue.Domain;
@@ -13,11 +13,11 @@ internal class ConcertDbContext(
     : DbContextBase(options)
 {
     public DbSet<ConcertEntity> Concerts => Set<ConcertEntity>();
-    public DbSet<ConcertBookingEntity> ConcertBookings => Set<ConcertBookingEntity>();
+    public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
     public DbSet<ConcertGenreEntity> ConcertGenres => Set<ConcertGenreEntity>();
     public DbSet<ConcertImageEntity> ConcertImages => Set<ConcertImageEntity>();
     public DbSet<OpportunityEntity> Opportunities => Set<OpportunityEntity>();
-    public DbSet<OpportunityApplicationEntity> OpportunityApplications => Set<OpportunityApplicationEntity>();
+    public DbSet<ApplicationEntity> Applications => Set<ApplicationEntity>();
     public DbSet<OpportunityGenreEntity> OpportunityGenres => Set<OpportunityGenreEntity>();
     public DbSet<TicketEntity> Tickets => Set<TicketEntity>();
     public DbSet<ReviewEntity> Reviews => Set<ReviewEntity>();

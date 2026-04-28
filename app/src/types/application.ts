@@ -1,4 +1,4 @@
-import type { ArtistSummary } from "@/types/artist";
+﻿import type { ArtistSummary } from "@/types/artist";
 import type { Opportunity } from "@/types/opportunity";
 
 export type ApplicationStatus =
@@ -10,7 +10,7 @@ export type ApplicationStatus =
   | "Complete"
   | "Settled";
 
-export interface OpportunityApplication {
+export interface Application {
   id: number;
   artist: ArtistSummary;
   opportunity: Opportunity;

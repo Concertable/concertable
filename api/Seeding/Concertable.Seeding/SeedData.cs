@@ -1,4 +1,4 @@
-using Concertable.Venue.Domain;
+﻿using Concertable.Venue.Domain;
 
 namespace Concertable.Seeding;
 
@@ -42,39 +42,39 @@ public class SeedData
     public VenueHireContractEntity PostedVenueHireAppContract { get; set; } = null!;
 
     // Pending applications (no booking)
-    public OpportunityApplicationEntity FlatFeeApp { get; set; } = null!;
-    public OpportunityApplicationEntity VersusApp { get; set; } = null!;
-    public OpportunityApplicationEntity DoorSplitApp { get; set; } = null!;
-    public OpportunityApplicationEntity VenueHireApp { get; set; } = null!;
+    public ApplicationEntity FlatFeeApp { get; set; } = null!;
+    public ApplicationEntity VersusApp { get; set; } = null!;
+    public ApplicationEntity DoorSplitApp { get; set; } = null!;
+    public ApplicationEntity VenueHireApp { get; set; } = null!;
 
     // Accepted applications with bookings
-    public OpportunityApplicationEntity ConfirmedApp { get; set; } = null!;
-    public ConcertBookingEntity ConfirmedBooking { get; set; } = null!;
+    public ApplicationEntity ConfirmedApp { get; set; } = null!;
+    public BookingEntity ConfirmedBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity AwaitingPaymentApp { get; set; } = null!;
-    public ConcertBookingEntity AwaitingPaymentBooking { get; set; } = null!;
+    public ApplicationEntity AwaitingPaymentApp { get; set; } = null!;
+    public BookingEntity AwaitingPaymentBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity PostedFlatFeeApp { get; set; } = null!;
-    public ConcertBookingEntity PostedFlatFeeBooking { get; set; } = null!;
+    public ApplicationEntity PostedFlatFeeApp { get; set; } = null!;
+    public BookingEntity PostedFlatFeeBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity PostedDoorSplitApp { get; set; } = null!;
-    public ConcertBookingEntity PostedDoorSplitBooking { get; set; } = null!;
+    public ApplicationEntity PostedDoorSplitApp { get; set; } = null!;
+    public BookingEntity PostedDoorSplitBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity PostedVersusApp { get; set; } = null!;
-    public ConcertBookingEntity PostedVersusBooking { get; set; } = null!;
+    public ApplicationEntity PostedVersusApp { get; set; } = null!;
+    public BookingEntity PostedVersusBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity PostedVenueHireApp { get; set; } = null!;
-    public ConcertBookingEntity PostedVenueHireBooking { get; set; } = null!;
+    public ApplicationEntity PostedVenueHireApp { get; set; } = null!;
+    public BookingEntity PostedVenueHireBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity FinishedDoorSplitApp { get; set; } = null!;
-    public ConcertBookingEntity FinishedDoorSplitBooking { get; set; } = null!;
+    public ApplicationEntity FinishedDoorSplitApp { get; set; } = null!;
+    public BookingEntity FinishedDoorSplitBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity FinishedVersusApp { get; set; } = null!;
-    public ConcertBookingEntity FinishedVersusBooking { get; set; } = null!;
+    public ApplicationEntity FinishedVersusApp { get; set; } = null!;
+    public BookingEntity FinishedVersusBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity UpcomingFlatFeeApp { get; set; } = null!;
-    public ConcertBookingEntity UpcomingFlatFeeBooking { get; set; } = null!;
+    public ApplicationEntity UpcomingFlatFeeApp { get; set; } = null!;
+    public BookingEntity UpcomingFlatFeeBooking { get; set; } = null!;
 
-    public OpportunityApplicationEntity UpcomingVenueHireApp { get; set; } = null!;
-    public ConcertBookingEntity UpcomingVenueHireBooking { get; set; } = null!;
+    public ApplicationEntity UpcomingVenueHireApp { get; set; } = null!;
+    public BookingEntity UpcomingVenueHireBooking { get; set; } = null!;
 }

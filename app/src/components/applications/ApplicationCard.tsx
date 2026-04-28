@@ -1,4 +1,4 @@
-import type { OpportunityApplication } from "@/types/application";
+﻿import type { Application } from "@/types/application";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useImageUrl } from "@/hooks/query/useImageUrl";
@@ -6,7 +6,7 @@ import { useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 
 interface Props {
-  application: OpportunityApplication;
+  application: Application;
   onDeny?: (applicationId: number) => void;
 }
 
@@ -36,7 +36,7 @@ export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
           <div className="space-y-0.5">
             <p className="font-medium">{artist.name}</p>
             <p className="text-muted-foreground text-sm">
-              {dayjs(opportunity.startDate).format("D MMM YYYY")} —{" "}
+              {dayjs(opportunity.startDate).format("D MMM YYYY")} â€”{" "}
               {dayjs(opportunity.endDate).format("D MMM YYYY")}
             </p>
           </div>

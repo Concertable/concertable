@@ -1,15 +1,15 @@
-using Concertable.Shared.Exceptions;
+﻿using Concertable.Shared.Exceptions;
 using FluentResults;
 
 namespace Concertable.Concert.Infrastructure.Services;
 
 internal class ConcertDraftService : IConcertDraftService
 {
-    private readonly IConcertBookingRepository bookingRepository;
+    private readonly IBookingRepository bookingRepository;
     private readonly IConcertNotifier notifier;
 
     public ConcertDraftService(
-        IConcertBookingRepository bookingRepository,
+        IBookingRepository bookingRepository,
         IConcertNotifier notifier)
     {
         this.bookingRepository = bookingRepository;

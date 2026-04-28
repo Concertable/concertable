@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Concertable.Payment.Infrastructure")]
 [assembly: InternalsVisibleTo("Concertable.Payment.Api")]
@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 // (TicketPaymentResponse, PurchaseCompleteDto).
 [assembly: InternalsVisibleTo("Concertable.Concert.Application")]
 // Concert.Infrastructure uses IStripeValidator + IStripeValidationFactory in
-// OpportunityService/OpportunityApplicationService for pre-create/pre-apply Stripe eligibility checks.
+// OpportunityService/ApplicationService for pre-create/pre-apply Stripe eligibility checks.
 // Also uses PurchaseCompleteDto in PaymentSucceededEventHandler.
 // TEMPORARY until eligibility routes through a Payment.Contracts facade.
 [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]

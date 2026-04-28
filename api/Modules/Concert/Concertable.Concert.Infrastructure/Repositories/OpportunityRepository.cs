@@ -1,4 +1,4 @@
-using Concertable.Concert.Infrastructure.Data;
+﻿using Concertable.Concert.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;
@@ -16,7 +16,7 @@ internal class OpportunityRepository : Repository<OpportunityEntity>, IOpportuni
     {
         var query = context.Opportunities
             .Where(o => o.VenueId == id && o.Period.Start >= timeProvider.GetUtcNow())
-            .Where(o => !context.ConcertBookings.Any(b => b.Application.OpportunityId == o.Id))
+            .Where(o => !context.Bookings.Any(b => b.Application.OpportunityId == o.Id))
             .Include(o => o.OpportunityGenres)
             .ThenInclude(og => og.Genre)
             .OrderBy(o => o.Period.Start);

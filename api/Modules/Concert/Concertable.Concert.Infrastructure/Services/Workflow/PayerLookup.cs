@@ -17,20 +17,20 @@ internal class PayerLookup : IPayerLookup
     }
 
     public Task<Guid?> GetVenueManagerIdAsync(int applicationId) =>
-        context.OpportunityApplications
+        context.Applications
             .Where(a => a.Id == applicationId)
             .Select(a => (Guid?)a.Opportunity.Venue.UserId)
             .FirstOrDefaultAsync();
 
     public Task<Guid?> GetArtistManagerIdAsync(int applicationId) =>
-        context.OpportunityApplications
+        context.Applications
             .Where(a => a.Id == applicationId)
             .Select(a => (Guid?)a.Artist.UserId)
             .FirstOrDefaultAsync();
 
     public async Task<(Guid VenueManagerId, Guid ArtistManagerId)?> GetManagerIdsAsync(int applicationId)
     {
-        var ids = await context.OpportunityApplications
+        var ids = await context.Applications
             .Where(a => a.Id == applicationId)
             .Select(a => new
             {
@@ -43,14 +43,14 @@ internal class PayerLookup : IPayerLookup
     }
 
     public Task<PayeeSummary?> GetArtistAsync(int applicationId) =>
-        context.OpportunityApplications
+        context.Applications
             .Where(a => a.Id == applicationId)
             .Select(a => new PayeeSummary(a.Artist.Name, a.Artist.Email))
             .FirstOrDefaultAsync()!;
 
     public async Task<PayeeSummary?> GetVenueAsync(int applicationId)
     {
-        var venue = await context.OpportunityApplications
+        var venue = await context.Applications
             .Where(a => a.Id == applicationId)
             .Select(a => new { a.Opportunity.Venue.Name, a.Opportunity.Venue.UserId })
             .FirstOrDefaultAsync();

@@ -1,4 +1,4 @@
-namespace Concertable.Concert.Domain;
+﻿namespace Concertable.Concert.Domain;
 
 public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntity>
 {
@@ -9,7 +9,7 @@ public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntit
     public DateRange Period { get; private set; } = null!;
     public VenueReadModel Venue { get; set; } = null!;
     public int ContractId { get; private set; }
-    public HashSet<OpportunityApplicationEntity> Applications { get; private set; } = [];
+    public HashSet<ApplicationEntity> Applications { get; private set; } = [];
     public HashSet<OpportunityGenreEntity> OpportunityGenres { get; private set; } = [];
 
     HashSet<OpportunityGenreEntity> IHasGenreJoins<OpportunityGenreEntity>.GenreJoins => OpportunityGenres;

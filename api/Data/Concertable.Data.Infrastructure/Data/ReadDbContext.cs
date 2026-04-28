@@ -1,4 +1,4 @@
-using Concertable.Auth.Domain;
+﻿using Concertable.Auth.Domain;
 using Concertable.Contract.Domain;
 using Concertable.Customer.Domain;
 using Concertable.Data.Application;
@@ -29,8 +29,8 @@ internal class ReadDbContext(
     public IQueryable<GenreEntity> Genres => Set<GenreEntity>().AsNoTracking();
     public IQueryable<OpportunityEntity> Opportunities => Set<OpportunityEntity>().AsNoTracking();
     public IQueryable<OpportunityGenreEntity> OpportunityGenres => Set<OpportunityGenreEntity>().AsNoTracking();
-    public IQueryable<OpportunityApplicationEntity> OpportunityApplications => Set<OpportunityApplicationEntity>().AsNoTracking();
-    public IQueryable<ConcertBookingEntity> ConcertBookings => Set<ConcertBookingEntity>().AsNoTracking();
+    public IQueryable<ApplicationEntity> Applications => Set<ApplicationEntity>().AsNoTracking();
+    public IQueryable<BookingEntity> Bookings => Set<BookingEntity>().AsNoTracking();
     public IQueryable<ReviewEntity> Reviews => Set<ReviewEntity>().AsNoTracking();
     public IQueryable<TicketEntity> Tickets => Set<TicketEntity>().AsNoTracking();
     public IQueryable<MessageEntity> Messages => Set<MessageEntity>().AsNoTracking();

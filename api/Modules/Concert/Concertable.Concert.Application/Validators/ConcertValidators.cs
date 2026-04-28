@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Requests;
+﻿using Concertable.Concert.Application.Requests;
 using FluentValidation;
 
 namespace Concertable.Concert.Application.Validators;
@@ -14,9 +14,9 @@ internal class UpdateConcertRequestValidator : AbstractValidator<UpdateConcertRe
     }
 }
 
-internal class ConcertBookingParamsValidator : AbstractValidator<ConcertBookingParams>
+internal class BookingParamsValidator : AbstractValidator<BookingParams>
 {
-    public ConcertBookingParamsValidator()
+    public BookingParamsValidator()
     {
         RuleFor(x => x.PaymentMethodId).NotEmpty().WithMessage("Payment method ID is required");
         RuleFor(x => x.ApplicationId).GreaterThan(0).WithMessage("Application ID is required");

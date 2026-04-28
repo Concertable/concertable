@@ -1,4 +1,4 @@
-using Concertable.Concert.Infrastructure.Data.Configurations;
+﻿using Concertable.Concert.Infrastructure.Data.Configurations;
 using Concertable.Data.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,10 +11,10 @@ internal sealed class ConcertConfigurationProvider : IEntityTypeConfigurationPro
         modelBuilder.ApplyConfiguration(new ConcertEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ConcertGenreEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ConcertImageEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ConcertBookingEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new BookingEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ConcertRatingProjectionConfiguration());
         modelBuilder.ApplyConfiguration(new OpportunityEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new OpportunityApplicationEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ApplicationEntityConfiguration());
         modelBuilder.ApplyConfiguration(new OpportunityGenreEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TicketEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewEntityConfiguration());

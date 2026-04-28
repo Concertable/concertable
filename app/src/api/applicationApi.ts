@@ -1,34 +1,27 @@
-import api from "@/lib/axios";
-import type {
-  AcceptOutcome,
-  OpportunityApplication,
-} from "@/types/application";
+﻿import api from "@/lib/axios";
+import type { AcceptOutcome, Application } from "@/types/application";
 import type { AcceptCheckout } from "@/types/acceptCheckout";
 
 const applicationApi = {
-  applyToOpportunity: async (
-    opportunityId: number,
-  ): Promise<OpportunityApplication> => {
-    const { data } = await api.post<OpportunityApplication>(
-      `/opportunityapplication/${opportunityId}`,
+  applyToOpportunity: async (opportunityId: number): Promise<Application> => {
+    const { data } = await api.post<Application>(
+      `/application/${opportunityId}`,
     );
     return data;
   },
 
   getApplicationsByOpportunityId: async (
     opportunityId: number,
-  ): Promise<OpportunityApplication[]> => {
-    const { data } = await api.get<OpportunityApplication[]>(
-      `/opportunityapplication/opportunity/${opportunityId}`,
+  ): Promise<Application[]> => {
+    const { data } = await api.get<Application[]>(
+      `/application/opportunity/${opportunityId}`,
     );
     return data;
   },
 
-  getApplicationById: async (
-    applicationId: number,
-  ): Promise<OpportunityApplication> => {
-    const { data } = await api.get<OpportunityApplication>(
-      `/opportunityapplication/${applicationId}`,
+  getApplicationById: async (applicationId: number): Promise<Application> => {
+    const { data } = await api.get<Application>(
+      `/application/${applicationId}`,
     );
     return data;
   },
@@ -38,7 +31,7 @@ const applicationApi = {
     paymentMethodId?: string | null,
   ): Promise<AcceptOutcome> => {
     const { data } = await api.post<AcceptOutcome>(
-      `/opportunityapplication/accept/${applicationId}`,
+      `/application/accept/${applicationId}`,
       { paymentMethodId },
     );
     return data;
@@ -46,14 +39,14 @@ const applicationApi = {
 
   canAcceptApplication: async (applicationId: number): Promise<boolean> => {
     const { data } = await api.get<boolean>(
-      `/opportunityapplication/can-accept/${applicationId}`,
+      `/application/can-accept/${applicationId}`,
     );
     return data;
   },
 
   checkout: async (applicationId: number): Promise<AcceptCheckout> => {
     const { data } = await api.post<AcceptCheckout>(
-      `/opportunityapplication/${applicationId}/checkout`,
+      `/application/${applicationId}/checkout`,
     );
     return data;
   },

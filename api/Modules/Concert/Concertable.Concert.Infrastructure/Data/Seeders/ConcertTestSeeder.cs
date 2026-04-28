@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+﻿using Concertable.Application.Interfaces;
 using Concertable.Concert.Infrastructure.Data;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
@@ -49,39 +49,39 @@ internal class ConcertTestSeeder : ITestSeeder
             await context.SaveChangesAsync(ct);
         });
 
-        await context.OpportunityApplications.SeedIfEmptyAsync(async () =>
+        await context.Applications.SeedIfEmptyAsync(async () =>
         {
             var opps = seed.Opportunities;
 
-            seed.FlatFeeApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[0].Id);
+            seed.FlatFeeApp = ApplicationFactory.Create(seed.Artist.Id, opps[0].Id);
 
-            seed.ConfirmedBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Draft Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[1].Period.Start, opps[1].Period.End).Generate());
-            seed.ConfirmedApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[1].Id, seed.ConfirmedBooking);
+            seed.ConfirmedBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Draft Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[1].Period.Start, opps[1].Period.End).Generate());
+            seed.ConfirmedApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[1].Id, seed.ConfirmedBooking);
 
-            seed.AwaitingPaymentBooking = ConcertBookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Unsettled Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[2].Period.Start, opps[2].Period.End).Generate());
-            seed.AwaitingPaymentApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[2].Id, seed.AwaitingPaymentBooking);
+            seed.AwaitingPaymentBooking = BookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Unsettled Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[2].Period.Start, opps[2].Period.End).Generate());
+            seed.AwaitingPaymentApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[2].Id, seed.AwaitingPaymentBooking);
 
-            seed.VersusApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[3].Id);
-            seed.DoorSplitApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[4].Id);
-            seed.VenueHireApp = OpportunityApplicationFactory.Create(seed.Artist.Id, opps[5].Id);
+            seed.VersusApp = ApplicationFactory.Create(seed.Artist.Id, opps[3].Id);
+            seed.DoorSplitApp = ApplicationFactory.Create(seed.Artist.Id, opps[4].Id);
+            seed.VenueHireApp = ApplicationFactory.Create(seed.Artist.Id, opps[5].Id);
 
-            seed.PostedFlatFeeBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[6].Period.Start, opps[6].Period.End, now).Generate());
+            seed.PostedFlatFeeBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[6].Period.Start, opps[6].Period.End, now).Generate());
             seed.PostedFlatFeeBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
-            seed.PostedFlatFeeApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[6].Id, seed.PostedFlatFeeBooking);
+            seed.PostedFlatFeeApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[6].Id, seed.PostedFlatFeeBooking);
 
-            seed.PostedDoorSplitBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted DoorSplit Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[7].Period.Start, opps[7].Period.End, now).Generate());
+            seed.PostedDoorSplitBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted DoorSplit Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[7].Period.Start, opps[7].Period.End, now).Generate());
             seed.PostedDoorSplitBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
-            seed.PostedDoorSplitApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[7].Id, seed.PostedDoorSplitBooking);
+            seed.PostedDoorSplitApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[7].Id, seed.PostedDoorSplitBooking);
 
-            seed.PostedVersusBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted Versus Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[8].Period.Start, opps[8].Period.End, now).Generate());
+            seed.PostedVersusBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted Versus Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[8].Period.Start, opps[8].Period.End, now).Generate());
             seed.PostedVersusBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
-            seed.PostedVersusApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[8].Id, seed.PostedVersusBooking);
+            seed.PostedVersusApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[8].Id, seed.PostedVersusBooking);
 
-            seed.PostedVenueHireBooking = ConcertBookingFactory.Confirmed(ConcertFaker.GetFaker("Posted VenueHire Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[9].Period.Start, opps[9].Period.End, now).Generate());
+            seed.PostedVenueHireBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted VenueHire Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[9].Period.Start, opps[9].Period.End, now).Generate());
             seed.PostedVenueHireBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
-            seed.PostedVenueHireApp = OpportunityApplicationFactory.Accepted(seed.Artist.Id, opps[9].Id, seed.PostedVenueHireBooking);
+            seed.PostedVenueHireApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[9].Id, seed.PostedVenueHireBooking);
 
-            context.OpportunityApplications.AddRange(
+            context.Applications.AddRange(
                 seed.FlatFeeApp,
                 seed.ConfirmedApp,
                 seed.AwaitingPaymentApp,

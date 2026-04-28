@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+﻿using Concertable.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Data.Application;
 using Concertable.Seeding;
@@ -19,18 +19,18 @@ public static class E2EEndpointExtensions
                 Customer = new SeededUser { Email = seedData.Customer.Email },
                 VenueManager1 = new SeededVenueManager { Email = seedData.VenueManager1.Email, StripeAccountId = seedData.VenueManager1StripeAccountId },
                 ArtistManager = new SeededArtistManager { Email = seedData.ArtistManager.Email, StripeAccountId = seedData.ArtistManagerStripeAccountId },
-                PendingFlatFeeApp = new SeededOpportunityApplication { ApplicationId = seedData.FlatFeeApp.Id },
-                PendingVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.VenueHireApp.Id },
-                PendingDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.DoorSplitApp.Id },
-                PendingVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.VersusApp.Id },
-                PostedFlatFeeApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedFlatFeeApp.Id, ConcertId = seedData.PostedFlatFeeApp.Booking!.Concert!.Id },
-                PostedDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedDoorSplitApp.Id, ConcertId = seedData.PostedDoorSplitApp.Booking!.Concert!.Id },
-                PostedVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedVersusApp.Id, ConcertId = seedData.PostedVersusApp.Booking!.Concert!.Id },
-                PostedVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.PostedVenueHireApp.Id, ConcertId = seedData.PostedVenueHireApp.Booking!.Concert!.Id },
-                FinishedDoorSplitApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedDoorSplitApp.Id, ConcertId = seedData.FinishedDoorSplitApp.Booking!.Concert!.Id },
-                FinishedVersusApp = new SeededOpportunityApplication { ApplicationId = seedData.FinishedVersusApp.Id, ConcertId = seedData.FinishedVersusApp.Booking!.Concert!.Id },
-                UpcomingFlatFeeApp = new SeededOpportunityApplication { ApplicationId = seedData.UpcomingFlatFeeApp.Id, ConcertId = seedData.UpcomingFlatFeeApp.Booking!.Concert!.Id },
-                UpcomingVenueHireApp = new SeededOpportunityApplication { ApplicationId = seedData.UpcomingVenueHireApp.Id, ConcertId = seedData.UpcomingVenueHireApp.Booking!.Concert!.Id },
+                PendingFlatFeeApp = new SeededApplication { ApplicationId = seedData.FlatFeeApp.Id },
+                PendingVenueHireApp = new SeededApplication { ApplicationId = seedData.VenueHireApp.Id },
+                PendingDoorSplitApp = new SeededApplication { ApplicationId = seedData.DoorSplitApp.Id },
+                PendingVersusApp = new SeededApplication { ApplicationId = seedData.VersusApp.Id },
+                PostedFlatFeeApp = new SeededApplication { ApplicationId = seedData.PostedFlatFeeApp.Id, ConcertId = seedData.PostedFlatFeeApp.Booking!.Concert!.Id },
+                PostedDoorSplitApp = new SeededApplication { ApplicationId = seedData.PostedDoorSplitApp.Id, ConcertId = seedData.PostedDoorSplitApp.Booking!.Concert!.Id },
+                PostedVersusApp = new SeededApplication { ApplicationId = seedData.PostedVersusApp.Id, ConcertId = seedData.PostedVersusApp.Booking!.Concert!.Id },
+                PostedVenueHireApp = new SeededApplication { ApplicationId = seedData.PostedVenueHireApp.Id, ConcertId = seedData.PostedVenueHireApp.Booking!.Concert!.Id },
+                FinishedDoorSplitApp = new SeededApplication { ApplicationId = seedData.FinishedDoorSplitApp.Id, ConcertId = seedData.FinishedDoorSplitApp.Booking!.Concert!.Id },
+                FinishedVersusApp = new SeededApplication { ApplicationId = seedData.FinishedVersusApp.Id, ConcertId = seedData.FinishedVersusApp.Booking!.Concert!.Id },
+                UpcomingFlatFeeApp = new SeededApplication { ApplicationId = seedData.UpcomingFlatFeeApp.Id, ConcertId = seedData.UpcomingFlatFeeApp.Booking!.Concert!.Id },
+                UpcomingVenueHireApp = new SeededApplication { ApplicationId = seedData.UpcomingVenueHireApp.Id, ConcertId = seedData.UpcomingVenueHireApp.Booking!.Concert!.Id },
                 FlatFeeUpcomingConcert = new SeededConcert { Id = seedData.UpcomingFlatFeeBooking.Concert!.Id },
                 VenueHireUpcomingConcert = new SeededConcert { Id = seedData.UpcomingVenueHireBooking.Concert!.Id },
                 DoorSplitUpcomingConcert = new SeededConcert { Id = seedData.PostedDoorSplitBooking.Concert!.Id },
@@ -45,7 +45,7 @@ public static class E2EEndpointExtensions
             if (result.IsFailed)
                 return Results.BadRequest(result.Errors.Select(e => e.Message));
 
-            var bookingId = await readDb.ConcertBookings
+            var bookingId = await readDb.Bookings
                 .Where(b => b.Concert!.Id == concertId)
                 .Select(b => b.Id)
                 .FirstOrDefaultAsync();
@@ -63,7 +63,7 @@ public static class E2EEndpointExtensions
 
         app.MapGet("/e2e/payment-intent/{applicationId:int}", async (int applicationId, IReadDbContext readDb) =>
         {
-            var bookingId = await readDb.ConcertBookings
+            var bookingId = await readDb.Bookings
                 .Where(b => b.ApplicationId == applicationId)
                 .Select(b => b.Id)
                 .FirstOrDefaultAsync();

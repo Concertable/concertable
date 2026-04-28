@@ -1,4 +1,4 @@
-using Concertable.Artist.Domain;
+﻿using Concertable.Artist.Domain;
 using Concertable.Auth.Domain;
 using Concertable.Concert.Domain;
 using Concertable.Contract.Domain;
@@ -26,8 +26,8 @@ public interface IReadDbContext
     IQueryable<GenreEntity> Genres { get; }
     IQueryable<OpportunityEntity> Opportunities { get; }
     IQueryable<OpportunityGenreEntity> OpportunityGenres { get; }
-    IQueryable<OpportunityApplicationEntity> OpportunityApplications { get; }
-    IQueryable<ConcertBookingEntity> ConcertBookings { get; }
+    IQueryable<ApplicationEntity> Applications { get; }
+    IQueryable<BookingEntity> Bookings { get; }
     IQueryable<ReviewEntity> Reviews { get; }
     IQueryable<TicketEntity> Tickets { get; }
     IQueryable<MessageEntity> Messages { get; }

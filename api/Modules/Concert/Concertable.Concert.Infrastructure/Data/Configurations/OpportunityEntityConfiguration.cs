@@ -1,4 +1,4 @@
-using Concertable.Concert.Domain;
+﻿using Concertable.Concert.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,11 +24,11 @@ internal class OpportunityEntityConfiguration : IEntityTypeConfiguration<Opportu
     }
 }
 
-internal class OpportunityApplicationEntityConfiguration : IEntityTypeConfiguration<OpportunityApplicationEntity>
+internal class ApplicationEntityConfiguration : IEntityTypeConfiguration<ApplicationEntity>
 {
-    public void Configure(EntityTypeBuilder<OpportunityApplicationEntity> builder)
+    public void Configure(EntityTypeBuilder<ApplicationEntity> builder)
     {
-        builder.ToTable("OpportunityApplications", Schema.Name);
+        builder.ToTable("Applications", Schema.Name);
         builder.HasIndex(ca => new { ca.OpportunityId, ca.ArtistId }).IsUnique();
         builder.HasOne(ca => ca.Opportunity)
             .WithMany(o => o.Applications)

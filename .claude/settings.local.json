@@ -29,7 +29,8 @@
       "Bash(powershell -Command '[Reflection.Assembly]::LoadFile\\('\\\\''C:\\\\Users\\\\TommySeery\\\\.nuget\\\\packages\\\\stripe.net\\\\47.3.0\\\\lib\\\\net8.0\\\\Stripe.net.dll'\\\\''\\).GetType\\('\\\\''Stripe.RequestOptions'\\\\''\\).GetProperties\\(\\) | ForEach-Object { Write-Output $_.Name }')",
       "PowerShell(Set-Location \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Modules\\\\Identity\"; Get-ChildItem -Directory | ForEach-Object { Write-Output \"$\\($_.Name\\)\" })",
       "PowerShell(Rename-Item *)",
-      "Bash(pwsh -File ./initial-migrations.ps1)"
+      "Bash(pwsh -File ./initial-migrations.ps1)",
+      "Bash(xargs -I {} rm -rf {})"
     ]
   }
 }

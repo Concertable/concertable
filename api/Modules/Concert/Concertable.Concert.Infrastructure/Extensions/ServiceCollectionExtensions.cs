@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+﻿using Concertable.Application.Interfaces;
 using Concertable.Artist.Contracts.Events;
 using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Mappers;
@@ -53,7 +53,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertNotifier, ConcertNotifier>();
         services.AddScoped<ITicketNotifier, TicketNotifier>();
         services.AddScoped<IOpportunityService, OpportunityService>();
-        services.AddScoped<IOpportunityApplicationService, OpportunityApplicationService>();
+        services.AddScoped<IApplicationService, ApplicationService>();
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
         services.AddKeyedScoped<IConcertPaymentFlow, OnSessionConcertPaymentFlow>(PaymentSession.OnSession);
@@ -69,7 +69,7 @@ public static class ServiceCollectionExtensions
         // Business-rule validators (interfaces in Concert.Application, impls in Concert.Infrastructure.Validators)
         services.AddSingleton<IConcertValidator, ConcertValidator>();
         services.AddScoped<ITicketValidator, TicketValidator>();
-        services.AddScoped<IOpportunityApplicationValidator, OpportunityApplicationValidator>();
+        services.AddScoped<IApplicationValidator, ApplicationValidator>();
 
         // Ticket QR + PDF (Concert-owned, were in legacy Concertable.Infrastructure)
         services.AddSingleton<QRCoder.QRCodeGenerator>();
@@ -88,7 +88,7 @@ public static class ServiceCollectionExtensions
         services.AddConcertWorkflow<VenueHireConcertWorkflow>(ContractType.VenueHire);
         services.AddScoped<IConcertWorkflowStrategyFactory, ConcertWorkflowStrategyFactory>();
 
-        // Ticket payee — composite dispatches by ContractType to artist vs venue
+        // Ticket payee â€” composite dispatches by ContractType to artist vs venue
         services.AddSingleton<ArtistTicketPayee>();
         services.AddSingleton<VenueTicketPayee>();
         services.AddSingleton<ITicketPayee, TicketPayee>();
@@ -96,8 +96,8 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<IConcertRepository, ConcertRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
-        services.AddScoped<IOpportunityApplicationRepository, OpportunityApplicationRepository>();
-        services.AddScoped<IConcertBookingRepository, ConcertBookingRepository>();
+        services.AddScoped<IApplicationRepository, ApplicationRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<IArtistReviewRepository, ArtistReviewRepository>();
         services.AddScoped<IVenueReviewRepository, VenueReviewRepository>();
@@ -105,13 +105,13 @@ public static class ServiceCollectionExtensions
 
         // Mappers
         services.AddScoped<IOpportunityMapper, OpportunityMapper>();
-        services.AddScoped<IOpportunityApplicationMapper, OpportunityApplicationMapper>();
+        services.AddScoped<IApplicationMapper, ApplicationMapper>();
 
         // Module facades
         services.AddScoped<IConcertModule, ConcertModule>();
         services.AddScoped<IConcertWorkflowModule, ConcertWorkflowModule>();
 
-        // Domain event → integration event + read-model projection handlers
+        // Domain event â†’ integration event + read-model projection handlers
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();

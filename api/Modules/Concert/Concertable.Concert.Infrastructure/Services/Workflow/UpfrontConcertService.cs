@@ -1,4 +1,4 @@
-using Concertable.Payment.Contracts;
+﻿using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -6,17 +6,17 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
 internal class UpfrontConcertService : IUpfrontConcertService
 {
-    private readonly IOpportunityApplicationValidator applicationValidator;
-    private readonly IOpportunityApplicationRepository applicationRepository;
-    private readonly IConcertBookingRepository bookingRepository;
+    private readonly IApplicationValidator applicationValidator;
+    private readonly IApplicationRepository applicationRepository;
+    private readonly IBookingRepository bookingRepository;
     private readonly IApplicationAcceptHandler acceptHandler;
     private readonly IConcertPaymentFlow paymentFlow;
     private readonly IConcertDraftService concertDraftService;
 
     public UpfrontConcertService(
-        IOpportunityApplicationValidator applicationValidator,
-        IOpportunityApplicationRepository applicationRepository,
-        IConcertBookingRepository bookingRepository,
+        IApplicationValidator applicationValidator,
+        IApplicationRepository applicationRepository,
+        IBookingRepository bookingRepository,
         IApplicationAcceptHandler acceptHandler,
         [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow,
         IConcertDraftService concertDraftService)
@@ -37,7 +37,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, paymentMethodId);
 
-        var bookingConcert = ConcertBookingEntity.Create(applicationId);
+        var bookingConcert = BookingEntity.Create(applicationId);
         bookingConcert.AwaitPayment();
         await bookingRepository.AddAsync(bookingConcert);
 

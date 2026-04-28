@@ -1,11 +1,11 @@
-using Concertable.Contract.Contracts;
+﻿using Concertable.Contract.Contracts;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services;
 
 internal sealed class ContractLookup(
-    IOpportunityApplicationRepository applicationRepository,
-    IConcertBookingRepository bookingRepository,
+    IApplicationRepository applicationRepository,
+    IBookingRepository bookingRepository,
     IConcertRepository concertRepository,
     IContractModule contractModule) : IContractLookup
 {

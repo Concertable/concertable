@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Enums;
+﻿using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -11,7 +11,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
 {
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IConcertRepository concertRepository;
-    private readonly IConcertBookingRepository bookingRepository;
+    private readonly IBookingRepository bookingRepository;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLookup contractLookup;
     private readonly IConcertPaymentFlow paymentFlow;
@@ -19,7 +19,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     public DoorSplitConcertWorkflow(
         IDeferredConcertService deferredConcertService,
         IConcertRepository concertRepository,
-        IConcertBookingRepository bookingRepository,
+        IBookingRepository bookingRepository,
         IPayerLookup payerLookup,
         IContractLookup contractLookup,
         [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow)

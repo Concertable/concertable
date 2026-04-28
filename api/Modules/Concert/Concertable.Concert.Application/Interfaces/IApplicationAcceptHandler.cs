@@ -1,6 +1,6 @@
-namespace Concertable.Concert.Application.Interfaces;
+﻿namespace Concertable.Concert.Application.Interfaces;
 
 internal interface IApplicationAcceptHandler
 {
-    Task HandleAsync(int applicationId, ConcertBookingEntity bookingConcert);
+    Task HandleAsync(int applicationId, BookingEntity bookingConcert);
 }

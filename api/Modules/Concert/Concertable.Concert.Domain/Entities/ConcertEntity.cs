@@ -1,4 +1,4 @@
-using NetTopologySuite.Geometries;
+﻿using NetTopologySuite.Geometries;
 
 namespace Concertable.Concert.Domain;
 
@@ -19,7 +19,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation
     public DateTime EndDate { get; private set; }
     public DateTime? DatePosted { get; private set; }
     public Point? Location { get; set; }
-    public ConcertBookingEntity Booking { get; set; } = null!;
+    public BookingEntity Booking { get; set; } = null!;
     public ArtistReadModel Artist { get; set; } = null!;
     public VenueReadModel Venue { get; set; } = null!;
     public ICollection<TicketEntity> Tickets { get; } = [];

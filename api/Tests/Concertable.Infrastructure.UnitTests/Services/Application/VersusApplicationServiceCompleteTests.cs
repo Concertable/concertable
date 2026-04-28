@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Concertable.Concert.Infrastructure.Services.Workflow;
 using Concertable.Contract.Contracts;
 using Moq;
@@ -10,7 +10,7 @@ public class VersusConcertWorkflowCompleteTests
 {
     private readonly Mock<IDeferredConcertService> deferredConcertService;
     private readonly Mock<IConcertRepository> concertRepository;
-    private readonly Mock<IConcertBookingRepository> bookingRepository;
+    private readonly Mock<IBookingRepository> bookingRepository;
     private readonly Mock<IContractLookup> contractLookup;
     private readonly VersusConcertWorkflow sut;
 
@@ -22,7 +22,7 @@ public class VersusConcertWorkflowCompleteTests
     {
         deferredConcertService = new Mock<IDeferredConcertService>();
         concertRepository = new Mock<IConcertRepository>();
-        bookingRepository = new Mock<IConcertBookingRepository>();
+        bookingRepository = new Mock<IBookingRepository>();
         contractLookup = new Mock<IContractLookup>();
 
         var booking = BookingFactory.Create(artistUserId, venueUserId);
@@ -51,11 +51,11 @@ public class VersusConcertWorkflowCompleteTests
 
     internal static class BookingFactory
     {
-        public static ConcertBookingEntity Create(Guid artistUserId, Guid venueUserId)
+        public static BookingEntity Create(Guid artistUserId, Guid venueUserId)
         {
-            var booking = ConcertBookingEntity.Create(applicationId: 1);
-            var application = (OpportunityApplicationEntity)Activator.CreateInstance(
-                typeof(OpportunityApplicationEntity),
+            var booking = BookingEntity.Create(applicationId: 1);
+            var application = (ApplicationEntity)Activator.CreateInstance(
+                typeof(ApplicationEntity),
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 binder: null,
                 args: null,

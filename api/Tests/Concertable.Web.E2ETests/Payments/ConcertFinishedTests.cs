@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.DTOs;
+﻿using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Api.Responses;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
@@ -33,8 +33,8 @@ public class ConcertFinishedTests : IAsyncLifetime
     {
         await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.PostedFlatFeeApp.ConcertId!.Value}");
 
-        var application = await fixture.Client.GetAsync<OpportunityApplicationResponse>(
-            $"/api/OpportunityApplication/{fixture.SeedData.PostedFlatFeeApp.ApplicationId}");
+        var application = await fixture.Client.GetAsync<ApplicationResponse>(
+            $"/api/Application/{fixture.SeedData.PostedFlatFeeApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
     }
@@ -44,8 +44,8 @@ public class ConcertFinishedTests : IAsyncLifetime
     {
         await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.PostedVenueHireApp.ConcertId!.Value}");
 
-        var application = await fixture.Client.GetAsync<OpportunityApplicationResponse>(
-            $"/api/OpportunityApplication/{fixture.SeedData.PostedVenueHireApp.ApplicationId}");
+        var application = await fixture.Client.GetAsync<ApplicationResponse>(
+            $"/api/Application/{fixture.SeedData.PostedVenueHireApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
     }
@@ -53,7 +53,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     [Fact]
     public async Task ShouldCompleteApplicationAndPayArtist_WhenDoorSplitConcertFinishes()
     {
-        // Op 50: DoorSplit 70% — 1 ticket pre-seeded at £20 = £20 revenue → artist share = £14 (1400 pence)
+        // Op 50: DoorSplit 70% â€” 1 ticket pre-seeded at Â£20 = Â£20 revenue â†’ artist share = Â£14 (1400 pence)
         var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value}")
             .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
 
@@ -62,8 +62,8 @@ public class ConcertFinishedTests : IAsyncLifetime
         Assert.Equal(1400L, intent.Amount);
 
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<OpportunityApplicationResponse>(
-                $"/api/OpportunityApplication/{fixture.SeedData.FinishedDoorSplitApp.ApplicationId}"),
+            async () => await fixture.Client.GetAsync<ApplicationResponse>(
+                $"/api/Application/{fixture.SeedData.FinishedDoorSplitApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
     }
@@ -71,7 +71,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     [Fact]
     public async Task ShouldCompleteApplicationAndPayArtist_WhenVersusConcertFinishes()
     {
-        // Op 51: Versus — guarantee £100 + 70% of door — 1 ticket pre-seeded at £20 → artist share = £114 (11400 pence)
+        // Op 51: Versus â€” guarantee Â£100 + 70% of door â€” 1 ticket pre-seeded at Â£20 â†’ artist share = Â£114 (11400 pence)
         var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedVersusApp.ConcertId!.Value}")
             .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
 
@@ -80,8 +80,8 @@ public class ConcertFinishedTests : IAsyncLifetime
         Assert.Equal(11400L, intent.Amount);
 
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<OpportunityApplicationResponse>(
-                $"/api/OpportunityApplication/{fixture.SeedData.FinishedVersusApp.ApplicationId}"),
+            async () => await fixture.Client.GetAsync<ApplicationResponse>(
+                $"/api/Application/{fixture.SeedData.FinishedVersusApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
     }
