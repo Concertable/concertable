@@ -18,7 +18,7 @@ import {
 } from "@/hooks/query/useApplicationQuery";
 import { usePaymentMethodQuery } from "@/hooks/query/useStripeAccountQuery";
 import type { AcceptOutcome } from "@/types/application";
-import type { AcceptPreview, PaymentAmount } from "@/types/acceptPreview";
+import { summaryFor } from "@/lib/acceptPreviewFormat";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -98,6 +98,7 @@ export default function ApplicationCheckoutPage() {
   }
 
   const ctaLabel = preview.timing === "deferred" ? "Confirm" : "Confirm & Pay";
+  const summary = summaryFor(preview.amount);
 
   return (
     <CheckoutLayout
@@ -111,8 +112,8 @@ export default function ApplicationCheckoutPage() {
       summary={
         <OrderSummaryCard
           title={preview.timing === "deferred" ? "Settlement" : "Summary"}
-          lines={buildSummaryLines(preview)}
-          total={buildTotalLine(preview)}
+          lines={summary.lines}
+          total={summary.total}
           action={
             <Button
               className="w-full"
@@ -148,51 +149,6 @@ export default function ApplicationCheckoutPage() {
       </CheckoutSection>
     </CheckoutLayout>
   );
-}
-
-function buildSummaryLines(preview: AcceptPreview) {
-  const payeeLine = { label: "Payee", value: preview.payee.name };
-  return [payeeLine, ...amountLines(preview.amount)];
-}
-
-function buildTotalLine(preview: AcceptPreview): {
-  label: string;
-  value: string;
-} {
-  if (preview.timing === "deferred")
-    return {
-      label: "Settled at concert end",
-      value: estimateLabel(preview.amount),
-    };
-  return { label: "Total due now", value: `£${flatTotal(preview.amount)}` };
-}
-
-function amountLines(amount: PaymentAmount) {
-  switch (amount.$type) {
-    case "flat":
-      return [{ label: "Fee", value: `£${amount.amount.toFixed(2)}` }];
-    case "doorShare":
-      return [
-        { label: "Artist door share", value: `${amount.artistPercent}%` },
-      ];
-    case "guaranteedDoor":
-      return [
-        { label: "Guarantee", value: `£${amount.guarantee.toFixed(2)}` },
-        { label: "Artist door share", value: `${amount.artistPercent}%` },
-      ];
-  }
-}
-
-function flatTotal(amount: PaymentAmount): string {
-  if (amount.$type === "flat") return amount.amount.toFixed(2);
-  return "—";
-}
-
-function estimateLabel(amount: PaymentAmount): string {
-  if (amount.$type === "doorShare") return `${amount.artistPercent}% of door`;
-  if (amount.$type === "guaranteedDoor")
-    return `£${amount.guarantee.toFixed(2)} + ${amount.artistPercent}% door`;
-  return "—";
 }
 
 function CheckoutSkeleton() {
