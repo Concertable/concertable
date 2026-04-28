@@ -1,4 +1,4 @@
-namespace Concertable.Identity.Contracts;
+namespace Concertable.Authorization.Contracts;
 
 public interface ICurrentUser
 {

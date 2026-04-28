@@ -1,4 +1,4 @@
-using Concertable.Identity.Contracts;
+using Concertable.Authorization.Contracts;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;

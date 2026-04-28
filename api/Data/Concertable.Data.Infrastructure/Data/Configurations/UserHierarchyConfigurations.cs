@@ -1,3 +1,4 @@
+using Concertable.Authorization.Contracts;
 using Concertable.Identity.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

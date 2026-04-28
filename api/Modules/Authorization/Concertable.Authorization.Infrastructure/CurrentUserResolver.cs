@@ -1,5 +1,12 @@
+using Concertable.Identity.Application.Interfaces;
+using Concertable.Identity.Domain;
 
-namespace Concertable.Identity.Infrastructure.Services;
+namespace Concertable.Authorization.Infrastructure;
+
+internal interface ICurrentUserResolver
+{
+    Task<UserEntity> ResolveAsync(CancellationToken ct = default);
+}
 
 internal class CurrentUserResolver : ICurrentUserResolver
 {

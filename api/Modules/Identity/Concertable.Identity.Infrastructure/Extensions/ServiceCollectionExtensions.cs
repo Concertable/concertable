@@ -54,9 +54,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<RandomNumberGenerator>(_ => RandomNumberGenerator.Create());
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-        services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUser, CurrentUserAccessor>();
-        services.AddScoped<ICurrentUserResolver, CurrentUserResolver>();
         services.AddScoped<IAuthModule, AuthModule>();
         services.AddScoped<IdentityModule>();
         services.AddScoped<IManagerModule>(sp => sp.GetRequiredService<IdentityModule>());
