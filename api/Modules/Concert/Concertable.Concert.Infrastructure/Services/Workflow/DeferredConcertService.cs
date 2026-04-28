@@ -1,4 +1,4 @@
-﻿using Concertable.Payment.Contracts;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,30 +9,33 @@ internal class DeferredConcertService : IDeferredConcertService
     private readonly IOpportunityApplicationValidator applicationValidator;
     private readonly IConcertBookingRepository bookingRepository;
     private readonly IApplicationAcceptHandler acceptHandler;
-    private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly IConcertPaymentFlow paymentFlow;
     private readonly IConcertDraftService concertDraftService;
 
     public DeferredConcertService(
         IOpportunityApplicationValidator applicationValidator,
         IConcertBookingRepository bookingRepository,
         IApplicationAcceptHandler acceptHandler,
-        [FromKeyedServices(PaymentSession.OffSession)] IManagerPaymentModule managerPaymentModule,
+        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow,
         IConcertDraftService concertDraftService)
     {
         this.applicationValidator = applicationValidator;
         this.bookingRepository = bookingRepository;
         this.acceptHandler = acceptHandler;
-        this.managerPaymentModule = managerPaymentModule;
+        this.paymentFlow = paymentFlow;
         this.concertDraftService = concertDraftService;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string? paymentMethodId)
     {
-        var result = await applicationValidator.CanAcceptAsync(applicationId);
-        if (result.IsFailed)
-            throw new BadRequestException(result.Errors);
+        var appCheck = await applicationValidator.CanAcceptAsync(applicationId);
+        if (appCheck.IsFailed)
+            throw new BadRequestException(appCheck.Errors);
+
+        var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, paymentMethodId);
 
         var bookingConcert = ConcertBookingEntity.Create(applicationId);
+        bookingConcert.StorePaymentMethod(resolvedPaymentMethodId);
         await bookingRepository.AddAsync(bookingConcert);
 
         await acceptHandler.HandleAsync(applicationId, bookingConcert);
@@ -44,7 +47,7 @@ internal class DeferredConcertService : IDeferredConcertService
         return new DeferredAcceptOutcome();
     }
 
-    public async Task<IFinishOutcome> FinishedAsync(int concertId, Guid payerUserId, Guid payeeUserId, decimal amount)
+    public async Task<IFinishOutcome> FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount)
     {
         var bookingConcert = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");
@@ -58,7 +61,10 @@ internal class DeferredConcertService : IDeferredConcertService
             ["bookingId"] = bookingConcert.Id.ToString()
         };
 
-        var payment = await managerPaymentModule.PayAsync(payerUserId, payeeUserId, amount, settlementMetadata, bookingConcert.PaymentMethodId);
+        var storedPaymentMethodId = bookingConcert.PaymentMethodId
+            ?? throw new BadRequestException("Booking has no stored payment method");
+
+        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, storedPaymentMethodId, settlementMetadata);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
         return new DeferredFinishOutcome(payment.Value);

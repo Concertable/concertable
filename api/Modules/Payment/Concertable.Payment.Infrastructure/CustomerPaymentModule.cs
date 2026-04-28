@@ -49,7 +49,7 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
             ?? throw new BadRequestException("Payee has no Stripe Connect account");
 
         var resolvedPaymentMethodId = paymentMethodId
-            ?? await stripeAccountService.GetPaymentMethodAsync(stripeCustomerId)
+            ?? await stripeAccountService.TryGetPaymentMethodAsync(stripeCustomerId)
             ?? throw new BadRequestException("No payment method provided and no saved payment method found");
 
         var mergedMetadata = new Dictionary<string, string>

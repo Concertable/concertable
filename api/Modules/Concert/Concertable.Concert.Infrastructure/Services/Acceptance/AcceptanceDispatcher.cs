@@ -1,3 +1,5 @@
+using Concertable.Concert.Application.Responses;
+
 namespace Concertable.Concert.Infrastructure.Services.Acceptance;
 
 internal class AcceptanceDispatcher : IAcceptanceDispatcher
@@ -9,6 +11,13 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
     {
         this.contractLookup = contractLookup;
         this.strategyFactory = strategyFactory;
+    }
+
+    public async Task<AcceptPreview> PreviewAsync(int applicationId)
+    {
+        var contract = await contractLookup.GetByApplicationIdAsync(applicationId);
+        return await strategyFactory.Create(contract.ContractType)
+            .PreviewAsync(applicationId);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)

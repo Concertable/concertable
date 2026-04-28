@@ -67,16 +67,20 @@ internal class StripeAccountController : ControllerBase
     [HttpPost("setup-intent")]
     public async Task<ActionResult<string>> CreateSetupIntent()
     {
-        var customer = await customerModule.GetCustomerAsync(currentUser.GetId());
+        if (currentUser.Id is null)
+            return Ok(await stripeAccountService.CreateSetupIntentAsync(null));
+
+        var userId = currentUser.GetId();
+        var customer = await customerModule.GetCustomerAsync(userId);
         if (customer is null) return Unauthorized();
 
-        var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId);
         var stripeCustomerId = account?.StripeCustomerId;
 
         if (string.IsNullOrWhiteSpace(stripeCustomerId))
         {
-            await stripeAccountService.ProvisionCustomerAsync(currentUser.GetId(), customer.Email!);
-            account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
+            await stripeAccountService.ProvisionCustomerAsync(userId, customer.Email!);
+            account = await payoutAccountRepository.GetByUserIdAsync(userId);
             stripeCustomerId = account?.StripeCustomerId
                 ?? throw new InvalidOperationException("Failed to provision Stripe customer.");
         }

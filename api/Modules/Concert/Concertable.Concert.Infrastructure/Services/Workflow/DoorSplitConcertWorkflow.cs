@@ -1,4 +1,6 @@
-﻿using Concertable.Contract.Contracts;
+using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Responses;
+using Concertable.Contract.Contracts;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -8,22 +10,39 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflowStrategy
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IConcertRepository concertRepository;
     private readonly IConcertBookingRepository bookingRepository;
+    private readonly IPayerLookup payerLookup;
     private readonly IContractLookup contractLookup;
 
     public DoorSplitConcertWorkflow(
         IDeferredConcertService deferredConcertService,
         IConcertRepository concertRepository,
         IConcertBookingRepository bookingRepository,
+        IPayerLookup payerLookup,
         IContractLookup contractLookup)
     {
         this.deferredConcertService = deferredConcertService;
         this.concertRepository = concertRepository;
         this.bookingRepository = bookingRepository;
+        this.payerLookup = payerLookup;
         this.contractLookup = contractLookup;
     }
 
-    public Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null) =>
-        deferredConcertService.InitiateAsync(applicationId);
+    public async Task<AcceptPreview> PreviewAsync(int applicationId)
+    {
+        var artist = await payerLookup.GetArtistAsync(applicationId)
+            ?? throw new NotFoundException("Application not found");
+        var contract = (DoorSplitContract)await contractLookup.GetByApplicationIdAsync(applicationId);
+
+        return new AcceptPreview(PaymentTiming.Deferred, new DoorSharePayment(contract.ArtistDoorPercent), artist);
+    }
+
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
+    {
+        var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
+            ?? throw new NotFoundException("Application not found");
+
+        return await deferredConcertService.InitiateAsync(applicationId, venueManagerId, paymentMethodId);
+    }
 
     public Task SettleAsync(int bookingId) =>
         deferredConcertService.SettleAsync(bookingId);

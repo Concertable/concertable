@@ -15,7 +15,7 @@ public class VenueHireConcertWorkflowCompleteTests
         upfrontConcertService = new Mock<IUpfrontConcertService>();
         sut = new VenueHireConcertWorkflow(
             upfrontConcertService.Object,
-            new Mock<IOpportunityApplicationRepository>().Object,
+            new Mock<IPayerLookup>().Object,
             new Mock<IContractLookup>().Object);
     }
 

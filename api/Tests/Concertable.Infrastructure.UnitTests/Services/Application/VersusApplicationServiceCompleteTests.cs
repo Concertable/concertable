@@ -31,6 +31,7 @@ public class VersusConcertWorkflowCompleteTests
             deferredConcertService.Object,
             concertRepository.Object,
             bookingRepository.Object,
+            new Mock<IPayerLookup>().Object,
             contractLookup.Object);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);

@@ -1,3 +1,4 @@
+using Concertable.Concert.Application.Responses;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Messaging.Contracts;
 using Concertable.Shared.Enums;
@@ -123,6 +124,9 @@ internal class OpportunityApplicationService : IOpportunityApplicationService
 
         return mapper.ToDto(application);
     }
+
+    public Task<AcceptPreview> GetAcceptPreviewAsync(int applicationId) =>
+        acceptDispatcher.PreviewAsync(applicationId);
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {

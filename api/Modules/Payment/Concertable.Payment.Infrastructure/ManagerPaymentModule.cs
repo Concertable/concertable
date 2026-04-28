@@ -4,19 +4,18 @@ using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Payment.Infrastructure;
 
-internal class OnSessionManagerPaymentModule : IManagerPaymentModule
+internal class ManagerPaymentModule : IManagerPaymentModule
 {
     private readonly IPaymentService paymentService;
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly IManagerModule managerModule;
 
-    public OnSessionManagerPaymentModule(
-        [FromKeyedServices(PaymentSession.OnSession)] IPaymentService paymentService,
+    public ManagerPaymentModule(
+        IPaymentService paymentService,
         IStripeAccountService stripeAccountService,
         IPayoutAccountRepository payoutAccountRepository,
         IManagerModule managerModule)
@@ -32,7 +31,7 @@ internal class OnSessionManagerPaymentModule : IManagerPaymentModule
         Guid payeeId,
         decimal amount,
         IDictionary<string, string>? metadata,
-        string? paymentMethodId,
+        string paymentMethodId,
         CancellationToken ct = default)
     {
         var payer = await managerModule.GetByIdAsync(payerId)
@@ -45,16 +44,11 @@ internal class OnSessionManagerPaymentModule : IManagerPaymentModule
         var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeId)
             ?? throw new NotFoundException($"Payout account not found for payee {payeeId}");
 
-        var payerStripeCustomerId = payerAccount.StripeCustomerId
-            ?? throw new BadRequestException("Payer has no Stripe customer ID");
         var payeeStripeAccountId = payeeAccount.StripeAccountId
             ?? throw new BadRequestException("Payee has not completed Stripe verification");
 
         if (await stripeAccountService.GetAccountStatusAsync(payeeStripeAccountId) != PayoutAccountStatus.Verified)
             throw new BadRequestException("Payee has not completed Stripe verification");
-
-        var resolvedPaymentMethodId = paymentMethodId
-            ?? await stripeAccountService.GetPaymentMethodAsync(payerStripeCustomerId);
 
         var mergedMetadata = new Dictionary<string, string>
         {
@@ -67,12 +61,24 @@ internal class OnSessionManagerPaymentModule : IManagerPaymentModule
 
         return await paymentService.ProcessAsync(new TransactionRequest
         {
-            PaymentMethodId = resolvedPaymentMethodId,
+            PaymentMethodId = paymentMethodId,
             FromUserEmail = payer.Email ?? string.Empty,
-            StripeCustomerId = payerStripeCustomerId,
+            StripeCustomerId = payerAccount.StripeCustomerId,
             DestinationStripeId = payeeStripeAccountId,
             Amount = amount,
             Metadata = mergedMetadata
         });
+    }
+
+    public async Task<bool> HasStripeCustomerAsync(Guid userId)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId);
+        return account?.StripeCustomerId is not null;
+    }
+
+    public async Task<string?> TryGetPaymentMethodIdAsync(Guid userId)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId);
+        return await stripeAccountService.TryGetPaymentMethodAsync(account?.StripeCustomerId);
     }
 }

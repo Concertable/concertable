@@ -2,18 +2,23 @@ import { useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { loadStripe } from "@stripe/stripe-js";
 import dayjs from "dayjs";
-import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentMethodSection } from "@/components/checkout/PaymentMethodSection";
+import { CheckoutLayout } from "@/components/checkout/CheckoutLayout";
+import { CheckoutSection } from "@/components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
+import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
+import { CheckoutSuccessView } from "@/components/checkout/CheckoutSuccessView";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
 import {
   useApplicationQuery,
   useAcceptApplicationMutation,
+  useAcceptPreviewQuery,
 } from "@/hooks/query/useApplicationQuery";
 import { usePaymentMethodQuery } from "@/hooks/query/useStripeAccountQuery";
 import type { AcceptOutcome } from "@/types/application";
+import { summaryFor } from "@/lib/acceptPreviewFormat";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -26,6 +31,8 @@ export default function ApplicationCheckoutPage() {
     isLoading,
     isError,
   } = useApplicationQuery(applicationId);
+  const { data: preview, isLoading: isPreviewLoading } =
+    useAcceptPreviewQuery(applicationId);
   const { data: savedCard, isLoading: isPaymentMethodLoading } =
     usePaymentMethodQuery();
   const { mutate: accept, isPending } = useAcceptApplicationMutation(
@@ -37,8 +44,8 @@ export default function ApplicationCheckoutPage() {
   const [isAwaiting, setIsAwaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (isLoading) return <CheckoutSkeleton />;
-  if (isError || !application)
+  if (isLoading || isPreviewLoading) return <CheckoutSkeleton />;
+  if (isError || !application || !preview)
     return <div className="text-destructive p-6">Application not found.</div>;
 
   const { artist, opportunity } = application;
@@ -77,75 +84,85 @@ export default function ApplicationCheckoutPage() {
 
   if (isAwaiting) {
     return (
-      <div className="mx-auto flex max-w-lg flex-col items-center gap-4 p-6 pt-20 text-center">
-        <CheckCircle className="mx-auto size-16 text-green-500" />
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">Application Accepted</h1>
-          <p className="text-muted-foreground">
+      <CheckoutSuccessView
+        title="Application Accepted"
+        description={
+          <>
             You have accepted{" "}
             <span className="text-foreground font-medium">{artist.name}</span>.
             Creating concert draft...
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
     );
   }
 
+  const ctaLabel = preview.timing === "deferred" ? "Confirm" : "Confirm & Pay";
+  const summary = summaryFor(preview.amount);
+
   return (
-    <div className="mx-auto max-w-lg space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Checkout</h1>
+    <CheckoutLayout
+      banner={
+        <CheckoutEventBanner
+          title={artist.name}
+          subtitle={`${dayjs(opportunity.startDate).format("D MMM YYYY")} – ${dayjs(opportunity.endDate).format("D MMM YYYY")}`}
+          meta={`Paying ${preview.payee.name}${preview.payee.email ? ` · ${preview.payee.email}` : ""}`}
+        />
+      }
+      summary={
+        <OrderSummaryCard
+          title={preview.timing === "deferred" ? "Settlement" : "Summary"}
+          lines={summary.lines}
+          total={summary.total}
+          action={
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={isPending || paymentMethodId === undefined}
+              onClick={handleAccept}
+            >
+              {isPending ? "Processing..." : ctaLabel}
+            </Button>
+          }
+          footer={error && <p className="text-destructive text-sm">{error}</p>}
+        />
+      }
+    >
+      <CheckoutSection title="Contract Terms">
+        <AcceptContractSummary contract={opportunity.contract} />
+      </CheckoutSection>
 
-      <div className="space-y-1 rounded-lg border p-4">
-        <p className="font-semibold">{artist.name}</p>
-        <p className="text-muted-foreground text-sm">
-          {dayjs(opportunity.startDate).format("D MMM YYYY")} –{" "}
-          {dayjs(opportunity.endDate).format("D MMM YYYY")}
-        </p>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-3">
-        <h2 className="font-medium">Contract Terms</h2>
-        <div className="rounded-xl border p-4">
-          <AcceptContractSummary contract={opportunity.contract} />
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-3">
-        <h2 className="font-medium">Payment Method</h2>
+      <CheckoutSection
+        title="Payment Method"
+        description={
+          preview.timing === "deferred"
+            ? "Saved card required for settlement after the concert."
+            : undefined
+        }
+      >
         <PaymentMethodSection
+          timing={preview.timing}
           savedCard={savedCard}
           isLoading={isPaymentMethodLoading}
           onChange={setPaymentMethodId}
         />
-      </div>
-
-      {error && <p className="text-destructive text-sm">{error}</p>}
-
-      <Button
-        className="w-full"
-        disabled={isPending || paymentMethodId === undefined}
-        onClick={handleAccept}
-      >
-        {isPending ? "Processing..." : "Confirm & Pay"}
-      </Button>
-    </div>
+      </CheckoutSection>
+    </CheckoutLayout>
   );
 }
 
 function CheckoutSkeleton() {
   return (
-    <div className="mx-auto max-w-lg space-y-6 p-6">
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-16 w-full rounded-lg" />
-      <Skeleton className="h-px w-full" />
-      <Skeleton className="h-24 w-full rounded-lg" />
-      <Skeleton className="h-px w-full" />
-      <Skeleton className="h-[66px] w-full rounded-lg" />
-      <Skeleton className="h-10 w-full rounded-lg" />
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 lg:py-12">
+      <Skeleton className="h-9 w-40" />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
+        <div className="space-y-6">
+          <Skeleton className="h-28 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-44 w-full rounded-xl" />
+        </div>
+        <Skeleton className="h-60 w-full rounded-xl" />
+      </div>
     </div>
   );
 }

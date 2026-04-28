@@ -10,6 +10,7 @@ internal interface IOpportunityApplicationService
     Task<IEnumerable<OpportunityApplicationDto>> GetPendingForArtistAsync();
     Task<IEnumerable<OpportunityApplicationDto>> GetRecentDeniedForArtistAsync();
     Task<OpportunityApplicationDto> ApplyAsync(int opportunityId);
+    Task<AcceptPreview> GetAcceptPreviewAsync(int applicationId);
     Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null);
     Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id);
 }

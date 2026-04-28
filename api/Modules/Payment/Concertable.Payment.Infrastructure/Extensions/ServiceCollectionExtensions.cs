@@ -1,5 +1,7 @@
 using Concertable.Application.Interfaces;
+using Concertable.Identity.Contracts;
 using Concertable.Identity.Contracts.Events;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Concertable.Data.Infrastructure;
@@ -81,8 +83,18 @@ public static class ServiceCollectionExtensions
 
         // Module facades — public Payment.Contracts surface
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
-        services.AddKeyedScoped<IManagerPaymentModule, OnSessionManagerPaymentModule>(PaymentSession.OnSession);
-        services.AddKeyedScoped<IManagerPaymentModule, OffSessionManagerPaymentModule>(PaymentSession.OffSession);
+        services.AddKeyedScoped<IManagerPaymentModule>(PaymentSession.OnSession, (sp, _) =>
+            new ManagerPaymentModule(
+                sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OnSession),
+                sp.GetRequiredService<IStripeAccountService>(),
+                sp.GetRequiredService<IPayoutAccountRepository>(),
+                sp.GetRequiredService<IManagerModule>()));
+        services.AddKeyedScoped<IManagerPaymentModule>(PaymentSession.OffSession, (sp, _) =>
+            new ManagerPaymentModule(
+                sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OffSession),
+                sp.GetRequiredService<IStripeAccountService>(),
+                sp.GetRequiredService<IPayoutAccountRepository>(),
+                sp.GetRequiredService<IManagerModule>()));
 
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();

@@ -95,6 +95,13 @@ internal class OpportunityApplicationController : ControllerBase
     }
 
     [Authorize(Roles = "VenueManager")]
+    [HttpGet("accept/preview/{applicationId}")]
+    public async Task<IActionResult> GetAcceptPreview(int applicationId)
+    {
+        return Ok(await applicationService.GetAcceptPreviewAsync(applicationId));
+    }
+
+    [Authorize(Roles = "VenueManager")]
     [HttpPost("accept/{applicationId}")]
     public async Task<IActionResult> Accept(int applicationId, [FromBody] AcceptApplicationRequest? request = null)
     {

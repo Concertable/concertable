@@ -3,6 +3,7 @@ import type {
   AcceptOutcome,
   OpportunityApplication,
 } from "@/types/application";
+import type { AcceptPreview } from "@/types/acceptPreview";
 
 const applicationApi = {
   applyToOpportunity: async (
@@ -46,6 +47,13 @@ const applicationApi = {
   canAcceptApplication: async (applicationId: number): Promise<boolean> => {
     const { data } = await api.get<boolean>(
       `/opportunityapplication/can-accept/${applicationId}`,
+    );
+    return data;
+  },
+
+  getAcceptPreview: async (applicationId: number): Promise<AcceptPreview> => {
+    const { data } = await api.get<AcceptPreview>(
+      `/opportunityapplication/accept/preview/${applicationId}`,
     );
     return data;
   },
