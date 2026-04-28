@@ -76,9 +76,9 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return account?.StripeCustomerId is not null;
     }
 
-    public async Task<string?> TryGetSavedPaymentMethodIdAsync(Guid userId)
+    public async Task<string?> TryGetPaymentMethodIdAsync(Guid userId)
     {
         var account = await payoutAccountRepository.GetByUserIdAsync(userId);
-        return await stripeAccountService.TryGetSavedPaymentMethodAsync(account?.StripeCustomerId);
+        return await stripeAccountService.TryGetPaymentMethodAsync(account?.StripeCustomerId);
     }
 }

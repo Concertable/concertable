@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { CreditCard } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddPaymentMethodModal } from "@/components/AddPaymentMethodModal";
+import { SavedCardOption } from "@/components/checkout/SavedCardOption";
 import type { PaymentSectionProps } from "@/components/checkout/PaymentMethodSection";
 
 export function DeferredPaymentSection({
@@ -18,33 +18,15 @@ export function DeferredPaymentSection({
   return (
     <div className="space-y-3">
       {savedCard ? (
-        <div className="border-primary bg-primary/5 rounded-lg border p-3">
-          <div className="flex items-center gap-2">
-            <CreditCard className="text-muted-foreground size-4 shrink-0" />
-            <div>
-              <p className="text-sm font-medium capitalize">
-                {savedCard.brand} •••• {savedCard.last4}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                Expires {savedCard.expMonth}/{savedCard.expYear}
-              </p>
-            </div>
-          </div>
-        </div>
+        <SavedCardOption card={savedCard} selected />
       ) : (
-        <div className="rounded-lg border border-dashed p-4 text-center">
-          <p className="text-muted-foreground mb-3 text-sm">
-            A saved card is required for deferred payment.
-          </p>
-          <AddPaymentMethodModal />
-        </div>
+        <p className="text-muted-foreground text-sm">
+          A saved card is required for deferred payment.
+        </p>
       )}
-
-      {savedCard && (
-        <div className="flex justify-end">
-          <AddPaymentMethodModal replace />
-        </div>
-      )}
+      <div className="flex justify-end">
+        <AddPaymentMethodModal replace={!!savedCard} />
+      </div>
     </div>
   );
 }

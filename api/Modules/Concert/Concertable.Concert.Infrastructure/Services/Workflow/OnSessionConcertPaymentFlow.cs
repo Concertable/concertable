@@ -18,7 +18,7 @@ internal class OnSessionConcertPaymentFlow : IConcertPaymentFlow
     public async Task<string> ResolvePaymentMethodAsync(Guid payerId, string? paymentMethodId)
     {
         return paymentMethodId
-            ?? await managerPaymentModule.TryGetSavedPaymentMethodIdAsync(payerId)
+            ?? await managerPaymentModule.TryGetPaymentMethodIdAsync(payerId)
             ?? throw new BadRequestException("A payment method is required.");
     }
 

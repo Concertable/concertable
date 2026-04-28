@@ -21,7 +21,7 @@ internal class OffSessionConcertPaymentFlow : IConcertPaymentFlow
             throw new BadRequestException("Stripe customer setup is required for deferred payments.");
 
         return paymentMethodId
-            ?? await managerPaymentModule.TryGetSavedPaymentMethodIdAsync(payerId)
+            ?? await managerPaymentModule.TryGetPaymentMethodIdAsync(payerId)
             ?? throw new BadRequestException("A payment method is required.");
     }
 

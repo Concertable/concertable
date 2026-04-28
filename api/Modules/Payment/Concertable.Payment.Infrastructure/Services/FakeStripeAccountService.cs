@@ -16,7 +16,7 @@ internal class FakeStripeAccountService : IStripeAccountService
     public Task<PayoutAccountStatus> GetAccountStatusAsync(string stripeId) =>
         Task.FromResult(PayoutAccountStatus.Verified);
 
-    public Task<string?> TryGetSavedPaymentMethodAsync(string? stripeCustomerId) =>
+    public Task<string?> TryGetPaymentMethodAsync(string? stripeCustomerId) =>
         Task.FromResult<string?>(stripeCustomerId is null ? null : "pm_fake_card");
 
     public Task<string> CreateSetupIntentAsync(string? stripeCustomerId) =>

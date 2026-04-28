@@ -94,7 +94,7 @@ internal class StripeAccountService : IStripeAccountService
         return PayoutAccountStatus.NotVerified;
     }
 
-    public async Task<string?> TryGetSavedPaymentMethodAsync(string? stripeCustomerId)
+    public async Task<string?> TryGetPaymentMethodAsync(string? stripeCustomerId)
     {
         if (stripeCustomerId is null) return null;
 

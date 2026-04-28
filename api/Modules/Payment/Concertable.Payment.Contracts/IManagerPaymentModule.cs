@@ -13,5 +13,5 @@ public interface IManagerPaymentModule
         CancellationToken ct = default);
 
     Task<bool> HasStripeCustomerAsync(Guid userId);
-    Task<string?> TryGetSavedPaymentMethodIdAsync(Guid userId);
+    Task<string?> TryGetPaymentMethodIdAsync(Guid userId);
 }

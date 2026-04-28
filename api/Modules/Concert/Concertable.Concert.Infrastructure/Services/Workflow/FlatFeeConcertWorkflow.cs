@@ -32,14 +32,12 @@ internal class FlatFeeConcertWorkflow : IConcertWorkflowStrategy
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
     {
-        var ids = await payerLookup.GetManagerIdsAsync(applicationId)
+        var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
-
-        var (payerId, payeeId) = (ids.VenueManagerId, ids.ArtistManagerId);
 
         var contract = (FlatFeeContract)await contractLookup.GetByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, payerId, payeeId, contract.Fee, paymentMethodId);
+        return await upfrontConcertService.InitiateAsync(applicationId, venueManagerId, artistManagerId, contract.Fee, paymentMethodId);
     }
 
     public Task SettleAsync(int bookingId) =>

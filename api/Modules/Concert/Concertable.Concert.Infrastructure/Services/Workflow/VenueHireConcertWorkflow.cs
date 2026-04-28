@@ -32,14 +32,12 @@ internal class VenueHireConcertWorkflow : IConcertWorkflowStrategy
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
     {
-        var ids = await payerLookup.GetManagerIdsAsync(applicationId)
+        var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
-
-        var (payerId, payeeId) = (ids.ArtistManagerId, ids.VenueManagerId);
 
         var contract = (VenueHireContract)await contractLookup.GetByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, payerId, payeeId, contract.HireFee, paymentMethodId);
+        return await upfrontConcertService.InitiateAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId);
     }
 
     public Task SettleAsync(int bookingId) =>
