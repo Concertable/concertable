@@ -44,7 +44,10 @@
       "Bash(mv \"Modules/Concert/Concertable.Concert.Infrastructure/Services/Settlement/SettlementDispatcher.cs\" \"Modules/Concert/Concertable.Concert.Infrastructure/Services/Settlement/SettlementExecutor.cs\")",
       "Bash(mv \"Tests/Concertable.Infrastructure.UnitTests/Services/Acceptance/AcceptanceDispatcherTests.cs\" \"Tests/Concertable.Infrastructure.UnitTests/Services/Acceptance/AcceptanceExecutorTests.cs\")",
       "Bash(mv \"Tests/Concertable.Infrastructure.UnitTests/Services/Completion/CompletionDispatcherTests.cs\" \"Tests/Concertable.Infrastructure.UnitTests/Services/Completion/CompletionExecutorTests.cs\")",
-      "Bash(mv \"Tests/Concertable.Infrastructure.UnitTests/Services/Settlement/SettlementDispatcherTests.cs\" \"Tests/Concertable.Infrastructure.UnitTests/Services/Settlement/SettlementExecutorTests.cs\")"
+      "Bash(mv \"Tests/Concertable.Infrastructure.UnitTests/Services/Settlement/SettlementDispatcherTests.cs\" \"Tests/Concertable.Infrastructure.UnitTests/Services/Settlement/SettlementExecutorTests.cs\")",
+      "PowerShell(Get-Content *)",
+      "Bash(docker info *)",
+      "Bash(grep -E '\"[^\"]+\", \"[^\"]+\", \"{')"
     ]
   }
 }

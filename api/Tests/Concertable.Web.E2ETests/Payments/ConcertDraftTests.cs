@@ -7,6 +7,7 @@ using Xunit.Abstractions;
 namespace Concertable.Web.E2ETests.Payments;
 
 [Collection("E2E")]
+
 public class ConcertDraftTests : IAsyncLifetime
 {
     private readonly AppFixture fixture;

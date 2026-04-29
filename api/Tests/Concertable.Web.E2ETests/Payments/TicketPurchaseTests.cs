@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.DTOs;
+﻿using Concertable.Concert.Application.DTOs;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 namespace Concertable.Web.E2ETests.Payments;
 
 [Collection("E2E")]
+
 public class TicketPurchaseTests : IAsyncLifetime
 {
     private readonly AppFixture fixture;

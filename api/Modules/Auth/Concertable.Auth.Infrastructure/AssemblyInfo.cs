@@ -1,3 +1,3 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
+[assembly: InternalsVisibleTo("Concertable.Auth.UnitTests")]
