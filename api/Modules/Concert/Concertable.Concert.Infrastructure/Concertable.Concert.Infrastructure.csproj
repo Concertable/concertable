@@ -30,7 +30,6 @@
     <ProjectReference Include="..\..\User\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
     <ProjectReference Include="..\..\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
     <ProjectReference Include="..\..\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
-    <ProjectReference Include="..\..\Search\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
     <ProjectReference Include="..\..\Payment\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
     <ProjectReference Include="..\..\Notification\Concertable.Notification.Contracts\Concertable.Notification.Contracts.csproj" />
     <ProjectReference Include="..\..\Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj" />

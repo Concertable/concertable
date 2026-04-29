@@ -1,6 +1,6 @@
-namespace Concertable.Search.Contracts;
+namespace Concertable.Search.Application.Interfaces;
 
-public interface IConcertHeaderModule : IHeaderModule
+internal interface IConcertHeaderModule : IHeaderModule
 {
     Task<IEnumerable<ConcertHeaderDto>> GetPopularAsync();
     Task<IEnumerable<ConcertHeaderDto>> GetFreeAsync();

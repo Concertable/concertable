@@ -8,7 +8,6 @@ namespace Concertable.Concert.Infrastructure.Services;
 internal class ConcertService : IConcertService
 {
     private readonly IConcertRepository concertRepository;
-    private readonly IConcertHeaderModule concertHeaderModule;
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IApplicationValidator applicationValidator;
@@ -20,7 +19,6 @@ internal class ConcertService : IConcertService
 
     public ConcertService(
         IConcertRepository concertRepository,
-        IConcertHeaderModule concertHeaderModule,
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IApplicationValidator applicationValidator,
@@ -31,7 +29,6 @@ internal class ConcertService : IConcertService
         TimeProvider timeProvider)
     {
         this.concertRepository = concertRepository;
-        this.concertHeaderModule = concertHeaderModule;
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;

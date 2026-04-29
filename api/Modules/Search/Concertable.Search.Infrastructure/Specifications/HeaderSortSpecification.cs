@@ -1,5 +1,3 @@
-using Concertable.Search.Contracts;
-using Concertable.Search.Application.Interfaces;
 
 namespace Concertable.Search.Infrastructure.Specifications;
 

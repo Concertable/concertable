@@ -1,4 +1,4 @@
-namespace Concertable.Search.Contracts;
+namespace Concertable.Search.Application;
 
 public class ConcertParams : IGeoParams
 {

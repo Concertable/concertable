@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Search.Contracts\Concertable.Search.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Search.Application\Concertable.Search.Application.csproj" />
     <ProjectReference Include="..\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj" />
   </ItemGroup>
