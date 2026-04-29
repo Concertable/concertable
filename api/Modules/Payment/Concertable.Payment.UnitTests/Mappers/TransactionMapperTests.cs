@@ -1,5 +1,4 @@
-namespace Concertable.Payment.UnitTests.Mappers;
-
+﻿namespace Concertable.Payment.UnitTests.Mappers;
 public class TransactionMapperTests
 {
     private readonly TransactionMapper sut = new();

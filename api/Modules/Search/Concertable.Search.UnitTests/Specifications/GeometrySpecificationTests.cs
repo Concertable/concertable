@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Geometry;
+﻿using Concertable.Application.Interfaces.Geometry;
 using Concertable.Search.Infrastructure.Specifications;
 using Concertable.Shared;
 using Moq;
@@ -6,7 +6,6 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Search.UnitTests.Specifications;
-
 public class GeometrySpecificationTests
 {
     private static readonly TestGeoParams LondonParams = new(51.5074, -0.1278);

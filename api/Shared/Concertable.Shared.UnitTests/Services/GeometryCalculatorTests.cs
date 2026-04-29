@@ -1,8 +1,7 @@
-using Concertable.Shared.Infrastructure.Services.Geometry;
+﻿using Concertable.Shared.Infrastructure.Services.Geometry;
 using NetTopologySuite;
 
 namespace Concertable.Shared.UnitTests.Services;
-
 public class GeometryCalculatorTests
 {
     private readonly GeometryCalculator sut;

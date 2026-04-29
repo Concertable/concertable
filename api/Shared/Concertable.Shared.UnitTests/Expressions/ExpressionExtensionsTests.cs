@@ -1,9 +1,8 @@
-using Concertable.Shared.Infrastructure.Expressions;
+﻿using Concertable.Shared.Infrastructure.Expressions;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
 namespace Concertable.Shared.UnitTests.Expressions;
-
 public class ExpressionExtensionsTests
 {
     [Fact]

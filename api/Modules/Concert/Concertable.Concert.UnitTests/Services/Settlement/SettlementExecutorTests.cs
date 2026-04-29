@@ -1,8 +1,7 @@
-using Concertable.Concert.Infrastructure.Services.Settlement;
+﻿using Concertable.Concert.Infrastructure.Services.Settlement;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Settlement;
-
 public class SettlementExecutorTests
 {
     private readonly Mock<IContractLoader> contractLoader;

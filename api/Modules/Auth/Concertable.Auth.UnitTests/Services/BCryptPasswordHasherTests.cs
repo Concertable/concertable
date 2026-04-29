@@ -1,5 +1,4 @@
-namespace Concertable.Auth.UnitTests.Services;
-
+﻿namespace Concertable.Auth.UnitTests.Services;
 public class BCryptPasswordHasherTests
 {
     private readonly BCryptPasswordHasher sut = new();

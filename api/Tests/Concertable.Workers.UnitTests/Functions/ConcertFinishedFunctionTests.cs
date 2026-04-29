@@ -1,11 +1,10 @@
-using FluentResults;
+﻿using FluentResults;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Workers.Functions;
 using Xunit;
 
 namespace Concertable.Workers.UnitTests.Functions;
-
 public class ConcertFinishedFunctionTests
 {
     private readonly Mock<IConcertRepository> concertRepository;

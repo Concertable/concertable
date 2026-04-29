@@ -1,9 +1,8 @@
-using Concertable.Concert.Application.Responses;
+﻿using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Infrastructure.Services.Completion;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Completion;
-
 public class CompletionExecutorTests
 {
     private readonly Mock<IContractLoader> contractLoader;

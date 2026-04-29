@@ -1,9 +1,8 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Concertable.Concert.Infrastructure.Services.Workflow;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Workflow;
-
 public class DoorSplitConcertWorkflowCompleteTests
 {
     private readonly Mock<IDeferredConcertService> deferredConcertService;

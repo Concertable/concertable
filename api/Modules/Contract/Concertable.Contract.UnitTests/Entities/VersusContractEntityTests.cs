@@ -1,5 +1,4 @@
-namespace Concertable.Contract.UnitTests.Entities;
-
+﻿namespace Concertable.Contract.UnitTests.Entities;
 public class VersusContractEntityTests
 {
     [Theory]

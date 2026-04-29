@@ -1,9 +1,10 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Shared;
 
 namespace Concertable.Search.IntegrationTests;
 
 [Collection("Integration")]
+
 public class AutocompleteApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;

@@ -6,6 +6,7 @@ using static Concertable.Concert.IntegrationTests.Ticket.TicketRequestBuilders;
 namespace Concertable.Concert.IntegrationTests.Ticket;
 
 [Collection("Integration")]
+
 public class TicketApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;

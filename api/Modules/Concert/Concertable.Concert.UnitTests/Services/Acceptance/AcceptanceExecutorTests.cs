@@ -1,8 +1,7 @@
-using Concertable.Concert.Infrastructure.Services.Acceptance;
+﻿using Concertable.Concert.Infrastructure.Services.Acceptance;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Acceptance;
-
 public class AcceptanceExecutorTests
 {
     private readonly Mock<IContractLoader> contractLoader;

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Artist.Application.DTOs;
 using Concertable.Artist.Api.Responses;
 using static Concertable.Artist.IntegrationTests.ArtistRequestBuilders;
@@ -6,6 +6,7 @@ using static Concertable.Artist.IntegrationTests.ArtistRequestBuilders;
 namespace Concertable.Artist.IntegrationTests;
 
 [Collection("Integration")]
+
 public class ArtistApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;

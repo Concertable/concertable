@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.Venue.Application.DTOs;
 using Concertable.Venue.Api.Responses;
 using static Concertable.Venue.IntegrationTests.VenueRequestBuilders;
@@ -6,6 +6,7 @@ using static Concertable.Venue.IntegrationTests.VenueRequestBuilders;
 namespace Concertable.Venue.IntegrationTests;
 
 [Collection("Integration")]
+
 public class VenueApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;

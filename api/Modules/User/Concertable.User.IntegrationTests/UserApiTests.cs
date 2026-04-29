@@ -1,10 +1,11 @@
-using System.Net;
+﻿using System.Net;
 using Concertable.User.Application.Requests;
 using Concertable.User.Contracts;
 
 namespace Concertable.User.IntegrationTests;
 
 [Collection("Integration")]
+
 public class UserApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;

@@ -1,8 +1,7 @@
-using Concertable.Concert.Infrastructure.Services.Workflow;
+﻿using Concertable.Concert.Infrastructure.Services.Workflow;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Workflow;
-
 public class VenueHireConcertWorkflowCompleteTests
 {
     private readonly Mock<IUpfrontConcertService> upfrontConcertService;

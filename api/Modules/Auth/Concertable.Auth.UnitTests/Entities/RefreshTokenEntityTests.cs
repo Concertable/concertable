@@ -1,5 +1,4 @@
-namespace Concertable.Auth.UnitTests.Entities;
-
+﻿namespace Concertable.Auth.UnitTests.Entities;
 public class RefreshTokenEntityTests
 {
     [Fact]

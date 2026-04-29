@@ -7,6 +7,7 @@ using Xunit;
 namespace Concertable.Concert.IntegrationTests.Application;
 
 [Collection("Integration")]
+
 public class ApplicationVersusApiTests : IAsyncLifetime
 {
     private readonly ApiFixture fixture;
