@@ -83,6 +83,8 @@ builder.Services.AddCors(options =>
 
 var services = builder.Services;
 
+services.AddScoped<IKeyedServiceProvider>(sp => (IKeyedServiceProvider)sp);
+
 services.AddInfrastructure(builder.Configuration);
 if (!builder.Environment.IsEnvironment("Testing"))
 {

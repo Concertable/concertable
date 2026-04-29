@@ -4,9 +4,9 @@ namespace Concertable.Concert.Infrastructure.Services.Payment;
 
 internal class PaymentSucceededProcessorFactory : IPaymentSucceededProcessorFactory
 {
-    private readonly IServiceProvider serviceProvider;
+    private readonly IKeyedServiceProvider serviceProvider;
 
-    public PaymentSucceededProcessorFactory(IServiceProvider serviceProvider)
+    public PaymentSucceededProcessorFactory(IKeyedServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
     }

@@ -5,9 +5,9 @@ namespace Concertable.Search.Application.Services;
 
 internal class HeaderServiceFactory : IHeaderServiceFactory
 {
-    private readonly IServiceProvider serviceProvider;
+    private readonly IKeyedServiceProvider serviceProvider;
 
-    public HeaderServiceFactory(IServiceProvider serviceProvider)
+    public HeaderServiceFactory(IKeyedServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
     }

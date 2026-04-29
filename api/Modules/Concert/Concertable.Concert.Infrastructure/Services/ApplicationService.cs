@@ -130,6 +130,11 @@ internal class ApplicationService : IApplicationService
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
+        var result = await applicationValidator.CanAcceptAsync(applicationId);
+
+        if (result.IsFailed)
+            throw new BadRequestException(result.Errors);
+
         var outcome = await acceptanceExecutor.AcceptAsync(applicationId, paymentMethodId);
 
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)

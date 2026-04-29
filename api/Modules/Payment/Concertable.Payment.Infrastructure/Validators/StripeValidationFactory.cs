@@ -4,9 +4,9 @@ namespace Concertable.Payment.Infrastructure.Validators;
 
 internal class StripeValidationFactory : IStripeValidationFactory
 {
-    private readonly IServiceProvider serviceProvider;
+    private readonly IKeyedServiceProvider serviceProvider;
 
-    public StripeValidationFactory(IServiceProvider serviceProvider)
+    public StripeValidationFactory(IKeyedServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
     }

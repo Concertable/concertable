@@ -4,9 +4,9 @@ namespace Concertable.Payment.Infrastructure.Events;
 
 internal class TransactionHandlerFactory : ITransactionHandlerFactory
 {
-    private readonly IServiceProvider serviceProvider;
+    private readonly IKeyedServiceProvider serviceProvider;
 
-    public TransactionHandlerFactory(IServiceProvider serviceProvider)
+    public TransactionHandlerFactory(IKeyedServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
     }

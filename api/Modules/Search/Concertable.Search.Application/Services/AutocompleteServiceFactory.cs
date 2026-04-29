@@ -5,9 +5,9 @@ namespace Concertable.Search.Application.Services;
 
 internal class AutocompleteServiceFactory : IAutocompleteServiceFactory
 {
-    private readonly IServiceProvider serviceProvider;
+    private readonly IKeyedServiceProvider serviceProvider;
 
-    public AutocompleteServiceFactory(IServiceProvider serviceProvider)
+    public AutocompleteServiceFactory(IKeyedServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
     }
