@@ -1,7 +1,6 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Concertable.Contract.Api")]
-[assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]

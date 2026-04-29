@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]
 [assembly: InternalsVisibleTo("Concertable.Concert.Api")]
-[assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
+[assembly: InternalsVisibleTo("Concertable.Concert.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]

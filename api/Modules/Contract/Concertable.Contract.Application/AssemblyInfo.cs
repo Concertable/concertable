@@ -1,10 +1,9 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Concertable.Contract.Infrastructure")]
 [assembly: InternalsVisibleTo("Concertable.Contract.Api")]
-// Ride-along (§3.3): Concert.Infrastructure applies ContractEntityConfiguration on ConcertDbContext.
+// Ride-along (Â§3.3): Concert.Infrastructure applies ContractEntityConfiguration on ConcertDbContext.
 [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]
-[assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]

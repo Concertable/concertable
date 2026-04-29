@@ -7,7 +7,6 @@
 [assembly: InternalsVisibleTo("Concertable.Web")]
 [assembly: InternalsVisibleTo("Concertable.Workers")]
 [assembly: InternalsVisibleTo("Concertable.IntegrationTests.Common")]
-[assembly: InternalsVisibleTo("Concertable.Web.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
 [assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]
@@ -21,3 +20,5 @@
 [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]
 // Concert.Api hosts TicketController; signature returns Payment-internal TicketPaymentResponse.
 [assembly: InternalsVisibleTo("Concertable.Concert.Api")]
+// Concert integration tests deserialize TicketPaymentResponse + reference ITransaction via fixture round-trips.
+[assembly: InternalsVisibleTo("Concertable.Concert.IntegrationTests")]
