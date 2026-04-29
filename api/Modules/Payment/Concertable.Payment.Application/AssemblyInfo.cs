@@ -7,8 +7,8 @@
 [assembly: InternalsVisibleTo("Concertable.Web")]
 [assembly: InternalsVisibleTo("Concertable.Workers")]
 [assembly: InternalsVisibleTo("Concertable.IntegrationTests.Common")]
+[assembly: InternalsVisibleTo("Concertable.Payment.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
-[assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]
 // Concert.Application hosts ITicketService; signature references Payment-internal DTOs/Responses
 // (TicketPaymentResponse, PurchaseCompleteDto).

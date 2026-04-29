@@ -1,3 +1,4 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Concertable.Infrastructure.UnitTests")]
+[assembly: InternalsVisibleTo("Concertable.Search.UnitTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
