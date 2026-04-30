@@ -35,7 +35,7 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         Guid payerId,
         Guid payeeId,
         decimal amount,
-        IDictionary<string, string>? metadata,
+        IDictionary<string, string> metadata,
         string? paymentMethodId,
         CancellationToken ct = default)
     {
@@ -65,10 +65,9 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         }
         .Merge(metadata);
 
-        var purpose = metadata is not null && metadata.TryGetValue("type", out var t) ? t : "(unspecified)";
         logger.LogInformation(
             "Charging customer {PayerId} {Amount} {Currency} -> {PayeeId} (stripe account {DestinationStripeId}) for {Purpose}",
-            payerId, amount, "GBP", payeeId, stripeAccountId, purpose);
+            payerId, amount, "GBP", payeeId, stripeAccountId, metadata["type"]);
 
         return await paymentService.ProcessAsync(new TransactionRequest
         {

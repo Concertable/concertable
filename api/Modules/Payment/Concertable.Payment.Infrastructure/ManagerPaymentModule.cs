@@ -34,7 +34,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         Guid payerId,
         Guid payeeId,
         decimal amount,
-        IDictionary<string, string>? metadata,
+        IDictionary<string, string> metadata,
         string paymentMethodId,
         CancellationToken ct = default)
     {
@@ -63,10 +63,9 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         }
         .Merge(metadata);
 
-        var purpose = metadata is not null && metadata.TryGetValue("type", out var t) ? t : "(unspecified)";
         logger.LogInformation(
             "Charging manager {PayerId} {Amount} {Currency} -> {PayeeId} (stripe account {DestinationStripeId}) for {Purpose}",
-            payerId, amount, "GBP", payeeId, payeeStripeAccountId, purpose);
+            payerId, amount, "GBP", payeeId, payeeStripeAccountId, metadata["type"]);
 
         return await paymentService.ProcessAsync(new TransactionRequest
         {
