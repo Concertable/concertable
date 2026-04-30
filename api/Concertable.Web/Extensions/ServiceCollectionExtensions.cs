@@ -2,7 +2,6 @@ using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Serializers;
 using Concertable.Auth.Contracts;
-using Concertable.Auth.Infrastructure.Settings;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
@@ -80,23 +79,16 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        var authSettings = configuration.GetSection("Auth").Get<AuthSettings>()!;
-        var keyBytes = Convert.FromBase64String(authSettings.JwtSigningKeyBase64);
-        var signingKey = new SymmetricSecurityKey(keyBytes);
-
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer("Bearer", options =>
             {
+                options.Authority = configuration["Auth:Authority"];
+                options.Audience = "concertable.api";
                 options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = signingKey,
-                    ValidIssuer = authSettings.Issuer,
-                    ValidAudience = authSettings.Audience,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero,
-                    RoleClaimType = "role"
+                    RoleClaimType = "role",
+                    ClockSkew = TimeSpan.Zero
                 };
                 options.Events = new JwtBearerEvents
                 {
