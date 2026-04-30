@@ -6,5 +6,6 @@ internal interface IContractLoader
 {
     Task<IContract> LoadByApplicationIdAsync(int applicationId);
     Task<IContract> LoadByBookingIdAsync(int bookingId);
+    Task<IContract?> TryLoadByBookingIdAsync(int bookingId);
     Task<IContract> LoadByConcertIdAsync(int concertId);
 }

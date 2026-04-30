@@ -76,6 +76,9 @@ internal class PaymentDevSeeder : IDevSeeder
                 context.PayoutAccounts.Add(account);
             }
 
+            seedData.VenueManager1StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
+            seedData.ArtistManagerStripeAccountId = "acct_1TJiMePysoXmht10";
+
             await context.SaveChangesAsync(ct);
         });
 

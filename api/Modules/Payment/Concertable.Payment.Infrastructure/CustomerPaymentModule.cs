@@ -5,6 +5,7 @@ using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure;
 
@@ -14,17 +15,20 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly ICustomerModule customerModule;
+    private readonly ILogger<CustomerPaymentModule> logger;
 
     public CustomerPaymentModule(
         [FromKeyedServices(PaymentSession.OnSession)] IPaymentService paymentService,
         IStripeAccountService stripeAccountService,
         IPayoutAccountRepository payoutAccountRepository,
-        ICustomerModule customerModule)
+        ICustomerModule customerModule,
+        ILogger<CustomerPaymentModule> logger)
     {
         this.paymentService = paymentService;
         this.stripeAccountService = stripeAccountService;
         this.payoutAccountRepository = payoutAccountRepository;
         this.customerModule = customerModule;
+        this.logger = logger;
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
@@ -60,6 +64,11 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
             ["amount"] = ((long)(amount * 100)).ToString()
         }
         .Merge(metadata);
+
+        var purpose = metadata is not null && metadata.TryGetValue("type", out var t) ? t : "(unspecified)";
+        logger.LogInformation(
+            "Charging customer {PayerId} {Amount} {Currency} -> {PayeeId} (stripe account {DestinationStripeId}) for {Purpose}",
+            payerId, amount, "GBP", payeeId, stripeAccountId, purpose);
 
         return await paymentService.ProcessAsync(new TransactionRequest
         {

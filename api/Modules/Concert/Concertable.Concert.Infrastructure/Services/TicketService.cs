@@ -5,6 +5,7 @@ using Concertable.User.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services;
 
@@ -20,6 +21,7 @@ internal class TicketService : ITicketService
     private readonly ITicketPayee ticketPayee;
     private readonly ICustomerPaymentModule customerPaymentModule;
     private readonly TimeProvider timeProvider;
+    private readonly ILogger<TicketService> logger;
 
     public TicketService(
         ITicketRepository ticketRepository,
@@ -31,7 +33,8 @@ internal class TicketService : ITicketService
         IContractLoader contractLoader,
         ITicketPayee ticketPayee,
         ICustomerPaymentModule customerPaymentModule,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        ILogger<TicketService> logger)
     {
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
@@ -43,6 +46,7 @@ internal class TicketService : ITicketService
         this.ticketPayee = ticketPayee;
         this.customerPaymentModule = customerPaymentModule;
         this.timeProvider = timeProvider;
+        this.logger = logger;
     }
 
     public async Task<Result<TicketPaymentResponse>> PurchaseAsync(TicketPurchaseParams purchaseParams)
@@ -59,6 +63,10 @@ internal class TicketService : ITicketService
 
         var contract = await contractLoader.LoadByConcertIdAsync(purchaseParams.ConcertId);
         var payeeUserId = ticketPayee.Resolve(concert, contract);
+
+        logger.LogInformation(
+            "Routing ticket revenue for concert {ConcertId} ({ContractType}) to {PayeeUserId}: {Quantity} x {Price} {Currency}",
+            purchaseParams.ConcertId, contract.ContractType, payeeUserId, purchaseParams.Quantity, concert.Price, "GBP");
 
         var metadata = new Dictionary<string, string>
         {

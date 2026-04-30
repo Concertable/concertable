@@ -1,4 +1,6 @@
-﻿using Concertable.Concert.Application.DTOs;
+﻿using System.Net;
+using Concertable.Concert.Application.DTOs;
+using Concertable.Tests.Common;
 using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,8 +38,7 @@ public class TicketPurchaseTests : IAsyncLifetime
             "/api/Ticket/purchase",
             new { ConcertId = fixture.SeedData.FlatFeeUpcomingConcert.Id, Quantity = 1 });
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
+        await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
         Assert.Empty(purchase!.TicketIds);
 
@@ -59,8 +60,7 @@ public class TicketPurchaseTests : IAsyncLifetime
             "/api/Ticket/purchase",
             new { ConcertId = fixture.SeedData.DoorSplitUpcomingConcert.Id, Quantity = 1 });
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
+        await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
         Assert.Empty(purchase!.TicketIds);
 
@@ -82,8 +82,7 @@ public class TicketPurchaseTests : IAsyncLifetime
             "/api/Ticket/purchase",
             new { ConcertId = fixture.SeedData.VersusUpcomingConcert.Id, Quantity = 1 });
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
+        await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
         Assert.Empty(purchase!.TicketIds);
 
@@ -105,8 +104,7 @@ public class TicketPurchaseTests : IAsyncLifetime
             "/api/Ticket/purchase",
             new { ConcertId = fixture.SeedData.VenueHireUpcomingConcert.Id, Quantity = 1 });
 
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode} {response.StatusCode}: {body}");
+        await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
         Assert.Empty(purchase!.TicketIds);
 

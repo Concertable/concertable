@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
+using Concertable.Concert.Application.Responses;
 using Concertable.Data.Application;
 using Concertable.Seeding;
 using Microsoft.EntityFrameworkCore;
@@ -38,26 +39,15 @@ public static class E2EEndpointExtensions
             });
         });
 
-        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionExecutor CompletionExecutor, IReadDbContext readDb) =>
+        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionExecutor CompletionExecutor) =>
         {
             var result = await CompletionExecutor.FinishAsync(concertId);
 
             if (result.IsFailed)
                 return Results.BadRequest(result.Errors.Select(e => e.Message));
 
-            var bookingId = await readDb.Bookings
-                .Where(b => b.Concert!.Id == concertId)
-                .Select(b => b.Id)
-                .FirstOrDefaultAsync();
-
-            var paymentIntentId = await readDb.SettlementTransactions
-                .Where(t => t.BookingId == bookingId)
-                .OrderByDescending(t => t.CreatedAt)
-                .Select(t => t.PaymentIntentId)
-                .FirstOrDefaultAsync();
-
-            return paymentIntentId is not null
-                ? Results.Ok(paymentIntentId)
+            return result.Value is DeferredFinishOutcome deferred
+                ? Results.Ok(deferred.Payment.TransactionId)
                 : Results.Ok();
         });
 

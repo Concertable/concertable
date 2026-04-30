@@ -1,4 +1,5 @@
 ﻿using Concertable.Concert.Infrastructure.Services.Settlement;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Settlement;
@@ -12,7 +13,7 @@ public class SettlementExecutorTests
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new SettlementExecutor(contractLoader.Object, workflowFactory.Object);
+        sut = new SettlementExecutor(contractLoader.Object, workflowFactory.Object, NullLogger<SettlementExecutor>.Instance);
     }
 
     [Fact]
@@ -21,7 +22,7 @@ public class SettlementExecutorTests
         var contract = new FlatFeeContract { Id = 99, Fee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
 
-        contractLoader.Setup(l => l.LoadByBookingIdAsync(1)).ReturnsAsync(contract);
+        contractLoader.Setup(l => l.TryLoadByBookingIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(workflow.Object);
 
         await sut.SettleAsync(1);

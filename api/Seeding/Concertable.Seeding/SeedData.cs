@@ -30,6 +30,8 @@ public class SeedData
 
     public IReadOnlyList<OpportunityEntity> Opportunities { get; set; } = [];
 
+    public IReadOnlyList<ContractEntity> Contracts { get; set; } = [];
+
     public FlatFeeContractEntity FlatFeeAppContract { get; set; } = null!;
     public FlatFeeContractEntity ConfirmedAppContract { get; set; } = null!;
     public FlatFeeContractEntity AwaitingPaymentAppContract { get; set; } = null!;

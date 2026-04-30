@@ -17,6 +17,7 @@ using Concertable.Payment.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure.Extensions;
 
@@ -90,13 +91,15 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OnSession),
                 sp.GetRequiredService<IStripeAccountService>(),
                 sp.GetRequiredService<IPayoutAccountRepository>(),
-                sp.GetRequiredService<IUserModule>()));
+                sp.GetRequiredService<IUserModule>(),
+                sp.GetRequiredService<ILogger<ManagerPaymentModule>>()));
         services.AddKeyedScoped<IManagerPaymentModule>(PaymentSession.OffSession, (sp, _) =>
             new ManagerPaymentModule(
                 sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OffSession),
                 sp.GetRequiredService<IStripeAccountService>(),
                 sp.GetRequiredService<IPayoutAccountRepository>(),
-                sp.GetRequiredService<IUserModule>()));
+                sp.GetRequiredService<IUserModule>(),
+                sp.GetRequiredService<ILogger<ManagerPaymentModule>>()));
 
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();

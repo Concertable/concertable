@@ -47,7 +47,21 @@
       "Bash(mv \"Tests/Concertable.Infrastructure.UnitTests/Services/Settlement/SettlementDispatcherTests.cs\" \"Tests/Concertable.Infrastructure.UnitTests/Services/Settlement/SettlementExecutorTests.cs\")",
       "PowerShell(Get-Content *)",
       "Bash(docker info *)",
-      "Bash(grep -E '\"[^\"]+\", \"[^\"]+\", \"{')"
+      "Bash(grep -E '\"[^\"]+\", \"[^\"]+\", \"{')",
+      "Bash(awk 'NR>=1700 && NR<=2010' \"C:\\\\Users\\\\TommySeery\\\\.claude\\\\projects\\\\C--Users-TommySeery-source-repos-Concertable\\\\53a1aaee-2227-48a2-9367-6ffb829574dd.jsonl\")",
+      "Bash(grep -oE '\"content\":\"[^\"]{50,400}\"' \"C:\\\\Users\\\\TommySeery\\\\.claude\\\\projects\\\\C--Users-TommySeery-source-repos-Concertable\\\\53a1aaee-2227-48a2-9367-6ffb829574dd\\\\tool-results\\\\bfdltj6qm.txt\")",
+      "Bash(grep -oE '\"input\":\\\\{[^}]{0,200}\"file_path\":\"[^\"]+\"' \"C:\\\\Users\\\\TommySeery\\\\.claude\\\\projects\\\\C--Users-TommySeery-source-repos-Concertable\\\\53a1aaee-2227-48a2-9367-6ffb829574dd.jsonl\")",
+      "Bash(grep -oE '\"name\":\"\\(Edit|Write|Bash\\)\",\"input\":\\\\{[^}]{0,500}' \"C:\\\\Users\\\\TommySeery\\\\.claude\\\\projects\\\\C--Users-TommySeery-source-repos-Concertable\\\\53a1aaee-2227-48a2-9367-6ffb829574dd.jsonl\")",
+      "Bash(grep -oE '\"type\":\"text\",\"text\":\"[^\"]{50,500}\"' \"C:\\\\Users\\\\TommySeery\\\\.claude\\\\projects\\\\C--Users-TommySeery-source-repos-Concertable\\\\53a1aaee-2227-48a2-9367-6ffb829574dd.jsonl\")",
+      "Bash(awk NR>=215 && NR<=295 *)",
+      "Bash(awk NR>=44 && NR<=90 *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(awk NR>=255 && NR<=350 *)",
+      "Bash(docker version *)",
+      "Bash(awk NR>=1968 && NR<=2010 *)",
+      "Bash(awk NR>=1697 && NR<=1780 *)",
+      "Bash(docker stop *)",
+      "Bash(xargs -r docker stop)"
     ]
   }
 }

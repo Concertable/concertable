@@ -20,6 +20,9 @@ internal sealed class ContractLoader(
     public Task<IContract> LoadByBookingIdAsync(int bookingId) =>
         ResolveAsync(new Key(Kind.Booking, bookingId), bookingRepository.GetContractIdByIdAsync);
 
+    public Task<IContract?> TryLoadByBookingIdAsync(int bookingId) =>
+        TryResolveAsync(new Key(Kind.Booking, bookingId), bookingRepository.GetContractIdByIdAsync);
+
     public Task<IContract> LoadByConcertIdAsync(int concertId) =>
         ResolveAsync(new Key(Kind.Concert, concertId), concertRepository.GetContractIdByIdAsync);
 
@@ -35,5 +38,15 @@ internal sealed class ContractLoader(
 
         cache[key] = contract;
         return contract;
+    }
+
+    private async Task<IContract?> TryResolveAsync(Key key, Func<int, Task<int?>> resolveContractId)
+    {
+        try { 
+            return await ResolveAsync(key, resolveContractId); 
+        }
+        catch (NotFoundException) { 
+            return null; 
+        }
     }
 }
