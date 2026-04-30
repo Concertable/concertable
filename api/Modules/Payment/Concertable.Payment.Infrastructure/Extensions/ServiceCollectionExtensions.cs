@@ -17,7 +17,6 @@ using Concertable.Payment.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure.Extensions;
 
@@ -58,17 +57,20 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.CustomerSessionService>();
             services.AddScoped<IStripeAccountService, StripeAccountService>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
-            services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>(PaymentSession.OnSession);
-            services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>(PaymentSession.OffSession);
+            services.AddKeyedScoped<IStripePaymentIntentClient, OnSessionStripePaymentIntentClient>(PaymentSession.OnSession);
+            services.AddKeyedScoped<IStripePaymentIntentClient, OffSessionStripePaymentIntentClient>(PaymentSession.OffSession);
             services.AddScoped<IWebhookService, WebhookService>();
         }
         else
         {
             services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
-            services.AddKeyedScoped<IPaymentService, FakePaymentService>(PaymentSession.OnSession);
-            services.AddKeyedScoped<IPaymentService, FakePaymentService>(PaymentSession.OffSession);
+            services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OnSession);
+            services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OffSession);
             services.AddScoped<IWebhookService, FakeWebhookService>();
         }
+
+        services.AddScoped<IStripePaymentIntentClientFactory, StripePaymentIntentClientFactory>();
+        services.AddScoped<IPaymentManager, PaymentManager>();
 
         // Stripe validation (keyed by ContractType) â€” used by Concert eligibility checks
         services.AddScoped<StripeAccountValidator>();
@@ -86,20 +88,7 @@ public static class ServiceCollectionExtensions
 
         // Module facades â€” public Payment.Contracts surface
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
-        services.AddKeyedScoped<IManagerPaymentModule>(PaymentSession.OnSession, (sp, _) =>
-            new ManagerPaymentModule(
-                sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OnSession),
-                sp.GetRequiredService<IStripeAccountService>(),
-                sp.GetRequiredService<IPayoutAccountRepository>(),
-                sp.GetRequiredService<IUserModule>(),
-                sp.GetRequiredService<ILogger<ManagerPaymentModule>>()));
-        services.AddKeyedScoped<IManagerPaymentModule>(PaymentSession.OffSession, (sp, _) =>
-            new ManagerPaymentModule(
-                sp.GetRequiredKeyedService<IPaymentService>(PaymentSession.OffSession),
-                sp.GetRequiredService<IStripeAccountService>(),
-                sp.GetRequiredService<IPayoutAccountRepository>(),
-                sp.GetRequiredService<IUserModule>(),
-                sp.GetRequiredService<ILogger<ManagerPaymentModule>>()));
+        services.AddScoped<IManagerPaymentModule, ManagerPaymentModule>();
 
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();

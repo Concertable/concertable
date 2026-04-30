@@ -3,16 +3,16 @@ using Stripe;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
-internal class FakePaymentService : IPaymentService
+internal class FakeStripePaymentIntentClient : IStripePaymentIntentClient
 {
     private readonly IWebhookQueue webhookQueue;
 
-    public FakePaymentService(IWebhookQueue webhookQueue)
+    public FakeStripePaymentIntentClient(IWebhookQueue webhookQueue)
     {
         this.webhookQueue = webhookQueue;
     }
 
-    public async Task<Result<PaymentResponse>> ProcessAsync(TransactionRequest request)
+    public async Task<Result<PaymentResponse>> ChargeAsync(StripeChargeOptions opts)
     {
         var transactionId = $"pi_fake_{Guid.NewGuid():N}";
 
@@ -26,8 +26,8 @@ internal class FakePaymentService : IPaymentService
                 {
                     Id = transactionId,
                     Status = "succeeded",
-                    AmountReceived = (long)(request.Amount * 100),
-                    Metadata = request.Metadata
+                    AmountReceived = (long)(opts.Amount * 100),
+                    Metadata = opts.Metadata
                 }
             }
         });

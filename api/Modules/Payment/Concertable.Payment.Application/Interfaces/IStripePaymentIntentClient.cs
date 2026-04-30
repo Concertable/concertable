@@ -3,7 +3,7 @@ using FluentResults;
 
 namespace Concertable.Payment.Application.Interfaces;
 
-internal interface IPaymentService
+internal interface IStripePaymentIntentClient
 {
-    Task<Result<PaymentResponse>> ProcessAsync(TransactionRequest request);
+    Task<Result<PaymentResponse>> ChargeAsync(StripeChargeOptions options);
 }

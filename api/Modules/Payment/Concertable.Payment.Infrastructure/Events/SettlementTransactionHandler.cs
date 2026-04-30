@@ -21,11 +21,11 @@ internal class SettlementTransactionHandler : ITransactionHandler
     {
         var meta = @event.Metadata;
         var bookingId = int.Parse(meta["bookingId"]);
-        var amountPence = long.TryParse(meta.GetValueOrDefault("amount"), out var a) ? a : 0;
+        var amount = long.Parse(meta["amount"]);
 
         logger.LogInformation(
-            "Recording settlement transaction {TransactionId} for booking {BookingId}: {AmountPence} pence {Currency}",
-            @event.TransactionId, bookingId, amountPence, "GBP");
+            "Recording settlement transaction {TransactionId} for booking {BookingId}: {Amount} pence {Currency}",
+            @event.TransactionId, bookingId, amount, "GBP");
 
         await transactionService.LogAsync(new SettlementTransactionDto
         {
@@ -33,7 +33,7 @@ internal class SettlementTransactionHandler : ITransactionHandler
             FromUserId = Guid.Parse(meta["fromUserId"]),
             ToUserId = Guid.Parse(meta["toUserId"]),
             PaymentIntentId = @event.TransactionId,
-            Amount = amountPence,
+            Amount = amount,
             Status = TransactionStatus.Complete,
             CreatedAt = timeProvider.GetUtcNow().DateTime
         });

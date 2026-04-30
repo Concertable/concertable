@@ -10,6 +10,7 @@ public interface IManagerPaymentModule
         decimal amount,
         IDictionary<string, string> metadata,
         string paymentMethodId,
+        PaymentSession session,
         CancellationToken ct = default);
 
     Task<bool> HasStripeCustomerAsync(Guid userId);

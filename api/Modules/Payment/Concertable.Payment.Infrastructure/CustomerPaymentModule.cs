@@ -4,31 +4,26 @@ using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure;
 
 internal class CustomerPaymentModule : ICustomerPaymentModule
 {
-    private readonly IPaymentService paymentService;
+    private readonly IPaymentManager paymentManager;
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly ICustomerModule customerModule;
-    private readonly ILogger<CustomerPaymentModule> logger;
 
     public CustomerPaymentModule(
-        [FromKeyedServices(PaymentSession.OnSession)] IPaymentService paymentService,
+        IPaymentManager paymentManager,
         IStripeAccountService stripeAccountService,
         IPayoutAccountRepository payoutAccountRepository,
-        ICustomerModule customerModule,
-        ILogger<CustomerPaymentModule> logger)
+        ICustomerModule customerModule)
     {
-        this.paymentService = paymentService;
+        this.paymentManager = paymentManager;
         this.stripeAccountService = stripeAccountService;
         this.payoutAccountRepository = payoutAccountRepository;
         this.customerModule = customerModule;
-        this.logger = logger;
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
@@ -42,42 +37,20 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         var customer = await customerModule.GetCustomerAsync(payerId)
             ?? throw new ForbiddenException("Only customers can purchase tickets");
 
-        var payerAccount = await payoutAccountRepository.GetByUserIdAsync(payerId)
-            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
-        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeId)
-            ?? throw new NotFoundException($"Payout account not found for payee {payeeId}");
-
-        var stripeCustomerId = payerAccount.StripeCustomerId
-            ?? throw new BadRequestException("Payer has no Stripe customer ID");
-        var stripeAccountId = payeeAccount.StripeAccountId
-            ?? throw new BadRequestException("Payee has no Stripe Connect account");
-
         var resolvedPaymentMethodId = paymentMethodId
-            ?? await stripeAccountService.TryGetPaymentMethodAsync(stripeCustomerId)
+            ?? await TryGetSavedPaymentMethodAsync(payerId, ct)
             ?? throw new BadRequestException("No payment method provided and no saved payment method found");
 
-        var mergedMetadata = new Dictionary<string, string>
+        return await paymentManager.ChargeAsync(new ChargeRequest
         {
-            ["fromUserId"] = payerId.ToString(),
-            ["fromUserEmail"] = customer.Email ?? string.Empty,
-            ["toUserId"] = payeeId.ToString(),
-            ["amount"] = ((long)(amount * 100)).ToString()
-        }
-        .Merge(metadata);
-
-        logger.LogInformation(
-            "Charging customer {PayerId} {Amount} {Currency} -> {PayeeId} (stripe account {DestinationStripeId}) for {Purpose}",
-            payerId, amount, "GBP", payeeId, stripeAccountId, metadata["type"]);
-
-        return await paymentService.ProcessAsync(new TransactionRequest
-        {
-            PaymentMethodId = resolvedPaymentMethodId,
-            FromUserEmail = customer.Email ?? string.Empty,
-            StripeCustomerId = stripeCustomerId,
-            DestinationStripeId = stripeAccountId,
+            PayerId = payerId,
+            PayerEmail = customer.Email ?? string.Empty,
+            PayeeId = payeeId,
             Amount = amount,
-            Metadata = mergedMetadata
-        });
+            PaymentMethodId = resolvedPaymentMethodId,
+            Metadata = metadata,
+            Session = PaymentSession.OnSession
+        }, ct);
     }
 
     public async Task<CheckoutSession> CreatePaymentSessionAsync(
@@ -98,6 +71,12 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         .Merge(metadata);
 
         return await stripeAccountService.CreatePaymentSessionAsync(stripeCustomerId, mergedMetadata, ct);
+    }
+
+    private async Task<string?> TryGetSavedPaymentMethodAsync(Guid payerId, CancellationToken ct)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(payerId, ct);
+        return await stripeAccountService.TryGetPaymentMethodAsync(account?.StripeCustomerId);
     }
 
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)

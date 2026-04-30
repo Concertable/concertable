@@ -5,42 +5,42 @@ using Stripe;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
-internal abstract class PaymentService : IPaymentService
+internal abstract class StripePaymentIntentClient : IStripePaymentIntentClient
 {
     private readonly IStripePaymentClient stripeClient;
     private readonly IStripeAccountService stripeAccountService;
     private readonly ILogger logger;
 
-    protected PaymentService(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService, ILogger logger)
+    protected StripePaymentIntentClient(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService, ILogger logger)
     {
         this.stripeClient = stripeClient;
         this.stripeAccountService = stripeAccountService;
         this.logger = logger;
     }
 
-    public async Task<Result<PaymentResponse>> ProcessAsync(TransactionRequest request)
+    public async Task<Result<PaymentResponse>> ChargeAsync(StripeChargeOptions opts)
     {
         try
         {
-            if (string.IsNullOrEmpty(request.DestinationStripeId))
+            if (string.IsNullOrEmpty(opts.DestinationStripeId))
                 return Result.Fail("Recipient does not have a Stripe account");
 
-            if (await stripeAccountService.GetAccountStatusAsync(request.DestinationStripeId) != PayoutAccountStatus.Verified)
+            if (await stripeAccountService.GetAccountStatusAsync(opts.DestinationStripeId) != PayoutAccountStatus.Verified)
                 return Result.Fail("Recipient is not eligible for payouts");
 
             var options = new PaymentIntentCreateOptions
             {
-                Amount = (long)(request.Amount * 100),
+                Amount = (long)(opts.Amount * 100),
                 Currency = "GBP",
-                PaymentMethod = request.PaymentMethodId,
-                Customer = request.StripeCustomerId,
+                PaymentMethod = opts.PaymentMethodId,
+                Customer = opts.StripeCustomerId,
                 Confirm = true,
                 PaymentMethodTypes = ["card"],
-                ReceiptEmail = request.FromUserEmail,
-                Metadata = request.Metadata,
+                ReceiptEmail = opts.ReceiptEmail,
+                Metadata = opts.Metadata,
                 TransferData = new PaymentIntentTransferDataOptions
                 {
-                    Destination = request.DestinationStripeId
+                    Destination = opts.DestinationStripeId
                 }
             };
 
@@ -63,14 +63,14 @@ internal abstract class PaymentService : IPaymentService
         {
             logger.LogError(ex,
                 "Stripe charge failed for {AmountPence} pence to {Destination}: {StripeCode}",
-                (long)(request.Amount * 100), request.DestinationStripeId, ex.StripeError?.Code);
+                (long)(opts.Amount * 100), opts.DestinationStripeId, ex.StripeError?.Code);
             return Result.Fail($"Stripe Error: {ex.Message}");
         }
         catch (Exception ex)
         {
             logger.LogError(ex,
                 "Payment processing failed for {AmountPence} pence to {Destination}",
-                (long)(request.Amount * 100), request.DestinationStripeId);
+                (long)(opts.Amount * 100), opts.DestinationStripeId);
             return Result.Fail($"General Error: {ex.Message}");
         }
     }

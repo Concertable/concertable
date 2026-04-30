@@ -2,9 +2,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
-internal class OffSessionPaymentService : PaymentService
+internal class OffSessionStripePaymentIntentClient : StripePaymentIntentClient
 {
-    public OffSessionPaymentService(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService, ILogger<OffSessionPaymentService> logger)
+    public OffSessionStripePaymentIntentClient(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService, ILogger<OffSessionStripePaymentIntentClient> logger)
         : base(stripeClient, stripeAccountService, logger) { }
 
     protected override void Configure(Stripe.PaymentIntentCreateOptions options)

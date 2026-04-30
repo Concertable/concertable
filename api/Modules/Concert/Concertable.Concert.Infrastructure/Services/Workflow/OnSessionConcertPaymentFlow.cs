@@ -1,7 +1,6 @@
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
@@ -9,8 +8,7 @@ internal class OnSessionConcertPaymentFlow : IConcertPaymentFlow
 {
     private readonly IManagerPaymentModule managerPaymentModule;
 
-    public OnSessionConcertPaymentFlow(
-        [FromKeyedServices(PaymentSession.OnSession)] IManagerPaymentModule managerPaymentModule)
+    public OnSessionConcertPaymentFlow(IManagerPaymentModule managerPaymentModule)
     {
         this.managerPaymentModule = managerPaymentModule;
     }
@@ -30,7 +28,7 @@ internal class OnSessionConcertPaymentFlow : IConcertPaymentFlow
         IDictionary<string, string> metadata,
         CancellationToken ct = default)
     {
-        return managerPaymentModule.PayAsync(payerId, payeeId, amount, metadata, paymentMethodId, ct);
+        return managerPaymentModule.PayAsync(payerId, payeeId, amount, metadata, paymentMethodId, PaymentSession.OnSession, ct);
     }
 
     public Task<CheckoutSession> CreateSessionAsync(

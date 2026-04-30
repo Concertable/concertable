@@ -1,33 +1,29 @@
-﻿using Concertable.User.Contracts;
+using Concertable.User.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
-using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure;
 
 internal class ManagerPaymentModule : IManagerPaymentModule
 {
-    private readonly IPaymentService paymentService;
+    private readonly IPaymentManager paymentManager;
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly IUserModule userModule;
-    private readonly ILogger<ManagerPaymentModule> logger;
 
     public ManagerPaymentModule(
-        IPaymentService paymentService,
+        IPaymentManager paymentManager,
         IStripeAccountService stripeAccountService,
         IPayoutAccountRepository payoutAccountRepository,
-        IUserModule userModule,
-        ILogger<ManagerPaymentModule> logger)
+        IUserModule userModule)
     {
-        this.paymentService = paymentService;
+        this.paymentManager = paymentManager;
         this.stripeAccountService = stripeAccountService;
         this.payoutAccountRepository = payoutAccountRepository;
         this.userModule = userModule;
-        this.logger = logger;
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
@@ -36,46 +32,22 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         decimal amount,
         IDictionary<string, string> metadata,
         string paymentMethodId,
+        PaymentSession session,
         CancellationToken ct = default)
     {
         var payer = await userModule.GetManagerByIdAsync(payerId)
             ?? throw new NotFoundException($"Payer manager not found for userId {payerId}");
-        var payee = await userModule.GetManagerByIdAsync(payeeId)
-            ?? throw new NotFoundException($"Payee manager not found for userId {payeeId}");
 
-        var payerAccount = await payoutAccountRepository.GetByUserIdAsync(payerId)
-            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
-        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(payeeId)
-            ?? throw new NotFoundException($"Payout account not found for payee {payeeId}");
-
-        var payeeStripeAccountId = payeeAccount.StripeAccountId
-            ?? throw new BadRequestException("Payee has not completed Stripe verification");
-
-        if (await stripeAccountService.GetAccountStatusAsync(payeeStripeAccountId) != PayoutAccountStatus.Verified)
-            throw new BadRequestException("Payee has not completed Stripe verification");
-
-        var mergedMetadata = new Dictionary<string, string>
+        return await paymentManager.ChargeAsync(new ChargeRequest
         {
-            ["fromUserId"] = payerId.ToString(),
-            ["fromUserEmail"] = payer.Email ?? string.Empty,
-            ["toUserId"] = payeeId.ToString(),
-            ["amount"] = ((long)(amount * 100)).ToString()
-        }
-        .Merge(metadata);
-
-        logger.LogInformation(
-            "Charging manager {PayerId} {Amount} {Currency} -> {PayeeId} (stripe account {DestinationStripeId}) for {Purpose}",
-            payerId, amount, "GBP", payeeId, payeeStripeAccountId, metadata["type"]);
-
-        return await paymentService.ProcessAsync(new TransactionRequest
-        {
-            PaymentMethodId = paymentMethodId,
-            FromUserEmail = payer.Email ?? string.Empty,
-            StripeCustomerId = payerAccount.StripeCustomerId,
-            DestinationStripeId = payeeStripeAccountId,
+            PayerId = payerId,
+            PayerEmail = payer.Email ?? string.Empty,
+            PayeeId = payeeId,
             Amount = amount,
-            Metadata = mergedMetadata
-        });
+            PaymentMethodId = paymentMethodId,
+            Metadata = metadata,
+            Session = session
+        }, ct);
     }
 
     public async Task<bool> HasStripeCustomerAsync(Guid userId)

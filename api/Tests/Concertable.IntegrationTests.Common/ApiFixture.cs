@@ -71,8 +71,8 @@ public async Task InitializeAsync()
                 services.AddSingleton<INotificationModule>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
-                services.AddKeyedScoped<IPaymentService, OnSessionPaymentService>(PaymentSession.OnSession);
-                services.AddKeyedScoped<IPaymentService, OffSessionPaymentService>(PaymentSession.OffSession);
+                services.AddKeyedScoped<IStripePaymentIntentClient, OnSessionStripePaymentIntentClient>(PaymentSession.OnSession);
+                services.AddKeyedScoped<IStripePaymentIntentClient, OffSessionStripePaymentIntentClient>(PaymentSession.OffSession);
                 services.AddResettables(NotificationService, StripePaymentClient, EmailService);
                 services.AddSingleton<IEmailService>(EmailService);
 
