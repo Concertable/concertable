@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Concertable.Concert.Infrastructure.Services.Workflow;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Workflow;
@@ -30,7 +31,8 @@ public class VersusConcertWorkflowCompleteTests
             bookingRepository.Object,
             new Mock<IPayerLookup>().Object,
             contractLookup.Object,
-            new Mock<IConcertPaymentFlow>().Object);
+            new Mock<IConcertPaymentFlow>().Object,
+            NullLogger<VersusConcertWorkflow>.Instance);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);
         concertRepository.Setup(r => r.GetTotalRevenueByConcertIdAsync(10)).ReturnsAsync(1000);

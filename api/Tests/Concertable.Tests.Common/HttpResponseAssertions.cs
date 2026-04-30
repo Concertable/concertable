@@ -1,7 +1,7 @@
 using System.Net;
 using Xunit.Sdk;
 
-namespace Concertable.IntegrationTests.Common;
+namespace Concertable.Tests.Common;
 
 public static class HttpResponseAssertions
 {

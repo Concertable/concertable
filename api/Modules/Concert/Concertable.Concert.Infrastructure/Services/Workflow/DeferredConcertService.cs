@@ -1,6 +1,7 @@
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
@@ -10,17 +11,20 @@ internal class DeferredConcertService : IDeferredConcertService
     private readonly IBookingService bookingService;
     private readonly IConcertPaymentFlow paymentFlow;
     private readonly IConcertDraftService concertDraftService;
+    private readonly ILogger<DeferredConcertService> logger;
 
     public DeferredConcertService(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
         [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow,
-        IConcertDraftService concertDraftService)
+        IConcertDraftService concertDraftService,
+        ILogger<DeferredConcertService> logger)
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
         this.paymentFlow = paymentFlow;
         this.concertDraftService = concertDraftService;
+        this.logger = logger;
     }
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string? paymentMethodId)
@@ -47,15 +51,21 @@ internal class DeferredConcertService : IDeferredConcertService
         var settlementMetadata = new Dictionary<string, string>
         {
             ["type"] = "settlement",
-            ["bookingId"] = booking.Id.ToString()
+            ["bookingId"] = booking.Id.ToString(),
+            ["fromUserId"] = payerId.ToString(),
+            ["toUserId"] = payeeId.ToString()
         };
 
-        var storedPaymentMethodId = booking.PaymentMethodId
-            ?? throw new BadRequestException("Booking has no stored payment method");
+        var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, booking.PaymentMethodId);
 
-        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, storedPaymentMethodId, settlementMetadata);
+        logger.LogInformation(
+            "Settling concert {ConcertId} (booking {BookingId}): paying {Amount} {Currency} from {PayerId} to {PayeeId}",
+            concertId, booking.Id, amount, "GBP", payerId, payeeId);
+
+        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, resolvedPaymentMethodId, settlementMetadata);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
+
         return new DeferredFinishOutcome(payment.Value);
     }
 

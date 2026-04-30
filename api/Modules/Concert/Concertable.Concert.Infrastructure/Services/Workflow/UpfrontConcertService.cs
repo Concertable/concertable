@@ -1,6 +1,7 @@
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
@@ -10,17 +11,20 @@ internal class UpfrontConcertService : IUpfrontConcertService
     private readonly IBookingService bookingService;
     private readonly IConcertPaymentFlow paymentFlow;
     private readonly IConcertDraftService concertDraftService;
+    private readonly ILogger<UpfrontConcertService> logger;
 
     public UpfrontConcertService(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
         [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow,
-        IConcertDraftService concertDraftService)
+        IConcertDraftService concertDraftService,
+        ILogger<UpfrontConcertService> logger)
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
         this.paymentFlow = paymentFlow;
         this.concertDraftService = concertDraftService;
+        this.logger = logger;
     }
 
     public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, Guid payeeId, decimal amount, string? paymentMethodId = null)
@@ -36,12 +40,19 @@ internal class UpfrontConcertService : IUpfrontConcertService
         var settlementMetadata = new Dictionary<string, string>
         {
             ["type"] = "settlement",
-            ["bookingId"] = booking.Id.ToString()
+            ["bookingId"] = booking.Id.ToString(),
+            ["fromUserId"] = payerId.ToString(),
+            ["toUserId"] = payeeId.ToString()
         };
+
+        logger.LogInformation(
+            "Accepting application {ApplicationId} (booking {BookingId}): charging {Amount} {Currency} from {PayerId} to {PayeeId}",
+            applicationId, booking.Id, amount, "GBP", payerId, payeeId);
 
         var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, resolvedPaymentMethodId, settlementMetadata);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
+
         return new ImmediateAcceptOutcome(payment.Value);
     }
 

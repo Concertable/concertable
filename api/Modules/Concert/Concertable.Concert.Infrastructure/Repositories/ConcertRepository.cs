@@ -152,6 +152,7 @@ internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         var now = timeProvider.GetUtcNow().UtcDateTime;
         return await context.Concerts
             .Where(c => c.Booking.Application.Status == ApplicationStatus.Accepted
+                     && c.Booking.Status == BookingStatus.Confirmed
                      && c.Booking.Application.Opportunity.Period.Start < now)
             .Select(c => c.Id)
             .ToListAsync();

@@ -12,7 +12,7 @@ internal interface IConcertPaymentFlow
         Guid payeeId,
         decimal amount,
         string paymentMethodId,
-        IDictionary<string, string>? metadata,
+        IDictionary<string, string> metadata,
         CancellationToken ct = default);
 
     Task<CheckoutSession> CreateSessionAsync(

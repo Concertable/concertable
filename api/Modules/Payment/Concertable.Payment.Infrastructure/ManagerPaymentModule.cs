@@ -4,6 +4,7 @@ using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure;
 
@@ -13,24 +14,27 @@ internal class ManagerPaymentModule : IManagerPaymentModule
     private readonly IStripeAccountService stripeAccountService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly IUserModule userModule;
+    private readonly ILogger<ManagerPaymentModule> logger;
 
     public ManagerPaymentModule(
         IPaymentService paymentService,
         IStripeAccountService stripeAccountService,
         IPayoutAccountRepository payoutAccountRepository,
-        IUserModule userModule)
+        IUserModule userModule,
+        ILogger<ManagerPaymentModule> logger)
     {
         this.paymentService = paymentService;
         this.stripeAccountService = stripeAccountService;
         this.payoutAccountRepository = payoutAccountRepository;
         this.userModule = userModule;
+        this.logger = logger;
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,
-        IDictionary<string, string>? metadata,
+        IDictionary<string, string> metadata,
         string paymentMethodId,
         CancellationToken ct = default)
     {
@@ -58,6 +62,10 @@ internal class ManagerPaymentModule : IManagerPaymentModule
             ["amount"] = ((long)(amount * 100)).ToString()
         }
         .Merge(metadata);
+
+        logger.LogInformation(
+            "Charging manager {PayerId} {Amount} {Currency} -> {PayeeId} (stripe account {DestinationStripeId}) for {Purpose}",
+            payerId, amount, "GBP", payeeId, payeeStripeAccountId, metadata["type"]);
 
         return await paymentService.ProcessAsync(new TransactionRequest
         {

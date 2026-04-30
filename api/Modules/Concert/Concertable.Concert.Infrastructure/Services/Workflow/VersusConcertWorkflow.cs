@@ -4,6 +4,7 @@ using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
@@ -15,6 +16,7 @@ internal class VersusConcertWorkflow : IConcertWorkflow
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
     private readonly IConcertPaymentFlow paymentFlow;
+    private readonly ILogger<VersusConcertWorkflow> logger;
 
     public VersusConcertWorkflow(
         IDeferredConcertService deferredConcertService,
@@ -22,7 +24,8 @@ internal class VersusConcertWorkflow : IConcertWorkflow
         IBookingRepository bookingRepository,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
-        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow)
+        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow,
+        ILogger<VersusConcertWorkflow> logger)
     {
         this.deferredConcertService = deferredConcertService;
         this.concertRepository = concertRepository;
@@ -30,6 +33,7 @@ internal class VersusConcertWorkflow : IConcertWorkflow
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
         this.paymentFlow = paymentFlow;
+        this.logger = logger;
     }
 
     public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
@@ -73,6 +77,10 @@ internal class VersusConcertWorkflow : IConcertWorkflow
         var contract = (VersusContract)await contractLoader.LoadByConcertIdAsync(concertId);
         var totalRevenue = await concertRepository.GetTotalRevenueByConcertIdAsync(concertId);
         var artistShare = contract.Guarantee + (totalRevenue * (contract.ArtistDoorPercent / 100));
+
+        logger.LogDebug(
+            "Calculated versus artist share for concert {ConcertId}: {Guarantee} {Currency} guarantee + ({Revenue} {Currency} revenue at {Percent}%) = {Share} {Currency}",
+            concertId, contract.Guarantee, "GBP", totalRevenue, contract.ArtistDoorPercent, artistShare);
 
         return await deferredConcertService.FinishedAsync(
             concertId,

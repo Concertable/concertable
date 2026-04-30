@@ -30,7 +30,7 @@ internal class OffSessionConcertPaymentFlow : IConcertPaymentFlow
         Guid payeeId,
         decimal amount,
         string paymentMethodId,
-        IDictionary<string, string>? metadata,
+        IDictionary<string, string> metadata,
         CancellationToken ct = default)
     {
         return managerPaymentModule.PayAsync(payerId, payeeId, amount, metadata, paymentMethodId, ct);
