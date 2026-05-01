@@ -1,5 +1,5 @@
 ﻿import type { ArtistSummary } from "@/features/artists";
-import type { Opportunity } from "@/types/opportunity";
+import type { Opportunity } from "@/features/concerts";
 
 export type ApplicationStatus =
   | "Pending"

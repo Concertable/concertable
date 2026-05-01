@@ -1,8 +1,8 @@
 import { usePagination } from "@/hooks/usePagination";
-import { useOpportunitiesByVenueQuery } from "@/hooks/query/useOpportunityQuery";
-import { OpportunityCard } from "@/components/opportunities/OpportunityCard";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useOpportunitiesByVenueQuery } from "../../hooks/useOpportunityQuery";
+import { OpportunityCard } from "./OpportunityCard";
 
 function OpportunitySectionSkeleton() {
   return (

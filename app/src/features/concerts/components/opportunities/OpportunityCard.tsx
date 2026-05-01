@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { Opportunity } from "@/types/opportunity";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +13,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { isVenueManager } from "@/types/auth";
 import dayjs from "dayjs";
+import type { Opportunity } from "../../types";
 
 interface Props {
   opportunity: Opportunity;

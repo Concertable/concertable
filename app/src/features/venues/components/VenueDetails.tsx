@@ -3,7 +3,7 @@ import { GoogleMap } from "@/components/GoogleMap";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/features/reviews";
-import { OpportunitySection } from "@/components/opportunities/OpportunitySection";
+import { OpportunitySection } from "@/features/concerts";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { useVenueStore } from "../store/useVenueStore";
 import type { Venue } from "../types";
