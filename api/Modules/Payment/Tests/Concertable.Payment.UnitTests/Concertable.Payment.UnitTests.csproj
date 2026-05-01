@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
-    <ProjectReference Include="..\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
+    <ProjectReference Include="..\..\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
+    <ProjectReference Include="..\..\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

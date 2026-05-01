@@ -17,18 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
-    <ProjectReference Include="..\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
-    <ProjectReference Include="..\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Contract\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
+    <ProjectReference Include="..\..\Concertable.Search.Application\Concertable.Search.Application.csproj" />
+    <ProjectReference Include="..\..\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="Concertable.Concert.Domain" />
-    <Using Include="Concertable.Concert.Application.Interfaces" />
-    <Using Include="Concertable.Contract.Contracts" />
+    <Using Include="Concertable.Search.Application" />
+    <Using Include="Concertable.Search.Application" />
   </ItemGroup>
 
 </Project>
