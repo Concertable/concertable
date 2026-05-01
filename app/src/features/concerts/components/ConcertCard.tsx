@@ -1,9 +1,9 @@
-import type { Concert } from "@/types/concert";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { useImageUrl } from "@/hooks/query/useImageUrl";
 import dayjs from "dayjs";
 import { CalendarDays, MapPin, Ticket } from "lucide-react";
+import type { Concert } from "../types";
 
 interface Props {
   concert: Concert;

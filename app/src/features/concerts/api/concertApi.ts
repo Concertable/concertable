@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import type { Concert } from "@/types/concert";
+import type { Concert } from "../types";
 
 interface UpdateConcertRequest {
   name: string;

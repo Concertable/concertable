@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useConcert } from "@/hooks/useConcert";
-import { useConcertStore } from "@/store/useConcertStore";
-import concertApi from "@/api/concertApi";
-import type { Concert } from "@/types/concert";
-import type { UseConcertResult } from "@/hooks/useConcert";
+import { useConcert } from "./useConcert";
+import { useConcertStore } from "../store/useConcertStore";
+import concertApi from "../api/concertApi";
+import type { Concert } from "../types";
+import type { UseConcertResult } from "./useConcert";
 
 interface UseMyConcertResult extends UseConcertResult {
   draft: Concert | undefined;

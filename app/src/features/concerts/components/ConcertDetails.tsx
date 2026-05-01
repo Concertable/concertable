@@ -1,15 +1,15 @@
-import type { Concert } from "@/types/concert";
 import { Hero } from "@/components/Hero";
 import { GoogleMap } from "@/components/GoogleMap";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection, ReviewSummaryBadge, AddReview } from "@/features/reviews";
-import { ConcertCard } from "@/components/concert/ConcertCard";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, TriangleAlertIcon } from "lucide-react";
 import { VenueLocation } from "@/features/venues";
 import { GenreTags } from "@/components/headers/GenreTags";
 import { useImageUrl } from "@/hooks/query/useImageUrl";
+import { ConcertCard } from "./ConcertCard";
+import type { Concert } from "../types";
 
 const SECTIONS = [
   { id: "about", label: "About" },

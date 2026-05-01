@@ -1,6 +1,5 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { useConcert } from "@/hooks/useConcert";
-import { ConcertDetails } from "@/components/concert/ConcertDetails";
+import { useConcert, ConcertDetails } from "@/features/concerts";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 
 const routeApi = getRouteApi("/_customer/find/concert/$id");

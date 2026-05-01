@@ -14,11 +14,11 @@ import {
   type AwaitingStep,
 } from "@/components/checkout/CheckoutAwaiting";
 import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
-import { useConcert } from "@/hooks/useConcert";
+import { useConcert } from "@/features/concerts";
 import { useTicketCheckoutQuery } from "@/hooks/query/useTicketsQuery";
 import { notificationConnection } from "@/lib/signalr";
 import type { TicketPurchasedPayload } from "@/features/notifications";
-import type { Concert } from "@/types/concert";
+import type { Concert } from "@/features/concerts";
 
 type CheckoutPhase = "form" | "awaiting" | "success" | "timeout";
 

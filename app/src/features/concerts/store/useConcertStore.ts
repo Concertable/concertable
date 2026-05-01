@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { produce } from "immer";
-import type { Concert } from "@/types/concert";
+import type { Concert } from "../types";
 
 interface ConcertStore {
   draft: Concert | undefined;

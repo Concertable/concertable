@@ -1,5 +1,5 @@
-import { useConcertQuery } from "@/hooks/query/useConcertQuery";
-import type { Concert } from "@/types/concert";
+import { useConcertQuery } from "./useConcertQuery";
+import type { Concert } from "../types";
 
 export interface UseConcertResult {
   concert: Concert | undefined;
