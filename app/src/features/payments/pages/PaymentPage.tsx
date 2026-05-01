@@ -16,7 +16,7 @@ import {
   useStripeOnboardingQuery,
   usePaymentMethodQuery,
 } from "../hooks/useStripeAccountQuery";
-import { AddPaymentMethodModal } from "./AddPaymentMethodModal";
+import { AddPaymentMethodModal } from "../components/AddPaymentMethodModal";
 
 export default function PaymentPage() {
   const user = useAuthStore((s) => s.user);

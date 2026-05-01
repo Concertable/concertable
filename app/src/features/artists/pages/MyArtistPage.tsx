@@ -3,7 +3,7 @@ import { EditableProvider } from "@/providers/EditableProvider";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 import { useMyArtist } from "../hooks/useMyArtist";
 import { useArtistStore } from "../store/useArtistStore";
-import { ArtistDetails } from "./ArtistDetails";
+import { ArtistDetails } from "../components/ArtistDetails";
 
 export default function MyArtistPage() {
   const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
