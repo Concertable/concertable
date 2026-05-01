@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import type { Preference, CreatePreferenceRequest } from "@/types/preference";
+import type { Preference, CreatePreferenceRequest } from "../types";
 
 const preferenceApi = {
   getMyPreference: async (): Promise<Preference> => {

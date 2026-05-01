@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import preferenceApi from "@/api/preferenceApi";
+import preferenceApi from "../api/preferenceApi";
 
 export function useMyPreferenceQuery() {
   return useQuery({
