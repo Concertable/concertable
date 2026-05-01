@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Tests\Concertable.IntegrationTests.Common\Concertable.IntegrationTests.Common.csproj" />
-    <ProjectReference Include="..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\Tests\Concertable.IntegrationTests.Common\Concertable.IntegrationTests.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +26,15 @@
     <Using Include="Concertable.IntegrationTests.Common" />
     <Using Include="Concertable.IntegrationTests.Common.Mocks" />
     <Using Include="Concertable.Tests.Common" />
+    <Using Include="Concertable.Concert.Application.DTOs" />
+    <Using Include="Concertable.Concert.Application.Requests" />
+    <Using Include="Concertable.Concert.Application.Responses" />
+    <Using Include="Concertable.Contract.Contracts" />
+    <Using Include="Concertable.Payment.Domain" />
+    <Using Include="Concertable.Concert.Domain" />
+    <Using Include="Concertable.Shared" />
+    <Using Include="Concertable.Payment.Application.Responses" />
+    <Using Include="Concertable.Payment.Application.Interfaces" />
   </ItemGroup>
 
 </Project>

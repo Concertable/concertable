@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <NoWarn>$(NoWarn);xUnit1000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,12 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\Tests\Concertable.IntegrationTests.Common\Concertable.IntegrationTests.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Concertable.IntegrationTests.Common" />
+    <Using Include="Concertable.IntegrationTests.Common.Mocks" />
+    <Using Include="Concertable.Tests.Common" />
   </ItemGroup>
 
 </Project>

@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NoWarn>$(NoWarn);xUnit1000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,17 +16,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Tests\Concertable.IntegrationTests.Common\Concertable.IntegrationTests.Common.csproj" />
-    <ProjectReference Include="..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
-    <ProjectReference Include="..\Concertable.Search.Application\Concertable.Search.Application.csproj" />
+    <ProjectReference Include="..\..\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
+    <ProjectReference Include="..\..\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="Concertable.IntegrationTests.Common" />
-    <Using Include="Concertable.IntegrationTests.Common.Mocks" />
-    <Using Include="Concertable.Tests.Common" />
-    <Using Include="Concertable.Search.Application" />
+    <Using Include="Concertable.Contract.Domain" />
+    <Using Include="Concertable.Contract.Contracts" />
   </ItemGroup>
 
 </Project>
