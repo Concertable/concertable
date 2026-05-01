@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Modules\Auth\Concertable.Auth.Contracts\Concertable.Auth.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Api\Concertable.Concert.Api.csproj" />
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />

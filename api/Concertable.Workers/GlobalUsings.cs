@@ -1,4 +1,3 @@
-global using Concertable.Auth.Contracts;
 global using Concertable.Authorization.Contracts;
 global using Concertable.User.Contracts;
 global using Concertable.Payment.Domain;

@@ -1,7 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Serializers;
-using Concertable.Auth.Contracts;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
@@ -72,7 +71,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddValidation(this IServiceCollection services)
     {
         services.AddFluentValidationAutoValidation();
-        services.AddValidatorsFromAssemblyContaining<LoginRequest>();
 
         return services;
     }

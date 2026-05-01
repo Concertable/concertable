@@ -66,15 +66,8 @@ public class AppFixture : IAsyncLifetime
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
     }
 
-    public async Task<HttpClient> CreateAuthenticatedClientAsync(string email, string password)
-    {
-        var response = await Client.PostAsJsonEnsureSuccessAsync("/api/Auth/login", new { Email = email, Password = password, RememberMe = false });
-        var login = await response.Content.ReadAsync<LoginResponse>();
-
-        var httpClient = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login!.AccessToken);
-        return httpClient;
-    }
+    public Task<HttpClient> CreateAuthenticatedClientAsync(string email, string password) =>
+        throw new NotImplementedException("Pending Duende migration — see Stage 10.");
 
     public async Task DisposeAsync()
     {
