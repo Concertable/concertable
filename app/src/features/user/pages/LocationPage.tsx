@@ -1,3 +1,3 @@
-export default function LocationPage() {
+export function LocationPage() {
   return <div>Location</div>;
 }

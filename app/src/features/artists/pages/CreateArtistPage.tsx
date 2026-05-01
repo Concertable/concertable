@@ -1,3 +1,3 @@
-export default function CreateArtistPage() {
+export function CreateArtistPage() {
   return <div>Create Artist</div>;
 }

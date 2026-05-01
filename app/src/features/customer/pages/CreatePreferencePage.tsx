@@ -1,3 +1,3 @@
-export default function CreatePreferencePage() {
+export function CreatePreferencePage() {
   return <div>Create Preference</div>;
 }

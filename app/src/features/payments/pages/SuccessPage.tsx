@@ -1,3 +1,3 @@
-export default function SuccessPage() {
+export function SuccessPage() {
   return <div>Success</div>;
 }

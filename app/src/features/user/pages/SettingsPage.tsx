@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 
-export default function SettingsPage() {
+export function SettingsPage() {
   return (
     <div className="max-w-lg space-y-8">
       <div>

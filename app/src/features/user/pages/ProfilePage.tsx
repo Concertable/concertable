@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-export default function ProfilePage() {
+export function ProfilePage() {
   const user = useAuthStore((s) => s.user);
 
   if (!user) return null;

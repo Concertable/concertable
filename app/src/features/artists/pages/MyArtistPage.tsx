@@ -5,7 +5,7 @@ import { useMyArtist } from "../hooks/useMyArtist";
 import { useArtistStore } from "../store/useArtistStore";
 import { ArtistDetails } from "../components/ArtistDetails";
 
-export default function MyArtistPage() {
+export function MyArtistPage() {
   const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
     useMyArtist();
 

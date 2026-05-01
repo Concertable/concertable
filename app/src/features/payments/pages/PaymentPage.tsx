@@ -18,7 +18,7 @@ import {
 } from "../hooks/useStripeAccountQuery";
 import { AddPaymentMethodModal } from "../components/AddPaymentMethodModal";
 
-export default function PaymentPage() {
+export function PaymentPage() {
   const user = useAuthStore((s) => s.user);
   const isManager =
     user?.role === "VenueManager" || user?.role === "ArtistManager";

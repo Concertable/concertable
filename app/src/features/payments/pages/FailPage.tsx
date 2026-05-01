@@ -1,3 +1,3 @@
-export default function FailPage() {
+export function FailPage() {
   return <div>Fail</div>;
 }

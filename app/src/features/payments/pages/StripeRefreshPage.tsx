@@ -1,6 +1,6 @@
 import { useMountEffect } from "@/hooks/useMountEffect";
 
-export default function StripeRefreshPage() {
+export function StripeRefreshPage() {
   useMountEffect(() => {
     window.opener?.postMessage(
       { type: "stripe_refresh" },

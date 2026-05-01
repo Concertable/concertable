@@ -1,3 +1,3 @@
-export default function ArtistDashboardPage() {
+export function ArtistDashboardPage() {
   return <div>Artist Dashboard</div>;
 }
