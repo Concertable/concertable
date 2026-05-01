@@ -22,6 +22,12 @@ internal class ContractDevSeeder : IDevSeeder
 
     public async Task SeedAsync(CancellationToken ct = default)
     {
+        if (await context.Contracts.AnyAsync(ct))
+        {
+            seed.Contracts = await context.Contracts.OrderBy(c => c.Id).ToListAsync(ct);
+            return;
+        }
+
         await context.Contracts.SeedIfEmptyAsync(async () =>
         {
             seed.ConfirmedAppContract = FlatFeeContractEntity.Create(200m, PaymentMethod.Cash);
