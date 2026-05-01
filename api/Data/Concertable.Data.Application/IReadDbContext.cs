@@ -1,5 +1,4 @@
 ﻿using Concertable.Artist.Domain;
-using Concertable.Auth.Domain;
 using Concertable.Concert.Domain;
 using Concertable.Contract.Domain;
 using Concertable.Customer.Domain;
@@ -13,9 +12,6 @@ namespace Concertable.Data.Application;
 public interface IReadDbContext
 {
     IQueryable<UserEntity> Users { get; }
-    IQueryable<RefreshTokenEntity> RefreshTokens { get; }
-    IQueryable<EmailVerificationTokenEntity> EmailVerificationTokens { get; }
-    IQueryable<PasswordResetTokenEntity> PasswordResetTokens { get; }
     IQueryable<ArtistEntity> Artists { get; }
     IQueryable<ArtistGenreEntity> ArtistGenres { get; }
     IQueryable<VenueEntity> Venues { get; }

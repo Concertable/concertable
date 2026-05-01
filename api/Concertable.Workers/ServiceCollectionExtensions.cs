@@ -1,4 +1,3 @@
-using Concertable.Auth.Infrastructure.Extensions;
 using Concertable.Authorization.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
@@ -28,7 +27,6 @@ internal static class ServiceCollectionExtensions
 
         services.AddAuthorizationModule();
         services.AddUserModule(configuration);
-        services.AddAuthModule(configuration);
         services.AddConcertModule(configuration);
         services.AddContractModule(configuration);
         services.AddPaymentModule(configuration);

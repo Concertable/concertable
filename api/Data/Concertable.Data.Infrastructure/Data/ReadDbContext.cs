@@ -1,5 +1,4 @@
-﻿using Concertable.Auth.Domain;
-using Concertable.Contract.Domain;
+﻿using Concertable.Contract.Domain;
 using Concertable.Customer.Domain;
 using Concertable.Data.Application;
 using Concertable.Messaging.Domain;
@@ -16,9 +15,6 @@ internal class ReadDbContext(
     public ReadDbContext() : this(new DbContextOptionsBuilder<ReadDbContext>().Options, []) { }
 
     public IQueryable<UserEntity> Users => Set<UserEntity>().AsNoTracking();
-    public IQueryable<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>().AsNoTracking();
-    public IQueryable<EmailVerificationTokenEntity> EmailVerificationTokens => Set<EmailVerificationTokenEntity>().AsNoTracking();
-    public IQueryable<PasswordResetTokenEntity> PasswordResetTokens => Set<PasswordResetTokenEntity>().AsNoTracking();
     public IQueryable<ArtistEntity> Artists => Set<ArtistEntity>().AsNoTracking();
     public IQueryable<ArtistGenreEntity> ArtistGenres => Set<ArtistGenreEntity>().AsNoTracking();
     public IQueryable<VenueEntity> Venues => Set<VenueEntity>().AsNoTracking();

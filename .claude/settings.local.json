@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(git mv *)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet new *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet sln *)",
+      "PowerShell(Rename-Item *)",
+      "Bash(git reset *)",
+      "Bash(git config *)",
+      "Bash(rm app/.husky/pre-commit)",
+      "Bash(rmdir app/.husky)"
+    ]
+  }
+}

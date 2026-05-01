@@ -11,5 +11,7 @@ internal sealed class UserConfigurationProvider : IEntityTypeConfigurationProvid
         modelBuilder.ApplyConfiguration(new UserEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ManagerEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.EmailVerificationTokenEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.PasswordResetTokenEntityConfiguration());
     }
 }

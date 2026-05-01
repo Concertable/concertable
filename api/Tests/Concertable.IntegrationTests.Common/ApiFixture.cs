@@ -6,7 +6,6 @@ using Concertable.User.Domain;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.IntegrationTests.Common.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
-using Concertable.Auth.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
@@ -59,9 +58,6 @@ public async Task InitializeAsync()
                     ["ExternalServices:UseRealStripe"] = "false",
                     ["ExternalServices:UseRealBlob"] = "false",
                     ["ExternalServices:UseRealEmail"] = "false",
-                    ["Auth:JwtSigningKeyBase64"] = Convert.ToBase64String(new byte[32]),
-                    ["Auth:Issuer"] = "test",
-                    ["Auth:Audience"] = "test",
                     ["Urls:Frontend"] = "https://localhost:5173",
                 });
             });
@@ -85,7 +81,6 @@ public async Task InitializeAsync()
                 services.AddScoped<ILocationFaker, LocationFaker>();
                 services.AddSharedTestSeeder();
                 services.AddUserTestSeeder();
-                services.AddAuthTestSeeder();
                 services.AddArtistTestSeeder();
                 services.AddVenueTestSeeder();
                 services.AddContractTestSeeder();

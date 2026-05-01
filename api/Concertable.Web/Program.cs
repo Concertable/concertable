@@ -14,8 +14,6 @@ using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Customer.Api.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
-using Concertable.Auth.Api.Extensions;
-using Concertable.Auth.Infrastructure.Extensions;
 using Concertable.Authorization.Infrastructure.Extensions;
 using Concertable.User.Api.Extensions;
 using Concertable.User.Infrastructure.Extensions;
@@ -93,7 +91,6 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddScoped<ILocationFaker, LocationFaker>();
     services.AddSharedDevSeeder();
     services.AddUserDevSeeder();
-    services.AddAuthDevSeeder();
     services.AddArtistDevSeeder();
     services.AddVenueDevSeeder();
     services.AddContractDevSeeder();
@@ -116,7 +113,6 @@ services.AddCustomerApi(builder.Configuration);
 services.AddQueueHostedService();
 services.AddAuthorizationModule();
 services.AddUserApi(builder.Configuration);
-services.AddAuthApi(builder.Configuration);
 services.AddAuth(builder.Configuration);
 services.AddValidation();
 
