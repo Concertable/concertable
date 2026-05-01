@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import type { Venue } from "@/types/venue";
+import type { Venue } from "../types";
 
 const venueApi = {
   getVenue: async (id: number): Promise<Venue> => {

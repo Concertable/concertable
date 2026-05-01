@@ -1,5 +1,5 @@
-import { useVenueQuery } from "@/hooks/query/useVenueQuery";
-import type { Venue } from "@/types/venue";
+import { useVenueQuery } from "./useVenueQuery";
+import type { Venue } from "../types";
 
 export interface UseVenueResult {
   venue: Venue | undefined;

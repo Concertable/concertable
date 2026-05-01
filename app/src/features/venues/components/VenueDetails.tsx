@@ -1,4 +1,3 @@
-import type { Venue } from "@/types/venue";
 import { MapPin } from "lucide-react";
 import { GoogleMap } from "@/components/GoogleMap";
 import { Hero } from "@/components/Hero";
@@ -6,7 +5,8 @@ import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection } from "@/features/reviews";
 import { OpportunitySection } from "@/components/opportunities/OpportunitySection";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
-import { useVenueStore } from "@/store/useVenueStore";
+import { useVenueStore } from "../store/useVenueStore";
+import type { Venue } from "../types";
 
 const SECTIONS = [
   { id: "about", label: "About" },

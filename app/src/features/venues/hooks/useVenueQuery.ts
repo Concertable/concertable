@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import venueApi from "@/api/venueApi";
+import venueApi from "../api/venueApi";
 
 export function useVenueQuery(id: number) {
   return useQuery({

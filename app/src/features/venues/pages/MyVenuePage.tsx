@@ -1,11 +1,11 @@
-import { useMyVenue } from "@/hooks/useMyVenue";
-import { useVenueStore } from "@/store/useVenueStore";
 import { ConfigBar } from "@/components/ConfigBar";
-import { VenueDetails } from "@/components/venue/VenueDetails";
 import { EditableProvider } from "@/providers/EditableProvider";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
+import { useMyVenue } from "../hooks/useMyVenue";
+import { useVenueStore } from "../store/useVenueStore";
+import { VenueDetails } from "../components/VenueDetails";
 
-export default function MyVenuePage() {
+export function MyVenuePage() {
   const { venue, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
     useMyVenue();
 

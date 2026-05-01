@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { produce } from "immer";
-import type { Venue } from "@/types/venue";
+import type { Venue } from "../types";
 
 interface VenueStore {
   draft: Venue | undefined;

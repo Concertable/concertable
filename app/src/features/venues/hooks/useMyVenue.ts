@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyVenueQuery } from "@/hooks/query/useVenueQuery";
-import { useVenueStore } from "@/store/useVenueStore";
-import venueApi from "@/api/venueApi";
-import type { Venue } from "@/types/venue";
-import type { UseVenueResult } from "@/hooks/useVenue";
+import { useMyVenueQuery } from "./useVenueQuery";
+import { useVenueStore } from "../store/useVenueStore";
+import venueApi from "../api/venueApi";
+import type { Venue } from "../types";
+import type { UseVenueResult } from "./useVenue";
 
 interface UseMyVenueResult extends UseVenueResult {
   draft: Venue | undefined;
