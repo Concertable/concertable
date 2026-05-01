@@ -1,4 +1,4 @@
-import type { Message } from "@/types/message";
+import type { Message } from "@/features/messaging";
 
 export interface TicketPurchasedPayload {
   success: boolean;

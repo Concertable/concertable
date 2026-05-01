@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { usePagination } from "@/hooks/usePagination";
 import {
   useUnreadCountQuery,
   useMessagesQuery,
-} from "@/hooks/query/useMessageQuery";
-import { usePagination } from "@/hooks/usePagination";
+} from "./useMessageQuery";
 
 export function useMailbox() {
   const [open, setOpen] = useState(false);

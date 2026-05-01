@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
-import type { Message } from "@/types/message";
 import type { Pagination } from "@/types/common";
 import type { PaginationParams } from "@/hooks/usePagination";
+import type { Message } from "../types";
 
 const messageApi = {
   getUnreadCount: async (): Promise<number> => {

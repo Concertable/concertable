@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/PaginationControls";
-import { useMailbox } from "@/hooks/useMailbox";
+import { useMailbox } from "../hooks/useMailbox";
 
 export function Mailbox() {
   const {
