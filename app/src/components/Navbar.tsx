@@ -3,12 +3,10 @@ import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ProfileMenu } from "@/components/ProfileMenu";
-import { Mailbox } from "@/components/Mailbox";
-import { NavbarSearch } from "@/components/NavbarSearch";
-import { useRole } from "@/hooks/useRole";
-import { useRouteRole } from "@/hooks/useRouteRole";
+import { Mailbox } from "@/features/messaging";
+import { NavbarSearch } from "@/features/search";
+import { useRole, useRouteRole, useAuthStore } from "@/features/auth";
 import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
-import { useAuthStore } from "@/store/useAuthStore";
 
 export interface NavLink {
   label: string;

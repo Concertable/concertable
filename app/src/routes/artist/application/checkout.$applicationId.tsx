@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import ApplicationCheckoutPage from "@/pages/customer/application/ApplicationCheckoutPage";
+import { ApplicationCheckoutPage } from "@/features/concerts";
 
 export const Route = createFileRoute(
   "/artist/application/checkout/$applicationId",

@@ -1,0 +1,13 @@
+import { useArtistQuery } from "./useArtistQuery";
+import type { Artist } from "../types";
+
+export interface UseArtistResult {
+  artist: Artist | undefined;
+  isLoading: boolean;
+  isError: boolean;
+}
+
+export function useArtist(id: number): UseArtistResult {
+  const { data: artist, isLoading, isError } = useArtistQuery(id);
+  return { artist, isLoading, isError };
+}

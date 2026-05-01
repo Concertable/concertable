@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/guards";
+import { requireAuth } from "@/features/auth";
 import {
   Sidebar,
   SidebarContent,

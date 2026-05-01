@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { requireRole } from "@/lib/guards";
-import { useVenueNotifications } from "@/hooks/useNotifications";
+import { requireRole } from "@/features/auth";
+import { useVenueNotifications } from "@/features/notifications";
 import { AppLayout } from "@/components/AppLayout";
 
 const links = [

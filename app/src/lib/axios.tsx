@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import qs from "qs";
 import { toast } from "sonner";
-import { userManager } from "@/lib/oidcConfig";
+import { userManager } from "@/features/auth";
 
 type ProblemDetails = {
   title?: string;

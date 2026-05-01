@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import LocationPage from "@/pages/customer/profile/LocationPage";
+import { LocationPage } from "@/features/user";
 
 export const Route = createFileRoute("/_customer/profile/location")({
   component: LocationPage,

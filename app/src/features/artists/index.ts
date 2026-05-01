@@ -1,0 +1,10 @@
+export { ArtistDetails } from "./components/ArtistDetails";
+export { ArtistDetailsPage } from "./pages/ArtistDetailsPage";
+export { ArtistDashboardPage } from "./pages/ArtistDashboardPage";
+export { CreateArtistPage } from "./pages/CreateArtistPage";
+export { MyArtistPage } from "./pages/MyArtistPage";
+export { useArtistQuery, useMyArtistQuery } from "./hooks/useArtistQuery";
+export { useArtist } from "./hooks/useArtist";
+export { useMyArtist } from "./hooks/useMyArtist";
+export { useArtistStore } from "./store/useArtistStore";
+export type { Artist, ArtistSummary } from "./types";

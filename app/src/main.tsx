@@ -4,11 +4,11 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import {
   serializeSearch,
   deserializeSearch,
-} from "@/utils/serializers/searchSerializer";
+} from "@/features/search";
 import { APIProvider as MapsProvider } from "@vis.gl/react-google-maps";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "react-oidc-context";
-import { userManager, onSigninCallback } from "@/lib/oidcConfig";
+import { userManager, onSigninCallback } from "@/features/auth";
 import { shouldRetry } from "@/lib/queryRetry";
 import { routeTree } from "./routeTree.gen";
 import { ThemeProvider } from "./providers/ThemeProvider";
