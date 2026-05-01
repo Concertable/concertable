@@ -1,4 +1,4 @@
-import type { Genre } from "@/types/artist";
+import type { Genre } from "@/types/common";
 import type { Contract } from "@/types/contract";
 
 export interface Opportunity {

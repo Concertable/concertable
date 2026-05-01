@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyArtistQuery } from "@/hooks/query/useArtistQuery";
-import { useArtistStore } from "@/store/useArtistStore";
-import artistApi from "@/api/artistApi";
+import { useMyArtistQuery } from "./useArtistQuery";
+import { useArtistStore } from "../store/useArtistStore";
+import artistApi from "../api/artistApi";
 
 export function useMyArtist() {
   const query = useMyArtistQuery();

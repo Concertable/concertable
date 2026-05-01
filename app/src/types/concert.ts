@@ -1,4 +1,4 @@
-import type { Genre } from "@/types/artist";
+import type { Genre } from "@/types/common";
 
 export interface ConcertArtist {
   id: number;

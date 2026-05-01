@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { produce } from "immer";
-import type { Artist } from "@/types/artist";
+import type { Artist } from "../types";
 
 interface ArtistStore {
   draft: Artist | undefined;

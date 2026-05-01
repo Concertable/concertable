@@ -1,4 +1,4 @@
-﻿import type { ArtistSummary } from "@/types/artist";
+﻿import type { ArtistSummary } from "@/features/artists";
 import type { Opportunity } from "@/types/opportunity";
 
 export type ApplicationStatus =

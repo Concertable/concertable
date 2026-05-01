@@ -1,5 +1,5 @@
-import { useArtistQuery } from "@/hooks/query/useArtistQuery";
-import type { Artist } from "@/types/artist";
+import { useArtistQuery } from "./useArtistQuery";
+import type { Artist } from "../types";
 
 export interface UseArtistResult {
   artist: Artist | undefined;

@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import type { Artist } from "@/types/artist";
+import type { Artist } from "../types";
 
 const artistApi = {
   getArtist: async (id: number): Promise<Artist> => {

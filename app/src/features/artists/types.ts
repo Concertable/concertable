@@ -1,7 +1,4 @@
-export interface Genre {
-  id: number;
-  name: string;
-}
+import type { Genre } from "@/types/common";
 
 export interface ArtistSummary {
   id: number;
