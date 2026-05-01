@@ -2,6 +2,7 @@ using Concertable.User.Application.Mappers;
 using Concertable.User.Infrastructure.Data;
 using Concertable.User.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace Concertable.User.Infrastructure;
 
@@ -75,4 +76,60 @@ internal class UserModule : IUserModule
         user.PasswordHash = newHash;
         await context.SaveChangesAsync(ct);
     }
+
+    public async Task<string?> CreateEmailVerificationTokenAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+        if (user is null || user.IsEmailVerified) return null;
+
+        var token = GenerateToken();
+        var entity = EmailVerificationTokenEntity.Create(userId, token, DateTime.UtcNow.AddHours(24));
+        context.EmailVerificationTokens.Add(entity);
+        await context.SaveChangesAsync(ct);
+        return token;
+    }
+
+    public async Task<bool> VerifyEmailWithTokenAsync(string token, CancellationToken ct = default)
+    {
+        var entity = await context.EmailVerificationTokens.FirstOrDefaultAsync(t => t.Token == token, ct);
+        if (entity is null || !entity.IsActive) return false;
+
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == entity.UserId, ct);
+        if (user is null) return false;
+
+        user.VerifyEmail();
+        context.EmailVerificationTokens.Remove(entity);
+        await context.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<string?> CreatePasswordResetTokenAsync(string email, CancellationToken ct = default)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
+        if (user is null) return null;
+
+        var token = GenerateToken();
+        var entity = PasswordResetTokenEntity.Create(user.Id, token, DateTime.UtcNow.AddHours(1));
+        context.PasswordResetTokens.Add(entity);
+        await context.SaveChangesAsync(ct);
+        return token;
+    }
+
+    public async Task<bool> ResetPasswordWithTokenAsync(string token, string newPasswordHash, CancellationToken ct = default)
+    {
+        var entity = await context.PasswordResetTokens.FirstOrDefaultAsync(t => t.Token == token, ct);
+        if (entity is null || !entity.IsActive) return false;
+
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == entity.UserId, ct);
+        if (user is null) return false;
+
+        user.PasswordHash = newPasswordHash;
+        context.PasswordResetTokens.Remove(entity);
+        await context.SaveChangesAsync(ct);
+        return true;
+    }
+
+    private static string GenerateToken() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
 }
