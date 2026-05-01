@@ -31,11 +31,6 @@ api.interceptors.response.use(
   async (error: AxiosError<ProblemDetails>) => {
     const { response } = error;
 
-    if (response?.status === 401) {
-      await userManager.signinRedirect();
-      return Promise.reject(error);
-    }
-
     if (response) {
       const { title, detail, errors } = response.data ?? {};
       if (errors?.length) {
