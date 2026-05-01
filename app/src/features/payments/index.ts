@@ -1,10 +1,10 @@
 export { StripeOnboardingBanner } from "./components/StripeOnboardingBanner";
 export { AddPaymentMethodModal } from "./components/AddPaymentMethodModal";
 export { NewCardSection } from "./components/NewCardSection";
-export { default as PaymentPage } from "./components/PaymentPage";
-export { default as StripeRefreshPage } from "./components/StripeRefreshPage";
-export { default as StripeReturnPage } from "./components/StripeReturnPage";
-export { default as SuccessPage } from "./components/SuccessPage";
-export { default as FailPage } from "./components/FailPage";
+export { default as PaymentPage } from "./pages/PaymentPage";
+export { default as StripeRefreshPage } from "./pages/StripeRefreshPage";
+export { default as StripeReturnPage } from "./pages/StripeReturnPage";
+export { default as SuccessPage } from "./pages/SuccessPage";
+export { default as FailPage } from "./pages/FailPage";
 export { usePayoutAccountStatusQuery } from "./hooks/useStripeAccountQuery";
 export type { PaymentMethod, PayoutAccountStatus } from "./types";

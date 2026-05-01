@@ -1,7 +1,7 @@
 export { ArtistDetails } from "./components/ArtistDetails";
-export { default as ArtistDashboardPage } from "./components/ArtistDashboardPage";
-export { default as CreateArtistPage } from "./components/CreateArtistPage";
-export { default as MyArtistPage } from "./components/MyArtistPage";
+export { default as ArtistDashboardPage } from "./pages/ArtistDashboardPage";
+export { default as CreateArtistPage } from "./pages/CreateArtistPage";
+export { default as MyArtistPage } from "./pages/MyArtistPage";
 export { useArtistQuery, useMyArtistQuery } from "./hooks/useArtistQuery";
 export { useArtist } from "./hooks/useArtist";
 export { useMyArtist } from "./hooks/useMyArtist";
