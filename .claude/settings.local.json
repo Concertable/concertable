@@ -11,7 +11,15 @@
       "Bash(git reset *)",
       "Bash(git config *)",
       "Bash(rm app/.husky/pre-commit)",
-      "Bash(rmdir app/.husky)"
+      "Bash(rmdir app/.husky)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(grep -E \"\\(UnitTests|IntegrationTests\\)\\\\.csproj$\")",
+      "Bash(powershell -NoProfile -Command ' *)",
+      "Bash(bash fix-paths.sh)",
+      "Bash(bash fix-sln.sh)",
+      "Bash(Get-ChildItem *)",
+      "Bash(xargs -I {} head -5 \"{}\")"
     ]
   }
 }
