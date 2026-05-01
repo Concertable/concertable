@@ -9,7 +9,7 @@ import type {
   ConcertDraftCreatedPayload,
   ConcertPostedPayload,
   ApplicationAcceptedPayload,
-} from "@/types/notification";
+} from "../types";
 
 export function useVenueNotifications() {
   const router = useRouter();

@@ -17,7 +17,7 @@ import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
 import { useConcert } from "@/hooks/useConcert";
 import { useTicketCheckoutQuery } from "@/hooks/query/useTicketsQuery";
 import { notificationConnection } from "@/lib/signalr";
-import type { TicketPurchasedPayload } from "@/types/notification";
+import type { TicketPurchasedPayload } from "@/features/notifications";
 import type { Concert } from "@/types/concert";
 
 type CheckoutPhase = "form" | "awaiting" | "success" | "timeout";

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCustomerNotifications } from "@/hooks/useNotifications";
+import { useCustomerNotifications } from "@/features/notifications";
 import { AppLayout } from "@/components/AppLayout";
 
 const links = [
