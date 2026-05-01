@@ -1,0 +1,20 @@
+import { useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
+import { useMountEffect } from "@/hooks/useMountEffect";
+import { useSearchFiltersStore } from "../store/useSearchFiltersStore";
+import type { SearchFilters } from "../schemas/searchSchema";
+
+export function useSearchFilters() {
+  const { setFilters } = useSearchFiltersStore();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const filters = useSearch({ strict: false }) as SearchFilters;
+
+  useMountEffect(() => setFilters(filters));
+
+  function updateFilters(next: SearchFilters) {
+    setFilters(next);
+    navigate({ to: pathname, search: () => next });
+  }
+
+  return { filters, updateFilters };
+}

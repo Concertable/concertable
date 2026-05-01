@@ -1,5 +1,6 @@
 export { VenueDetails } from "./components/VenueDetails";
 export { VenueLocation } from "./components/VenueLocation";
+export { VenueDetailsPage } from "./pages/VenueDetailsPage";
 export { VenueDashboardPage } from "./pages/VenueDashboardPage";
 export { CreateVenuePage } from "./pages/CreateVenuePage";
 export { MyVenuePage } from "./pages/MyVenuePage";

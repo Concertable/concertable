@@ -6,6 +6,7 @@ export { ApplicationCard } from "./components/applications/ApplicationCard";
 export { AcceptContractSummary } from "./components/applications/AcceptContractSummary";
 export { TicketCard } from "./components/tickets/TicketCard";
 export { QrPopover } from "./components/tickets/QrPopover";
+export { ConcertDetailsPage } from "./pages/ConcertDetailsPage";
 export { ArtistConcertPage } from "./pages/ArtistConcertPage";
 export { VenueConcertPage } from "./pages/VenueConcertPage";
 export { ApplicationsPage } from "./pages/ApplicationsPage";

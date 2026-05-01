@@ -6,7 +6,7 @@ import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, TriangleAlertIcon } from "lucide-react";
 import { VenueLocation } from "@/features/venues";
-import { GenreTags } from "@/components/headers/GenreTags";
+import { GenreTags } from "@/features/search";
 import { useImageUrl } from "@/hooks/query/useImageUrl";
 import { ConcertCard } from "./ConcertCard";
 import type { Concert } from "../types";

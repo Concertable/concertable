@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import FindPage from "@/pages/customer/FindPage";
-import { SearchSchema } from "@/schemas/searchSchema";
+import { CustomerFindPage, SearchSchema } from "@/features/search";
 
 export const Route = createFileRoute("/_customer/find/")({
-  component: FindPage,
+  component: CustomerFindPage,
   validateSearch: SearchSchema(),
 });

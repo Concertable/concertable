@@ -1,4 +1,5 @@
 export { ArtistDetails } from "./components/ArtistDetails";
+export { ArtistDetailsPage } from "./pages/ArtistDetailsPage";
 export { ArtistDashboardPage } from "./pages/ArtistDashboardPage";
 export { CreateArtistPage } from "./pages/CreateArtistPage";
 export { MyArtistPage } from "./pages/MyArtistPage";

@@ -4,7 +4,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import {
   serializeSearch,
   deserializeSearch,
-} from "@/utils/serializers/searchSerializer";
+} from "@/features/search";
 import { APIProvider as MapsProvider } from "@vis.gl/react-google-maps";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "react-oidc-context";
