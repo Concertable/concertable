@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import applicationApi from "@/api/applicationApi";
 import { useRole } from "@/hooks/useRole";
+import applicationApi from "../api/applicationApi";
 
 export function useApply(opportunityId: number) {
   const role = useRole();

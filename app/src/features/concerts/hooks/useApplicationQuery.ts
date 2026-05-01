@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import applicationApi from "@/api/applicationApi";
+import applicationApi from "../api/applicationApi";
 
 export function useApplicationsByOpportunityQuery(opportunityId: number) {
   return useQuery({

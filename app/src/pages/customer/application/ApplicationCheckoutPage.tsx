@@ -8,11 +8,11 @@ import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
 import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
 import { CheckoutSuccess } from "@/components/checkout/CheckoutSuccess";
 import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
-import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
 import {
+  AcceptContractSummary,
   useApplicationQuery,
   useCheckoutQuery,
-} from "@/hooks/query/useApplicationQuery";
+} from "@/features/concerts";
 import { summaryFor } from "@/lib/acceptCheckoutFormat";
 
 export default function ApplicationCheckoutPage() {

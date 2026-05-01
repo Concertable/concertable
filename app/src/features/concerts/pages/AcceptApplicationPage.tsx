@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "@tanstack/react-router";
-import { useApplicationQuery } from "@/hooks/query/useApplicationQuery";
 import { usePayoutAccountStatusQuery, StripeOnboardingBanner } from "@/features/payments";
-import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
 import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
+import { useApplicationQuery } from "../hooks/useApplicationQuery";
+import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
 
-export default function AcceptApplicationPage() {
+export function AcceptApplicationPage() {
   const { applicationId } = useParams({ from: "/venue/accept/$applicationId" });
   const navigate = useNavigate();
   const { data: application, isLoading } = useApplicationQuery(applicationId);
