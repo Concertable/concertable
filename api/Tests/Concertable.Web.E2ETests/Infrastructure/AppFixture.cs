@@ -1,8 +1,10 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Concertable.Seeding;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Stripe;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
 
@@ -15,6 +17,7 @@ public class AppFixture : IAsyncLifetime
     private SqlFixture sqlFixture = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
+    private readonly TestTokenMinter tokenMinter;
 
     internal const string ApiBaseUrl = "http://localhost:7001";
 
@@ -31,6 +34,11 @@ public class AppFixture : IAsyncLifetime
 
         logger = loggerFactory.CreateLogger<AppFixture>();
         Polling = new PollingService(loggerFactory.CreateLogger<PollingService>());
+
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.E2E.json"))
+            .Build();
+        tokenMinter = new TestTokenMinter(configuration, new JwtSecurityTokenHandler());
     }
 
     public async Task InitializeAsync()
@@ -66,8 +74,13 @@ public class AppFixture : IAsyncLifetime
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
     }
 
-    public Task<HttpClient> CreateAuthenticatedClientAsync(string email, string password) =>
-        throw new NotImplementedException("Pending Duende migration — see Stage 10.");
+    public HttpClient CreateAuthenticatedClient(Guid userId, Role role)
+    {
+        var client = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", tokenMinter.Mint(userId, role));
+        return client;
+    }
 
     public async Task DisposeAsync()
     {

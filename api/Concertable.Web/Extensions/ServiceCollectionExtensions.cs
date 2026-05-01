@@ -80,14 +80,35 @@ public static class ServiceCollectionExtensions
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer("Bearer", options =>
             {
-                options.Authority = configuration["Auth:Authority"];
-                options.Audience = "concertable.api";
                 options.MapInboundClaims = false;
-                options.TokenValidationParameters = new TokenValidationParameters
+
+                if (configuration["Auth:TestSigningKey"] is { } testKey)
                 {
-                    RoleClaimType = "role",
-                    ClockSkew = TimeSpan.Zero
-                };
+                    options.Authority = null;
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = configuration["Auth:TestIssuer"],
+                        ValidateAudience = true,
+                        ValidAudience = configuration["Auth:TestAudience"],
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(testKey)),
+                        RoleClaimType = "role",
+                        ClockSkew = TimeSpan.Zero
+                    };
+                }
+                else
+                {
+                    options.Authority = configuration["Auth:Authority"];
+                    options.Audience = "concertable.api";
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        RoleClaimType = "role",
+                        ClockSkew = TimeSpan.Zero
+                    };
+                }
+
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
