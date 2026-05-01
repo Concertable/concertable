@@ -7,7 +7,8 @@ $dirs = @(
     "Modules\Contract\Concertable.Contract.Infrastructure\Data\Migrations",
     "Modules\Payment\Concertable.Payment.Infrastructure\Data\Migrations",
     "Modules\Customer\Concertable.Customer.Infrastructure\Data\Migrations",
-    "Modules\Messaging\Concertable.Messaging.Infrastructure\Data\Migrations"
+    "Modules\Messaging\Concertable.Messaging.Infrastructure\Data\Migrations",
+    "Concertable.Auth\Data\Migrations"
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
 
@@ -36,6 +37,9 @@ dotnet ef migrations add InitialCreate --context CustomerDbContext --project Mod
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context MessagingDbContext --project Modules/Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --project Concertable.Auth --startup-project Concertable.Auth --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 Write-Host "All migrations scaffolded successfully."
