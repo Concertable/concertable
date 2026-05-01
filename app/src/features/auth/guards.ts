@@ -1,6 +1,6 @@
 import { redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/store/useAuthStore";
-import type { Role } from "@/types/auth";
+import { useAuthStore } from "./store/useAuthStore";
+import type { Role } from "./types";
 
 export function requireAuth({
   location,

@@ -3,7 +3,7 @@ import {
   HubConnectionState,
   LogLevel,
 } from "@microsoft/signalr";
-import { userManager } from "@/lib/oidcConfig";
+import { userManager } from "@/features/auth";
 
 export const notificationConnection = new HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_BASE_URL}/hub/notifications`, {

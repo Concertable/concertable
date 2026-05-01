@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuthStore } from "@/features/auth";
 import userApi from "../api/userApi";
 
 export function useSyncUser() {

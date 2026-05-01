@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuthStore } from "@/features/auth";
 import { toast } from "sonner";
 import { useMountEffect } from "@/hooks/useMountEffect";
 import {

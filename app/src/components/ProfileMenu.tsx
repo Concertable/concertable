@@ -1,11 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
 import { useAuth } from "react-oidc-context";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuthStore, isArtistManager, isVenueManager } from "@/features/auth";
 import { useNavSection } from "@/hooks/useNavSection";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/IconButton";
-import { isArtistManager, isVenueManager } from "@/types/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,

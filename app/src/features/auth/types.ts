@@ -40,4 +40,3 @@ export function isVenueManager(user: User): user is VenueManager {
 export function isArtistManager(user: User): user is ArtistManager {
   return user.role === "ArtistManager";
 }
-

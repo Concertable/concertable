@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { requireRole } from "@/lib/guards";
+import { requireRole } from "@/features/auth";
 import { useVenueNotifications } from "@/features/notifications";
 import { AppLayout } from "@/components/AppLayout";
 

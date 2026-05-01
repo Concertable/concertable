@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import type { User } from "@/types/auth";
+import type { User } from "@/features/auth";
 
 const userApi = {
   getMe: async (): Promise<User> => {

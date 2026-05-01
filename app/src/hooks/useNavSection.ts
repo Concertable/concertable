@@ -1,5 +1,5 @@
 import { useRouterState } from "@tanstack/react-router";
-import type { UserRole } from "@/types/auth";
+import type { UserRole } from "@/features/auth";
 
 const prefixMap: [string, UserRole][] = [
   ["/venue", "VenueManager"],

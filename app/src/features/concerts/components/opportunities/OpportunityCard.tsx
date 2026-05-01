@@ -10,8 +10,7 @@ import {
 import { ContractDetails, ContractSummaryLabel } from "@/features/contracts";
 import { useApply } from "../../hooks/useApply";
 import { useNavigate } from "@tanstack/react-router";
-import { useAuthStore } from "@/store/useAuthStore";
-import { isVenueManager } from "@/types/auth";
+import { useAuthStore, isVenueManager } from "@/features/auth";
 import dayjs from "dayjs";
 import type { Opportunity } from "../../types";
 
