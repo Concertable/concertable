@@ -1,4 +1,3 @@
-import { getRouteApi } from "@tanstack/react-router";
 import { ConfigBar } from "@/components/ConfigBar";
 import { EditableProvider } from "@/providers/EditableProvider";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
@@ -6,12 +5,13 @@ import { useMyConcert } from "../hooks/useMyConcert";
 import { useConcertStore } from "../store/useConcertStore";
 import { ConcertDetails } from "../components/ConcertDetails";
 
-const routeApi = getRouteApi("/artist/my/concerts/concert/$id");
+interface Props {
+  id: number;
+}
 
-export function ArtistConcertPage() {
-  const { id } = routeApi.useParams();
+export function MyConcertPage({ id }: Props) {
   const { concert, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
-    useMyConcert(Number(id));
+    useMyConcert(id);
 
   const draft = useConcertStore((state) => state.draft);
   const setName = useConcertStore((state) => state.setName);

@@ -7,8 +7,7 @@ export { AcceptContractSummary } from "./components/applications/AcceptContractS
 export { TicketCard } from "./components/tickets/TicketCard";
 export { QrPopover } from "./components/tickets/QrPopover";
 export { ConcertDetailsPage } from "./pages/ConcertDetailsPage";
-export { ArtistConcertPage } from "./pages/ArtistConcertPage";
-export { VenueConcertPage } from "./pages/VenueConcertPage";
+export { MyConcertPage } from "./pages/MyConcertPage";
 export { ApplicationsPage } from "./pages/ApplicationsPage";
 export { AcceptApplicationPage } from "./pages/AcceptApplicationPage";
 export { TicketsPage } from "./pages/TicketsPage";

@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { VenueConcertPage } from "@/features/concerts";
+import { MyConcertPage } from "@/features/concerts";
 
 export const Route = createFileRoute("/venue/my/concerts/concert/$id")({
   params: {
     parse: (params) => ({ id: Number(params.id) }),
     stringify: (params) => ({ id: String(params.id) }),
   },
-  component: VenueConcertPage,
+  component: () => {
+    const { id } = Route.useParams();
+    return <MyConcertPage id={id} />;
+  },
 });
