@@ -1,6 +1,5 @@
 import api from "@/lib/axios";
-import type { Ticket } from "@/types/ticket";
-import type { TicketCheckout } from "@/types/ticketCheckout";
+import type { Ticket, TicketCheckout } from "../types";
 
 interface TicketPurchaseRequest {
   concertId: number;

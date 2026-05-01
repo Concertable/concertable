@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddPaymentMethodModal } from "@/features/payments";
-import { SavedCardOption } from "@/components/checkout/SavedCardOption";
-import type { PaymentSectionProps } from "@/components/checkout/PaymentMethodSection";
+import { SavedCardOption } from "./SavedCardOption";
+import type { PaymentSectionProps } from "./PaymentMethodSection";
 
 export function DeferredPaymentSection({
   savedCard,

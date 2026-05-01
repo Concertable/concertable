@@ -2,20 +2,17 @@ import { useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckoutLayout } from "@/components/checkout/CheckoutLayout";
-import { CheckoutSection } from "@/components/checkout/CheckoutSection";
-import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
-import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
-import { CheckoutSuccess } from "@/components/checkout/CheckoutSuccess";
-import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
-import {
-  AcceptContractSummary,
-  useApplicationQuery,
-  useCheckoutQuery,
-} from "@/features/concerts";
-import { summaryFor } from "@/lib/acceptCheckoutFormat";
+import { useApplicationQuery, useCheckoutQuery } from "../hooks/useApplicationQuery";
+import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
+import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
+import { CheckoutSection } from "../components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
+import { OrderSummaryCard } from "../components/checkout/OrderSummaryCard";
+import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
+import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
+import { summaryFor } from "../utils/acceptCheckoutFormat";
 
-export default function ApplicationCheckoutPage() {
+export function ApplicationCheckoutPage() {
   const { applicationId } = useParams({ strict: false }) as {
     applicationId: number;
   };

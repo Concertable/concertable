@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { notificationConnection } from "@/lib/signalr";
 import type { TicketPurchasedPayload } from "@/features/notifications";
-import ticketApi from "@/api/ticketApi";
+import ticketApi from "../api/ticketApi";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 

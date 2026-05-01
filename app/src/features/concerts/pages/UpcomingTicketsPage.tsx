@@ -1,8 +1,8 @@
-import { useUpcomingTicketsQuery } from "@/hooks/query/useTicketsQuery";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TicketCard } from "./TicketCard";
+import { useUpcomingTicketsQuery } from "../hooks/useTicketsQuery";
+import { TicketCard } from "../components/tickets/TicketCard";
 
-export default function UpcomingTicketsPage() {
+export function UpcomingTicketsPage() {
   const { data, isLoading, isError } = useUpcomingTicketsQuery();
 
   return (

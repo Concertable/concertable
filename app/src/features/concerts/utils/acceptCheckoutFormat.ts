@@ -1,5 +1,5 @@
-import type { PaymentAmount } from "@/types/acceptCheckout";
-import type { SummaryLine } from "@/components/checkout/OrderSummaryCard";
+import type { PaymentAmount } from "../types";
+import type { SummaryLine } from "../components/checkout/OrderSummaryCard";
 
 export function summaryFor(amount: PaymentAmount): {
   lines: SummaryLine[];

@@ -1,6 +1,5 @@
 import api from "@/lib/axios";
-import type { AcceptCheckout } from "@/types/acceptCheckout";
-import type { AcceptOutcome, Application } from "../types";
+import type { AcceptCheckout, AcceptOutcome, Application } from "../types";
 
 const applicationApi = {
   applyToOpportunity: async (opportunityId: number): Promise<Application> => {

@@ -1,8 +1,8 @@
-import { useTicketHistoryQuery } from "@/hooks/query/useTicketsQuery";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TicketCard } from "./TicketCard";
+import { useTicketHistoryQuery } from "../hooks/useTicketsQuery";
+import { TicketCard } from "../components/tickets/TicketCard";
 
-export default function TicketHistoryPage() {
+export function TicketHistoryPage() {
   const { data, isLoading, isError } = useTicketHistoryQuery();
 
   return (

@@ -1,7 +1,7 @@
 import { CalendarDays, MapPin, Music } from "lucide-react";
-import type { Ticket } from "@/types/ticket";
 import { Separator } from "@/components/ui/separator";
 import { QrPopover } from "./QrPopover";
+import type { Ticket } from "../../types";
 
 interface Props {
   ticket: Ticket;

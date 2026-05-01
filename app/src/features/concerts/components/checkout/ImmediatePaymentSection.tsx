@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SavedCardOption } from "@/components/checkout/SavedCardOption";
-import { NewCardOption } from "@/components/checkout/NewCardOption";
-import type { PaymentSectionProps } from "@/components/checkout/PaymentMethodSection";
+import { SavedCardOption } from "./SavedCardOption";
+import { NewCardOption } from "./NewCardOption";
+import type { PaymentSectionProps } from "./PaymentMethodSection";
 
 enum PaymentOption {
   Saved = "saved",

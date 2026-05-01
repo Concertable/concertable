@@ -3,26 +3,26 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckoutLayout } from "@/components/checkout/CheckoutLayout";
-import { CheckoutSection } from "@/components/checkout/CheckoutSection";
-import { CheckoutEventBanner } from "@/components/checkout/CheckoutEventBanner";
-import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
-import { QuantitySelector } from "@/components/checkout/QuantitySelector";
-import { CheckoutSuccess } from "@/components/checkout/CheckoutSuccess";
+import { notificationConnection } from "@/lib/signalr";
+import type { TicketPurchasedPayload } from "@/features/notifications";
+import { useConcert } from "../hooks/useConcert";
+import { useTicketCheckoutQuery } from "../hooks/useTicketsQuery";
+import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
+import { CheckoutSection } from "../components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
+import { OrderSummaryCard } from "../components/checkout/OrderSummaryCard";
+import { QuantitySelector } from "../components/checkout/QuantitySelector";
+import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
 import {
   CheckoutAwaiting,
   type AwaitingStep,
-} from "@/components/checkout/CheckoutAwaiting";
-import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
-import { useConcert } from "@/features/concerts";
-import { useTicketCheckoutQuery } from "@/hooks/query/useTicketsQuery";
-import { notificationConnection } from "@/lib/signalr";
-import type { TicketPurchasedPayload } from "@/features/notifications";
-import type { Concert } from "@/features/concerts";
+} from "../components/checkout/CheckoutAwaiting";
+import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
+import type { Concert } from "../types";
 
 type CheckoutPhase = "form" | "awaiting" | "success" | "timeout";
 
-export default function ConcertCheckoutPage() {
+export function ConcertCheckoutPage() {
   const { id } = useParams({ from: "/_customer/concert/checkout/$id" });
   const router = useRouter();
   const { concert, isLoading, isError } = useConcert(id);

@@ -2,6 +2,72 @@ import type { Genre } from "@/types/common";
 import type { Contract } from "@/features/contracts";
 import type { ArtistSummary } from "@/features/artists";
 
+export interface TicketConcert {
+  id: number;
+  name: string;
+  price: number;
+  startDate: string;
+  endDate: string;
+  venueName: string;
+  artistName: string;
+}
+
+export interface Ticket {
+  id: string;
+  purchaseDate: string;
+  qrCode: string;
+  userId: string;
+  userEmail: string;
+  concert: TicketConcert;
+}
+
+export interface CheckoutSession {
+  clientSecret: string;
+  customerSession: string;
+  customerId: string;
+}
+
+export interface TicketCheckout {
+  session: CheckoutSession;
+  price: number;
+  concertId: number;
+}
+
+export type PaymentTiming = "immediate" | "deferred";
+
+export interface FlatPayment {
+  $type: "flat";
+  amount: number;
+}
+
+export interface DoorSharePayment {
+  $type: "doorShare";
+  artistPercent: number;
+}
+
+export interface GuaranteedDoorPayment {
+  $type: "guaranteedDoor";
+  guarantee: number;
+  artistPercent: number;
+}
+
+export type PaymentAmount =
+  | FlatPayment
+  | DoorSharePayment
+  | GuaranteedDoorPayment;
+
+export interface PayeeSummary {
+  name: string;
+  email: string | null;
+}
+
+export interface AcceptCheckout {
+  timing: PaymentTiming;
+  amount: PaymentAmount;
+  payee: PayeeSummary;
+  session: CheckoutSession;
+}
+
 export type ApplicationStatus =
   | "Pending"
   | "Rejected"

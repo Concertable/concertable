@@ -1,8 +1,8 @@
 import type { ComponentType } from "react";
-import { ImmediatePaymentSection } from "@/components/checkout/ImmediatePaymentSection";
-import { DeferredPaymentSection } from "@/components/checkout/DeferredPaymentSection";
 import type { PaymentMethod } from "@/features/payments";
-import type { PaymentTiming } from "@/types/acceptCheckout";
+import { ImmediatePaymentSection } from "./ImmediatePaymentSection";
+import { DeferredPaymentSection } from "./DeferredPaymentSection";
+import type { PaymentTiming } from "../../types";
 
 export interface PaymentSectionProps {
   savedCard: PaymentMethod | null | undefined;

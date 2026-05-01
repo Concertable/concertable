@@ -8,7 +8,7 @@ import {
 import type { Appearance, StripeElementsOptions } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 import { stripePromise } from "@/lib/stripe";
-import type { CheckoutSession } from "@/types/checkoutSession";
+import type { CheckoutSession } from "../../types";
 
 const appearance: Appearance = { theme: "night" };
 
