@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
-import userApi from "@/api/userApi";
 import { useAuthStore } from "@/store/useAuthStore";
+import userApi from "../api/userApi";
 
 export function useSyncUser() {
   const { isAuthenticated } = useAuth();
