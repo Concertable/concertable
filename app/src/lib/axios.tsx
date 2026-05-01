@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import qs from "qs";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { userManager } from "@/lib/oidcConfig";
 
 type ProblemDetails = {
   title?: string;
@@ -20,24 +20,20 @@ const api = axios.create({
     }),
 });
 
-api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(async (config) => {
+  const user = await userManager.getUser();
+  if (user?.access_token) config.headers.Authorization = `Bearer ${user.access_token}`;
   return config;
 });
 
 api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError<ProblemDetails>) => {
-    const { config, response } = error;
+    const { response } = error;
 
-    if (response?.status === 401 && config?.url !== "/auth/refresh") {
-      await useAuthStore.getState().refresh();
-      const token = useAuthStore.getState().accessToken;
-      if (config && token) {
-        config.headers.Authorization = `Bearer ${token}`;
-        return api(config);
-      }
+    if (response?.status === 401) {
+      await userManager.signinRedirect();
+      return Promise.reject(error);
     }
 
     if (response) {

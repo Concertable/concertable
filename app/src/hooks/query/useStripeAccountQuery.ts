@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "react-oidc-context";
 import stripeAccountApi from "@/api/stripeAccountApi";
-import { useAuthStore } from "@/store/useAuthStore";
 
 export function usePayoutAccountStatusQuery(enabled: boolean) {
   return useQuery({
@@ -13,7 +13,7 @@ export function usePayoutAccountStatusQuery(enabled: boolean) {
 }
 
 export function usePaymentMethodQuery() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: ["stripe", "payment-method"],
     queryFn: stripeAccountApi.getPaymentMethod,

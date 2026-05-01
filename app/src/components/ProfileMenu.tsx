@@ -1,5 +1,6 @@
-import { useRouter, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
+import { useAuth } from "react-oidc-context";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavSection } from "@/hooks/useNavSection";
 import { Button } from "@/components/ui/button";
@@ -19,13 +20,11 @@ import {
 
 export function ProfileMenu() {
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
-  const router = useRouter();
+  const auth = useAuth();
   const section = useNavSection();
 
   async function handleLogout() {
-    await logout();
-    router.navigate({ to: "/login" });
+    await auth.signoutRedirect();
   }
 
   if (!user) {

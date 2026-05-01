@@ -22,6 +22,7 @@ import { Route as VenueIndexRouteImport } from './routes/venue/index'
 import { Route as ArtistIndexRouteImport } from './routes/artist/index'
 import { Route as CustomerIndexRouteImport } from './routes/_customer/index'
 import { Route as VenueCreateRouteImport } from './routes/venue/create'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ArtistCreateRouteImport } from './routes/artist/create'
 import { Route as CustomerSettingsRouteRouteImport } from './routes/_customer/settings/route'
 import { Route as CustomerProfileRouteRouteImport } from './routes/_customer/profile/route'
@@ -115,6 +116,11 @@ const VenueCreateRoute = VenueCreateRouteImport.update({
   id: '/create',
   path: '/create',
   getParentRoute: () => VenueRouteRoute,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistCreateRoute = ArtistCreateRouteImport.update({
   id: '/create',
@@ -286,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof CustomerProfileRouteRouteWithChildren
   '/settings': typeof CustomerSettingsRouteRouteWithChildren
   '/artist/create': typeof ArtistCreateRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/venue/create': typeof VenueCreateRoute
   '/artist/': typeof ArtistIndexRoute
   '/venue/': typeof VenueIndexRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByTo {
   '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
   '/artist/create': typeof ArtistCreateRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/venue/create': typeof VenueCreateRoute
   '/': typeof CustomerIndexRoute
   '/artist': typeof ArtistIndexRoute
@@ -369,6 +377,7 @@ export interface FileRoutesById {
   '/_customer/profile': typeof CustomerProfileRouteRouteWithChildren
   '/_customer/settings': typeof CustomerSettingsRouteRouteWithChildren
   '/artist/create': typeof ArtistCreateRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/venue/create': typeof VenueCreateRoute
   '/_customer/': typeof CustomerIndexRoute
   '/artist/': typeof ArtistIndexRoute
@@ -415,6 +424,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/artist/create'
+    | '/auth/callback'
     | '/venue/create'
     | '/artist/'
     | '/venue/'
@@ -453,6 +463,7 @@ export interface FileRouteTypes {
     | '/stripe-return'
     | '/success'
     | '/artist/create'
+    | '/auth/callback'
     | '/venue/create'
     | '/'
     | '/artist'
@@ -497,6 +508,7 @@ export interface FileRouteTypes {
     | '/_customer/profile'
     | '/_customer/settings'
     | '/artist/create'
+    | '/auth/callback'
     | '/venue/create'
     | '/_customer/'
     | '/artist/'
@@ -539,6 +551,7 @@ export interface RootRouteChildren {
   StripeRefreshRoute: typeof StripeRefreshRoute
   StripeReturnRoute: typeof StripeReturnRoute
   SuccessRoute: typeof SuccessRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -633,6 +646,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/venue/create'
       preLoaderRoute: typeof VenueCreateRouteImport
       parentRoute: typeof VenueRouteRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/artist/create': {
       id: '/artist/create'
@@ -968,6 +988,7 @@ const rootRouteChildren: RootRouteChildren = {
   StripeRefreshRoute: StripeRefreshRoute,
   StripeReturnRoute: StripeReturnRoute,
   SuccessRoute: SuccessRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -41,26 +41,3 @@ export function isArtistManager(user: User): user is ArtistManager {
   return user.role === "ArtistManager";
 }
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  role: Exclude<Role, "Admin">;
-}
-
-export interface LoginResponse {
-  user: User;
-  accessToken: string;
-  refreshToken: string;
-  expiresInSeconds: number;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
-  confirmPassword: string;
-}
