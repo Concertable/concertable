@@ -1,8 +1,7 @@
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { useApplicationQuery } from "@/hooks/query/useApplicationQuery";
-import { usePayoutAccountStatusQuery } from "@/hooks/query/useStripeAccountQuery";
+import { usePayoutAccountStatusQuery, StripeOnboardingBanner } from "@/features/payments";
 import { AcceptContractSummary } from "@/components/applications/AcceptContractSummary";
-import { StripeOnboardingBanner } from "@/components/stripe/StripeOnboardingBanner";
 import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
 

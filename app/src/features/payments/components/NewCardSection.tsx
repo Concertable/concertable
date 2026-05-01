@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "@/providers/ThemeProvider";
-import { useSetupIntentQuery } from "@/hooks/query/useStripeAccountQuery";
+import { useSetupIntentQuery } from "../hooks/useStripeAccountQuery";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 

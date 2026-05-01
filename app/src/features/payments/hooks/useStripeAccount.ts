@@ -1,7 +1,7 @@
 import {
   usePayoutAccountStatusQuery,
   useStripeOnboardingQuery,
-} from "@/hooks/query/useStripeAccountQuery";
+} from "./useStripeAccountQuery";
 
 export function useStripeAccount() {
   const { data: accountStatus, isLoading } = usePayoutAccountStatusQuery(true);

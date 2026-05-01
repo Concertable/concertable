@@ -10,13 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
+import { useMountEffect } from "@/hooks/useMountEffect";
 import {
   usePayoutAccountStatusQuery,
   useStripeOnboardingQuery,
   usePaymentMethodQuery,
-} from "@/hooks/query/useStripeAccountQuery";
-import { AddPaymentMethodModal } from "@/components/AddPaymentMethodModal";
-import { useMountEffect } from "@/hooks/useMountEffect";
+} from "../hooks/useStripeAccountQuery";
+import { AddPaymentMethodModal } from "./AddPaymentMethodModal";
 
 export default function PaymentPage() {
   const user = useAuthStore((s) => s.user);

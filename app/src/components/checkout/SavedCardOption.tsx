@@ -1,5 +1,5 @@
 import { CreditCard } from "lucide-react";
-import type { PaymentMethod } from "@/api/stripeAccountApi";
+import type { PaymentMethod } from "@/features/payments";
 
 interface Props {
   card: PaymentMethod;

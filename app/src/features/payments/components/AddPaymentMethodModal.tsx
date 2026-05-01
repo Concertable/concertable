@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { NewCardSection } from "@/components/NewCardSection";
+import { NewCardSection } from "./NewCardSection";
 
 export function AddPaymentMethodModal({
   replace = false,

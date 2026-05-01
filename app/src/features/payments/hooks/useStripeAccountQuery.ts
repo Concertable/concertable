@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "react-oidc-context";
-import stripeAccountApi from "@/api/stripeAccountApi";
+import stripeAccountApi from "../api/stripeAccountApi";
 
 export function usePayoutAccountStatusQuery(enabled: boolean) {
   return useQuery({

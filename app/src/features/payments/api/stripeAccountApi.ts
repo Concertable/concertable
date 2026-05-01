@@ -1,13 +1,5 @@
 import api from "@/lib/axios";
-
-export type PayoutAccountStatus = "NotVerified" | "Pending" | "Verified";
-
-export interface PaymentMethod {
-  brand: string;
-  last4: string;
-  expMonth: number;
-  expYear: number;
-}
+import type { PayoutAccountStatus, PaymentMethod } from "../types";
 
 const stripeAccountApi = {
   getOnboardingLink: async (): Promise<string> => {
@@ -15,8 +7,8 @@ const stripeAccountApi = {
     return data;
   },
 
-  getAccountStatus: async (): Promise<StripeAccountStatus> => {
-    const { data } = await api.get<StripeAccountStatus>(
+  getAccountStatus: async (): Promise<PayoutAccountStatus> => {
+    const { data } = await api.get<PayoutAccountStatus>(
       "/stripeaccount/account-status",
     );
     return data;

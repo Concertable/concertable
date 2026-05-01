@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useStripeAccount } from "@/hooks/useStripeAccount";
+import { useStripeAccount } from "../hooks/useStripeAccount";
 
 export function StripeOnboardingBanner() {
   const { isVerified, isLoading, isLoadingLink, beginOnboarding } =

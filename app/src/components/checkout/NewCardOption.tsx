@@ -1,4 +1,4 @@
-import { NewCardSection } from "@/components/NewCardSection";
+import { NewCardSection } from "@/features/payments";
 
 interface Props {
   selected: boolean;
