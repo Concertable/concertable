@@ -1,5 +1,5 @@
 import type { Genre } from "@/types/common";
-import type { Contract } from "@/types/contract";
+import type { Contract } from "@/features/contracts";
 
 export interface Opportunity {
   id: number;

@@ -5,7 +5,7 @@ import type {
   DoorSplitContract,
   VersusContract,
   VenueHireContract,
-} from "@/types/contract";
+} from "../types";
 
 function FlatFeeDetails({ contract }: { contract: FlatFeeContract }) {
   return (

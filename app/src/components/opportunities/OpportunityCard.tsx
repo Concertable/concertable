@@ -8,8 +8,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ContractDetails } from "@/components/opportunities/ContractDetails";
-import { ContractSummaryLabel } from "@/components/opportunities/ContractSummaryLabel";
+import { ContractDetails, ContractSummaryLabel } from "@/features/contracts";
 import { useApply } from "@/hooks/useApply";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/useAuthStore";

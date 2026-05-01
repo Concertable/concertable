@@ -4,7 +4,7 @@ import type {
   DoorSplitContract,
   VersusContract,
   VenueHireContract,
-} from "@/types/contract";
+} from "../types";
 
 const contractTypeLabel: Record<Contract["$type"], string> = {
   flatFee: "Flat Fee",
