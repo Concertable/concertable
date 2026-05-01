@@ -1,6 +1,6 @@
 import { Star } from "lucide-react";
-import type { ReviewEntityType } from "@/api/reviewApi";
-import { useReviewSummaryQuery } from "@/hooks/query/useReviewQuery";
+import { useReviewSummaryQuery } from "../hooks/useReviewQuery";
+import type { ReviewEntityType } from "../types";
 
 interface Props {
   type: ReviewEntityType;

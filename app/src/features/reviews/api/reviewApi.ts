@@ -1,9 +1,7 @@
 import api from "@/lib/axios";
-import type { Review, ReviewSummary } from "@/types/review";
 import type { Pagination } from "@/types/common";
 import type { PaginationParams } from "@/hooks/usePagination";
-
-export type ReviewEntityType = "venue" | "artist" | "concert";
+import type { Review, ReviewSummary, ReviewEntityType } from "../types";
 
 interface CreateReviewRequest {
   concertId: number;

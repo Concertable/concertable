@@ -1,10 +1,11 @@
+import { usePagination } from "@/hooks/usePagination";
 import {
   useReviewsQuery,
   useReviewSummaryQuery,
   useCanReviewQuery,
-} from "@/hooks/query/useReviewQuery";
-import { usePagination } from "@/hooks/usePagination";
-import type { ReviewEntityType } from "@/api/reviewApi";
+} from "./useReviewQuery";
+import type { ReviewEntityType } from "../types";
+
 export function useReviews(type: ReviewEntityType, id: number) {
   const { params, setPage, nextPage, prevPage } = usePagination();
   const reviewsQuery = useReviewsQuery(type, id, params);

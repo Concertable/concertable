@@ -1,8 +1,8 @@
 import { Star } from "lucide-react";
-import type { ReviewEntityType } from "@/api/reviewApi";
-import { useReviews } from "@/hooks/useReviews";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useReviews } from "../hooks/useReviews";
+import type { ReviewEntityType } from "../types";
 
 interface Props {
   type: ReviewEntityType;

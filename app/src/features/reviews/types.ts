@@ -1,3 +1,5 @@
+export type ReviewEntityType = "venue" | "artist" | "concert";
+
 export interface Review {
   id: number;
   email: string;

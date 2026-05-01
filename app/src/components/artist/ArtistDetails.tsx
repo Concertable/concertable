@@ -2,7 +2,7 @@ import type { Artist } from "@/types/artist";
 import { MapPin } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
-import { ReviewSection } from "@/components/reviews/ReviewSection";
+import { ReviewSection } from "@/features/reviews";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { useArtistStore } from "@/store/useArtistStore";
 

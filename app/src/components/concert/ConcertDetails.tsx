@@ -2,14 +2,12 @@ import type { Concert } from "@/types/concert";
 import { Hero } from "@/components/Hero";
 import { GoogleMap } from "@/components/GoogleMap";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
-import { ReviewSection } from "@/components/reviews/ReviewSection";
-import { ReviewSummaryBadge } from "@/components/reviews/ReviewSummaryBadge";
+import { ReviewSection, ReviewSummaryBadge, AddReview } from "@/features/reviews";
 import { ConcertCard } from "@/components/concert/ConcertCard";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, TriangleAlertIcon } from "lucide-react";
 import { VenueLocation } from "@/components/VenueLocation";
-import { AddReview } from "@/components/reviews/AddReview";
 import { GenreTags } from "@/components/headers/GenreTags";
 import { useImageUrl } from "@/hooks/query/useImageUrl";
 

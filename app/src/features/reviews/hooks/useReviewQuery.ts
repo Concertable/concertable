@@ -1,7 +1,8 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useAuth } from "react-oidc-context";
-import reviewApi, { type ReviewEntityType } from "@/api/reviewApi";
 import type { PaginationParams } from "@/hooks/usePagination";
+import reviewApi from "../api/reviewApi";
+import type { ReviewEntityType } from "../types";
 
 export function useReviewsQuery(
   type: ReviewEntityType,

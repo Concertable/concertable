@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
-import { useAddReview } from "@/hooks/useAddReview";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useAddReview } from "../hooks/useAddReview";
 
 interface Props {
   concertId: number;

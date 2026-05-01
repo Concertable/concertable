@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import reviewApi from "@/api/reviewApi";
-import { useCanReviewQuery } from "@/hooks/query/useReviewQuery";
+import reviewApi from "../api/reviewApi";
+import { useCanReviewQuery } from "./useReviewQuery";
 
 export function useAddReview(concertId: number) {
   const queryClient = useQueryClient();
