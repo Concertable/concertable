@@ -19,7 +19,17 @@
       "Bash(bash fix-paths.sh)",
       "Bash(bash fix-sln.sh)",
       "Bash(Get-ChildItem *)",
-      "Bash(xargs -I {} head -5 \"{}\")"
+      "Bash(xargs -I {} head -5 \"{}\")",
+      "Bash(npx tsc *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(xargs grep *)",
+      "Bash(Remove-Item *)",
+      "Bash(Select-Object FullName)",
+      "Bash(ConvertTo-Csv -NoTypeInformation)",
+      "Bash(Select-Object -Skip 1)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "PowerShell(Get-ChildItem *)"
     ]
   }
 }
