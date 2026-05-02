@@ -4,35 +4,111 @@
 
 ### Progress checkpoint (last updated 2026-05-02)
 
-**Done:**
-- `ApplicationEntity.PaymentMethodId` + two `Create` overloads (with/without PM) — commit `e21130c7`
-- `Executor` → `Dispatcher` rename (Acceptance/Completion/Settlement) — commit `5b10ec27`
-- Family markers (`IApplyable` / `IAcceptable` / `ICheckoutable`) + `ICheckout` rename from `IAcceptCheckout` — commit `fa8a3277`
-- `IConcertWorkflowStep` root marker + `ConcertWorkflowCapabilityRegistry` (singleton, type-only `IsAssignableTo` lookup, no workflow instantiation) — commit `e0e3753e`
-- `IConcertWorkflow` redefined as marker umbrella (`: IApplyable, IAcceptable, ISettleable, IFinishable`); strategies rewritten as capability composers; `AcceptanceDispatcher` capability-cast — commit `9d2d2fc5`
-- `IStandardConcertWorkflow` + `IPrepaidConcertWorkflow` bundle interfaces (cosmetic shorthand for current capability bundles) — commit `a775bf58`
-- `IApplyResolver` (resolves `ISimpleApply` / `IApplyWithPaymentMethod` by opportunity contract type); `IOpportunityRepository.GetContractIdByIdAsync` + `IContractLoader.LoadByOpportunityIdAsync` added — commit `b4f58f06`
-- `ApplicationService.ApplyAsync` + `AcceptAsync` split into typed overloads; `IAcceptanceDispatcher.AcceptAsync` split into two non-nullable methods — commit `9e0c590d`
+Read this section first when resuming the work — the original design content (further down) reflects pre-implementation intent and uses earlier names. The progress checkpoint is the source of truth.
 
-**Pending:**
-- #9 Split `ApplicationController` endpoints (`POST /applications/{oppId}` + `/with-payment-method`; `/accept-with-payment` + `/accept-confirmation`); request DTOs per endpoint
-- #10 HATEOAS action links on `OpportunityResponse` / `ApplicationResponse` using `ConcertWorkflowCapabilityRegistry`
-- #11 Remove `BookingEntity.PaymentMethodId` (read/write moved to `Application.PaymentMethodId`); drop PM param from `BookingService.CreateAsync`; rewire `DeferredConcertService`
-- #13 Slim `IFinishOutcome` → `Task` (migrate `E2EEndpointExtensions` and `DevController.Complete` consumers off the payload first)
-- #14 (effectively done — strategies registered once under `IConcertWorkflow`, dispatchers cast to capability)
-- #15 Run `./initial-migrations.ps1` to re-scaffold migrations after entity changes
-- #16 Test sweep (most tests updated piecemeal during commits; final integration test pass)
-- #17 Frontend: HATEOAS-driven apply/accept (read action URLs from response, drop `contract.type` switches in components)
+#### Branch + commits
+
+Branch: `Refactor/ConcertWorkflowCoupling`. Most-recent first:
+
+| Commit | What |
+|---|---|
+| `a13beac9` | **Unify apply + accept endpoints**; controller branches on optional PM in body. Reverts the earlier endpoint split. Wire format: `POST /api/Application/{oppId}` (apply, optional `ApplyRequest` body), `POST /api/Application/{appId}/checkout`, `POST /api/Application/{appId}/accept` (accept, optional `AcceptRequest` body). Service stays typed. |
+| `da21a10e` | First progress checkpoint added to plan doc. |
+| `9e0c590d` | Split `ApplicationService.ApplyAsync` + `AcceptAsync` into typed overloads; `IAcceptanceDispatcher.AcceptAsync` split into two non-nullable methods. |
+| `b4f58f06` | `IApplyResolver` (resolves `ISimpleApply` / `IApplyWithPaymentMethod` by opportunity contract type). Added `IOpportunityRepository.GetContractIdByIdAsync` + `IContractLoader.LoadByOpportunityIdAsync`. |
+| `a775bf58` | `IStandardConcertWorkflow` + `IPrepaidConcertWorkflow` bundle interfaces (pure marker composition; cosmetic shorthand for the current durable capability bundles). |
+| `9d2d2fc5` | Redefined `IConcertWorkflow` as marker umbrella. Strategies rewritten as capability composers. `AcceptanceDispatcher` capability-cast. `IApplyWithPaymentMethod` → marker (no method). VenueHire injects `IApplicationRepository` to read its stored PM at accept time. |
+| `e0e3753e` | `IConcertWorkflowStep` root marker + `ConcertWorkflowCapabilityRegistry` (singleton, type-only `IsAssignableTo` lookup, no workflow instantiation). |
+| `fa8a3277` | Family markers `IApplyable` / `IAcceptable` / `ICheckoutable` + rename `IAcceptCheckout` → `ICheckout`. |
+| `5b10ec27` | `Executor` → `Dispatcher` rename (`AcceptanceExecutor` / `CompletionExecutor` / `SettlementExecutor` → `AcceptanceDispatcher` / `CompletionDispatcher` / `SettlementDispatcher`). |
+| `e21130c7` | `ApplicationEntity.PaymentMethodId` + two `Create` overloads (with/without PM). |
+
+#### Pending tasks (in suggested execution order)
+
+| # | Task | Notes |
+|---|---|---|
+| 10 | HATEOAS action links on `OpportunityResponse` / `ApplicationResponse` using `ConcertWorkflowCapabilityRegistry.Has<TStep>(ct)` | Mapper takes `ContractType`, queries registry, embeds action URLs. **No need to instantiate workflows** — registry is type-metadata only. The single-URL design (post-revert) means HATEOAS hints whether PM is required via a flag (e.g. `actions.apply.requiresPayment: true`) rather than by varying the URL. |
+| 11 | Remove `BookingEntity.PaymentMethodId` | Read/write moves to `Application.PaymentMethodId`. Drop PM param from `BookingService.CreateAsync`. Rewire `DeferredConcertService` (currently writes PM via booking; should write via application or move that logic upstream into the workflow). Only DoorSplit/Versus paths actually used the column. |
+| 13 | Slim `IFinishOutcome` → `Task` | Migrate `E2EEndpointExtensions.cs` and `DevController.Complete` consumers off the `result.Value is DeferredFinishOutcome deferred` payload first. They currently read `deferred.Payment.TransactionId`. Move those test/dev reads to a separate query path (e.g. `GET /e2e/payment-intent/{applicationId}` already exists). |
+| 14 | DI registration audit | **Effectively done already.** Strategies registered once under `IConcertWorkflow` keyed by `ContractType`; dispatchers/resolvers cast to specific capability via `is`. Verify no leftover registrations expected the old shape. |
+| 15 | Run `./initial-migrations.ps1` | Re-scaffold migrations after `ApplicationEntity.PaymentMethodId` was added. CLAUDE.md rule: never add additive migrations; always re-scaffold `InitialCreate`. |
+| 16 | Test sweep | Most tests updated piecemeal during commits (`AcceptanceDispatcherTests`, `VenueHireConcertWorkflowCompleteTests`). Final integration-test pass after migrations are re-scaffolded. |
+| 17 | Frontend: HATEOAS-driven apply/accept | Read `actions` from response. Drop any `contract.type` branching for choosing endpoints. UI components for the apply form decide whether to render PM input based on the HATEOAS hint (or contract type — frontend can know contract type for rendering choices, just not for URL routing). |
+
+#### Closed/superseded tasks
+
+- **#3-6, #12** — strategy rewrites + `IConcertWorkflow` redefinition all landed in `9d2d2fc5`.
+- **#8** — `ApplicationService.ApplyAsync` / `AcceptAsync` typed overloads in `9e0c590d`.
+- **#9** — re-scoped from "split URLs" to "unify URLs". Final shape in `a13beac9`.
+- **#18** — Executor → Dispatcher rename in `5b10ec27`.
+- **#19** — `IApplyResolver` in `b4f58f06`.
+- **#20** — family markers + `ICheckout` in `fa8a3277`.
+- **#21** — `IConcertWorkflowStep` + `ConcertWorkflowCapabilityRegistry` in `e0e3753e`.
+
+### Key design decisions made along the way (reasoning preserved)
+
+#### Bundle interfaces (`IStandardConcertWorkflow` / `IPrepaidConcertWorkflow`)
+
+Initially I argued against these as "premature abstraction" and "re-introducing the smell." That was wrong. The original smell was a **shape-forcing parent with concrete nullable methods** (old `IConcertWorkflow.InitiateAsync(int, string?)` that VenueHire ignored). Pure marker composition (no methods) can't shape-force — strategies that don't fit simply don't declare it. User correctly pushed back; bundles are kept as cosmetic shorthand for the two current durable bundles. They're optional opt-in; a future contract with a different mix can declare individual capabilities directly.
+
+#### `ISimpleApply` and `IApplyWithPaymentMethod` are markers (no methods)
+
+Apply has **low variance** — three contracts have nothing to do at apply, one stores a PM. The PM storage is a single-line entity-mutation that fits naturally in `ApplicationService.ApplyAsync(int, string)` via the `ApplicationEntity.Create(artistId, oppId, pmId)` overload. No need for a strategy hook. The strategy interfaces are pure markers used by `IApplyResolver` as permission gates (`is ISimpleApply` / `is IApplyWithPaymentMethod`).
+
+This is **different from** `IAcceptWithPaymentMethod` / `IAcceptByConfirmation` which DO have methods because Accept variance is real (different downstream services, different payment flows).
+
+#### Dispatcher vs Resolver pattern
+
+Two roles, two names, both internal:
+
+- **Dispatcher** — does the work. Loads contract → resolves workflow → calls the capability method → returns the result. Caller treats the dispatcher's method as the operation. `AcceptanceDispatcher`, `CompletionDispatcher`, `SettlementDispatcher`.
+- **Resolver** — returns the typed capability or throws. Caller does the work using the resolved capability. `IApplyResolver`. Used when the orchestration lives in the service (not the strategy).
+
+For Apply, orchestration is in `ApplicationService` (validation, save, messaging, email — uniform across all contracts). Service uses `IApplyResolver` as a permission gate; strategy doesn't run any apply method. That's why Resolver fits.
+
+For Accept/Settle/Finish/Checkout, the strategy IS where the work lives (different payment services, different revenue calcs). Dispatcher fits.
+
+The naming distinction is intentional. Don't merge them.
+
+#### `ConcertWorkflowCapabilityRegistry` — type-metadata only
+
+Lives in `Concert.Application/Workflow/`. Singleton. Built at DI registration time from a `Dictionary<ContractType, Type>` populated alongside `AddKeyedScoped<IConcertWorkflow, T>(ct)`. Exposes `Has<TStep>(ct) where TStep : IConcertWorkflowStep` via `Type.IsAssignableTo(typeof(TStep))`.
+
+**Critical: never instantiates a workflow.** Strategy constructors take heavy dependencies (`IPayerLookup`, `IConcertPaymentFlow`, etc.). For HATEOAS link generation on list endpoints we don't want to construct N workflows just to read flags. Pure type metadata answers "does FlatFeeConcertWorkflow implement ICheckoutable?" without ever calling `new FlatFeeConcertWorkflow(...)`.
+
+#### Payment method storage — single nullable column on `ApplicationEntity`
+
+Considered: side table `ApplicationPaymentMethods` with role enum (Applicant/Acceptor). Rejected because per-application the role is mutually exclusive (one party authorizes per contract, not both — `BookingEntity.PaymentMethodId` was only ever used by DoorSplit/Versus, never both with VenueHire's apply-time PM). Single nullable column on `ApplicationEntity` is the simplest cohesive home.
+
+`BookingEntity.PaymentMethodId` will be deleted in #11 — its reads/writes move to `Application.PaymentMethodId`. (Booking only exists post-accept; Application exists from apply onward — so VenueHire can populate the column at apply-time.)
+
+#### HTTP layer: unified URLs (post-revert in `a13beac9`)
+
+The "no nullable-and-ignored params" rule applies to the **service layer**, not the HTTP boundary. The controller is inherently a translation point between untyped JSON and typed code; a single nullable field with one `is { } pmId` branch at the controller is a controlled bridge, not the smell.
+
+```csharp
+public async Task<IActionResult> Apply(int opportunityId, [FromBody] ApplyRequest? request = null)
+{
+    var application = request?.PaymentMethodId is { } pmId
+        ? await applicationService.ApplyAsync(opportunityId, pmId)
+        : await applicationService.ApplyAsync(opportunityId);
+    return CreatedAtAction(nameof(GetById), new { id = application.Id }, application.ToResponse());
+}
+```
+
+Service overloads stay typed. The branch is at the controller bridge only. The resolver in the typed service path validates capability — VenueHire-without-PM throws; FlatFee-with-PM throws.
+
+For HATEOAS, the response embeds a single action URL plus a hint (e.g. `actions.apply.requiresPayment: true`) rather than varying the URL.
 
 ### Final hierarchy as landed
 
 ```
 IConcertWorkflowStep (root marker)
-├── IApplyable        ── ISimpleApply, IApplyWithPaymentMethod
-├── IAcceptable       ── IAcceptWithPaymentMethod, IAcceptByConfirmation
-├── ICheckoutable     ── ICheckout
-├── ISettleable (has SettleAsync)
-└── IFinishable (has FinishAsync, still returns Task<IFinishOutcome> until #13)
+├── IApplyable        ── ISimpleApply (marker), IApplyWithPaymentMethod (marker)
+├── IAcceptable       ── IAcceptWithPaymentMethod (AcceptAsync(int, string)), IAcceptByConfirmation (AcceptAsync(int))
+├── ICheckoutable     ── ICheckout (CheckoutAsync(int))
+├── ISettleable       (SettleAsync(int))
+└── IFinishable       (FinishAsync(int) → Task<IFinishOutcome>; slim to Task pending #13)
 
 IConcertWorkflow : IApplyable, IAcceptable, ISettleable, IFinishable     (umbrella, marker only)
 
@@ -43,7 +119,72 @@ FlatFee/DoorSplit/Versus : IStandardConcertWorkflow
 VenueHire                : IPrepaidConcertWorkflow
 ```
 
-`ConcertWorkflowCapabilityRegistry.Has<TStep>(ContractType)` queries via `IsAssignableTo` against precomputed `Dictionary<ContractType, Type>` (built at DI registration). Singleton, no workflow instantiation for capability lookup.
+### Key files and locations
+
+```
+Concert.Application/Interfaces/
+├── IConcertWorkflow.cs                       umbrella (marker only)
+├── IConcertWorkflowStep.cs                   root marker
+├── IApplyable.cs / IAcceptable.cs / ICheckoutable.cs    family markers
+├── ISettleable.cs / IFinishable.cs           family markers WITH methods
+├── ISimpleApply.cs / IApplyWithPaymentMethod.cs   apply variants (markers)
+├── ICheckout.cs                              checkout (was IAcceptCheckout)
+├── IAcceptWithPaymentMethod.cs / IAcceptByConfirmation.cs   accept variants
+├── IStandardConcertWorkflow.cs / IPrepaidConcertWorkflow.cs   bundle composers
+├── IApplyResolver.cs                         resolves apply capability
+├── IAcceptanceDispatcher.cs                  dispatches accept (split into 2 methods)
+├── ISettlementDispatcher.cs                  (was ISettlementExecutor)
+├── ICompletionDispatcher.cs                  (was ICompletionExecutor)
+└── IConcertWorkflowFactory.cs                returns IConcertWorkflow umbrella by ContractType
+
+Concert.Application/Workflow/
+└── ConcertWorkflowCapabilityRegistry.cs      type-only capability lookup
+
+Concert.Infrastructure/Services/
+├── Apply/
+│   └── ApplyResolver.cs                      IApplyResolver impl
+├── Acceptance/
+│   └── AcceptanceDispatcher.cs               (was AcceptanceExecutor)
+├── Completion/
+│   └── CompletionDispatcher.cs               (was CompletionExecutor)
+├── Settlement/
+│   └── SettlementDispatcher.cs               (was SettlementExecutor)
+├── Workflow/
+│   ├── FlatFeeConcertWorkflow.cs             : IStandardConcertWorkflow
+│   ├── DoorSplitConcertWorkflow.cs           : IStandardConcertWorkflow
+│   ├── VersusConcertWorkflow.cs              : IStandardConcertWorkflow
+│   ├── VenueHireConcertWorkflow.cs           : IPrepaidConcertWorkflow
+│   ├── ConcertWorkflowFactory.cs
+│   ├── UpfrontConcertService.cs              (downstream service, unchanged)
+│   ├── DeferredConcertService.cs             (downstream service, has BookingEntity.PaymentMethodId reads — touched by #11)
+│   ├── OnSessionConcertPaymentFlow.cs
+│   └── OffSessionConcertPaymentFlow.cs
+├── ApplicationService.cs                     ApplyAsync x2 + AcceptAsync x2 typed overloads
+└── BookingService.cs                         StorePaymentMethod still wired — touched by #11
+
+Concert.Domain/Entities/
+├── ApplicationEntity.cs                      has PaymentMethodId column + two Create overloads
+└── BookingEntity.cs                          has PaymentMethodId column to be deleted (#11)
+
+Concert.Api/Controllers/
+└── ApplicationController.cs                  unified apply + accept endpoints, controller-side null branch
+
+Concert.Api/Requests/
+└── ApplicationRequests.cs                    ApplyRequest(string? PaymentMethodId) + AcceptRequest(string? PaymentMethodId)
+
+Concert.Infrastructure/Extensions/
+└── ServiceCollectionExtensions.cs            DI registration; AddConcertWorkflow<T>(ct, dict) populates registry
+```
+
+### Gotchas to remember when resuming
+
+1. **Build verification** — every commit so far has been verified with `dotnet build` (background) before committing. Keep that pattern.
+2. **VenueHire `AcceptAsync`** loads `application.PaymentMethodId` from `IApplicationRepository.GetByIdAsync(applicationId)` (since the artist's PM was stored at apply-time). Throws `BadRequestException("VenueHire application has no payment method stored")` if null.
+3. **`AcceptanceDispatcher`** kept the Dispatcher pattern (does the work + returns outcome) — Accept variance is real. **`IApplyResolver`** uses Resolver pattern (returns capability) — Apply orchestration lives in the service.
+4. **`IFinishOutcome` slim (#13)** is blocked on migrating `E2EEndpointExtensions.cs:42-52` (reads `deferred.Payment.TransactionId`) and `DevController.Complete` (returns `result.Value`). Both need to query payment intent separately first.
+5. **Migration re-scaffold (#15)** must happen at the very end before integration tests run, after all entity changes settle.
+6. **Per-CLAUDE.md** — never additive migrations; always re-scaffold `InitialCreate`.
+7. **Per-memory** — never add `Co-Authored-By: Claude` trailer; never use unnecessary braces on single-statement `if/else`; prefer `is not null` over `is { }` capture when the captured value is just reused.
 
 ---
 
