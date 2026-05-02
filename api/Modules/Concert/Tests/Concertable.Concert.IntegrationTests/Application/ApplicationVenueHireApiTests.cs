@@ -38,7 +38,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldConfirmBookingAndCreateDraftConcertAndNotifyArtist()
+    public async Task Accept_ShouldConfirmBookingAndCreateDraftConcertAndNotifyArtistAndVenue()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
@@ -53,9 +53,11 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var concert = await client.GetAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.VenueHireApp.Id}");
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
-        var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);
-        Assert.Equal(fixture.SeedData.ArtistManager.Id.ToString(), userId);
-        Assert.NotNull(payload);
+        Assert.Equal(2, fixture.NotificationService.DraftCreated.Count);
+        var notifiedUserIds = fixture.NotificationService.DraftCreated.Select(n => n.UserId).ToList();
+        Assert.Contains(fixture.SeedData.ArtistManager.Id.ToString(), notifiedUserIds);
+        Assert.Contains(fixture.SeedData.VenueManager1.Id.ToString(), notifiedUserIds);
+        Assert.All(fixture.NotificationService.DraftCreated, n => Assert.NotNull(n.Payload));
     }
 
     [Fact]
@@ -70,7 +72,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
-        Assert.Single(fixture.NotificationService.DraftCreated);
+        Assert.Equal(2, fixture.NotificationService.DraftCreated.Count);
     }
 
     [Fact]
