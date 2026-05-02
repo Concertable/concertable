@@ -1,5 +1,5 @@
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IApplyable
+internal interface IApplyable : IConcertWorkflowStep
 {
 }

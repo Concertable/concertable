@@ -1,5 +1,5 @@
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface ICheckoutable
+internal interface ICheckoutable : IConcertWorkflowStep
 {
 }
