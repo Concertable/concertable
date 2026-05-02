@@ -43,71 +43,130 @@ Under this distinction:
 Apply → Checkout → Accept → Settle → Finish
 ```
 
-### Role interfaces per step
+### Interface hierarchy: umbrella + family markers + capabilities
+
+Three layers, designed for declarative intent and loose coupling:
+
+```
+                 IConcertWorkflow                ← umbrella (required minimum)
+                       │
+       ┌───────────┬───┴───────┬─────────────┐
+       ▼           ▼           ▼             ▼
+  IApplyable  IAcceptable  ISettleable  IFinishable    ← required family markers
+                                  │            │           (Settleable + Finishable
+                                  ▼            ▼            carry the actual method)
+                              SettleAsync  FinishAsync
+
+  ICheckoutable                                          ← OPTIONAL family marker
+                                                            (NOT in IConcertWorkflow —
+                                                             VenueHire skips checkout)
+
+Concrete capabilities (extensions on top):
+  Apply:    ISimpleApply              : IApplyable      (marker)
+            IApplyWithPaymentMethod   : IApplyable      (OnAppliedAsync)
+  Checkout: ICheckout                 : ICheckoutable   (CheckoutAsync)
+  Accept:   IAcceptWithPaymentMethod  : IAcceptable     (AcceptAsync(appId, pmId))
+            IAcceptByConfirmation     : IAcceptable     (AcceptAsync(appId))
+```
+
+Why a hierarchy at all: the markers don't add behaviour, but they make each interface's role declarative — `IApplyable` says "this is something to do with apply." Strategies declare the umbrella + the specific capabilities they fulfil; the type system enforces "every workflow has settle + finish + at least an apply variant + at least an accept variant." Checkout is opt-in.
 
 **Apply step** — variance: does the artist supply a payment method at apply-time?
 ```csharp
-public interface ISimpleApply             { Task<Application> Apply(int opportunityId, Guid artistId); }
-public interface IApplyWithPaymentMethod  { Task<Application> Apply(int opportunityId, Guid artistId, string paymentMethodId); }
+public interface IApplyable { }
+public interface ISimpleApply : IApplyable { }                   // marker — no method
+public interface IApplyWithPaymentMethod : IApplyable
+{
+    Task OnAppliedAsync(int applicationId, string paymentMethodId);
+}
 ```
 
 **Checkout step** — variance: does it exist? Independent capability, not all contracts have one.
 ```csharp
-public interface IPreAcceptCheckout       { Task<Checkout> Checkout(int applicationId); }
+public interface ICheckoutable { }
+public interface ICheckout : ICheckoutable
+{
+    Task<AcceptCheckout> CheckoutAsync(int applicationId);
+}
 ```
 
 **Accept step** — variance: does the venue supply a payment method at accept-time?
 ```csharp
-public interface IAcceptWithPaymentMethod { Task Accept(int applicationId, string paymentMethodId); }
-public interface IAcceptByConfirmation    { Task Accept(int applicationId); }
+public interface IAcceptable { }
+public interface IAcceptWithPaymentMethod : IAcceptable
+{
+    Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId);
+}
+public interface IAcceptByConfirmation : IAcceptable
+{
+    Task<IAcceptOutcome> AcceptAsync(int applicationId);
+}
 ```
 
 **Settle step** — universal lifecycle hook, behaviour varies in method body.
 ```csharp
-public interface ISettle                  { Task Settle(int bookingId); }
+public interface ISettleable
+{
+    Task SettleAsync(int bookingId);
+}
 ```
 
 **Finish step** — universal lifecycle hook, behaviour varies in method body. Worker-triggered, returns `Task` (not `Task<IFinishOutcome>`) — no caller consumes the outcome payload; failure is signalled by exception.
 ```csharp
-public interface IFinish                  { Task Finish(int concertId); }
+public interface IFinishable
+{
+    Task FinishAsync(int concertId);
+}
+```
+
+**Workflow umbrella** — every concert workflow must be each of these at minimum:
+```csharp
+public interface IConcertWorkflow : IApplyable, IAcceptable, ISettleable, IFinishable { }
 ```
 
 ### Strategies as capability composition
 
-No shared parent contract. Each strategy declares the capabilities it fulfils:
+Each strategy declares the umbrella plus the specific capabilities it fulfils:
 
 ```csharp
-public sealed class FlatFeeStrategy
-    : ISimpleApply, IPreAcceptCheckout, IAcceptWithPaymentMethod, ISettle, IFinish { }
+public sealed class FlatFeeConcertWorkflow
+    : IConcertWorkflow, ISimpleApply, ICheckout, IAcceptWithPaymentMethod { }
 
-public sealed class VenueHireStrategy
-    : IApplyWithPaymentMethod, IAcceptByConfirmation, ISettle, IFinish { }
+public sealed class DoorSplitConcertWorkflow
+    : IConcertWorkflow, ISimpleApply, ICheckout, IAcceptWithPaymentMethod { }
 
-public sealed class DoorSplitStrategy
-    : ISimpleApply, IPreAcceptCheckout, IAcceptWithPaymentMethod, ISettle, IFinish { }
+public sealed class VersusConcertWorkflow
+    : IConcertWorkflow, ISimpleApply, ICheckout, IAcceptWithPaymentMethod { }
 
-public sealed class VersusStrategy
-    : ISimpleApply, IPreAcceptCheckout, IAcceptWithPaymentMethod, ISettle, IFinish { }
+public sealed class VenueHireConcertWorkflow
+    : IConcertWorkflow, IApplyWithPaymentMethod, IAcceptByConfirmation { }
 ```
 
-VenueHire deliberately does **not** implement `ISimpleApply` or `IPreAcceptCheckout`. The type system enforces that callers cannot ask VenueHire for a checkout or a payment-method-free apply.
+VenueHire deliberately does **not** implement `ISimpleApply` or `ICheckout`. The type system enforces that callers cannot ask VenueHire for a checkout or a payment-method-free apply.
 
 ### Dispatch is capability-based, not contract-type-based
 
-Strategies registered keyed by `ContractType` in DI. Orchestrator resolves once, then pattern-matches on **capability**, not contract type:
+Strategies registered keyed by `ContractType` in DI under the `IConcertWorkflow` umbrella — **one registration per strategy**:
 
 ```csharp
-var strategy = sp.GetRequiredKeyedService<object>(contractType);
-return strategy switch
-{
-    IApplyWithPaymentMethod a => a.Apply(opportunityId, artistId,
-        paymentMethodId ?? throw new BadRequestException("Payment method required for this contract")),
-    ISimpleApply s            => s.Apply(opportunityId, artistId),
-    _ => throw new InvalidOperationException("Strategy supports no apply path")
-};
+services.AddKeyedScoped<IConcertWorkflow, FlatFeeConcertWorkflow>(ContractType.FlatFee);
+// ...same for DoorSplit, Versus, VenueHire
 ```
 
-`Settle` and `Finish` need no switch — every strategy implements them, resolved directly via `sp.GetRequiredKeyedService<ISettle>(contractType).Settle(...)`.
+Resolvers/dispatchers fetch the umbrella, then cast to the specific capability:
+
+```csharp
+public async Task<ISimpleApply> ResolveSimpleAsync(int opportunityId)
+{
+    var contract = await contractLoader.LoadByOpportunityIdAsync(opportunityId);
+    var workflow = workflowFactory.Create(contract.ContractType);  // returns IConcertWorkflow
+    return workflow is ISimpleApply simple
+        ? simple
+        : throw new BadRequestException("This contract requires a payment method at apply");
+}
+```
+
+`SettleAsync` and `FinishAsync` need no cast — they're on the umbrella's required `ISettleable` / `IFinishable` parents.
 
 ### HTTP layer mirrors capability split
 

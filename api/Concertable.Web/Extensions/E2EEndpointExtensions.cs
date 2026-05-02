@@ -39,9 +39,9 @@ public static class E2EEndpointExtensions
             });
         });
 
-        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionExecutor CompletionExecutor) =>
+        app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionDispatcher CompletionDispatcher) =>
         {
-            var result = await CompletionExecutor.FinishAsync(concertId);
+            var result = await CompletionDispatcher.FinishAsync(concertId);
 
             if (result.IsFailed)
                 return Results.BadRequest(result.Errors.Select(e => e.Message));

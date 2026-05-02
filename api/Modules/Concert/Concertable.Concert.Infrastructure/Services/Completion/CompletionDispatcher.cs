@@ -2,12 +2,12 @@ using FluentResults;
 
 namespace Concertable.Concert.Infrastructure.Services.Completion;
 
-internal class CompletionExecutor : ICompletionExecutor
+internal class CompletionDispatcher : ICompletionDispatcher
 {
     private readonly IContractLoader contractLoader;
     private readonly IConcertWorkflowFactory workflowFactory;
 
-    public CompletionExecutor(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory)
+    public CompletionDispatcher(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory)
     {
         this.contractLoader = contractLoader;
         this.workflowFactory = workflowFactory;

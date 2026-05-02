@@ -3,17 +3,17 @@ using Concertable.Concert.Infrastructure.Services.Completion;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Completion;
-public class CompletionExecutorTests
+public class CompletionDispatcherTests
 {
     private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowFactory> workflowFactory;
-    private readonly CompletionExecutor sut;
+    private readonly CompletionDispatcher sut;
 
-    public CompletionExecutorTests()
+    public CompletionDispatcherTests()
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new CompletionExecutor(contractLoader.Object, workflowFactory.Object);
+        sut = new CompletionDispatcher(contractLoader.Object, workflowFactory.Object);
     }
 
     [Fact]

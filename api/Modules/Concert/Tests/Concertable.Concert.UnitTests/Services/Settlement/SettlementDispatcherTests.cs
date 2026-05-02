@@ -3,17 +3,17 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Settlement;
-public class SettlementExecutorTests
+public class SettlementDispatcherTests
 {
     private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowFactory> workflowFactory;
-    private readonly SettlementExecutor sut;
+    private readonly SettlementDispatcher sut;
 
-    public SettlementExecutorTests()
+    public SettlementDispatcherTests()
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new SettlementExecutor(contractLoader.Object, workflowFactory.Object, NullLogger<SettlementExecutor>.Instance);
+        sut = new SettlementDispatcher(contractLoader.Object, workflowFactory.Object, NullLogger<SettlementDispatcher>.Instance);
     }
 
     [Fact]

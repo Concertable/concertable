@@ -19,7 +19,7 @@ internal class ApplicationService : IApplicationService
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
     private readonly IUserModule userModule;
-    private readonly IAcceptanceExecutor acceptanceExecutor;
+    private readonly IAcceptanceDispatcher acceptanceDispatcher;
     private readonly IApplicationMapper mapper;
 
     public ApplicationService(
@@ -32,7 +32,7 @@ internal class ApplicationService : IApplicationService
         IOpportunityService opportunityService,
         IArtistModule artistModule,
         IUserModule userModule,
-        IAcceptanceExecutor acceptanceExecutor,
+        IAcceptanceDispatcher acceptanceDispatcher,
         IApplicationMapper mapper)
     {
         this.applicationRepository = applicationRepository;
@@ -44,7 +44,7 @@ internal class ApplicationService : IApplicationService
         this.opportunityService = opportunityService;
         this.artistModule = artistModule;
         this.userModule = userModule;
-        this.acceptanceExecutor = acceptanceExecutor;
+        this.acceptanceDispatcher = acceptanceDispatcher;
         this.mapper = mapper;
     }
 
@@ -126,7 +126,7 @@ internal class ApplicationService : IApplicationService
     }
 
     public Task<AcceptCheckout?> CheckoutAsync(int applicationId) =>
-        acceptanceExecutor.CheckoutAsync(applicationId);
+        acceptanceDispatcher.CheckoutAsync(applicationId);
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
@@ -135,7 +135,7 @@ internal class ApplicationService : IApplicationService
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var outcome = await acceptanceExecutor.AcceptAsync(applicationId, paymentMethodId);
+        var outcome = await acceptanceDispatcher.AcceptAsync(applicationId, paymentMethodId);
 
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");

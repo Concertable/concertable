@@ -2,17 +2,17 @@
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Acceptance;
-public class AcceptanceExecutorTests
+public class AcceptanceDispatcherTests
 {
     private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowFactory> workflowFactory;
-    private readonly AcceptanceExecutor sut;
+    private readonly AcceptanceDispatcher sut;
 
-    public AcceptanceExecutorTests()
+    public AcceptanceDispatcherTests()
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new AcceptanceExecutor(contractLoader.Object, workflowFactory.Object);
+        sut = new AcceptanceDispatcher(contractLoader.Object, workflowFactory.Object);
     }
 
     [Fact]

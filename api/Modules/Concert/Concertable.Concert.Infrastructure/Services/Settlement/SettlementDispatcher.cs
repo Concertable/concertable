@@ -2,13 +2,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Settlement;
 
-internal class SettlementExecutor : ISettlementExecutor
+internal class SettlementDispatcher : ISettlementDispatcher
 {
     private readonly IContractLoader contractLoader;
     private readonly IConcertWorkflowFactory workflowFactory;
-    private readonly ILogger<SettlementExecutor> logger;
+    private readonly ILogger<SettlementDispatcher> logger;
 
-    public SettlementExecutor(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory, ILogger<SettlementExecutor> logger)
+    public SettlementDispatcher(IContractLoader contractLoader, IConcertWorkflowFactory workflowFactory, ILogger<SettlementDispatcher> logger)
     {
         this.contractLoader = contractLoader;
         this.workflowFactory = workflowFactory;
