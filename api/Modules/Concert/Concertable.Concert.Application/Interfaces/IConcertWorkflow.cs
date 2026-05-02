@@ -1,10 +1,5 @@
-using Concertable.Concert.Application.Responses;
-
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IConcertWorkflow : IContractStrategy
-{
-    Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null);
-    Task SettleAsync(int bookingId);
-    Task<IFinishOutcome> FinishAsync(int concertId);
-}
+// Every concert workflow must satisfy: some apply, some accept, settle, finish.
+// Checkout is opt-in (not every contract has one).
+internal interface IConcertWorkflow : IApplyable, IAcceptable, ISettleable, IFinishable { }

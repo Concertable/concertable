@@ -1,4 +1,5 @@
 using Concertable.Concert.Application.Responses;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Acceptance;
 
@@ -25,7 +26,15 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
     {
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
-        return await workflowFactory.Create(contract.ContractType)
-            .InitiateAsync(applicationId, paymentMethodId);
+        var workflow = workflowFactory.Create(contract.ContractType);
+
+        if (paymentMethodId is not null)
+            return workflow is IAcceptWithPaymentMethod withPm
+                ? await withPm.AcceptAsync(applicationId, paymentMethodId)
+                : throw new BadRequestException("This contract does not accept a payment method at accept");
+
+        return workflow is IAcceptByConfirmation byConfirm
+            ? await byConfirm.AcceptAsync(applicationId)
+            : throw new BadRequestException("This contract requires a payment method at accept");
     }
 }
