@@ -21,7 +21,8 @@ internal class OpportunityController : ControllerBase
     [HttpGet("active/venue/{id}")]
     public async Task<IActionResult> GetActiveByVenueId(int id, [FromQuery] PageParams pageParams)
     {
-        return Ok(await opportunityService.GetActiveByVenueIdAsync(id, pageParams));
+        var page = await opportunityService.GetActiveByVenueIdAsync(id, pageParams);
+        return Ok(mapper.ToResponses(page));
     }
 
     [HttpGet("{id:int}")]
