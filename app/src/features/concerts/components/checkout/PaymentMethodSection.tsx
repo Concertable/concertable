@@ -7,7 +7,7 @@ import type { PaymentTiming } from "../../types";
 export interface PaymentSectionProps {
   savedCard: PaymentMethod | null | undefined;
   isLoading: boolean;
-  onChange: (paymentMethodId: string | null | undefined) => void;
+  onChange: (paymentMethodId: string | undefined) => void;
 }
 
 const sectionRegistry = {

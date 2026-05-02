@@ -18,7 +18,7 @@ export interface StripePaymentFormProps {
   submitLabel: string;
   disabled?: boolean;
   footer?: ReactNode;
-  onSuccess: (paymentMethodId: string | null) => void;
+  onSuccess: (paymentMethodId: string) => void;
 }
 
 export function StripePaymentForm(props: StripePaymentFormProps) {
@@ -78,7 +78,13 @@ function Form({
 
     const intent =
       timing === "Immediate" ? result.paymentIntent : result.setupIntent;
-    onSuccess((intent?.payment_method as string | null | undefined) ?? null);
+    const paymentMethodId = intent?.payment_method as string | undefined;
+    if (!paymentMethodId) {
+      setError("Payment method missing from confirmation.");
+      setIsSubmitting(false);
+      return;
+    }
+    onSuccess(paymentMethodId);
   }
 
   const isDisabled = !stripe || !elements || disabled || isSubmitting;

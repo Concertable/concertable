@@ -13,17 +13,7 @@ internal class OffSessionConcertPaymentFlow : IConcertPaymentFlow
         this.managerPaymentModule = managerPaymentModule;
     }
 
-    public async Task<string> ResolvePaymentMethodAsync(Guid payerId, string? paymentMethodId)
-    {
-        if (!await managerPaymentModule.HasStripeCustomerAsync(payerId))
-            throw new BadRequestException("Stripe customer setup is required for deferred payments.");
-
-        return paymentMethodId
-            ?? await managerPaymentModule.TryGetPaymentMethodIdAsync(payerId)
-            ?? throw new BadRequestException("A payment method is required.");
-    }
-
-    public Task<Result<PaymentResponse>> PayAsync(
+    public async Task<Result<PaymentResponse>> PayAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,
@@ -31,7 +21,10 @@ internal class OffSessionConcertPaymentFlow : IConcertPaymentFlow
         IDictionary<string, string> metadata,
         CancellationToken ct = default)
     {
-        return managerPaymentModule.PayAsync(payerId, payeeId, amount, metadata, paymentMethodId, PaymentSession.OffSession, ct);
+        if (!await managerPaymentModule.HasStripeCustomerAsync(payerId))
+            throw new BadRequestException("Stripe customer setup is required for deferred payments.");
+
+        return await managerPaymentModule.PayAsync(payerId, payeeId, amount, metadata, paymentMethodId, PaymentSession.OffSession, ct);
     }
 
     public Task<CheckoutSession> CreateSessionAsync(

@@ -56,12 +56,6 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return account?.StripeCustomerId is not null;
     }
 
-    public async Task<string?> TryGetPaymentMethodIdAsync(Guid userId)
-    {
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId);
-        return await stripeAccountService.TryGetPaymentMethodAsync(account?.StripeCustomerId);
-    }
-
     public async Task<CheckoutSession> CreatePaymentSessionAsync(
         Guid payerId,
         IDictionary<string, string> metadata,

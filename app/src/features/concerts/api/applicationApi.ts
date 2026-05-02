@@ -27,10 +27,10 @@ const applicationApi = {
 
   acceptApplication: async (
     applicationId: number,
-    paymentMethodId?: string | null,
+    paymentMethodId?: string,
   ): Promise<AcceptOutcome> => {
     const { data } = await api.post<AcceptOutcome>(
-      `/application/accept/${applicationId}`,
+      `/application/${applicationId}/accept`,
       { paymentMethodId },
     );
     return data;

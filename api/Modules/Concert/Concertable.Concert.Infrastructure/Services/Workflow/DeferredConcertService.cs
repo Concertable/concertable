@@ -27,15 +27,13 @@ internal class DeferredConcertService : IDeferredConcertService
         this.logger = logger;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string? paymentMethodId)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string paymentMethodId)
     {
         var appCheck = await applicationValidator.CanAcceptAsync(applicationId);
         if (appCheck.IsFailed)
             throw new BadRequestException(appCheck.Errors);
 
-        var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, paymentMethodId);
-
-        var booking = await bookingService.CreateAsync(applicationId, resolvedPaymentMethodId);
+        var booking = await bookingService.CreateAsync(applicationId, paymentMethodId);
 
         var draftResult = await concertDraftService.CreateAsync(booking.Id);
         if (draftResult.IsFailed)
@@ -56,13 +54,14 @@ internal class DeferredConcertService : IDeferredConcertService
             ["toUserId"] = payeeId.ToString()
         };
 
-        var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, booking.PaymentMethodId);
+        var paymentMethodId = booking.PaymentMethodId
+            ?? throw new BadRequestException("Booking has no payment method stored");
 
         logger.LogInformation(
             "Settling concert {ConcertId} (booking {BookingId}): paying {Amount} {Currency} from {PayerId} to {PayeeId}",
             concertId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, resolvedPaymentMethodId, settlementMetadata);
+        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, paymentMethodId, settlementMetadata);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
 

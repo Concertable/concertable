@@ -1,5 +1,4 @@
 using Concertable.Payment.Contracts;
-using Concertable.Shared.Exceptions;
 using FluentResults;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -11,13 +10,6 @@ internal class OnSessionConcertPaymentFlow : IConcertPaymentFlow
     public OnSessionConcertPaymentFlow(IManagerPaymentModule managerPaymentModule)
     {
         this.managerPaymentModule = managerPaymentModule;
-    }
-
-    public async Task<string> ResolvePaymentMethodAsync(Guid payerId, string? paymentMethodId)
-    {
-        return paymentMethodId
-            ?? await managerPaymentModule.TryGetPaymentMethodIdAsync(payerId)
-            ?? throw new BadRequestException("A payment method is required.");
     }
 
     public Task<Result<PaymentResponse>> PayAsync(
