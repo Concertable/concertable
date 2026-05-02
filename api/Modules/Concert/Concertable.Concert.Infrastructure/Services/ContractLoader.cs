@@ -5,17 +5,21 @@ namespace Concertable.Concert.Infrastructure.Services;
 
 internal sealed class ContractLoader(
     IApplicationRepository applicationRepository,
+    IOpportunityRepository opportunityRepository,
     IBookingRepository bookingRepository,
     IConcertRepository concertRepository,
     IContractModule contractModule) : IContractLoader
 {
-    private enum Kind { Application, Booking, Concert }
+    private enum Kind { Application, Opportunity, Booking, Concert }
     private readonly record struct Key(Kind Kind, int Id);
 
     private readonly Dictionary<Key, IContract> cache = [];
 
     public Task<IContract> LoadByApplicationIdAsync(int applicationId) =>
         ResolveAsync(new Key(Kind.Application, applicationId), applicationRepository.GetContractIdByIdAsync);
+
+    public Task<IContract> LoadByOpportunityIdAsync(int opportunityId) =>
+        ResolveAsync(new Key(Kind.Opportunity, opportunityId), opportunityRepository.GetContractIdByIdAsync);
 
     public Task<IContract> LoadByBookingIdAsync(int bookingId) =>
         ResolveAsync(new Key(Kind.Booking, bookingId), bookingRepository.GetContractIdByIdAsync);

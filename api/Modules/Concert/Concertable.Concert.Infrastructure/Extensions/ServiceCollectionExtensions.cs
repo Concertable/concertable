@@ -15,6 +15,7 @@ using Concertable.Concert.Infrastructure.Repositories;
 using Concertable.Concert.Infrastructure.Repositories.Review;
 using Concertable.Concert.Infrastructure.Services;
 using Concertable.Concert.Infrastructure.Services.Acceptance;
+using Concertable.Concert.Infrastructure.Services.Apply;
 using Concertable.Concert.Infrastructure.Services.Workflow;
 using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Payment;
@@ -80,6 +81,7 @@ public static class ServiceCollectionExtensions
 
         // Dispatchers
         services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
+        services.AddScoped<IApplyResolver, ApplyResolver>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
