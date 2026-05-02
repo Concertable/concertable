@@ -2,7 +2,7 @@ using Concertable.Concert.Application.Responses;
 
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IAcceptByConfirmation : IAcceptable
+internal interface ISimpleAccept : IAcceptable
 {
     Task<IAcceptOutcome> AcceptAsync(int applicationId);
 }

@@ -17,8 +17,8 @@ internal class ApplyDispatcher : IApplyDispatcher
     {
         var contract = await contractLoader.LoadByOpportunityIdAsync(opportunityId);
         var workflow = workflowFactory.Create(contract.ContractType);
-        return workflow is ISimpleApply simple
-            ? await simple.ApplyAsync(artistId, opportunityId)
+        return workflow is ISimpleApply w
+            ? await w.ApplyAsync(artistId, opportunityId)
             : throw new BadRequestException("This contract requires a payment method at apply");
     }
 
@@ -26,8 +26,8 @@ internal class ApplyDispatcher : IApplyDispatcher
     {
         var contract = await contractLoader.LoadByOpportunityIdAsync(opportunityId);
         var workflow = workflowFactory.Create(contract.ContractType);
-        return workflow is IApplyWithPaymentMethod withPm
-            ? await withPm.ApplyAsync(artistId, opportunityId, paymentMethodId)
+        return workflow is IPaidApply w
+            ? await w.ApplyAsync(artistId, opportunityId, paymentMethodId)
             : throw new BadRequestException("This contract does not accept a payment method at apply");
     }
 }

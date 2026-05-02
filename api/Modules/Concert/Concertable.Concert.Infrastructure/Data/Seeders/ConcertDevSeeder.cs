@@ -254,12 +254,12 @@ internal class ConcertDevSeeder : IDevSeeder
                 // App 42: Accepted (upcoming concert)
                 ApplicationFactory.Accepted(8, 15, BookingFactory.Confirmed(ConcertFaker.GetFaker("Bass in the Air", 30m, 140, 120, 8, seed.Opportunities[14].VenueId, seed.Opportunities[14].Period.Start, seed.Opportunities[14].Period.End, now.AddDays(18)).Generate())),
                 // Apps 43-44: Pending (no concert)
-                ApplicationFactory.Create(9, 16),
-                ApplicationFactory.Create(10, 16),
+                ApplicationFactory.CreatePrepaid(9, 16),
+                ApplicationFactory.CreatePrepaid(10, 16),
                 // App 45: Accepted (upcoming concert)
-                ApplicationFactory.Accepted(11, 16, BookingFactory.Confirmed(ConcertFaker.GetFaker("Jumpin and thumpin", 15m, 100, 80, 11, seed.Opportunities[15].VenueId, seed.Opportunities[15].Period.Start, seed.Opportunities[15].Period.End, now.AddDays(22)).Generate())),
+                ApplicationFactory.AcceptedPrepaid(11, 16, BookingFactory.Confirmed(ConcertFaker.GetFaker("Jumpin and thumpin", 15m, 100, 80, 11, seed.Opportunities[15].VenueId, seed.Opportunities[15].Period.Start, seed.Opportunities[15].Period.End, now.AddDays(22)).Generate())),
                 // Apps 46-48: Pending (no concert)
-                ApplicationFactory.Create(12, 16),
+                ApplicationFactory.CreatePrepaid(12, 16),
                 seed.VersusApp,
                 ApplicationFactory.Create(14, 17),
                 // App 49: Accepted (upcoming concert)
@@ -277,7 +277,7 @@ internal class ConcertDevSeeder : IDevSeeder
                 ApplicationFactory.Create(1, 45),
                 ApplicationFactory.Create(2, 46),
                 ApplicationFactory.Create(3, 47),
-                ApplicationFactory.Create(4, 48),
+                ApplicationFactory.CreatePrepaid(4, 48),
                 ApplicationFactory.Create(5, 49),
                 ApplicationFactory.Create(2, 50),
                 ApplicationFactory.Create(2, 51),
@@ -317,9 +317,9 @@ internal class ConcertDevSeeder : IDevSeeder
                 ApplicationFactory.Accepted(5, 47, BookingFactory.Confirmed(ConcertFaker.GetFaker("Night Drive", 25m, 160, 130, 5, seed.Opportunities[46].VenueId, seed.Opportunities[46].Period.Start, seed.Opportunities[46].Period.End, now.AddDays(12)).Generate())),
                 ApplicationFactory.Create(6, 47),
                 ApplicationFactory.Create(7, 47),
-                ApplicationFactory.Accepted(6, 48, BookingFactory.Confirmed(ConcertFaker.GetFaker("Weekend Rush", 15m, 120, 90, 6, seed.Opportunities[47].VenueId, seed.Opportunities[47].Period.Start, seed.Opportunities[47].Period.End, now.AddDays(14)).Generate())),
-                ApplicationFactory.Create(7, 48),
-                ApplicationFactory.Create(8, 48),
+                ApplicationFactory.AcceptedPrepaid(6, 48, BookingFactory.Confirmed(ConcertFaker.GetFaker("Weekend Rush", 15m, 120, 90, 6, seed.Opportunities[47].VenueId, seed.Opportunities[47].Period.Start, seed.Opportunities[47].Period.End, now.AddDays(14)).Generate())),
+                ApplicationFactory.CreatePrepaid(7, 48),
+                ApplicationFactory.CreatePrepaid(8, 48),
             };
             context.Applications.AddRange(applications);
             await context.SaveChangesAsync(ct);

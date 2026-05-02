@@ -18,8 +18,8 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
     {
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         var workflow = workflowFactory.Create(contract.ContractType);
-        return workflow is ICheckout co
-            ? await co.CheckoutAsync(applicationId)
+        return workflow is ICheckout w
+            ? await w.CheckoutAsync(applicationId)
             : null;
     }
 
@@ -27,8 +27,8 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
     {
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         var workflow = workflowFactory.Create(contract.ContractType);
-        return workflow is IAcceptByConfirmation byConfirm
-            ? await byConfirm.AcceptAsync(applicationId)
+        return workflow is ISimpleAccept w
+            ? await w.AcceptAsync(applicationId)
             : throw new BadRequestException("This contract requires a payment method at accept");
     }
 
@@ -36,8 +36,8 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
     {
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         var workflow = workflowFactory.Create(contract.ContractType);
-        return workflow is IAcceptWithPaymentMethod withPm
-            ? await withPm.AcceptAsync(applicationId, paymentMethodId)
+        return workflow is IPaidAccept w
+            ? await w.AcceptAsync(applicationId, paymentMethodId)
             : throw new BadRequestException("This contract does not accept a payment method at accept");
     }
 }

@@ -2,7 +2,7 @@ using Concertable.Concert.Application.Responses;
 
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IAcceptWithPaymentMethod : IAcceptable
+internal interface IPaidAccept : IAcceptable
 {
     Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId);
 }
