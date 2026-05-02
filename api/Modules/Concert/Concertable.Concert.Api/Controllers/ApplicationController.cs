@@ -113,7 +113,9 @@ internal class ApplicationController : ControllerBase
     [HttpPost("accept/{applicationId}")]
     public async Task<IActionResult> Accept(int applicationId, [FromBody] AcceptApplicationRequest? request = null)
     {
-        var outcome = await applicationService.AcceptAsync(applicationId, request?.PaymentMethodId);
+        var outcome = request?.PaymentMethodId is { } pmId
+            ? await applicationService.AcceptAsync(applicationId, pmId)
+            : await applicationService.AcceptAsync(applicationId);
         return Ok(outcome);
     }
 

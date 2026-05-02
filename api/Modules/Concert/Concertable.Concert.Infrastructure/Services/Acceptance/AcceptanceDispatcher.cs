@@ -23,18 +23,21 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
             : null;
     }
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId)
     {
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         var workflow = workflowFactory.Create(contract.ContractType);
-
-        if (paymentMethodId is not null)
-            return workflow is IAcceptWithPaymentMethod withPm
-                ? await withPm.AcceptAsync(applicationId, paymentMethodId)
-                : throw new BadRequestException("This contract does not accept a payment method at accept");
-
         return workflow is IAcceptByConfirmation byConfirm
             ? await byConfirm.AcceptAsync(applicationId)
             : throw new BadRequestException("This contract requires a payment method at accept");
+    }
+
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
+    {
+        var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
+        var workflow = workflowFactory.Create(contract.ContractType);
+        return workflow is IAcceptWithPaymentMethod withPm
+            ? await withPm.AcceptAsync(applicationId, paymentMethodId)
+            : throw new BadRequestException("This contract does not accept a payment method at accept");
     }
 }

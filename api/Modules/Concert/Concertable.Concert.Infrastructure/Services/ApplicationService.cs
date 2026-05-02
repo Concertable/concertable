@@ -19,6 +19,7 @@ internal class ApplicationService : IApplicationService
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
     private readonly IUserModule userModule;
+    private readonly IApplyResolver applyResolver;
     private readonly IAcceptanceDispatcher acceptanceDispatcher;
     private readonly IApplicationMapper mapper;
 
@@ -32,6 +33,7 @@ internal class ApplicationService : IApplicationService
         IOpportunityService opportunityService,
         IArtistModule artistModule,
         IUserModule userModule,
+        IApplyResolver applyResolver,
         IAcceptanceDispatcher acceptanceDispatcher,
         IApplicationMapper mapper)
     {
@@ -44,6 +46,7 @@ internal class ApplicationService : IApplicationService
         this.opportunityService = opportunityService;
         this.artistModule = artistModule;
         this.userModule = userModule;
+        this.applyResolver = applyResolver;
         this.acceptanceDispatcher = acceptanceDispatcher;
         this.mapper = mapper;
     }
@@ -81,23 +84,43 @@ internal class ApplicationService : IApplicationService
         if (!await stripeValidator.ValidateAccountAsync())
             throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
 
+        _ = await applyResolver.ResolveSimpleAsync(opportunityId);
+
         var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
 
         var application = ApplicationEntity.Create(artistId, opportunityId);
+        return await ApplyAsync(application);
+    }
 
-        var opportunityOwnerId = await opportunityService.GetOwnerByIdAsync(opportunityId)
+    public async Task<ApplicationDto> ApplyAsync(int opportunityId, string paymentMethodId)
+    {
+        if (!await stripeValidator.ValidateAccountAsync())
+            throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
+
+        _ = await applyResolver.ResolveWithPaymentMethodAsync(opportunityId);
+
+        var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
+            ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
+
+        var application = ApplicationEntity.Create(artistId, opportunityId, paymentMethodId);
+        return await ApplyAsync(application);
+    }
+
+    private async Task<ApplicationDto> ApplyAsync(ApplicationEntity application)
+    {
+        var opportunityOwnerId = await opportunityService.GetOwnerByIdAsync(application.OpportunityId)
             ?? throw new NotFoundException("Concert Opportunity owner not found");
         var opportunityOwner = await userModule.GetManagerByIdAsync(opportunityOwnerId)
             ?? throw new NotFoundException("Venue manager not found for opportunity owner");
-        var opportunity = await opportunityService.GetByIdAsync(opportunityId);
+        var opportunity = await opportunityService.GetByIdAsync(application.OpportunityId);
 
-        var result = await applicationValidator.CanApplyAsync(opportunityId, artistId);
+        var result = await applicationValidator.CanApplyAsync(application.OpportunityId, application.ArtistId);
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var artistGenreIds = await artistModule.GetGenreIdsAsync(artistId);
+        var artistGenreIds = await artistModule.GetGenreIdsAsync(application.ArtistId);
         var opportunityGenreIds = opportunity.Genres.Select(g => g.Id).ToHashSet();
 
         if (opportunityGenreIds.Count > 0 && !artistGenreIds.Overlaps(opportunityGenreIds))
@@ -128,7 +151,18 @@ internal class ApplicationService : IApplicationService
     public Task<AcceptCheckout?> CheckoutAsync(int applicationId) =>
         acceptanceDispatcher.CheckoutAsync(applicationId);
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId)
+    {
+        var result = await applicationValidator.CanAcceptAsync(applicationId);
+
+        if (result.IsFailed)
+            throw new BadRequestException(result.Errors);
+
+        var outcome = await acceptanceDispatcher.AcceptAsync(applicationId);
+        return await NotifyAcceptedAsync(applicationId, outcome);
+    }
+
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
@@ -136,7 +170,11 @@ internal class ApplicationService : IApplicationService
             throw new BadRequestException(result.Errors);
 
         var outcome = await acceptanceDispatcher.AcceptAsync(applicationId, paymentMethodId);
+        return await NotifyAcceptedAsync(applicationId, outcome);
+    }
 
+    private async Task<IAcceptOutcome> NotifyAcceptedAsync(int applicationId, IAcceptOutcome outcome)
+    {
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");
 
