@@ -18,19 +18,22 @@ internal class ApplicationController : ControllerBase
     private readonly IArtistModule artistModule;
     private readonly ICurrentUser currentUser;
     private readonly IOpportunityService opportunityService;
+    private readonly IApplicationResponseMapper mapper;
 
     public ApplicationController(
         IApplicationService applicationService,
         IApplicationValidator applicationValidator,
         IArtistModule artistModule,
         ICurrentUser currentUser,
-        IOpportunityService opportunityService)
+        IOpportunityService opportunityService,
+        IApplicationResponseMapper mapper)
     {
         this.applicationService = applicationService;
         this.applicationValidator = applicationValidator;
         this.artistModule = artistModule;
         this.currentUser = currentUser;
         this.opportunityService = opportunityService;
+        this.mapper = mapper;
     }
 
     [Authorize(Roles = "VenueManager")]
@@ -38,7 +41,7 @@ internal class ApplicationController : ControllerBase
     public async Task<ActionResult<IEnumerable<ApplicationResponse>>> GetAllByOpportunityId(int id)
     {
         var applications = await applicationService.GetByOpportunityIdAsync(id);
-        return Ok(applications.ToResponses());
+        return Ok(mapper.ToResponses(applications));
     }
 
     [Authorize(Roles = "ArtistManager")]
@@ -48,7 +51,7 @@ internal class ApplicationController : ControllerBase
         var application = request?.PaymentMethodId is { } pmId
             ? await applicationService.ApplyAsync(opportunityId, pmId)
             : await applicationService.ApplyAsync(opportunityId);
-        return CreatedAtAction(nameof(GetById), new { id = application.Id }, application.ToResponse());
+        return CreatedAtAction(nameof(GetById), new { id = application.Id }, mapper.ToResponse(application));
     }
 
     [HttpGet("artist/pending")]
@@ -56,7 +59,7 @@ internal class ApplicationController : ControllerBase
     public async Task<ActionResult<IEnumerable<ApplicationResponse>>> GetPendingForArtist()
     {
         var applications = await applicationService.GetPendingForArtistAsync();
-        return Ok(applications.ToResponses());
+        return Ok(mapper.ToResponses(applications));
     }
 
     [HttpGet("artist/recently-denied")]
@@ -64,14 +67,14 @@ internal class ApplicationController : ControllerBase
     public async Task<ActionResult<IEnumerable<ApplicationResponse>>> GetRecentDeniedForArtist()
     {
         var applications = await applicationService.GetRecentDeniedForArtistAsync();
-        return Ok(applications.ToResponses());
+        return Ok(mapper.ToResponses(applications));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ApplicationResponse>> GetById(int id)
     {
         var application = await applicationService.GetByIdAsync(id);
-        return Ok(application.ToResponse());
+        return Ok(mapper.ToResponse(application));
     }
 
     [Authorize(Roles = "ArtistManager")]
