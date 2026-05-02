@@ -27,12 +27,10 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         await client.PostAsync(
-            $"/api/Application/accept/{fixture.SeedData.DoorSplitApp.Id}",
-            (object?)null);
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
 
         var response = await client.PostAsync(
-            $"/api/Application/accept/{fixture.SeedData.DoorSplitApp.Id}",
-            (object?)null);
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -43,8 +41,7 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         var acceptResponse = await client.PostAsync(
-            $"/api/Application/accept/{fixture.SeedData.DoorSplitApp.Id}",
-            (object?)null);
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
         await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         var application = await client.GetAsync<ApplicationResponse>(

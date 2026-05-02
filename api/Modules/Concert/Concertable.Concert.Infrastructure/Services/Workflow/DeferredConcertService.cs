@@ -33,7 +33,7 @@ internal class DeferredConcertService : IDeferredConcertService
         if (appCheck.IsFailed)
             throw new BadRequestException(appCheck.Errors);
 
-        var booking = await bookingService.CreateAsync(applicationId, paymentMethodId);
+        var booking = await bookingService.CreateDeferredAsync(applicationId, paymentMethodId);
 
         var draftResult = await concertDraftService.CreateAsync(booking.Id);
         if (draftResult.IsFailed)
@@ -45,6 +45,8 @@ internal class DeferredConcertService : IDeferredConcertService
     public async Task<IFinishOutcome> FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount)
     {
         var booking = await bookingService.MarkAwaitingPaymentByConcertIdAsync(concertId);
+        if (booking is not DeferredBooking deferred)
+            throw new BadRequestException("Concert finish requires a DeferredBooking");
 
         var settlementMetadata = new Dictionary<string, string>
         {
@@ -54,8 +56,7 @@ internal class DeferredConcertService : IDeferredConcertService
             ["toUserId"] = payeeId.ToString()
         };
 
-        var paymentMethodId = booking.PaymentMethodId
-            ?? throw new BadRequestException("Booking has no payment method stored");
+        var paymentMethodId = deferred.PaymentMethodId;
 
         logger.LogInformation(
             "Settling concert {ConcertId} (booking {BookingId}): paying {Amount} {Currency} from {PayerId} to {PayeeId}",

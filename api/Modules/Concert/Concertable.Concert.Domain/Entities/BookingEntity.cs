@@ -1,24 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Concertable.Concert.Domain;
 
-[Table("Bookings")]
-public class BookingEntity : IIdEntity
+public abstract class BookingEntity : IIdEntity
 {
     public int Id { get; private set; }
     public int ApplicationId { get; private set; }
-    public string? PaymentMethodId { get; private set; }
     public BookingStatus Status { get; private set; }
     public ApplicationEntity Application { get; set; } = null!;
     public ConcertEntity? Concert { get; private set; }
 
-    private BookingEntity() { }
-
-    public static BookingEntity Create(int applicationId) => new()
-    {
-        ApplicationId = applicationId,
-        Status = BookingStatus.Pending
-    };
+    protected BookingEntity() { }
 
     public void AwaitPayment()
     {
@@ -51,8 +41,32 @@ public class BookingEntity : IIdEntity
         Status = BookingStatus.PaymentFailed;
     }
 
-    public void StorePaymentMethod(string? paymentMethodId)
+    protected static T Init<T>(T booking, int applicationId) where T : BookingEntity
     {
-        PaymentMethodId = paymentMethodId;
+        booking.ApplicationId = applicationId;
+        booking.Status = BookingStatus.Pending;
+        return booking;
+    }
+}
+
+public sealed class StandardBooking : BookingEntity
+{
+    private StandardBooking() { }
+
+    public static StandardBooking Create(int applicationId) =>
+        Init(new StandardBooking(), applicationId);
+}
+
+public sealed class DeferredBooking : BookingEntity
+{
+    public string PaymentMethodId { get; private set; } = null!;
+
+    private DeferredBooking() { }
+
+    public static DeferredBooking Create(int applicationId, string paymentMethodId)
+    {
+        var booking = Init(new DeferredBooking(), applicationId);
+        booking.PaymentMethodId = paymentMethodId;
+        return booking;
     }
 }

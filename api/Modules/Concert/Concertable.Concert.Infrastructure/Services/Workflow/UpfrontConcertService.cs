@@ -33,7 +33,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var booking = await bookingService.CreateAsync(applicationId);
+        var booking = await bookingService.CreateStandardAsync(applicationId);
 
         var settlementMetadata = new Dictionary<string, string>
         {

@@ -29,9 +29,9 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/Application/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/accept", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
-        var response = await client.PostAsync($"/api/Application/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/accept", (object?)null);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -44,7 +44,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/Application/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/accept", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
@@ -65,7 +65,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/Application/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/accept", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
         await fixture.StripeClient.SendWebhookAsync();
 
@@ -81,7 +81,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        await client.PostAsync($"/api/Application/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/accept", (object?)null);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
@@ -97,7 +97,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingPayment());
 
         // Act
-        await client.PostAsync($"/api/Application/accept/{fixture.SeedData.VenueHireApp.Id}", (object?)null);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/accept", (object?)null);
 
         // Assert
         var draft = await fixture.ReadDbContext.Concerts.FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.VenueHireApp.Id);

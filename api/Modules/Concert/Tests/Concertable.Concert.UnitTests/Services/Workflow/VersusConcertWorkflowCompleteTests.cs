@@ -51,9 +51,9 @@ public class VersusConcertWorkflowCompleteTests
     {
         public static BookingEntity Create(Guid artistUserId, Guid venueUserId)
         {
-            var booking = BookingEntity.Create(applicationId: 1);
-            var application = (ApplicationEntity)Activator.CreateInstance(
-                typeof(ApplicationEntity),
+            var booking = DeferredBooking.Create(applicationId: 1, paymentMethodId: "pm_test");
+            var application = (StandardApplication)Activator.CreateInstance(
+                typeof(StandardApplication),
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 binder: null,
                 args: null,

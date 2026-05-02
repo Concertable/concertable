@@ -30,8 +30,9 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
 
         var application = await applicationRepository.GetByIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
-        var paymentMethodId = application.PaymentMethodId
-            ?? throw new BadRequestException("VenueHire application has no payment method stored");
+        if (application is not PrepaidApplication prepaid)
+            throw new BadRequestException("VenueHire requires a PrepaidApplication");
+        var paymentMethodId = prepaid.PaymentMethodId;
 
         var contract = (VenueHireContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 

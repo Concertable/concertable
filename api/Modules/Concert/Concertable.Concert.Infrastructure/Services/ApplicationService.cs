@@ -89,7 +89,7 @@ internal class ApplicationService : IApplicationService
         var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
 
-        var application = ApplicationEntity.Create(artistId, opportunityId);
+        var application = StandardApplication.Create(artistId, opportunityId);
         return await ApplyAsync(application);
     }
 
@@ -103,7 +103,7 @@ internal class ApplicationService : IApplicationService
         var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
 
-        var application = ApplicationEntity.Create(artistId, opportunityId, paymentMethodId);
+        var application = PrepaidApplication.Create(artistId, opportunityId, paymentMethodId);
         return await ApplyAsync(application);
     }
 

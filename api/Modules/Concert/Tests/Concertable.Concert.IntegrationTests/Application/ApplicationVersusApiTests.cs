@@ -27,7 +27,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/accept/{fixture.SeedData.VersusApp.Id}", (object?)null);
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_test" });
         await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         // Assert
