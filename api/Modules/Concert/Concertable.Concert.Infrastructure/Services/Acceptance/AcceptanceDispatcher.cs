@@ -17,7 +17,7 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
     {
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         var workflow = workflowFactory.Create(contract.ContractType);
-        return workflow is IAcceptCheckout co
+        return workflow is ICheckout co
             ? await co.CheckoutAsync(applicationId)
             : null;
     }

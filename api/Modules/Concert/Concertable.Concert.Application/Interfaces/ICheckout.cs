@@ -2,7 +2,7 @@ using Concertable.Concert.Application.Responses;
 
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IAcceptCheckout
+internal interface ICheckout : ICheckoutable
 {
     Task<AcceptCheckout> CheckoutAsync(int applicationId);
 }

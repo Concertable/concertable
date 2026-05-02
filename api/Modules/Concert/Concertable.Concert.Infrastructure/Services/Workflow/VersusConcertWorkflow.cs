@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class VersusConcertWorkflow : IConcertWorkflow, IAcceptCheckout
+internal class VersusConcertWorkflow : IConcertWorkflow, ICheckout
 {
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IConcertRepository concertRepository;

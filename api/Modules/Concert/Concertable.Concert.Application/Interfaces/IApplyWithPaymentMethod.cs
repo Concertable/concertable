@@ -1,6 +1,6 @@
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IApplyWithPaymentMethod
+internal interface IApplyWithPaymentMethod : IApplyable
 {
     Task OnAppliedAsync(int applicationId, string paymentMethodId);
 }
