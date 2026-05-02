@@ -23,6 +23,9 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
         this.applicationRepository = applicationRepository;
     }
 
+    public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId) =>
+        Task.FromResult<ApplicationEntity>(PrepaidApplication.Create(artistId, opportunityId, paymentMethodId));
+
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId)
     {
         var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)

@@ -36,6 +36,9 @@ internal class DoorSplitConcertWorkflow : IStandardConcertWorkflow
         this.logger = logger;
     }
 
+    public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId) =>
+        Task.FromResult<ApplicationEntity>(StandardApplication.Create(artistId, opportunityId));
+
     public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
     {
         var artist = await payerLookup.GetArtistAsync(applicationId)

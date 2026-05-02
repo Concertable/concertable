@@ -19,7 +19,7 @@ internal class ApplicationService : IApplicationService
     private readonly IOpportunityService opportunityService;
     private readonly IArtistModule artistModule;
     private readonly IUserModule userModule;
-    private readonly IApplyResolver applyResolver;
+    private readonly IApplyDispatcher applyDispatcher;
     private readonly IAcceptanceDispatcher acceptanceDispatcher;
     private readonly IApplicationMapper mapper;
 
@@ -33,7 +33,7 @@ internal class ApplicationService : IApplicationService
         IOpportunityService opportunityService,
         IArtistModule artistModule,
         IUserModule userModule,
-        IApplyResolver applyResolver,
+        IApplyDispatcher applyDispatcher,
         IAcceptanceDispatcher acceptanceDispatcher,
         IApplicationMapper mapper)
     {
@@ -46,7 +46,7 @@ internal class ApplicationService : IApplicationService
         this.opportunityService = opportunityService;
         this.artistModule = artistModule;
         this.userModule = userModule;
-        this.applyResolver = applyResolver;
+        this.applyDispatcher = applyDispatcher;
         this.acceptanceDispatcher = acceptanceDispatcher;
         this.mapper = mapper;
     }
@@ -84,12 +84,8 @@ internal class ApplicationService : IApplicationService
         if (!await stripeValidator.ValidateAccountAsync())
             throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
 
-        _ = await applyResolver.ResolveSimpleAsync(opportunityId);
-
-        var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
-            ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
-
-        var application = StandardApplication.Create(artistId, opportunityId);
+        var artistId = await ResolveArtistIdAsync();
+        var application = await applyDispatcher.ApplyAsync(opportunityId, artistId);
         return await ApplyAsync(application);
     }
 
@@ -98,14 +94,14 @@ internal class ApplicationService : IApplicationService
         if (!await stripeValidator.ValidateAccountAsync())
             throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
 
-        _ = await applyResolver.ResolveWithPaymentMethodAsync(opportunityId);
-
-        var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId())
-            ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
-
-        var application = PrepaidApplication.Create(artistId, opportunityId, paymentMethodId);
+        var artistId = await ResolveArtistIdAsync();
+        var application = await applyDispatcher.ApplyAsync(opportunityId, artistId, paymentMethodId);
         return await ApplyAsync(application);
     }
+
+    private async Task<int> ResolveArtistIdAsync() =>
+        await artistModule.GetIdByUserIdAsync(currentUser.GetId())
+            ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
 
     private async Task<ApplicationDto> ApplyAsync(ApplicationEntity application)
     {

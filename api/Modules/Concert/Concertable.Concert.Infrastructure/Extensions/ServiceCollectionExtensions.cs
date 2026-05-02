@@ -81,7 +81,7 @@ public static class ServiceCollectionExtensions
 
         // Dispatchers
         services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
-        services.AddScoped<IApplyResolver, ApplyResolver>();
+        services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
