@@ -1,5 +1,5 @@
 namespace Concertable.Concert.Api.Requests;
 
-internal record ApplyWithPaymentMethodRequest(string PaymentMethodId);
+internal record ApplyRequest(string? PaymentMethodId);
 
-internal record AcceptWithPaymentMethodRequest(string PaymentMethodId);
+internal record AcceptRequest(string? PaymentMethodId);

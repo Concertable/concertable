@@ -43,17 +43,11 @@ internal class ApplicationController : ControllerBase
 
     [Authorize(Roles = "ArtistManager")]
     [HttpPost("{opportunityId}")]
-    public async Task<IActionResult> Apply(int opportunityId)
+    public async Task<IActionResult> Apply(int opportunityId, [FromBody] ApplyRequest? request = null)
     {
-        var application = await applicationService.ApplyAsync(opportunityId);
-        return CreatedAtAction(nameof(GetById), new { id = application.Id }, application.ToResponse());
-    }
-
-    [Authorize(Roles = "ArtistManager")]
-    [HttpPost("{opportunityId}/with-payment-method")]
-    public async Task<IActionResult> ApplyWithPaymentMethod(int opportunityId, [FromBody] ApplyWithPaymentMethodRequest request)
-    {
-        var application = await applicationService.ApplyAsync(opportunityId, request.PaymentMethodId);
+        var application = request?.PaymentMethodId is { } pmId
+            ? await applicationService.ApplyAsync(opportunityId, pmId)
+            : await applicationService.ApplyAsync(opportunityId);
         return CreatedAtAction(nameof(GetById), new { id = application.Id }, application.ToResponse());
     }
 
@@ -118,18 +112,12 @@ internal class ApplicationController : ControllerBase
     }
 
     [Authorize(Roles = "VenueManager")]
-    [HttpPost("{applicationId}/accept-with-payment")]
-    public async Task<IActionResult> AcceptWithPayment(int applicationId, [FromBody] AcceptWithPaymentMethodRequest request)
+    [HttpPost("{applicationId}/accept")]
+    public async Task<IActionResult> Accept(int applicationId, [FromBody] AcceptRequest? request = null)
     {
-        var outcome = await applicationService.AcceptAsync(applicationId, request.PaymentMethodId);
-        return Ok(outcome);
-    }
-
-    [Authorize(Roles = "VenueManager")]
-    [HttpPost("{applicationId}/accept-confirmation")]
-    public async Task<IActionResult> AcceptByConfirmation(int applicationId)
-    {
-        var outcome = await applicationService.AcceptAsync(applicationId);
+        var outcome = request?.PaymentMethodId is { } pmId
+            ? await applicationService.AcceptAsync(applicationId, pmId)
+            : await applicationService.AcceptAsync(applicationId);
         return Ok(outcome);
     }
 
