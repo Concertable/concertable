@@ -33,7 +33,7 @@ Branch: `Refactor/ConcertWorkflowCoupling`. Most-recent first:
 | ~~23~~ | ~~Drop stored-payment fallback~~ — **DONE.** See commit table. Resolved more aggressively than originally scoped: the entire `IConcertPaymentFlow.ResolvePaymentMethodAsync` method was deleted (it had no remaining work after the fallback came out — OnSession was identity, OffSession was identity + `HasStripeCustomerAsync` check). The check moved to `OffSessionConcertPaymentFlow.PayAsync` (encapsulates off-session preconditions). `IManagerPaymentModule.TryGetPaymentMethodIdAsync` was also deleted — turned out to have no callers post-cleanup (frontend uses `GET /api/StripeAccount/payment-method` for saved-card rendering, not this contract method). |
 | ~~22~~ | ~~Customer-side fallback parallel cleanup~~ — **DONE.** See commit table. |
 | ~~10~~ | ~~HATEOAS action links~~ — **DONE.** Final shape narrower than originally planned: only `Checkout?` on `ApplicationResponse` (the one capability-gated transition). Apply/Accept omitted — apply has zero variance (one URL for everyone) and accept's variance is the PM body shape, which the FE already knows from `contract.type`. `requiresPayment` flag dropped entirely (post-#23 the wire-format presence/absence of `paymentMethodId` is the signal). |
-| 11 | Remove `BookingEntity.PaymentMethodId` | Read/write moves to `Application.PaymentMethodId`. Drop PM param from `BookingService.CreateAsync`. Rewire `DeferredConcertService` (currently writes PM via booking; should write via application or move that logic upstream into the workflow). Only DoorSplit/Versus paths actually used the column. |
+| 11 | **Application + Booking TPH split (re-scoped from "consolidate PM onto Application")** | Original #11 was wrong direction — would have made Application carry deferred-path PM that naturally co-lives with the Booking aggregate. Correct refactor: TPH on both. `ApplicationEntity` → abstract base + `StandardApplication` (FlatFee/DoorSplit/Versus) + `PrepaidApplication` (VenueHire — `PaymentMethodId` non-nullable). `BookingEntity` → abstract base + `StandardBooking` (FlatFee/VenueHire) + `DeferredBooking` (DoorSplit/Versus — `PaymentMethodId` non-nullable). PM lives on the subtype of the aggregate that uses it; FlatFee gets neither. Eliminates both nullable-PM columns; type system enforces the per-contract invariant. Implementation steps + gotchas in memory: `project_application_booking_tph.md`. **Mapping per contract:** FlatFee = Standard+Standard (no PM anywhere); DoorSplit/Versus = Standard+Deferred (PM on booking); VenueHire = Prepaid+Standard (PM on application). Migration re-scaffold per CLAUDE.md. |
 | 13 | Slim `IFinishOutcome` → `Task` | Migrate `E2EEndpointExtensions.cs` and `DevController.Complete` consumers off the `result.Value is DeferredFinishOutcome deferred` payload first. They currently read `deferred.Payment.TransactionId`. Move those test/dev reads to a separate query path (e.g. `GET /e2e/payment-intent/{applicationId}` already exists). |
 | 14 | DI registration audit | **Effectively done already.** Strategies registered once under `IConcertWorkflow` keyed by `ContractType`; dispatchers/resolvers cast to specific capability via `is`. Verify no leftover registrations expected the old shape. |
 | 15 | Run `./initial-migrations.ps1` | Re-scaffold migrations after `ApplicationEntity.PaymentMethodId` was added. CLAUDE.md rule: never add additive migrations; always re-scaffold `InitialCreate`. |
@@ -49,6 +49,24 @@ Branch: `Refactor/ConcertWorkflowCoupling`. Most-recent first:
 - **#19** — `IApplyResolver` in `b4f58f06`.
 - **#20** — family markers + `ICheckout` in `fa8a3277`.
 - **#21** — `IConcertWorkflowStep` + `ConcertWorkflowCapabilityRegistry` in `e0e3753e`.
+
+### Late addition (2026-05-02): #11 re-scoped to TPH refactor
+
+Original #11 was "remove `BookingEntity.PaymentMethodId`, consolidate onto `Application.PaymentMethodId`." Started implementing it; user pushed back asking why payment storage feels out of place on Application. After lengthy design discussion the answer became clear: **half the data naturally belongs to the Booking aggregate, not the Application.**
+
+Lifecycle test:
+- VenueHire's PM exists from apply → accept → charged. Application aggregate's lifetime.
+- DoorSplit/Versus's PM exists from accept → finish → charged. Booking aggregate's lifetime.
+
+Putting both on Application is convenience storage that misaligns aggregate ownership. The principled refactor is TPH on **both** entities, with each PM column on the subtype that uses it.
+
+Considered alternatives:
+1. ~~Side entity `ApplicationPaymentAuthorization` (Role: Applicant/Acceptor)~~ — over-engineered; same data scattered when TPH cleanly splits it.
+2. ~~TPH on Application alone~~ — handles VenueHire (`PrepaidApplication`) but leaves DoorSplit/Versus PM stuck on a nullable Application column. Half-fix.
+3. ~~3 booking subtypes (one per "contract family")~~ — `StandardBooking` and `PrepaidBooking` (for VenueHire) are structurally identical (no fields); collapsing them to 2 subtypes is correct because TPH should reflect *structural variance* (does this booking carry settlement state) not contract heritage.
+4. **TPH on both Application AND Booking, 2 subtypes each** ← chosen.
+
+Final shape captured in `project_application_booking_tph.md` memory.
 
 ### Late addition (2026-05-02): drop stored-payment fallback
 
