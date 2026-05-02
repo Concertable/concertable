@@ -12,6 +12,12 @@ public abstract class ApplicationEntity : IIdEntity
 
     protected ApplicationEntity() { }
 
+    protected ApplicationEntity(int artistId, int opportunityId)
+    {
+        ArtistId = artistId;
+        OpportunityId = opportunityId;
+    }
+
     public void Accept(BookingEntity bookingConcert)
     {
         if (Status != ApplicationStatus.Pending)
@@ -33,21 +39,17 @@ public abstract class ApplicationEntity : IIdEntity
             throw new DomainException("Only pending applications can be withdrawn.");
         Status = ApplicationStatus.Withdrawn;
     }
-
-    protected static T Init<T>(T application, int artistId, int opportunityId) where T : ApplicationEntity
-    {
-        application.ArtistId = artistId;
-        application.OpportunityId = opportunityId;
-        return application;
-    }
 }
 
 public sealed class StandardApplication : ApplicationEntity
 {
     private StandardApplication() { }
 
+    private StandardApplication(int artistId, int opportunityId)
+        : base(artistId, opportunityId) { }
+
     public static StandardApplication Create(int artistId, int opportunityId) =>
-        Init(new StandardApplication(), artistId, opportunityId);
+        new(artistId, opportunityId);
 }
 
 public sealed class PrepaidApplication : ApplicationEntity
@@ -56,10 +58,12 @@ public sealed class PrepaidApplication : ApplicationEntity
 
     private PrepaidApplication() { }
 
-    public static PrepaidApplication Create(int artistId, int opportunityId, string paymentMethodId)
+    private PrepaidApplication(int artistId, int opportunityId, string paymentMethodId)
+        : base(artistId, opportunityId)
     {
-        var application = Init(new PrepaidApplication(), artistId, opportunityId);
-        application.PaymentMethodId = paymentMethodId;
-        return application;
+        PaymentMethodId = paymentMethodId;
     }
+
+    public static PrepaidApplication Create(int artistId, int opportunityId, string paymentMethodId) =>
+        new(artistId, opportunityId, paymentMethodId);
 }

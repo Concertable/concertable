@@ -10,6 +10,12 @@ public abstract class BookingEntity : IIdEntity
 
     protected BookingEntity() { }
 
+    protected BookingEntity(int applicationId)
+    {
+        ApplicationId = applicationId;
+        Status = BookingStatus.Pending;
+    }
+
     public void AwaitPayment()
     {
         if (Status != BookingStatus.Pending && Status != BookingStatus.Confirmed)
@@ -40,21 +46,16 @@ public abstract class BookingEntity : IIdEntity
             throw new DomainException("Only bookings awaiting payment can fail.");
         Status = BookingStatus.PaymentFailed;
     }
-
-    protected static T Init<T>(T booking, int applicationId) where T : BookingEntity
-    {
-        booking.ApplicationId = applicationId;
-        booking.Status = BookingStatus.Pending;
-        return booking;
-    }
 }
 
 public sealed class StandardBooking : BookingEntity
 {
     private StandardBooking() { }
 
+    private StandardBooking(int applicationId) : base(applicationId) { }
+
     public static StandardBooking Create(int applicationId) =>
-        Init(new StandardBooking(), applicationId);
+        new(applicationId);
 }
 
 public sealed class DeferredBooking : BookingEntity
@@ -63,10 +64,11 @@ public sealed class DeferredBooking : BookingEntity
 
     private DeferredBooking() { }
 
-    public static DeferredBooking Create(int applicationId, string paymentMethodId)
+    private DeferredBooking(int applicationId, string paymentMethodId) : base(applicationId)
     {
-        var booking = Init(new DeferredBooking(), applicationId);
-        booking.PaymentMethodId = paymentMethodId;
-        return booking;
+        PaymentMethodId = paymentMethodId;
     }
+
+    public static DeferredBooking Create(int applicationId, string paymentMethodId) =>
+        new(applicationId, paymentMethodId);
 }
