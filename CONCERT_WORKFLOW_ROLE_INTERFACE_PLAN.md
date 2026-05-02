@@ -1,6 +1,55 @@
 # Concert Workflow — Role-Interface Composition Plan
 
-**Status:** Deferred. Captured 2026-05-02. Current intermediate state lives at commit `1a590507` (`refactor/checkout-capability-split` branch — `CheckoutAsync` lifted off `IConcertWorkflow` into `IAcceptCheckout` capability).
+**Status:** **In progress on `Refactor/ConcertWorkflowCoupling` branch (started 2026-05-02).**
+
+### Progress checkpoint (last updated 2026-05-02)
+
+**Done:**
+- `ApplicationEntity.PaymentMethodId` + two `Create` overloads (with/without PM) — commit `e21130c7`
+- `Executor` → `Dispatcher` rename (Acceptance/Completion/Settlement) — commit `5b10ec27`
+- Family markers (`IApplyable` / `IAcceptable` / `ICheckoutable`) + `ICheckout` rename from `IAcceptCheckout` — commit `fa8a3277`
+- `IConcertWorkflowStep` root marker + `ConcertWorkflowCapabilityRegistry` (singleton, type-only `IsAssignableTo` lookup, no workflow instantiation) — commit `e0e3753e`
+- `IConcertWorkflow` redefined as marker umbrella (`: IApplyable, IAcceptable, ISettleable, IFinishable`); strategies rewritten as capability composers; `AcceptanceDispatcher` capability-cast — commit `9d2d2fc5`
+- `IStandardConcertWorkflow` + `IPrepaidConcertWorkflow` bundle interfaces (cosmetic shorthand for current capability bundles) — commit `a775bf58`
+- `IApplyResolver` (resolves `ISimpleApply` / `IApplyWithPaymentMethod` by opportunity contract type); `IOpportunityRepository.GetContractIdByIdAsync` + `IContractLoader.LoadByOpportunityIdAsync` added — commit `b4f58f06`
+- `ApplicationService.ApplyAsync` + `AcceptAsync` split into typed overloads; `IAcceptanceDispatcher.AcceptAsync` split into two non-nullable methods — commit `9e0c590d`
+
+**Pending:**
+- #9 Split `ApplicationController` endpoints (`POST /applications/{oppId}` + `/with-payment-method`; `/accept-with-payment` + `/accept-confirmation`); request DTOs per endpoint
+- #10 HATEOAS action links on `OpportunityResponse` / `ApplicationResponse` using `ConcertWorkflowCapabilityRegistry`
+- #11 Remove `BookingEntity.PaymentMethodId` (read/write moved to `Application.PaymentMethodId`); drop PM param from `BookingService.CreateAsync`; rewire `DeferredConcertService`
+- #13 Slim `IFinishOutcome` → `Task` (migrate `E2EEndpointExtensions` and `DevController.Complete` consumers off the payload first)
+- #14 (effectively done — strategies registered once under `IConcertWorkflow`, dispatchers cast to capability)
+- #15 Run `./initial-migrations.ps1` to re-scaffold migrations after entity changes
+- #16 Test sweep (most tests updated piecemeal during commits; final integration test pass)
+- #17 Frontend: HATEOAS-driven apply/accept (read action URLs from response, drop `contract.type` switches in components)
+
+### Final hierarchy as landed
+
+```
+IConcertWorkflowStep (root marker)
+├── IApplyable        ── ISimpleApply, IApplyWithPaymentMethod
+├── IAcceptable       ── IAcceptWithPaymentMethod, IAcceptByConfirmation
+├── ICheckoutable     ── ICheckout
+├── ISettleable (has SettleAsync)
+└── IFinishable (has FinishAsync, still returns Task<IFinishOutcome> until #13)
+
+IConcertWorkflow : IApplyable, IAcceptable, ISettleable, IFinishable     (umbrella, marker only)
+
+IStandardConcertWorkflow : IConcertWorkflow, ISimpleApply, ICheckout, IAcceptWithPaymentMethod
+IPrepaidConcertWorkflow  : IConcertWorkflow, IApplyWithPaymentMethod, IAcceptByConfirmation
+
+FlatFee/DoorSplit/Versus : IStandardConcertWorkflow
+VenueHire                : IPrepaidConcertWorkflow
+```
+
+`ConcertWorkflowCapabilityRegistry.Has<TStep>(ContractType)` queries via `IsAssignableTo` against precomputed `Dictionary<ContractType, Type>` (built at DI registration). Singleton, no workflow instantiation for capability lookup.
+
+---
+
+(Original plan content below remains as the original design intent; sections may refer to earlier names like `IPreAcceptCheckout`, `IAcceptCheckout`, `ISettle`/`IFinish`, etc. The progress checkpoint above is the source of truth for what's actually landed.)
+
+---
 
 This document captures the **WHY** of the eventual redesign and the high-level shape. Implementation details are deliberately left for whoever picks this up — fill in the gaps when the work actually happens.
 
