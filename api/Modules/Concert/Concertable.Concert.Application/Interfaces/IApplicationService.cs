@@ -10,7 +10,7 @@ internal interface IApplicationService
     Task<IEnumerable<ApplicationDto>> GetPendingForArtistAsync();
     Task<IEnumerable<ApplicationDto>> GetRecentDeniedForArtistAsync();
     Task<ApplicationDto> ApplyAsync(int opportunityId);
-    Task<AcceptCheckout> CheckoutAsync(int applicationId);
+    Task<AcceptCheckout?> CheckoutAsync(int applicationId);
     Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null);
     Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id);
 }

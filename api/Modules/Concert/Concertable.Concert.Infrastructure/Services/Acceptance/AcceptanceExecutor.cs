@@ -13,11 +13,13 @@ internal class AcceptanceExecutor : IAcceptanceExecutor
         this.workflowFactory = workflowFactory;
     }
 
-    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
+    public async Task<AcceptCheckout?> CheckoutAsync(int applicationId)
     {
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
-        return await workflowFactory.Create(contract.ContractType)
-            .CheckoutAsync(applicationId);
+        var workflow = workflowFactory.Create(contract.ContractType);
+        return workflow is IAcceptCheckout co
+            ? await co.CheckoutAsync(applicationId)
+            : null;
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)

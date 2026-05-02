@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class FlatFeeConcertWorkflow : IConcertWorkflow
+internal class FlatFeeConcertWorkflow : IConcertWorkflow, IAcceptCheckout
 {
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IPayerLookup payerLookup;
