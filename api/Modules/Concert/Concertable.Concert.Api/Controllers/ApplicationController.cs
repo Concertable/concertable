@@ -3,6 +3,7 @@ using Concertable.Authorization.Contracts;
 using Concertable.Concert.Api.Mappers;
 using Concertable.Concert.Api.Requests;
 using Concertable.Concert.Api.Responses;
+using Concertable.Shared;
 using Concertable.User.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -79,7 +80,7 @@ internal class ApplicationController : ControllerBase
         var result = await applicationValidator.CanApplyAsync(opportunityId, artistId.Value);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors.Select(e => e.Message));
+            return BadRequest(result.Errors.SelectMessages());
 
         return Ok(true);
     }
@@ -91,7 +92,7 @@ internal class ApplicationController : ControllerBase
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors.Select(e => e.Message));
+            return BadRequest(result.Errors.SelectMessages());
 
         return Ok(true);
     }

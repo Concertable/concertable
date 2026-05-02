@@ -3,6 +3,7 @@ using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Payment.Application.Responses;
 using Concertable.Payment.Domain;
+using Concertable.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +29,7 @@ internal class TicketController : ControllerBase
         var result = await ticketService.PurchaseAsync(purchaseParams);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors.Select(e => e.Message));
+            return BadRequest(result.Errors.SelectMessages());
 
         return Ok(result.Value);
     }
@@ -39,7 +40,7 @@ internal class TicketController : ControllerBase
         var result = await ticketService.CheckoutAsync(request.ConcertId);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors.Select(e => e.Message));
+            return BadRequest(result.Errors.SelectMessages());
 
         return Ok(result.Value);
     }
@@ -62,7 +63,7 @@ internal class TicketController : ControllerBase
         var result = await ticketValidator.CanPurchaseTicketAsync(eventId);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors.Select(e => e.Message));
+            return BadRequest(result.Errors.SelectMessages());
 
         return Ok(true);
     }

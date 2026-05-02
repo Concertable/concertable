@@ -1,6 +1,6 @@
 # Concert Workflow — Role-Interface Composition Plan
 
-**Status:** **Refactor complete on `Refactor/ConcertWorkflowCoupling` branch (started 2026-05-02; all tasks landed 2026-05-02).** Branch is ready for review/merge once frontend artist-side VenueHire apply (separate work) is sequenced.
+**Status:** **Role-interface refactor complete on `Refactor/ConcertWorkflowCoupling` (started 2026-05-02; original tasks landed 2026-05-02; follow-on cleanups + URL move landed 2026-05-02).** Branch will be merge-ready once the **artist-side VenueHire apply-checkout** feature lands — that's the planned next branch (see "Next branch" section below).
 
 ### Progress checkpoint (last updated 2026-05-02)
 
@@ -12,6 +12,10 @@ Branch: `Refactor/ConcertWorkflowCoupling`. Most-recent first:
 
 | Commit | What |
 |---|---|
+| `fa629ee1` | **Apply moved to OpportunityController**: `POST /api/Application/{oppId}` → `POST /api/Opportunity/{oppId}/applications`. Apply is an action against an Opportunity (no Application exists yet) — URL parent now matches resource being operated against. `ApplicationService.ApplyAsync` unchanged (still owns Application aggregate creation). New `OpportunityResponse` + `OpportunityActions(Apply)` + `IOpportunityResponseMapper`; OpportunityController GET/POST/PUT now return the response shape. `ApplyRequest` + `AcceptRequest` records tightened: `PaymentMethodId` non-nullable on the type, request itself nullable in controller (`[FromBody] X? request = null`). FE: `applyToOpportunity` moved `applicationApi.ts` → `opportunityApi.ts` to mirror URL move; `acceptApplication` tightened to send body only when `paymentMethodId` is defined. |
+| `1c8571c7` | **Apply/Accept capabilities renamed Simple/Paid + dispatcher throw-path tests**: `IApplyWithPaymentMethod` → `IPaidApply`, `IAcceptByConfirmation` → `ISimpleAccept`, `IAcceptWithPaymentMethod` → `IPaidAccept`. "Paid" prefix means actor (artist at apply, venue manager at accept) submits a PM at this step; "Simple" means they don't. Dispatcher pattern-match variables collapsed to `w` (type already in cast). `AcceptanceDispatcherTests` gained two throw-path tests using `.As<>()` to mock the OPPOSITE capability — proves the cast is selective. New `ApplyDispatcherTests` mirrors AcceptanceDispatcher coverage (4 happy + throw cases). Drive-by: `ConcertDevSeeder` bug fix — opp 16 + opp 48 are VenueHire contracts but were seeding StandardApplications via `Create`/`Accepted`; switched to `CreatePrepaid`/`AcceptedPrepaid`. |
+| `21768606` | **Apply markers promoted to real workflow methods + Resolver→Dispatcher**: `ISimpleApply.ApplyAsync(int artistId, int opportunityId)` and `IPaidApply.ApplyAsync(int artistId, int opportunityId, string paymentMethodId)` both return `Task<ApplicationEntity>`. Strategies own factory choice (`StandardApplication.Create` vs `PrepaidApplication.Create`) — slot for future apply-time payment work (SetupIntent confirm, escrow auth) lives there. Deleted `IApplyResolver`/`ApplyResolver`. New `IApplyDispatcher` mirrors `IAcceptanceDispatcher` shape: load contract → resolve workflow → cast to capability → call → return entity. `ApplicationService` no longer references either subtype. Brings apply into structural symmetry with the rest of the workflow — umbrella `IConcertWorkflow` already declared `IApplyable`; implementation now matches. |
+| `4cdcde07` | **`Init<T>` reflection-style helper replaced with protected base ctor**: `ApplicationEntity.Init<T>` and `BookingEntity.Init<T>` generic helpers were unnecessary ceremony — both subtypes only seeded base fields. A protected base constructor + `: base(...)` on each subtype is the standard idiom and removes a layer of indirection. |
 | `985d9823` | **#17 landed (frontend HATEOAS-driven flow)**: FE `Application` type now mirrors backend `ApplicationResponse` — adds `actions: { accept: ActionLink, checkout?: ActionLink }`. `AcceptApplicationPage` branches on `application.actions.checkout` presence: navigates to checkout page if present (FlatFee/DoorSplit/Versus), otherwise calls `accept` directly (VenueHire by-confirmation, no PM at accept). The button label flips between "Continue" and "Accept". Resolves the previous broken VenueHire venue-accept path that always navigated to checkout, hit `204 NoContent`, and rendered "Could not start checkout". `tsc --noEmit` clean. |
 | `8c656fc8` | **#16 landed (test sweep)**: The 6 pre-existing `Assert.Single(DraftCreated)` failures (across `ApplicationFlatFeeApiTests`, `ApplicationDoorSplitApiTests`, `ApplicationVersusApiTests`, `ApplicationVenueHireApiTests`) updated to assert both artist + venue notifications. Tests renamed from `…AndNotifyArtist` → `…AndNotifyArtistAndVenue` to reflect actual `ConcertDraftService` behaviour. Switched to `Assert.Equal(2, count)` + `Assert.Contains` for both UserIds. Concert integration suite now fully green: 37/37. **#14 verified clean** in same pass — no leftover `IFinishOutcome`/`*Executor` references; `ServiceCollectionExtensions.AddConcertModule` registers strategies once under `IConcertWorkflow` umbrella keyed by `ContractType`, capability registry built from same dict, all dispatchers/resolvers wired correctly. |
 | `c414c77f` | **#13 landed (`IFinishOutcome` slim → `Task`)**: Worker-driven lifecycle hook; no caller consumes payload, failure signals via exception. Slimmed `IFinishable.FinishAsync`, `IUpfrontConcertService.FinishedAsync`, `IDeferredConcertService.FinishedAsync` to `Task`; `ICompletionDispatcher.FinishAsync` to `Task<Result>`. Deleted `IFinishOutcome` interface + `ImmediateFinishOutcome` + `DeferredFinishOutcome` records. `E2EEndpointExtensions /e2e/finish` no longer returns body; `DevController.Complete` returns `Ok()`. `ConcertFinishedTests` (DoorSplit/Versus) migrated off `finishBody.Trim('"')` to query existing `/e2e/payment-intent/{applicationId}` endpoint (reads from `SettlementTransactions`). Concert + Workers unit tests pass (8 + 3). |
@@ -53,6 +57,61 @@ Branch: `Refactor/ConcertWorkflowCoupling`. Most-recent first:
 - **#19** — `IApplyResolver` in `b4f58f06`.
 - **#20** — family markers + `ICheckout` in `fa8a3277`.
 - **#21** — `IConcertWorkflowStep` + `ConcertWorkflowCapabilityRegistry` in `e0e3753e`.
+
+### Next branch: artist-side VenueHire apply-checkout (PLANNED — not started)
+
+**Why this is needed:** today the artist-side VenueHire apply path is broken end-to-end. The artist clicks Apply on a VenueHire opportunity → FE POSTs `/api/Opportunity/{oppId}/applications` with no body → backend dispatches to `IApplyDispatcher.ApplyAsync(oppId, artistId)` (no-PM overload) → `is ISimpleApply w` check fails (VenueHire is `IPaidApply` not `ISimpleApply`) → throws `BadRequestException("This contract requires a payment method at apply")` → 400 to the FE.
+
+The plumbing is there for `ApplyAsync(oppId, artistId, pmId)` (the PaidApply variant), but the FE has no way to *get* a PM for VenueHire — there's no apply-time Stripe checkout endpoint on the backend, no FE checkout page, no SetupIntent flow.
+
+**What's missing (concrete 14-step plan):**
+
+#### Backend — interface plumbing (minimal renames so `ICheckout` is reusable for both apply-side and accept-side)
+
+1. **Rename DTO `AcceptCheckout` → `Checkout`** — fields unchanged (`Session`, `Payee`, `Timing`, `Amount`); just the name is generic enough to serve apply-side checkout too. FE mirrors the type rename.
+2. **Rename `ICheckout.CheckoutAsync(int applicationId)` → `(int contextId)`** — parameter rename only. Strategy interprets contextId per its lifecycle phase (VenueHire reads it as oppId; FlatFee/DoorSplit/Versus read it as appId).
+3. **Add `Authorize` value to `PaymentTiming` enum** — placeholder for SetupIntent timing. Existing `Immediate`/`Deferred` stay unchanged.
+
+#### Backend — VenueHire's apply-side checkout impl
+
+4. **Add `IConcertPaymentFlow.CreateSetupSessionAsync(payerId, metadata)`** — sibling to existing `CreateSessionAsync`. Creates a Stripe **SetupIntent** (vs PaymentIntent), returns `CheckoutSession { clientSecret, customerSession, customerId }`. Lives in `OnSessionConcertPaymentFlow` (artist is on-session at apply-time). Off-session impl probably throws or no-ops since SetupIntent is only relevant on-session.
+5. **Add `ICheckout` to `IPrepaidConcertWorkflow` bundle** — VenueHire now declares it.
+6. **Implement `VenueHireConcertWorkflow.CheckoutAsync(int oppId)`** — load contract, fetch venue info, call `paymentFlow.CreateSetupSessionAsync(artistManagerId, metadata)`, return `Checkout(session, venue, PaymentTiming.Authorize, new FlatPayment(contract.HireFee))`.
+
+#### Backend — dispatcher + service + endpoint
+
+7. **Move `CheckoutAsync` out of `IAcceptanceDispatcher`, into new `ICheckoutDispatcher`** with two methods:
+   - `CheckoutForApplyAsync(int opportunityId)` — for apply-side (VenueHire today)
+   - `CheckoutForAcceptAsync(int applicationId)` — for accept-side (FlatFee/DoorSplit/Versus)
+   Both call `ICheckout.CheckoutAsync(contextId)` on the resolved strategy. `IAcceptanceDispatcher` shrinks to just `AcceptAsync` overloads.
+8. **Update `IApplicationService`** — drop `CheckoutAsync(int applicationId)`, replace with `CheckoutForApplyAsync(int opportunityId)` + `CheckoutForAcceptAsync(int applicationId)`. Both pass through to the new dispatcher.
+9. **Add `POST /api/Opportunity/{oppId}/checkout` endpoint** on `OpportunityController` — calls `applicationService.CheckoutForApplyAsync(oppId)`, returns `Checkout?` (NoContent if null — i.e. contract has no apply-side checkout).
+
+#### Backend — HATEOAS gate
+
+10. **Phase-discriminator marker for HATEOAS** — single `ICheckout` interface can't tell mappers whether to emit `actions.checkout` on `OpportunityResponse` (apply-side) vs `ApplicationResponse` (accept-side). Two options:
+    - **Option A (recommended):** add two pure markers `IApplyCheckout : ICheckoutable` + `IAcceptCheckout : ICheckoutable` (no methods). Strategies declare the appropriate one alongside `ICheckout`. Mappers gate via `registry.Has<IApplyCheckout>(ct)` / `registry.Has<IAcceptCheckout>(ct)`.
+    - **Option B:** use bundle markers (`IPrepaidConcertWorkflow` for apply-side, `IStandardConcertWorkflow` for accept-side) as the gate. Bundles graduate from cosmetic to load-bearing. Cheaper, but ties HATEOAS to bundle existence — bundles aren't compulsory if a future contract doesn't fit either pattern.
+11. **Add `OpportunityResponse.actions.checkout?`** — emitted when registry says contract has apply-side checkout (per option chosen in step 10). Existing `ApplicationResponse.actions.checkout?` already exists; just retunes the registry query to use `IAcceptCheckout` instead of generic `ICheckoutable`.
+
+#### Frontend
+
+12. **`opportunityApi.applyCheckout(oppId)`** — new function. POSTs to the new apply-checkout endpoint, returns `Checkout` session.
+13. **`opportunityApi.applyToOpportunity(oppId, paymentMethodId?)`** — overload. Sends body only when PM is defined (mirroring how `acceptApplication` does it post-`fa629ee1`).
+14. **Artist apply-checkout page** — new FE route. Reads `opportunity.actions.checkout` from the opportunity response; when present, navigates to checkout page on Apply click. Page calls `actions.checkout.href` → renders Stripe Elements in **Setup mode** (`stripe.confirmSetup`, mirroring `useTicketCheckout`'s 3DS handling) → on success POSTs `actions.apply.href` with `{ paymentMethodId }` → application created. When `actions.checkout` is null (FlatFee/DoorSplit/Versus), Apply submits directly (today's behaviour).
+
+#### Out of scope for this branch
+
+- 3DS handling on the Accept response — separate FE bug (the AcceptOutcome payload is unconsumed today even though the BE sends it correctly). File under "FE accept 3DS wiring" as a separate task.
+- Pure-HATEOAS Continue/Confirm/Checkout workflow rewrite — discussed and rejected; current role-interface design stays.
+
+#### Resume notes when picking this up
+
+- Migrations: no schema changes expected from this branch (PrepaidApplication already exists; VenueHire's PM column is already on the entity). If anything in the entity changes, re-scaffold per CLAUDE.md.
+- Tests: add unit tests for `CheckoutDispatcher` (both methods, opposite-capability throw-path mirroring `AcceptanceDispatcherTests`); add integration test for VenueHire apply-checkout endpoint; add E2E test for full artist apply-checkout flow.
+- HATEOAS marker decision (option A vs B in step 10) should be made before strategies are recomposed — avoids churn.
+
+---
 
 ### Late addition (2026-05-02): #11 re-scoped to TPH refactor
 

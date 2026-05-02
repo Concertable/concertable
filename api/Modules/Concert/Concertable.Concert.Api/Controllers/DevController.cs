@@ -1,3 +1,4 @@
+using Concertable.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,7 +26,7 @@ internal class DevController : ControllerBase
     {
         var result = await CompletionDispatcher.FinishAsync(concertId);
         return result.IsFailed
-            ? BadRequest(result.Errors.Select(e => e.Message))
+            ? BadRequest(result.Errors.SelectMessages())
             : Ok();
     }
 }

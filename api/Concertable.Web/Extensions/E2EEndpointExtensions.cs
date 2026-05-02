@@ -2,6 +2,7 @@ using Concertable.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Data.Application;
 using Concertable.Seeding;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Web.Extensions;
@@ -42,7 +43,7 @@ public static class E2EEndpointExtensions
         {
             var result = await CompletionDispatcher.FinishAsync(concertId);
             return result.IsFailed
-                ? Results.BadRequest(result.Errors.Select(e => e.Message))
+                ? Results.BadRequest(result.Errors.SelectMessages())
                 : Results.Ok();
         });
 
