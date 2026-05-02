@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
+using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Responses;
 
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
@@ -20,6 +22,31 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
 
     public Task InitializeAsync() => fixture.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task AcceptCheckout_ShouldReturnDeferredDoorSharePaymentSession()
+    {
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/checkout");
+
+        await response.ShouldBe(HttpStatusCode.OK);
+        var checkout = await response.Content.ReadAsync<Checkout>();
+        Assert.NotNull(checkout);
+        Assert.Equal(PaymentTiming.Deferred, checkout!.Timing);
+        Assert.IsType<DoorSharePayment>(checkout.Amount);
+        Assert.NotEmpty(checkout.Session.ClientSecret);
+    }
+
+    [Fact]
+    public async Task ApplyCheckout_ShouldReturn400_WhenContractDoesNotSupportApplyTimeCheckout()
+    {
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+
+        var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.DoorSplitApp.OpportunityId}/checkout");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 
     [Fact]
     public async Task Accept_ShouldReturn400_WhenAlreadyAccepted()

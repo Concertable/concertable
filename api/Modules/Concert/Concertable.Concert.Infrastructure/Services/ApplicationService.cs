@@ -144,7 +144,9 @@ internal class ApplicationService : IApplicationService
             throw new BadRequestException("You cannot apply to the same concert opportunity twice");
         }
 
-        return await mapper.ToDtoAsync(application);
+        var saved = await applicationRepository.GetByIdAsync(application.Id)
+            ?? throw new NotFoundException("Application not found after save");
+        return await mapper.ToDtoAsync(saved);
     }
 
     public Task<Checkout> ApplyCheckoutAsync(int opportunityId) =>

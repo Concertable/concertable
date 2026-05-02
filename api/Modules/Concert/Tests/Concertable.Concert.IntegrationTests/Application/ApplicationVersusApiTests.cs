@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
+using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
 using Xunit;
@@ -19,6 +21,37 @@ public class ApplicationVersusApiTests : IAsyncLifetime
 
     public Task InitializeAsync() => fixture.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task AcceptCheckout_ShouldReturnDeferredGuaranteedDoorPaymentSession()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+
+        // Act
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedData.VersusApp.Id}/checkout");
+
+        // Assert
+        await response.ShouldBe(HttpStatusCode.OK);
+        var checkout = await response.Content.ReadAsync<Checkout>();
+        Assert.NotNull(checkout);
+        Assert.Equal(PaymentTiming.Deferred, checkout!.Timing);
+        Assert.IsType<GuaranteedDoorPayment>(checkout.Amount);
+        Assert.NotEmpty(checkout.Session.ClientSecret);
+    }
+
+    [Fact]
+    public async Task ApplyCheckout_ShouldReturn400_WhenContractDoesNotSupportApplyTimeCheckout()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+
+        // Act
+        var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.VersusApp.OpportunityId}/checkout");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 
     [Fact]
     public async Task Accept_ShouldCreateDraftConcertAndNotifyArtistAndVenue()

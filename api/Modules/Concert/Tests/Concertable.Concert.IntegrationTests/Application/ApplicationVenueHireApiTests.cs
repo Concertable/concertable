@@ -1,7 +1,10 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
-
+using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Requests;
+using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
+using Concertable.Concert.Domain;
 using Concertable.IntegrationTests.Common;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -21,6 +24,68 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
 
     public Task InitializeAsync() => fixture.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task ApplyCheckout_ShouldReturnAuthorizeFlatPaymentSession()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+
+        // Act
+        var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.VenueHireApp.OpportunityId}/checkout");
+
+        // Assert
+        await response.ShouldBe(HttpStatusCode.OK);
+        var checkout = await response.Content.ReadAsync<Checkout>();
+        Assert.NotNull(checkout);
+        Assert.Equal(PaymentTiming.Authorize, checkout!.Timing);
+        Assert.IsType<FlatPayment>(checkout.Amount);
+        Assert.NotEmpty(checkout.Session.ClientSecret);
+    }
+
+    [Fact]
+    public async Task AcceptCheckout_ShouldReturn400_WhenContractDoesNotSupportAcceptTimeCheckout()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+
+        // Act
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/checkout");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ApplyCheckoutThenApply_ShouldStorePaymentMethodOnPrepaidApplication()
+    {
+        // Arrange — venue manager creates a fresh VenueHire opportunity
+        var venueClient = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        var oppRequest = new OpportunityRequest
+        {
+            StartDate = DateTime.UtcNow.AddMonths(13),
+            EndDate = DateTime.UtcNow.AddMonths(13).AddHours(3),
+            GenreIds = [fixture.SeedData.Rock.Id],
+            Contract = new VenueHireContract { PaymentMethod = PaymentMethod.Cash, HireFee = 250m }
+        };
+        var oppResponse = await venueClient.PostAsync("/api/Opportunity", oppRequest);
+        var opportunity = await oppResponse.Content.ReadAsync<OpportunityResponse>();
+
+        // Act — artist runs apply-checkout, then applies with the PM
+        var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var checkoutResponse = await artistClient.PostAsync($"/api/Application/opportunity/{opportunity!.Id}/checkout");
+        await checkoutResponse.ShouldBe(HttpStatusCode.OK);
+
+        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity.Id}", new { paymentMethodId = "pm_test" });
+        await applyResponse.ShouldBe(HttpStatusCode.Created);
+
+        // Assert — a PrepaidApplication was created with the supplied PM
+        var prepaid = await fixture.ReadDbContext.Applications
+            .OfType<PrepaidApplication>()
+            .FirstOrDefaultAsync(a => a.OpportunityId == opportunity.Id);
+        Assert.NotNull(prepaid);
+        Assert.Equal("pm_test", prepaid!.PaymentMethodId);
+    }
 
     [Fact]
     public async Task Accept_ShouldReturn400_WhenAlreadyAccepted()
