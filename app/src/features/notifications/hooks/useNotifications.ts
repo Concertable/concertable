@@ -30,6 +30,7 @@ export function useVenueNotifications() {
     notificationConnection.on(
       "ConcertDraftCreated",
       (payload: ConcertDraftCreatedPayload) => {
+        toast.success("Your concert has been created");
         void router.navigate({
           to: "/venue/my/concerts/concert/$id",
           params: { id: payload },

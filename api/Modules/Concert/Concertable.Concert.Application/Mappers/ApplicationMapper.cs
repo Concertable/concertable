@@ -21,17 +21,10 @@ internal class ApplicationMapper : IApplicationMapper
     public async Task<IEnumerable<ApplicationDto>> ToDtosAsync(IEnumerable<ApplicationEntity> applications)
     {
         var applicationList = applications.ToList();
-        var opportunityPage = new Pagination<OpportunityEntity>(
-            applicationList.Select(a => a.Opportunity), applicationList.Count, 1, applicationList.Count);
-        var opportunityDtos = (await opportunityMapper.ToDtosAsync(opportunityPage)).Data
-            .ToDictionary(o => o.Id);
+        var opportunityDtos = await opportunityMapper.ToDtosAsync(applicationList.Select(a => a.Opportunity));
 
-        return applicationList.Select(a =>
-            new ApplicationDto(
-                a.Id,
-                BuildArtistSummary(a),
-                opportunityDtos[a.Opportunity.Id],
-                a.Status));
+        return applicationList.Zip(opportunityDtos, (a, opp) =>
+            new ApplicationDto(a.Id, BuildArtistSummary(a), opp, a.Status));
     }
 
     private static ArtistSummaryDto BuildArtistSummary(ApplicationEntity application) => new()

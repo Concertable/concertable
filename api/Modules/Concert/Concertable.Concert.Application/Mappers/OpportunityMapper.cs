@@ -21,18 +21,23 @@ internal class OpportunityMapper : IOpportunityMapper
         return opportunity.ToDto(contract);
     }
 
-    public async Task<IPagination<OpportunityDto>> ToDtosAsync(IPagination<OpportunityEntity> opportunities)
+    public async Task<IEnumerable<OpportunityDto>> ToDtosAsync(IEnumerable<OpportunityEntity> opportunities)
     {
-        var contractMap = (await contractModule.GetByIdsAsync(opportunities.Data.Select(o => o.ContractId).Distinct()))
+        var opportunityList = opportunities.ToList();
+        var contractMap = (await contractModule.GetByIdsAsync(opportunityList.Select(o => o.ContractId).Distinct()))
             .ToDictionary(c => c.Id);
 
-        var dtos = opportunities.Data.Select(o =>
+        return opportunityList.Select(o =>
         {
             if (!contractMap.TryGetValue(o.ContractId, out var contract))
                 throw new NotFoundException($"Contract {o.ContractId} not found");
             return o.ToDto(contract);
-        }).ToList();
+        });
+    }
 
+    public async Task<IPagination<OpportunityDto>> ToDtosAsync(IPagination<OpportunityEntity> opportunities)
+    {
+        var dtos = await ToDtosAsync(opportunities.Data);
         return new Pagination<OpportunityDto>(dtos, opportunities.TotalCount, opportunities.PageNumber, opportunities.PageSize);
     }
 }

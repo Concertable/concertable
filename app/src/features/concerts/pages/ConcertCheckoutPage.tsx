@@ -76,7 +76,7 @@ export function ConcertCheckoutPage() {
       <CheckoutSection title="Payment Method">
         <StripePaymentForm
           session={checkout.session}
-          kind="payment"
+          timing="Immediate"
           submitLabel={`Pay £${total.toFixed(2)}`}
           onSuccess={() => setSubmitted(true)}
         />

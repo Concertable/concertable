@@ -8,19 +8,17 @@ import {
 import type { Appearance, StripeElementsOptions } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 import { stripePromise } from "@/lib/stripe";
-import type { CheckoutSession } from "../../types";
+import type { CheckoutSession, PaymentTiming } from "../../types";
 
 const appearance: Appearance = { theme: "night" };
 
-type Kind = "payment" | "setup";
-
 export interface StripePaymentFormProps {
   session: CheckoutSession;
-  kind: Kind;
+  timing: PaymentTiming;
   submitLabel: string;
   disabled?: boolean;
   footer?: ReactNode;
-  onSuccess: () => void;
+  onSuccess: (paymentMethodId: string | null) => void;
 }
 
 export function StripePaymentForm(props: StripePaymentFormProps) {
@@ -42,7 +40,7 @@ export function StripePaymentForm(props: StripePaymentFormProps) {
 }
 
 function Form({
-  kind,
+  timing,
   submitLabel,
   disabled,
   footer,
@@ -68,15 +66,9 @@ function Form({
     }
 
     const result =
-      kind === "payment"
-        ? await stripe.confirmPayment({
-            elements,
-            redirect: "if_required",
-          })
-        : await stripe.confirmSetup({
-            elements,
-            redirect: "if_required",
-          });
+      timing === "Immediate"
+        ? await stripe.confirmPayment({ elements, redirect: "if_required" })
+        : await stripe.confirmSetup({ elements, redirect: "if_required" });
 
     if (result.error) {
       setError(result.error.message ?? "Payment failed.");
@@ -84,7 +76,9 @@ function Form({
       return;
     }
 
-    onSuccess();
+    const intent =
+      timing === "Immediate" ? result.paymentIntent : result.setupIntent;
+    onSuccess((intent?.payment_method as string | null | undefined) ?? null);
   }
 
   const isDisabled = !stripe || !elements || disabled || isSubmitting;

@@ -4,7 +4,12 @@ import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ConcertDraftCreatedPayload } from "@/features/notifications";
+import type {
+  AcceptCheckout,
+  Application,
+} from "../types";
 import {
+  useAcceptApplicationMutation,
   useApplicationQuery,
   useCheckoutQuery,
 } from "../hooks/useApplicationQuery";
@@ -33,7 +38,6 @@ export function ApplicationCheckoutPage() {
     isLoading: isCheckoutLoading,
     isError: isCheckoutError,
   } = useCheckoutQuery(applicationId);
-  const [submitted, setSubmitted] = useState(false);
 
   if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
   if (isError || !application)
@@ -42,6 +46,27 @@ export function ApplicationCheckoutPage() {
     return (
       <div className="text-destructive p-6">Could not start checkout.</div>
     );
+
+  return (
+    <ApplicationCheckoutForm
+      applicationId={applicationId}
+      application={application}
+      checkout={checkout}
+    />
+  );
+}
+
+function ApplicationCheckoutForm({
+  applicationId,
+  application,
+  checkout,
+}: {
+  applicationId: number;
+  application: Application;
+  checkout: AcceptCheckout;
+}) {
+  const [submitted, setSubmitted] = useState(false);
+  const acceptMutation = useAcceptApplicationMutation(application.opportunity.id);
 
   const { artist, opportunity } = application;
   const isDeferred = checkout.timing === "Deferred";
@@ -87,9 +112,12 @@ export function ApplicationCheckoutPage() {
       >
         <StripePaymentForm
           session={checkout.session}
-          kind={isDeferred ? "setup" : "payment"}
+          timing={checkout.timing}
           submitLabel={isDeferred ? "Confirm" : "Confirm & Pay"}
-          onSuccess={() => setSubmitted(true)}
+          onSuccess={(paymentMethodId) => {
+            setSubmitted(true);
+            acceptMutation.mutate({ applicationId, paymentMethodId });
+          }}
         />
       </CheckoutSection>
     </CheckoutLayout>
