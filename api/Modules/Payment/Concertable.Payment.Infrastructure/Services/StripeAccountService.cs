@@ -101,19 +101,6 @@ internal class StripeAccountService : IStripeAccountService
         return PayoutAccountStatus.NotVerified;
     }
 
-    public async Task<string?> TryGetPaymentMethodAsync(string? stripeCustomerId)
-    {
-        if (stripeCustomerId is null) return null;
-
-        var paymentMethods = await paymentMethodService.ListAsync(new PaymentMethodListOptions
-        {
-            Customer = stripeCustomerId,
-            Type = "card"
-        });
-
-        return paymentMethods.FirstOrDefault()?.Id;
-    }
-
     public async Task<string> CreateSetupIntentAsync(string? stripeCustomerId)
     {
         var intent = await setupIntentService.CreateAsync(new SetupIntentCreateOptions

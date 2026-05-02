@@ -4,7 +4,7 @@ import type { Ticket, TicketCheckout } from "../types";
 interface TicketPurchaseRequest {
   concertId: number;
   quantity: number;
-  paymentMethodId?: string;
+  paymentMethodId: string;
 }
 
 export interface TicketPurchaseResponse {

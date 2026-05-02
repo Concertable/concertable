@@ -9,7 +9,6 @@ internal interface IStripeAccountService
     Task ProvisionConnectAccountAsync(Guid userId, string email, CancellationToken ct = default);
     Task<string> GetOnboardingLinkAsync(string stripeAccountId);
     Task<PayoutAccountStatus> GetAccountStatusAsync(string stripeAccountId);
-    Task<string?> TryGetPaymentMethodAsync(string? stripeCustomerId);
     Task<string> CreateSetupIntentAsync(string? stripeCustomerId);
     Task<PaymentMethodDto?> GetPaymentMethodDetailsAsync(string stripeCustomerId);
 
