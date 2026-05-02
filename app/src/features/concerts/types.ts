@@ -77,11 +77,22 @@ export type ApplicationStatus =
   | "Complete"
   | "Settled";
 
+export interface ActionLink {
+  href: string;
+  method: string;
+}
+
+export interface ApplicationActions {
+  accept: ActionLink;
+  checkout?: ActionLink | null;
+}
+
 export interface Application {
   id: number;
   artist: ArtistSummary;
   opportunity: Opportunity;
   status: ApplicationStatus;
+  actions: ApplicationActions;
 }
 
 interface PaymentResponse {
