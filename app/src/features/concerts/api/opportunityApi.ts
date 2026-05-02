@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 import type { Pagination } from "@/types/common";
 import type { PaginationParams } from "@/hooks/usePagination";
-import type { Application, Opportunity } from "../types";
+import type { Opportunity } from "../types";
 
 const opportunityApi = {
   getOpportunitiesByVenueId: async (
@@ -11,13 +11,6 @@ const opportunityApi = {
     const { data } = await api.get<Pagination<Opportunity>>(
       `/opportunity/active/venue/${venueId}`,
       { params },
-    );
-    return data;
-  },
-
-  applyToOpportunity: async (opportunityId: number): Promise<Application> => {
-    const { data } = await api.post<Application>(
-      `/opportunity/${opportunityId}/applications`,
     );
     return data;
   },

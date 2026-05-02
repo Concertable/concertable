@@ -45,6 +45,16 @@ internal class ApplicationController : ControllerBase
         return Ok(mapper.ToResponses(applications));
     }
 
+    [Authorize(Roles = "ArtistManager")]
+    [HttpPost("{opportunityId}")]
+    public async Task<IActionResult> Apply(int opportunityId, [FromBody] ApplyRequest? request = null)
+    {
+        var application = request is not null
+            ? await applicationService.ApplyAsync(opportunityId, request.PaymentMethodId)
+            : await applicationService.ApplyAsync(opportunityId);
+        return CreatedAtAction(nameof(GetById), new { id = application.Id }, mapper.ToResponse(application));
+    }
+
     [HttpGet("artist/pending")]
     [Authorize(Roles = "ArtistManager")]
     public async Task<ActionResult<IEnumerable<ApplicationResponse>>> GetPendingForArtist()

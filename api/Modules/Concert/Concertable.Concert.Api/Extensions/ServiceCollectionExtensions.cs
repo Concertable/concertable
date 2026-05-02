@@ -14,7 +14,6 @@ public static class ServiceCollectionExtensions
         services.AddConcertModule(configuration);
         services.AddScoped<IConcertPostedHandler, ConcertPostedHandler>();
         services.AddSingleton<IApplicationResponseMapper, ApplicationResponseMapper>();
-        services.AddSingleton<IOpportunityResponseMapper, OpportunityResponseMapper>();
         services.AddControllers()
             .AddApplicationPart(typeof(ConcertController).Assembly)
             .ConfigureApplicationPartManager(apm =>
