@@ -6,6 +6,7 @@ public class ApplicationEntity : IIdEntity
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Pending;
     public int OpportunityId { get; private set; }
     public int ArtistId { get; private set; }
+    public string? PaymentMethodId { get; private set; }
     public OpportunityEntity Opportunity { get; set; } = null!;
     public ArtistReadModel Artist { get; set; } = null!;
     public BookingEntity? Booking { get; set; }
@@ -17,6 +18,16 @@ public class ApplicationEntity : IIdEntity
         ArtistId = artistId,
         OpportunityId = opportunityId
     };
+
+    public static ApplicationEntity Create(int artistId, int opportunityId, string paymentMethodId) => new()
+    {
+        ArtistId = artistId,
+        OpportunityId = opportunityId,
+        PaymentMethodId = paymentMethodId
+    };
+
+    public void StorePaymentMethod(string paymentMethodId) =>
+        PaymentMethodId = paymentMethodId;
 
     public void Accept(BookingEntity bookingConcert)
     {
