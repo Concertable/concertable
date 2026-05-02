@@ -27,6 +27,7 @@ Branch: `Refactor/ConcertWorkflowCoupling`. Most-recent first:
 
 | # | Task | Notes |
 |---|---|---|
+| 23 | **Drop stored-payment fallback (NEW — added 2026-05-02)** | The `?? await managerPaymentModule.TryGetPaymentMethodIdAsync(payerId)` fallback in `OnSessionConcertPaymentFlow.ResolvePaymentMethodAsync` and `OffSessionConcertPaymentFlow.ResolvePaymentMethodAsync` is the indirection that causes the 3rd "case" (saved card via null PM). Frontend already has the saved card's PM ID — just pass it explicitly. **Remove** the fallback. **Tighten** `IConcertPaymentFlow.ResolvePaymentMethodAsync(Guid payerId, string paymentMethodId)` to non-nullable. **Frontend:** `ImmediatePaymentSection.selectSaved()` calls `onChange(savedCard.id)` instead of `onChange(null)`; `DeferredPaymentSection`'s effect uses `savedCard.id` directly; `applicationApi.acceptApplication` types tighten `paymentMethodId?: string \| null` → `paymentMethodId?: string`. **Order:** frontend first (stops sending null), then backend cleanup. After this, the world is 2 paths everywhere: payment-required (with explicit PM) or no-payment (confirmation/simple apply). `IManagerPaymentModule.TryGetPaymentMethodIdAsync` itself stays — frontend uses it to fetch the saved card for rendering. |
 | 10 | HATEOAS action links on `OpportunityResponse` / `ApplicationResponse` using `ConcertWorkflowCapabilityRegistry.Has<TStep>(ct)` | Mapper takes `ContractType`, queries registry, embeds action URLs. **No need to instantiate workflows** — registry is type-metadata only. The single-URL design (post-revert) means HATEOAS hints whether PM is required via a flag (e.g. `actions.apply.requiresPayment: true`) rather than by varying the URL. |
 | 11 | Remove `BookingEntity.PaymentMethodId` | Read/write moves to `Application.PaymentMethodId`. Drop PM param from `BookingService.CreateAsync`. Rewire `DeferredConcertService` (currently writes PM via booking; should write via application or move that logic upstream into the workflow). Only DoorSplit/Versus paths actually used the column. |
 | 13 | Slim `IFinishOutcome` → `Task` | Migrate `E2EEndpointExtensions.cs` and `DevController.Complete` consumers off the `result.Value is DeferredFinishOutcome deferred` payload first. They currently read `deferred.Payment.TransactionId`. Move those test/dev reads to a separate query path (e.g. `GET /e2e/payment-intent/{applicationId}` already exists). |
@@ -44,6 +45,19 @@ Branch: `Refactor/ConcertWorkflowCoupling`. Most-recent first:
 - **#19** — `IApplyResolver` in `b4f58f06`.
 - **#20** — family markers + `ICheckout` in `fa8a3277`.
 - **#21** — `IConcertWorkflowStep` + `ConcertWorkflowCapabilityRegistry` in `e0e3753e`.
+
+### Late addition (2026-05-02): drop stored-payment fallback
+
+Discovered while resuming after the unified-URL revert: the existing `OnSession`/`OffSession` payment flows have a `?? TryGetPaymentMethodIdAsync(payerId)` fallback that turned a "saved card" UX choice into a null-PM-on-the-wire signal. Frontend `ImmediatePaymentSection.tsx` actively uses this — `selectSaved()` calls `onChange(null)` to mean "use my saved card." That null travels through to `ResolvePaymentMethodAsync` which falls back to the stored Stripe customer PM.
+
+This created a **3rd semantic case** (no PM / explicit PM / stored fallback) that didn't fit the typed `AcceptAsync(int, string)` signature. Two options were considered:
+
+1. Add a third method `AcceptWithStoredPaymentAsync` everywhere (3 service methods + 3 dispatcher methods + controller pattern-match)
+2. Remove the fallback entirely; frontend always passes explicit PM
+
+User picked (2). The fallback is solving a problem the frontend doesn't have — it already holds the saved card's PM ID for rendering. Passing it explicitly is one extra string in the request body and removes a whole class of nullable indirection from the backend.
+
+This is now task #23 in the pending list. Until it lands, the saved-card UX on the current branch will throw `"This contract requires a payment method at accept"` because my unified controller routes `{ paymentMethodId: null }` to the by-confirmation path. **Don't release this branch without #23 also landed**.
 
 ### Key design decisions made along the way (reasoning preserved)
 
@@ -181,10 +195,11 @@ Concert.Infrastructure/Extensions/
 1. **Build verification** — every commit so far has been verified with `dotnet build` (background) before committing. Keep that pattern.
 2. **VenueHire `AcceptAsync`** loads `application.PaymentMethodId` from `IApplicationRepository.GetByIdAsync(applicationId)` (since the artist's PM was stored at apply-time). Throws `BadRequestException("VenueHire application has no payment method stored")` if null.
 3. **`AcceptanceDispatcher`** kept the Dispatcher pattern (does the work + returns outcome) — Accept variance is real. **`IApplyResolver`** uses Resolver pattern (returns capability) — Apply orchestration lives in the service.
-4. **`IFinishOutcome` slim (#13)** is blocked on migrating `E2EEndpointExtensions.cs:42-52` (reads `deferred.Payment.TransactionId`) and `DevController.Complete` (returns `result.Value`). Both need to query payment intent separately first.
-5. **Migration re-scaffold (#15)** must happen at the very end before integration tests run, after all entity changes settle.
-6. **Per-CLAUDE.md** — never additive migrations; always re-scaffold `InitialCreate`.
-7. **Per-memory** — never add `Co-Authored-By: Claude` trailer; never use unnecessary braces on single-statement `if/else`; prefer `is not null` over `is { }` capture when the captured value is just reused.
+4. **Saved-card UX is BROKEN on this branch until #23 lands.** The unified controller routes `{ paymentMethodId: null }` to the by-confirmation path; FlatFee/DoorSplit/Versus don't implement `IAcceptByConfirmation` and throw. Fix by doing #23 (frontend passes explicit PM, backend drops fallback). Pre-refactor master worked because the strategy's `InitiateAsync` accepted nullable PM and the payment-flow fallback resolved it.
+5. **`IFinishOutcome` slim (#13)** is blocked on migrating `E2EEndpointExtensions.cs:42-52` (reads `deferred.Payment.TransactionId`) and `DevController.Complete` (returns `result.Value`). Both need to query payment intent separately first.
+6. **Migration re-scaffold (#15)** must happen at the very end before integration tests run, after all entity changes settle.
+7. **Per-CLAUDE.md** — never additive migrations; always re-scaffold `InitialCreate`.
+8. **Per-memory** — never add `Co-Authored-By: Claude` trailer; never use unnecessary braces on single-statement `if/else`; prefer `is not null` over `is { }` capture when the captured value is just reused.
 
 ---
 
