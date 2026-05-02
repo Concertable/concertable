@@ -43,11 +43,11 @@ const applicationApi = {
     return data;
   },
 
-  checkout: async (applicationId: number): Promise<AcceptCheckout> => {
-    const { data } = await api.post<AcceptCheckout>(
+  checkout: async (applicationId: number): Promise<AcceptCheckout | null> => {
+    const response = await api.post<AcceptCheckout>(
       `/application/${applicationId}/checkout`,
     );
-    return data;
+    return response.status === 204 ? null : response.data;
   },
 };
 

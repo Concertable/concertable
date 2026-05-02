@@ -105,7 +105,8 @@ internal class ApplicationController : ControllerBase
     [HttpPost("{applicationId}/checkout")]
     public async Task<IActionResult> Checkout(int applicationId)
     {
-        return Ok(await applicationService.CheckoutAsync(applicationId));
+        var checkout = await applicationService.CheckoutAsync(applicationId);
+        return checkout is null ? NoContent() : Ok(checkout);
     }
 
     [Authorize(Roles = "VenueManager")]

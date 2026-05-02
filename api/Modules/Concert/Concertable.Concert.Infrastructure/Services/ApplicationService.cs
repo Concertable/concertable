@@ -125,7 +125,7 @@ internal class ApplicationService : IApplicationService
         return await mapper.ToDtoAsync(application);
     }
 
-    public Task<AcceptCheckout> CheckoutAsync(int applicationId) =>
+    public Task<AcceptCheckout?> CheckoutAsync(int applicationId) =>
         acceptanceExecutor.CheckoutAsync(applicationId);
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null)

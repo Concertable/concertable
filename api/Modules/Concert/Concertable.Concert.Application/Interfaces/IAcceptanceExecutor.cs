@@ -4,6 +4,6 @@ namespace Concertable.Concert.Application.Interfaces;
 
 internal interface IAcceptanceExecutor
 {
-    Task<AcceptCheckout> CheckoutAsync(int applicationId);
+    Task<AcceptCheckout?> CheckoutAsync(int applicationId);
     Task<IAcceptOutcome> AcceptAsync(int applicationId, string? paymentMethodId = null);
 }
