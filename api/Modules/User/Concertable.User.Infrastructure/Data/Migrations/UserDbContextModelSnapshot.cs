@@ -135,12 +135,18 @@ namespace Concertable.User.Infrastructure.Data.Migrations
                 {
                     b.HasBaseType("Concertable.User.Domain.ManagerEntity");
 
+                    b.Property<int?>("ArtistId")
+                        .HasColumnType("int");
+
                     b.HasDiscriminator().HasValue(2);
                 });
 
             modelBuilder.Entity("Concertable.User.Domain.VenueManagerEntity", b =>
                 {
                     b.HasBaseType("Concertable.User.Domain.ManagerEntity");
+
+                    b.Property<int?>("VenueId")
+                        .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue(1);
                 });

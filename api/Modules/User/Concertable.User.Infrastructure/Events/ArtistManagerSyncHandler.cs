@@ -23,6 +23,9 @@ internal class ArtistManagerSyncHandler(UserDbContext db)
             GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude)),
             new Address(e.County, e.Town));
 
+        if (user is ArtistManagerEntity am)
+            am.AssignArtist(e.ArtistId);
+
         await db.SaveChangesAsync(ct);
     }
 }

@@ -14,7 +14,7 @@ internal class VenueManagerMapper : IUserMapper
             Longitude = vm.Location.ToLongitude(),
             County = vm.Address?.County,
             Town = vm.Address?.Town,
-            VenueId = null,
+            VenueId = vm.VenueId,
             IsEmailVerified = vm.IsEmailVerified
         };
     }

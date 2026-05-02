@@ -60,7 +60,9 @@ namespace Concertable.User.Infrastructure.Data.Migrations
                     Town = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Location = table.Column<Point>(type: "geography", nullable: true),
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsEmailVerified = table.Column<bool>(type: "bit", nullable: false)
+                    IsEmailVerified = table.Column<bool>(type: "bit", nullable: false),
+                    ArtistId = table.Column<int>(type: "int", nullable: true),
+                    VenueId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {

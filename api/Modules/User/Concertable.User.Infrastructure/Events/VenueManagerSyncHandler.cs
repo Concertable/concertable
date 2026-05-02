@@ -23,6 +23,9 @@ internal class VenueManagerSyncHandler(UserDbContext db)
             GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude)),
             new Address(e.County, e.Town));
 
+        if (user is VenueManagerEntity vm)
+            vm.AssignVenue(e.VenueId);
+
         await db.SaveChangesAsync(ct);
     }
 }

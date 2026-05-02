@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Concertable.Data.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SharedDbContext))]
-    [Migration("20260501133252_InitialCreate")]
+    [Migration("20260501235351_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

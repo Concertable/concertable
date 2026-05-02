@@ -14,7 +14,7 @@ internal class ArtistManagerMapper : IUserMapper
             Longitude = am.Location.ToLongitude(),
             County = am.Address?.County,
             Town = am.Address?.Town,
-            ArtistId = null,
+            ArtistId = am.ArtistId,
             IsEmailVerified = am.IsEmailVerified
         };
     }

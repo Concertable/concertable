@@ -66,7 +66,11 @@ public class VenueManagerEntity : ManagerEntity
     private VenueManagerEntity(string email, string passwordHash)
         : base(email, passwordHash, Role.VenueManager) { }
 
+    public int? VenueId { get; private set; }
+
     public static VenueManagerEntity Create(string email, string passwordHash) => new(email, passwordHash);
+
+    public void AssignVenue(int venueId) => VenueId = venueId;
 }
 
 public class ArtistManagerEntity : ManagerEntity
@@ -76,7 +80,11 @@ public class ArtistManagerEntity : ManagerEntity
     private ArtistManagerEntity(string email, string passwordHash)
         : base(email, passwordHash, Role.ArtistManager) { }
 
+    public int? ArtistId { get; private set; }
+
     public static ArtistManagerEntity Create(string email, string passwordHash) => new(email, passwordHash);
+
+    public void AssignArtist(int artistId) => ArtistId = artistId;
 }
 
 public class CustomerEntity : UserEntity
