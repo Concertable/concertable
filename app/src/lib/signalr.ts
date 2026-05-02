@@ -16,10 +16,16 @@ export const notificationConnection = new HubConnectionBuilder()
   .configureLogging(import.meta.env.DEV ? LogLevel.Information : LogLevel.None)
   .build();
 
-userManager.events.addUserLoaded(() => {
+function startIfReady() {
   if (notificationConnection.state === HubConnectionState.Disconnected)
     notificationConnection.start().catch(console.error);
+}
+
+userManager.getUser().then((user) => {
+  if (user && !user.expired) startIfReady();
 });
+
+userManager.events.addUserLoaded(startIfReady);
 
 userManager.events.addUserUnloaded(() => {
   if (notificationConnection.state === HubConnectionState.Connected)

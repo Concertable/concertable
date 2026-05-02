@@ -30,12 +30,6 @@ export function useVenueNotifications() {
     notificationConnection.on(
       "ConcertDraftCreated",
       (payload: ConcertDraftCreatedPayload) => {
-        console.log(
-          "[SignalR] ConcertDraftCreated received, payload:",
-          payload,
-          "type:",
-          typeof payload,
-        );
         void router.navigate({
           to: "/venue/my/concerts/concert/$id",
           params: { id: payload },

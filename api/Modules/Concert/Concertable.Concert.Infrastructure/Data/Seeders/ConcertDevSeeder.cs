@@ -303,6 +303,23 @@ internal class ConcertDevSeeder : IDevSeeder
                 seed.UpcomingFlatFeeApp,
                 // App 81: UpcomingVenueHireApp — VenueId=1, VenueHire (future)
                 seed.UpcomingVenueHireApp,
+                // Accepted + pending apps for opps 34, 35, 46, 47, 48
+                ApplicationFactory.Accepted(3, 34, BookingFactory.Confirmed(ConcertFaker.GetFaker("Groove Night", 18m, 130, 100, 3, seed.Opportunities[33].VenueId, seed.Opportunities[33].Period.Start, seed.Opportunities[33].Period.End, now.AddDays(-1)).Generate())),
+                ApplicationFactory.Create(4, 34),
+                ApplicationFactory.Create(5, 34),
+                ApplicationFactory.Accepted(1, 35, BookingFactory.Confirmed(ConcertFaker.GetFaker("Electric Midnight", 22m, 140, 110, 1, seed.Opportunities[34].VenueId, seed.Opportunities[34].Period.Start, seed.Opportunities[34].Period.End, now).Generate())),
+                ApplicationFactory.Create(2, 35),
+                ApplicationFactory.Create(4, 35),
+                ApplicationFactory.Create(5, 35),
+                ApplicationFactory.Accepted(4, 46, BookingFactory.Confirmed(ConcertFaker.GetFaker("Summer Haze", 20m, 150, 120, 4, seed.Opportunities[45].VenueId, seed.Opportunities[45].Period.Start, seed.Opportunities[45].Period.End, now.AddDays(10)).Generate())),
+                ApplicationFactory.Create(5, 46),
+                ApplicationFactory.Create(6, 46),
+                ApplicationFactory.Accepted(5, 47, BookingFactory.Confirmed(ConcertFaker.GetFaker("Night Drive", 25m, 160, 130, 5, seed.Opportunities[46].VenueId, seed.Opportunities[46].Period.Start, seed.Opportunities[46].Period.End, now.AddDays(12)).Generate())),
+                ApplicationFactory.Create(6, 47),
+                ApplicationFactory.Create(7, 47),
+                ApplicationFactory.Accepted(6, 48, BookingFactory.Confirmed(ConcertFaker.GetFaker("Weekend Rush", 15m, 120, 90, 6, seed.Opportunities[47].VenueId, seed.Opportunities[47].Period.Start, seed.Opportunities[47].Period.End, now.AddDays(14)).Generate())),
+                ApplicationFactory.Create(7, 48),
+                ApplicationFactory.Create(8, 48),
             };
             context.Applications.AddRange(applications);
             await context.SaveChangesAsync(ct);

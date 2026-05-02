@@ -33,7 +33,7 @@ export interface TicketCheckout {
   concertId: number;
 }
 
-export type PaymentTiming = "immediate" | "deferred";
+export type PaymentTiming = "Immediate" | "Deferred";
 
 export interface FlatPayment {
   $type: "flat";

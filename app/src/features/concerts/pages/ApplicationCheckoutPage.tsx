@@ -1,14 +1,21 @@
 import { useState } from "react";
-import { useParams } from "@tanstack/react-router";
+import { useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useApplicationQuery, useCheckoutQuery } from "../hooks/useApplicationQuery";
+import type { ConcertDraftCreatedPayload } from "@/features/notifications";
+import {
+  useApplicationQuery,
+  useCheckoutQuery,
+} from "../hooks/useApplicationQuery";
+import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
 import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
 import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
 import { CheckoutSection } from "../components/checkout/CheckoutSection";
 import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
 import { OrderSummaryCard } from "../components/checkout/OrderSummaryCard";
 import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
+import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
 import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
 import { summaryFor } from "../utils/acceptCheckoutFormat";
 
@@ -26,7 +33,7 @@ export function ApplicationCheckoutPage() {
     isLoading: isCheckoutLoading,
     isError: isCheckoutError,
   } = useCheckoutQuery(applicationId);
-  const [isAwaiting, setIsAwaiting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
   if (isError || !application)
@@ -37,25 +44,17 @@ export function ApplicationCheckoutPage() {
     );
 
   const { artist, opportunity } = application;
+  const isDeferred = checkout.timing === "Deferred";
 
-  if (isAwaiting) {
+  if (submitted)
     return (
-      <CheckoutSuccess
-        title="Application Accepted"
-        description={
-          <>
-            You have accepted{" "}
-            <span className="text-foreground font-medium">{artist.name}</span>.
-            Creating concert draft...
-          </>
-        }
+      <ApplicationCheckoutResolution
+        artistName={artist.name}
+        firstStep={isDeferred ? "Card saved" : "Payment authorised"}
       />
     );
-  }
 
   const summary = summaryFor(checkout.amount);
-  const submitLabel =
-    checkout.timing === "deferred" ? "Confirm" : "Confirm & Pay";
 
   return (
     <CheckoutLayout
@@ -68,7 +67,7 @@ export function ApplicationCheckoutPage() {
       }
       summary={
         <OrderSummaryCard
-          title={checkout.timing === "deferred" ? "Settlement" : "Summary"}
+          title={isDeferred ? "Settlement" : "Summary"}
           lines={summary.lines}
           total={summary.total}
         />
@@ -81,19 +80,79 @@ export function ApplicationCheckoutPage() {
       <CheckoutSection
         title="Payment Method"
         description={
-          checkout.timing === "deferred"
+          isDeferred
             ? "Saved card required for settlement after the concert."
             : undefined
         }
       >
         <StripePaymentForm
           session={checkout.session}
-          kind={checkout.timing === "deferred" ? "setup" : "payment"}
-          submitLabel={submitLabel}
-          onSuccess={() => setIsAwaiting(true)}
+          kind={isDeferred ? "setup" : "payment"}
+          submitLabel={isDeferred ? "Confirm" : "Confirm & Pay"}
+          onSuccess={() => setSubmitted(true)}
         />
       </CheckoutSection>
     </CheckoutLayout>
+  );
+}
+
+function ApplicationCheckoutResolution({
+  artistName,
+  firstStep,
+}: {
+  artistName: string;
+  firstStep: string;
+}) {
+  const router = useRouter();
+  const flow = useCheckoutFlow<ConcertDraftCreatedPayload>({
+    event: "ConcertDraftCreated",
+  });
+
+  return (
+    <CheckoutFlow
+      flow={flow}
+      title="Finalising acceptance"
+      timeoutTitle="Still finalising"
+      pendingHint="Your concert will appear in your dashboard"
+      steps={{ first: firstStep, final: "Creating concert draft" }}
+      renderSuccess={(concertId) => (
+        <ApplicationSuccess
+          artistName={artistName}
+          onView={() =>
+            void router.navigate({
+              to: "/venue/my/concerts/concert/$id",
+              params: { id: concertId },
+            })
+          }
+        />
+      )}
+    />
+  );
+}
+
+function ApplicationSuccess({
+  artistName,
+  onView,
+}: {
+  artistName: string;
+  onView: () => void;
+}) {
+  return (
+    <CheckoutSuccess
+      title="Application Accepted"
+      description={
+        <>
+          You have accepted{" "}
+          <span className="text-foreground font-medium">{artistName}</span>.
+          Your concert draft is ready.
+        </>
+      }
+      footer={
+        <Button onClick={onView} className="mt-2">
+          View concert
+        </Button>
+      }
+    />
   );
 }
 

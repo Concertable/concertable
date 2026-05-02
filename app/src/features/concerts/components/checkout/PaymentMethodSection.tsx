@@ -11,8 +11,8 @@ export interface PaymentSectionProps {
 }
 
 const sectionRegistry = {
-  immediate: ImmediatePaymentSection,
-  deferred: DeferredPaymentSection,
+  Immediate: ImmediatePaymentSection,
+  Deferred: DeferredPaymentSection,
 } as const satisfies Record<PaymentTiming, ComponentType<PaymentSectionProps>>;
 
 export function PaymentMethodSection({

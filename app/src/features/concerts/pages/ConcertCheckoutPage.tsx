@@ -1,26 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { notificationConnection } from "@/lib/signalr";
 import type { TicketPurchasedPayload } from "@/features/notifications";
 import { useConcert } from "../hooks/useConcert";
 import { useTicketCheckoutQuery } from "../hooks/useTicketsQuery";
+import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
 import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
 import { CheckoutSection } from "../components/checkout/CheckoutSection";
 import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
 import { OrderSummaryCard } from "../components/checkout/OrderSummaryCard";
 import { QuantitySelector } from "../components/checkout/QuantitySelector";
 import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
-import {
-  CheckoutAwaiting,
-  type AwaitingStep,
-} from "../components/checkout/CheckoutAwaiting";
+import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
 import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
 import type { Concert } from "../types";
-
-type CheckoutPhase = "form" | "awaiting" | "success" | "timeout";
 
 export function ConcertCheckoutPage() {
   const { id } = useParams({ from: "/_customer/concert/checkout/$id" });
@@ -33,28 +28,7 @@ export function ConcertCheckoutPage() {
   } = useTicketCheckoutQuery(id);
 
   const [quantity, setQuantity] = useState(1);
-  const [phase, setPhase] = useState<CheckoutPhase>("form");
-  const [ticketCount, setTicketCount] = useState(0);
-
-  useEffect(() => {
-    if (phase !== "awaiting") return;
-
-    function handleTicketPurchased(payload: TicketPurchasedPayload) {
-      if (payload.concertId !== id) return;
-      setTicketCount(payload.ticketIds.length);
-      setPhase("success");
-    }
-
-    notificationConnection.on("TicketPurchased", handleTicketPurchased);
-    const timeoutId = setTimeout(() => {
-      setPhase((current) => (current === "awaiting" ? "timeout" : current));
-    }, 30_000);
-
-    return () => {
-      notificationConnection.off("TicketPurchased", handleTicketPurchased);
-      clearTimeout(timeoutId);
-    };
-  }, [phase, id]);
+  const [submitted, setSubmitted] = useState(false);
 
   if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
   if (isError || !concert)
@@ -64,44 +38,7 @@ export function ConcertCheckoutPage() {
       <div className="text-destructive p-6">Could not start checkout.</div>
     );
 
-  if (phase === "awaiting") {
-    const steps: AwaitingStep[] = [
-      { label: "Payment authorised", status: "done" },
-      { label: "Confirming with our system", status: "active" },
-      { label: "Issuing your tickets", status: "pending" },
-    ];
-    return (
-      <CheckoutAwaiting
-        title="Processing your payment"
-        description="This usually takes a few seconds. Please don't close this page."
-        steps={steps}
-      />
-    );
-  }
-
-  if (phase === "success") {
-    return (
-      <ConcertSuccess
-        concert={concert}
-        ticketCount={ticketCount}
-        onView={() => void router.navigate({ to: "/profile/tickets/upcoming" })}
-      />
-    );
-  }
-
-  if (phase === "timeout") {
-    return (
-      <CheckoutAwaiting
-        title="Still confirming your payment"
-        description="This is taking longer than usual. Your tickets will appear in your profile shortly — feel free to keep using the app."
-        steps={[
-          { label: "Payment authorised", status: "done" },
-          { label: "Confirming with our system", status: "active" },
-          { label: "Issuing your tickets", status: "pending" },
-        ]}
-      />
-    );
-  }
+  if (submitted) return <ConcertCheckoutResolution concert={concert} />;
 
   const total = concert.price * quantity;
 
@@ -141,10 +78,36 @@ export function ConcertCheckoutPage() {
           session={checkout.session}
           kind="payment"
           submitLabel={`Pay £${total.toFixed(2)}`}
-          onSuccess={() => setPhase("awaiting")}
+          onSuccess={() => setSubmitted(true)}
         />
       </CheckoutSection>
     </CheckoutLayout>
+  );
+}
+
+function ConcertCheckoutResolution({ concert }: { concert: Concert }) {
+  const router = useRouter();
+  const flow = useCheckoutFlow<TicketPurchasedPayload>({
+    event: "TicketPurchased",
+  });
+
+  return (
+    <CheckoutFlow
+      flow={flow}
+      title="Processing your payment"
+      timeoutTitle="Still confirming your payment"
+      pendingHint="Your tickets will appear in your profile"
+      steps={{ first: "Payment authorised", final: "Issuing your tickets" }}
+      renderSuccess={(payload) => (
+        <ConcertSuccess
+          concert={concert}
+          ticketCount={payload.ticketIds.length}
+          onView={() =>
+            void router.navigate({ to: "/profile/tickets/upcoming" })
+          }
+        />
+      )}
+    />
   );
 }
 

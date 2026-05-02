@@ -27,16 +27,39 @@ internal class WebhookProcessor : IWebhookProcessor
     {
         try
         {
+            logger.LogInformation(
+                "Processing Stripe event {EventId} of type {EventType}",
+                stripeEvent.Id, stripeEvent.Type);
+
             if (stripeEvent.Data.Object is not PaymentIntent intent)
+            {
+                logger.LogInformation(
+                    "Skipping Stripe event {EventId}: data object is {ObjectType}, not PaymentIntent",
+                    stripeEvent.Id, stripeEvent.Data.Object?.GetType().Name ?? "null");
                 return;
+            }
 
             if (await stripeEventRepository.EventExistsAsync(stripeEvent.Id))
+            {
+                logger.LogInformation(
+                    "Skipping Stripe event {EventId}: already processed",
+                    stripeEvent.Id);
                 return;
+            }
 
             await stripeEventRepository.AddEventAsync(StripeEventEntity.Create(stripeEvent.Id, timeProvider.GetUtcNow().DateTime));
 
             if (intent.Status != "succeeded")
+            {
+                logger.LogInformation(
+                    "Skipping PaymentIntent {IntentId} (event {EventId}): status is {Status}, not succeeded",
+                    intent.Id, stripeEvent.Id, intent.Status);
                 return;
+            }
+
+            logger.LogInformation(
+                "Publishing PaymentSucceededEvent for PaymentIntent {IntentId} (event {EventId}) of transaction type {TransactionType}",
+                intent.Id, stripeEvent.Id, intent.Metadata["type"]);
 
             await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, intent.Metadata), cancellationToken);
         }

@@ -20,11 +20,11 @@ export function CheckoutAwaiting({ title, description, steps }: Props) {
       transition={{ duration: 0.3 }}
       className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-12 text-center"
     >
-      <div className="bg-primary/10 mb-6 flex size-20 items-center justify-center rounded-full">
+      <div className="bg-primary/10 mb-5 flex size-20 items-center justify-center rounded-full">
         <Loader2 className="text-primary size-10 animate-spin" />
       </div>
-      <h1 className="mb-2 text-2xl font-bold tracking-tight">{title}</h1>
-      <p className="text-muted-foreground mb-8">{description}</p>
+      <h1 className="mb-3 text-2xl font-bold tracking-tight">{title}</h1>
+      <p className="text-muted-foreground mb-5">{description}</p>
 
       <ol className="bg-card w-full space-y-3 rounded-xl border p-5 text-left">
         {steps.map((step) => (
