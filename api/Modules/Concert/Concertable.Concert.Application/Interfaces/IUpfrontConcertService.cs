@@ -6,5 +6,5 @@ internal interface IUpfrontConcertService
 {
     Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, Guid payeeId, decimal amount, string paymentMethodId);
     Task SettleAsync(int bookingId);
-    Task<IFinishOutcome> FinishedAsync(int concertId);
+    Task FinishedAsync(int concertId);
 }

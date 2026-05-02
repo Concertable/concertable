@@ -13,13 +13,13 @@ internal class CompletionDispatcher : ICompletionDispatcher
         this.workflowFactory = workflowFactory;
     }
 
-    public async Task<Result<IFinishOutcome>> FinishAsync(int concertId)
+    public async Task<Result> FinishAsync(int concertId)
     {
         try
         {
             var contract = await contractLoader.LoadByConcertIdAsync(concertId);
-            var outcome = await workflowFactory.Create(contract.ContractType).FinishAsync(concertId);
-            return Result.Ok(outcome);
+            await workflowFactory.Create(contract.ContractType).FinishAsync(concertId);
+            return Result.Ok();
         }
         catch (Exception ex)
         {

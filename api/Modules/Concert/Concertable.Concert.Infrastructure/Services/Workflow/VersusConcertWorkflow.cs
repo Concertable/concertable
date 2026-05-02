@@ -69,7 +69,7 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
     public Task SettleAsync(int bookingId) =>
         deferredConcertService.SettleAsync(bookingId);
 
-    public async Task<IFinishOutcome> FinishAsync(int concertId)
+    public async Task FinishAsync(int concertId)
     {
         var booking = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");
@@ -82,7 +82,7 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
             "Calculated versus artist share for concert {ConcertId}: {Guarantee} {Currency} guarantee + ({Revenue} {Currency} revenue at {Percent}%) = {Share} {Currency}",
             concertId, contract.Guarantee, "GBP", totalRevenue, contract.ArtistDoorPercent, artistShare);
 
-        return await deferredConcertService.FinishedAsync(
+        await deferredConcertService.FinishedAsync(
             concertId,
             booking.Application.Opportunity.Venue.UserId,
             booking.Application.Artist.UserId,

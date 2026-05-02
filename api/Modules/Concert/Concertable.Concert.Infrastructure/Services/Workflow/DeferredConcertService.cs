@@ -42,7 +42,7 @@ internal class DeferredConcertService : IDeferredConcertService
         return new DeferredAcceptOutcome();
     }
 
-    public async Task<IFinishOutcome> FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount)
+    public async Task FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount)
     {
         var booking = await bookingService.MarkAwaitingPaymentByConcertIdAsync(concertId);
         if (booking is not DeferredBooking deferred)
@@ -56,17 +56,13 @@ internal class DeferredConcertService : IDeferredConcertService
             ["toUserId"] = payeeId.ToString()
         };
 
-        var paymentMethodId = deferred.PaymentMethodId;
-
         logger.LogInformation(
             "Settling concert {ConcertId} (booking {BookingId}): paying {Amount} {Currency} from {PayerId} to {PayeeId}",
             concertId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, paymentMethodId, settlementMetadata);
+        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, deferred.PaymentMethodId, settlementMetadata);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
-
-        return new DeferredFinishOutcome(payment.Value);
     }
 
     public Task SettleAsync(int bookingId) =>

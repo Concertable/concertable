@@ -19,7 +19,7 @@ public class ConcertFinishedFunctionTests
         logger = new Mock<ILogger<ConcertFinishedFunction>>();
         sut = new ConcertFinishedFunction(concertRepository.Object, CompletionDispatcher.Object, logger.Object);
 
-        CompletionDispatcher.Setup(p => p.FinishAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok<IFinishOutcome>(new ImmediateFinishOutcome()));
+        CompletionDispatcher.Setup(p => p.FinishAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok());
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class ConcertFinishedFunctionTests
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([1, 2, 3]);
-        CompletionDispatcher.Setup(p => p.FinishAsync(2)).ReturnsAsync(Result.Fail<IFinishOutcome>("Payment failed"));
+        CompletionDispatcher.Setup(p => p.FinishAsync(2)).ReturnsAsync(Result.Fail("Payment failed"));
 
         // Act
         await sut.Run(null!);

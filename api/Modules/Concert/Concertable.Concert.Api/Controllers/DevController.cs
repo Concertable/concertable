@@ -24,10 +24,8 @@ internal class DevController : ControllerBase
         [FromServices] ICompletionDispatcher CompletionDispatcher)
     {
         var result = await CompletionDispatcher.FinishAsync(concertId);
-
-        if (result.IsFailed)
-            return BadRequest(result.Errors.Select(e => e.Message));
-
-        return Ok(result.Value);
+        return result.IsFailed
+            ? BadRequest(result.Errors.Select(e => e.Message))
+            : Ok();
     }
 }

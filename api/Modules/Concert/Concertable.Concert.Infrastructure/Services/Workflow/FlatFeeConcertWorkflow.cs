@@ -59,6 +59,6 @@ internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
     public Task SettleAsync(int bookingId) =>
         upfrontConcertService.SettleAsync(bookingId);
 
-    public Task<IFinishOutcome> FinishAsync(int concertId) =>
+    public Task FinishAsync(int concertId) =>
         upfrontConcertService.FinishedAsync(concertId);
 }

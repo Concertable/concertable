@@ -55,10 +55,12 @@ public class ConcertFinishedTests : IAsyncLifetime
     public async Task ShouldCompleteApplicationAndPayArtist_WhenDoorSplitConcertFinishes()
     {
         // Op 50: DoorSplit 70% â€” 1 ticket pre-seeded at Â£20 = Â£20 revenue â†’ artist share = Â£14 (1400 pence)
-        var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value}")
-            .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
+        await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedDoorSplitApp.ConcertId!.Value}");
 
-        var intent = await fixture.StripePaymentIntents.GetAsync(finishBody.Trim('"'));
+        var paymentIntentId = await fixture.Client.GetAssertAsync<string>(
+            $"/e2e/payment-intent/{fixture.SeedData.FinishedDoorSplitApp.ApplicationId}");
+
+        var intent = await fixture.StripePaymentIntents.GetAsync(paymentIntentId!);
         Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
         Assert.Equal(1400L, intent.Amount);
 
@@ -73,10 +75,12 @@ public class ConcertFinishedTests : IAsyncLifetime
     public async Task ShouldCompleteApplicationAndPayArtist_WhenVersusConcertFinishes()
     {
         // Op 51: Versus â€” guarantee Â£100 + 70% of door â€” 1 ticket pre-seeded at Â£20 â†’ artist share = Â£114 (11400 pence)
-        var finishBody = await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedVersusApp.ConcertId!.Value}")
-            .ContinueWith(t => t.Result.Content.ReadAsStringAsync()).Unwrap();
+        await fixture.Client.PostAsSuccessAsync($"/e2e/finish/{fixture.SeedData.FinishedVersusApp.ConcertId!.Value}");
 
-        var intent = await fixture.StripePaymentIntents.GetAsync(finishBody.Trim('"'));
+        var paymentIntentId = await fixture.Client.GetAssertAsync<string>(
+            $"/e2e/payment-intent/{fixture.SeedData.FinishedVersusApp.ApplicationId}");
+
+        var intent = await fixture.StripePaymentIntents.GetAsync(paymentIntentId!);
         Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
         Assert.Equal(11400L, intent.Amount);
 

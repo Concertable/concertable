@@ -1,6 +1,5 @@
 using Concertable.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
-using Concertable.Concert.Application.Responses;
 using Concertable.Data.Application;
 using Concertable.Seeding;
 using Microsoft.EntityFrameworkCore;
@@ -42,12 +41,8 @@ public static class E2EEndpointExtensions
         app.MapPost("/e2e/finish/{concertId:int}", async (int concertId, ICompletionDispatcher CompletionDispatcher) =>
         {
             var result = await CompletionDispatcher.FinishAsync(concertId);
-
-            if (result.IsFailed)
-                return Results.BadRequest(result.Errors.Select(e => e.Message));
-
-            return result.Value is DeferredFinishOutcome deferred
-                ? Results.Ok(deferred.Payment.TransactionId)
+            return result.IsFailed
+                ? Results.BadRequest(result.Errors.Select(e => e.Message))
                 : Results.Ok();
         });
 

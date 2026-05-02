@@ -61,9 +61,6 @@ internal class UpfrontConcertService : IUpfrontConcertService
             throw new BadRequestException(draftResult.Errors);
     }
 
-    public async Task<IFinishOutcome> FinishedAsync(int concertId)
-    {
-        await bookingService.CompleteByConcertIdAsync(concertId);
-        return new ImmediateFinishOutcome();
-    }
+    public Task FinishedAsync(int concertId) =>
+        bookingService.CompleteByConcertIdAsync(concertId);
 }

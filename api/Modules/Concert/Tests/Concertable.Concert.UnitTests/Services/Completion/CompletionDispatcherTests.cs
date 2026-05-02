@@ -1,4 +1,3 @@
-﻿using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Infrastructure.Services.Completion;
 using Moq;
 
@@ -21,16 +20,14 @@ public class CompletionDispatcherTests
     {
         var contract = new FlatFeeContract { Id = 99, Fee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
-        var outcome = new Mock<IFinishOutcome>().Object;
 
         contractLoader.Setup(l => l.LoadByConcertIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(workflow.Object);
-        workflow.Setup(s => s.FinishAsync(1)).ReturnsAsync(outcome);
+        workflow.Setup(s => s.FinishAsync(1)).Returns(Task.CompletedTask);
 
         var result = await sut.FinishAsync(1);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(outcome, result.Value);
         workflow.Verify(s => s.FinishAsync(1), Times.Once);
     }
 }
