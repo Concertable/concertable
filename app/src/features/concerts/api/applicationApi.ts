@@ -20,6 +20,13 @@ const applicationApi = {
     return data;
   },
 
+  getApplyEligibility: async (opportunityId: number): Promise<boolean> => {
+    const { data } = await api.get<boolean>(
+      `/application/opportunity/${opportunityId}/eligibility`,
+    );
+    return data;
+  },
+
   getApplicationsByOpportunityId: async (
     opportunityId: number,
   ): Promise<Application[]> => {

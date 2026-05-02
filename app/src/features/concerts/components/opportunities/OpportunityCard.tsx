@@ -21,6 +21,7 @@ interface Props {
 export function OpportunityCard({ opportunity }: Readonly<Props>) {
   const [open, setOpen] = useState(false);
   const { apply, isPending, error, canApply } = useApply(opportunity.id);
+  const isArtistManager = user?.role === "ArtistManager";
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
@@ -54,10 +55,11 @@ export function OpportunityCard({ opportunity }: Readonly<Props>) {
                 View Applications
               </Button>
             ) : (
-              canApply &&
+              isArtistManager &&
               (opportunity.actions.checkout != null ? (
                 <Button
                   size="sm"
+                  disabled={!canApply}
                   onClick={() =>
                     navigate({
                       to: "/artist/opportunity/checkout/$opportunityId",
@@ -68,7 +70,11 @@ export function OpportunityCard({ opportunity }: Readonly<Props>) {
                   Continue
                 </Button>
               ) : (
-                <Button size="sm" disabled={isPending} onClick={() => apply()}>
+                <Button
+                  size="sm"
+                  disabled={!canApply || isPending}
+                  onClick={() => apply()}
+                >
                   {isPending ? "Applying..." : "Apply"}
                 </Button>
               ))

@@ -149,8 +149,15 @@ internal class ApplicationService : IApplicationService
         return await mapper.ToDtoAsync(saved);
     }
 
-    public Task<Checkout> ApplyCheckoutAsync(int opportunityId) =>
-        checkoutDispatcher.ApplyCheckoutAsync(opportunityId);
+    public async Task<Checkout> ApplyCheckoutAsync(int opportunityId)
+    {
+        var artistId = await ResolveArtistIdAsync();
+        var result = await applicationValidator.CanApplyAsync(opportunityId, artistId);
+        if (result.IsFailed)
+            throw new BadRequestException(result.Errors);
+
+        return await checkoutDispatcher.ApplyCheckoutAsync(opportunityId);
+    }
 
     public Task<Checkout> AcceptCheckoutAsync(int applicationId) =>
         checkoutDispatcher.AcceptCheckoutAsync(applicationId);

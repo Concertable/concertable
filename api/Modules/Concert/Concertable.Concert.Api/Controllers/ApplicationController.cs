@@ -79,20 +79,16 @@ internal class ApplicationController : ControllerBase
     }
 
     [Authorize(Roles = "ArtistManager")]
-    [HttpGet("can-apply/{opportunityId}")]
-    public async Task<ActionResult<bool>> CanApply(int opportunityId)
+    [HttpGet("opportunity/{opportunityId}/eligibility")]
+    public async Task<ActionResult<bool>> GetApplyEligibility(int opportunityId)
     {
         var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId());
 
         if (artistId is null)
-            return NotFound("Artist not found");
+            return Ok(false);
 
         var result = await applicationValidator.CanApplyAsync(opportunityId, artistId.Value);
-
-        if (result.IsFailed)
-            return BadRequest(result.Errors.SelectMessages());
-
-        return Ok(true);
+        return Ok(result.IsSuccess);
     }
 
     [Authorize(Roles = "VenueManager")]
