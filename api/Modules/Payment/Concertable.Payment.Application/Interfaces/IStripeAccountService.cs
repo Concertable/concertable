@@ -17,7 +17,7 @@ internal interface IStripeAccountService
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
 
-    Task<CheckoutSession> CreateSavedCardSessionAsync(
+    Task<CheckoutSession> CreateSetupSessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default);

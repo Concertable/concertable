@@ -60,4 +60,17 @@ internal class PayerLookup : IPayerLookup
         var manager = await userModule.GetManagerByIdAsync(venue.UserId);
         return new PayeeSummary(venue.Name, manager?.Email);
     }
+
+    public async Task<PayeeSummary?> GetVenueByOpportunityIdAsync(int opportunityId)
+    {
+        var venue = await context.Opportunities
+            .Where(o => o.Id == opportunityId)
+            .Select(o => new { o.Venue.Name, o.Venue.UserId })
+            .FirstOrDefaultAsync();
+
+        if (venue is null) return null;
+
+        var manager = await userModule.GetManagerByIdAsync(venue.UserId);
+        return new PayeeSummary(venue.Name, manager?.Email);
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Concertable.Concert.Infrastructure.Services.Workflow;
+using Concertable.Payment.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -31,7 +32,7 @@ public class DoorSplitConcertWorkflowCompleteTests
             bookingRepository.Object,
             new Mock<IPayerLookup>().Object,
             contractLookup.Object,
-            new Mock<IConcertPaymentFlow>().Object,
+            new Mock<IManagerPaymentModule>().Object,
             NullLogger<DoorSplitConcertWorkflow>.Instance);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);

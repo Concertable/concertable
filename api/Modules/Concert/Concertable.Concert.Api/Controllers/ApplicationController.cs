@@ -107,12 +107,20 @@ internal class ApplicationController : ControllerBase
         return Ok(true);
     }
 
+    [Authorize(Roles = "ArtistManager")]
+    [HttpPost("opportunity/{opportunityId}/checkout")]
+    public async Task<IActionResult> ApplyCheckout(int opportunityId)
+    {
+        var checkout = await applicationService.ApplyCheckoutAsync(opportunityId);
+        return Ok(checkout);
+    }
+
     [Authorize(Roles = "VenueManager")]
     [HttpPost("{applicationId}/checkout")]
-    public async Task<IActionResult> Checkout(int applicationId)
+    public async Task<IActionResult> AcceptCheckout(int applicationId)
     {
-        var checkout = await applicationService.CheckoutAsync(applicationId);
-        return checkout is null ? NoContent() : Ok(checkout);
+        var checkout = await applicationService.AcceptCheckoutAsync(applicationId);
+        return Ok(checkout);
     }
 
     [Authorize(Roles = "VenueManager")]

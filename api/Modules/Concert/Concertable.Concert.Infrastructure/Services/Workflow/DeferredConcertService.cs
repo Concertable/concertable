@@ -1,6 +1,5 @@
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -9,20 +8,20 @@ internal class DeferredConcertService : IDeferredConcertService
 {
     private readonly IApplicationValidator applicationValidator;
     private readonly IBookingService bookingService;
-    private readonly IConcertPaymentFlow paymentFlow;
+    private readonly IManagerPaymentModule managerPaymentModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly ILogger<DeferredConcertService> logger;
 
     public DeferredConcertService(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
-        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow,
+        IManagerPaymentModule managerPaymentModule,
         IConcertDraftService concertDraftService,
         ILogger<DeferredConcertService> logger)
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
-        this.paymentFlow = paymentFlow;
+        this.managerPaymentModule = managerPaymentModule;
         this.concertDraftService = concertDraftService;
         this.logger = logger;
     }
@@ -60,7 +59,7 @@ internal class DeferredConcertService : IDeferredConcertService
             "Settling concert {ConcertId} (booking {BookingId}): paying {Amount} {Currency} from {PayerId} to {PayeeId}",
             concertId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, deferred.PaymentMethodId, settlementMetadata);
+        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, settlementMetadata, deferred.PaymentMethodId, PaymentSession.OffSession);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
     }

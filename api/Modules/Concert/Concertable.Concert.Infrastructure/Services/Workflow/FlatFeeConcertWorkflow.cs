@@ -3,7 +3,6 @@ using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
@@ -12,24 +11,24 @@ internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
-    private readonly IConcertPaymentFlow paymentFlow;
+    private readonly IManagerPaymentModule managerPaymentModule;
 
     public FlatFeeConcertWorkflow(
         IUpfrontConcertService upfrontConcertService,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
-        [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow)
+        IManagerPaymentModule managerPaymentModule)
     {
         this.upfrontConcertService = upfrontConcertService;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
-        this.paymentFlow = paymentFlow;
+        this.managerPaymentModule = managerPaymentModule;
     }
 
     public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId) =>
         Task.FromResult<ApplicationEntity>(StandardApplication.Create(artistId, opportunityId));
 
-    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
+    public async Task<Checkout> CheckoutAsync(int applicationId)
     {
         var artist = await payerLookup.GetArtistAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
@@ -45,8 +44,8 @@ internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
             ["currency"] = "gbp"
         };
 
-        var session = await paymentFlow.CreateSessionAsync(venueManagerId, metadata);
-        return new AcceptCheckout(PaymentTiming.Immediate, new FlatPayment(contract.Fee), artist, session);
+        var session = await managerPaymentModule.CreatePaymentSessionAsync(venueManagerId, metadata);
+        return new Checkout(PaymentTiming.Immediate, new FlatPayment(contract.Fee), artist, session);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
@@ -56,7 +55,7 @@ internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
 
         var contract = (FlatFeeContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, venueManagerId, artistManagerId, contract.Fee, paymentMethodId);
+        return await upfrontConcertService.InitiateAsync(applicationId, venueManagerId, artistManagerId, contract.Fee, paymentMethodId, PaymentSession.OnSession);
     }
 
     public Task SettleAsync(int bookingId) =>

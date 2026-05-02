@@ -18,7 +18,7 @@ internal sealed class ApplicationResponseMapper : IApplicationResponseMapper
 
         var actions = new ApplicationActions(
             Accept: new ActionLink($"/api/Application/{dto.Id}/accept", "POST"),
-            Checkout: registry.Has<ICheckoutable>(ct)
+            Checkout: registry.Has<IAcceptCheckout>(ct)
                 ? new ActionLink($"/api/Application/{dto.Id}/checkout", "POST")
                 : null);
 

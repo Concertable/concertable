@@ -9,4 +9,5 @@ internal interface IPayerLookup
     Task<(Guid VenueManagerId, Guid ArtistManagerId)?> GetManagerIdsAsync(int applicationId);
     Task<PayeeSummary?> GetArtistAsync(int applicationId);
     Task<PayeeSummary?> GetVenueAsync(int applicationId);
+    Task<PayeeSummary?> GetVenueByOpportunityIdAsync(int opportunityId);
 }

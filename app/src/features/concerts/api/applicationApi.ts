@@ -1,10 +1,21 @@
 import api from "@/lib/axios";
-import type { AcceptCheckout, AcceptOutcome, Application } from "../types";
+import type { AcceptOutcome, Application, Checkout } from "../types";
 
 const applicationApi = {
-  applyToOpportunity: async (opportunityId: number): Promise<Application> => {
+  applyToOpportunity: async (
+    opportunityId: number,
+    paymentMethodId?: string,
+  ): Promise<Application> => {
     const { data } = await api.post<Application>(
       `/application/${opportunityId}`,
+      paymentMethodId ? { paymentMethodId } : undefined,
+    );
+    return data;
+  },
+
+  applyCheckout: async (opportunityId: number): Promise<Checkout> => {
+    const { data } = await api.post<Checkout>(
+      `/application/opportunity/${opportunityId}/checkout`,
     );
     return data;
   },
@@ -43,11 +54,11 @@ const applicationApi = {
     return data;
   },
 
-  checkout: async (applicationId: number): Promise<AcceptCheckout | null> => {
-    const response = await api.post<AcceptCheckout>(
+  acceptCheckout: async (applicationId: number): Promise<Checkout> => {
+    const { data } = await api.post<Checkout>(
       `/application/${applicationId}/checkout`,
     );
-    return response.status === 204 ? null : response.data;
+    return data;
   },
 };
 

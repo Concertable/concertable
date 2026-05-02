@@ -59,8 +59,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplicationService, ApplicationService>();
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
-        services.AddKeyedScoped<IConcertPaymentFlow, OnSessionConcertPaymentFlow>(PaymentSession.OnSession);
-        services.AddKeyedScoped<IConcertPaymentFlow, OffSessionConcertPaymentFlow>(PaymentSession.OffSession);
         services.AddScoped<IContractLoader, ContractLoader>();
         services.AddScoped<IPayerLookup, PayerLookup>();
         services.AddScoped<ITicketService, TicketService>();
@@ -82,6 +80,7 @@ public static class ServiceCollectionExtensions
         // Dispatchers
         services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
         services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
+        services.AddScoped<ICheckoutDispatcher, CheckoutDispatcher>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();

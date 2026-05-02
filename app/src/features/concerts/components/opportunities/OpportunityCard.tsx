@@ -54,11 +54,24 @@ export function OpportunityCard({ opportunity }: Readonly<Props>) {
                 View Applications
               </Button>
             ) : (
-              canApply && (
+              canApply &&
+              (opportunity.actions.checkout != null ? (
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    navigate({
+                      to: "/artist/opportunity/checkout/$opportunityId",
+                      params: { opportunityId: opportunity.id },
+                    })
+                  }
+                >
+                  Continue
+                </Button>
+              ) : (
                 <Button size="sm" disabled={isPending} onClick={() => apply()}>
                   {isPending ? "Applying..." : "Apply"}
                 </Button>
-              )
+              ))
             )}
           </div>
         </div>

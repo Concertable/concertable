@@ -13,14 +13,12 @@ public interface IManagerPaymentModule
         PaymentSession session,
         CancellationToken ct = default);
 
-    Task<bool> HasStripeCustomerAsync(Guid userId);
-
     Task<CheckoutSession> CreatePaymentSessionAsync(
         Guid payerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
 
-    Task<CheckoutSession> CreateSavedCardSessionAsync(
+    Task<CheckoutSession> CreateSetupSessionAsync(
         Guid payerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default);

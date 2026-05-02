@@ -146,7 +146,7 @@ internal class StripeAccountService : IStripeAccountService
         return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
     }
 
-    public async Task<CheckoutSession> CreateSavedCardSessionAsync(
+    public async Task<CheckoutSession> CreateSetupSessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default)

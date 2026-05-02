@@ -4,7 +4,7 @@ using Concertable.Payment.Contracts;
 
 namespace Concertable.Concert.Application.Responses;
 
-internal record AcceptCheckout(PaymentTiming Timing, IPaymentAmount Amount, PayeeSummary Payee, CheckoutSession Session);
+internal record Checkout(PaymentTiming Timing, IPaymentAmount Amount, PayeeSummary Payee, CheckoutSession Session);
 
 internal record PayeeSummary(string Name, string? Email);
 

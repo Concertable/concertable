@@ -21,6 +21,7 @@ internal class ApplicationService : IApplicationService
     private readonly IUserModule userModule;
     private readonly IApplyDispatcher applyDispatcher;
     private readonly IAcceptanceDispatcher acceptanceDispatcher;
+    private readonly ICheckoutDispatcher checkoutDispatcher;
     private readonly IApplicationMapper mapper;
 
     public ApplicationService(
@@ -35,6 +36,7 @@ internal class ApplicationService : IApplicationService
         IUserModule userModule,
         IApplyDispatcher applyDispatcher,
         IAcceptanceDispatcher acceptanceDispatcher,
+        ICheckoutDispatcher checkoutDispatcher,
         IApplicationMapper mapper)
     {
         this.applicationRepository = applicationRepository;
@@ -48,6 +50,7 @@ internal class ApplicationService : IApplicationService
         this.userModule = userModule;
         this.applyDispatcher = applyDispatcher;
         this.acceptanceDispatcher = acceptanceDispatcher;
+        this.checkoutDispatcher = checkoutDispatcher;
         this.mapper = mapper;
     }
 
@@ -144,8 +147,11 @@ internal class ApplicationService : IApplicationService
         return await mapper.ToDtoAsync(application);
     }
 
-    public Task<AcceptCheckout?> CheckoutAsync(int applicationId) =>
-        acceptanceDispatcher.CheckoutAsync(applicationId);
+    public Task<Checkout> ApplyCheckoutAsync(int opportunityId) =>
+        checkoutDispatcher.ApplyCheckoutAsync(opportunityId);
+
+    public Task<Checkout> AcceptCheckoutAsync(int applicationId) =>
+        checkoutDispatcher.AcceptCheckoutAsync(applicationId);
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId)
     {

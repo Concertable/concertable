@@ -1,6 +1,5 @@
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -9,25 +8,25 @@ internal class UpfrontConcertService : IUpfrontConcertService
 {
     private readonly IApplicationValidator applicationValidator;
     private readonly IBookingService bookingService;
-    private readonly IConcertPaymentFlow paymentFlow;
+    private readonly IManagerPaymentModule managerPaymentModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly ILogger<UpfrontConcertService> logger;
 
     public UpfrontConcertService(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
-        [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow,
+        IManagerPaymentModule managerPaymentModule,
         IConcertDraftService concertDraftService,
         ILogger<UpfrontConcertService> logger)
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
-        this.paymentFlow = paymentFlow;
+        this.managerPaymentModule = managerPaymentModule;
         this.concertDraftService = concertDraftService;
         this.logger = logger;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, Guid payeeId, decimal amount, string paymentMethodId)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, Guid payeeId, decimal amount, string paymentMethodId, PaymentSession session)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
         if (result.IsFailed)
@@ -47,7 +46,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
             "Accepting application {ApplicationId} (booking {BookingId}): charging {Amount} {Currency} from {PayerId} to {PayeeId}",
             applicationId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, paymentMethodId, settlementMetadata);
+        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, settlementMetadata, paymentMethodId, session);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
 

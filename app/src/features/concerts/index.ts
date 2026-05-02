@@ -15,6 +15,7 @@ export { UpcomingTicketsPage } from "./pages/UpcomingTicketsPage";
 export { TicketHistoryPage } from "./pages/TicketHistoryPage";
 export { ConcertCheckoutPage } from "./pages/ConcertCheckoutPage";
 export { ApplicationCheckoutPage } from "./pages/ApplicationCheckoutPage";
+export { ApplyCheckoutPage } from "./pages/ApplyCheckoutPage";
 export { useConcertQuery } from "./hooks/useConcertQuery";
 export { useConcert } from "./hooks/useConcert";
 export { useMyConcert } from "./hooks/useMyConcert";
@@ -22,7 +23,8 @@ export { useOpportunitiesByVenueQuery } from "./hooks/useOpportunityQuery";
 export {
   useApplicationQuery,
   useApplicationsByOpportunityQuery,
-  useCheckoutQuery,
+  useAcceptCheckoutQuery,
+  useApplyCheckoutQuery,
   useAcceptApplicationMutation,
 } from "./hooks/useApplicationQuery";
 export { useApply } from "./hooks/useApply";
@@ -51,5 +53,5 @@ export type {
   DoorSharePayment,
   GuaranteedDoorPayment,
   PayeeSummary,
-  AcceptCheckout,
+  Checkout,
 } from "./types";

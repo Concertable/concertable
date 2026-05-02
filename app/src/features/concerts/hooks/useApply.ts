@@ -8,12 +8,15 @@ export function useApply(opportunityId: number) {
   const canApply = role === "ArtistManager";
 
   const {
-    mutate: apply,
+    mutate: applyMutate,
     isPending,
     error,
   } = useMutation({
-    mutationFn: () => applicationApi.applyToOpportunity(opportunityId),
+    mutationFn: (paymentMethodId?: string) =>
+      applicationApi.applyToOpportunity(opportunityId, paymentMethodId),
   });
+
+  const apply = (paymentMethodId?: string) => applyMutate(paymentMethodId);
 
   return { apply, isPending, error, canApply };
 }

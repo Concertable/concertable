@@ -3,7 +3,6 @@ using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -15,7 +14,7 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
     private readonly IBookingRepository bookingRepository;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
-    private readonly IConcertPaymentFlow paymentFlow;
+    private readonly IManagerPaymentModule managerPaymentModule;
     private readonly ILogger<VersusConcertWorkflow> logger;
 
     public VersusConcertWorkflow(
@@ -24,7 +23,7 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
         IBookingRepository bookingRepository,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
-        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow,
+        IManagerPaymentModule managerPaymentModule,
         ILogger<VersusConcertWorkflow> logger)
     {
         this.deferredConcertService = deferredConcertService;
@@ -32,14 +31,14 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
         this.bookingRepository = bookingRepository;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
-        this.paymentFlow = paymentFlow;
+        this.managerPaymentModule = managerPaymentModule;
         this.logger = logger;
     }
 
     public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId) =>
         Task.FromResult<ApplicationEntity>(StandardApplication.Create(artistId, opportunityId));
 
-    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
+    public async Task<Checkout> CheckoutAsync(int applicationId)
     {
         var artist = await payerLookup.GetArtistAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
@@ -53,8 +52,8 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
             ["applicationId"] = applicationId.ToString()
         };
 
-        var session = await paymentFlow.CreateSessionAsync(venueManagerId, metadata);
-        return new AcceptCheckout(
+        var session = await managerPaymentModule.CreateSetupSessionAsync(venueManagerId, metadata);
+        return new Checkout(
             PaymentTiming.Deferred,
             new GuaranteedDoorPayment(contract.Guarantee, contract.ArtistDoorPercent),
             artist,

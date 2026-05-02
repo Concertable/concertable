@@ -38,6 +38,9 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         var payer = await userModule.GetManagerByIdAsync(payerId)
             ?? throw new NotFoundException($"Payer manager not found for userId {payerId}");
 
+        if (session == PaymentSession.OffSession && !await HasStripeCustomerAsync(payerId, ct))
+            throw new BadRequestException("Stripe customer setup is required for off-session payments.");
+
         return await paymentManager.ChargeAsync(new ChargeRequest
         {
             PayerId = payerId,
@@ -50,9 +53,9 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         }, ct);
     }
 
-    public async Task<bool> HasStripeCustomerAsync(Guid userId)
+    private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)
     {
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId);
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
         return account?.StripeCustomerId is not null;
     }
 
@@ -65,13 +68,13 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return await stripeAccountService.CreatePaymentSessionAsync(stripeCustomerId, metadata, ct);
     }
 
-    public async Task<CheckoutSession> CreateSavedCardSessionAsync(
+    public async Task<CheckoutSession> CreateSetupSessionAsync(
         Guid payerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default)
     {
         var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
-        return await stripeAccountService.CreateSavedCardSessionAsync(stripeCustomerId, metadata, ct);
+        return await stripeAccountService.CreateSetupSessionAsync(stripeCustomerId, metadata, ct);
     }
 
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
