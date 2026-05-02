@@ -4,7 +4,7 @@ using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class VenueHireConcertWorkflow : IConcertWorkflow, IApplyWithPaymentMethod, IAcceptByConfirmation
+internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
 {
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IPayerLookup payerLookup;
