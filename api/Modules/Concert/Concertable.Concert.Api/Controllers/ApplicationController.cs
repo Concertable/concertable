@@ -49,6 +49,14 @@ internal class ApplicationController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = application.Id }, application.ToResponse());
     }
 
+    [Authorize(Roles = "ArtistManager")]
+    [HttpPost("{opportunityId}/with-payment-method")]
+    public async Task<IActionResult> ApplyWithPaymentMethod(int opportunityId, [FromBody] ApplyWithPaymentMethodRequest request)
+    {
+        var application = await applicationService.ApplyAsync(opportunityId, request.PaymentMethodId);
+        return CreatedAtAction(nameof(GetById), new { id = application.Id }, application.ToResponse());
+    }
+
     [HttpGet("artist/pending")]
     [Authorize(Roles = "ArtistManager")]
     public async Task<ActionResult<IEnumerable<ApplicationResponse>>> GetPendingForArtist()
@@ -110,12 +118,18 @@ internal class ApplicationController : ControllerBase
     }
 
     [Authorize(Roles = "VenueManager")]
-    [HttpPost("accept/{applicationId}")]
-    public async Task<IActionResult> Accept(int applicationId, [FromBody] AcceptApplicationRequest? request = null)
+    [HttpPost("{applicationId}/accept-with-payment")]
+    public async Task<IActionResult> AcceptWithPayment(int applicationId, [FromBody] AcceptWithPaymentMethodRequest request)
     {
-        var outcome = request?.PaymentMethodId is { } pmId
-            ? await applicationService.AcceptAsync(applicationId, pmId)
-            : await applicationService.AcceptAsync(applicationId);
+        var outcome = await applicationService.AcceptAsync(applicationId, request.PaymentMethodId);
+        return Ok(outcome);
+    }
+
+    [Authorize(Roles = "VenueManager")]
+    [HttpPost("{applicationId}/accept-confirmation")]
+    public async Task<IActionResult> AcceptByConfirmation(int applicationId)
+    {
+        var outcome = await applicationService.AcceptAsync(applicationId);
         return Ok(outcome);
     }
 
