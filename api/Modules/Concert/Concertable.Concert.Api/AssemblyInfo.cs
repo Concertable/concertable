@@ -1,4 +1,4 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Concertable.Concert.IntegrationTests")]
-[assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
+[assembly: InternalsVisibleTo("Concertable.E2ETests.Api")]

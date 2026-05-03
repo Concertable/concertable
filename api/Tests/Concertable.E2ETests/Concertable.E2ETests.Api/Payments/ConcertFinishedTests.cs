@@ -6,7 +6,7 @@ using Concertable.Tests.Common;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Concertable.Web.E2ETests.Payments;
+namespace Concertable.E2ETests.Api.Payments;
 
 [Collection("E2E")]
 

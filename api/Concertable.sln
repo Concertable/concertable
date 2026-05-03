@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BA474DCE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Workers.UnitTests", "Tests\Concertable.Workers.UnitTests\Concertable.Workers.UnitTests.csproj", "{B13BFEC6-3036-41CA-AA71-4C52FE645B69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Web.E2ETests", "Tests\Concertable.Web.E2ETests\Concertable.Web.E2ETests.csproj", "{E2FF7921-0449-4236-BB34-92142522B69E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.E2ETests.Api", "Tests\Concertable.E2ETests\Concertable.E2ETests.Api\Concertable.E2ETests.Api.csproj", "{E2FF7921-0449-4236-BB34-92142522B69E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Tests.Common", "Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj", "{83ED7AF0-B302-4C34-ABD0-E6435D3BC7C0}"
 EndProject
@@ -189,7 +189,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Auth", "Concert
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.E2ETests.Common", "Tests\Concertable.E2ETests.Common\Concertable.E2ETests.Common.csproj", "{F6F4B798-FB2D-4325-84AF-E17300F9F7B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.E2ETests.Common", "Tests\Concertable.E2ETests\Concertable.E2ETests.Common\Concertable.E2ETests.Common.csproj", "{F6F4B798-FB2D-4325-84AF-E17300F9F7B6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{CA253913-39DE-BFD0-C9A3-4B7EC6FBDF17}"
 EndProject

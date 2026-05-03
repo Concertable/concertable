@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Concertable.Concert.IntegrationTests")]
 [assembly: InternalsVisibleTo("Concertable.Concert.UnitTests")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]
-[assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
+[assembly: InternalsVisibleTo("Concertable.E2ETests.Api")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 // TEMPORARY: legacy Concertable.Infrastructure still hosts Payment + Ticket services that inject Concert.Application
 // internals (IConcertRepository, IOpportunityRepository, IContractLoader, ITicketPaymentStrategy). Retires when
