@@ -3,6 +3,7 @@ using Aspire.Hosting.Testing;
 using Concertable.Seeding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Stripe;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
@@ -23,18 +24,20 @@ public class AppFixture : IAsyncLifetime
 
     public string ApiBaseUrl { get; }
     public string AuthBaseUrl { get; }
+    public string SpaBaseUrl { get; }
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
     public SeedDataResponse SeedData { get; private set; } = null!;
     public SqlFixture Sql { get; private set; } = null!;
 
-    public AppFixture(IMessageSink messageSink)
-    {
-        loggerFactory = LoggerFactory.Create(b => b
-            .AddProvider(new MessageSinkLoggerProvider(messageSink))
-            .SetMinimumLevel(LogLevel.Debug));
+    public AppFixture() : this(BuildConsoleLoggerFactory()) { }
 
+    public AppFixture(IMessageSink messageSink) : this(BuildMessageSinkLoggerFactory(messageSink)) { }
+
+    private AppFixture(ILoggerFactory loggerFactory)
+    {
+        this.loggerFactory = loggerFactory;
         logger = loggerFactory.CreateLogger<AppFixture>();
         Polling = new PollingService(loggerFactory.CreateLogger<PollingService>());
 
@@ -46,6 +49,8 @@ public class AppFixture : IAsyncLifetime
             ?? throw new InvalidOperationException("Endpoints:Api is not configured in appsettings.E2E.json.");
         AuthBaseUrl = configuration["Endpoints:Auth"]
             ?? throw new InvalidOperationException("Endpoints:Auth is not configured in appsettings.E2E.json.");
+        SpaBaseUrl = configuration["Endpoints:Spa"]
+            ?? throw new InvalidOperationException("Endpoints:Spa is not configured in appsettings.E2E.json.");
 
         tokenMinter = new TestTokenMinter(configuration, new JwtSecurityTokenHandler());
     }
@@ -115,4 +120,14 @@ public class AppFixture : IAsyncLifetime
 
         logger.LogInformation("App is healthy");
     }
+
+    private static ILoggerFactory BuildConsoleLoggerFactory() =>
+        LoggerFactory.Create(b => b
+            .AddSimpleConsole(o => o.SingleLine = true)
+            .SetMinimumLevel(LogLevel.Debug));
+
+    private static ILoggerFactory BuildMessageSinkLoggerFactory(IMessageSink messageSink) =>
+        LoggerFactory.Create(b => b
+            .AddProvider(new MessageSinkLoggerProvider(messageSink))
+            .SetMinimumLevel(LogLevel.Debug));
 }

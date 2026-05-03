@@ -9,10 +9,9 @@ public class UiFixture : IAsyncLifetime
     public AppFixture App { get; }
     public IBrowser Browser { get; private set; } = null!;
 
-    public UiFixture(IMessageSink messageSink)
-    {
-        App = new AppFixture(messageSink);
-    }
+    public UiFixture() => App = new AppFixture();
+
+    public UiFixture(IMessageSink messageSink) => App = new AppFixture(messageSink);
 
     public async Task InitializeAsync()
     {
