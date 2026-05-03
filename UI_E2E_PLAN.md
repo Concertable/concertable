@@ -83,7 +83,7 @@ api/Tests/
         │   ├── AspireHooks.cs                         ([BeforeTestRun] boot AppFixture; [BeforeScenario] reset + reseed)
         │   └── LoginCaptureHooks.cs                   ([BeforeTestRun] real OIDC login per role → cache storageState)
         ├── Support/
-        │   ├── UiAppFixture.cs                        (composes AppFixture + Browser/Playwright)
+        │   ├── UiFixture.cs                        (composes AppFixture + Browser/Playwright)
         │   ├── WorkflowState.cs                       (per-scenario typed state object — avoids ScenarioContext stringly-typed keys)
         │   ├── EnumTransformations.cs                 ([StepArgumentTransformation] for ContractType, BookingSubtype, etc)
         │   ├── PageObjects/
@@ -274,18 +274,18 @@ What was originally one step grew (deliberately) to also fix the pre-existing re
 - Both Common + Api moved into nested parent `Tests/Concertable.E2ETests/` — mirrors `Modules/<Domain>/` cohesion pattern (Common is private infra, Api+Ui never used independently). Adjusted relative paths in csprojs (`..\..\` → `..\..\..\` for cross-tree refs).
 - 12/12 still green
 
-### Step 4 — Create `Concertable.E2ETests.Ui` Reqnroll project + `UiAppFixture` composition
+### Step 4 — Create `Concertable.E2ETests.Ui` Reqnroll project + `UiFixture` composition
 
 **Composition pattern** (decided pre-Step 4):
 
 ```csharp
-public class UiAppFixture : IAsyncLifetime
+public class UiFixture : IAsyncLifetime
 {
     public AppFixture App { get; }
     public IBrowser Browser { get; private set; } = null!;
     private IPlaywright playwright = null!;
 
-    public UiAppFixture(IMessageSink messageSink)
+    public UiFixture(IMessageSink messageSink)
     {
         App = new AppFixture(messageSink);  // composes existing fixture
     }
@@ -307,14 +307,14 @@ public class UiAppFixture : IAsyncLifetime
 }
 ```
 
-`UiAppFixture` **composes** `AppFixture` rather than inheriting — keeps API-only fixture concerns separate from UI-only Playwright concerns. Tests reach API stuff via `fixture.App.Sql.Connection` etc; UI stuff via `fixture.Browser`. Clean cross-cutting access, no diamond inheritance, no leaky abstractions.
+`UiFixture` **composes** `AppFixture` rather than inheriting — keeps API-only fixture concerns separate from UI-only Playwright concerns. Tests reach API stuff via `fixture.App.Sql.Connection` etc; UI stuff via `fixture.Browser`. Clean cross-cutting access, no diamond inheritance, no leaky abstractions.
 
 **Project setup:**
 - New test project at `api/Tests/Concertable.E2ETests.Ui/`; refs Common
 - Packages: `Reqnroll.xUnit`, `Reqnroll.Microsoft.Extensions.DependencyInjection`, `Microsoft.Playwright`, `Microsoft.Playwright.Xunit`
 - `reqnroll.json` config
 - Skeleton folders: `Hooks/`, `Support/PageObjects/`, `Support/Helpers/`, `Steps/`, `Features/`
-- `UiAppFixture` (composition above) + `WorkflowState` + `EnumTransformations`
+- `UiFixture` (composition above) + `WorkflowState` + `EnumTransformations`
 - Hooks: `AspireHooks` (BeforeTestRun init / AfterTestRun dispose), `PlaywrightHooks` (BeforeScenario context creation from cached storageState by `@VenueManager`/`@Artist`/`@Customer` tag), `LoginCaptureHooks` (BeforeTestRun real OIDC login per role → cache)
 - One `Login.feature` smoke scenario — drives real OIDC login, asserts post-login URL
 - DoD: `dotnet test --filter "Category=Ui"` runs Login scenario green
@@ -371,4 +371,4 @@ For DoorSplit/Versus:
 
 ## Next Step
 
-Step 4: Reqnroll project scaffolding at `Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/` + `UiAppFixture` composition + `Login.feature` smoke. Steps 1–3 all landed.
+Step 4: Reqnroll project scaffolding at `Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/` + `UiFixture` composition + `Login.feature` smoke. Steps 1–3 all landed.
