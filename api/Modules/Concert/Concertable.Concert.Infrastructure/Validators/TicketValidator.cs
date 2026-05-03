@@ -1,3 +1,4 @@
+using Concertable.Shared.Exceptions;
 using FluentResults;
 
 namespace Concertable.Concert.Infrastructure.Validators;
@@ -13,13 +14,8 @@ internal class TicketValidator : ITicketValidator
         this.timeProvider = timeProvider;
     }
 
-    public async Task<Result> CanPurchaseTicketAsync(int concertId, int? quantity = null)
+    public Result CanBePurchased(ConcertEntity concert)
     {
-        var concert = await concertRepository.GetDtoByIdAsync(concertId);
-
-        if (concert is null)
-            return Result.Fail("Concert does not exist.");
-
         var errors = new List<string>();
 
         if (concert.DatePosted is null)
@@ -31,9 +27,25 @@ internal class TicketValidator : ITicketValidator
         if (concert.AvailableTickets <= 0)
             errors.Add("No Tickets Available for Concert");
 
-        if (quantity.HasValue && concert.AvailableTickets - quantity.Value < 0)
-            errors.Add($"Not enough tickets available. Only {concert.AvailableTickets} tickets are available");
-
         return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+    }
+
+    public async Task<Result> CanBePurchasedAsync(int concertId)
+    {
+        var concert = await concertRepository.GetByIdAsync(concertId)
+            ?? throw new NotFoundException("Concert not found");
+
+        return CanBePurchased(concert);
+    }
+
+    public Result CanPurchaseTickets(ConcertEntity concert, int quantity)
+    {
+        var baseResult = CanBePurchased(concert);
+        if (baseResult.IsFailed)
+            return baseResult;
+
+        return concert.AvailableTickets - quantity < 0
+            ? Result.Fail($"Not enough tickets available. Only {concert.AvailableTickets} tickets are available")
+            : Result.Ok();
     }
 }

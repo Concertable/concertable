@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 
 namespace Concertable.Concert.Infrastructure.Validators;
 
@@ -24,17 +24,34 @@ internal class ApplicationValidator : IApplicationValidator
         this.timeProvider = timeProvider;
     }
 
-    public async Task<Result> CanAcceptAsync(int applicationId)
+    public async Task<Result> CanApplyAsync(OpportunityEntity opportunity, int artistId)
     {
-        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId);
-        var application = await applicationRepository.GetByIdAsync(applicationId);
+        var errors = new List<string>();
+
+        if (opportunity.Period.Start < timeProvider.GetUtcNow())
+            errors.Add("This concert opportunity has already passed");
+
+        if (await concertRepository.OpportunityHasConcertAsync(opportunity.Id))
+            errors.Add("This concert opportunity has already been booked for a concert");
+
+        if (await concertRepository.ArtistHasConcertOnDateAsync(artistId, opportunity.Period.Start))
+            errors.Add("You already have a concert on this day");
+
+        return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+    }
+
+    public async Task<Result> CanApplyAsync(int opportunityId, int artistId)
+    {
+        var opportunity = await opportunityRepository.GetByIdAsync(opportunityId);
 
         if (opportunity is null)
             return Result.Fail("Concert opportunity does not exist");
 
-        if (application is null)
-            return Result.Fail("Concert application does not exist");
+        return await CanApplyAsync(opportunity, artistId);
+    }
 
+    public async Task<Result> CanAcceptAsync(OpportunityEntity opportunity, ApplicationEntity application)
+    {
         var errors = new List<string>();
 
         if (opportunity.Venue.UserId != currentUser.GetId())
@@ -55,24 +72,17 @@ internal class ApplicationValidator : IApplicationValidator
         return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
     }
 
-    public async Task<Result> CanApplyAsync(int opportunityId, int artistId)
+    public async Task<Result> CanAcceptAsync(int applicationId)
     {
-        var opportunity = await opportunityRepository.GetByIdAsync(opportunityId);
+        var opportunity = await opportunityRepository.GetByApplicationIdAsync(applicationId);
+        var application = await applicationRepository.GetByIdAsync(applicationId);
 
         if (opportunity is null)
             return Result.Fail("Concert opportunity does not exist");
 
-        var errors = new List<string>();
+        if (application is null)
+            return Result.Fail("Concert application does not exist");
 
-        if (opportunity.Period.Start < timeProvider.GetUtcNow())
-            errors.Add("This concert opportunity has already passed");
-
-        if (await concertRepository.OpportunityHasConcertAsync(opportunityId))
-            errors.Add("This concert opportunity has already been booked for a concert");
-
-        if (await concertRepository.ArtistHasConcertOnDateAsync(artistId, opportunity.Period.Start))
-            errors.Add("You already have a concert on this day");
-
-        return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+        return await CanAcceptAsync(opportunity, application);
     }
 }

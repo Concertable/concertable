@@ -80,27 +80,31 @@ internal class ApplicationController : ControllerBase
 
     [Authorize(Roles = "ArtistManager")]
     [HttpGet("opportunity/{opportunityId}/eligibility")]
-    public async Task<ActionResult<bool>> GetApplyEligibility(int opportunityId)
+    public async Task<IActionResult> CanApply(int opportunityId)
     {
         var artistId = await artistModule.GetIdByUserIdAsync(currentUser.GetId());
 
         if (artistId is null)
-            return Ok(false);
+            return BadRequest("You must create an Artist account before you apply for a concert opportunity");
 
         var result = await applicationValidator.CanApplyAsync(opportunityId, artistId.Value);
-        return Ok(result.IsSuccess);
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors.SelectMessages());
+
+        return NoContent();
     }
 
     [Authorize(Roles = "VenueManager")]
     [HttpGet("can-accept/{applicationId}")]
-    public async Task<ActionResult<bool>> CanAcceptApplication(int applicationId)
+    public async Task<IActionResult> CanAcceptApplication(int applicationId)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
         if (result.IsFailed)
             return BadRequest(result.Errors.SelectMessages());
 
-        return Ok(true);
+        return NoContent();
     }
 
     [Authorize(Roles = "ArtistManager")]

@@ -71,7 +71,7 @@ internal class ConcertService : IConcertService
         var concertEntity = await concertRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
-        var result = await concertValidator.CanUpdateAsync(concertEntity, request.TotalTickets);
+        var result = concertValidator.CanUpdate(concertEntity, request.TotalTickets);
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
@@ -95,7 +95,7 @@ internal class ConcertService : IConcertService
         var concertEntity = await concertRepository.GetFullByIdAsync(id)
             ?? throw new NotFoundException("Concert not found");
 
-        var result = await concertValidator.CanPostAsync(concertEntity);
+        var result = concertValidator.CanPost(concertEntity);
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 

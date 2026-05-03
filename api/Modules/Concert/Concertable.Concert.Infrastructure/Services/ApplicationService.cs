@@ -17,6 +17,7 @@ internal class ApplicationService : IApplicationService
     private readonly IMessagingModule messagingModule;
     private readonly IEmailService emailService;
     private readonly IOpportunityService opportunityService;
+    private readonly IOpportunityRepository opportunityRepository;
     private readonly IArtistModule artistModule;
     private readonly IUserModule userModule;
     private readonly IApplyDispatcher applyDispatcher;
@@ -32,6 +33,7 @@ internal class ApplicationService : IApplicationService
         IMessagingModule messagingModule,
         IEmailService emailService,
         IOpportunityService opportunityService,
+        IOpportunityRepository opportunityRepository,
         IArtistModule artistModule,
         IUserModule userModule,
         IApplyDispatcher applyDispatcher,
@@ -46,6 +48,7 @@ internal class ApplicationService : IApplicationService
         this.messagingModule = messagingModule;
         this.emailService = emailService;
         this.opportunityService = opportunityService;
+        this.opportunityRepository = opportunityRepository;
         this.artistModule = artistModule;
         this.userModule = userModule;
         this.applyDispatcher = applyDispatcher;
@@ -108,19 +111,20 @@ internal class ApplicationService : IApplicationService
 
     private async Task<ApplicationDto> ApplyAsync(ApplicationEntity application)
     {
-        var opportunityOwnerId = await opportunityService.GetOwnerByIdAsync(application.OpportunityId)
+        var opportunityOwnerId = await opportunityRepository.GetOwnerByIdAsync(application.OpportunityId)
             ?? throw new NotFoundException("Concert Opportunity owner not found");
         var opportunityOwner = await userModule.GetManagerByIdAsync(opportunityOwnerId)
             ?? throw new NotFoundException("Venue manager not found for opportunity owner");
-        var opportunity = await opportunityService.GetByIdAsync(application.OpportunityId);
+        var opportunity = await opportunityRepository.GetByIdAsync(application.OpportunityId)
+            ?? throw new NotFoundException("Concert Opportunity not found");
 
-        var result = await applicationValidator.CanApplyAsync(application.OpportunityId, application.ArtistId);
+        var result = await applicationValidator.CanApplyAsync(opportunity, application.ArtistId);
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
         var artistGenreIds = await artistModule.GetGenreIdsAsync(application.ArtistId);
-        var opportunityGenreIds = opportunity.Genres.Select(g => g.Id).ToHashSet();
+        var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId).ToHashSet();
 
         if (opportunityGenreIds.Count > 0 && !artistGenreIds.Overlaps(opportunityGenreIds))
             throw new BadRequestException("You need to have the same genres as the Concert Opportunity to be able to apply to it");

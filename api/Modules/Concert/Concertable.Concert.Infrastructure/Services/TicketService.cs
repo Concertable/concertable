@@ -54,12 +54,12 @@ internal class TicketService : ITicketService
         if (currentUser.GetRole() != Role.Customer)
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var validationResult = await ticketValidator.CanPurchaseTicketAsync(purchaseParams.ConcertId, purchaseParams.Quantity);
-        if (validationResult.IsFailed)
-            throw new BadRequestException(validationResult.Errors);
-
         var concert = await concertRepository.GetFullByIdAsync(purchaseParams.ConcertId)
             ?? throw new NotFoundException("Concert not found");
+
+        var validationResult = ticketValidator.CanPurchaseTickets(concert, purchaseParams.Quantity);
+        if (validationResult.IsFailed)
+            throw new BadRequestException(validationResult.Errors);
 
         var contract = await contractLoader.LoadByConcertIdAsync(purchaseParams.ConcertId);
         var payeeUserId = ticketPayee.Resolve(concert, contract);
@@ -141,12 +141,12 @@ internal class TicketService : ITicketService
         if (currentUser.GetRole() != Role.Customer)
             throw new ForbiddenException("Only Customers can buy tickets");
 
-        var validationResult = await ticketValidator.CanPurchaseTicketAsync(concertId);
-        if (validationResult.IsFailed)
-            return Result.Fail(validationResult.Errors);
-
         var concert = await concertRepository.GetFullByIdAsync(concertId)
             ?? throw new NotFoundException("Concert not found");
+
+        var validationResult = ticketValidator.CanBePurchased(concert);
+        if (validationResult.IsFailed)
+            return Result.Fail(validationResult.Errors);
 
         var contract = await contractLoader.LoadByConcertIdAsync(concertId);
         var payeeUserId = ticketPayee.Resolve(concert, contract);

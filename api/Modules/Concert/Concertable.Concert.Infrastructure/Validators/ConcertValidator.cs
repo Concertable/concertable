@@ -4,16 +4,16 @@ namespace Concertable.Concert.Infrastructure.Validators;
 
 internal class ConcertValidator : IConcertValidator
 {
-    public Task<Result> CanUpdateAsync(ConcertEntity concert, int newTotalTickets)
+    public Result CanUpdate(ConcertEntity concert, int newTotalTickets)
     {
         int ticketsSold = concert.TotalTickets - concert.AvailableTickets;
 
         return newTotalTickets < ticketsSold
-            ? Task.FromResult(Result.Fail("Cannot reduce TotalTickets below the number of tickets already sold"))
-            : Task.FromResult(Result.Ok());
+            ? Result.Fail("Cannot reduce TotalTickets below the number of tickets already sold")
+            : Result.Ok();
     }
 
-    public Task<Result> CanPostAsync(ConcertEntity concert)
+    public Result CanPost(ConcertEntity concert)
     {
         var errors = new List<string>();
 
@@ -23,6 +23,6 @@ internal class ConcertValidator : IConcertValidator
         if (concert.DatePosted is not null)
             errors.Add("Concert has already been posted");
 
-        return Task.FromResult(errors.Count > 0 ? Result.Fail(errors) : Result.Ok());
+        return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
     }
 }

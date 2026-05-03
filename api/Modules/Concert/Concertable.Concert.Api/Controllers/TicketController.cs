@@ -58,13 +58,13 @@ internal class TicketController : ControllerBase
     }
 
     [HttpGet("can-purchase/{eventId}")]
-    public async Task<ActionResult<bool>> CanPurchaseAsync(int eventId)
+    public async Task<IActionResult> CanPurchaseAsync(int eventId)
     {
-        var result = await ticketValidator.CanPurchaseTicketAsync(eventId);
+        var result = await ticketValidator.CanBePurchasedAsync(eventId);
 
         if (result.IsFailed)
             return BadRequest(result.Errors.SelectMessages());
 
-        return Ok(true);
+        return NoContent();
     }
 }
