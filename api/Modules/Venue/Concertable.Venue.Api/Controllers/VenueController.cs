@@ -54,7 +54,7 @@ internal class VenueController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("is-owner/{id}")]
+    [HttpGet("{id}/ownership")]
     public async Task<ActionResult<bool>> IsOwner(int id)
     {
         return Ok(await venueService.OwnsVenueAsync(id));

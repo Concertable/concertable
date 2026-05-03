@@ -360,7 +360,7 @@ public class VenueApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var response = await client.GetAsync($"/api/Venue/is-owner/{fixture.SeedData.Venue.Id}");
+        var response = await client.GetAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/ownership");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -375,7 +375,7 @@ public class VenueApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var response = await client.GetAsync("/api/Venue/is-owner/99999");
+        var response = await client.GetAsync("/api/Venue/99999/ownership");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

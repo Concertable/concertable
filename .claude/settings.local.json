@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(dotnet build *)"
+      "PowerShell(dotnet build *)",
+      "Bash(git checkout *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(npx tsc *)",
+      "Bash(git --no-pager diff --stat)",
+      "Bash(git add *)",
+      "Bash(git -C C:/Users/TommySeery/source/repos/Concertable add api/Modules/Concert app/src/features/concerts/api/applicationApi.ts)",
+      "Bash(git -C C:/Users/TommySeery/source/repos/Concertable status)",
+      "Bash(git *)",
+      "Bash(xargs sed *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(gh pr create --base master --head Refactor/ConcertWorkflowCoupling --title 'Concert workflow role-interface refactor + Application/Booking TPH' --body ' *)",
+      "Bash(where gh *)",
+      "Bash(powershell -NoProfile -Command \"Get-Command gh -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(xargs grep *)",
+      "Bash(grep -n \"^            };$\" api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs)",
+      "Bash(Select-Object -Last 30)"
     ]
   }
 }

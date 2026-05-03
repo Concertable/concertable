@@ -18,7 +18,6 @@ internal class ApplicationController : ControllerBase
     private readonly IApplicationValidator applicationValidator;
     private readonly IArtistModule artistModule;
     private readonly ICurrentUser currentUser;
-    private readonly IOpportunityService opportunityService;
     private readonly IApplicationResponseMapper mapper;
 
     public ApplicationController(
@@ -26,14 +25,12 @@ internal class ApplicationController : ControllerBase
         IApplicationValidator applicationValidator,
         IArtistModule artistModule,
         ICurrentUser currentUser,
-        IOpportunityService opportunityService,
         IApplicationResponseMapper mapper)
     {
         this.applicationService = applicationService;
         this.applicationValidator = applicationValidator;
         this.artistModule = artistModule;
         this.currentUser = currentUser;
-        this.opportunityService = opportunityService;
         this.mapper = mapper;
     }
 
@@ -133,9 +130,4 @@ internal class ApplicationController : ControllerBase
         return Ok(outcome);
     }
 
-    [HttpGet("is-owner/{id}")]
-    public async Task<ActionResult<bool>> IsOwner(int id)
-    {
-        return Ok(await opportunityService.OwnsOpportunityByApplicationIdAsync(id));
-    }
 }

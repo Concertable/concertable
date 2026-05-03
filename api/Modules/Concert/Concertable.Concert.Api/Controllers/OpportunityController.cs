@@ -56,9 +56,15 @@ internal class OpportunityController : ControllerBase
         return Ok(mapper.ToResponse(opportunity));
     }
 
-    [HttpGet("is-owner/{id}")]
+    [HttpGet("{id}/ownership")]
     public async Task<IActionResult> IsOwner(int id)
     {
         return Ok(await opportunityService.OwnsOpportunityAsync(id));
+    }
+
+    [HttpGet("by-application/{applicationId}/ownership")]
+    public async Task<IActionResult> IsOwnerByApplicationId(int applicationId)
+    {
+        return Ok(await opportunityService.OwnsOpportunityByApplicationIdAsync(applicationId));
     }
 }
