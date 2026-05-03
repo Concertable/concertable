@@ -16,12 +16,13 @@ public class AppFixture : IAsyncLifetime
     private StripeCliFixture stripeCli = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
+    private readonly IConfiguration configuration;
     private readonly TestTokenMinter tokenMinter;
-
-    internal const string ApiBaseUrl = "http://localhost:7001";
 
     public const string TestPaymentMethodId = "pm_card_visa";
 
+    public string ApiBaseUrl { get; }
+    public string AuthBaseUrl { get; }
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
@@ -37,9 +38,15 @@ public class AppFixture : IAsyncLifetime
         logger = loggerFactory.CreateLogger<AppFixture>();
         Polling = new PollingService(loggerFactory.CreateLogger<PollingService>());
 
-        var configuration = new ConfigurationBuilder()
+        configuration = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.E2E.json"))
             .Build();
+
+        ApiBaseUrl = configuration["Endpoints:Api"]
+            ?? throw new InvalidOperationException("Endpoints:Api is not configured in appsettings.E2E.json.");
+        AuthBaseUrl = configuration["Endpoints:Auth"]
+            ?? throw new InvalidOperationException("Endpoints:Auth is not configured in appsettings.E2E.json.");
+
         tokenMinter = new TestTokenMinter(configuration, new JwtSecurityTokenHandler());
     }
 
@@ -50,10 +57,10 @@ public class AppFixture : IAsyncLifetime
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
-        stripeCli = builder.AddStripe(ApiBaseUrl);
+        stripeCli = builder.AddStripe(configuration, ApiBaseUrl);
         await stripeCli.InitializeAsync();
 
-        builder.AddE2E(stripeCli.WebhookSecret);
+        builder.AddE2E(ApiBaseUrl, AuthBaseUrl, stripeCli.WebhookSecret);
         StripePaymentIntents = new PaymentIntentService(new StripeClient(stripeCli.ApiKey));
 
         app = await builder.BuildAsync();
