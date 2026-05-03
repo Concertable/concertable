@@ -21,9 +21,9 @@ interface Props {
 export function OpportunityCard({ opportunity }: Readonly<Props>) {
   const [open, setOpen] = useState(false);
   const { apply, isPending, error, canApply } = useApply(opportunity.id);
-  const isArtistManager = user?.role === "ArtistManager";
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const isArtistManager = user?.role === "ArtistManager";
 
   return (
     <>

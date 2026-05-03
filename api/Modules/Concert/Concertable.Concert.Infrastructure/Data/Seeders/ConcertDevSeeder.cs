@@ -95,6 +95,11 @@ internal class ConcertDevSeeder : IDevSeeder
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(220), now.AddDays(220).AddHours(3)), contractId: contracts[56].Id),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(15), now.AddDays(15).AddHours(3)), contractId: contracts[57].Id),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(20), now.AddDays(20).AddHours(3)), contractId: contracts[58].Id),
+
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(40), now.AddDays(40).AddHours(3)), contractId: contracts[59].Id),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(42), now.AddDays(42).AddHours(3)), contractId: contracts[60].Id),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(44), now.AddDays(44).AddHours(3)), contractId: contracts[61].Id),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(46), now.AddDays(46).AddHours(3)), contractId: contracts[62].Id),
             ];
 
             context.Opportunities.AddRange(seed.Opportunities);
@@ -158,7 +163,12 @@ internal class ConcertDevSeeder : IDevSeeder
                 new OpportunityGenreEntity { OpportunityId = 39, GenreId = 1 },
                 new OpportunityGenreEntity { OpportunityId = 40, GenreId = 2 },
                 new OpportunityGenreEntity { OpportunityId = 41, GenreId = 4 },
-                new OpportunityGenreEntity { OpportunityId = 41, GenreId = 8 }
+                new OpportunityGenreEntity { OpportunityId = 41, GenreId = 8 },
+
+                new OpportunityGenreEntity { OpportunityId = 60, GenreId = 1 },
+                new OpportunityGenreEntity { OpportunityId = 61, GenreId = 1 },
+                new OpportunityGenreEntity { OpportunityId = 62, GenreId = 1 },
+                new OpportunityGenreEntity { OpportunityId = 63, GenreId = 1 }
             };
             context.OpportunityGenres.AddRange(opportunityGenres);
             await context.SaveChangesAsync(ct);

@@ -96,6 +96,11 @@ internal class ContractDevSeeder : IDevSeeder
                 VersusContractEntity.Create(110m, 65m, PaymentMethod.Cash),     // 57 — opp[56]
                 seed.FlatFeeAppContract,                                        // 58 — opp[57] UpcomingFlatFee
                 seed.VenueHireAppContract,                                      // 59 — opp[58] UpcomingVenueHire
+
+                FlatFeeContractEntity.Create(200m, PaymentMethod.Cash),         // 60 — opp[59]
+                DoorSplitContractEntity.Create(70m, PaymentMethod.Cash),        // 61 — opp[60]
+                VersusContractEntity.Create(100m, 60m, PaymentMethod.Cash),     // 62 — opp[61]
+                VenueHireContractEntity.Create(250m, PaymentMethod.Cash),       // 63 — opp[62]
             ];
 
             context.Contracts.AddRange(seed.Contracts);
