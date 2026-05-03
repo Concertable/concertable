@@ -1,16 +1,23 @@
-# Apply-time Card Verification (VenueHire)
+# Card Verification at PM-Storage Points (VenueHire apply + DoorSplit/Versus accept)
 
 **Branch:** `Feature/ApplyCardVerification` (off `master`)
 
 ## The problem
 
-VenueHire artist apply-checkout uses Stripe `SetupIntent` to attach the card. SetupIntent confirms only that the card details are well-formed, accepted by Stripe, and eligible for off-session usage. It does **not** confirm that the card will successfully charge later.
+Any flow that stores a PaymentMethod to charge later off-session uses Stripe `SetupIntent` to attach the card. SetupIntent confirms only that the card details are well-formed, accepted by Stripe, and eligible for off-session usage. It does **not** confirm that the card will successfully charge later.
 
-Result: an artist can complete apply-checkout with a card that will decline at venue-accept time. The application gets created, the venue spends time reviewing it, and the failure only surfaces when the venue clicks Accept and the BE off-session charge returns a decline.
+Two flows are affected:
+
+| Flow | PM stored on | Charged at | Failure surfaces today |
+|---|---|---|---|
+| **VenueHire apply** | Artist's PM on `PrepaidApplication` | Venue accept (off-session) | At venue accept — ghost application until then |
+| **DoorSplit / Versus accept** | Venue's PM on `DeferredBooking` | Concert finish (off-session, deferred) | At finish (worker-driven, days later) — concert booked then settlement fails |
+
+**FlatFee accept is unaffected** — `confirmPayment` performs the real charge in-band, so the card is verified by the act of charging.
 
 **Reproducible with Stripe test card `4000 0000 0000 0341`** — designed to attach successfully and fail at off-session charge.
 
-In production this is rare (>99% of cards that pass SetupIntent succeed at off-session charge), but the failure path is real (expired between attach and charge, fraud lock placed post-attach, account closed). Today the path is poorly handled — venue gets a 400, artist gets nothing.
+In production this is rare (>99% of cards that pass SetupIntent succeed at off-session charge), but the failure path is real (expired between attach and charge, fraud lock placed post-attach, account closed). Today both paths are poorly handled — the failure surfaces far from where the user provided the card.
 
 ## Decision
 
@@ -24,7 +31,12 @@ In production this is rare (>99% of cards that pass SetupIntent succeed at off-s
 | **£1 verify-and-void (chosen)** | Above + "Stripe won't actually charge this card right now" — covers most decline reasons | £1 + void on artist's statement; no funds tied up | Right balance. |
 | Full pre-auth £250 with manual capture | Above + reserves actual funds | £250 hold per application until venue decides; expires after 7 days; UX hit | Over-engineered for marketplace where artists apply to many opps. Real estate / hotel pattern, not marketplace pattern. |
 
-**Where it lives:** inside `VenueHireConcertWorkflow.ApplyAsync` — the verify step is part of the apply workflow for prepaid contracts. Keeps the role-interface composition clean: `IPaidApply` workflows verify; `ISimpleApply` workflows don't (because there's no card at apply for them).
+**Where it lives:** at every PM-storage point that feeds a future off-session charge. Two locations:
+
+1. **`VenueHireConcertWorkflow.ApplyAsync`** — verify before constructing `PrepaidApplication`. Covers VenueHire apply.
+2. **`DeferredConcertService.InitiateAsync`** — verify before `bookingService.CreateDeferredAsync`. Covers DoorSplit + Versus accept (both contracts route through this service).
+
+`FlatFeeConcertWorkflow.AcceptAsync` is **not** updated — the on-session `confirmPayment` already performs a real charge, which is itself the verification.
 
 ## Backend changes
 
@@ -84,7 +96,7 @@ public async Task VerifyAndVoidAsync(string stripeCustomerId, string paymentMeth
 
 Fake impl in `FakeStripeAccountService`: `Task.CompletedTask` (always passes — integration tests using the fake never see decline; we test decline by keying on a magic PM id like `pm_decline`).
 
-### 3. Wire into `VenueHireConcertWorkflow.ApplyAsync`
+### 3. Wire into `VenueHireConcertWorkflow.ApplyAsync` (artist's card at apply)
 
 ```csharp
 public async Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId)
@@ -96,7 +108,25 @@ public async Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId,
 
 If `VerifyAndVoidAsync` throws → `ApplicationService.ApplyAsync` propagates → controller returns 400 with the Stripe decline message → FE shows it. **No `PrepaidApplication` row created.**
 
-### 4. Translate Stripe decline → `BadRequestException` cleanly
+### 4. Wire into `DeferredConcertService.InitiateAsync` (venue's card at deferred-accept)
+
+```csharp
+public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string paymentMethodId)
+{
+    var appCheck = await applicationValidator.CanAcceptAsync(applicationId);
+    if (appCheck.IsFailed)
+        throw new BadRequestException(appCheck.Errors);
+
+    await managerPaymentModule.VerifyAndVoidAsync(payerId, paymentMethodId);
+
+    var booking = await bookingService.CreateDeferredAsync(applicationId, paymentMethodId);
+    // ... draft creation, return DeferredAcceptOutcome
+}
+```
+
+Covers DoorSplit + Versus. If verify throws → no `DeferredBooking` row, no concert draft. Venue sees a 400 with the decline message at accept-checkout time.
+
+### 5. Translate Stripe decline → `BadRequestException` cleanly
 
 The Stripe SDK throws `StripeException` with a `StripeError.DeclineCode`/`Message` on card decline. Want to surface a friendly message to the artist, not a raw Stripe stack trace. Either:
 - Catch in `VerifyAndVoidAsync` and re-throw as `BadRequestException`, OR
@@ -106,45 +136,55 @@ Put it in `VerifyAndVoidAsync` so any consumer of the primitive gets the same tr
 
 ## Frontend changes
 
-**Approximately none.** The apply page already POSTs `/application/{oppId}` and surfaces the response error. With the BE change, declined-card cards will get a 400 with the Stripe message instead of a 201 + ghost application.
+**Approximately none.** Both flows already POST and surface response errors. With the BE change, declined cards get a 400 with the Stripe message instead of a 201/200 + ghost row.
 
-Cosmetic improvement worth tightening (existing copy is misleading):
+Cosmetic improvements worth tightening (existing copy is misleading):
 - `ApplyCheckoutPage` success copy: `"Your card was authorised and your application was sent"` → `"Your card was saved and your application was sent. The venue will only charge if they accept."`
+- `ApplicationCheckoutPage` deferred copy ("Card saved" awaiting step) — already accurate, no change.
 
 ## Tests
 
-### Integration test — new
+### Integration tests — new (3)
 
-`ApplicationVenueHireApiTests.ApplyCheckoutThenApply_ShouldFail_WhenCardWillDecline`:
-- Setup: `MockStripeClient` rigged to throw a decline on the verify-and-void call (or use a magic PM id `pm_decline_at_verify`)
-- Act: artist runs apply-checkout, then POSTs apply with the bad PM
-- Assert: `400 BadRequest`, no `PrepaidApplication` exists in `fixture.ReadDbContext`
+1. `ApplicationVenueHireApiTests.Apply_ShouldFail_WhenCardWillDecline` — VenueHire apply path, asserts 400 + no `PrepaidApplication` row.
+2. `ApplicationDoorSplitApiTests.Accept_ShouldFail_WhenCardWillDecline` — DoorSplit accept path, asserts 400 + no `DeferredBooking` + no concert draft.
+3. `ApplicationVersusApiTests.Accept_ShouldFail_WhenCardWillDecline` — Versus accept path, same shape as DoorSplit.
 
-### Unit test — new
+Setup: `MockStripeClient` keyed on a magic PM id (`pm_decline_at_verify`) — `FakeStripeAccountService.VerifyAndVoidAsync` throws when called with that PM.
 
-`VenueHireConcertWorkflowTests.ApplyAsync_ShouldThrow_WhenVerifyFails`:
-- Mock `IManagerPaymentModule.VerifyAndVoidAsync` to throw
-- Call `workflow.ApplyAsync(...)`
-- Assert: throws, no entity returned
+### Unit tests — new (2)
+
+1. `VenueHireConcertWorkflowTests.ApplyAsync_ShouldThrow_WhenVerifyFails` — mock `IManagerPaymentModule.VerifyAndVoidAsync` to throw, assert no entity returned.
+2. `DeferredConcertServiceTests.InitiateAsync_ShouldThrow_WhenVerifyFails` — same shape, mock the same primitive.
 
 ### Manual test
 
-Use Stripe test card `4000 0000 0000 0341` on the apply-checkout page:
-- Before this change: apply succeeds (ghost app), venue accept later 400s
-- After this change: apply 400s, no application created, artist sees "Your card was declined" or similar
+Use Stripe test card `4000 0000 0000 0341` on:
+- VenueHire apply-checkout — before: apply succeeds (ghost app), venue accept later 400s. After: apply 400s, no application created.
+- DoorSplit/Versus accept-checkout — before: accept succeeds (concert created!), settlement at finish 400s. After: accept 400s, no concert draft, venue tries another card.
 
 ## Out of scope
 
-- Full £250 pre-auth at apply (Option A from the conversation) — over-engineered for this workflow.
-- Notification to artist when a venue-accept-time charge fails — separate post-merge task. Less critical now because the verify catches most failure cases at apply.
-- Verify-and-void for FlatFee/DoorSplit/Versus — they're `ISimpleApply` (no PM at apply), so this entire flow doesn't apply to them. The PM is collected at venue-accept-checkout where the venue's card is verified by `confirmPayment` itself.
-- 3DS during the £1 verify — `confirm: true` with `off_session: true` will NOT trigger 3DS challenges (off-session SCA exempt). If 3DS IS triggered (rare for verification), the verify itself fails — same handling as decline (apply 400s, artist re-tries with a different card).
+- Full £-amount pre-auth with manual capture (Option A from the conversation) — over-engineered for this workflow; verify-and-void gets >95% of the value at no UX cost.
+- Notification to artist when a venue-accept-time charge fails — separate post-merge task. Less critical now because the verify catches most failure cases at the storage point.
+- Verify on FlatFee accept — already verified by the on-session `confirmPayment`. Adding a £1 hold there would just be a redundant Stripe call.
+- Verify on FlatFee/DoorSplit/Versus apply — they're `ISimpleApply` (no PM at apply), nothing to verify.
+- 3DS during the £1 verify — `confirm: true` with `off_session: true` will NOT trigger 3DS challenges (off-session SCA exempt). If 3DS IS triggered (rare for verification), the verify itself fails — same handling as decline (apply/accept 400s, user re-tries with a different card).
 
 ## Acceptance
 
+VenueHire apply:
 1. Apply with `4242 4242 4242 4242` (good card) → succeeds as today, application created
 2. Apply with `4000 0000 0000 0341` (verify-passes-charge-fails card) → **400 at apply, no application created**
 3. Apply with `4000 0000 0000 0002` (immediate decline card) → still rejected at `confirmSetup` step in browser (unchanged from today)
-4. Concert integration suite still 46/46 + the new test = 47/47
-5. FE tsc clean
-6. Manual: see `4000...0341` fail at apply with a clean error message
+
+DoorSplit/Versus accept:
+4. Accept with `4242...` → succeeds, booking + concert draft created
+5. Accept with `4000...0341` → **400 at accept, no booking, no concert draft**
+6. Accept with `4000...0002` → still rejected at `confirmSetup` step in browser (unchanged)
+
+Suite:
+7. Concert integration suite 46 → 49 with the 3 new tests
+8. Concert unit suite 14 → 16 with the 2 new tests
+9. FE tsc clean
+10. Manual: `4000...0341` fails at the storage step with a clean error message in both flows
