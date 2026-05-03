@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApplyCheckoutQuery } from "../hooks/useApplicationQuery";
 import applicationApi from "../api/applicationApi";
+import { CheckoutAwaiting } from "../components/checkout/CheckoutAwaiting";
 import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
 import { CheckoutSection } from "../components/checkout/CheckoutSection";
 import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
@@ -59,6 +60,18 @@ function ApplyCheckoutForm({
             .
           </>
         }
+      />
+    );
+
+  if (applyMutation.isPending)
+    return (
+      <CheckoutAwaiting
+        title="Submitting application"
+        description={`Sending your application to ${checkout.payee.name}`}
+        steps={[
+          { label: "Card authorised", status: "done" },
+          { label: "Submitting application", status: "active" },
+        ]}
       />
     );
 
