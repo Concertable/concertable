@@ -17,7 +17,11 @@ public class UiFixture : IAsyncLifetime
     {
         await App.InitializeAsync();
         playwright = await Playwright.CreateAsync();
-        Browser = await playwright.Chromium.LaunchAsync();
+        Browser = await playwright.Chromium.LaunchAsync(new()
+        {
+            Headless = Environment.GetEnvironmentVariable("CI") == "true",
+            SlowMo = Environment.GetEnvironmentVariable("CI") == "true" ? 0 : 250
+        });
     }
 
     public async Task DisposeAsync()

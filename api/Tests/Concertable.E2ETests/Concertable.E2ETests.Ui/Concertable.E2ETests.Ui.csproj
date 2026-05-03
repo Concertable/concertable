@@ -34,4 +34,16 @@
     <Using Include="Reqnroll" />
   </ItemGroup>
 
+  <Target Name="StripReqnrollFeatureTitleAndDescriptionTraits"
+          AfterTargets="GenerateFeatureFileCodeBehindFiles"
+          BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_ReqnrollFeatureCs Include="**\*.feature.cs" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="%(_ReqnrollFeatureCs.FullPath)"
+      Overwrite="true"
+      Lines="$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.File]::ReadAllText('%(_ReqnrollFeatureCs.FullPath)')), '[ \t]*\[global::Xunit\.TraitAttribute\(&quot;(FeatureTitle|Description)&quot;,[^\]]*\][ \t]*\r?\n', ''))" />
+  </Target>
+
 </Project>

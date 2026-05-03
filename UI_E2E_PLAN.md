@@ -197,6 +197,16 @@ A unit test in `Concertable.E2ETests.Ui` asserts that every `ContractType` enum 
 
 Steps don't know what a `data-testid` is. Pages don't know what a `[When]` is. Steps call methods like `await page.PayWithCardAsync(Cards.Success)` and the page handles iframe walking, fill, submit, wait-for-redirect.
 
+**Selector standard:**
+
+- **`data-testid` everywhere we touch DOM in the SPA** — every element a page object interacts with gets a stable `data-testid="<feature>-<element>"` (kebab-case, feature-prefixed: `login-email`, `vm-opportunity-create`, `ticket-checkout-pay`). Add the attribute in the same PR as the page object that needs it.
+- **Page objects use `page.GetByTestId(...)`**, not raw CSS — survives DOM/Tailwind churn, intent reads clearly.
+- **Selector strings live as `private const` fields at the top of the page object** — never inline literals in methods, never `public` (consumers go through `SignInAsync`, not raw selectors).
+- **Razor Pages on the Auth host (`/Account/Login`, `/Account/ForgotPassword`, etc) follow the same `data-testid` rule** — they're outside the SPA but still part of the UI surface page objects drive.
+- Stripe iframe content is the unavoidable exception — selectors there target Stripe's stable element names (`[name='cardnumber']` etc), encapsulated in `StripeUiHelpers`.
+
+Reference impl: `LoginPage.cs` + `Concertable.Auth/Pages/Account/Login.cshtml` (`login-email` / `login-password` / `login-submit`).
+
 ### 5. Background blocks for shared setup
 
 Each `.feature` file uses `Background:` for the "fresh DB reseed + role auth state hydrated" setup that every scenario needs. Reduces scenario noise.
@@ -317,7 +327,8 @@ public class UiFixture : IAsyncLifetime
 - `UiFixture` (composition above) + `WorkflowState` + `EnumTransformations`
 - Hooks: `AspireHooks` (BeforeTestRun init / AfterTestRun dispose), `PlaywrightHooks` (BeforeScenario context creation from cached storageState by `@VenueManager`/`@Artist`/`@Customer` tag), `LoginCaptureHooks` (BeforeTestRun real OIDC login per role → cache)
 - One `Login.feature` smoke scenario — drives real OIDC login, asserts post-login URL
-- DoD: `dotnet test --filter "Category=Ui"` runs Login scenario green
+- DoD: `dotnet test --filter "Category=Ui"` runs Login scenario green.
+- **Test Explorer trait hygiene:** Reqnroll's xUnit codegen hardcodes `[global::Xunit.TraitAttribute("FeatureTitle", ...)]` + `[Description, ...]` on every generated scenario, which duplicates the VS Test Explorer tree (one branch per trait). Suppressed via an MSBuild target `StripReqnrollFeatureTitleAndDescriptionTraits` in `Concertable.E2ETests.Ui.csproj` that runs `AfterTargets="GenerateFeatureFileCodeBehindFiles" BeforeTargets="CoreCompile"` and regex-strips both attributes from `*.feature.cs`. Result: only `[AssemblyTrait("Category", "Ui")]` survives, matching `Category=Api` symmetry. Headed Chromium is the local default (`Headless = CI=="true"`); CI will set `CI=true` automatically.
 
 ### Step 5 — FlatFee happy path
 - Page objects for VM and Artist pages touched by FlatFee
@@ -365,7 +376,6 @@ For DoorSplit/Versus:
 
 ## What this plan does not cover
 
-- Selectors / `data-testid` conventions (added to SPA elements as we hit them — track in PRs).
 - Step naming conventions (settled in Step 6 when first feature lands).
 - Scenario tagging conventions (`@VenueManager` / `@Artist` / `@Customer` for auth hydration; rest decided as needed).
 
