@@ -163,6 +163,31 @@ internal class StripeAccountService : IStripeAccountService
         return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Setup);
     }
 
+    public async Task VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default)
+    {
+        try
+        {
+            var intent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions
+            {
+                Amount = 100,
+                Currency = "gbp",
+                Customer = stripeCustomerId,
+                PaymentMethod = paymentMethodId,
+                Confirm = true,
+                CaptureMethod = "manual",
+                OffSession = true,
+                Description = "Card verification (auto-voided)"
+            }, cancellationToken: ct);
+
+            if (intent.Status == "requires_capture" || intent.Status == "succeeded")
+                await paymentIntentService.CancelAsync(intent.Id, cancellationToken: ct);
+        }
+        catch (StripeException ex)
+        {
+            throw new BadRequestException(ex.StripeError?.Message ?? ex.Message);
+        }
+    }
+
     private async Task<string> CreateCustomerSessionAsync(string stripeCustomerId, CancellationToken ct)
     {
         var session = await customerSessionService.CreateAsync(new CustomerSessionCreateOptions

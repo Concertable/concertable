@@ -31,8 +31,11 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
         this.currentUser = currentUser;
     }
 
-    public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId) =>
-        Task.FromResult<ApplicationEntity>(PrepaidApplication.Create(artistId, opportunityId, paymentMethodId));
+    public async Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId)
+    {
+        await managerPaymentModule.VerifyAndVoidAsync(currentUser.GetId(), paymentMethodId);
+        return PrepaidApplication.Create(artistId, opportunityId, paymentMethodId);
+    }
 
     public async Task<Checkout> CheckoutAsync(int opportunityId)
     {

@@ -2,9 +2,9 @@
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
-
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Concertable.Concert.IntegrationTests.Application;
@@ -60,6 +60,23 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
             $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Accept_ShouldFail_WhenCardWillDecline()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+
+        // Act
+        var response = await client.PostAsync(
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_decline_at_verify" });
+
+        // Assert — 400 returned, no DeferredBooking or concert draft created
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var concert = await fixture.ReadDbContext.Concerts
+            .FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.DoorSplitApp.Id);
+        Assert.Null(concert);
     }
 
     [Fact]

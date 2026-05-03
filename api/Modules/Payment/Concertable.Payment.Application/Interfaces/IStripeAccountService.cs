@@ -21,4 +21,9 @@ internal interface IStripeAccountService
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
+
+    Task VerifyAndVoidAsync(
+        string stripeCustomerId,
+        string paymentMethodId,
+        CancellationToken ct = default);
 }

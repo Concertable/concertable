@@ -4,6 +4,7 @@ using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Concertable.Concert.IntegrationTests.Application;
@@ -51,6 +52,23 @@ public class ApplicationVersusApiTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Accept_ShouldFail_WhenCardWillDecline()
+    {
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+
+        // Act
+        var response = await client.PostAsync(
+            $"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_decline_at_verify" });
+
+        // Assert — 400 returned, no concert draft created
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var concert = await fixture.ReadDbContext.Concerts
+            .FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.VersusApp.Id);
+        Assert.Null(concert);
     }
 
     [Fact]

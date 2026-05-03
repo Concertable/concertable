@@ -77,6 +77,12 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return await stripeAccountService.CreateSetupSessionAsync(stripeCustomerId, metadata, ct);
     }
 
+    public async Task VerifyAndVoidAsync(Guid payerId, string paymentMethodId, CancellationToken ct = default)
+    {
+        var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
+        await stripeAccountService.VerifyAndVoidAsync(stripeCustomerId, paymentMethodId, ct);
+    }
+
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
     {
         var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);

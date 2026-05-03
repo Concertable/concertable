@@ -34,4 +34,11 @@ internal class FakeStripeAccountService : IStripeAccountService
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("seti_fake_secret", "cuss_fake_secret", stripeCustomerId, IntentType.Setup));
+
+    public Task VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default)
+    {
+        if (paymentMethodId == "pm_decline_at_verify")
+            throw new Concertable.Shared.Exceptions.BadRequestException("Your card was declined.");
+        return Task.CompletedTask;
+    }
 }
