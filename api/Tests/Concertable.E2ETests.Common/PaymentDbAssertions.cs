@@ -2,7 +2,7 @@ using System.Data.Common;
 
 namespace Concertable.E2ETests.Common;
 
-public static class DbAssertions
+public static class PaymentDbAssertions
 {
     public static async Task<string?> GetLatestSettlementPaymentIntentIdByApplicationIdAsync(
         this DbConnection connection,
