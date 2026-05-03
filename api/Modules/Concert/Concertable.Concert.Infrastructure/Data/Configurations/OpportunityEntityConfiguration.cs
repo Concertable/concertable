@@ -40,5 +40,8 @@ internal class ApplicationEntityConfiguration : IEntityTypeConfiguration<Applica
             .HasForeignKey(ca => ca.ArtistId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
+        builder.HasDiscriminator<string>("Discriminator")
+            .HasValue<StandardApplication>(nameof(StandardApplication))
+            .HasValue<PrepaidApplication>(nameof(PrepaidApplication));
     }
 }

@@ -3,30 +3,32 @@ using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class FlatFeeConcertWorkflow : IConcertWorkflow, IAcceptCheckout
+internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
 {
     private readonly IUpfrontConcertService upfrontConcertService;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
-    private readonly IConcertPaymentFlow paymentFlow;
+    private readonly IManagerPaymentModule managerPaymentModule;
 
     public FlatFeeConcertWorkflow(
         IUpfrontConcertService upfrontConcertService,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
-        [FromKeyedServices(PaymentSession.OnSession)] IConcertPaymentFlow paymentFlow)
+        IManagerPaymentModule managerPaymentModule)
     {
         this.upfrontConcertService = upfrontConcertService;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
-        this.paymentFlow = paymentFlow;
+        this.managerPaymentModule = managerPaymentModule;
     }
 
-    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
+    public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId) =>
+        Task.FromResult<ApplicationEntity>(StandardApplication.Create(artistId, opportunityId));
+
+    public async Task<Checkout> CheckoutAsync(int applicationId)
     {
         var artist = await payerLookup.GetArtistAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
@@ -42,23 +44,23 @@ internal class FlatFeeConcertWorkflow : IConcertWorkflow, IAcceptCheckout
             ["currency"] = "gbp"
         };
 
-        var session = await paymentFlow.CreateSessionAsync(venueManagerId, metadata);
-        return new AcceptCheckout(PaymentTiming.Immediate, new FlatPayment(contract.Fee), artist, session);
+        var session = await managerPaymentModule.CreatePaymentSessionAsync(venueManagerId, metadata);
+        return new Checkout(PaymentTiming.Immediate, new FlatPayment(contract.Fee), artist, session);
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
     {
         var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
         var contract = (FlatFeeContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, venueManagerId, artistManagerId, contract.Fee, paymentMethodId);
+        return await upfrontConcertService.InitiateAsync(applicationId, venueManagerId, artistManagerId, contract.Fee, paymentMethodId, PaymentSession.OnSession);
     }
 
     public Task SettleAsync(int bookingId) =>
         upfrontConcertService.SettleAsync(bookingId);
 
-    public Task<IFinishOutcome> FinishAsync(int concertId) =>
+    public Task FinishAsync(int concertId) =>
         upfrontConcertService.FinishedAsync(concertId);
 }

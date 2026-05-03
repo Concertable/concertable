@@ -101,19 +101,6 @@ internal class StripeAccountService : IStripeAccountService
         return PayoutAccountStatus.NotVerified;
     }
 
-    public async Task<string?> TryGetPaymentMethodAsync(string? stripeCustomerId)
-    {
-        if (stripeCustomerId is null) return null;
-
-        var paymentMethods = await paymentMethodService.ListAsync(new PaymentMethodListOptions
-        {
-            Customer = stripeCustomerId,
-            Type = "card"
-        });
-
-        return paymentMethods.FirstOrDefault()?.Id;
-    }
-
     public async Task<string> CreateSetupIntentAsync(string? stripeCustomerId)
     {
         var intent = await setupIntentService.CreateAsync(new SetupIntentCreateOptions
@@ -156,10 +143,10 @@ internal class StripeAccountService : IStripeAccountService
         }, cancellationToken: ct);
 
         var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
-        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Payment);
     }
 
-    public async Task<CheckoutSession> CreateSavedCardSessionAsync(
+    public async Task<CheckoutSession> CreateSetupSessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default)
@@ -173,7 +160,7 @@ internal class StripeAccountService : IStripeAccountService
         }, cancellationToken: ct);
 
         var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
-        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Setup);
     }
 
     private async Task<string> CreateCustomerSessionAsync(string stripeCustomerId, CancellationToken ct)

@@ -8,17 +8,16 @@ import {
 import type { Appearance, StripeElementsOptions } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 import { stripePromise } from "@/lib/stripe";
-import type { CheckoutSession, PaymentTiming } from "../../types";
+import type { CheckoutSession } from "../../types";
 
 const appearance: Appearance = { theme: "night" };
 
 export interface StripePaymentFormProps {
   session: CheckoutSession;
-  timing: PaymentTiming;
   submitLabel: string;
   disabled?: boolean;
   footer?: ReactNode;
-  onSuccess: (paymentMethodId: string | null) => void;
+  onSuccess: (paymentMethodId: string) => void;
 }
 
 export function StripePaymentForm(props: StripePaymentFormProps) {
@@ -40,7 +39,7 @@ export function StripePaymentForm(props: StripePaymentFormProps) {
 }
 
 function Form({
-  timing,
+  session,
   submitLabel,
   disabled,
   footer,
@@ -65,10 +64,10 @@ function Form({
       return;
     }
 
-    const result =
-      timing === "Immediate"
-        ? await stripe.confirmPayment({ elements, redirect: "if_required" })
-        : await stripe.confirmSetup({ elements, redirect: "if_required" });
+    const isPayment = session.intentType === "Payment";
+    const result = isPayment
+      ? await stripe.confirmPayment({ elements, redirect: "if_required" })
+      : await stripe.confirmSetup({ elements, redirect: "if_required" });
 
     if (result.error) {
       setError(result.error.message ?? "Payment failed.");
@@ -76,9 +75,14 @@ function Form({
       return;
     }
 
-    const intent =
-      timing === "Immediate" ? result.paymentIntent : result.setupIntent;
-    onSuccess((intent?.payment_method as string | null | undefined) ?? null);
+    const intent = isPayment ? result.paymentIntent : result.setupIntent;
+    const paymentMethodId = intent?.payment_method as string | undefined;
+    if (!paymentMethodId) {
+      setError("Payment method missing from confirmation.");
+      setIsSubmitting(false);
+      return;
+    }
+    onSuccess(paymentMethodId);
   }
 
   const isDisabled = !stripe || !elements || disabled || isSubmitting;

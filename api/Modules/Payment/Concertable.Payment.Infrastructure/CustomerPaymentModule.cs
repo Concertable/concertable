@@ -31,15 +31,11 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         Guid payeeId,
         decimal amount,
         IDictionary<string, string> metadata,
-        string? paymentMethodId,
+        string paymentMethodId,
         CancellationToken ct = default)
     {
         var customer = await customerModule.GetCustomerAsync(payerId)
             ?? throw new ForbiddenException("Only customers can purchase tickets");
-
-        var resolvedPaymentMethodId = paymentMethodId
-            ?? await TryGetSavedPaymentMethodAsync(payerId, ct)
-            ?? throw new BadRequestException("No payment method provided and no saved payment method found");
 
         return await paymentManager.ChargeAsync(new ChargeRequest
         {
@@ -47,7 +43,7 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
             PayerEmail = customer.Email ?? string.Empty,
             PayeeId = payeeId,
             Amount = amount,
-            PaymentMethodId = resolvedPaymentMethodId,
+            PaymentMethodId = paymentMethodId,
             Metadata = metadata,
             Session = PaymentSession.OnSession
         }, ct);
@@ -71,12 +67,6 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         .Merge(metadata);
 
         return await stripeAccountService.CreatePaymentSessionAsync(stripeCustomerId, mergedMetadata, ct);
-    }
-
-    private async Task<string?> TryGetSavedPaymentMethodAsync(Guid payerId, CancellationToken ct)
-    {
-        var account = await payoutAccountRepository.GetByUserIdAsync(payerId, ct);
-        return await stripeAccountService.TryGetPaymentMethodAsync(account?.StripeCustomerId);
     }
 
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Concertable.Concert.Infrastructure.Services.Workflow;
+using Concertable.Payment.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -31,7 +32,7 @@ public class VersusConcertWorkflowCompleteTests
             bookingRepository.Object,
             new Mock<IPayerLookup>().Object,
             contractLookup.Object,
-            new Mock<IConcertPaymentFlow>().Object,
+            new Mock<IManagerPaymentModule>().Object,
             NullLogger<VersusConcertWorkflow>.Instance);
 
         bookingRepository.Setup(r => r.GetByConcertIdAsync(10)).ReturnsAsync(booking);
@@ -51,9 +52,9 @@ public class VersusConcertWorkflowCompleteTests
     {
         public static BookingEntity Create(Guid artistUserId, Guid venueUserId)
         {
-            var booking = BookingEntity.Create(applicationId: 1);
-            var application = (ApplicationEntity)Activator.CreateInstance(
-                typeof(ApplicationEntity),
+            var booking = DeferredBooking.Create(applicationId: 1, paymentMethodId: "pm_test");
+            var application = (StandardApplication)Activator.CreateInstance(
+                typeof(StandardApplication),
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 binder: null,
                 args: null,

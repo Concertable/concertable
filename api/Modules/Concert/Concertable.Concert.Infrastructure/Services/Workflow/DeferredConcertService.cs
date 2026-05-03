@@ -1,6 +1,5 @@
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
@@ -9,33 +8,31 @@ internal class DeferredConcertService : IDeferredConcertService
 {
     private readonly IApplicationValidator applicationValidator;
     private readonly IBookingService bookingService;
-    private readonly IConcertPaymentFlow paymentFlow;
+    private readonly IManagerPaymentModule managerPaymentModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly ILogger<DeferredConcertService> logger;
 
     public DeferredConcertService(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
-        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow,
+        IManagerPaymentModule managerPaymentModule,
         IConcertDraftService concertDraftService,
         ILogger<DeferredConcertService> logger)
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
-        this.paymentFlow = paymentFlow;
+        this.managerPaymentModule = managerPaymentModule;
         this.concertDraftService = concertDraftService;
         this.logger = logger;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string? paymentMethodId)
+    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string paymentMethodId)
     {
         var appCheck = await applicationValidator.CanAcceptAsync(applicationId);
         if (appCheck.IsFailed)
             throw new BadRequestException(appCheck.Errors);
 
-        var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, paymentMethodId);
-
-        var booking = await bookingService.CreateAsync(applicationId, resolvedPaymentMethodId);
+        var booking = await bookingService.CreateDeferredAsync(applicationId, paymentMethodId);
 
         var draftResult = await concertDraftService.CreateAsync(booking.Id);
         if (draftResult.IsFailed)
@@ -44,9 +41,11 @@ internal class DeferredConcertService : IDeferredConcertService
         return new DeferredAcceptOutcome();
     }
 
-    public async Task<IFinishOutcome> FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount)
+    public async Task FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount)
     {
         var booking = await bookingService.MarkAwaitingPaymentByConcertIdAsync(concertId);
+        if (booking is not DeferredBooking deferred)
+            throw new BadRequestException("Concert finish requires a DeferredBooking");
 
         var settlementMetadata = new Dictionary<string, string>
         {
@@ -56,17 +55,13 @@ internal class DeferredConcertService : IDeferredConcertService
             ["toUserId"] = payeeId.ToString()
         };
 
-        var resolvedPaymentMethodId = await paymentFlow.ResolvePaymentMethodAsync(payerId, booking.PaymentMethodId);
-
         logger.LogInformation(
             "Settling concert {ConcertId} (booking {BookingId}): paying {Amount} {Currency} from {PayerId} to {PayeeId}",
             concertId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await paymentFlow.PayAsync(payerId, payeeId, amount, resolvedPaymentMethodId, settlementMetadata);
+        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, settlementMetadata, deferred.PaymentMethodId, PaymentSession.OffSession);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
-
-        return new DeferredFinishOutcome(payment.Value);
     }
 
     public Task SettleAsync(int bookingId) =>

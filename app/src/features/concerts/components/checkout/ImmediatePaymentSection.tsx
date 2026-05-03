@@ -19,7 +19,7 @@ export function ImmediatePaymentSection({
   useEffect(() => {
     if (!isLoading) {
       setSelected(savedCard ? PaymentOption.Saved : PaymentOption.New);
-      onChange(savedCard ? null : undefined);
+      onChange(savedCard?.id);
     }
   }, [isLoading]);
 
@@ -27,7 +27,7 @@ export function ImmediatePaymentSection({
 
   function selectSaved() {
     setSelected(PaymentOption.Saved);
-    onChange(null);
+    onChange(savedCard?.id);
   }
 
   function selectNew() {

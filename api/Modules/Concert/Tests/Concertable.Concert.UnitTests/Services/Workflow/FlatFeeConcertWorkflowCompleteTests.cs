@@ -1,4 +1,5 @@
 ﻿using Concertable.Concert.Infrastructure.Services.Workflow;
+using Concertable.Payment.Contracts;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Workflow;
@@ -14,7 +15,7 @@ public class FlatFeeConcertWorkflowCompleteTests
             upfrontConcertService.Object,
             new Mock<IPayerLookup>().Object,
             new Mock<IContractLoader>().Object,
-            new Mock<IConcertPaymentFlow>().Object);
+            new Mock<IManagerPaymentModule>().Object);
     }
 
     [Fact]

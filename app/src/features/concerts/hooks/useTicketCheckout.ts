@@ -15,9 +15,9 @@ export type TicketCheckoutState =
 
 export function useTicketCheckout(concertId: number) {
   const [quantity, setQuantity] = useState(1);
-  const [paymentMethodId, setPaymentMethodId] = useState<
-    string | null | undefined
-  >(undefined);
+  const [paymentMethodId, setPaymentMethodId] = useState<string | undefined>(
+    undefined,
+  );
   const [state, setState] = useState<TicketCheckoutState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TicketPurchasedPayload | null>(null);
@@ -40,6 +40,12 @@ export function useTicketCheckout(concertId: number) {
   }, [concertId]);
 
   async function purchase() {
+    if (!paymentMethodId) {
+      setError("Please select a payment method.");
+      setState("error");
+      return;
+    }
+
     setState("processing");
     setError(null);
 
@@ -47,7 +53,7 @@ export function useTicketCheckout(concertId: number) {
       const response = await ticketApi.purchase({
         concertId,
         quantity,
-        paymentMethodId: paymentMethodId ?? undefined,
+        paymentMethodId,
       });
 
       if (response.requiresAction && response.clientSecret) {

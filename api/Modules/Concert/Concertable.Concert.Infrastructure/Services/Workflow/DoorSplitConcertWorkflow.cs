@@ -3,19 +3,18 @@ using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class DoorSplitConcertWorkflow : IConcertWorkflow, IAcceptCheckout
+internal class DoorSplitConcertWorkflow : IStandardConcertWorkflow
 {
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IConcertRepository concertRepository;
     private readonly IBookingRepository bookingRepository;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
-    private readonly IConcertPaymentFlow paymentFlow;
+    private readonly IManagerPaymentModule managerPaymentModule;
     private readonly ILogger<DoorSplitConcertWorkflow> logger;
 
     public DoorSplitConcertWorkflow(
@@ -24,7 +23,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflow, IAcceptCheckout
         IBookingRepository bookingRepository,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
-        [FromKeyedServices(PaymentSession.OffSession)] IConcertPaymentFlow paymentFlow,
+        IManagerPaymentModule managerPaymentModule,
         ILogger<DoorSplitConcertWorkflow> logger)
     {
         this.deferredConcertService = deferredConcertService;
@@ -32,11 +31,14 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflow, IAcceptCheckout
         this.bookingRepository = bookingRepository;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
-        this.paymentFlow = paymentFlow;
+        this.managerPaymentModule = managerPaymentModule;
         this.logger = logger;
     }
 
-    public async Task<AcceptCheckout> CheckoutAsync(int applicationId)
+    public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId) =>
+        Task.FromResult<ApplicationEntity>(StandardApplication.Create(artistId, opportunityId));
+
+    public async Task<Checkout> CheckoutAsync(int applicationId)
     {
         var artist = await payerLookup.GetArtistAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
@@ -50,11 +52,11 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflow, IAcceptCheckout
             ["applicationId"] = applicationId.ToString()
         };
 
-        var session = await paymentFlow.CreateSessionAsync(venueManagerId, metadata);
-        return new AcceptCheckout(PaymentTiming.Deferred, new DoorSharePayment(contract.ArtistDoorPercent), artist, session);
+        var session = await managerPaymentModule.CreateSetupSessionAsync(venueManagerId, metadata);
+        return new Checkout(PaymentTiming.Deferred, new DoorSharePayment(contract.ArtistDoorPercent), artist, session);
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, string? paymentMethodId = null)
+    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
     {
         var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
@@ -65,7 +67,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflow, IAcceptCheckout
     public Task SettleAsync(int bookingId) =>
         deferredConcertService.SettleAsync(bookingId);
 
-    public async Task<IFinishOutcome> FinishAsync(int concertId)
+    public async Task FinishAsync(int concertId)
     {
         var booking = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");
@@ -78,7 +80,7 @@ internal class DoorSplitConcertWorkflow : IConcertWorkflow, IAcceptCheckout
             "Calculated door-split artist share for concert {ConcertId}: {Revenue} {Currency} revenue at {Percent}% = {Share} {Currency}",
             concertId, totalRevenue, "GBP", contract.ArtistDoorPercent, artistShare);
 
-        return await deferredConcertService.FinishedAsync(
+        await deferredConcertService.FinishedAsync(
             concertId,
             booking.Application.Opportunity.Venue.UserId,
             booking.Application.Artist.UserId,

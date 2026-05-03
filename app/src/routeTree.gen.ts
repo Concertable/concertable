@@ -41,6 +41,7 @@ import { Route as CustomerProfilePreferencesIndexRouteImport } from './routes/_c
 import { Route as VenueMyApplicationsIdRouteImport } from './routes/venue/my/applications.$id'
 import { Route as VenueFindArtistIdRouteImport } from './routes/venue/find/artist.$id'
 import { Route as VenueApplicationCheckoutApplicationIdRouteImport } from './routes/venue/application/checkout.$applicationId'
+import { Route as ArtistOpportunityCheckoutOpportunityIdRouteImport } from './routes/artist/opportunity/checkout.$opportunityId'
 import { Route as ArtistFindVenueIdRouteImport } from './routes/artist/find/venue.$id'
 import { Route as ArtistApplicationCheckoutApplicationIdRouteImport } from './routes/artist/application/checkout.$applicationId'
 import { Route as CustomerProfileTicketsUpcomingRouteImport } from './routes/_customer/profile/tickets/upcoming'
@@ -216,6 +217,12 @@ const VenueApplicationCheckoutApplicationIdRoute =
     path: '/application/checkout/$applicationId',
     getParentRoute: () => VenueRouteRoute,
   } as any)
+const ArtistOpportunityCheckoutOpportunityIdRoute =
+  ArtistOpportunityCheckoutOpportunityIdRouteImport.update({
+    id: '/opportunity/checkout/$opportunityId',
+    path: '/opportunity/checkout/$opportunityId',
+    getParentRoute: () => ArtistRouteRoute,
+  } as any)
 const ArtistFindVenueIdRoute = ArtistFindVenueIdRouteImport.update({
   id: '/find/venue/$id',
   path: '/find/venue/$id',
@@ -315,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/profile/tickets/upcoming': typeof CustomerProfileTicketsUpcomingRoute
   '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/artist/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
   '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
@@ -355,6 +363,7 @@ export interface FileRoutesByTo {
   '/profile/tickets/upcoming': typeof CustomerProfileTicketsUpcomingRoute
   '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/artist/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
   '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
@@ -401,6 +410,7 @@ export interface FileRoutesById {
   '/_customer/profile/tickets/upcoming': typeof CustomerProfileTicketsUpcomingRoute
   '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
   '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/artist/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
   '/venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
   '/venue/find/artist/$id': typeof VenueFindArtistIdRoute
   '/venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/profile/tickets/upcoming'
     | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
+    | '/artist/opportunity/checkout/$opportunityId'
     | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/profile/tickets/upcoming'
     | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
+    | '/artist/opportunity/checkout/$opportunityId'
     | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
@@ -532,6 +544,7 @@ export interface FileRouteTypes {
     | '/_customer/profile/tickets/upcoming'
     | '/artist/application/checkout/$applicationId'
     | '/artist/find/venue/$id'
+    | '/artist/opportunity/checkout/$opportunityId'
     | '/venue/application/checkout/$applicationId'
     | '/venue/find/artist/$id'
     | '/venue/my/applications/$id'
@@ -780,6 +793,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VenueApplicationCheckoutApplicationIdRouteImport
       parentRoute: typeof VenueRouteRoute
     }
+    '/artist/opportunity/checkout/$opportunityId': {
+      id: '/artist/opportunity/checkout/$opportunityId'
+      path: '/opportunity/checkout/$opportunityId'
+      fullPath: '/artist/opportunity/checkout/$opportunityId'
+      preLoaderRoute: typeof ArtistOpportunityCheckoutOpportunityIdRouteImport
+      parentRoute: typeof ArtistRouteRoute
+    }
     '/artist/find/venue/$id': {
       id: '/artist/find/venue/$id'
       path: '/find/venue/$id'
@@ -931,6 +951,7 @@ interface ArtistRouteRouteChildren {
   ArtistMyIndexRoute: typeof ArtistMyIndexRoute
   ArtistApplicationCheckoutApplicationIdRoute: typeof ArtistApplicationCheckoutApplicationIdRoute
   ArtistFindVenueIdRoute: typeof ArtistFindVenueIdRoute
+  ArtistOpportunityCheckoutOpportunityIdRoute: typeof ArtistOpportunityCheckoutOpportunityIdRoute
   ArtistMyConcertsConcertIdRoute: typeof ArtistMyConcertsConcertIdRoute
 }
 
@@ -942,6 +963,8 @@ const ArtistRouteRouteChildren: ArtistRouteRouteChildren = {
   ArtistApplicationCheckoutApplicationIdRoute:
     ArtistApplicationCheckoutApplicationIdRoute,
   ArtistFindVenueIdRoute: ArtistFindVenueIdRoute,
+  ArtistOpportunityCheckoutOpportunityIdRoute:
+    ArtistOpportunityCheckoutOpportunityIdRoute,
   ArtistMyConcertsConcertIdRoute: ArtistMyConcertsConcertIdRoute,
 }
 

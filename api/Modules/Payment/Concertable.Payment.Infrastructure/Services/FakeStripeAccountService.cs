@@ -17,9 +17,6 @@ internal class FakeStripeAccountService : IStripeAccountService
     public Task<PayoutAccountStatus> GetAccountStatusAsync(string stripeId) =>
         Task.FromResult(PayoutAccountStatus.Verified);
 
-    public Task<string?> TryGetPaymentMethodAsync(string? stripeCustomerId) =>
-        Task.FromResult<string?>(stripeCustomerId is null ? null : "pm_fake_card");
-
     public Task<string> CreateSetupIntentAsync(string? stripeCustomerId) =>
         Task.FromResult("seti_fake_secret");
 
@@ -30,11 +27,11 @@ internal class FakeStripeAccountService : IStripeAccountService
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("pi_fake_secret", "cuss_fake_secret", stripeCustomerId));
+        Task.FromResult(new CheckoutSession("pi_fake_secret", "cuss_fake_secret", stripeCustomerId, IntentType.Payment));
 
-    public Task<CheckoutSession> CreateSavedCardSessionAsync(
+    public Task<CheckoutSession> CreateSetupSessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("seti_fake_secret", "cuss_fake_secret", stripeCustomerId));
+        Task.FromResult(new CheckoutSession("seti_fake_secret", "cuss_fake_secret", stripeCustomerId, IntentType.Setup));
 }

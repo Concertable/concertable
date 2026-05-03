@@ -1,3 +1,5 @@
+using Concertable.Concert.Api.Mappers;
+using Concertable.Concert.Api.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,22 +10,26 @@ namespace Concertable.Concert.Api.Controllers;
 internal class OpportunityController : ControllerBase
 {
     private readonly IOpportunityService opportunityService;
+    private readonly IOpportunityResponseMapper mapper;
 
-    public OpportunityController(IOpportunityService opportunityService)
+    public OpportunityController(IOpportunityService opportunityService, IOpportunityResponseMapper mapper)
     {
         this.opportunityService = opportunityService;
+        this.mapper = mapper;
     }
 
     [HttpGet("active/venue/{id}")]
     public async Task<IActionResult> GetActiveByVenueId(int id, [FromQuery] PageParams pageParams)
     {
-        return Ok(await opportunityService.GetActiveByVenueIdAsync(id, pageParams));
+        var page = await opportunityService.GetActiveByVenueIdAsync(id, pageParams);
+        return Ok(mapper.ToResponses(page));
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<OpportunityDto>> GetById(int id)
+    public async Task<ActionResult<OpportunityResponse>> GetById(int id)
     {
-        return Ok(await opportunityService.GetByIdAsync(id));
+        var opportunity = await opportunityService.GetByIdAsync(id);
+        return Ok(mapper.ToResponse(opportunity));
     }
 
     [Authorize(Roles = "VenueManager")]
@@ -31,7 +37,7 @@ internal class OpportunityController : ControllerBase
     public async Task<IActionResult> Create([FromBody] OpportunityRequest request)
     {
         var opportunity = await opportunityService.CreateAsync(request);
-        return CreatedAtAction(nameof(GetById), new { id = opportunity.Id }, opportunity);
+        return CreatedAtAction(nameof(GetById), new { id = opportunity.Id }, mapper.ToResponse(opportunity));
     }
 
     [Authorize(Roles = "VenueManager")]
@@ -44,9 +50,10 @@ internal class OpportunityController : ControllerBase
 
     [Authorize(Roles = "VenueManager")]
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<OpportunityDto>> Update(int id, [FromBody] OpportunityRequest request)
+    public async Task<ActionResult<OpportunityResponse>> Update(int id, [FromBody] OpportunityRequest request)
     {
-        return Ok(await opportunityService.UpdateAsync(id, request));
+        var opportunity = await opportunityService.UpdateAsync(id, request);
+        return Ok(mapper.ToResponse(opportunity));
     }
 
     [HttpGet("is-owner/{id}")]

@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
+using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Responses;
 
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
@@ -22,29 +24,51 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task Accept_ShouldReturn400_WhenAlreadyAccepted()
+    public async Task AcceptCheckout_ShouldReturnDeferredDoorSharePaymentSession()
     {
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
-        await client.PostAsync(
-            $"/api/Application/accept/{fixture.SeedData.DoorSplitApp.Id}",
-            (object?)null);
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/checkout");
 
-        var response = await client.PostAsync(
-            $"/api/Application/accept/{fixture.SeedData.DoorSplitApp.Id}",
-            (object?)null);
+        await response.ShouldBe(HttpStatusCode.OK);
+        var checkout = await response.Content.ReadAsync<Checkout>();
+        Assert.NotNull(checkout);
+        Assert.Equal(PaymentTiming.Deferred, checkout!.Timing);
+        Assert.IsType<DoorSharePayment>(checkout.Amount);
+        Assert.NotEmpty(checkout.Session.ClientSecret);
+    }
+
+    [Fact]
+    public async Task ApplyCheckout_ShouldReturn400_WhenContractDoesNotSupportApplyTimeCheckout()
+    {
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+
+        var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.DoorSplitApp.OpportunityId}/checkout");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
-    public async Task Accept_ShouldCreateDraftConcertAndNotifyArtist()
+    public async Task Accept_ShouldReturn400_WhenAlreadyAccepted()
+    {
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+
+        await client.PostAsync(
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
+
+        var response = await client.PostAsync(
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Accept_ShouldCreateDraftConcertAndNotifyArtistAndVenue()
     {
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         var acceptResponse = await client.PostAsync(
-            $"/api/Application/accept/{fixture.SeedData.DoorSplitApp.Id}",
-            (object?)null);
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
         await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         var application = await client.GetAsync<ApplicationResponse>(
@@ -58,8 +82,10 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
         Assert.NotNull(concert);
         Assert.Null(concert.DatePosted);
 
-        var (userId, payload) = Assert.Single(fixture.NotificationService.DraftCreated);
-        Assert.Equal(fixture.SeedData.ArtistManager.Id.ToString(), userId);
-        Assert.NotNull(payload);
+        Assert.Equal(2, fixture.NotificationService.DraftCreated.Count);
+        var notifiedUserIds = fixture.NotificationService.DraftCreated.Select(n => n.UserId).ToList();
+        Assert.Contains(fixture.SeedData.ArtistManager.Id.ToString(), notifiedUserIds);
+        Assert.Contains(fixture.SeedData.VenueManager1.Id.ToString(), notifiedUserIds);
+        Assert.All(fixture.NotificationService.DraftCreated, n => Assert.NotNull(n.Payload));
     }
 }

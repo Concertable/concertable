@@ -10,7 +10,7 @@ export function DeferredPaymentSection({
   onChange,
 }: PaymentSectionProps) {
   useEffect(() => {
-    if (!isLoading) onChange(savedCard ? null : undefined);
+    if (!isLoading) onChange(savedCard?.id);
   }, [isLoading, savedCard]);
 
   if (isLoading) return <Skeleton className="h-[66px] w-full rounded-lg" />;

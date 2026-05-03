@@ -2,7 +2,10 @@ import { useParams, useNavigate } from "@tanstack/react-router";
 import { usePayoutAccountStatusQuery, StripeOnboardingBanner } from "@/features/payments";
 import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
-import { useApplicationQuery } from "../hooks/useApplicationQuery";
+import {
+  useApplicationQuery,
+  useAcceptApplicationMutation,
+} from "../hooks/useApplicationQuery";
 import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
 
 export function AcceptApplicationPage() {
@@ -10,16 +13,35 @@ export function AcceptApplicationPage() {
   const navigate = useNavigate();
   const { data: application, isLoading } = useApplicationQuery(applicationId);
   const { data: accountStatus } = usePayoutAccountStatusQuery(true);
+  const acceptMutation = useAcceptApplicationMutation(
+    application?.opportunity.id ?? 0,
+  );
 
   if (isLoading || !application) return null;
 
-  const { artist, opportunity } = application;
+  const { artist, opportunity, actions } = application;
+  const requiresCheckout = actions.checkout != null;
 
   function handleConfirm() {
-    void navigate({
-      to: "/venue/application/checkout/$applicationId",
-      params: { applicationId },
-    });
+    if (requiresCheckout) {
+      void navigate({
+        to: "/venue/application/checkout/$applicationId",
+        params: { applicationId },
+      });
+      return;
+    }
+
+    acceptMutation.mutate(
+      { applicationId },
+      {
+        onSuccess: () => {
+          void navigate({
+            to: "/venue/my/applications/$id",
+            params: { id: opportunity.id },
+          });
+        },
+      },
+    );
   }
 
   return (
@@ -50,8 +72,11 @@ export function AcceptApplicationPage() {
         >
           Cancel
         </Button>
-        <Button disabled={accountStatus !== "Verified"} onClick={handleConfirm}>
-          Continue
+        <Button
+          disabled={accountStatus !== "Verified" || acceptMutation.isPending}
+          onClick={handleConfirm}
+        >
+          {requiresCheckout ? "Continue" : "Accept"}
         </Button>
       </div>
     </div>

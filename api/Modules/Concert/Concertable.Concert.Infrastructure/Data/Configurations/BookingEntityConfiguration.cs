@@ -14,5 +14,8 @@ internal class BookingEntityConfiguration : IEntityTypeConfiguration<BookingEnti
             .HasForeignKey<BookingEntity>(b => b.ApplicationId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
+        builder.HasDiscriminator<string>("Discriminator")
+            .HasValue<StandardBooking>(nameof(StandardBooking))
+            .HasValue<DeferredBooking>(nameof(DeferredBooking));
     }
 }

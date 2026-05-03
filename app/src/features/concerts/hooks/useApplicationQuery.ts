@@ -15,10 +15,17 @@ export function useApplicationQuery(applicationId: number) {
   });
 }
 
-export function useCheckoutQuery(applicationId: number) {
+export function useAcceptCheckoutQuery(applicationId: number) {
   return useQuery({
     queryKey: ["applications", applicationId, "checkout"],
-    queryFn: () => applicationApi.checkout(applicationId),
+    queryFn: () => applicationApi.acceptCheckout(applicationId),
+  });
+}
+
+export function useApplyCheckoutQuery(opportunityId: number) {
+  return useQuery({
+    queryKey: ["opportunities", opportunityId, "apply-checkout"],
+    queryFn: () => applicationApi.applyCheckout(opportunityId),
   });
 }
 
@@ -31,7 +38,7 @@ export function useAcceptApplicationMutation(opportunityId: number) {
       paymentMethodId,
     }: {
       applicationId: number;
-      paymentMethodId?: string | null;
+      paymentMethodId?: string;
     }) => applicationApi.acceptApplication(applicationId, paymentMethodId),
     onSuccess: () => {
       queryClient.invalidateQueries({

@@ -54,6 +54,11 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<int>("ArtistId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
                     b.Property<int>("OpportunityId")
                         .HasColumnType("int");
 
@@ -68,6 +73,10 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Applications", "concert");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("ApplicationEntity");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ArtistReadModel", b =>
@@ -131,8 +140,10 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<int>("ApplicationId")
                         .HasColumnType("int");
 
-                    b.Property<string>("PaymentMethodId")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -143,6 +154,10 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Bookings", "concert");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("BookingEntity");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertEntity", b =>
@@ -429,6 +444,42 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                         {
                             t.ExcludeFromMigrations();
                         });
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.PrepaidApplication", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.ApplicationEntity");
+
+                    b.Property<string>("PaymentMethodId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("PrepaidApplication");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.StandardApplication", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.ApplicationEntity");
+
+                    b.HasDiscriminator().HasValue("StandardApplication");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.DeferredBooking", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.BookingEntity");
+
+                    b.Property<string>("PaymentMethodId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("DeferredBooking");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.StandardBooking", b =>
+                {
+                    b.HasBaseType("Concertable.Concert.Domain.BookingEntity");
+
+                    b.HasDiscriminator().HasValue("StandardBooking");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ApplicationEntity", b =>

@@ -32,6 +32,14 @@ internal class OpportunityRepository : Repository<OpportunityEntity>, IOpportuni
             .FirstOrDefaultAsync();
     }
 
+    public Task<int?> GetContractIdByIdAsync(int opportunityId)
+    {
+        return context.Opportunities
+            .Where(o => o.Id == opportunityId)
+            .Select(o => (int?)o.ContractId)
+            .FirstOrDefaultAsync();
+    }
+
     public async new Task<OpportunityEntity?> GetByIdAsync(int id)
     {
         return await context.Opportunities

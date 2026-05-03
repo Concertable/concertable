@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ConcertDraftCreatedPayload } from "@/features/notifications";
 import type {
-  AcceptCheckout,
   Application,
+  Checkout,
 } from "../types";
 import {
   useAcceptApplicationMutation,
+  useAcceptCheckoutQuery,
   useApplicationQuery,
-  useCheckoutQuery,
 } from "../hooks/useApplicationQuery";
 import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
 import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
@@ -37,7 +37,7 @@ export function ApplicationCheckoutPage() {
     data: checkout,
     isLoading: isCheckoutLoading,
     isError: isCheckoutError,
-  } = useCheckoutQuery(applicationId);
+  } = useAcceptCheckoutQuery(applicationId);
 
   if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
   if (isError || !application)
@@ -63,7 +63,7 @@ function ApplicationCheckoutForm({
 }: {
   applicationId: number;
   application: Application;
-  checkout: AcceptCheckout;
+  checkout: Checkout;
 }) {
   const [submitted, setSubmitted] = useState(false);
   const acceptMutation = useAcceptApplicationMutation(application.opportunity.id);
@@ -112,7 +112,6 @@ function ApplicationCheckoutForm({
       >
         <StripePaymentForm
           session={checkout.session}
-          timing={checkout.timing}
           submitLabel={isDeferred ? "Confirm" : "Confirm & Pay"}
           onSuccess={(paymentMethodId) => {
             setSubmitted(true);

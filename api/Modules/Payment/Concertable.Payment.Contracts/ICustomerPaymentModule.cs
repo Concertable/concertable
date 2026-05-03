@@ -9,7 +9,7 @@ public interface ICustomerPaymentModule
         Guid payeeId,
         decimal amount,
         IDictionary<string, string> metadata,
-        string? paymentMethodId,
+        string paymentMethodId,
         CancellationToken ct = default);
 
     Task<CheckoutSession> CreatePaymentSessionAsync(

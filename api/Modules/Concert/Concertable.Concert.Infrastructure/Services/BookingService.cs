@@ -15,19 +15,18 @@ internal class BookingService : IBookingService
         this.applicationAcceptor = applicationAcceptor;
     }
 
-    public async Task<BookingEntity> CreateAsync(int applicationId)
+    public async Task<StandardBooking> CreateStandardAsync(int applicationId)
     {
-        var booking = BookingEntity.Create(applicationId);
+        var booking = StandardBooking.Create(applicationId);
         booking.AwaitPayment();
         await bookingRepository.AddAsync(booking);
         await applicationAcceptor.AcceptAsync(applicationId, booking);
         return booking;
     }
 
-    public async Task<BookingEntity> CreateAsync(int applicationId, string? paymentMethodId)
+    public async Task<DeferredBooking> CreateDeferredAsync(int applicationId, string paymentMethodId)
     {
-        var booking = BookingEntity.Create(applicationId);
-        booking.StorePaymentMethod(paymentMethodId);
+        var booking = DeferredBooking.Create(applicationId, paymentMethodId);
         await bookingRepository.AddAsync(booking);
         await applicationAcceptor.AcceptAsync(applicationId, booking);
         return booking;
