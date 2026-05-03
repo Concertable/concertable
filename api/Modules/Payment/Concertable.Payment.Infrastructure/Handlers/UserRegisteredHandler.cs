@@ -5,7 +5,7 @@ using Concertable.Shared;
 
 namespace Concertable.Payment.Infrastructure.Handlers;
 
-internal class UserRegisteredHandler(IStripeAccountService stripeAccountService)
+internal class UserRegisteredHandler(IStripeAccountClient stripeAccountClient)
     : IIntegrationEventHandler<UserRegisteredEvent>
 {
     public async Task HandleAsync(UserRegisteredEvent e, CancellationToken ct = default)
@@ -13,9 +13,9 @@ internal class UserRegisteredHandler(IStripeAccountService stripeAccountService)
         if (e.Role is Role.Admin)
             return;
 
-        await stripeAccountService.ProvisionCustomerAsync(e.UserId, e.Email, ct);
+        await stripeAccountClient.ProvisionCustomerAsync(e.UserId, e.Email, ct);
 
         if (e.Role is Role.ArtistManager or Role.VenueManager)
-            await stripeAccountService.ProvisionConnectAccountAsync(e.UserId, e.Email, ct);
+            await stripeAccountClient.ProvisionConnectAccountAsync(e.UserId, e.Email, ct);
     }
 }

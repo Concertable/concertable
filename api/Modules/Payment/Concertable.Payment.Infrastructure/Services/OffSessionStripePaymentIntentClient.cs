@@ -4,7 +4,7 @@ namespace Concertable.Payment.Infrastructure.Services;
 
 internal class OffSessionStripePaymentIntentClient : StripePaymentIntentClient
 {
-    public OffSessionStripePaymentIntentClient(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService, ILogger<OffSessionStripePaymentIntentClient> logger)
+    public OffSessionStripePaymentIntentClient(IStripePaymentClient stripeClient, IStripeAccountClient stripeAccountService, ILogger<OffSessionStripePaymentIntentClient> logger)
         : base(stripeClient, stripeAccountService, logger) { }
 
     protected override void Configure(Stripe.PaymentIntentCreateOptions options)

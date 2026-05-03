@@ -8,13 +8,13 @@ namespace Concertable.Payment.Infrastructure.Services;
 internal abstract class StripePaymentIntentClient : IStripePaymentIntentClient
 {
     private readonly IStripePaymentClient stripeClient;
-    private readonly IStripeAccountService stripeAccountService;
+    private readonly IStripeAccountClient stripeAccountClient;
     private readonly ILogger logger;
 
-    protected StripePaymentIntentClient(IStripePaymentClient stripeClient, IStripeAccountService stripeAccountService, ILogger logger)
+    protected StripePaymentIntentClient(IStripePaymentClient stripeClient, IStripeAccountClient stripeAccountClient, ILogger logger)
     {
         this.stripeClient = stripeClient;
-        this.stripeAccountService = stripeAccountService;
+        this.stripeAccountClient = stripeAccountClient;
         this.logger = logger;
     }
 
@@ -25,7 +25,7 @@ internal abstract class StripePaymentIntentClient : IStripePaymentIntentClient
             if (string.IsNullOrEmpty(opts.DestinationStripeId))
                 return Result.Fail("Recipient does not have a Stripe account");
 
-            if (await stripeAccountService.GetAccountStatusAsync(opts.DestinationStripeId) != PayoutAccountStatus.Verified)
+            if (await stripeAccountClient.GetAccountStatusAsync(opts.DestinationStripeId) != PayoutAccountStatus.Verified)
                 return Result.Fail("Recipient is not eligible for payouts");
 
             var options = new PaymentIntentCreateOptions

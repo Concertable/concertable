@@ -53,11 +53,11 @@ function ApplyCheckoutForm({
         title="Application Submitted"
         description={
           <>
-            Your card was authorised and your application was sent to{" "}
+            Your card was saved and your application was sent to{" "}
             <span className="text-foreground font-medium">
               {checkout.payee.name}
             </span>
-            .
+            . The venue will only charge if they accept.
           </>
         }
       />

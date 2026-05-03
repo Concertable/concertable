@@ -22,4 +22,9 @@ public interface IManagerPaymentModule
         Guid payerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
+
+    Task VerifyAndVoidAsync(
+        Guid payerId,
+        string paymentMethodId,
+        CancellationToken ct = default);
 }
