@@ -27,11 +27,11 @@ internal class FakeStripeAccountService : IStripeAccountService
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("pi_fake_secret", "cuss_fake_secret", stripeCustomerId));
+        Task.FromResult(new CheckoutSession("pi_fake_secret", "cuss_fake_secret", stripeCustomerId, IntentType.Payment));
 
     public Task<CheckoutSession> CreateSetupSessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("seti_fake_secret", "cuss_fake_secret", stripeCustomerId));
+        Task.FromResult(new CheckoutSession("seti_fake_secret", "cuss_fake_secret", stripeCustomerId, IntentType.Setup));
 }

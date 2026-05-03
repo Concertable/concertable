@@ -112,7 +112,6 @@ function ApplicationCheckoutForm({
       >
         <StripePaymentForm
           session={checkout.session}
-          timing={checkout.timing}
           submitLabel={isDeferred ? "Confirm" : "Confirm & Pay"}
           onSuccess={(paymentMethodId) => {
             setSubmitted(true);

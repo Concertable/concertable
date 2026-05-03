@@ -143,7 +143,7 @@ internal class StripeAccountService : IStripeAccountService
         }, cancellationToken: ct);
 
         var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
-        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Payment);
     }
 
     public async Task<CheckoutSession> CreateSetupSessionAsync(
@@ -160,7 +160,7 @@ internal class StripeAccountService : IStripeAccountService
         }, cancellationToken: ct);
 
         var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
-        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Setup);
     }
 
     private async Task<string> CreateCustomerSessionAsync(string stripeCustomerId, CancellationToken ct)

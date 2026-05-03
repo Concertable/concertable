@@ -100,7 +100,6 @@ function ApplyCheckoutForm({
       >
         <StripePaymentForm
           session={checkout.session}
-          timing={checkout.timing}
           submitLabel="Authorise & Apply"
           onSuccess={(paymentMethodId) => applyMutation.mutate(paymentMethodId)}
         />
