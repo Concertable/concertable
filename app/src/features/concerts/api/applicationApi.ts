@@ -20,7 +20,7 @@ const applicationApi = {
     return data;
   },
 
-  getApplyEligibility: async (opportunityId: number): Promise<boolean> => {
+  canApply: async (opportunityId: number): Promise<boolean> => {
     const { data } = await api.get<boolean>(
       `/application/opportunity/${opportunityId}/eligibility`,
     );
@@ -54,9 +54,9 @@ const applicationApi = {
     return data;
   },
 
-  canAcceptApplication: async (applicationId: number): Promise<boolean> => {
+  canAccept: async (applicationId: number): Promise<boolean> => {
     const { data } = await api.get<boolean>(
-      `/application/can-accept/${applicationId}`,
+      `/application/${applicationId}/eligibility`,
     );
     return data;
   },

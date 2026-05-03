@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
 import { notificationConnection } from "@/lib/signalr";
 import type { TicketPurchasedPayload } from "@/features/notifications";
 import ticketApi from "../api/ticketApi";
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+import { handle3ds } from "../utils/handle3ds";
 
 export type TicketCheckoutState =
   | "idle"
@@ -56,26 +54,10 @@ export function useTicketCheckout(concertId: number) {
         paymentMethodId,
       });
 
-      if (response.requiresAction && response.clientSecret) {
-        const stripe = await stripePromise;
-        if (!stripe) {
-          setError("Stripe failed to load. Please refresh and try again.");
-          setState("error");
-          return;
-        }
-        const { error: stripeError } = await stripe.handleNextAction({
-          clientSecret: response.clientSecret,
-        });
-        if (stripeError) {
-          setError(stripeError.message ?? "Payment authentication failed.");
-          setState("error");
-          return;
-        }
-      }
-
+      await handle3ds(response);
       setState("pending");
-    } catch {
-      setError("Payment failed. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Payment failed. Please try again.");
       setState("error");
     }
   }

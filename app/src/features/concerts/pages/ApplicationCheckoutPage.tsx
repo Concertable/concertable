@@ -23,6 +23,7 @@ import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
 import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
 import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
 import { summaryFor } from "../utils/acceptCheckoutFormat";
+import { handle3ds } from "../utils/handle3ds";
 
 export function ApplicationCheckoutPage() {
   const { applicationId } = useParams({ strict: false }) as {
@@ -66,6 +67,7 @@ function ApplicationCheckoutForm({
   checkout: Checkout;
 }) {
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const acceptMutation = useAcceptApplicationMutation(application.opportunity.id);
 
   const { artist, opportunity } = application;
@@ -80,6 +82,18 @@ function ApplicationCheckoutForm({
     );
 
   const summary = summaryFor(checkout.amount);
+
+  async function handleAccept(paymentMethodId: string) {
+    setError(null);
+    try {
+      const outcome = await acceptMutation.mutateAsync({ applicationId, paymentMethodId });
+      if (outcome.$type === "immediate")
+        await handle3ds(outcome.payment);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Acceptance failed. Please try again.");
+    }
+  }
 
   return (
     <CheckoutLayout
@@ -113,12 +127,11 @@ function ApplicationCheckoutForm({
         <StripePaymentForm
           session={checkout.session}
           submitLabel={isDeferred ? "Confirm" : "Confirm & Pay"}
-          onSuccess={(paymentMethodId) => {
-            setSubmitted(true);
-            acceptMutation.mutate({ applicationId, paymentMethodId });
-          }}
+          disabled={acceptMutation.isPending}
+          onSuccess={handleAccept}
         />
       </CheckoutSection>
+      {error && <p className="text-destructive text-sm">{error}</p>}
     </CheckoutLayout>
   );
 }

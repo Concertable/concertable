@@ -68,26 +68,28 @@ public class TicketApiTests : IAsyncLifetime
     #region CanPurchase
 
     [Fact]
-    public async Task CanPurchase_ShouldReturn400_WhenConcertNotPosted()
+    public async Task CanPurchase_ShouldReturnFalse_WhenConcertNotPosted()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
         // Act
-        var response = await client.GetAsync($"/api/Ticket/can-purchase/{fixture.SeedData.ConfirmedBooking.Concert!.Id}");
+        var response = await client.GetAsync($"/api/Ticket/concert/{fixture.SeedData.ConfirmedBooking.Concert!.Id}/eligibility");
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadAsync<bool>();
+        Assert.False(result);
     }
 
     [Fact]
-    public async Task CanPurchase_ShouldReturn200_WhenValid()
+    public async Task CanPurchase_ShouldReturnTrue_WhenValid()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
         // Act
-        var response = await client.GetAsync($"/api/Ticket/can-purchase/{fixture.SeedData.PostedFlatFeeBooking.Concert!.Id}");
+        var response = await client.GetAsync($"/api/Ticket/concert/{fixture.SeedData.PostedFlatFeeBooking.Concert!.Id}/eligibility");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

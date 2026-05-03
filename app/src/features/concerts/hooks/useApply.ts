@@ -8,7 +8,7 @@ export function useApply(opportunityId: number) {
 
   const { data: isEligible } = useQuery({
     queryKey: ["applications", "opportunity", opportunityId, "eligibility"],
-    queryFn: () => applicationApi.getApplyEligibility(opportunityId),
+    queryFn: () => applicationApi.canApply(opportunityId),
     enabled: isArtistManager,
   });
 
