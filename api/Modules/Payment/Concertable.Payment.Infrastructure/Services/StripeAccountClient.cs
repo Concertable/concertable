@@ -8,7 +8,7 @@ using Stripe;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
-internal class StripeAccountService : IStripeAccountService
+internal class StripeAccountClient : IStripeAccountClient
 {
     private readonly string baseUri;
     private readonly AccountService accountService;
@@ -20,7 +20,7 @@ internal class StripeAccountService : IStripeAccountService
     private readonly Stripe.CustomerSessionService customerSessionService;
     private readonly IPayoutAccountRepository payoutAccountRepository;
 
-    public StripeAccountService(
+    public StripeAccountClient(
         IOptions<StripeSettings> stripeSettings,
         IConfiguration configuration,
         AccountService accountService,

@@ -12,20 +12,20 @@ namespace Concertable.Payment.Api.Controllers;
 [Route("api/[controller]")]
 internal class StripeAccountController : ControllerBase
 {
-    private readonly IStripeAccountService stripeAccountService;
+    private readonly IStripeAccountClient stripeAccountClient;
     private readonly ICurrentUser currentUser;
     private readonly IUserModule userModule;
     private readonly ICustomerModule customerModule;
     private readonly IPayoutAccountRepository payoutAccountRepository;
 
     public StripeAccountController(
-        IStripeAccountService stripeAccountService,
+        IStripeAccountClient stripeAccountClient,
         ICurrentUser currentUser,
         IUserModule userModule,
         ICustomerModule customerModule,
         IPayoutAccountRepository payoutAccountRepository)
     {
-        this.stripeAccountService = stripeAccountService;
+        this.stripeAccountClient = stripeAccountClient;
         this.currentUser = currentUser;
         this.userModule = userModule;
         this.customerModule = customerModule;
@@ -41,7 +41,7 @@ internal class StripeAccountController : ControllerBase
         var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
         if (account?.StripeAccountId is null) return BadRequest("No Stripe connect account found.");
 
-        return Ok(await stripeAccountService.GetOnboardingLinkAsync(account.StripeAccountId));
+        return Ok(await stripeAccountClient.GetOnboardingLinkAsync(account.StripeAccountId));
     }
 
     [HttpGet("account-status")]
@@ -53,7 +53,7 @@ internal class StripeAccountController : ControllerBase
         var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
         if (account?.StripeAccountId is null) return Ok(PayoutAccountStatus.NotVerified);
 
-        return Ok(await stripeAccountService.GetAccountStatusAsync(account.StripeAccountId));
+        return Ok(await stripeAccountClient.GetAccountStatusAsync(account.StripeAccountId));
     }
 
     [HttpGet("payment-method")]
@@ -62,14 +62,14 @@ internal class StripeAccountController : ControllerBase
         var account = await payoutAccountRepository.GetByUserIdAsync(currentUser.GetId());
         if (account?.StripeCustomerId is null) return Ok(null);
 
-        return Ok(await stripeAccountService.GetPaymentMethodDetailsAsync(account.StripeCustomerId));
+        return Ok(await stripeAccountClient.GetPaymentMethodDetailsAsync(account.StripeCustomerId));
     }
 
     [HttpPost("setup-intent")]
     public async Task<ActionResult<string>> CreateSetupIntent()
     {
         if (currentUser.Id is null)
-            return Ok(await stripeAccountService.CreateSetupIntentAsync(null));
+            return Ok(await stripeAccountClient.CreateSetupIntentAsync(null));
 
         var userId = currentUser.GetId();
         var customer = await customerModule.GetCustomerAsync(userId);
@@ -80,12 +80,12 @@ internal class StripeAccountController : ControllerBase
 
         if (string.IsNullOrWhiteSpace(stripeCustomerId))
         {
-            await stripeAccountService.ProvisionCustomerAsync(userId, customer.Email!);
+            await stripeAccountClient.ProvisionCustomerAsync(userId, customer.Email!);
             account = await payoutAccountRepository.GetByUserIdAsync(userId);
             stripeCustomerId = account?.StripeCustomerId
                 ?? throw new InvalidOperationException("Failed to provision Stripe customer.");
         }
 
-        return Ok(await stripeAccountService.CreateSetupIntentAsync(stripeCustomerId));
+        return Ok(await stripeAccountClient.CreateSetupIntentAsync(stripeCustomerId));
     }
 }

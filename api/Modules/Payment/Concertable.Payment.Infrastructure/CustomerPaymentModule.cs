@@ -10,18 +10,18 @@ namespace Concertable.Payment.Infrastructure;
 internal class CustomerPaymentModule : ICustomerPaymentModule
 {
     private readonly IPaymentManager paymentManager;
-    private readonly IStripeAccountService stripeAccountService;
+    private readonly IStripeAccountClient stripeAccountClient;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly ICustomerModule customerModule;
 
     public CustomerPaymentModule(
         IPaymentManager paymentManager,
-        IStripeAccountService stripeAccountService,
+        IStripeAccountClient stripeAccountClient,
         IPayoutAccountRepository payoutAccountRepository,
         ICustomerModule customerModule)
     {
         this.paymentManager = paymentManager;
-        this.stripeAccountService = stripeAccountService;
+        this.stripeAccountClient = stripeAccountClient;
         this.payoutAccountRepository = payoutAccountRepository;
         this.customerModule = customerModule;
     }
@@ -66,7 +66,7 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         }
         .Merge(metadata);
 
-        return await stripeAccountService.CreatePaymentSessionAsync(stripeCustomerId, mergedMetadata, ct);
+        return await stripeAccountClient.CreatePaymentSessionAsync(stripeCustomerId, mergedMetadata, ct);
     }
 
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
@@ -78,7 +78,7 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         var customer = await customerModule.GetCustomerAsync(userId)
             ?? throw new ForbiddenException("Only customers can purchase tickets");
 
-        await stripeAccountService.ProvisionCustomerAsync(userId, customer.Email ?? string.Empty, ct);
+        await stripeAccountClient.ProvisionCustomerAsync(userId, customer.Email ?? string.Empty, ct);
 
         account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
         return account?.StripeCustomerId

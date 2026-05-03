@@ -3,7 +3,7 @@ using Concertable.Payment.Contracts;
 
 namespace Concertable.Payment.Application.Interfaces;
 
-internal interface IStripeAccountService
+internal interface IStripeAccountClient
 {
     Task ProvisionCustomerAsync(Guid userId, string email, CancellationToken ct = default);
     Task ProvisionConnectAccountAsync(Guid userId, string email, CancellationToken ct = default);

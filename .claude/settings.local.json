@@ -18,7 +18,8 @@
       "Bash(powershell -NoProfile -Command \"Get-Command gh -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
       "Bash(xargs grep *)",
       "Bash(grep -n \"^            };$\" api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs)",
-      "Bash(Select-Object -Last 30)"
+      "Bash(Select-Object -Last 30)",
+      "PowerShell(Rename-Item *)"
     ]
   }
 }

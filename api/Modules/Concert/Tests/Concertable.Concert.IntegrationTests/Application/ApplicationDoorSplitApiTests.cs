@@ -65,12 +65,12 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
     [Fact]
     public async Task Accept_ShouldFail_WhenCardWillDecline()
     {
-        // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        // Arrange — verify-and-void is stubbed to decline
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseDeclineAtVerify());
 
         // Act
         var response = await client.PostAsync(
-            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_decline_at_verify" });
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
 
         // Assert — 400 returned, no DeferredBooking or concert draft created
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

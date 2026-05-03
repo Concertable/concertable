@@ -186,9 +186,9 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var oppResponse = await venueClient.PostAsync("/api/Opportunity", oppRequest);
         var opportunity = await oppResponse.Content.ReadAsync<OpportunityResponse>();
 
-        // Act — artist applies with a PM that fails card verification
-        var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager);
-        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity!.Id}", new { paymentMethodId = "pm_decline_at_verify" });
+        // Act — artist applies; verify-and-void is stubbed to decline
+        var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager, o => o.UseDeclineAtVerify());
+        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity!.Id}", new { paymentMethodId = "pm_test" });
 
         // Assert — 400 returned, no PrepaidApplication row created
         Assert.Equal(HttpStatusCode.BadRequest, applyResponse.StatusCode);

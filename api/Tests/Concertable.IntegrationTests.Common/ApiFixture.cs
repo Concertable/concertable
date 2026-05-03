@@ -13,6 +13,7 @@ using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
+using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Infrastructure.Services;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Extensions;
@@ -64,6 +65,7 @@ public async Task InitializeAsync()
 
             builder.ConfigureTestServices(services =>
             {
+                services.AddScoped<IStripeAccountClient, MockStripeAccountClient>();
                 services.AddSingleton<INotificationModule>(NotificationService);
                 services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
                 services.AddSingleton<IStripePaymentClient>(StripePaymentClient);

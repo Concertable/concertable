@@ -55,7 +55,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.SetupIntentService>();
             services.AddSingleton<Stripe.PaymentIntentService>();
             services.AddSingleton<Stripe.CustomerSessionService>();
-            services.AddScoped<IStripeAccountService, StripeAccountService>();
+            services.AddScoped<IStripeAccountClient, StripeAccountClient>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
             services.AddKeyedScoped<IStripePaymentIntentClient, OnSessionStripePaymentIntentClient>(PaymentSession.OnSession);
             services.AddKeyedScoped<IStripePaymentIntentClient, OffSessionStripePaymentIntentClient>(PaymentSession.OffSession);
@@ -63,7 +63,7 @@ public static class ServiceCollectionExtensions
         }
         else
         {
-            services.AddScoped<IStripeAccountService, FakeStripeAccountService>();
+            services.AddScoped<IStripeAccountClient, FakeStripeAccountClient>();
             services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OnSession);
             services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OffSession);
             services.AddScoped<IWebhookService, FakeWebhookService>();

@@ -10,18 +10,18 @@ namespace Concertable.Payment.Infrastructure;
 internal class ManagerPaymentModule : IManagerPaymentModule
 {
     private readonly IPaymentManager paymentManager;
-    private readonly IStripeAccountService stripeAccountService;
+    private readonly IStripeAccountClient stripeAccountClient;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly IUserModule userModule;
 
     public ManagerPaymentModule(
         IPaymentManager paymentManager,
-        IStripeAccountService stripeAccountService,
+        IStripeAccountClient stripeAccountClient,
         IPayoutAccountRepository payoutAccountRepository,
         IUserModule userModule)
     {
         this.paymentManager = paymentManager;
-        this.stripeAccountService = stripeAccountService;
+        this.stripeAccountClient = stripeAccountClient;
         this.payoutAccountRepository = payoutAccountRepository;
         this.userModule = userModule;
     }
@@ -65,7 +65,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         CancellationToken ct = default)
     {
         var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
-        return await stripeAccountService.CreatePaymentSessionAsync(stripeCustomerId, metadata, ct);
+        return await stripeAccountClient.CreatePaymentSessionAsync(stripeCustomerId, metadata, ct);
     }
 
     public async Task<CheckoutSession> CreateSetupSessionAsync(
@@ -74,13 +74,13 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         CancellationToken ct = default)
     {
         var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
-        return await stripeAccountService.CreateSetupSessionAsync(stripeCustomerId, metadata, ct);
+        return await stripeAccountClient.CreateSetupSessionAsync(stripeCustomerId, metadata, ct);
     }
 
     public async Task VerifyAndVoidAsync(Guid payerId, string paymentMethodId, CancellationToken ct = default)
     {
         var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
-        await stripeAccountService.VerifyAndVoidAsync(stripeCustomerId, paymentMethodId, ct);
+        await stripeAccountClient.VerifyAndVoidAsync(stripeCustomerId, paymentMethodId, ct);
     }
 
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
@@ -92,7 +92,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         var manager = await userModule.GetManagerByIdAsync(userId)
             ?? throw new NotFoundException($"Manager not found for userId {userId}");
 
-        await stripeAccountService.ProvisionCustomerAsync(userId, manager.Email ?? string.Empty, ct);
+        await stripeAccountClient.ProvisionCustomerAsync(userId, manager.Email ?? string.Empty, ct);
 
         account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
         return account?.StripeCustomerId
