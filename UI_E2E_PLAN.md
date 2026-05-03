@@ -7,7 +7,7 @@ A Reqnroll + Playwright UI E2E suite that drives the Concertable SPA through eve
 1. Replace tedious manual click-through-as-3-roles testing during current development.
 2. Permanent regression armour for the workflow surface as the SPA refactor lands.
 
-UI tests live in a new `api/Tests/Concertable.E2ETests.Ui/` Reqnroll project. API E2E tests stay where they are, in xUnit form, in a renamed `Concertable.E2ETests.Api`. Shared infrastructure lives in `Concertable.E2ETests.Common` and is consumed by both.
+All three E2E projects (Common + Api + Ui) live under a single `api/Tests/Concertable.E2ETests/` parent folder, mirroring the `Modules/<Domain>/` cohesion pattern: Common is private infra for Api+Ui, neither sibling makes sense without it. UI tests are a new Reqnroll project. API E2E tests stay xUnit-direct, renamed from `Concertable.Web.E2ETests` to `Concertable.E2ETests.Api`.
 
 ## Decisions locked in
 
@@ -51,69 +51,72 @@ Plus three cross-cutting flows that aren't strategies but are UI surface:
 
 ```
 api/Tests/
-├── Concertable.E2ETests.Common/                ✅ Step 1 LANDED
-│   ├── Concertable.E2ETests.Common.csproj      (class lib, IsTestProject=false)
-│   ├── AppFixture.cs                           (Aspire boot, /e2e/reseed, JWT minting)
-│   ├── StripeCliFixture.cs                     (Docker stripe-cli + webhook secret)
-│   ├── SqlFixture.cs                           (Respawn DB reset)
-│   ├── PollingService.cs / IPollingService.cs
-│   ├── TestTokenMinter.cs                      (used by Api project only)
-│   ├── MessageSinkLoggerProvider.cs
-│   ├── DistributedApplicationBuilderExtensions.cs (port pinning + E2E env vars)
-│   ├── E2ETestCollection.cs                    (collection definition base)
-│   ├── GlobalUsings.cs
-│   └── Content: appsettings.E2E.json (CopyToOutputDirectory)
-│
-├── Concertable.E2ETests.Api/                   (RENAME of Concertable.Web.E2ETests — Step 4)
-│   ├── Concertable.E2ETests.Api.csproj
-│   ├── CollectionRegistration.cs               ([CollectionDefinition("E2E")] for this assembly)
-│   └── Payments/
-│       ├── ConcertDraftTests.cs                (+ [Trait("Category","Api")])
-│       ├── ConcertFinishedTests.cs
-│       └── TicketPurchaseTests.cs
-│
-└── Concertable.E2ETests.Ui/                    (NEW — Step 5+)
-    ├── Concertable.E2ETests.Ui.csproj          (Reqnroll.xUnit + Reqnroll.Microsoft.Extensions.DependencyInjection
-    │                                            + Microsoft.Playwright + Microsoft.Playwright.Xunit)
-    ├── reqnroll.json                            (Reqnroll config)
-    ├── Hooks/
-    │   ├── PlaywrightHooks.cs                  ([BeforeTestRun] launch browser; [BeforeScenario] new context; [AfterScenario] dispose)
-    │   ├── AspireHooks.cs                      ([BeforeTestRun] boot AppFixture; [BeforeScenario] reset + reseed)
-    │   └── LoginCaptureHooks.cs                ([BeforeTestRun] real OIDC login per role → cache storageState)
-    ├── Support/
-    │   ├── WorkflowState.cs                    (per-scenario typed state object — avoids ScenarioContext stringly-typed keys)
-    │   ├── EnumTransformations.cs              ([StepArgumentTransformation] for ContractType, BookingSubtype, etc)
-    │   ├── PageObjects/
-    │   │   ├── LoginPage.cs
-    │   │   ├── VenueManager/
-    │   │   │   ├── OpportunitiesPage.cs
-    │   │   │   ├── ApplicationsPage.cs
-    │   │   │   ├── AcceptApplicationPage.cs
-    │   │   │   └── ApplicationCheckoutPage.cs
-    │   │   ├── Artist/
-    │   │   │   ├── OpportunityFindPage.cs
-    │   │   │   ├── ApplyCheckoutPage.cs
-    │   │   │   └── MyApplicationsPage.cs
-    │   │   └── Customer/
-    │   │       └── TicketCheckoutPage.cs
-    │   └── Helpers/
-    │       ├── StripeUiHelpers.cs              (frame-locator helpers + Cards.Success/Cards.Decline/etc constants)
-    │       ├── SignalRWaiter.cs                (wait-for-event with PollingService)
-    │       └── DbAssertions.cs                 (read EF entities post-flow)
-    ├── Steps/
-    │   ├── VenueManagerSteps.cs                ([Binding] — thin, delegates to page objects)
-    │   ├── ArtistSteps.cs
-    │   ├── CustomerSteps.cs
-    │   ├── SystemSteps.cs                       (Given/When for system events: SignalR, /e2e/finish, etc)
-    │   └── AssertionSteps.cs                    (Then DbAssertions / StripePaymentIntents calls)
-    └── Features/
-        ├── Login.feature                        (Phase 1 smoke)
-        ├── FlatFeeWorkflow.feature              (Phase 2)
-        ├── DoorSplitWorkflow.feature            (Phase 3)
-        ├── VersusWorkflow.feature               (Phase 3)
-        ├── VenueHireWorkflow.feature            (Phase 3)
-        ├── CustomerTicketPurchase.feature       (Phase 3)
-        └── ConcertSettlement.feature            (Phase 3)
+└── Concertable.E2ETests/                              ✅ Step 3 LANDED (parent grouping folder)
+    ├── Concertable.E2ETests.Common/                   ✅ Step 1 LANDED
+    │   ├── Concertable.E2ETests.Common.csproj         (class lib, IsTestProject=false)
+    │   ├── AppFixture.cs                              (Aspire boot, /e2e/reseed, JWT minting)
+    │   ├── StripeCliFixture.cs                        (Docker stripe-cli + webhook secret)
+    │   ├── SqlFixture.cs                              (Respawn DB reset)
+    │   ├── PollingService.cs / IPollingService.cs
+    │   ├── TestTokenMinter.cs                         (used by Api project only)
+    │   ├── MessageSinkLoggerProvider.cs
+    │   ├── DistributedApplicationBuilderExtensions.cs (port pinning + E2E env vars)
+    │   ├── E2ETestCollection.cs                       (collection definition base)
+    │   ├── GlobalUsings.cs
+    │   └── Content: appsettings.E2E.json (CopyToOutputDirectory)
+    │
+    ├── Concertable.E2ETests.Api/                      ✅ Step 3 LANDED (rename of Concertable.Web.E2ETests)
+    │   ├── Concertable.E2ETests.Api.csproj
+    │   ├── AssemblyInfo.cs                            ([AssemblyTrait("Category","Api")])
+    │   ├── CollectionRegistration.cs                  ([CollectionDefinition("E2E")] for this assembly)
+    │   └── Payments/
+    │       ├── ConcertDraftTests.cs
+    │       ├── ConcertFinishedTests.cs
+    │       └── TicketPurchaseTests.cs
+    │
+    └── Concertable.E2ETests.Ui/                       (NEW — Step 4)
+        ├── Concertable.E2ETests.Ui.csproj             (Reqnroll.xUnit + Reqnroll.Microsoft.Extensions.DependencyInjection
+        │                                               + Microsoft.Playwright + Microsoft.Playwright.Xunit)
+        ├── reqnroll.json                              (Reqnroll config)
+        ├── Hooks/
+        │   ├── PlaywrightHooks.cs                     ([BeforeTestRun] launch browser; [BeforeScenario] new context; [AfterScenario] dispose)
+        │   ├── AspireHooks.cs                         ([BeforeTestRun] boot AppFixture; [BeforeScenario] reset + reseed)
+        │   └── LoginCaptureHooks.cs                   ([BeforeTestRun] real OIDC login per role → cache storageState)
+        ├── Support/
+        │   ├── UiAppFixture.cs                        (composes AppFixture + Browser/Playwright)
+        │   ├── WorkflowState.cs                       (per-scenario typed state object — avoids ScenarioContext stringly-typed keys)
+        │   ├── EnumTransformations.cs                 ([StepArgumentTransformation] for ContractType, BookingSubtype, etc)
+        │   ├── PageObjects/
+        │   │   ├── LoginPage.cs
+        │   │   ├── VenueManager/
+        │   │   │   ├── OpportunitiesPage.cs
+        │   │   │   ├── ApplicationsPage.cs
+        │   │   │   ├── AcceptApplicationPage.cs
+        │   │   │   └── ApplicationCheckoutPage.cs
+        │   │   ├── Artist/
+        │   │   │   ├── OpportunityFindPage.cs
+        │   │   │   ├── ApplyCheckoutPage.cs
+        │   │   │   └── MyApplicationsPage.cs
+        │   │   └── Customer/
+        │   │       └── TicketCheckoutPage.cs
+        │   └── Helpers/
+        │       ├── StripeUiHelpers.cs                 (frame-locator helpers + Cards.Success/Cards.Decline/etc constants)
+        │       ├── SignalRWaiter.cs                   (wait-for-event with PollingService)
+        │       └── DbAssertions.cs                    (read EF entities post-flow)
+        ├── Steps/
+        │   ├── VenueManagerSteps.cs                   ([Binding] — thin, delegates to page objects)
+        │   ├── ArtistSteps.cs
+        │   ├── CustomerSteps.cs
+        │   ├── SystemSteps.cs                         (Given/When for system events: SignalR, /e2e/finish, etc)
+        │   └── AssertionSteps.cs                      (Then DbAssertions / StripePaymentIntents calls)
+        └── Features/
+            ├── Login.feature                          (Phase 1 smoke)
+            ├── FlatFeeWorkflow.feature                (Phase 2)
+            ├── DoorSplitWorkflow.feature              (Phase 3)
+            ├── VersusWorkflow.feature                 (Phase 3)
+            ├── VenueHireWorkflow.feature              (Phase 3)
+            ├── CustomerTicketPurchase.feature         (Phase 3)
+            └── ConcertSettlement.feature              (Phase 3)
 ```
 
 ## Reqnroll Conventions (NON-NEGOTIABLE — failure mode prevention)
@@ -258,15 +261,18 @@ What was originally one step grew (deliberately) to also fix the pre-existing re
 - `CompletionDispatcher` gained `ILogger<CompletionDispatcher>` + `LogError(ex, ...)` in catch block — surfaces full exception detail when `BadRequestException` / similar gets swallowed by result-conversion. Same pattern should apply to any future catch-all that converts exceptions to `Result.Fail(ex.Message)`.
 - 3 tests migrated from raw `EnsureSuccessStatusCode` to `HttpResponseAssertions.ShouldBe(...)` for visible response body on assertion failures
 
-### Step 2 — Port pinning + Auth env override (NEXT)
+### ✅ Step 2 — Port pinning + Auth env override (LANDED)
 - `ApiBaseUrl` `http://localhost:7001` → `https://localhost:7086` (matches `.env.development`)
-- Pin Auth resource to `https://localhost:7083` via `EnvironmentCallbackAnnotation`
-- `dotnet test` — must stay 12/12 green
+- Pinned Auth resource to `https://localhost:7083` via `EnvironmentCallbackAnnotation`
+- URLs sourced from `IConfiguration` (`Endpoints:Api` + `Endpoints:Auth` in `appsettings.E2E.json`) — no hardcoded constants. ASPNETCORE_ENVIRONMENT=E2E means these never bleed into prod (prod uses Azure App Settings → IConfiguration).
+- StripeCliFixture forwards via `--skip-verify` (HTTPS localhost dev cert)
+- 12/12 green
 
-### Step 3 — Rename `Concertable.Web.E2ETests` → `Concertable.E2ETests.Api`
-- Rename folder, csproj, asm name; update sln
-- Add `[Trait("Category","Api")]` to the 3 test classes
-- `dotnet test` — must stay 12/12 green
+### ✅ Step 3 — Rename `Concertable.Web.E2ETests` → `Concertable.E2ETests.Api` + nest both projects under `Tests/Concertable.E2ETests/` (LANDED)
+- Renamed folder, csproj, namespaces, asm name; updated sln + 4 IVTs (Concert.Api, Concert.Application, Contract.Application, Payment.Application)
+- Added `[AssemblyTrait("Category","Api")]` (alongside existing `Category=E2E`)
+- Both Common + Api moved into nested parent `Tests/Concertable.E2ETests/` — mirrors `Modules/<Domain>/` cohesion pattern (Common is private infra, Api+Ui never used independently). Adjusted relative paths in csprojs (`..\..\` → `..\..\..\` for cross-tree refs).
+- 12/12 still green
 
 ### Step 4 — Create `Concertable.E2ETests.Ui` Reqnroll project + `UiAppFixture` composition
 
@@ -365,4 +371,4 @@ For DoorSplit/Versus:
 
 ## Next Step
 
-Step 4: Reqnroll project scaffolding + `UiAppFixture` composition + `Login.feature` smoke. (Steps 2 + 3 — port pinning + rename — can land alongside or before; both are mechanical and don't block Reqnroll work.)
+Step 4: Reqnroll project scaffolding at `Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/` + `UiAppFixture` composition + `Login.feature` smoke. Steps 1–3 all landed.
