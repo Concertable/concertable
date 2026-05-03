@@ -76,7 +76,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var checkoutResponse = await artistClient.PostAsync($"/api/Application/opportunity/{opportunity!.Id}/checkout");
         await checkoutResponse.ShouldBe(HttpStatusCode.OK);
 
-        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity.Id}", new { paymentMethodId = "pm_test" });
+        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity.Id}", new { paymentMethodId = "pm_card_visa" });
         await applyResponse.ShouldBe(HttpStatusCode.Created);
 
         // Assert — a PrepaidApplication was created with the supplied PM
@@ -84,7 +84,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
             .OfType<PrepaidApplication>()
             .FirstOrDefaultAsync(a => a.OpportunityId == opportunity.Id);
         Assert.NotNull(prepaid);
-        Assert.Equal("pm_test", prepaid!.PaymentMethodId);
+        Assert.Equal("pm_card_visa", prepaid!.PaymentMethodId);
     }
 
     [Fact]
@@ -188,7 +188,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
 
         // Act — artist applies; verify-and-void is stubbed to decline
         var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager, o => o.UseDeclineAtVerify());
-        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity!.Id}", new { paymentMethodId = "pm_test" });
+        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity!.Id}", new { paymentMethodId = "pm_card_visa" });
 
         // Assert — 400 returned, no PrepaidApplication row created
         Assert.Equal(HttpStatusCode.BadRequest, applyResponse.StatusCode);

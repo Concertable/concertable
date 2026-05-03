@@ -1,9 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Concert.Application.Interfaces;
-using Concertable.Data.Application;
 using Concertable.Seeding;
 using Concertable.Shared;
-using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Web.Extensions;
 
@@ -45,24 +43,6 @@ public static class E2EEndpointExtensions
             return result.IsFailed
                 ? Results.BadRequest(result.Errors.SelectMessages())
                 : Results.Ok();
-        });
-
-        app.MapGet("/e2e/payment-intent/{applicationId:int}", async (int applicationId, IReadDbContext readDb) =>
-        {
-            var bookingId = await readDb.Bookings
-                .Where(b => b.ApplicationId == applicationId)
-                .Select(b => b.Id)
-                .FirstOrDefaultAsync();
-
-            var paymentIntentId = await readDb.SettlementTransactions
-                .Where(t => t.BookingId == bookingId)
-                .OrderByDescending(t => t.CreatedAt)
-                .Select(t => t.PaymentIntentId)
-                .FirstOrDefaultAsync();
-
-            return paymentIntentId is not null
-                ? Results.Ok(paymentIntentId)
-                : Results.NotFound("No settlement transaction found for this application");
         });
     }
 }

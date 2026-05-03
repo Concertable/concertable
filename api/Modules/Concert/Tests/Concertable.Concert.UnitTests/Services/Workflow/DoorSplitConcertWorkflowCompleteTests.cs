@@ -52,7 +52,7 @@ public class DoorSplitConcertWorkflowCompleteTests
     {
         public static BookingEntity Create(Guid artistUserId, Guid venueUserId)
         {
-            var booking = DeferredBooking.Create(applicationId: 1, paymentMethodId: "pm_test");
+            var booking = DeferredBooking.Create(applicationId: 1, paymentMethodId: "pm_card_visa");
             var application = (StandardApplication)Activator.CreateInstance(
                 typeof(StandardApplication),
                 BindingFlags.Instance | BindingFlags.NonPublic,

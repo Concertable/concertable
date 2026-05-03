@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.Web.E2ETests.Infrastructure;
+namespace Concertable.E2ETests.Common;
 
 public class PollingService : IPollingService
 {

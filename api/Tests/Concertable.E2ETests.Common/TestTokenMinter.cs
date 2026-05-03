@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace Concertable.Web.E2ETests.Infrastructure;
+namespace Concertable.E2ETests.Common;
 
 internal sealed class TestTokenMinter
 {

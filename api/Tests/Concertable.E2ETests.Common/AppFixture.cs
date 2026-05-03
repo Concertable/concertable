@@ -8,23 +8,25 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
 
-namespace Concertable.Web.E2ETests.Infrastructure;
+namespace Concertable.E2ETests.Common;
 
 public class AppFixture : IAsyncLifetime
 {
     private DistributedApplication app = null!;
     private StripeCliFixture stripeCli = null!;
-    private SqlFixture sqlFixture = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
     private readonly TestTokenMinter tokenMinter;
 
     internal const string ApiBaseUrl = "http://localhost:7001";
 
+    public const string TestPaymentMethodId = "pm_card_visa";
+
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
     public SeedDataResponse SeedData { get; private set; } = null!;
+    public SqlFixture Sql { get; private set; } = null!;
 
     public AppFixture(IMessageSink messageSink)
     {
@@ -61,15 +63,15 @@ public class AppFixture : IAsyncLifetime
 
         await WaitForAppAsync();
 
-        sqlFixture = new SqlFixture();
-        await sqlFixture.InitializeAsync(app);
+        Sql = new SqlFixture();
+        await Sql.InitializeAsync(app);
 
         logger.LogInformation("E2E test fixture ready");
     }
 
     public async Task ResetAsync()
     {
-        await sqlFixture.ResetAsync();
+        await Sql.ResetAsync();
         var response = await Client.PostAsync("/e2e/reseed");
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
     }
@@ -85,7 +87,7 @@ public class AppFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         Client.Dispose();
-        await sqlFixture.DisposeAsync();
+        await Sql.DisposeAsync();
         await app.DisposeAsync();
         await stripeCli.DisposeAsync();
         loggerFactory.Dispose();

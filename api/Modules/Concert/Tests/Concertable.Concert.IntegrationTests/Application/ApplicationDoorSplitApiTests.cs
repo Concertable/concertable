@@ -54,10 +54,10 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         await client.PostAsync(
-            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
         var response = await client.PostAsync(
-            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -70,7 +70,7 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
 
         // Act
         var response = await client.PostAsync(
-            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
         // Assert — 400 returned, no DeferredBooking or concert draft created
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -85,7 +85,7 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         var acceptResponse = await client.PostAsync(
-            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_test" });
+            $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
         await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         var application = await client.GetAsync<ApplicationResponse>(

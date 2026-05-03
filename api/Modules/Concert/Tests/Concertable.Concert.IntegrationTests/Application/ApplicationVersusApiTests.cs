@@ -62,7 +62,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
 
         // Act
         var response = await client.PostAsync(
-            $"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_test" });
+            $"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
         // Assert — 400 returned, no concert draft created
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -78,7 +78,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_test" });
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
         await acceptResponse.ShouldBe(HttpStatusCode.OK);
 
         // Assert
