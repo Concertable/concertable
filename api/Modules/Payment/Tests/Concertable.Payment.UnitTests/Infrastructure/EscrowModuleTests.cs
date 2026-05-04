@@ -2,6 +2,7 @@ using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
 using Concertable.Payment.Infrastructure;
+using Concertable.Tests.Common;
 using Concertable.User.Contracts;
 using FluentResults;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -171,9 +172,4 @@ public class EscrowModuleTests
         account.LinkCustomer(stripeCustomerId);
         return account;
     }
-}
-
-internal sealed class FakeTimeProvider : TimeProvider
-{
-    public override DateTimeOffset GetUtcNow() => new(2026, 5, 4, 12, 0, 0, TimeSpan.Zero);
 }

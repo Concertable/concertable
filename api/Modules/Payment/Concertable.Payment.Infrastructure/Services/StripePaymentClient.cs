@@ -6,32 +6,34 @@ namespace Concertable.Payment.Infrastructure.Services;
 
 internal class StripePaymentClient : IStripePaymentClient
 {
-    public StripePaymentClient(IOptions<StripeSettings> stripeSettings)
+    private readonly PaymentIntentService paymentIntentService;
+    private readonly TransferService transferService;
+    private readonly RefundService refundService;
+    private readonly TransferReversalService transferReversalService;
+
+    public StripePaymentClient(
+        IOptions<StripeSettings> stripeSettings,
+        PaymentIntentService paymentIntentService,
+        TransferService transferService,
+        RefundService refundService,
+        TransferReversalService transferReversalService)
     {
         StripeConfiguration.ApiKey = stripeSettings.Value.SecretKey;
+        this.paymentIntentService = paymentIntentService;
+        this.transferService = transferService;
+        this.refundService = refundService;
+        this.transferReversalService = transferReversalService;
     }
 
-    public async Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options)
-    {
-        var service = new PaymentIntentService();
-        return await service.CreateAsync(options);
-    }
+    public Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options) =>
+        paymentIntentService.CreateAsync(options);
 
-    public async Task<Transfer> CreateTransferAsync(TransferCreateOptions options)
-    {
-        var service = new TransferService();
-        return await service.CreateAsync(options);
-    }
+    public Task<Transfer> CreateTransferAsync(TransferCreateOptions options) =>
+        transferService.CreateAsync(options);
 
-    public async Task<Refund> CreateRefundAsync(RefundCreateOptions options)
-    {
-        var service = new RefundService();
-        return await service.CreateAsync(options);
-    }
+    public Task<Refund> CreateRefundAsync(RefundCreateOptions options) =>
+        refundService.CreateAsync(options);
 
-    public async Task<TransferReversal> CreateTransferReversalAsync(string transferId, TransferReversalCreateOptions options)
-    {
-        var service = new TransferReversalService();
-        return await service.CreateAsync(transferId, options);
-    }
+    public Task<TransferReversal> CreateTransferReversalAsync(string transferId, TransferReversalCreateOptions options) =>
+        transferReversalService.CreateAsync(transferId, options);
 }

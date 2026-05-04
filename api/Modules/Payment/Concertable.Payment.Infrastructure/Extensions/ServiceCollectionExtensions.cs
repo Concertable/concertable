@@ -56,6 +56,9 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.SetupIntentService>();
             services.AddSingleton<Stripe.PaymentIntentService>();
             services.AddSingleton<Stripe.CustomerSessionService>();
+            services.AddSingleton<Stripe.TransferService>();
+            services.AddSingleton<Stripe.RefundService>();
+            services.AddSingleton<Stripe.TransferReversalService>();
             services.AddScoped<IStripeAccountClient, StripeAccountClient>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
             services.AddKeyedScoped<IStripePaymentIntentClient, OnSessionStripePaymentIntentClient>(PaymentSession.OnSession);
