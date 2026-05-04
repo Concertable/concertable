@@ -8,20 +8,20 @@ internal class UpfrontConcertService : IUpfrontConcertService
 {
     private readonly IApplicationValidator applicationValidator;
     private readonly IBookingService bookingService;
-    private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly IEscrowModule escrowModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly ILogger<UpfrontConcertService> logger;
 
     public UpfrontConcertService(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
-        IManagerPaymentModule managerPaymentModule,
+        IEscrowModule escrowModule,
         IConcertDraftService concertDraftService,
         ILogger<UpfrontConcertService> logger)
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
-        this.managerPaymentModule = managerPaymentModule;
+        this.escrowModule = escrowModule;
         this.concertDraftService = concertDraftService;
         this.logger = logger;
     }
@@ -38,7 +38,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
             "Accepting application {ApplicationId} (booking {BookingId}): holding {Amount} {Currency} from {PayerId} on behalf of {PayeeId}",
             applicationId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var hold = await managerPaymentModule.HoldAsync(payerId, payeeId, amount, paymentMethodId, session, booking.Id);
+        var hold = await escrowModule.HoldAsync(payerId, payeeId, amount, paymentMethodId, session, booking.Id);
         if (hold.IsFailed)
             throw new BadRequestException(hold.Errors);
 
@@ -56,27 +56,8 @@ internal class UpfrontConcertService : IUpfrontConcertService
     {
         var booking = await bookingService.CompleteByConcertIdAsync(concertId);
 
-        var escrow = await managerPaymentModule.GetEscrowByBookingIdAsync(booking.Id);
-        if (escrow is null)
-        {
-            logger.LogWarning("No escrow found for booking {BookingId} on concert finish; nothing to release", booking.Id);
-            return;
-        }
-
-        if (escrow.Status != EscrowStatus.Held)
-        {
-            logger.LogWarning(
-                "Escrow {EscrowId} for booking {BookingId} is {Status}, not Held; skipping release",
-                escrow.Id, booking.Id, escrow.Status);
-            return;
-        }
-
-        var release = await managerPaymentModule.ReleaseAsync(escrow.Id);
+        var release = await escrowModule.ReleaseByBookingIdAsync(booking.Id);
         if (release.IsFailed)
             throw new BadRequestException(release.Errors);
-
-        logger.LogInformation(
-            "Released escrow {EscrowId} for booking {BookingId} on concert {ConcertId} finish: transfer {TransferId}",
-            escrow.Id, booking.Id, concertId, release.Value.TransferId);
     }
 }

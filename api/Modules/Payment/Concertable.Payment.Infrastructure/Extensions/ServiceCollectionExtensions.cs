@@ -90,6 +90,7 @@ public static class ServiceCollectionExtensions
         // Module facades â€” public Payment.Contracts surface
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
         services.AddScoped<IManagerPaymentModule, ManagerPaymentModule>();
+        services.AddScoped<IEscrowModule, EscrowModule>();
 
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
