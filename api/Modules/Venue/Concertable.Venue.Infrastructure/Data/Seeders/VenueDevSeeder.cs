@@ -92,6 +92,8 @@ internal class VenueDevSeeder : IDevSeeder
 
             context.Venues.AddRange(venues);
             await context.SaveChangesAsync(ct);
+
+            seed.Venue = venues[0];
         });
     }
 }
