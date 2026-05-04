@@ -72,7 +72,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldConfirmBookingAndCreateDraftConcertAndNotifyArtistAndVenue()
+    public async Task Accept_ShouldConfirmBookingAndCreateDraftConcertAndNotifyArtistAndVenueAndHoldEscrow()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
@@ -93,6 +93,14 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         Assert.Contains(fixture.SeedData.ArtistManager.Id.ToString(), notifiedUserIds);
         Assert.Contains(fixture.SeedData.VenueManager1.Id.ToString(), notifiedUserIds);
         Assert.All(fixture.NotificationService.DraftCreated, n => Assert.NotNull(n.Payload));
+
+        var booking = await fixture.ReadDbContext.Bookings.FirstAsync(b => b.ApplicationId == fixture.SeedData.FlatFeeApp.Id);
+        var escrow = await fixture.ReadDbContext.Escrows.FirstOrDefaultAsync(e => e.BookingId == booking.Id);
+        Assert.NotNull(escrow);
+        Assert.Equal(Concertable.Payment.Contracts.EscrowStatus.Held, escrow!.Status);
+        Assert.NotEmpty(escrow.ChargeId);
+        Assert.Equal(fixture.SeedData.VenueManager1.Id, escrow.FromUserId);
+        Assert.Equal(fixture.SeedData.ArtistManager.Id, escrow.ToUserId);
     }
 
     [Fact]

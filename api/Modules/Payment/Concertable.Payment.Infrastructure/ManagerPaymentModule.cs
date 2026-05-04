@@ -51,7 +51,11 @@ internal class ManagerPaymentModule : IManagerPaymentModule
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
-            Metadata = new Dictionary<string, string> { ["type"] = TransactionTypes.Settlement },
+            Metadata = new Dictionary<string, string>
+            {
+                ["type"] = TransactionTypes.Settlement,
+                ["bookingId"] = bookingId.ToString()
+            },
             Session = session
         }, ct);
 

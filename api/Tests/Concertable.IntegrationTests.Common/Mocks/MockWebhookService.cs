@@ -19,6 +19,7 @@ internal class MockWebhookService : IWebhookService
         var root = doc.RootElement;
 
         var eventId = root.GetProperty("id").GetString()!;
+        var eventType = root.GetProperty("type").GetString()!;
         var dataObject = root.GetProperty("data").GetProperty("object");
         var intentId = dataObject.GetProperty("id").GetString()!;
         var status = dataObject.GetProperty("status").GetString()!;
@@ -34,7 +35,7 @@ internal class MockWebhookService : IWebhookService
         var stripeEvent = new Event
         {
             Id = eventId,
-            Type = "payment_intent.succeeded",
+            Type = eventType,
             Data = new EventData { Object = intent }
         };
 

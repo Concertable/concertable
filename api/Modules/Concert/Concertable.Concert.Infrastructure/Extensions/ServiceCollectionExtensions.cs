@@ -125,6 +125,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPaymentSucceededProcessorFactory, PaymentSucceededProcessorFactory>();
         services.AddKeyedScoped<IPaymentSucceededProcessor, TicketPaymentService>("ticket");
         services.AddKeyedScoped<IPaymentSucceededProcessor, SettlementPaymentService>("settlement");
+        services.AddKeyedScoped<IPaymentSucceededProcessor, EscrowPaymentService>("escrow");
 
         services.AddSingleton<ConcertConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ConcertConfigurationProvider>());

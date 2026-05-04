@@ -55,7 +55,11 @@ internal class EscrowModule : IEscrowModule
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
-            Metadata = new Dictionary<string, string> { ["type"] = TransactionTypes.Escrow },
+            Metadata = new Dictionary<string, string>
+            {
+                ["type"] = TransactionTypes.Escrow,
+                ["bookingId"] = bookingId.ToString()
+            },
             Session = session
         }, ct);
 
