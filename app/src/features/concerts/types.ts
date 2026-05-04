@@ -127,6 +127,16 @@ export interface Opportunity {
   actions: OpportunityActions;
 }
 
+export type ContractRequest = Omit<Contract, "id">;
+
+export interface OpportunityRequest {
+  id?: number;
+  startDate: string;
+  endDate: string;
+  genreIds: number[];
+  contract: ContractRequest;
+}
+
 export interface ConcertArtist {
   id: number;
   name: string;

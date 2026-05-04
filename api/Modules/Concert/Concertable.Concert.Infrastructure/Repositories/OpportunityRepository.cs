@@ -24,6 +24,17 @@ internal class OpportunityRepository : Repository<OpportunityEntity>, IOpportuni
         return await query.ToPaginationAsync(pageParams);
     }
 
+    public async Task<IEnumerable<OpportunityEntity>> GetActiveByVenueIdAsync(int venueId)
+    {
+        return await context.Opportunities
+            .Where(o => o.VenueId == venueId && o.Period.Start >= timeProvider.GetUtcNow())
+            .Where(o => !o.Applications.Any(a => a.Status == ApplicationStatus.Accepted))
+            .Include(o => o.OpportunityGenres)
+            .ThenInclude(og => og.Genre)
+            .OrderBy(o => o.Period.Start)
+            .ToListAsync();
+    }
+
     public async Task<Guid?> GetOwnerByIdAsync(int opportunityId)
     {
         return await context.Opportunities
