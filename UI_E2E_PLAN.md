@@ -7,9 +7,11 @@ A Reqnroll + Playwright UI E2E suite that drives the Concertable SPA through eve
 1. Replace tedious manual click-through-as-3-roles testing during current development.
 2. Permanent regression armour for the workflow surface as the SPA refactor lands.
 
-## Status: scaffolding complete, escrow landed, FlatFee workflow next
+## Status: scaffolding complete, escrow landed, opportunity-sync prereq landed, FlatFee workflow next
 
-**Scaffolding PR (#35) merged** + **Escrow PR (#36) merged** + escrow follow-up commits on master. Reqnroll + Playwright + Aspire stack wired up end-to-end. `Login.feature` smoke proves the real OIDC redirect dance works. Money flow now goes through escrow (auth at accept → capture/transfer at settle) — UI E2E built against this final shape, no rework expected.
+**Scaffolding PR (#35) merged** + **Escrow PR (#36) merged** + **Opportunity-sync prereq PR (`Feature/UiE2eFlatFeeWorkflow-2`)** in flight. Reqnroll + Playwright + Aspire stack wired up end-to-end. `Login.feature` smoke proves the real OIDC redirect dance works. Money flow now goes through escrow (auth at accept → capture/transfer at settle) — UI E2E built against this final shape, no rework expected.
+
+**Why the prereq PR exists:** Drafting Step 5 surfaced that the SPA had no UI to *post* an opportunity (only to display existing ones). The "VM posts a flat fee opportunity for £500" Gherkin step was unimplementable. PR `Feature/UiE2eFlatFeeWorkflow-2` builds the missing UI plus the BE collection-sync endpoint + service infrastructure to back it. See `OPPORTUNITY_SYNC_PR.md` for full breakdown of that PR. The actual `FlatFeeWorkflow.feature` E2E test lands in a follow-up branch.
 
 **Escrow's impact on UI E2E (now baked in, not deferred):**
 - `EscrowStatus` enum + `IPaymentSucceededProcessor` keyed by transaction type now own the money flow
@@ -247,9 +249,11 @@ Lifecycle:
 
 ## Phased Implementation
 
-### Step 5 — FlatFee happy path (NEXT — branch `Feature/UiE2eFlatFeeWorkflow-2`)
+### Step 5 — FlatFee happy path (NEXT — new branch off master once prereq merges, e.g. `Feature/UiE2eFlatFeeWorkflow-3`)
 
-Multi-actor scenario covering the FlatFee strategy end-to-end via the UI, **post-escrow**:
+**Prerequisite:** opportunity-sync PR (`Feature/UiE2eFlatFeeWorkflow-2`) merged — adds VM "post opportunity" UI, BE `PUT /api/Venue/{id}/opportunities` declarative full-set sync endpoint, `useOpportunities` hook, `OpportunityList` + edit-mode `OpportunityCard`, `ContractFields` per-variant form fields, `DateRangeField` (single-day/multi-day toggle), `NumberInput` (anti scroll-wheel decrement). Detailed in `OPPORTUNITY_SYNC_PR.md`. Without this PR, "VM posts a flat fee opportunity" has no UI to drive.
+
+Multi-actor scenario covering the FlatFee strategy end-to-end via the UI, **post-escrow, post-prereq**:
 1. VM posts a FlatFee opportunity (`Given a venue manager has posted a flat fee opportunity for £500`)
 2. Artist applies (`When the artist applies to the opportunity`)
 3. VM accepts with valid card (`And the venue manager accepts with a valid card`) — exercises Stripe Elements + 3DS in the UI; PaymentIntent authorised, funds parked in escrow
@@ -322,4 +326,4 @@ For DoorSplit/Versus:
 
 ## Next Step
 
-**Step 5: FlatFee happy path** on `Feature/UiE2eFlatFeeWorkflow-2`. Start by drafting `FlatFeeWorkflow.feature` Gherkin — needs UI flow clarification first (VM post-opportunity form fields, artist apply UX, VM accept page route, draft-concert post-state).
+**Once `Feature/UiE2eFlatFeeWorkflow-2` (opportunity-sync prereq) is merged:** branch off master for Step 5 — the actual FlatFee E2E test. Start by drafting `FlatFeeWorkflow.feature` Gherkin against the now-existing SPA UI, then build outside-in per the §Step 5 build order (auth hooks first, then per-step driven by missing-binding errors).
