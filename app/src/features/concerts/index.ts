@@ -19,7 +19,7 @@ export { ApplyCheckoutPage } from "./pages/ApplyCheckoutPage";
 export { useConcertQuery } from "./hooks/useConcertQuery";
 export { useConcert } from "./hooks/useConcert";
 export { useMyConcert } from "./hooks/useMyConcert";
-export { useOpportunitiesByVenueQuery } from "./hooks/useOpportunityQuery";
+export { useOpportunitiesQuery } from "./hooks/useOpportunitiesQuery";
 export {
   useApplicationQuery,
   useApplicationsByOpportunityQuery,

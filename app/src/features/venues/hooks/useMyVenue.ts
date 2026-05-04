@@ -2,8 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMyVenueQuery } from "./useVenueQuery";
 import { useVenueStore } from "../store/useVenueStore";
 import venueApi from "../api/venueApi";
-import opportunityApi from "@/features/concerts/api/opportunityApi";
+import { useOpportunities } from "@/features/concerts/hooks/useOpportunities";
+import { opportunitiesQueryKey } from "@/features/concerts/hooks/useOpportunitiesQuery";
 import type { Venue } from "../types";
+import type { Opportunity } from "@/features/concerts/types";
 import type { UseVenueResult } from "./useVenue";
 
 interface UseMyVenueResult extends UseVenueResult {
@@ -21,28 +23,33 @@ export function useMyVenue(): UseMyVenueResult {
   const queryClient = useQueryClient();
 
   const {
-    toggleEdit,
-    resetDraft,
+    toggleEdit: storeToggleEdit,
+    resetDraft: storeResetDraft,
     draft,
     banner,
     avatar,
-    isDirty,
+    isDirty: venueIsDirty,
     editMode,
-    opportunities,
   } = useVenueStore();
+
+  const venueId = query.data?.id ?? 0;
+  const {
+    save: saveOpportunities,
+    hydrate: hydrateOpportunities,
+    reset: resetOpportunities,
+    isDirty: opportunitiesIsDirty,
+  } = useOpportunities(venueId);
 
   const mutation = useMutation({
     mutationFn: async () => {
       const saved = await venueApi.updateVenue(draft!, banner, avatar);
-      await opportunityApi.update(saved.id, opportunities);
+      await saveOpportunities();
       return saved;
     },
     onSuccess: (saved) => {
       queryClient.setQueryData(["venue", "my"], saved);
-      queryClient.invalidateQueries({
-        queryKey: ["opportunities", "venue", saved.id],
-      });
-      resetDraft(saved);
+      storeResetDraft(saved);
+      resetOpportunities();
     },
   });
 
@@ -52,10 +59,20 @@ export function useMyVenue(): UseMyVenueResult {
     isLoading: query.isLoading,
     isError: query.isError,
     editMode,
-    isDirty,
+    isDirty: venueIsDirty || opportunitiesIsDirty,
     save: mutation.mutate,
     isSaving: mutation.isPending,
-    toggleEdit: () => toggleEdit(query.data!),
-    resetDraft: () => resetDraft(query.data!),
+    toggleEdit: () => {
+      const cached =
+        queryClient.getQueryData<Opportunity[]>(
+          opportunitiesQueryKey(venueId),
+        ) ?? [];
+      storeToggleEdit(query.data!);
+      hydrateOpportunities(cached);
+    },
+    resetDraft: () => {
+      storeResetDraft(query.data!);
+      resetOpportunities();
+    },
   };
 }

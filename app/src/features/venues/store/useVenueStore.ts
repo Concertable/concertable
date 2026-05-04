@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import { produce } from "immer";
 import type { Venue } from "../types";
-import type { Opportunity, OpportunityDraft } from "@/features/concerts/types";
-
-type StoredOpportunity = Opportunity | OpportunityDraft;
 
 interface VenueStore {
   draft: Venue | undefined;
@@ -11,7 +8,6 @@ interface VenueStore {
   isDirty: boolean;
   banner: File | undefined;
   avatar: File | undefined;
-  opportunities: StoredOpportunity[];
 
   toggleEdit: (venue: Venue) => void;
   resetDraft: (venue: Venue) => void;
@@ -21,11 +17,6 @@ interface VenueStore {
   setLocation: (lat: number, lng: number, county: string, town: string) => void;
   setBanner: (file: File) => void;
   setAvatar: (file: File) => void;
-
-  setOpportunities: (opportunities: Opportunity[]) => void;
-  addOpportunity: (opportunity: OpportunityDraft) => void;
-  updateOpportunity: (index: number, opportunity: StoredOpportunity) => void;
-  removeOpportunity: (index: number) => void;
 }
 
 export const useVenueStore = create<VenueStore>((set) => ({
@@ -34,7 +25,6 @@ export const useVenueStore = create<VenueStore>((set) => ({
   isDirty: false,
   banner: undefined,
   avatar: undefined,
-  opportunities: [],
 
   toggleEdit: (venue) =>
     set(
@@ -54,7 +44,6 @@ export const useVenueStore = create<VenueStore>((set) => ({
         state.isDirty = false;
         state.banner = undefined;
         state.avatar = undefined;
-        state.opportunities = [];
       }),
     ),
 
@@ -104,37 +93,6 @@ export const useVenueStore = create<VenueStore>((set) => ({
         if (!state.draft) return;
         state.draft.avatar = URL.createObjectURL(file);
         state.avatar = file;
-        state.isDirty = true;
-      }),
-    ),
-
-  setOpportunities: (opportunities) =>
-    set(
-      produce((state: VenueStore) => {
-        state.opportunities = opportunities;
-      }),
-    ),
-
-  addOpportunity: (opportunity) =>
-    set(
-      produce((state: VenueStore) => {
-        state.opportunities.push(opportunity);
-        state.isDirty = true;
-      }),
-    ),
-
-  updateOpportunity: (index, opportunity) =>
-    set(
-      produce((state: VenueStore) => {
-        state.opportunities[index] = opportunity;
-        state.isDirty = true;
-      }),
-    ),
-
-  removeOpportunity: (index) =>
-    set(
-      produce((state: VenueStore) => {
-        state.opportunities.splice(index, 1);
         state.isDirty = true;
       }),
     ),

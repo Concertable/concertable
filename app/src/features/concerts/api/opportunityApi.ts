@@ -4,13 +4,20 @@ import type { PaginationParams } from "@/hooks/usePagination";
 import type { Opportunity, OpportunityDraft } from "../types";
 
 const opportunityApi = {
-  getOpportunitiesByVenueId: async (
+  getPaged: async (
     venueId: number,
     params: PaginationParams,
   ): Promise<Pagination<Opportunity>> => {
     const { data } = await api.get<Pagination<Opportunity>>(
       `/opportunity/active/venue/${venueId}`,
       { params },
+    );
+    return data;
+  },
+
+  getAll: async (venueId: number): Promise<Opportunity[]> => {
+    const { data } = await api.get<Opportunity[]>(
+      `/venue/${venueId}/opportunities`,
     );
     return data;
   },
