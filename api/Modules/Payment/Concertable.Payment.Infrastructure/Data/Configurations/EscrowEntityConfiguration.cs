@@ -10,6 +10,6 @@ internal class EscrowEntityConfiguration : IEntityTypeConfiguration<EscrowEntity
         builder.ToTable("Escrows", Schema.Name);
         builder.HasIndex(e => e.BookingId).IsUnique();
         builder.HasIndex(e => e.ChargeId).IsUnique();
-        builder.HasIndex(e => new { e.Status, e.ReleaseAt });
+        builder.HasIndex(e => e.Status);
     }
 }

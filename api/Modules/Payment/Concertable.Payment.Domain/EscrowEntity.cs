@@ -4,14 +4,13 @@ public class EscrowEntity : IIdEntity, IAuditable
 {
     private EscrowEntity() { }
 
-    private EscrowEntity(int bookingId, Guid fromUserId, Guid toUserId, long amount, string chargeId, DateTime releaseAt)
+    private EscrowEntity(int bookingId, Guid fromUserId, Guid toUserId, long amount, string chargeId)
     {
         BookingId = bookingId;
         FromUserId = fromUserId;
         ToUserId = toUserId;
         Amount = amount;
         ChargeId = chargeId;
-        ReleaseAt = releaseAt;
         Status = EscrowStatus.Pending;
     }
 
@@ -24,7 +23,6 @@ public class EscrowEntity : IIdEntity, IAuditable
     public string ChargeId { get; private set; } = null!;
     public string? TransferId { get; private set; }
     public string? RefundId { get; private set; }
-    public DateTime ReleaseAt { get; private set; }
     public DateTime? ReleasedAt { get; private set; }
     public DateTime? RefundedAt { get; private set; }
     public DateTime CreatedAt { get; set; }
@@ -32,8 +30,8 @@ public class EscrowEntity : IIdEntity, IAuditable
     public DateTime? LastModifiedAt { get; set; }
     public string? LastModifiedBy { get; set; }
 
-    public static EscrowEntity Create(int bookingId, Guid fromUserId, Guid toUserId, long amount, string chargeId, DateTime releaseAt) =>
-        new(bookingId, fromUserId, toUserId, amount, chargeId, releaseAt);
+    public static EscrowEntity Create(int bookingId, Guid fromUserId, Guid toUserId, long amount, string chargeId) =>
+        new(bookingId, fromUserId, toUserId, amount, chargeId);
 
     public void Confirm()
     {

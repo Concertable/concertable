@@ -63,9 +63,6 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("RefundedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("ReleaseAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime?>("ReleasedAt")
                         .HasColumnType("datetime2");
 
@@ -86,7 +83,7 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasIndex("ChargeId")
                         .IsUnique();
 
-                    b.HasIndex("Status", "ReleaseAt");
+                    b.HasIndex("Status");
 
                     b.ToTable("Escrows", "payment");
                 });

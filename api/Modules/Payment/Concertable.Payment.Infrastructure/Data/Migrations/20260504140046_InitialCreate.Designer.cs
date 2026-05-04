@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Concertable.Payment.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(PaymentDbContext))]
-    [Migration("20260504124248_InitialCreate")]
+    [Migration("20260504140046_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -66,9 +66,6 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("RefundedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("ReleaseAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime?>("ReleasedAt")
                         .HasColumnType("datetime2");
 
@@ -89,7 +86,7 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasIndex("ChargeId")
                         .IsUnique();
 
-                    b.HasIndex("Status", "ReleaseAt");
+                    b.HasIndex("Status");
 
                     b.ToTable("Escrows", "payment");
                 });

@@ -93,7 +93,6 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         string paymentMethodId,
         PaymentSession session,
         int bookingId,
-        DateTime releaseAt,
         CancellationToken ct = default)
     {
         var payer = await userModule.GetManagerByIdAsync(payerId)
@@ -124,8 +123,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
             payerId,
             payeeId,
             (long)(amount * 100),
-            hold.Value.TransactionId,
-            releaseAt);
+            hold.Value.TransactionId);
 
         await escrowRepository.AddAsync(escrow);
         await escrowRepository.SaveChangesAsync();
@@ -222,7 +220,6 @@ internal class ManagerPaymentModule : IManagerPaymentModule
             escrow.ChargeId,
             escrow.TransferId,
             escrow.RefundId,
-            escrow.ReleaseAt,
             escrow.ReleasedAt,
             escrow.RefundedAt);
     }

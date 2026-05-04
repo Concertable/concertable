@@ -10,6 +10,5 @@ public record EscrowDto(
     string ChargeId,
     string? TransferId,
     string? RefundId,
-    DateTime ReleaseAt,
     DateTime? ReleasedAt,
     DateTime? RefundedAt);

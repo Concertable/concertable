@@ -20,7 +20,6 @@ public interface IManagerPaymentModule
         string paymentMethodId,
         PaymentSession session,
         int bookingId,
-        DateTime releaseAt,
         CancellationToken ct = default);
 
     Task<Result<TransferResponse>> ReleaseAsync(

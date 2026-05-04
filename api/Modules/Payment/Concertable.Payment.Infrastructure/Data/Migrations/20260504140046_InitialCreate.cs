@@ -29,7 +29,6 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     ChargeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     TransferId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RefundId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ReleaseAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReleasedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RefundedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -149,10 +148,10 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Escrows_Status_ReleaseAt",
+                name: "IX_Escrows_Status",
                 schema: "payment",
                 table: "Escrows",
-                columns: new[] { "Status", "ReleaseAt" });
+                column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PayoutAccounts_StripeAccountId",
