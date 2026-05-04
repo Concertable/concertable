@@ -5,5 +5,5 @@
 // Ride-along (Â§3.3): Concert.Infrastructure applies ContractEntityConfiguration on ConcertDbContext.
 [assembly: InternalsVisibleTo("Concertable.Concert.Infrastructure")]
 [assembly: InternalsVisibleTo("Concertable.Workers.UnitTests")]
-[assembly: InternalsVisibleTo("Concertable.Web.E2ETests")]
+[assembly: InternalsVisibleTo("Concertable.E2ETests.Api")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

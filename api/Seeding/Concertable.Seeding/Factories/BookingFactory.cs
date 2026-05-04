@@ -9,7 +9,7 @@ public static class BookingFactory
             .With(nameof(BookingEntity.Status), BookingStatus.Confirmed)
             .With(nameof(BookingEntity.Concert), concert);
 
-    public static DeferredBooking ConfirmedDeferred(ConcertEntity concert, string paymentMethodId = "pm_test")
+    public static DeferredBooking ConfirmedDeferred(ConcertEntity concert, string paymentMethodId = "pm_card_visa")
         => New<DeferredBooking>()
             .With(nameof(BookingEntity.Status), BookingStatus.Confirmed)
             .With(nameof(BookingEntity.Concert), concert)
@@ -31,7 +31,7 @@ public static class BookingFactory
             .With(nameof(BookingEntity.Status), BookingStatus.Complete)
             .With(nameof(BookingEntity.Concert), concert);
 
-    public static DeferredBooking CompleteDeferred(ConcertEntity concert, string paymentMethodId = "pm_test")
+    public static DeferredBooking CompleteDeferred(ConcertEntity concert, string paymentMethodId = "pm_card_visa")
         => New<DeferredBooking>()
             .With(nameof(BookingEntity.Status), BookingStatus.Complete)
             .With(nameof(BookingEntity.Concert), concert)

@@ -3,41 +3,55 @@ using Aspire.Hosting.Testing;
 using Concertable.Seeding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Stripe;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
 
-namespace Concertable.Web.E2ETests.Infrastructure;
+namespace Concertable.E2ETests;
 
 public class AppFixture : IAsyncLifetime
 {
     private DistributedApplication app = null!;
     private StripeCliFixture stripeCli = null!;
-    private SqlFixture sqlFixture = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
+    private readonly IConfiguration configuration;
     private readonly TestTokenMinter tokenMinter;
 
-    internal const string ApiBaseUrl = "http://localhost:7001";
+    public const string TestPaymentMethodId = "pm_card_visa";
 
+    public string ApiBaseUrl { get; }
+    public string AuthBaseUrl { get; }
+    public string SpaBaseUrl { get; }
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
     public SeedDataResponse SeedData { get; private set; } = null!;
+    public SqlFixture Sql { get; private set; } = null!;
 
-    public AppFixture(IMessageSink messageSink)
+    public AppFixture() : this(BuildConsoleLoggerFactory()) { }
+
+    public AppFixture(IMessageSink messageSink) : this(BuildMessageSinkLoggerFactory(messageSink)) { }
+
+    private AppFixture(ILoggerFactory loggerFactory)
     {
-        loggerFactory = LoggerFactory.Create(b => b
-            .AddProvider(new MessageSinkLoggerProvider(messageSink))
-            .SetMinimumLevel(LogLevel.Debug));
-
+        this.loggerFactory = loggerFactory;
         logger = loggerFactory.CreateLogger<AppFixture>();
         Polling = new PollingService(loggerFactory.CreateLogger<PollingService>());
 
-        var configuration = new ConfigurationBuilder()
+        configuration = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.E2E.json"))
             .Build();
+
+        ApiBaseUrl = configuration["Endpoints:Api"]
+            ?? throw new InvalidOperationException("Endpoints:Api is not configured in appsettings.E2E.json.");
+        AuthBaseUrl = configuration["Endpoints:Auth"]
+            ?? throw new InvalidOperationException("Endpoints:Auth is not configured in appsettings.E2E.json.");
+        SpaBaseUrl = configuration["Endpoints:Spa"]
+            ?? throw new InvalidOperationException("Endpoints:Spa is not configured in appsettings.E2E.json.");
+
         tokenMinter = new TestTokenMinter(configuration, new JwtSecurityTokenHandler());
     }
 
@@ -48,10 +62,10 @@ public class AppFixture : IAsyncLifetime
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
-        stripeCli = builder.AddStripe(ApiBaseUrl);
+        stripeCli = builder.AddStripe(configuration, ApiBaseUrl);
         await stripeCli.InitializeAsync();
 
-        builder.AddE2E(stripeCli.WebhookSecret);
+        builder.AddE2E(ApiBaseUrl, AuthBaseUrl, stripeCli.WebhookSecret);
         StripePaymentIntents = new PaymentIntentService(new StripeClient(stripeCli.ApiKey));
 
         app = await builder.BuildAsync();
@@ -61,15 +75,15 @@ public class AppFixture : IAsyncLifetime
 
         await WaitForAppAsync();
 
-        sqlFixture = new SqlFixture();
-        await sqlFixture.InitializeAsync(app);
+        Sql = new SqlFixture();
+        await Sql.InitializeAsync(app);
 
         logger.LogInformation("E2E test fixture ready");
     }
 
     public async Task ResetAsync()
     {
-        await sqlFixture.ResetAsync();
+        await Sql.ResetAsync();
         var response = await Client.PostAsync("/e2e/reseed");
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
     }
@@ -85,7 +99,7 @@ public class AppFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         Client.Dispose();
-        await sqlFixture.DisposeAsync();
+        await Sql.DisposeAsync();
         await app.DisposeAsync();
         await stripeCli.DisposeAsync();
         loggerFactory.Dispose();
@@ -106,4 +120,14 @@ public class AppFixture : IAsyncLifetime
 
         logger.LogInformation("App is healthy");
     }
+
+    private static ILoggerFactory BuildConsoleLoggerFactory() =>
+        LoggerFactory.Create(b => b
+            .AddSimpleConsole(o => o.SingleLine = true)
+            .SetMinimumLevel(LogLevel.Debug));
+
+    private static ILoggerFactory BuildMessageSinkLoggerFactory(IMessageSink messageSink) =>
+        LoggerFactory.Create(b => b
+            .AddProvider(new MessageSinkLoggerProvider(messageSink))
+            .SetMinimumLevel(LogLevel.Debug));
 }

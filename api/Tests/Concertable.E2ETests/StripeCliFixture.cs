@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-namespace Concertable.Web.E2ETests.Infrastructure;
+namespace Concertable.E2ETests;
 
 public class StripeCliFixture : IAsyncLifetime
 {
@@ -27,7 +27,7 @@ public class StripeCliFixture : IAsyncLifetime
             StartInfo = new ProcessStartInfo
             {
                 FileName = "docker",
-                Arguments = $"run --rm stripe/stripe-cli listen --api-key {apiKey} --forward-to {forwardUrl.Replace("localhost", "host.docker.internal")}/api/Webhook",
+                Arguments = $"run --rm stripe/stripe-cli listen --skip-verify --api-key {apiKey} --forward-to {forwardUrl.Replace("localhost", "host.docker.internal")}/api/Webhook",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

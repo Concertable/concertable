@@ -4,12 +4,14 @@ using Aspire.Hosting.Testing;
 using Microsoft.Data.SqlClient;
 using Respawn;
 
-namespace Concertable.Web.E2ETests.Infrastructure;
+namespace Concertable.E2ETests;
 
 public class SqlFixture
 {
     private DbConnection connection = null!;
     private Respawner respawner = null!;
+
+    public DbConnection Connection => connection;
 
     public async Task InitializeAsync(DistributedApplication app)
     {

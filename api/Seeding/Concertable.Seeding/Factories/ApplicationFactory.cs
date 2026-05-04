@@ -7,7 +7,7 @@ public static class ApplicationFactory
     public static StandardApplication Create(int artistId, int opportunityId)
         => StandardApplication.Create(artistId, opportunityId);
 
-    public static PrepaidApplication CreatePrepaid(int artistId, int opportunityId, string paymentMethodId = "pm_test")
+    public static PrepaidApplication CreatePrepaid(int artistId, int opportunityId, string paymentMethodId = "pm_card_visa")
         => PrepaidApplication.Create(artistId, opportunityId, paymentMethodId);
 
     public static StandardApplication Accepted(int artistId, int opportunityId, BookingEntity booking)
@@ -20,7 +20,7 @@ public static class ApplicationFactory
         return app;
     }
 
-    public static PrepaidApplication AcceptedPrepaid(int artistId, int opportunityId, BookingEntity booking, string paymentMethodId = "pm_test")
+    public static PrepaidApplication AcceptedPrepaid(int artistId, int opportunityId, BookingEntity booking, string paymentMethodId = "pm_card_visa")
     {
         var app = New<PrepaidApplication>()
             .With(nameof(ApplicationEntity.ArtistId), artistId)

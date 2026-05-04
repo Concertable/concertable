@@ -1,4 +1,4 @@
-namespace Concertable.Web.E2ETests.Infrastructure;
+namespace Concertable.E2ETests;
 
 public interface IPollingService
 {

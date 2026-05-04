@@ -1,11 +1,10 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Tests.Common;
-using Concertable.Web.E2ETests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Concertable.Web.E2ETests.Payments;
+namespace Concertable.E2ETests.Api.Payments;
 
 [Collection("E2E")]
 
@@ -36,7 +35,7 @@ public class TicketPurchaseTests : IAsyncLifetime
         // Act
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.FlatFeeUpcomingConcert.Id, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.FlatFeeUpcomingConcert.Id, Quantity = 1, PaymentMethodId = AppFixture.TestPaymentMethodId });
 
         await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
@@ -58,7 +57,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     {
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.DoorSplitUpcomingConcert.Id, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.DoorSplitUpcomingConcert.Id, Quantity = 1, PaymentMethodId = AppFixture.TestPaymentMethodId });
 
         await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
@@ -80,7 +79,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     {
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.VersusUpcomingConcert.Id, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.VersusUpcomingConcert.Id, Quantity = 1, PaymentMethodId = AppFixture.TestPaymentMethodId });
 
         await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();
@@ -102,7 +101,7 @@ public class TicketPurchaseTests : IAsyncLifetime
     {
         var response = await customerClient.PostAsync(
             "/api/Ticket/purchase",
-            new { ConcertId = fixture.SeedData.VenueHireUpcomingConcert.Id, Quantity = 1 });
+            new { ConcertId = fixture.SeedData.VenueHireUpcomingConcert.Id, Quantity = 1, PaymentMethodId = AppFixture.TestPaymentMethodId });
 
         await response.ShouldBe(HttpStatusCode.OK);
         var purchase = await response.Content.ReadAsync<TicketPaymentResponse>();

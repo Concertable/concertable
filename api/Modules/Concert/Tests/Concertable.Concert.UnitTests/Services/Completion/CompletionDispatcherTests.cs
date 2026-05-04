@@ -1,4 +1,5 @@
 using Concertable.Concert.Infrastructure.Services.Completion;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Concertable.Concert.UnitTests.Services.Completion;
@@ -6,13 +7,15 @@ public class CompletionDispatcherTests
 {
     private readonly Mock<IContractLoader> contractLoader;
     private readonly Mock<IConcertWorkflowFactory> workflowFactory;
+    private readonly Mock<ILogger<CompletionDispatcher>> logger;
     private readonly CompletionDispatcher sut;
 
     public CompletionDispatcherTests()
     {
         contractLoader = new Mock<IContractLoader>();
         workflowFactory = new Mock<IConcertWorkflowFactory>();
-        sut = new CompletionDispatcher(contractLoader.Object, workflowFactory.Object);
+        logger = new Mock<ILogger<CompletionDispatcher>>();
+        sut = new CompletionDispatcher(contractLoader.Object, workflowFactory.Object, logger.Object);
     }
 
     [Fact]
