@@ -3,7 +3,7 @@ using Concertable.E2ETests.Ui.Support;
 namespace Concertable.E2ETests.Ui.Hooks;
 
 [Binding]
-public static class TestRunHooks
+public class TestRunHooks
 {
     public static UiFixture Fixture { get; private set; } = null!;
 
