@@ -9,7 +9,3 @@ internal record TicketPaymentResponse : PaymentResponse
     public DateTime PurchaseDate { get; set; }
     public string? UserEmail { get; set; }
 }
-
-internal record TransferResponse(string TransferId);
-
-internal record RefundResponse(string RefundId);

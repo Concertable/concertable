@@ -1,4 +1,3 @@
-using Concertable.Payment.Application.Responses;
 using Concertable.Payment.Infrastructure.Mappers;
 using FluentResults;
 using Microsoft.Extensions.Logging;

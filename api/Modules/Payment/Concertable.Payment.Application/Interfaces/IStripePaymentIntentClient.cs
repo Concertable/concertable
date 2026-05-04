@@ -1,5 +1,4 @@
 using Concertable.Payment.Application.Requests;
-using Concertable.Payment.Application.Responses;
 using FluentResults;
 
 namespace Concertable.Payment.Application.Interfaces;
