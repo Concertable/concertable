@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IPayoutAccountRepository, PayoutAccountRepository>();
+        services.AddScoped<IEscrowRepository, EscrowRepository>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
 
         // Transaction service

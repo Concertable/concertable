@@ -12,6 +12,7 @@ internal class PaymentDbContext(
     public DbSet<SettlementTransactionEntity> SettlementTransactions => Set<SettlementTransactionEntity>();
     public DbSet<StripeEventEntity> StripeEvents => Set<StripeEventEntity>();
     public DbSet<PayoutAccountEntity> PayoutAccounts => Set<PayoutAccountEntity>();
+    public DbSet<EscrowEntity> Escrows => Set<EscrowEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
