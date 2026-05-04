@@ -1,5 +1,5 @@
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IAcceptCheckout : ICheckout
+internal interface IAcceptCheckout : ICheckoutable
 {
 }
