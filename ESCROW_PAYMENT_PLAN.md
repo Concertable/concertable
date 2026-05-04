@@ -155,9 +155,13 @@ public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct
 
 Stripe fires `payment_intent.payment_failed` on declines. `WebhookProcessor` currently filters to `succeeded` only — extend to publish a sibling `PaymentFailedEvent` and a Concert-side handler that marks the related `BookingEntity` as `PaymentFailed` (the existing domain transition `BookingEntity.FailPayment()` already exists).
 
-### 0.4 Workers reconciliation job for orphaned Pending rows
+### 0.4 Workers reconciliation job for orphaned Pending rows — DEFERRED
 
-A `SettlementReconciliationFunction` in `Concertable.Workers` runs hourly, finds `SettlementTransactions` where `Status = Pending AND CreatedAt < UtcNow - 1h`, queries Stripe for the matching PaymentIntent (by `metadata.transactionId`), and updates the local row. Catches webhook delivery failures.
+Originally planned as `PaymentReconciliationFunction` in `Concertable.Workers` running hourly to recover stuck `Pending` rows (lost-webhook safety net for both `Escrows` and `SettlementTransactions`).
+
+**Deferred 2026-05-04** — the two-phase + idempotent transitions cover the dominant paths (synchronous success, 3DS, decline, user-cancel). Lost-webhook recovery is rare in practice (Stripe retries for 3 days). Manual SQL cleanup is acceptable until production volume justifies the Worker. Pick up when:
+- Real customer money runs through escrow (held funds matter more than booking-state).
+- A first stuck Pending happens in production and we want it never again.
 
 ### 0.5 Fix the original deadlock properly
 

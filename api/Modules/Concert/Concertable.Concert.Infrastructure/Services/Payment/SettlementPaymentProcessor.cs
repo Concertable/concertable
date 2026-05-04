@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
 
-internal class EscrowPaymentService : IPaymentSucceededProcessor
+internal class SettlementPaymentProcessor : IPaymentSucceededProcessor
 {
     private readonly IConcertWorkflowModule concertWorkflowModule;
-    private readonly ILogger<EscrowPaymentService> logger;
+    private readonly ILogger<SettlementPaymentProcessor> logger;
 
-    public EscrowPaymentService(IConcertWorkflowModule concertWorkflowModule, ILogger<EscrowPaymentService> logger)
+    public SettlementPaymentProcessor(IConcertWorkflowModule concertWorkflowModule, ILogger<SettlementPaymentProcessor> logger)
     {
         this.concertWorkflowModule = concertWorkflowModule;
         this.logger = logger;
@@ -18,7 +18,7 @@ internal class EscrowPaymentService : IPaymentSucceededProcessor
     {
         var bookingId = int.Parse(@event.Metadata["bookingId"]);
         logger.LogDebug(
-            "Escrow webhook received: payment intent {TransactionId} for booking {BookingId}",
+            "Settlement webhook received: payment intent {TransactionId} for booking {BookingId}",
             @event.TransactionId, bookingId);
         await concertWorkflowModule.SettleAsync(bookingId, ct);
     }

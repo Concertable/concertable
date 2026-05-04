@@ -19,7 +19,20 @@
       "Bash(xargs grep *)",
       "Bash(grep -n \"^            };$\" api/Modules/Concert/Concertable.Concert.Infrastructure/Data/Seeders/ConcertDevSeeder.cs)",
       "Bash(Select-Object -Last 30)",
-      "PowerShell(Rename-Item *)"
+      "PowerShell(Rename-Item *)",
+      "Bash(grep -v -E '^\\(bin|obj\\)$')",
+      "Bash(dotnet sln *)",
+      "Bash(tasklist)",
+      "Bash(dotnet package *)",
+      "PowerShell(& \"C:/Users/TommySeery/source/repos/Concertable/api/Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/bin/Debug/net10.0/playwright.ps1\" install chromium 2>&1 | Select-Object -Last 10)",
+      "Bash(taskkill //F //FI \"WINDOWTITLE eq dotnet*\" //T)",
+      "Bash(taskkill //PID 20160 //F)",
+      "Bash(tasklist //FI \"IMAGENAME eq testhost.exe\")",
+      "Bash(tasklist //FI \"IMAGENAME eq testhost.exe\" //FO CSV)",
+      "Bash(taskkill //PID 30060 //F)",
+      "Bash(tasklist //FI \"IMAGENAME eq devenv.exe\" //FO CSV)",
+      "PowerShell(.\\\\initial-migrations.ps1 2>&1 | Select-Object -Last 30)",
+      "PowerShell(.\\\\initial-migrations.ps1 2>&1 | Select-Object -Last 5)"
     ]
   }
 }
