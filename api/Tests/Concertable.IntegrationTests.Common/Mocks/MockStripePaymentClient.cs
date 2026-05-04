@@ -30,4 +30,32 @@ internal class MockStripePaymentClient : IMockStripePaymentClient
             Metadata = options.Metadata ?? []
         });
     }
+
+    public Task<Transfer> CreateTransferAsync(TransferCreateOptions options) =>
+        Task.FromResult(new Transfer
+        {
+            Id = $"tr_test_{Guid.NewGuid():N}",
+            Amount = options.Amount ?? 0,
+            DestinationId = options.Destination,
+            SourceTransactionId = options.SourceTransaction,
+            Metadata = options.Metadata ?? []
+        });
+
+    public Task<Refund> CreateRefundAsync(RefundCreateOptions options) =>
+        Task.FromResult(new Refund
+        {
+            Id = $"re_test_{Guid.NewGuid():N}",
+            Amount = options.Amount ?? 0,
+            PaymentIntentId = options.PaymentIntent,
+            Status = "succeeded",
+            Metadata = options.Metadata ?? []
+        });
+
+    public Task<TransferReversal> CreateTransferReversalAsync(string transferId, TransferReversalCreateOptions options) =>
+        Task.FromResult(new TransferReversal
+        {
+            Id = $"trr_test_{Guid.NewGuid():N}",
+            Amount = options.Amount ?? 0,
+            TransferId = transferId
+        });
 }

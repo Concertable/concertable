@@ -41,12 +41,13 @@ internal class BookingService : IBookingService
         return booking;
     }
 
-    public async Task CompleteByConcertIdAsync(int concertId)
+    public async Task<BookingEntity> CompleteByConcertIdAsync(int concertId)
     {
         var booking = await bookingRepository.GetByConcertIdAsync(concertId)
             ?? throw new NotFoundException("Booking not found");
         booking.Complete();
         await bookingRepository.SaveChangesAsync();
+        return booking;
     }
 
     public async Task CompleteAsync(int bookingId)

@@ -8,20 +8,20 @@ internal class UpfrontConcertService : IUpfrontConcertService
 {
     private readonly IApplicationValidator applicationValidator;
     private readonly IBookingService bookingService;
-    private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly IEscrowModule escrowModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly ILogger<UpfrontConcertService> logger;
 
     public UpfrontConcertService(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
-        IManagerPaymentModule managerPaymentModule,
+        IEscrowModule escrowModule,
         IConcertDraftService concertDraftService,
         ILogger<UpfrontConcertService> logger)
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
-        this.managerPaymentModule = managerPaymentModule;
+        this.escrowModule = escrowModule;
         this.concertDraftService = concertDraftService;
         this.logger = logger;
     }
@@ -34,23 +34,15 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         var booking = await bookingService.CreateStandardAsync(applicationId);
 
-        var settlementMetadata = new Dictionary<string, string>
-        {
-            ["type"] = "settlement",
-            ["bookingId"] = booking.Id.ToString(),
-            ["fromUserId"] = payerId.ToString(),
-            ["toUserId"] = payeeId.ToString()
-        };
-
         logger.LogInformation(
-            "Accepting application {ApplicationId} (booking {BookingId}): charging {Amount} {Currency} from {PayerId} to {PayeeId}",
+            "Accepting application {ApplicationId} (booking {BookingId}): holding {Amount} {Currency} from {PayerId} on behalf of {PayeeId}",
             applicationId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, settlementMetadata, paymentMethodId, session);
-        if (payment.IsFailed)
-            throw new BadRequestException(payment.Errors);
+        var hold = await escrowModule.HoldAsync(payerId, payeeId, amount, paymentMethodId, session, booking.Id);
+        if (hold.IsFailed)
+            throw new BadRequestException(hold.Errors);
 
-        return new ImmediateAcceptOutcome(payment.Value);
+        return new ImmediateAcceptOutcome(hold.Value);
     }
 
     public async Task SettleAsync(int bookingId)
@@ -60,6 +52,12 @@ internal class UpfrontConcertService : IUpfrontConcertService
             throw new BadRequestException(draftResult.Errors);
     }
 
-    public Task FinishedAsync(int concertId) =>
-        bookingService.CompleteByConcertIdAsync(concertId);
+    public async Task FinishedAsync(int concertId)
+    {
+        var booking = await bookingService.CompleteByConcertIdAsync(concertId);
+
+        var release = await escrowModule.ReleaseByBookingIdAsync(booking.Id);
+        if (release.IsFailed)
+            throw new BadRequestException(release.Errors);
+    }
 }

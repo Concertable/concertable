@@ -49,19 +49,11 @@ internal class DeferredConcertService : IDeferredConcertService
         if (booking is not DeferredBooking deferred)
             throw new BadRequestException("Concert finish requires a DeferredBooking");
 
-        var settlementMetadata = new Dictionary<string, string>
-        {
-            ["type"] = "settlement",
-            ["bookingId"] = booking.Id.ToString(),
-            ["fromUserId"] = payerId.ToString(),
-            ["toUserId"] = payeeId.ToString()
-        };
-
         logger.LogInformation(
             "Settling concert {ConcertId} (booking {BookingId}): paying {Amount} {Currency} from {PayerId} to {PayeeId}",
             concertId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, settlementMetadata, deferred.PaymentMethodId, PaymentSession.OffSession);
+        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, deferred.PaymentMethodId, PaymentSession.OffSession, booking.Id);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
     }

@@ -12,17 +12,20 @@ internal class ManagerPaymentModule : IManagerPaymentModule
     private readonly IPaymentManager paymentManager;
     private readonly IStripeAccountClient stripeAccountClient;
     private readonly IPayoutAccountRepository payoutAccountRepository;
+    private readonly ITransactionRepository transactionRepository;
     private readonly IUserModule userModule;
 
     public ManagerPaymentModule(
         IPaymentManager paymentManager,
         IStripeAccountClient stripeAccountClient,
         IPayoutAccountRepository payoutAccountRepository,
+        ITransactionRepository transactionRepository,
         IUserModule userModule)
     {
         this.paymentManager = paymentManager;
         this.stripeAccountClient = stripeAccountClient;
         this.payoutAccountRepository = payoutAccountRepository;
+        this.transactionRepository = transactionRepository;
         this.userModule = userModule;
     }
 
@@ -30,9 +33,9 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         Guid payerId,
         Guid payeeId,
         decimal amount,
-        IDictionary<string, string> metadata,
         string paymentMethodId,
         PaymentSession session,
+        int bookingId,
         CancellationToken ct = default)
     {
         var payer = await userModule.GetManagerByIdAsync(payerId)
@@ -41,22 +44,44 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         if (session == PaymentSession.OffSession && !await HasStripeCustomerAsync(payerId, ct))
             throw new BadRequestException("Stripe customer setup is required for off-session payments.");
 
-        return await paymentManager.ChargeAsync(new ChargeRequest
+        var charge = await paymentManager.ChargeAsync(new ChargeRequest
         {
             PayerId = payerId,
             PayerEmail = payer.Email ?? string.Empty,
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
-            Metadata = metadata,
+            Metadata = new Dictionary<string, string>
+            {
+                ["type"] = TransactionTypes.Settlement,
+                ["bookingId"] = bookingId.ToString()
+            },
             Session = session
         }, ct);
-    }
 
-    private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)
-    {
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
-        return account?.StripeCustomerId is not null;
+        if (charge.IsFailed)
+            return charge;
+
+        if (string.IsNullOrEmpty(charge.Value.TransactionId))
+            return Result.Fail("Stripe charge response missing PaymentIntent id.");
+
+        var transaction = SettlementTransactionEntity.Create(
+            payerId,
+            payeeId,
+            charge.Value.TransactionId,
+            (long)(amount * 100),
+            TransactionStatus.Pending,
+            bookingId);
+
+        await transactionRepository.CreateAsync(transaction);
+
+        if (!charge.Value.RequiresAction)
+        {
+            transaction.Complete();
+            await transactionRepository.SaveChangesAsync();
+        }
+
+        return charge;
     }
 
     public async Task<CheckoutSession> CreatePaymentSessionAsync(
@@ -81,6 +106,12 @@ internal class ManagerPaymentModule : IManagerPaymentModule
     {
         var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
         await stripeAccountClient.VerifyAndVoidAsync(stripeCustomerId, paymentMethodId, ct);
+    }
+
+    private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
+        return account?.StripeCustomerId is not null;
     }
 
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)

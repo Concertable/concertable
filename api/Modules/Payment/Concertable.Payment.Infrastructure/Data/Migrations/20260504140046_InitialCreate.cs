@@ -15,6 +15,33 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                 name: "payment");
 
             migrationBuilder.CreateTable(
+                name: "Escrows",
+                schema: "payment",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BookingId = table.Column<int>(type: "int", nullable: false),
+                    FromUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ToUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Amount = table.Column<long>(type: "bigint", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    ChargeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TransferId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefundId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReleasedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RefundedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Escrows", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PayoutAccounts",
                 schema: "payment",
                 columns: table => new
@@ -107,6 +134,26 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Escrows_BookingId",
+                schema: "payment",
+                table: "Escrows",
+                column: "BookingId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Escrows_ChargeId",
+                schema: "payment",
+                table: "Escrows",
+                column: "ChargeId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Escrows_Status",
+                schema: "payment",
+                table: "Escrows",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PayoutAccounts_StripeAccountId",
                 schema: "payment",
                 table: "PayoutAccounts",
@@ -148,6 +195,10 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Escrows",
+                schema: "payment");
+
             migrationBuilder.DropTable(
                 name: "PayoutAccounts",
                 schema: "payment");

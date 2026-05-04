@@ -32,6 +32,7 @@ public interface IReadDbContext
     IQueryable<SettlementTransactionEntity> SettlementTransactions { get; }
     IQueryable<StripeEventEntity> StripeEvents { get; }
     IQueryable<PayoutAccountEntity> PayoutAccounts { get; }
+    IQueryable<EscrowEntity> Escrows { get; }
     IQueryable<ContractEntity> Contracts { get; }
     IQueryable<FlatFeeContractEntity> FlatFeeContracts { get; }
     IQueryable<DoorSplitContractEntity> DoorSplitContracts { get; }

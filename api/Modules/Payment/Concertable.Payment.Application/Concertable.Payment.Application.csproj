@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\Contract\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Application\Concertable.Shared.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Validation\Concertable.Shared.Validation.csproj" />
     <ProjectReference Include="..\..\User\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
   </ItemGroup>

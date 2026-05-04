@@ -14,4 +14,13 @@ internal class MockStripePaymentClientFail : IStripePaymentClient
             Metadata = options.Metadata ?? []
         });
     }
+
+    public Task<Transfer> CreateTransferAsync(TransferCreateOptions options) =>
+        throw new StripeException("Mock transfer failure");
+
+    public Task<Refund> CreateRefundAsync(RefundCreateOptions options) =>
+        throw new StripeException("Mock refund failure");
+
+    public Task<TransferReversal> CreateTransferReversalAsync(string transferId, TransferReversalCreateOptions options) =>
+        throw new StripeException("Mock transfer reversal failure");
 }

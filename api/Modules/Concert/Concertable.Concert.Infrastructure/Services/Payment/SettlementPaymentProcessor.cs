@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
 
-internal class SettlementPaymentService : IPaymentSucceededProcessor
+internal class SettlementPaymentProcessor : IPaymentSucceededProcessor
 {
     private readonly IConcertWorkflowModule concertWorkflowModule;
-    private readonly ILogger<SettlementPaymentService> logger;
+    private readonly ILogger<SettlementPaymentProcessor> logger;
 
-    public SettlementPaymentService(IConcertWorkflowModule concertWorkflowModule, ILogger<SettlementPaymentService> logger)
+    public SettlementPaymentProcessor(IConcertWorkflowModule concertWorkflowModule, ILogger<SettlementPaymentProcessor> logger)
     {
         this.concertWorkflowModule = concertWorkflowModule;
         this.logger = logger;

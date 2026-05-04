@@ -70,7 +70,7 @@ internal class TicketService : ITicketService
 
         var metadata = new Dictionary<string, string>
         {
-            ["type"] = "ticket",
+            ["type"] = TransactionTypes.Ticket,
             ["concertId"] = purchaseParams.ConcertId.ToString(),
             ["quantity"] = purchaseParams.Quantity.ToString()
         };
@@ -153,7 +153,7 @@ internal class TicketService : ITicketService
 
         var metadata = new Dictionary<string, string>
         {
-            ["type"] = "ticket",
+            ["type"] = TransactionTypes.Ticket,
             ["concertId"] = concertId.ToString(),
             ["toUserId"] = payeeUserId.ToString(),
             ["amount"] = ((long)(concert.Price * 100)).ToString(),

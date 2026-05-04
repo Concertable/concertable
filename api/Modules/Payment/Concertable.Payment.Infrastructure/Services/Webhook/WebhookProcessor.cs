@@ -49,19 +49,30 @@ internal class WebhookProcessor : IWebhookProcessor
 
             await stripeEventRepository.AddEventAsync(StripeEventEntity.Create(stripeEvent.Id, timeProvider.GetUtcNow().DateTime));
 
-            if (intent.Status != "succeeded")
+            switch (stripeEvent.Type)
             {
-                logger.LogInformation(
-                    "Skipping PaymentIntent {IntentId} (event {EventId}): status is {Status}, not succeeded",
-                    intent.Id, stripeEvent.Id, intent.Status);
-                return;
+                case "payment_intent.succeeded":
+                    logger.LogInformation(
+                        "Publishing PaymentSucceededEvent for PaymentIntent {IntentId} (event {EventId}) of transaction type {TransactionType}",
+                        intent.Id, stripeEvent.Id, intent.Metadata.GetValueOrDefault("type", "unknown"));
+                    await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, intent.Metadata), cancellationToken);
+                    break;
+
+                case "payment_intent.payment_failed":
+                    var failureCode = intent.LastPaymentError?.Code;
+                    var failureMessage = intent.LastPaymentError?.Message;
+                    logger.LogInformation(
+                        "Publishing PaymentFailedEvent for PaymentIntent {IntentId} (event {EventId}) of transaction type {TransactionType}: {Code} {Message}",
+                        intent.Id, stripeEvent.Id, intent.Metadata.GetValueOrDefault("type", "unknown"), failureCode, failureMessage);
+                    await integrationEventBus.PublishAsync(new PaymentFailedEvent(intent.Id, failureCode, failureMessage, intent.Metadata), cancellationToken);
+                    break;
+
+                default:
+                    logger.LogInformation(
+                        "Skipping Stripe event {EventId}: type {EventType} not handled",
+                        stripeEvent.Id, stripeEvent.Type);
+                    break;
             }
-
-            logger.LogInformation(
-                "Publishing PaymentSucceededEvent for PaymentIntent {IntentId} (event {EventId}) of transaction type {TransactionType}",
-                intent.Id, stripeEvent.Id, intent.Metadata["type"]);
-
-            await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, intent.Metadata), cancellationToken);
         }
         catch (Exception ex)
         {

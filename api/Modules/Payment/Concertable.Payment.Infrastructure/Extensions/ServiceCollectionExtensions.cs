@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IPayoutAccountRepository, PayoutAccountRepository>();
+        services.AddScoped<IEscrowRepository, EscrowRepository>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
 
         // Transaction service
@@ -55,6 +56,9 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.SetupIntentService>();
             services.AddSingleton<Stripe.PaymentIntentService>();
             services.AddSingleton<Stripe.CustomerSessionService>();
+            services.AddSingleton<Stripe.TransferService>();
+            services.AddSingleton<Stripe.RefundService>();
+            services.AddSingleton<Stripe.TransferReversalService>();
             services.AddScoped<IStripeAccountClient, StripeAccountClient>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
             services.AddKeyedScoped<IStripePaymentIntentClient, OnSessionStripePaymentIntentClient>(PaymentSession.OnSession);
@@ -89,13 +93,19 @@ public static class ServiceCollectionExtensions
         // Module facades â€” public Payment.Contracts surface
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
         services.AddScoped<IManagerPaymentModule, ManagerPaymentModule>();
+        services.AddScoped<IEscrowModule, EscrowModule>();
 
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentTransactionHandler>();
+        services.AddScoped<IIntegrationEventHandler<PaymentFailedEvent>, PaymentFailureDispatcher>();
         services.AddScoped<ITransactionHandlerFactory, TransactionHandlerFactory>();
-        services.AddKeyedScoped<ITransactionHandler, TicketTransactionHandler>("ticket");
-        services.AddKeyedScoped<ITransactionHandler, SettlementTransactionHandler>("settlement");
+        services.AddScoped<IPaymentFailureHandlerFactory, PaymentFailureHandlerFactory>();
+        services.AddKeyedScoped<ITransactionHandler, TicketTransactionHandler>(TransactionTypes.Ticket);
+        services.AddKeyedScoped<ITransactionHandler, SettlementTransactionHandler>(TransactionTypes.Settlement);
+        services.AddKeyedScoped<ITransactionHandler, EscrowConfirmedHandler>(TransactionTypes.Escrow);
+        services.AddKeyedScoped<IPaymentFailureHandler, EscrowFailedHandler>(TransactionTypes.Escrow);
+        services.AddKeyedScoped<IPaymentFailureHandler, SettlementFailedHandler>(TransactionTypes.Settlement);
 
         return services;
     }

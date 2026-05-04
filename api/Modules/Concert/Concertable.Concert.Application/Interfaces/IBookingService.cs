@@ -5,6 +5,6 @@ internal interface IBookingService
     Task<StandardBooking> CreateStandardAsync(int applicationId);
     Task<DeferredBooking> CreateDeferredAsync(int applicationId, string paymentMethodId);
     Task<BookingEntity> MarkAwaitingPaymentByConcertIdAsync(int concertId);
-    Task CompleteByConcertIdAsync(int concertId);
+    Task<BookingEntity> CompleteByConcertIdAsync(int concertId);
     Task CompleteAsync(int bookingId);
 }

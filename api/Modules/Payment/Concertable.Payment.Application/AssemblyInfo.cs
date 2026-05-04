@@ -22,3 +22,4 @@
 [assembly: InternalsVisibleTo("Concertable.Concert.Api")]
 // Concert integration tests deserialize TicketPaymentResponse + reference ITransaction via fixture round-trips.
 [assembly: InternalsVisibleTo("Concertable.Concert.IntegrationTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

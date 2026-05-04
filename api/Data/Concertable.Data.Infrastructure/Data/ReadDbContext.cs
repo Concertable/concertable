@@ -35,6 +35,7 @@ internal class ReadDbContext(
     public IQueryable<SettlementTransactionEntity> SettlementTransactions => Set<SettlementTransactionEntity>().AsNoTracking();
     public IQueryable<StripeEventEntity> StripeEvents => Set<StripeEventEntity>().AsNoTracking();
     public IQueryable<PayoutAccountEntity> PayoutAccounts => Set<PayoutAccountEntity>().AsNoTracking();
+    public IQueryable<EscrowEntity> Escrows => Set<EscrowEntity>().AsNoTracking();
     public IQueryable<ContractEntity> Contracts => Set<ContractEntity>().AsNoTracking();
     public IQueryable<FlatFeeContractEntity> FlatFeeContracts => Set<FlatFeeContractEntity>().AsNoTracking();
     public IQueryable<DoorSplitContractEntity> DoorSplitContracts => Set<DoorSplitContractEntity>().AsNoTracking();

@@ -55,4 +55,90 @@ internal sealed class PaymentManager : IPaymentManager
             Metadata = metadata
         });
     }
+
+    public async Task<Result<PaymentResponse>> HoldAsync(HoldRequest r, CancellationToken ct = default)
+    {
+        var payerAccount = await payoutAccountRepository.GetByUserIdAsync(r.PayerId, ct)
+            ?? throw new NotFoundException($"Payout account not found for payer {r.PayerId}");
+        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(r.PayeeId, ct)
+            ?? throw new NotFoundException($"Payout account not found for payee {r.PayeeId}");
+
+        var stripeCustomerId = payerAccount.StripeCustomerId
+            ?? throw new BadRequestException("Payer has no Stripe customer ID");
+        var destinationStripeId = payeeAccount.StripeAccountId
+            ?? throw new BadRequestException("Payee has no Stripe Connect account");
+
+        var metadata = new Dictionary<string, string>
+        {
+            ["fromUserId"] = r.PayerId.ToString(),
+            ["fromUserEmail"] = r.PayerEmail,
+            ["toUserId"] = r.PayeeId.ToString(),
+            ["amount"] = ((long)(r.Amount * 100)).ToString()
+        }
+        .Merge(r.Metadata);
+
+        logger.LogInformation(
+            "Holding {Amount} GBP from {PayerId} on behalf of {PayeeId} (stripe {DestinationStripeId}) for {Purpose}",
+            r.Amount, r.PayerId, r.PayeeId, destinationStripeId, r.Metadata["type"]);
+
+        return await intentClientFactory.Create(r.Session).HoldAsync(new StripeHoldOptions
+        {
+            Amount = r.Amount,
+            PaymentMethodId = r.PaymentMethodId,
+            StripeCustomerId = stripeCustomerId,
+            DestinationStripeId = destinationStripeId,
+            ReceiptEmail = r.PayerEmail,
+            Metadata = metadata
+        });
+    }
+
+    public async Task<Result<TransferResponse>> ReleaseAsync(ReleaseRequest r, CancellationToken ct = default)
+    {
+        var payeeAccount = await payoutAccountRepository.GetByUserIdAsync(r.PayeeId, ct)
+            ?? throw new NotFoundException($"Payout account not found for payee {r.PayeeId}");
+
+        var destinationStripeId = payeeAccount.StripeAccountId
+            ?? throw new BadRequestException("Payee has no Stripe Connect account");
+
+        var metadata = new Dictionary<string, string>
+        {
+            ["toUserId"] = r.PayeeId.ToString(),
+            ["amount"] = ((long)(r.Amount * 100)).ToString()
+        }
+        .Merge(r.Metadata);
+
+        logger.LogInformation(
+            "Releasing {Amount} GBP from platform balance to {PayeeId} (stripe {DestinationStripeId}) from charge {ChargeId}",
+            r.Amount, r.PayeeId, destinationStripeId, r.ChargeId);
+
+        return await intentClientFactory.Create(PaymentSession.OnSession).ReleaseAsync(new StripeReleaseOptions
+        {
+            Amount = r.Amount,
+            ChargeId = r.ChargeId,
+            DestinationStripeId = destinationStripeId,
+            Metadata = metadata
+        });
+    }
+
+    public async Task<Result<RefundResponse>> RefundAsync(RefundRequest r, CancellationToken ct = default)
+    {
+        var metadata = new Dictionary<string, string>
+        {
+            ["amount"] = ((long)(r.Amount * 100)).ToString()
+        }
+        .Merge(r.Metadata);
+
+        logger.LogInformation(
+            "Refunding {Amount} GBP for payment intent {IntentId}{TransferReversal}",
+            r.Amount, r.PaymentIntentId, string.IsNullOrEmpty(r.TransferId) ? string.Empty : $" (reversing transfer {r.TransferId})");
+
+        return await intentClientFactory.Create(PaymentSession.OnSession).RefundAsync(new StripeRefundOptions
+        {
+            Amount = r.Amount,
+            PaymentIntentId = r.PaymentIntentId,
+            TransferId = r.TransferId,
+            Reason = r.Reason,
+            Metadata = metadata
+        });
+    }
 }

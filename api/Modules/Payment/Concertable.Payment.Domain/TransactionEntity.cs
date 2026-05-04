@@ -25,5 +25,17 @@ public abstract class TransactionEntity : IIdEntity, IAuditable
     public DateTime? LastModifiedAt { get; set; }
     public string? LastModifiedBy { get; set; }
 
-    public void Complete() => Status = TransactionStatus.Complete;
+    public void Complete()
+    {
+        if (Status != TransactionStatus.Pending)
+            return;
+        Status = TransactionStatus.Complete;
+    }
+
+    public void Fail()
+    {
+        if (Status != TransactionStatus.Pending)
+            return;
+        Status = TransactionStatus.Failed;
+    }
 }
