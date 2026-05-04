@@ -17,7 +17,6 @@ public interface IManagerPaymentModule
         Guid payerId,
         Guid payeeId,
         decimal amount,
-        IDictionary<string, string> metadata,
         string paymentMethodId,
         PaymentSession session,
         int bookingId,

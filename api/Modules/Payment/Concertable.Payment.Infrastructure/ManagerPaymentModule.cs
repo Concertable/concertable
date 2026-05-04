@@ -90,7 +90,6 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         Guid payerId,
         Guid payeeId,
         decimal amount,
-        IDictionary<string, string> metadata,
         string paymentMethodId,
         PaymentSession session,
         int bookingId,
@@ -103,8 +102,6 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         if (session == PaymentSession.OffSession && !await HasStripeCustomerAsync(payerId, ct))
             throw new BadRequestException("Stripe customer setup is required for off-session payments.");
 
-        var holdMetadata = new Dictionary<string, string>(metadata) { ["type"] = TransactionTypes.Escrow };
-
         var hold = await paymentManager.HoldAsync(new HoldRequest
         {
             PayerId = payerId,
@@ -112,7 +109,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
-            Metadata = holdMetadata,
+            Metadata = new Dictionary<string, string> { ["type"] = TransactionTypes.Escrow },
             Session = session
         }, ct);
 
