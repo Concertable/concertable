@@ -13,6 +13,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
     private readonly IStripeAccountClient stripeAccountClient;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly IEscrowRepository escrowRepository;
+    private readonly ITransactionRepository transactionRepository;
     private readonly IUserModule userModule;
     private readonly TimeProvider timeProvider;
 
@@ -21,6 +22,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         IStripeAccountClient stripeAccountClient,
         IPayoutAccountRepository payoutAccountRepository,
         IEscrowRepository escrowRepository,
+        ITransactionRepository transactionRepository,
         IUserModule userModule,
         TimeProvider timeProvider)
     {
@@ -28,6 +30,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         this.stripeAccountClient = stripeAccountClient;
         this.payoutAccountRepository = payoutAccountRepository;
         this.escrowRepository = escrowRepository;
+        this.transactionRepository = transactionRepository;
         this.userModule = userModule;
         this.timeProvider = timeProvider;
     }
@@ -36,9 +39,9 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         Guid payerId,
         Guid payeeId,
         decimal amount,
-        IDictionary<string, string> metadata,
         string paymentMethodId,
         PaymentSession session,
+        int bookingId,
         CancellationToken ct = default)
     {
         var payer = await userModule.GetManagerByIdAsync(payerId)
@@ -47,16 +50,40 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         if (session == PaymentSession.OffSession && !await HasStripeCustomerAsync(payerId, ct))
             throw new BadRequestException("Stripe customer setup is required for off-session payments.");
 
-        return await paymentManager.ChargeAsync(new ChargeRequest
+        var charge = await paymentManager.ChargeAsync(new ChargeRequest
         {
             PayerId = payerId,
             PayerEmail = payer.Email ?? string.Empty,
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
-            Metadata = metadata,
+            Metadata = new Dictionary<string, string> { ["type"] = TransactionTypes.Settlement },
             Session = session
         }, ct);
+
+        if (charge.IsFailed)
+            return charge;
+
+        if (string.IsNullOrEmpty(charge.Value.TransactionId))
+            return Result.Fail("Stripe charge response missing PaymentIntent id.");
+
+        var transaction = SettlementTransactionEntity.Create(
+            payerId,
+            payeeId,
+            charge.Value.TransactionId,
+            (long)(amount * 100),
+            TransactionStatus.Pending,
+            bookingId);
+
+        await transactionRepository.CreateAsync(transaction);
+
+        if (!charge.Value.RequiresAction)
+        {
+            transaction.Complete();
+            await transactionRepository.SaveChangesAsync();
+        }
+
+        return charge;
     }
 
     public async Task<Result<EscrowResponse>> HoldAsync(

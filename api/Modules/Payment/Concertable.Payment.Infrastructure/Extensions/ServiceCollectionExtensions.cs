@@ -101,6 +101,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<ITransactionHandler, SettlementTransactionHandler>(TransactionTypes.Settlement);
         services.AddKeyedScoped<ITransactionHandler, EscrowConfirmedHandler>(TransactionTypes.Escrow);
         services.AddKeyedScoped<IPaymentFailureHandler, EscrowFailedHandler>(TransactionTypes.Escrow);
+        services.AddKeyedScoped<IPaymentFailureHandler, SettlementFailedHandler>(TransactionTypes.Settlement);
 
         return services;
     }

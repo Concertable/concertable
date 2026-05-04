@@ -34,19 +34,11 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         var booking = await bookingService.CreateStandardAsync(applicationId);
 
-        var settlementMetadata = new Dictionary<string, string>
-        {
-            ["type"] = TransactionTypes.Settlement,
-            ["bookingId"] = booking.Id.ToString(),
-            ["fromUserId"] = payerId.ToString(),
-            ["toUserId"] = payeeId.ToString()
-        };
-
         logger.LogInformation(
             "Accepting application {ApplicationId} (booking {BookingId}): charging {Amount} {Currency} from {PayerId} to {PayeeId}",
             applicationId, booking.Id, amount, "GBP", payerId, payeeId);
 
-        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, settlementMetadata, paymentMethodId, session);
+        var payment = await managerPaymentModule.PayAsync(payerId, payeeId, amount, paymentMethodId, session, booking.Id);
         if (payment.IsFailed)
             throw new BadRequestException(payment.Errors);
 
