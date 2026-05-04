@@ -17,6 +17,7 @@ using Concertable.Payment.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Payment.Infrastructure.Extensions;
 
@@ -61,8 +62,21 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.TransferReversalService>();
             services.AddScoped<IStripeAccountClient, StripeAccountClient>();
             services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
-            services.AddKeyedScoped<IStripePaymentIntentClient, OnSessionStripePaymentIntentClient>(PaymentSession.OnSession);
-            services.AddKeyedScoped<IStripePaymentIntentClient, OffSessionStripePaymentIntentClient>(PaymentSession.OffSession);
+            services.AddKeyedSingleton<IPaymentSessionConfigurator, OnSessionConfigurator>(PaymentSession.OnSession);
+            services.AddKeyedSingleton<IPaymentSessionConfigurator, OffSessionConfigurator>(PaymentSession.OffSession);
+            services.AddKeyedScoped<IStripePaymentIntentClient>(PaymentSession.OnSession, (sp, _) =>
+                new StripePaymentIntentClient(
+                    sp.GetRequiredService<IStripePaymentClient>(),
+                    sp.GetRequiredService<IStripeAccountClient>(),
+                    sp.GetRequiredKeyedService<IPaymentSessionConfigurator>(PaymentSession.OnSession),
+                    sp.GetRequiredService<ILogger<StripePaymentIntentClient>>()));
+            services.AddKeyedScoped<IStripePaymentIntentClient>(PaymentSession.OffSession, (sp, _) =>
+                new StripePaymentIntentClient(
+                    sp.GetRequiredService<IStripePaymentClient>(),
+                    sp.GetRequiredService<IStripeAccountClient>(),
+                    sp.GetRequiredKeyedService<IPaymentSessionConfigurator>(PaymentSession.OffSession),
+                    sp.GetRequiredService<ILogger<StripePaymentIntentClient>>()));
+            services.AddScoped<IStripeTransferClient, StripeTransferClient>();
             services.AddScoped<IWebhookService, WebhookService>();
         }
         else

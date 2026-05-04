@@ -8,15 +8,18 @@ internal sealed class PaymentManager : IPaymentManager
 {
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly IStripePaymentIntentClientFactory intentClientFactory;
+    private readonly IStripeTransferClient transferClient;
     private readonly ILogger<PaymentManager> logger;
 
     public PaymentManager(
         IPayoutAccountRepository payoutAccountRepository,
         IStripePaymentIntentClientFactory intentClientFactory,
+        IStripeTransferClient transferClient,
         ILogger<PaymentManager> logger)
     {
         this.payoutAccountRepository = payoutAccountRepository;
         this.intentClientFactory = intentClientFactory;
+        this.transferClient = transferClient;
         this.logger = logger;
     }
 
@@ -111,7 +114,7 @@ internal sealed class PaymentManager : IPaymentManager
             "Releasing {Amount} GBP from platform balance to {PayeeId} (stripe {DestinationStripeId}) from charge {ChargeId}",
             r.Amount, r.PayeeId, destinationStripeId, r.ChargeId);
 
-        return await intentClientFactory.Create(PaymentSession.OnSession).ReleaseAsync(new StripeReleaseOptions
+        return await transferClient.ReleaseAsync(new StripeReleaseOptions
         {
             Amount = r.Amount,
             ChargeId = r.ChargeId,
@@ -132,7 +135,7 @@ internal sealed class PaymentManager : IPaymentManager
             "Refunding {Amount} GBP for payment intent {IntentId}{TransferReversal}",
             r.Amount, r.PaymentIntentId, string.IsNullOrEmpty(r.TransferId) ? string.Empty : $" (reversing transfer {r.TransferId})");
 
-        return await intentClientFactory.Create(PaymentSession.OnSession).RefundAsync(new StripeRefundOptions
+        return await transferClient.RefundAsync(new StripeRefundOptions
         {
             Amount = r.Amount,
             PaymentIntentId = r.PaymentIntentId,
