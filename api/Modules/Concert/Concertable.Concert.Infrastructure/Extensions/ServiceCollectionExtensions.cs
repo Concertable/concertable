@@ -123,9 +123,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentSucceededEventHandler>();
         services.AddScoped<IPaymentSucceededProcessorFactory, PaymentSucceededProcessorFactory>();
-        services.AddKeyedScoped<IPaymentSucceededProcessor, TicketPaymentProcessor>("ticket");
-        services.AddKeyedScoped<IPaymentSucceededProcessor, SettlementPaymentProcessor>("settlement");
-        services.AddKeyedScoped<IPaymentSucceededProcessor, EscrowPaymentProcessor>("escrow");
+        services.AddKeyedScoped<IPaymentSucceededProcessor, TicketPaymentProcessor>(TransactionTypes.Ticket);
+        services.AddKeyedScoped<IPaymentSucceededProcessor, SettlementPaymentProcessor>(TransactionTypes.Settlement);
+        services.AddKeyedScoped<IPaymentSucceededProcessor, EscrowPaymentProcessor>(TransactionTypes.Escrow);
 
         services.AddSingleton<ConcertConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ConcertConfigurationProvider>());
