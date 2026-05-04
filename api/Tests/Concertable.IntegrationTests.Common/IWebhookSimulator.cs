@@ -1,6 +1,6 @@
 namespace Concertable.IntegrationTests.Common;
 
-public interface IStripeClient
+public interface IWebhookSimulator
 {
     Task SendWebhookAsync();
 }

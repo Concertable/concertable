@@ -7,10 +7,10 @@ namespace Concertable.Payment.Infrastructure.Services;
 
 internal class StripeTransferClient : IStripeTransferClient
 {
-    private readonly IStripePaymentClient stripeClient;
+    private readonly IStripeApiClient stripeClient;
     private readonly ILogger<StripeTransferClient> logger;
 
-    public StripeTransferClient(IStripePaymentClient stripeClient, ILogger<StripeTransferClient> logger)
+    public StripeTransferClient(IStripeApiClient stripeClient, ILogger<StripeTransferClient> logger)
     {
         this.stripeClient = stripeClient;
         this.logger = logger;

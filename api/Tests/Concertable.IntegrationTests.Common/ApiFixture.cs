@@ -38,9 +38,9 @@ public class ApiFixture : IAsyncLifetime
     private IServiceScope? scope;
 
     public IMockNotificationService NotificationService { get; } = new MockNotificationService();
-    public IMockStripePaymentClient StripePaymentClient { get; } = new MockStripePaymentClient();
+    public IMockStripeApiClient StripeApiClient { get; } = new MockStripeApiClient();
     public IMockEmailService EmailService { get; } = new MockEmailService();
-    public IStripeClient StripeClient { get; private set; } = null!;
+    public IWebhookSimulator StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
     public IReadDbContext ReadDbContext { get; private set; } = null!;
 
@@ -67,15 +67,13 @@ public async Task InitializeAsync()
             {
                 services.AddScoped<IStripeAccountClient, MockStripeAccountClient>();
                 services.AddSingleton<INotificationModule>(NotificationService);
-                services.AddSingleton<IMockStripePaymentClient>(StripePaymentClient);
-                services.AddSingleton<IStripePaymentClient>(StripePaymentClient);
-                services.AddKeyedScoped<IStripePaymentIntentClient, OnSessionStripePaymentIntentClient>(PaymentSession.OnSession);
-                services.AddKeyedScoped<IStripePaymentIntentClient, OffSessionStripePaymentIntentClient>(PaymentSession.OffSession);
-                services.AddResettables(NotificationService, StripePaymentClient, EmailService);
+                services.AddSingleton<IMockStripeApiClient>(StripeApiClient);
+                services.AddSingleton<IStripeApiClient>(StripeApiClient);
+                services.AddResettables(NotificationService, StripeApiClient, EmailService);
                 services.AddSingleton<IEmailService>(EmailService);
 
                 services.AddScoped<IWebhookService, MockWebhookService>();
-                services.AddSingleton<IStripeClient, MockStripeClient>();
+                services.AddSingleton<IWebhookSimulator, MockWebhookSimulator>();
                 services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));
                 services.AddScoped<IGeocodingService, MockGeocodingService>();
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
@@ -105,7 +103,7 @@ public async Task InitializeAsync()
         _ = factory.Services;
 
         await sqlFixture.InitializeRespawnerAsync();
-        StripeClient = factory.Services.GetRequiredService<IStripeClient>();
+        StripeClient = factory.Services.GetRequiredService<IWebhookSimulator>();
     }
 
     public async Task DisposeAsync()
@@ -120,7 +118,7 @@ public async Task InitializeAsync()
         await sqlFixture.ResetAsync();
         foreach (var resettable in factory.Services.GetServices<IResettable>())
             resettable.Reset();
-        StripeClient = factory.Services.GetRequiredService<IStripeClient>();
+        StripeClient = factory.Services.GetRequiredService<IWebhookSimulator>();
 
         scope?.Dispose();
         scope = factory.Services.CreateScope();
@@ -151,7 +149,7 @@ public async Task InitializeAsync()
                 b.ConfigureTestServices(options.Services);
         });
 
-        StripeClient = customFactory.Services.GetRequiredService<IStripeClient>();
+        StripeClient = customFactory.Services.GetRequiredService<IWebhookSimulator>();
 
         var client = customFactory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, user.Id.ToString());
@@ -180,7 +178,7 @@ public async Task InitializeAsync()
                 b.ConfigureTestServices(options.Services);
         });
 
-        StripeClient = customFactory.Services.GetRequiredService<IStripeClient>();
+        StripeClient = customFactory.Services.GetRequiredService<IWebhookSimulator>();
 
         var client = customFactory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, userId.ToString());

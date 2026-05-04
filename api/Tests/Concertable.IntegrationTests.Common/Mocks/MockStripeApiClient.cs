@@ -3,7 +3,7 @@ using Stripe;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 
-internal class MockStripePaymentClient : IMockStripePaymentClient
+internal class MockStripeApiClient : IMockStripeApiClient
 {
     public string LastPaymentIntentId { get; private set; } = string.Empty;
     public string LastEventId { get; private set; } = string.Empty;

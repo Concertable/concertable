@@ -61,18 +61,18 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.RefundService>();
             services.AddSingleton<Stripe.TransferReversalService>();
             services.AddScoped<IStripeAccountClient, StripeAccountClient>();
-            services.AddSingleton<IStripePaymentClient, StripePaymentClient>();
+            services.AddSingleton<IStripeApiClient, StripeApiClient>();
             services.AddKeyedSingleton<IPaymentSessionConfigurator, OnSessionConfigurator>(PaymentSession.OnSession);
             services.AddKeyedSingleton<IPaymentSessionConfigurator, OffSessionConfigurator>(PaymentSession.OffSession);
             services.AddKeyedScoped<IStripePaymentIntentClient>(PaymentSession.OnSession, (sp, _) =>
                 new StripePaymentIntentClient(
-                    sp.GetRequiredService<IStripePaymentClient>(),
+                    sp.GetRequiredService<IStripeApiClient>(),
                     sp.GetRequiredService<IStripeAccountClient>(),
                     sp.GetRequiredKeyedService<IPaymentSessionConfigurator>(PaymentSession.OnSession),
                     sp.GetRequiredService<ILogger<StripePaymentIntentClient>>()));
             services.AddKeyedScoped<IStripePaymentIntentClient>(PaymentSession.OffSession, (sp, _) =>
                 new StripePaymentIntentClient(
-                    sp.GetRequiredService<IStripePaymentClient>(),
+                    sp.GetRequiredService<IStripeApiClient>(),
                     sp.GetRequiredService<IStripeAccountClient>(),
                     sp.GetRequiredKeyedService<IPaymentSessionConfigurator>(PaymentSession.OffSession),
                     sp.GetRequiredService<ILogger<StripePaymentIntentClient>>()));
@@ -84,6 +84,7 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IStripeAccountClient, FakeStripeAccountClient>();
             services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OnSession);
             services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OffSession);
+            services.AddScoped<IStripeTransferClient, StripeTransferClient>();
             services.AddScoped<IWebhookService, FakeWebhookService>();
         }
 

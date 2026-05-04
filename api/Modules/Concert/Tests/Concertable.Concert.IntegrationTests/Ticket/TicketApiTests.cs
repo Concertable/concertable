@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Concertable.IntegrationTests.Common;
 using Xunit;
 using static Concertable.Concert.IntegrationTests.Ticket.TicketRequestBuilders;

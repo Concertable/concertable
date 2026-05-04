@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Api.Responses;
 using Concertable.Payment.Application.Interfaces;
@@ -43,8 +43,8 @@ public class TicketDoorSplitApiTests : IAsyncLifetime
         Assert.Equal(99, concert!.AvailableTickets);
         var (userId, _) = Assert.Single(fixture.NotificationService.TicketPurchased);
         Assert.Equal(fixture.SeedData.Customer.Id.ToString(), userId);
-        Assert.Equal(fixture.SeedData.Customer.Id.ToString(), fixture.StripePaymentClient.LastMetadata["fromUserId"]);
-        Assert.Equal(fixture.SeedData.VenueManager1.Id.ToString(), fixture.StripePaymentClient.LastMetadata["toUserId"]);
+        Assert.Equal(fixture.SeedData.Customer.Id.ToString(), fixture.StripeApiClient.LastMetadata["fromUserId"]);
+        Assert.Equal(fixture.SeedData.VenueManager1.Id.ToString(), fixture.StripeApiClient.LastMetadata["toUserId"]);
         var transactions = await client.GetAsync<Pagination<ITransaction>>("/api/Transaction");
         var transaction = Assert.Single(transactions!.Data);
         Assert.Equal(TransactionStatus.Complete, transaction.Status);

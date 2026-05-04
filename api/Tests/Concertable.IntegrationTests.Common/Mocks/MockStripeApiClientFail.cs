@@ -3,17 +3,15 @@ using Stripe;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 
-internal class MockStripePaymentClientFail : IStripePaymentClient
+internal class MockStripeApiClientFail : IStripeApiClient
 {
-    public Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options)
-    {
-        return Task.FromResult(new PaymentIntent
+    public Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options) =>
+        Task.FromResult(new PaymentIntent
         {
             Id = $"pi_test_{Guid.NewGuid():N}",
             Status = "requires_payment_method",
             Metadata = options.Metadata ?? []
         });
-    }
 
     public Task<Transfer> CreateTransferAsync(TransferCreateOptions options) =>
         throw new StripeException("Mock transfer failure");

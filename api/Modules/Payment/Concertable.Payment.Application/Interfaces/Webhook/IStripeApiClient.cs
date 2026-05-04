@@ -2,7 +2,7 @@ using Stripe;
 
 namespace Concertable.Payment.Application.Interfaces.Webhook;
 
-public interface IStripePaymentClient
+public interface IStripeApiClient
 {
     Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options);
     Task<Transfer> CreateTransferAsync(TransferCreateOptions options);

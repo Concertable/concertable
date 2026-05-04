@@ -15,13 +15,13 @@ public class TestClientOptions
 
     public TestClientOptions UseFailingStripe()
     {
-        Services += services => services.Replace(ServiceDescriptor.Singleton<IStripeClient, MockStripeClientFail>());
+        Services += services => services.Replace(ServiceDescriptor.Singleton<IWebhookSimulator, MockWebhookSimulatorFail>());
         return this;
     }
 
     public TestClientOptions UseFailingPayment()
     {
-        Services += services => services.Replace(ServiceDescriptor.Singleton<IStripePaymentClient, MockStripePaymentClientFail>());
+        Services += services => services.Replace(ServiceDescriptor.Singleton<IStripeApiClient, MockStripeApiClientFail>());
         return this;
     }
 

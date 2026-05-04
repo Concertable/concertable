@@ -1,4 +1,4 @@
-﻿
+
 namespace Concertable.Concert.IntegrationTests.Ticket;
 
 public static class TicketRequestBuilders

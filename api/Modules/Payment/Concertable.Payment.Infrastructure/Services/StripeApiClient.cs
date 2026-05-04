@@ -1,17 +1,18 @@
+using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Payment.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Stripe;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
-internal class StripePaymentClient : IStripePaymentClient
+internal class StripeApiClient : IStripeApiClient
 {
     private readonly PaymentIntentService paymentIntentService;
     private readonly TransferService transferService;
     private readonly RefundService refundService;
     private readonly TransferReversalService transferReversalService;
 
-    public StripePaymentClient(
+    public StripeApiClient(
         IOptions<StripeSettings> stripeSettings,
         PaymentIntentService paymentIntentService,
         TransferService transferService,

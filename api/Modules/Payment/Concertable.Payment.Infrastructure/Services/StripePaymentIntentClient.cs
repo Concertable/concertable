@@ -7,13 +7,13 @@ namespace Concertable.Payment.Infrastructure.Services;
 
 internal class StripePaymentIntentClient : IStripePaymentIntentClient
 {
-    private readonly IStripePaymentClient stripeClient;
+    private readonly IStripeApiClient stripeClient;
     private readonly IStripeAccountClient stripeAccountClient;
     private readonly IPaymentSessionConfigurator configurator;
     private readonly ILogger<StripePaymentIntentClient> logger;
 
     public StripePaymentIntentClient(
-        IStripePaymentClient stripeClient,
+        IStripeApiClient stripeClient,
         IStripeAccountClient stripeAccountClient,
         IPaymentSessionConfigurator configurator,
         ILogger<StripePaymentIntentClient> logger)
