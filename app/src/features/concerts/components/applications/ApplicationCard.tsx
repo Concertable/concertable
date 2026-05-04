@@ -23,7 +23,10 @@ export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
   }
 
   return (
-    <div className="border-border bg-card space-y-3 rounded-xl border p-4">
+    <div
+      className="border-border bg-card space-y-3 rounded-xl border p-4"
+      data-testid={`application-${application.id}`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           {avatarSrc && (
@@ -46,7 +49,7 @@ export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
           <Badge variant="outline">{status}</Badge>
           {status === "Pending" && (
             <>
-              <Button size="sm" onClick={handleAccept}>
+              <Button size="sm" onClick={handleAccept} data-testid="accept">
                 Accept
               </Button>
               {onDeny && (

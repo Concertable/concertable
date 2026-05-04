@@ -30,6 +30,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Concertable.Tests.Common" />
+    <Using Include="Concertable.User.Contracts" />
     <Using Include="Microsoft.Playwright" />
     <Using Include="Reqnroll" />
   </ItemGroup>

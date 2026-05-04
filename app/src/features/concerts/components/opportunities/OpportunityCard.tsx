@@ -69,7 +69,10 @@ function ReadView({ opportunity }: { opportunity: Opportunity }) {
 
   return (
     <>
-      <div className="border-border bg-card space-y-3 rounded-xl border p-4">
+      <div
+        className="border-border bg-card space-y-3 rounded-xl border p-4"
+        data-testid={`opportunity-${opportunity.id}`}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <p className="text-muted-foreground text-sm">
@@ -116,6 +119,7 @@ function ReadView({ opportunity }: { opportunity: Opportunity }) {
                   size="sm"
                   disabled={!canApply || isPending}
                   onClick={() => apply()}
+                  data-testid="apply"
                 >
                   {isPending ? "Applying..." : "Apply"}
                 </Button>

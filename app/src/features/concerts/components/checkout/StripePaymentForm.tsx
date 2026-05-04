@@ -91,7 +91,13 @@ function Form({
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement options={{ layout: "tabs" }} />
       {error && <p className="text-destructive text-sm">{error}</p>}
-      <Button type="submit" className="w-full" size="lg" disabled={isDisabled}>
+      <Button
+        type="submit"
+        className="w-full"
+        size="lg"
+        disabled={isDisabled}
+        data-testid="confirm"
+      >
         {isSubmitting ? "Processing..." : submitLabel}
       </Button>
       {footer}

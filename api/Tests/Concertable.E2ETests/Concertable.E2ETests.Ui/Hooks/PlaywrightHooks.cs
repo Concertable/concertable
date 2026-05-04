@@ -5,8 +5,6 @@ namespace Concertable.E2ETests.Ui.Hooks;
 [Binding]
 public class PlaywrightHooks
 {
-    private static readonly string[] KnownRoles = ["VenueManager", "ArtistManager", "Customer"];
-
     private readonly UiFixture fixture;
     private readonly Browser browser;
 
@@ -21,10 +19,11 @@ public class PlaywrightHooks
     {
         await fixture.App.ResetAsync();
 
-        var role = scenarioContext.ScenarioInfo.Tags.FirstOrDefault(KnownRoles.Contains);
-        var storageState = role is null ? null : LoginCaptureHooks.GetStorageState(role);
+        var role = scenarioContext.ScenarioInfo.Tags
+            .Select(tag => Enum.TryParse<Role>(tag, out var r) ? (Role?)r : null)
+            .FirstOrDefault(r => r is not null);
 
-        await browser.InitializeAsync(fixture.Browser, storageState);
+        await browser.InitializeAsync(fixture.Browser, role);
     }
 
     [AfterScenario]
