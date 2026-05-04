@@ -58,8 +58,8 @@ public class EscrowEntity : IIdEntity, IAuditable
 
     public void Refund(string refundId, DateTime now)
     {
-        if (Status is not (EscrowStatus.Held or EscrowStatus.Disputed))
-            throw new DomainException("Only held or disputed escrow can be refunded.");
+        if (Status is not (EscrowStatus.Held or EscrowStatus.Released or EscrowStatus.Disputed))
+            throw new DomainException("Only held, released, or disputed escrow can be refunded.");
         RefundId = refundId;
         RefundedAt = now;
         Status = EscrowStatus.Refunded;
