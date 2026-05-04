@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-namespace Concertable.E2ETests.Common;
+namespace Concertable.E2ETests;
 
 public class StripeCliFixture : IAsyncLifetime
 {

@@ -1,6 +1,6 @@
 using System.Data.Common;
 
-namespace Concertable.E2ETests.Common;
+namespace Concertable.E2ETests;
 
 public static class PaymentDbAssertions
 {

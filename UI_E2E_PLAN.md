@@ -51,19 +51,17 @@ Plus three cross-cutting flows that aren't strategies but are UI surface:
 
 ```
 api/Tests/
-└── Concertable.E2ETests/                              ✅ Step 3 LANDED (parent grouping folder)
-    ├── Concertable.E2ETests.Common/                   ✅ Step 1 LANDED
-    │   ├── Concertable.E2ETests.Common.csproj         (class lib, IsTestProject=false)
-    │   ├── AppFixture.cs                              (Aspire boot, /e2e/reseed, JWT minting)
-    │   ├── StripeCliFixture.cs                        (Docker stripe-cli + webhook secret)
-    │   ├── SqlFixture.cs                              (Respawn DB reset)
-    │   ├── PollingService.cs / IPollingService.cs
-    │   ├── TestTokenMinter.cs                         (used by Api project only)
-    │   ├── MessageSinkLoggerProvider.cs
-    │   ├── DistributedApplicationBuilderExtensions.cs (port pinning + E2E env vars)
-    │   ├── E2ETestCollection.cs                       (collection definition base)
-    │   ├── GlobalUsings.cs
-    │   └── Content: appsettings.E2E.json (CopyToOutputDirectory)
+└── Concertable.E2ETests/                              ✅ Steps 1–4 LANDED — parent classlib (was .Common)
+    ├── Concertable.E2ETests.csproj                    (class lib, IsTestProject=false; <DefaultItemExcludes> excludes Api/Ui subfolders so the recursive compile glob doesn't grab inner project files)
+    ├── AppFixture.cs                                  (Aspire boot, /e2e/reseed, JWT minting)
+    ├── StripeCliFixture.cs                            (Docker stripe-cli + webhook secret)
+    ├── SqlFixture.cs                                  (Respawn DB reset)
+    ├── PollingService.cs / IPollingService.cs
+    ├── TestTokenMinter.cs                             (used by Api project only)
+    ├── MessageSinkLoggerProvider.cs
+    ├── DistributedApplicationBuilderExtensions.cs     (port pinning + E2E env vars)
+    ├── E2ETestCollection.cs                           (collection definition base)
+    ├── GlobalUsings.cs
     │
     ├── Concertable.E2ETests.Api/                      ✅ Step 3 LANDED (rename of Concertable.Web.E2ETests)
     │   ├── Concertable.E2ETests.Api.csproj

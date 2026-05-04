@@ -9,7 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
 
-namespace Concertable.E2ETests.Common;
+namespace Concertable.E2ETests;
 
 public class AppFixture : IAsyncLifetime
 {

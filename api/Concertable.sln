@@ -187,7 +187,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Payment.UnitTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Auth", "Concertable.Auth\Concertable.Auth.csproj", "{2C11D624-4686-42D2-A352-0B42F3BBDCEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.E2ETests.Common", "Tests\Concertable.E2ETests\Concertable.E2ETests.Common\Concertable.E2ETests.Common.csproj", "{F6F4B798-FB2D-4325-84AF-E17300F9F7B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.E2ETests", "Tests\Concertable.E2ETests\Concertable.E2ETests.csproj", "{F6F4B798-FB2D-4325-84AF-E17300F9F7B6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{CA253913-39DE-BFD0-C9A3-4B7EC6FBDF17}"
 EndProject

@@ -4,7 +4,7 @@ using Aspire.Hosting.Testing;
 using Microsoft.Data.SqlClient;
 using Respawn;
 
-namespace Concertable.E2ETests.Common;
+namespace Concertable.E2ETests;
 
 public class SqlFixture
 {

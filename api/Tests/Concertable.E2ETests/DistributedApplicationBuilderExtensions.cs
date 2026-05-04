@@ -3,7 +3,7 @@ using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.Configuration;
 
-namespace Concertable.E2ETests.Common;
+namespace Concertable.E2ETests;
 
 internal static class DistributedApplicationBuilderExtensions
 {

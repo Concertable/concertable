@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.E2ETests.Common\Concertable.E2ETests.Common.csproj" />
+    <ProjectReference Include="..\Concertable.E2ETests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +30,6 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Concertable.Tests.Common" />
-    <Using Include="Concertable.E2ETests.Common" />
     <Using Include="Microsoft.Playwright" />
     <Using Include="Reqnroll" />
   </ItemGroup>

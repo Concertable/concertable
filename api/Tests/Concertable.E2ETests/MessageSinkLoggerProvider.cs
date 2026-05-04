@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Concertable.E2ETests.Common;
+namespace Concertable.E2ETests;
 
 public sealed class MessageSinkLoggerProvider(IMessageSink sink) : ILoggerProvider
 {

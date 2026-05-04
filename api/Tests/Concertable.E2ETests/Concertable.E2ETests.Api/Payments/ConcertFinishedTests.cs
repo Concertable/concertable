@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Api.Responses;
-using Concertable.E2ETests.Common;
 using Concertable.Tests.Common;
 using Xunit;
 using Xunit.Abstractions;
