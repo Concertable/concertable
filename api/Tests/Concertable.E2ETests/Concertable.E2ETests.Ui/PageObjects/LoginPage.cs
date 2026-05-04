@@ -2,10 +2,6 @@ namespace Concertable.E2ETests.Ui.PageObjects;
 
 public class LoginPage
 {
-    private const string EmailInput = "login-email";
-    private const string PasswordInput = "login-password";
-    private const string SubmitButton = "login-submit";
-
     private readonly IPage page;
     private readonly string spaBaseUrl;
 
@@ -15,13 +11,17 @@ public class LoginPage
         this.spaBaseUrl = spaBaseUrl;
     }
 
+    private ILocator EmailInput => page.GetByTestId("login-email");
+    private ILocator PasswordInput => page.GetByTestId("login-password");
+    private ILocator SubmitButton => page.GetByTestId("login-submit");
+
     public Task GotoAsync() => page.GotoAsync($"{spaBaseUrl}/login");
 
     public async Task SignInAsync(string email, string password)
     {
-        await page.GetByTestId(EmailInput).FillAsync(email);
-        await page.GetByTestId(PasswordInput).FillAsync(password);
-        await page.GetByTestId(SubmitButton).ClickAsync();
+        await EmailInput.FillAsync(email);
+        await PasswordInput.FillAsync(password);
+        await SubmitButton.ClickAsync();
     }
 
     public Task WaitForUrlAsync(string url, float timeoutMs = 15000) =>

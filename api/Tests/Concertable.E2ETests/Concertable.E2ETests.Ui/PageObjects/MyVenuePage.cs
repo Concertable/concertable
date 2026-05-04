@@ -2,11 +2,6 @@ namespace Concertable.E2ETests.Ui.PageObjects;
 
 public class MyVenuePage
 {
-    private const string EditButton = "edit";
-    private const string SaveButton = "save";
-    private const string AddOpportunity = "opportunity-add";
-    private const string FlatFeeFee = "contract-flatfee-fee";
-
     private readonly IPage page;
     private readonly string spaBaseUrl;
 
@@ -16,16 +11,21 @@ public class MyVenuePage
         this.spaBaseUrl = spaBaseUrl;
     }
 
+    private ILocator EditButton => page.GetByTestId("edit");
+    private ILocator SaveButton => page.GetByTestId("save");
+    private ILocator AddOpportunityButton => page.GetByTestId("opportunity-add");
+    private ILocator FlatFeeFeeInput => page.GetByTestId("contract-flatfee-fee");
+
     public Task GotoAsync() => page.GotoAsync($"{spaBaseUrl}/venue/my");
 
     public async Task PostFlatFeeOpportunityAsync(decimal fee)
     {
-        await page.GetByTestId(EditButton).ClickAsync();
-        await page.GetByTestId(AddOpportunity).ClickAsync();
-        await page.GetByTestId(FlatFeeFee).FillAsync(fee.ToString());
-        await page.GetByTestId(SaveButton).ClickAsync();
+        await EditButton.ClickAsync();
+        await AddOpportunityButton.ClickAsync();
+        await FlatFeeFeeInput.FillAsync(fee.ToString());
+        await SaveButton.ClickAsync();
     }
 
     public Task WaitUntilSavedAsync() =>
-        Assertions.Expect(page.GetByTestId(SaveButton)).ToBeDisabledAsync();
+        Assertions.Expect(SaveButton).ToBeDisabledAsync();
 }
