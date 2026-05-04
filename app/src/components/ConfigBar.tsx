@@ -37,13 +37,23 @@ export function ConfigBar({
       <Button
         variant={editMode ? "secondary" : "outline"}
         onClick={onToggleEdit}
+        data-testid="edit"
       >
         {editMode ? "Editing" : "Edit"}
       </Button>
-      <Button variant="outline" onClick={onCancel} disabled={!isDirty}>
+      <Button
+        variant="outline"
+        onClick={onCancel}
+        disabled={!isDirty}
+        data-testid="cancel"
+      >
         Cancel
       </Button>
-      <Button onClick={onSave} disabled={!isDirty || isSaving}>
+      <Button
+        onClick={onSave}
+        disabled={!isDirty || isSaving}
+        data-testid="save"
+      >
         {isSaving ? "Saving..." : "Save"}
       </Button>
     </div>

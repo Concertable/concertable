@@ -11,6 +11,8 @@ public static class ScenarioDependencies
     {
         var services = new ServiceCollection();
         services.AddSingleton(_ => TestRunHooks.Fixture);
+        services.AddScoped<Browser>();
+        services.AddScoped<WorkflowState>();
         return services;
     }
 }

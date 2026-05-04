@@ -54,6 +54,7 @@ export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
               to={link.to}
               activeOptions={{ exact: true }}
               className="text-primary-foreground/70 hover:text-primary-foreground [&.active]:text-primary-foreground text-sm transition-colors [&.active]:font-medium"
+              data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
             >
               {link.label}
             </Link>

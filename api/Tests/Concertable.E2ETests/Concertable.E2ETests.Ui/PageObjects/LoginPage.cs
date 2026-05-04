@@ -1,4 +1,4 @@
-namespace Concertable.E2ETests.Ui.Support.PageObjects;
+namespace Concertable.E2ETests.Ui.PageObjects;
 
 public class LoginPage
 {
