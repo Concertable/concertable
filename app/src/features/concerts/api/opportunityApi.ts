@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 import type { Pagination } from "@/types/common";
 import type { PaginationParams } from "@/hooks/usePagination";
-import type { Opportunity, OpportunityRequest } from "../types";
+import type { Opportunity, OpportunityDraft } from "../types";
 
 const opportunityApi = {
   getOpportunitiesByVenueId: async (
@@ -17,9 +17,18 @@ const opportunityApi = {
 
   update: async (
     venueId: number,
-    desired: OpportunityRequest[],
+    desired: (Opportunity | OpportunityDraft)[],
   ): Promise<void> => {
-    await api.put(`/venue/${venueId}/opportunities`, desired);
+    await api.put(
+      `/venue/${venueId}/opportunities`,
+      desired.map((o) => ({
+        id: "id" in o ? o.id : undefined,
+        startDate: o.startDate,
+        endDate: o.endDate,
+        genreIds: o.genres.map((g) => g.id),
+        contract: o.contract,
+      })),
+    );
   },
 };
 

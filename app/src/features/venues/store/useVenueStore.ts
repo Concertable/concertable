@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { produce } from "immer";
 import type { Venue } from "../types";
-import type { OpportunityRequest } from "@/features/concerts/types";
+import type { Opportunity, OpportunityDraft } from "@/features/concerts/types";
+
+type StoredOpportunity = Opportunity | OpportunityDraft;
 
 interface VenueStore {
   draft: Venue | undefined;
@@ -9,7 +11,7 @@ interface VenueStore {
   isDirty: boolean;
   banner: File | undefined;
   avatar: File | undefined;
-  opportunities: OpportunityRequest[];
+  opportunities: StoredOpportunity[];
 
   toggleEdit: (venue: Venue) => void;
   resetDraft: (venue: Venue) => void;
@@ -20,9 +22,9 @@ interface VenueStore {
   setBanner: (file: File) => void;
   setAvatar: (file: File) => void;
 
-  setOpportunities: (opportunities: OpportunityRequest[]) => void;
-  addOpportunity: (opportunity: OpportunityRequest) => void;
-  updateOpportunity: (index: number, opportunity: OpportunityRequest) => void;
+  setOpportunities: (opportunities: Opportunity[]) => void;
+  addOpportunity: (opportunity: OpportunityDraft) => void;
+  updateOpportunity: (index: number, opportunity: StoredOpportunity) => void;
   removeOpportunity: (index: number) => void;
 }
 

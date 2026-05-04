@@ -117,24 +117,17 @@ export interface OpportunityActions {
   checkout?: ActionLink | null;
 }
 
-export interface Opportunity {
-  id: number;
-  venueId: number;
+export interface OpportunityDraft {
   startDate: string;
   endDate: string;
   genres: Genre[];
   contract: Contract;
-  actions: OpportunityActions;
 }
 
-export type ContractRequest = Omit<Contract, "id">;
-
-export interface OpportunityRequest {
-  id?: number;
-  startDate: string;
-  endDate: string;
-  genreIds: number[];
-  contract: ContractRequest;
+export interface Opportunity extends OpportunityDraft {
+  id: number;
+  venueId: number;
+  actions: OpportunityActions;
 }
 
 export interface ConcertArtist {
