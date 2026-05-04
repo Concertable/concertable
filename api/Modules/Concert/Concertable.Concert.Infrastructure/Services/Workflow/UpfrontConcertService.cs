@@ -36,7 +36,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
 
         var settlementMetadata = new Dictionary<string, string>
         {
-            ["type"] = "settlement",
+            ["type"] = TransactionTypes.Settlement,
             ["bookingId"] = booking.Id.ToString(),
             ["fromUserId"] = payerId.ToString(),
             ["toUserId"] = payeeId.ToString()

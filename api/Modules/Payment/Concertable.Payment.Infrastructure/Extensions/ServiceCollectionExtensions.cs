@@ -94,9 +94,13 @@ public static class ServiceCollectionExtensions
         // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentTransactionHandler>();
+        services.AddScoped<IIntegrationEventHandler<PaymentFailedEvent>, PaymentFailureDispatcher>();
         services.AddScoped<ITransactionHandlerFactory, TransactionHandlerFactory>();
-        services.AddKeyedScoped<ITransactionHandler, TicketTransactionHandler>("ticket");
-        services.AddKeyedScoped<ITransactionHandler, SettlementTransactionHandler>("settlement");
+        services.AddScoped<IPaymentFailureHandlerFactory, PaymentFailureHandlerFactory>();
+        services.AddKeyedScoped<ITransactionHandler, TicketTransactionHandler>(TransactionTypes.Ticket);
+        services.AddKeyedScoped<ITransactionHandler, SettlementTransactionHandler>(TransactionTypes.Settlement);
+        services.AddKeyedScoped<ITransactionHandler, EscrowConfirmedHandler>(TransactionTypes.Escrow);
+        services.AddKeyedScoped<IPaymentFailureHandler, EscrowFailedHandler>(TransactionTypes.Escrow);
 
         return services;
     }

@@ -12,7 +12,7 @@ public class EscrowEntity : IIdEntity, IAuditable
         Amount = amount;
         ChargeId = chargeId;
         ReleaseAt = releaseAt;
-        Status = EscrowStatus.Held;
+        Status = EscrowStatus.Pending;
     }
 
     public int Id { get; private set; }
@@ -28,12 +28,26 @@ public class EscrowEntity : IIdEntity, IAuditable
     public DateTime? ReleasedAt { get; private set; }
     public DateTime? RefundedAt { get; private set; }
     public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; } = string.Empty;
+    public string CreatedBy { get; set; } = null!;
     public DateTime? LastModifiedAt { get; set; }
     public string? LastModifiedBy { get; set; }
 
     public static EscrowEntity Create(int bookingId, Guid fromUserId, Guid toUserId, long amount, string chargeId, DateTime releaseAt) =>
         new(bookingId, fromUserId, toUserId, amount, chargeId, releaseAt);
+
+    public void Confirm()
+    {
+        if (Status != EscrowStatus.Pending)
+            return;
+        Status = EscrowStatus.Held;
+    }
+
+    public void Fail()
+    {
+        if (Status != EscrowStatus.Pending)
+            return;
+        Status = EscrowStatus.Failed;
+    }
 
     public void Release(string transferId, DateTime now)
     {

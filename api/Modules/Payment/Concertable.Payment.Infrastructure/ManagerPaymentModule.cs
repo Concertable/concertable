@@ -76,6 +76,8 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         if (session == PaymentSession.OffSession && !await HasStripeCustomerAsync(payerId, ct))
             throw new BadRequestException("Stripe customer setup is required for off-session payments.");
 
+        var holdMetadata = new Dictionary<string, string>(metadata) { ["type"] = TransactionTypes.Escrow };
+
         var hold = await paymentManager.HoldAsync(new HoldRequest
         {
             PayerId = payerId,
@@ -83,15 +85,15 @@ internal class ManagerPaymentModule : IManagerPaymentModule
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
-            Metadata = metadata,
+            Metadata = holdMetadata,
             Session = session
         }, ct);
 
         if (hold.IsFailed)
             return hold.ToResult<EscrowResponse>();
 
-        if (hold.Value.RequiresAction || string.IsNullOrEmpty(hold.Value.TransactionId))
-            return Result.Fail("Escrow hold requires additional authentication; 3DS step-up not yet supported in escrow flow.");
+        if (string.IsNullOrEmpty(hold.Value.TransactionId))
+            return Result.Fail("Stripe hold response missing PaymentIntent id.");
 
         var escrow = EscrowEntity.Create(
             bookingId,
@@ -104,7 +106,13 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         await escrowRepository.AddAsync(escrow);
         await escrowRepository.SaveChangesAsync();
 
-        return Result.Ok(new EscrowResponse(escrow.Id, escrow.ChargeId, escrow.Status));
+        if (!hold.Value.RequiresAction)
+        {
+            escrow.Confirm();
+            await escrowRepository.SaveChangesAsync();
+        }
+
+        return Result.Ok(new EscrowResponse(escrow.Id, escrow.ChargeId, escrow.Status, hold.Value.ClientSecret));
     }
 
     public async Task<Result<TransferResponse>> ReleaseAsync(int escrowId, CancellationToken ct = default)
