@@ -19,5 +19,5 @@ public class ArtistFindVenuePage
     public Task ApplyAsync(int opportunityId) => ApplyButton(opportunityId).ClickAsync();
 
     public Task WaitUntilAppliedAsync(int opportunityId) =>
-        Assertions.Expect(ApplyButton(opportunityId)).ToBeDisabledAsync();
+        Assertions.Expect(page.GetByText("Application submitted!")).ToBeVisibleAsync();
 }

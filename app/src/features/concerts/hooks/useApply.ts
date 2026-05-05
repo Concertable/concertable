@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRole } from "@/features/auth";
 import applicationApi from "../api/applicationApi";
+import { toast } from "sonner";
 
 export function useApply(opportunityId: number) {
   const role = useRole();
@@ -21,6 +22,7 @@ export function useApply(opportunityId: number) {
   } = useMutation({
     mutationFn: (paymentMethodId?: string) =>
       applicationApi.applyToOpportunity(opportunityId, paymentMethodId),
+    onSuccess: () => toast.success("Application submitted!"),
   });
 
   const apply = (paymentMethodId?: string) => applyMutate(paymentMethodId);

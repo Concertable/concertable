@@ -100,30 +100,23 @@ function ReadView({ opportunity }: { opportunity: Opportunity }) {
                 View Applications
               </Button>
             ) : (
-              isArtistManager &&
-              (opportunity.actions.checkout != null ? (
-                <Button
-                  size="sm"
-                  disabled={!canApply}
-                  onClick={() =>
-                    navigate({
-                      to: "/artist/opportunity/checkout/$opportunityId",
-                      params: { opportunityId: opportunity.id },
-                    })
-                  }
-                >
-                  Continue
-                </Button>
-              ) : (
+              isArtistManager && (
                 <Button
                   size="sm"
                   disabled={!canApply || isPending}
-                  onClick={() => apply()}
                   data-testid="apply"
+                  onClick={() =>
+                    opportunity.actions.checkout != null
+                      ? navigate({
+                          to: "/artist/opportunity/checkout/$opportunityId",
+                          params: { opportunityId: opportunity.id },
+                        })
+                      : apply()
+                  }
                 >
                   {isPending ? "Applying..." : "Apply"}
                 </Button>
-              ))
+              )
             )}
           </div>
         </div>
