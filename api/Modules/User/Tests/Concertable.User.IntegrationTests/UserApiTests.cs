@@ -30,7 +30,7 @@ public class UserApiTests : IAsyncLifetime
         var response = await client.PutAsync("/api/User/location", new UpdateLocationRequest(51.5, -0.1));
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class UserApiTests : IAsyncLifetime
         var response = await client.PutAsync("/api/User/location", new UpdateLocationRequest(51.5, -0.1));
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var user = await response.Content.ReadAsync<CustomerDto>();
         Assert.NotNull(user);
         Assert.Equal(fixture.SeedData.Customer.Id, user.Id);
@@ -61,7 +61,7 @@ public class UserApiTests : IAsyncLifetime
         var response = await client.PutAsync("/api/User/location", new UpdateLocationRequest(latitude, longitude));
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var user = await response.Content.ReadAsync<CustomerDto>();
         Assert.NotNull(user);
         Assert.NotNull(user.Latitude);

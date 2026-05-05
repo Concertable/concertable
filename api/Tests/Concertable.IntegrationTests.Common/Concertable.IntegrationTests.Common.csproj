@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Concertable.Web\Concertable.Web.csproj" />
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
+    <ProjectReference Include="..\..\Modules\Payment\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
   </ItemGroup>
 
 </Project>

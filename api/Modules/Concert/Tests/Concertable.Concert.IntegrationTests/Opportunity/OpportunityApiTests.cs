@@ -61,7 +61,7 @@ internal class OpportunityApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest(fixture.SeedData.Rock.Id));
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ internal class OpportunityApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest(fixture.SeedData.Rock.Id));
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     #endregion

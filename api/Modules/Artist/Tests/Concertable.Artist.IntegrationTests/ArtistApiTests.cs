@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Concertable.Artist.Application.DTOs;
 using Concertable.Artist.Api.Responses;
 using static Concertable.Artist.IntegrationTests.ArtistRequestBuilders;
@@ -28,7 +28,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.GetAsync($"/api/Artist/{fixture.SeedData.Artist.Id}");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var artist = await response.Content.ReadAsync<ArtistDetailsResponse>();
         Assert.NotNull(artist);
         Assert.Equal(fixture.SeedData.Artist.Id, artist.Id);
@@ -42,7 +42,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Artist/99999");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NotFound);
     }
 
     #endregion
@@ -56,7 +56,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Artist/user");
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Artist/user");
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Artist/user");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var artist = await response.Content.ReadAsync<ArtistDetailsResponse>();
         Assert.NotNull(artist);
         Assert.Equal("Test Artist", artist.Name);
@@ -89,7 +89,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Artist/user");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NotFound);
     }
 
     #endregion
@@ -104,7 +104,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PostAsync("/api/Artist", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PostAsync("/api/Artist", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PostAsync("/api/Artist", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Created);
         var artist = await response.Content.ReadAsync<ArtistDto>();
         Assert.NotNull(artist);
         Assert.True(artist.Id > 0);
@@ -146,7 +146,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PostAsync("/api/Artist", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PostAsync("/api/Artist", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     #endregion
@@ -172,7 +172,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PutAsync($"/api/Artist/{fixture.SeedData.Artist.Id}", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PutAsync($"/api/Artist/{fixture.SeedData.Artist.Id}", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PutAsync($"/api/Artist/{fixture.SeedData.Artist.Id}", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PutAsync("/api/Artist/99999", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PutAsync($"/api/Artist/{fixture.SeedData.Artist.Id}", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var artist = await response.Content.ReadAsync<ArtistDto>();
         Assert.NotNull(artist);
         Assert.Equal("Updated Artist", artist.Name);
@@ -233,7 +233,7 @@ public class ArtistApiTests : IAsyncLifetime
 
         var response = await client.PutAsync($"/api/Artist/{fixture.SeedData.Artist.Id}", await request.ToFormContent());
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     #endregion

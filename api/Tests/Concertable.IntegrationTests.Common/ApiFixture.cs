@@ -69,6 +69,8 @@ public async Task InitializeAsync()
                 services.AddSingleton<INotificationModule>(NotificationService);
                 services.AddSingleton<IMockStripeApiClient>(StripeApiClient);
                 services.AddSingleton<IStripeApiClient>(StripeApiClient);
+                services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OnSession);
+                services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OffSession);
                 services.AddResettables(NotificationService, StripeApiClient, EmailService);
                 services.AddSingleton<IEmailService>(EmailService);
 

@@ -30,7 +30,7 @@ public class ApplicationApiTests : IAsyncLifetime
         var response = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", (object?)null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class ApplicationApiTests : IAsyncLifetime
         var response = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", (object?)null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     #endregion

@@ -54,7 +54,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var response = await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/checkout");
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var response = await client.PostAsync($"/api/Application/{fixture.SeedData.VenueHireApp.Id}/accept", (object?)null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]

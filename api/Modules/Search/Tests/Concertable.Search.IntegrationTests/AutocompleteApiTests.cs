@@ -20,7 +20,7 @@ public class AutocompleteApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Autocomplete?searchTerm=Test");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
         Assert.NotNull(results);
         Assert.NotEmpty(results);
@@ -33,7 +33,7 @@ public class AutocompleteApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Autocomplete?searchTerm=zzznomatch");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
         Assert.NotNull(results);
         Assert.Empty(results);
@@ -46,7 +46,7 @@ public class AutocompleteApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Autocomplete");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
         Assert.NotNull(results);
         Assert.NotEmpty(results);
@@ -59,7 +59,7 @@ public class AutocompleteApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/Autocomplete?searchTerm=Test Artist");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var results = await response.Content.ReadAsync<AutocompleteDto[]>();
         Assert.NotNull(results);
         Assert.Contains(results, r => r.Name == "Test Artist" && r.Type == "artist");

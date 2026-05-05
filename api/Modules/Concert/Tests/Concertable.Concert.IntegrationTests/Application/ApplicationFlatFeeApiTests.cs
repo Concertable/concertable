@@ -52,7 +52,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.FlatFeeApp.OpportunityId}/checkout");
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var response = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]

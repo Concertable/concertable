@@ -40,6 +40,6 @@ internal class TransactionService : ITransactionService
         var userId = currentUser.GetId();
         var result = await purchaseRepository.GetAsync(pageParams, userId);
         var dtos = transactionMapper.ToDtos(result.Data);
-        return new Pagination<ITransaction>(dtos, result.TotalCount, result.PageNumber, result.PageSize);
+        return new Pagination<ITransaction>(dtos.ToList(), result.TotalCount, result.PageNumber, result.PageSize);
     }
 }

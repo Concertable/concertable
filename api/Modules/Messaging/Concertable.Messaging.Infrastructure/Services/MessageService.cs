@@ -51,7 +51,7 @@ internal class MessageService : IMessageService
         var senders = await GetSenderDtosAsync(messages.Data);
 
         return new Pagination<MessageDto>(
-            messages.Data.Select(m => m.ToDto(senders[m.FromUserId])),
+            messages.Data.Select(m => m.ToDto(senders[m.FromUserId])).ToList(),
             messages.TotalCount,
             messages.PageNumber,
             messages.PageSize);
@@ -67,7 +67,7 @@ internal class MessageService : IMessageService
         var senders = await GetSenderDtosAsync(messages.Data);
 
         var pagination = new Pagination<MessageDto>(
-            messages.Data.Select(m => m.ToDto(senders[m.FromUserId])),
+            messages.Data.Select(m => m.ToDto(senders[m.FromUserId])).ToList(),
             messages.TotalCount,
             messages.PageNumber,
             messages.PageSize);

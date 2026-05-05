@@ -31,7 +31,7 @@ public class ConcertApiTests : IAsyncLifetime
             $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class ConcertApiTests : IAsyncLifetime
             $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class ConcertApiTests : IAsyncLifetime
             $"/api/Concert/post/{fixture.SeedData.AwaitingPaymentBooking.Concert!.Id}",
             request);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class ConcertApiTests : IAsyncLifetime
             $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class ConcertApiTests : IAsyncLifetime
             $"/api/Concert/post/{fixture.SeedData.ConfirmedBooking.Concert!.Id}",
             request);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     #endregion

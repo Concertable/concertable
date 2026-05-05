@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Concertable.Venue.Application.DTOs;
 using Concertable.Venue.Api.Responses;
 using static Concertable.Venue.IntegrationTests.VenueRequestBuilders;
@@ -31,7 +31,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync($"/api/Venue/{fixture.SeedData.Venue.Id}");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var venue = await response.Content.ReadAsync<VenueDetailsResponse>();
         Assert.NotNull(venue);
         Assert.Equal(fixture.SeedData.Venue.Id, venue.Id);
@@ -48,7 +48,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/Venue/99999");
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NotFound);
     }
 
     #endregion
@@ -65,7 +65,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/Venue/user");
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/Venue/user");
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/Venue/user");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var venue = await response.Content.ReadAsync<VenueDetailsResponse>();
         Assert.NotNull(venue);
         Assert.Equal("Test Venue", venue.Name);
@@ -107,7 +107,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/Venue/user");
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NotFound);
     }
 
     #endregion
@@ -125,7 +125,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Venue", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     #endregion
@@ -212,7 +212,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -240,7 +240,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -254,7 +254,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PutAsync("/api/Venue/99999", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -268,7 +268,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var venue = await response.Content.ReadAsync<VenueDto>();
         Assert.NotNull(venue);
         Assert.Equal("Updated Venue", venue.Name);
@@ -288,7 +288,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PutAsync($"/api/Venue/{fixture.SeedData.Venue.Id}", await request.ToFormContent());
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     #endregion
@@ -305,7 +305,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PatchAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/approve", null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -318,7 +318,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PatchAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/approve", null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -331,7 +331,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PatchAsync("/api/Venue/99999/approve", null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -344,7 +344,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.PatchAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/approve", null);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.NoContent);
         var venue = await fixture.CreateClient().GetAsync<VenueDto>($"/api/Venue/{fixture.SeedData.Venue.Id}");
         Assert.True(venue!.Approved);
     }
@@ -363,7 +363,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync($"/api/Venue/{fixture.SeedData.Venue.Id}/ownership");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var result = await response.Content.ReadAsync<bool>();
         Assert.True(result);
     }
@@ -378,7 +378,7 @@ public class VenueApiTests : IAsyncLifetime
         var response = await client.GetAsync("/api/Venue/99999/ownership");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var result = await response.Content.ReadAsync<bool>();
         Assert.False(result);
     }

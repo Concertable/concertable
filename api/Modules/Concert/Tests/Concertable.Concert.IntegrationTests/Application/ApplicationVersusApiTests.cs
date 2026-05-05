@@ -51,7 +51,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
         var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.VersusApp.OpportunityId}/checkout");
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
             $"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
         // Assert — 400 returned, no concert draft created
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
         var concert = await fixture.ReadDbContext.Concerts
             .FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.VersusApp.Id);
         Assert.Null(concert);

@@ -22,7 +22,7 @@ public static class PaginationExtensions
         Func<TSource, TDestination> selector)
     {
         return new Pagination<TDestination>(
-            source.Data.Select(selector),
+            source.Data.Select(selector).ToList(),
             source.TotalCount,
             source.PageNumber,
             source.PageSize);

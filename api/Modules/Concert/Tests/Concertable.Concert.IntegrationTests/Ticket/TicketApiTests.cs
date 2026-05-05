@@ -32,7 +32,7 @@ public class TicketApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Ticket/purchase", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class TicketApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Ticket/purchase", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class TicketApiTests : IAsyncLifetime
         var response = await client.PostAsync("/api/Ticket/purchase", request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     #endregion
@@ -77,7 +77,7 @@ public class TicketApiTests : IAsyncLifetime
         var response = await client.GetAsync($"/api/Ticket/concert/{fixture.SeedData.ConfirmedBooking.Concert!.Id}/eligibility");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var result = await response.Content.ReadAsync<bool>();
         Assert.False(result);
     }
@@ -92,7 +92,7 @@ public class TicketApiTests : IAsyncLifetime
         var response = await client.GetAsync($"/api/Ticket/concert/{fixture.SeedData.PostedFlatFeeBooking.Concert!.Id}/eligibility");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var result = await response.Content.ReadAsync<bool>();
         Assert.True(result);
     }

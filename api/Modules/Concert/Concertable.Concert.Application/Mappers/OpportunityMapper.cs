@@ -38,7 +38,7 @@ internal class OpportunityMapper : IOpportunityMapper
     public async Task<IPagination<OpportunityDto>> ToDtosAsync(IPagination<OpportunityEntity> opportunities)
     {
         var dtos = await ToDtosAsync(opportunities.Data);
-        return new Pagination<OpportunityDto>(dtos, opportunities.TotalCount, opportunities.PageNumber, opportunities.PageSize);
+        return new Pagination<OpportunityDto>(dtos.ToList(), opportunities.TotalCount, opportunities.PageNumber, opportunities.PageSize);
     }
 }
 

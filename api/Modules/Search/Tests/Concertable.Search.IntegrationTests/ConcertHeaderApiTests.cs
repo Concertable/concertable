@@ -22,7 +22,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/concert/headers/popular");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
         Assert.NotNull(concerts);
         Assert.NotEmpty(concerts);
@@ -39,7 +39,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/concert/headers/free");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
         Assert.NotNull(concerts);
         Assert.Empty(concerts);
@@ -56,7 +56,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/concert/headers/recommended");
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
 
         var response = await client.GetAsync("/api/concert/headers/recommended");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
         Assert.NotNull(concerts);
         Assert.NotEmpty(concerts);
@@ -79,7 +79,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
 
         var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Rock.Id}");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
         Assert.NotNull(concerts);
         Assert.NotEmpty(concerts);
@@ -92,7 +92,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
 
         var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Jazz.Id}");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
         Assert.NotNull(concerts);
         Assert.Empty(concerts);
@@ -108,7 +108,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
         var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Rock.Id},{fixture.SeedData.Jazz.Id}");
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
         Assert.NotNull(concerts);
         Assert.NotEmpty(concerts);
