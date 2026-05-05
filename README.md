@@ -34,7 +34,7 @@ The Aspire dashboard will open and list all service URLs.
 
 # How to Use the App
 
-## Creating an Event
+## Creating a Concert
 
 ### 1. Create Opportunity
 
