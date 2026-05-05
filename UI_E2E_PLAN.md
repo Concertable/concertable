@@ -7,11 +7,11 @@ A Reqnroll + Playwright UI E2E suite that drives the Concertable SPA through eve
 1. Replace tedious manual click-through-as-3-roles testing during current development.
 2. Permanent regression armour for the workflow surface as the SPA refactor lands.
 
-## Status: scaffolding complete, escrow landed, opportunity-sync prereq landed, FlatFee workflow next
+## Status: FlatFee happy-path scenario in progress — steps 1 + 2 green, step 3 (VM accept) fix applied, step 4 (draft concert) pending
 
-**Scaffolding PR (#35) merged** + **Escrow PR (#36) merged** + **Opportunity-sync prereq PR (`Feature/UiE2eFlatFeeWorkflow-2`)** in flight. Reqnroll + Playwright + Aspire stack wired up end-to-end. `Login.feature` smoke proves the real OIDC redirect dance works. Money flow now goes through escrow (auth at accept → capture/transfer at settle) — UI E2E built against this final shape, no rework expected.
+**Scaffolding PR (#35) merged** + **Escrow PR (#36) merged** + **`Feature/UiE2eFlatFeeWorkflow-2`** in flight (opportunity-sync prereq + FlatFee E2E test combined). Reqnroll + Playwright + Aspire stack wired up end-to-end. `Login.feature` smoke proves the real OIDC redirect dance works. Money flow now goes through escrow (auth at accept → capture/transfer at settle) — UI E2E built against this final shape, no rework expected.
 
-**Why the prereq PR exists:** Drafting Step 5 surfaced that the SPA had no UI to *post* an opportunity (only to display existing ones). The "VM posts a flat fee opportunity for £500" Gherkin step was unimplementable. PR `Feature/UiE2eFlatFeeWorkflow-2` builds the missing UI plus the BE collection-sync endpoint + service infrastructure to back it. See `OPPORTUNITY_SYNC_PR.md` for full breakdown of that PR. The actual `FlatFeeWorkflow.feature` E2E test lands in a follow-up branch.
+**Why the prereq work exists on the same branch:** Drafting Step 5 surfaced that the SPA had no UI to *post* an opportunity. The "VM posts a flat fee opportunity for £500" Gherkin step was unimplementable. `Feature/UiE2eFlatFeeWorkflow-2` builds the missing UI plus the BE collection-sync endpoint + service infrastructure, then continues straight into the FlatFee E2E scenario on the same branch.
 
 **Escrow's impact on UI E2E (now baked in, not deferred):**
 - `EscrowStatus` enum + `IPaymentSucceededProcessor` keyed by transaction type now own the money flow
@@ -23,9 +23,13 @@ A Reqnroll + Playwright UI E2E suite that drives the Concertable SPA through eve
 **What's in place:**
 - `Concertable.E2ETests` — shared classlib (AppFixture, StripeCliFixture, SqlFixture, PollingService, port pinning, `/e2e/reseed`)
 - `Concertable.E2ETests.Api` (xUnit-direct) — green; assertions updated for escrow shape (PR #36 follow-up)
-- `Concertable.E2ETests.Ui` (Reqnroll + Playwright) — `UiFixture`, `TestRunHooks`, `ScenarioDependencies` (Reqnroll DI registers `UiFixture` as a singleton sourced from `TestRunHooks.Fixture`), `HomePage` + `LoginPage` page objects, MSBuild target strips Reqnroll's auto-emitted `FeatureTitle`/`Description` traits so only `Category=Ui` shows in Test Explorer
+- `Concertable.E2ETests.Ui` (Reqnroll + Playwright) — `UiFixture`, `TestRunHooks`, `ScenarioDependencies` (Reqnroll DI: `UiFixture` singleton + `Browser` + `WorkflowState` scoped + `ILogger` via `AddLogging`), `HomePage` + `LoginPage` + all FlatFee page objects, MSBuild target strips Reqnroll's auto-emitted `FeatureTitle`/`Description` traits so only `Category=Ui` shows in Test Explorer
+- `Browser.cs` — per-role context switching with Playwright trace recording (`playwright-traces/trace-<role>-<ts>.zip` on dispose); `show-trace.ps1` at repo root opens latest trace
 - `data-testid` selector standard codified (Reqnroll Conventions §4)
 - Headed Chromium is the local default (`Headless = CI=="true"`); CI runners set `CI=true` automatically
+- `GlobalExceptionHandler` — `!IsProduction()` guard exposes full stack traces in E2E environment
+- `appsettings.E2E.json` — `GoogleApiKey` added (gitignored); `UseRealStripe: true`
+- **FlatFee scenario step progress:** VM posts ✅ (6.4s) → Artist applies ✅ (6.8s, toast-based success signal) → VM accepts (fix applied — saved card pre-selected in Stripe PaymentElement) → draft concert created (pending)
 
 ## Decisions locked in
 
@@ -87,34 +91,38 @@ api/Tests/Concertable.E2ETests/                        (parent classlib)
     ├── AssemblyInfo.cs                                ([AssemblyTrait("Category","Ui")])
     ├── Hooks/
     │   ├── TestRunHooks.cs                            ✅ ([BeforeTestRun] boots UiFixture; [AfterTestRun] disposes)
-    │   ├── ScenarioDependencies.cs                    ✅ (registers UiFixture singleton via Reqnroll DI)
-    │   ├── PlaywrightHooks.cs                         (TODO Step 5 — [BeforeScenario] hydrate IBrowserContext from cached storageState by @role tag; [AfterScenario] dispose)
-    │   └── LoginCaptureHooks.cs                       (TODO Step 5 — [BeforeTestRun] real OIDC login per role → cache storageState)
+    │   ├── ScenarioDependencies.cs                    ✅ (UiFixture singleton + Browser + WorkflowState scoped + AddLogging/Console)
+    │   ├── PlaywrightHooks.cs                         ✅ ([BeforeScenario] hydrate IBrowserContext from cached storageState; [AfterScenario] dispose)
+    │   └── LoginCaptureHooks.cs                       ✅ ([BeforeTestRun] real OIDC login per role → cache storageState)
     ├── Support/
     │   ├── UiFixture.cs                               ✅ (composes AppFixture + Browser/Playwright; Headless = CI=="true")
-    │   ├── WorkflowState.cs                           (TODO — typed scenario state; injected via Reqnroll DI)
-    │   ├── EnumTransformations.cs                     (TODO — [StepArgumentTransformation] for ContractType etc)
-    │   ├── PageObjects/
-    │   │   ├── HomePage.cs                            ✅
-    │   │   ├── LoginPage.cs                           ✅
-    │   │   ├── VenueManager/                          (TODO Step 5+)
-    │   │   ├── Artist/                                (TODO Step 5+)
-    │   │   └── Customer/                              (TODO Step 6)
-    │   └── Helpers/
-    │       ├── Money.cs                               (TODO Step 5 — escrow-aware assertions: AssertArtistReceivedAsync, AssertVenueChargedAsync, etc)
-    │       ├── StripeUiHelpers.cs                     (TODO Step 5 — Stripe iframe walking + Cards constants)
-    │       ├── SignalRWaiter.cs                       (TODO Step 5 — wait-for-event with PollingService)
-    │       └── DbAssertions.cs                        (TODO Step 5 — read EF entities post-flow)
+    │   ├── Browser.cs                                 ✅ (per-role context switching; Playwright trace per role; double-dispose guard)
+    │   ├── WorkflowState.cs                           ✅ (VenueId, OpportunityId, ApplicationId, ConcertId)
+    │   ├── StripeIframe.cs                            ✅ (FillCardAsync + Complete3dsChallengeAsync; StripeCards constants)
+    │   └── EnumTransformations.cs                     (TODO — [StepArgumentTransformation] for ContractType etc)
+    ├── PageObjects/
+    │   ├── HomePage.cs                                ✅
+    │   ├── LoginPage.cs                               ✅
+    │   ├── MyVenuePage.cs                             ✅ (GotoAsync, PostFlatFeeOpportunityAsync, WaitUntilSavedAsync)
+    │   ├── ArtistFindVenuePage.cs                     ✅ (GotoAsync, ApplyAsync, WaitUntilAppliedAsync — waits for Sonner toast)
+    │   ├── VenueApplicationsPage.cs                   ✅ (GotoAsync, ClickAcceptAsync)
+    │   ├── VenueAcceptApplicationPage.cs              ✅ (ClickConfirmAsync — contract review confirm)
+    │   ├── ApplicationCheckoutPage.cs                 ✅ (PayWithSavedCardAsync, WaitForSuccessAsync)
+    │   └── Customer/                                  (TODO Step 6)
+    └── Helpers/
+        ├── Money.cs                                   (TODO Step 6 — escrow-aware assertions)
+        ├── SignalRWaiter.cs                           (TODO Step 6 — wait-for-event with PollingService)
+        └── DbAssertions.cs                            (TODO Step 6 — read EF entities post-flow)
     ├── Steps/
     │   ├── LoginSteps.cs                              ✅
-    │   ├── VenueManagerSteps.cs                       (TODO Step 5+)
-    │   ├── ArtistSteps.cs                             (TODO Step 5+)
+    │   ├── VenueManagerSteps.cs                       ✅ (PostsFlatFeeOpportunity, AcceptsWithValidCard, DraftConcertCreated)
+    │   ├── ArtistSteps.cs                             ✅ (ArtistApplies — navigates + applies + waits for toast)
     │   ├── CustomerSteps.cs                           (TODO Step 6)
     │   ├── SystemSteps.cs                             (TODO Step 6 — /e2e/finish, SignalR)
-    │   └── AssertionSteps.cs                          (TODO Step 5+)
+    │   └── AssertionSteps.cs                          (TODO Step 6)
     └── Features/
         ├── Login.feature                              ✅
-        ├── FlatFeeWorkflow.feature                    (TODO Step 5)
+        ├── FlatFeeWorkflow.feature                    ✅ (written; steps 1+2 green; step 3 fix applied; step 4 pending)
         ├── DoorSplitWorkflow.feature                  (TODO Step 6)
         ├── VersusWorkflow.feature                     (TODO Step 6)
         ├── VenueHireWorkflow.feature                  (TODO Step 6)
@@ -249,30 +257,26 @@ Lifecycle:
 
 ## Phased Implementation
 
-### Step 5 — FlatFee happy path (NEXT — new branch off master once prereq merges, e.g. `Feature/UiE2eFlatFeeWorkflow-3`)
+### Step 5 — FlatFee happy path (`Feature/UiE2eFlatFeeWorkflow-2` — IN PROGRESS)
 
-**Prerequisite:** opportunity-sync PR (`Feature/UiE2eFlatFeeWorkflow-2`) merged — adds VM "post opportunity" UI, BE `PUT /api/Venue/{id}/opportunities` declarative full-set sync endpoint, `useOpportunities` hook, `OpportunityList` + edit-mode `OpportunityCard`, `ContractFields` per-variant form fields, `DateRangeField` (single-day/multi-day toggle), `NumberInput` (anti scroll-wheel decrement). Detailed in `OPPORTUNITY_SYNC_PR.md`. Without this PR, "VM posts a flat fee opportunity" has no UI to drive.
+**Prerequisite work (same branch):** VM "post opportunity" UI, BE `PUT /api/Venue/{id}/opportunities` declarative full-set sync endpoint, `useOpportunities` hook, `OpportunityList` + edit-mode `OpportunityCard`, `ContractFields` per-variant form fields, `DateRangeField`, `NumberInput`. Detailed in `OPPORTUNITY_SYNC_PR.md`.
 
-Multi-actor scenario covering the FlatFee strategy end-to-end via the UI, **post-escrow, post-prereq**:
-1. VM posts a FlatFee opportunity (`Given a venue manager has posted a flat fee opportunity for £500`)
-2. Artist applies (`When the artist applies to the opportunity`)
-3. VM accepts with valid card (`And the venue manager accepts with a valid card`) — exercises Stripe Elements + 3DS in the UI; PaymentIntent authorised, funds parked in escrow
-4. Application accepted, draft concert created (`Then the application is accepted` + DB assertions on draft concert)
-5. *(Optional in same scenario or a separate `ConcertSettlement.feature` scenario)* concert finishes → escrow releases → transfer to artist (`Then the artist receives £500`)
+Multi-actor scenario covering the FlatFee strategy end-to-end via the UI, post-escrow:
+1. VM posts a FlatFee opportunity — **✅ green (6.4s)**
+2. Artist applies — **✅ green (6.8s)** (apply button unified; Sonner toast as success signal)
+3. VM accepts with valid card — **fix applied** (Stripe PaymentElement shows "Saved" tab with test card pre-selected; `PayWithSavedCardAsync` skips card entry and clicks "Confirm & Pay")
+4. Draft concert created — **pending** (assertion step wired; waiting on step 3 to be confirmed green)
+5. Settlement slice — deferred to `ConcertSettlement.feature` (Step 6)
 
-**Build order (outside-in, scenario-first):**
+**Build order — completed:**
+1. ✅ `FlatFeeWorkflow.feature` — Gherkin written
+2. ✅ `LoginCaptureHooks` + `PlaywrightHooks` — real OIDC login per role → cached storageState
+3. ✅ `WorkflowState` + Reqnroll DI in `ScenarioDependencies`
+4. ✅ Per-step page objects: `MyVenuePage`, `ArtistFindVenuePage`, `VenueApplicationsPage`, `VenueAcceptApplicationPage`, `VenueApplicationCheckoutPage`
+5. ✅ `Browser.cs` — Playwright trace recording; `show-trace.ps1` helper
+6. ✅ Bug fixes: `GoogleApiKey` in `appsettings.E2E.json`; `GlobalExceptionHandler !IsProduction()`; unified Apply button in `OpportunityCard.tsx`; toast-based apply signal in `useApply.ts`
 
-1. **`FlatFeeWorkflow.feature`** — write the Gherkin first, ~10 lines. This drives everything else.
-2. **`LoginCaptureHooks` + `PlaywrightHooks`** — auth precondition, must land before any scenario can run. Cache `VenueManager`, `ArtistManager`, `Customer` storageStates; hydrate `IBrowserContext` per scenario by tag.
-3. **`WorkflowState` shell** + Reqnroll DI registration in `ScenarioDependencies` — fields added as steps need them.
-4. **Per-step build, driven by Reqnroll's missing-binding errors:**
-   - VM step → `OpportunitiesPage` (post opportunity form) → `data-testid` on SPA elements
-   - Artist step → `OpportunityFindPage` + `MyApplicationsPage`
-   - VM accept step → `ApplicationsPage` + `ApplicationCheckoutPage` (Stripe Elements) → `StripeUiHelpers` + `Cards.*` constants
-   - Settlement step → `Money` helpers + `SystemSteps` (`/e2e/finish`)
-   - Assertion steps → `DbAssertions` + `Money` helpers
-
-5. **`EnumTransformations`** — added when Gherkin first uses an enum parameter.
+**Notable Stripe finding:** `PaymentElement` with `layout: "tabs"` pre-selects the "Saved" tab when the test user has a saved card. `StripeIframe.FillCardAsync` targets card-entry iframes on the "Card" tab — wrong tab. Fixed by using the saved card directly. A separate future test should cover the "Card" tab entry path (see memory note `project_e2e_stripe_card_tab.md`).
 
 **DoD:** scenario passes deterministically locally; trace viewer artefact saved on failure; test runs in CI on push to master.
 

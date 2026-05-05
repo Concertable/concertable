@@ -11,7 +11,7 @@ public class VenueManagerSteps
     private readonly Browser browser;
     private readonly WorkflowState state;
     private MyVenuePage myVenuePage = null!;
-    private VenueApplicationCheckoutPage checkoutPage = null!;
+    private ApplicationCheckoutPage checkoutPage = null!;
 
     public VenueManagerSteps(UiFixture fixture, Browser browser, WorkflowState state)
     {
@@ -47,8 +47,8 @@ public class VenueManagerSteps
         var acceptPage = new VenueAcceptApplicationPage(browser.Page);
         await acceptPage.ClickConfirmAsync();
 
-        checkoutPage = new VenueApplicationCheckoutPage(browser.Page);
-        await checkoutPage.PayWithCardAsync(StripeCards.Success);
+        checkoutPage = new ApplicationCheckoutPage(browser.Page);
+        await checkoutPage.PayWithSavedCardAsync();
     }
 
     [Then(@"a draft concert is created")]
