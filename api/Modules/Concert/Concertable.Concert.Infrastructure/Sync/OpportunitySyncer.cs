@@ -13,8 +13,6 @@ internal sealed class OpportunitySyncer
         this.contractModule = contractModule;
     }
 
-    protected override int? DtoKey(OpportunityRequest dto) => dto.Id;
-
     protected override async Task<OpportunityEntity> CreateAsync(int venueId, OpportunityRequest dto)
     {
         var contractId = await contractModule.CreateAsync(dto.Contract);

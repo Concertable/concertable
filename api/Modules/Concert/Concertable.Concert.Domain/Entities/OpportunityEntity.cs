@@ -1,6 +1,6 @@
 ﻿namespace Concertable.Concert.Domain;
 
-public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntity>
+public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntity>, IEquatable<OpportunityEntity>
 {
     private OpportunityEntity() { }
 
@@ -38,4 +38,10 @@ public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntit
 
     public void SyncGenres(IEnumerable<int> genreIds) =>
         this.SyncGenres<OpportunityGenreEntity>(genreIds);
+
+    public bool Equals(OpportunityEntity? other) => other is not null && Id == other.Id;
+
+    public override bool Equals(object? obj) => Equals(obj as OpportunityEntity);
+
+    public override int GetHashCode() => Id.GetHashCode();
 }

@@ -5,7 +5,8 @@ namespace Concertable.Application.Diffing;
 
 public abstract class CollectionSyncer<TEntity, TDto, TContext>
     : ICollectionSyncer<TEntity, TDto, TContext>
-    where TEntity : class, IIdEntity
+    where TEntity : class, IIdEntity, IEquatable<TEntity>
+    where TDto : ISyncRequest
 {
     private readonly IBaseRepository<TEntity> repo;
 
@@ -16,30 +17,32 @@ public abstract class CollectionSyncer<TEntity, TDto, TContext>
         IEnumerable<TEntity> current,
         IEnumerable<TDto> desired)
     {
+        var currentList = current.ToList();
+
         var byKey = desired
-            .Where(d => DtoKey(d).HasValue)
-            .ToDictionary(d => DtoKey(d)!.Value);
+            .Where(d => d.Id.HasValue)
+            .ToDictionary(d => d.Id!.Value);
 
-        var deletes = new List<TEntity>();
+        var kept = new HashSet<TEntity>();
 
-        foreach (var entity in current)
+        foreach (var entity in currentList)
         {
             if (byKey.TryGetValue(entity.Id, out var dto))
+            {
                 await UpdateAsync(entity, dto);
-            else
-                deletes.Add(entity);
+                kept.Add(entity);
+            }
         }
 
         var creates = new List<TEntity>();
-        foreach (var dto in desired.Where(d => !DtoKey(d).HasValue))
+        foreach (var dto in desired.Where(d => !d.Id.HasValue))
             creates.Add(await CreateAsync(context, dto));
 
         await repo.AddRangeAsync(creates);
-        foreach (var entity in deletes) await DeleteAsync(entity);
+        foreach (var entity in currentList.Except(kept)) await DeleteAsync(entity);
         await repo.SaveChangesAsync();
     }
 
-    protected abstract int? DtoKey(TDto dto);
     protected abstract Task<TEntity> CreateAsync(TContext context, TDto dto);
     protected abstract Task UpdateAsync(TEntity entity, TDto dto);
 

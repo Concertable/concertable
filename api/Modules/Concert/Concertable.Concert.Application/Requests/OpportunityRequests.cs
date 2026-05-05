@@ -1,8 +1,9 @@
+using Concertable.Application.Diffing;
 using Concertable.Concert.Application.Interfaces;
 
 namespace Concertable.Concert.Application.Requests;
 
-internal record OpportunityRequest
+internal record OpportunityRequest : ISyncRequest
 {
     public int? Id { get; init; }
     public DateTime StartDate { get; init; }
