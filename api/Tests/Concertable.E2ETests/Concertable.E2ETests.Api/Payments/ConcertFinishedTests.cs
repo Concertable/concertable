@@ -25,7 +25,7 @@ public class ConcertFinishedTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await fixture.ResetAsync();
-        customerClient = fixture.CreateAuthenticatedClient(fixture.SeedData.Customer.Id, Role.Customer);
+        customerClient = await fixture.CreateAuthenticatedClientAsync(fixture.SeedData.Customer.Email);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

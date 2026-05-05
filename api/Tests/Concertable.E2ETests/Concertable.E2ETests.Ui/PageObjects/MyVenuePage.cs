@@ -14,7 +14,7 @@ public class MyVenuePage
     private ILocator EditButton => page.GetByTestId("edit");
     private ILocator SaveButton => page.GetByTestId("save");
     private ILocator AddOpportunityButton => page.GetByTestId("opportunity-add");
-    private ILocator FlatFeeFeeInput => page.GetByTestId("contract-flatfee-fee");
+    private ILocator FlatFeeFeeInput => page.GetByTestId("opportunity-card-edit").Last.GetByTestId("contract-flatfee-fee");
 
     public Task GotoAsync() => page.GotoAsync($"{spaBaseUrl}/venue/my");
 

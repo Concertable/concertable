@@ -16,6 +16,6 @@ function VenueLayout() {
 }
 
 export const Route = createFileRoute("/venue")({
-  beforeLoad: () => requireRole("VenueManager"),
+  beforeLoad: ({ location }) => requireRole("VenueManager", { location }),
   component: VenueLayout,
 });

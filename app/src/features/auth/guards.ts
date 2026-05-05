@@ -23,24 +23,24 @@ async function ensureUser(): Promise<User | null> {
 
 export async function requireAuth({
   location,
-}: { location?: { href: string } } = {}) {
+}: { location?: { pathname: string } } = {}) {
   if (!(await hasValidSession()))
     throw redirect({
       to: "/login",
-      search: { redirect: location?.href ?? "" },
+      search: { redirect: location?.pathname ?? "" },
     });
   const user = await ensureUser();
   if (!user)
     throw redirect({
       to: "/login",
-      search: { redirect: location?.href ?? "" },
+      search: { redirect: location?.pathname ?? "" },
     });
   return user;
 }
 
 export async function requireRole(
   role: Role,
-  { location }: { location?: { href: string } } = {},
+  { location }: { location?: { pathname: string } } = {},
 ) {
   const user = await requireAuth({ location });
   if (user.role !== role) throw redirect({ to: "/" });

@@ -38,9 +38,17 @@ internal class VenueDevSeeder : IDevSeeder
 
         await context.Venues.SeedIfEmptyAsync(async () =>
         {
+            seed.Venue = VenueFaker.GetFaker(
+                seed.VenueManager1.Id,
+                "The Grand Venue",
+                "grandvenue.jpg",
+                "avatar.jpg",
+                geometryProvider.CreatePoint(51, 0),
+                new Address("Test County", "Test Town"),
+                seed.VenueManager1.Email).Generate();
+
             var venueData = new (string Name, string Banner)[]
             {
-                ("The Grand Venue", "grandvenue.jpg"),
                 ("Redhill Hall", "redhillhall.jpg"),
                 ("Weybridge Pavilion", "weybridgepavilon.jpg"),
                 ("Cobham Arts Centre", "cobhamarts.jpg"),
@@ -81,7 +89,7 @@ internal class VenueDevSeeder : IDevSeeder
             {
                 var loc = locationFaker.Next();
                 return VenueFaker.GetFaker(
-                    venueManagerIds[i],
+                    venueManagerIds[i + 1],
                     v.Name,
                     v.Banner,
                     "avatar.jpg",
@@ -90,10 +98,9 @@ internal class VenueDevSeeder : IDevSeeder
                     $"{v.Name.ToLowerInvariant().Replace(" ", "").Replace("&", "and").Replace("é", "e")}@test.com").Generate();
             }).ToArray();
 
+            context.Venues.Add(seed.Venue);
             context.Venues.AddRange(venues);
             await context.SaveChangesAsync(ct);
-
-            seed.Venue = venues[0];
         });
     }
 }

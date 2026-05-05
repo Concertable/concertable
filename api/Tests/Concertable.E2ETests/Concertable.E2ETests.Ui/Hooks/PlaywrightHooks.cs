@@ -18,6 +18,7 @@ public class PlaywrightHooks
     public async Task BeforeScenario(ScenarioContext scenarioContext)
     {
         await fixture.App.ResetAsync();
+        await LoginCaptureHooks.CaptureAllAsync(fixture);
 
         var role = scenarioContext.ScenarioInfo.Tags
             .Select(tag => Enum.TryParse<Role>(tag, out var r) ? (Role?)r : null)

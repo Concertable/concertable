@@ -1,44 +1,40 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using System.Text.Json;
 
 namespace Concertable.E2ETests;
 
-internal sealed class TestTokenMinter
+internal sealed class TestTokenMinter : IDisposable
 {
-    private readonly JwtSecurityTokenHandler tokenHandler;
-    private readonly SigningCredentials signingCredentials;
-    private readonly string issuer;
-    private readonly string audience;
+    private readonly HttpClient httpClient;
+    private readonly string authBaseUrl;
 
-    public TestTokenMinter(IConfiguration configuration, JwtSecurityTokenHandler tokenHandler)
+    public TestTokenMinter(IConfiguration configuration)
     {
-        this.tokenHandler = tokenHandler;
-        var key = configuration["Auth:TestSigningKey"]
-            ?? throw new InvalidOperationException("Auth:TestSigningKey is not configured.");
-        issuer = configuration["Auth:TestIssuer"]
-            ?? throw new InvalidOperationException("Auth:TestIssuer is not configured.");
-        audience = configuration["Auth:TestAudience"]
-            ?? throw new InvalidOperationException("Auth:TestAudience is not configured.");
+        authBaseUrl = configuration["Endpoints:Auth"]
+            ?? throw new InvalidOperationException("Endpoints:Auth is not configured.");
 
-        signingCredentials = new SigningCredentials(
-            new SymmetricSecurityKey(Convert.FromBase64String(key)),
-            SecurityAlgorithms.HmacSha256);
+        httpClient = new HttpClient(new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        });
     }
 
-    public string Mint(Guid userId, Role role)
+    public async Task<string> MintAsync(string email, string password)
     {
-        var jwt = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: [
-                new Claim("sub", userId.ToString()),
-                new Claim("role", role.ToString())
-            ],
-            expires: DateTime.UtcNow.AddMinutes(30),
-            signingCredentials: signingCredentials);
+        var response = await httpClient.PostAsync($"{authBaseUrl}/connect/token",
+            new FormUrlEncodedContent([
+                new("grant_type", "password"),
+                new("client_id", "concertable-test"),
+                new("username", email),
+                new("password", password),
+                new("scope", "concertable.api"),
+            ]));
+        response.EnsureSuccessStatusCode();
 
-        return tokenHandler.WriteToken(jwt);
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var doc = await JsonDocument.ParseAsync(stream);
+        return doc.RootElement.GetProperty("access_token").GetString()!;
     }
+
+    public void Dispose() => httpClient.Dispose();
 }

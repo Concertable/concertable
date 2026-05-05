@@ -38,7 +38,7 @@ public class ArtistSteps
     private async Task<int> FetchNewestApplicationIdAsync(int opportunityId)
     {
         var seed = fixture.App.SeedData;
-        using var client = fixture.App.CreateAuthenticatedClient(seed.VenueManager1.Id, Role.VenueManager);
+        using var client = await fixture.App.CreateAuthenticatedClientAsync(seed.VenueManager1.Email);
         var json = await client.GetStringAsync($"/api/application/opportunity/{opportunityId}");
         using var doc = JsonDocument.Parse(json);
         return doc.RootElement.EnumerateArray()

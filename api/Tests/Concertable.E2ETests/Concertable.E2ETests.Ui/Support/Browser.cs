@@ -2,7 +2,7 @@ using Concertable.E2ETests.Ui.Hooks;
 
 namespace Concertable.E2ETests.Ui.Support;
 
-public class Browser : IAsyncDisposable
+public class Browser : IAsyncDisposable, IDisposable
 {
     private IBrowser playwrightBrowser = null!;
     private Role? currentRole;
@@ -31,6 +31,8 @@ public class Browser : IAsyncDisposable
         Page = await Context.NewPageAsync();
         currentRole = role;
     }
+
+    public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
 
     public async ValueTask DisposeAsync()
     {

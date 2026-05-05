@@ -15,6 +15,6 @@ function ArtistLayout() {
 }
 
 export const Route = createFileRoute("/artist")({
-  beforeLoad: () => requireRole("ArtistManager"),
+  beforeLoad: ({ location }) => requireRole("ArtistManager", { location }),
   component: ArtistLayout,
 });
