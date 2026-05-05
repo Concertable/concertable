@@ -1,7 +1,7 @@
 export type PaymentMethod = "Cash" | "Transfer";
 
 interface ContractBase {
-  id: number;
+  id?: number;
   paymentMethod: PaymentMethod;
 }
 

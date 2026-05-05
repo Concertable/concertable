@@ -10,6 +10,7 @@ internal class OpportunityService : IOpportunityService
     private readonly IStripeValidationFactory stripeValidationFactory;
     private readonly IVenueModule venueModule;
     private readonly IContractModule contractModule;
+    private readonly IOpportunitySyncer syncer;
     private readonly IOpportunityMapper mapper;
     private readonly ICurrentUser currentUser;
     private readonly IUnitOfWorkBehavior uowBehavior;
@@ -19,6 +20,7 @@ internal class OpportunityService : IOpportunityService
         IStripeValidationFactory stripeValidationFactory,
         IVenueModule venueModule,
         IContractModule contractModule,
+        IOpportunitySyncer syncer,
         IOpportunityMapper mapper,
         ICurrentUser currentUser,
         IUnitOfWorkBehavior uowBehavior)
@@ -27,6 +29,7 @@ internal class OpportunityService : IOpportunityService
         this.stripeValidationFactory = stripeValidationFactory;
         this.venueModule = venueModule;
         this.contractModule = contractModule;
+        this.syncer = syncer;
         this.mapper = mapper;
         this.currentUser = currentUser;
         this.uowBehavior = uowBehavior;
@@ -84,38 +87,37 @@ internal class OpportunityService : IOpportunityService
         });
     }
 
-    public async Task<OpportunityDto> UpdateAsync(int id, OpportunityRequest request)
-    {
-        if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
-            throw new ForbiddenException("You do not have the required Stripe account set up");
-
-        var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
-            ?? throw new NotFoundException("Venue not found for current user");
-
-        var opportunity = await opportunityRepository.GetByIdAsync(id)
-            ?? throw new NotFoundException("Concert Opportunity not found");
-
-        if (opportunity.VenueId != venueId)
-            throw new ForbiddenException("You do not own this concert opportunity");
-
-        await uowBehavior.ExecuteAsync(async () =>
-        {
-            await contractModule.UpdateAsync(opportunity.ContractId, request.Contract);
-            opportunity.Update(
-                new DateRange(request.StartDate, request.EndDate),
-                opportunity.ContractId,
-                request.GenreIds);
-        });
-
-        var updated = await opportunityRepository.GetByIdAsync(id)
-            ?? throw new NotFoundException("Concert Opportunity not found");
-        return await mapper.ToDtoAsync(updated);
-    }
-
     public async Task<IPagination<OpportunityDto>> GetActiveByVenueIdAsync(int id, IPageParams pageParams)
     {
         var opportunities = await opportunityRepository.GetActiveByVenueIdAsync(id, pageParams);
         return await mapper.ToDtosAsync(opportunities);
+    }
+
+    public async Task<IEnumerable<OpportunityDto>> GetActiveByVenueIdAsync(int venueId)
+    {
+        var opportunities = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
+        return await mapper.ToDtosAsync(opportunities);
+    }
+
+    public async Task<IEnumerable<OpportunityDto>> UpdateAsync(int venueId, IEnumerable<OpportunityRequest> desired)
+    {
+        var ownedVenueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
+            ?? throw new NotFoundException("Venue not found for current user");
+
+        if (ownedVenueId != venueId)
+            throw new ForbiddenException("You do not own this venue");
+
+        var desiredList = desired.ToList();
+        foreach (var req in desiredList)
+            if (!await stripeValidationFactory.Create(req.Contract.ContractType).ValidateAsync())
+                throw new ForbiddenException("You do not have the required Stripe account set up");
+
+        var current = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
+
+        await uowBehavior.ExecuteAsync(() => syncer.SyncAsync(venueId, current, desiredList));
+
+        var updated = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
+        return await mapper.ToDtosAsync(updated);
     }
 
     public async Task<OpportunityDto> GetByIdAsync(int id)

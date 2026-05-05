@@ -18,8 +18,15 @@ const venueApi = {
     avatar?: File,
   ): Promise<Venue> => {
     const formData = new FormData();
-    formData.append("venue", JSON.stringify(venue));
-    if (banner) formData.append("Banner", banner);
+    formData.append("Name", venue.name);
+    formData.append("About", venue.about);
+    formData.append("Latitude", String(venue.latitude));
+    formData.append("Longitude", String(venue.longitude));
+    formData.append("Approved", String(venue.approved));
+    if (banner) {
+      formData.append("Banner.Url", venue.bannerUrl);
+      formData.append("Banner.File", banner);
+    }
     if (avatar) formData.append("Avatar", avatar);
     const { data } = await api.put<Venue>(`/venue/${venue.id}`, formData);
     return data;

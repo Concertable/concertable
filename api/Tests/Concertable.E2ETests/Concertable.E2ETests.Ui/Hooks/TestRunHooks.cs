@@ -12,7 +12,6 @@ public class TestRunHooks
     {
         Fixture = new UiFixture();
         await Fixture.InitializeAsync();
-        await Fixture.App.ResetAsync();
     }
 
     [AfterTestRun]

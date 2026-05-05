@@ -1,8 +1,37 @@
-import { usePagination } from "@/hooks/usePagination";
-import { PaginationControls } from "@/components/ui/PaginationControls";
+import { Editable } from "@/components/editable/Editable";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOpportunitiesByVenueQuery } from "../../hooks/useOpportunityQuery";
+import { useAllOpportunitiesQuery } from "../../hooks/useOpportunitiesQuery";
 import { OpportunityCard } from "./OpportunityCard";
+import { OpportunityList } from "./OpportunityList";
+
+interface Props {
+  venueId: number;
+}
+
+export function OpportunitySection({ venueId }: Readonly<Props>) {
+  const { data, isLoading, isError } = useAllOpportunitiesQuery(venueId);
+
+  if (isLoading) return <OpportunitySectionSkeleton />;
+  if (isError)
+    return <p className="text-destructive">Failed to load opportunities.</p>;
+
+  return (
+    <Editable
+      view={
+        data && data.length > 0 ? (
+          <div className="space-y-3">
+            {data.map((opportunity) => (
+              <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground">No opportunities yet.</p>
+        )
+      }
+      edit={<OpportunityList venueId={venueId} />}
+    />
+  );
+}
 
 function OpportunitySectionSkeleton() {
   return (
@@ -28,39 +57,6 @@ function OpportunitySectionSkeleton() {
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-interface Props {
-  venueId: number;
-}
-
-export function OpportunitySection({ venueId }: Readonly<Props>) {
-  const { params, nextPage, prevPage } = usePagination();
-  const { data, isLoading, isError } = useOpportunitiesByVenueQuery(
-    venueId,
-    params,
-  );
-
-  if (isLoading) return <OpportunitySectionSkeleton />;
-  if (isError)
-    return <p className="text-destructive">Failed to load opportunities.</p>;
-  if (!data?.data.length)
-    return <p className="text-muted-foreground">No opportunities yet.</p>;
-
-  return (
-    <div className="space-y-3">
-      {data.data.map((opportunity) => (
-        <OpportunityCard key={opportunity.id} opportunity={opportunity} />
-      ))}
-
-      <PaginationControls
-        pageNumber={params.pageNumber}
-        totalPages={data.totalPages}
-        onPrev={prevPage}
-        onNext={nextPage}
-      />
     </div>
   );
 }

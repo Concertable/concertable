@@ -7,18 +7,40 @@ A Reqnroll + Playwright UI E2E suite that drives the Concertable SPA through eve
 1. Replace tedious manual click-through-as-3-roles testing during current development.
 2. Permanent regression armour for the workflow surface as the SPA refactor lands.
 
-All three E2E projects (Common + Api + Ui) live under a single `api/Tests/Concertable.E2ETests/` parent folder, mirroring the `Modules/<Domain>/` cohesion pattern: Common is private infra for Api+Ui, neither sibling makes sense without it. UI tests are a new Reqnroll project. API E2E tests stay xUnit-direct, renamed from `Concertable.Web.E2ETests` to `Concertable.E2ETests.Api`.
+## Status: FlatFee happy-path scenario in progress — steps 1 + 2 green, step 3 (VM accept) fix applied, step 4 (draft concert) pending
+
+**Scaffolding PR (#35) merged** + **Escrow PR (#36) merged** + **`Feature/UiE2eFlatFeeWorkflow-2`** in flight (opportunity-sync prereq + FlatFee E2E test combined). Reqnroll + Playwright + Aspire stack wired up end-to-end. `Login.feature` smoke proves the real OIDC redirect dance works. Money flow now goes through escrow (auth at accept → capture/transfer at settle) — UI E2E built against this final shape, no rework expected.
+
+**Why the prereq work exists on the same branch:** Drafting Step 5 surfaced that the SPA had no UI to *post* an opportunity. The "VM posts a flat fee opportunity for £500" Gherkin step was unimplementable. `Feature/UiE2eFlatFeeWorkflow-2` builds the missing UI plus the BE collection-sync endpoint + service infrastructure, then continues straight into the FlatFee E2E scenario on the same branch.
+
+**Escrow's impact on UI E2E (now baked in, not deferred):**
+- `EscrowStatus` enum + `IPaymentSucceededProcessor` keyed by transaction type now own the money flow
+- For FlatFee/VenueHire (immediate-payment workflows): VM/Artist authorises Stripe payment at accept time; funds sit in platform balance under escrow; Concert.SettleAsync triggers transfer to recipient at concert finish
+- Mid-test assertions: at accept time, `PaymentIntent.transfer_data.destination` is platform (not artist/venue); at settle, a separate Stripe `Transfer` lands
+- Settlement scenarios for FlatFee/VenueHire are now meaningful (real transfer to recipient), not just status flips
+- Money assertion helpers (`Money.AssertArtistReceivedAsync` etc) abstract phase — Gherkin reads `Then the artist receives £500` regardless of when in the timeline that's true
+
+**What's in place:**
+- `Concertable.E2ETests` — shared classlib (AppFixture, StripeCliFixture, SqlFixture, PollingService, port pinning, `/e2e/reseed`)
+- `Concertable.E2ETests.Api` (xUnit-direct) — green; assertions updated for escrow shape (PR #36 follow-up)
+- `Concertable.E2ETests.Ui` (Reqnroll + Playwright) — `UiFixture`, `TestRunHooks`, `ScenarioDependencies` (Reqnroll DI: `UiFixture` singleton + `Browser` + `WorkflowState` scoped + `ILogger` via `AddLogging`), `HomePage` + `LoginPage` + all FlatFee page objects, MSBuild target strips Reqnroll's auto-emitted `FeatureTitle`/`Description` traits so only `Category=Ui` shows in Test Explorer
+- `Browser.cs` — per-role context switching with Playwright trace recording (`playwright-traces/trace-<role>-<ts>.zip` on dispose); `show-trace.ps1` at repo root opens latest trace
+- `data-testid` selector standard codified (Reqnroll Conventions §4)
+- Headed Chromium is the local default (`Headless = CI=="true"`); CI runners set `CI=true` automatically
+- `GlobalExceptionHandler` — `!IsProduction()` guard exposes full stack traces in E2E environment
+- `appsettings.E2E.json` — `GoogleApiKey` added (gitignored); `UseRealStripe: true`
+- **FlatFee scenario step progress:** VM posts ✅ (6.4s) → Artist applies ✅ (6.8s, toast-based success signal) → VM accepts (fix applied — saved card pre-selected in Stripe PaymentElement) → draft concert created (pending)
 
 ## Decisions locked in
 
 - **Reqnroll for UI E2E** — multi-actor narratives (role transitions every few steps, SignalR events mid-flow, 4-strategy × N-outcome matrix) make Gherkin's structural reuse + readable subject prefixes worth the framework cost.
 - **xUnit for API E2E** — assertions are single-subject (HTTP request → assert state). Gherkin adds no value here.
-- **Class library `E2ETests.Common`** for shared fixtures (already extracted — Step 1 complete).
 - **Reqnroll, not SpecFlow** — SpecFlow is unmaintained and lacks .NET 10 support; Reqnroll is the OSS fork by the original SpecFlow author, API-compatible.
 - **C#, not TypeScript Playwright** — the C# fixture reuse (typed SeedDataResponse, in-process DB assertions, Aspire orchestration) wins over TS codegen DX. Use `npx playwright codegen --target csharp` for locator discovery only.
-- **Authentication: real OIDC login per role, captured to `storageState` once per test run, hydrated per-scenario.** No ROPC backdoor. `Concertable.Auth` runs in Aspire E2E mode unmodified. One dedicated `Login.feature` covers the real redirect dance.
+- **Authentication: real OIDC login per role, captured to `storageState` once per test run, hydrated per-scenario.** No ROPC backdoor. `Concertable.Auth` runs in Aspire E2E mode unmodified. Dedicated `Login.feature` covers the real redirect dance (already green).
 - **Build from scratch** — happy-path scenarios drive the *entire* workflow in the UI starting from no state, rather than starting from a pre-seeded `Pending*App`. Half the value of UI E2E is proving the full chain works.
 - **Chromium only for v1.** Multi-browser matrix deferred.
+- **Outside-in / scenario-first build order** — write `.feature` first; let Reqnroll's missing-binding errors drive what to build next. Boilerplate emerges, sized to need. Auth hooks are the only precondition that must land before any scenario can run.
 
 ## Scope
 
@@ -26,95 +48,86 @@ All three E2E projects (Common + Api + Ui) live under a single `api/Tests/Concer
 
 **Out of v1:** Visual regression / screenshots. Mobile viewports. Accessibility audits. Failure branches (decline / 3DS fail / withdraw) — Phase 4.
 
-## Workflow Matrix
+## Workflow Matrix (post-escrow)
 
-Four concrete strategies in `api/Modules/Concert/Concertable.Concert.Infrastructure/Services/Workflow/`. The matrix is smaller than feared — UI scenario count is bounded.
+Four concrete strategies in `api/Modules/Concert/Concertable.Concert.Infrastructure/Services/Workflow/`. Money flow now uniformly goes through escrow — auth + capture timing varies per strategy, but final transfer always happens at settlement.
 
-| # | Strategy | Contract | Application subtype | Booking subtype | Payment phase | UI checkout pages traversed |
-|---|----------|----------|---------------------|-----------------|---------------|-----------------------------|
-| 1 | `FlatFeeConcertWorkflow` | `FlatFeeContract` (Fee) | `StandardApplication` | `StandardBooking` | Accept-checkout (immediate) | Artist apply (no payment) → VM accept (Stripe + 3DS) |
-| 2 | `DoorSplitConcertWorkflow` | `DoorSplitContract` (ArtistDoorPercent) | `StandardApplication` | `DeferredBooking` | None at apply/accept; deferred to settlement | Artist apply (no payment) → VM accept (no payment) → settle later |
-| 3 | `VersusConcertWorkflow` | `VersusContract` (Guarantee + ArtistDoorPercent) | `StandardApplication` | `DeferredBooking` | None at apply/accept; deferred | Artist apply (no payment) → VM accept (no payment) → settle later |
-| 4 | `VenueHireConcertWorkflow` | `VenueHireContract` (HireFee) | `PrepaidApplication` (stores PaymentMethodId) | `StandardBooking` | Apply-checkout (artist authorises at apply) | Artist apply (Stripe + 3DS) → VM accept (no payment, captures held auth) |
+| # | Strategy | Contract | App subtype | Booking subtype | Auth point | Capture/Transfer point | UI checkout pages |
+|---|----------|----------|---------|-----------------|------------|------------------------|-------------------|
+| 1 | `FlatFeeConcertWorkflow` | `FlatFeeContract` (Fee) | `StandardApplication` | `StandardBooking` | VM at accept (Stripe + 3DS) | Settle: capture → transfer to artist | Artist apply (no payment) → VM accept (Stripe) |
+| 2 | `DoorSplitConcertWorkflow` | `DoorSplitContract` (ArtistDoorPercent) | `StandardApplication` | `DeferredBooking` | Customer at ticket purchase | Settle: transfer artist's share to artist | Artist apply (no payment) → VM accept (no payment) → ticket sales |
+| 3 | `VersusConcertWorkflow` | `VersusContract` (Guarantee + ArtistDoorPercent) | `StandardApplication` | `DeferredBooking` | Customer at ticket purchase | Settle: transfer guarantee + door share to artist | Artist apply (no payment) → VM accept (no payment) → ticket sales |
+| 4 | `VenueHireConcertWorkflow` | `VenueHireContract` (HireFee) | `PrepaidApplication` (stores PaymentMethodId) | `StandardBooking` | Artist at apply (Stripe + 3DS) | Settle: capture → transfer to venue | Artist apply (Stripe) → VM accept (no payment) |
 
 Plus three cross-cutting flows that aren't strategies but are UI surface:
 
 | # | Flow | Notes |
 |---|------|-------|
 | 5 | Customer ticket purchase | UI version of existing `TicketPurchaseTests.cs` API tests |
-| 6 | Concert finish / settlement | Triggered via `/e2e/finish/{concertId}` to keep tests deterministic |
-| 7 | OIDC login | Single dedicated scenario covering the real redirect dance — proves `storageState` capture is sound |
+| 6 | Concert finish / settlement | Triggered via `/e2e/finish/{concertId}` to keep tests deterministic; **post-escrow this is where most workflows actually pay out** |
+| 7 | OIDC login | ✅ Done — single dedicated scenario covering the real redirect dance |
 
-**Total v1 happy-path scenarios: 7** (4 workflows + customer + settlement + login).
+**Total v1 happy-path scenarios: 7** (4 workflows + customer + settlement + login). Login already green; 6 to go.
 
 ## Project Structure
 
 ```
-api/Tests/
-└── Concertable.E2ETests/                              ✅ Steps 1–4 LANDED — parent classlib (was .Common)
-    ├── Concertable.E2ETests.csproj                    (class lib, IsTestProject=false; <DefaultItemExcludes> excludes Api/Ui subfolders so the recursive compile glob doesn't grab inner project files)
-    ├── AppFixture.cs                                  (Aspire boot, /e2e/reseed, JWT minting)
-    ├── StripeCliFixture.cs                            (Docker stripe-cli + webhook secret)
-    ├── SqlFixture.cs                                  (Respawn DB reset)
-    ├── PollingService.cs / IPollingService.cs
-    ├── TestTokenMinter.cs                             (used by Api project only)
-    ├── MessageSinkLoggerProvider.cs
-    ├── DistributedApplicationBuilderExtensions.cs     (port pinning + E2E env vars)
-    ├── E2ETestCollection.cs                           (collection definition base)
-    ├── GlobalUsings.cs
-    │
-    ├── Concertable.E2ETests.Api/                      ✅ Step 3 LANDED (rename of Concertable.Web.E2ETests)
-    │   ├── Concertable.E2ETests.Api.csproj
-    │   ├── AssemblyInfo.cs                            ([AssemblyTrait("Category","Api")])
-    │   ├── CollectionRegistration.cs                  ([CollectionDefinition("E2E")] for this assembly)
-    │   └── Payments/
-    │       ├── ConcertDraftTests.cs
-    │       ├── ConcertFinishedTests.cs
-    │       └── TicketPurchaseTests.cs
-    │
-    └── Concertable.E2ETests.Ui/                       (NEW — Step 4)
-        ├── Concertable.E2ETests.Ui.csproj             (Reqnroll.xUnit + Reqnroll.Microsoft.Extensions.DependencyInjection
-        │                                               + Microsoft.Playwright + Microsoft.Playwright.Xunit)
-        ├── reqnroll.json                              (Reqnroll config)
-        ├── Hooks/
-        │   ├── PlaywrightHooks.cs                     ([BeforeTestRun] launch browser; [BeforeScenario] new context; [AfterScenario] dispose)
-        │   ├── AspireHooks.cs                         ([BeforeTestRun] boot AppFixture; [BeforeScenario] reset + reseed)
-        │   └── LoginCaptureHooks.cs                   ([BeforeTestRun] real OIDC login per role → cache storageState)
-        ├── Support/
-        │   ├── UiFixture.cs                        (composes AppFixture + Browser/Playwright)
-        │   ├── WorkflowState.cs                       (per-scenario typed state object — avoids ScenarioContext stringly-typed keys)
-        │   ├── EnumTransformations.cs                 ([StepArgumentTransformation] for ContractType, BookingSubtype, etc)
-        │   ├── PageObjects/
-        │   │   ├── LoginPage.cs
-        │   │   ├── VenueManager/
-        │   │   │   ├── OpportunitiesPage.cs
-        │   │   │   ├── ApplicationsPage.cs
-        │   │   │   ├── AcceptApplicationPage.cs
-        │   │   │   └── ApplicationCheckoutPage.cs
-        │   │   ├── Artist/
-        │   │   │   ├── OpportunityFindPage.cs
-        │   │   │   ├── ApplyCheckoutPage.cs
-        │   │   │   └── MyApplicationsPage.cs
-        │   │   └── Customer/
-        │   │       └── TicketCheckoutPage.cs
-        │   └── Helpers/
-        │       ├── StripeUiHelpers.cs                 (frame-locator helpers + Cards.Success/Cards.Decline/etc constants)
-        │       ├── SignalRWaiter.cs                   (wait-for-event with PollingService)
-        │       └── DbAssertions.cs                    (read EF entities post-flow)
-        ├── Steps/
-        │   ├── VenueManagerSteps.cs                   ([Binding] — thin, delegates to page objects)
-        │   ├── ArtistSteps.cs
-        │   ├── CustomerSteps.cs
-        │   ├── SystemSteps.cs                         (Given/When for system events: SignalR, /e2e/finish, etc)
-        │   └── AssertionSteps.cs                      (Then DbAssertions / StripePaymentIntents calls)
-        └── Features/
-            ├── Login.feature                          (Phase 1 smoke)
-            ├── FlatFeeWorkflow.feature                (Phase 2)
-            ├── DoorSplitWorkflow.feature              (Phase 3)
-            ├── VersusWorkflow.feature                 (Phase 3)
-            ├── VenueHireWorkflow.feature              (Phase 3)
-            ├── CustomerTicketPurchase.feature         (Phase 3)
-            └── ConcertSettlement.feature              (Phase 3)
+api/Tests/Concertable.E2ETests/                        (parent classlib)
+├── Concertable.E2ETests.csproj                        (<DefaultItemExcludes> excludes Api/Ui subfolders)
+├── AppFixture.cs / StripeCliFixture.cs / SqlFixture.cs / PollingService.cs
+├── DistributedApplicationBuilderExtensions.cs / TestTokenMinter.cs
+├── E2ETestCollection.cs / MessageSinkLoggerProvider.cs / GlobalUsings.cs
+│
+├── Concertable.E2ETests.Api/                          (xUnit-direct, green)
+│   ├── AssemblyInfo.cs                                ([AssemblyTrait("Category","Api")])
+│   ├── CollectionRegistration.cs
+│   └── Payments/
+│       ├── ConcertDraftTests.cs
+│       ├── ConcertFinishedTests.cs
+│       └── TicketPurchaseTests.cs
+│
+└── Concertable.E2ETests.Ui/                           (Reqnroll + Playwright)
+    ├── reqnroll.json
+    ├── AssemblyInfo.cs                                ([AssemblyTrait("Category","Ui")])
+    ├── Hooks/
+    │   ├── TestRunHooks.cs                            ✅ ([BeforeTestRun] boots UiFixture; [AfterTestRun] disposes)
+    │   ├── ScenarioDependencies.cs                    ✅ (UiFixture singleton + Browser + WorkflowState scoped + AddLogging/Console)
+    │   ├── PlaywrightHooks.cs                         ✅ ([BeforeScenario] hydrate IBrowserContext from cached storageState; [AfterScenario] dispose)
+    │   └── LoginCaptureHooks.cs                       ✅ ([BeforeTestRun] real OIDC login per role → cache storageState)
+    ├── Support/
+    │   ├── UiFixture.cs                               ✅ (composes AppFixture + Browser/Playwright; Headless = CI=="true")
+    │   ├── Browser.cs                                 ✅ (per-role context switching; Playwright trace per role; double-dispose guard)
+    │   ├── WorkflowState.cs                           ✅ (VenueId, OpportunityId, ApplicationId, ConcertId)
+    │   ├── StripeIframe.cs                            ✅ (FillCardAsync + Complete3dsChallengeAsync; StripeCards constants)
+    │   └── EnumTransformations.cs                     (TODO — [StepArgumentTransformation] for ContractType etc)
+    ├── PageObjects/
+    │   ├── HomePage.cs                                ✅
+    │   ├── LoginPage.cs                               ✅
+    │   ├── MyVenuePage.cs                             ✅ (GotoAsync, PostFlatFeeOpportunityAsync, WaitUntilSavedAsync)
+    │   ├── ArtistFindVenuePage.cs                     ✅ (GotoAsync, ApplyAsync, WaitUntilAppliedAsync — waits for Sonner toast)
+    │   ├── VenueApplicationsPage.cs                   ✅ (GotoAsync, ClickAcceptAsync)
+    │   ├── VenueAcceptApplicationPage.cs              ✅ (ClickConfirmAsync — contract review confirm)
+    │   ├── ApplicationCheckoutPage.cs                 ✅ (PayWithSavedCardAsync, WaitForSuccessAsync)
+    │   └── Customer/                                  (TODO Step 6)
+    └── Helpers/
+        ├── Money.cs                                   (TODO Step 6 — escrow-aware assertions)
+        ├── SignalRWaiter.cs                           (TODO Step 6 — wait-for-event with PollingService)
+        └── DbAssertions.cs                            (TODO Step 6 — read EF entities post-flow)
+    ├── Steps/
+    │   ├── LoginSteps.cs                              ✅
+    │   ├── VenueManagerSteps.cs                       ✅ (PostsFlatFeeOpportunity, AcceptsWithValidCard, DraftConcertCreated)
+    │   ├── ArtistSteps.cs                             ✅ (ArtistApplies — navigates + applies + waits for toast)
+    │   ├── CustomerSteps.cs                           (TODO Step 6)
+    │   ├── SystemSteps.cs                             (TODO Step 6 — /e2e/finish, SignalR)
+    │   └── AssertionSteps.cs                          (TODO Step 6)
+    └── Features/
+        ├── Login.feature                              ✅
+        ├── FlatFeeWorkflow.feature                    ✅ (written; steps 1+2 green; step 3 fix applied; step 4 pending)
+        ├── DoorSplitWorkflow.feature                  (TODO Step 6)
+        ├── VersusWorkflow.feature                     (TODO Step 6)
+        ├── VenueHireWorkflow.feature                  (TODO Step 6)
+        ├── CustomerTicketPurchase.feature             (TODO Step 6)
+        └── ConcertSettlement.feature                  (TODO Step 6)
 ```
 
 ## Reqnroll Conventions (NON-NEGOTIABLE — failure mode prevention)
@@ -149,32 +162,19 @@ If a step body is over ~5 lines, push the work into a page object or helper.
 ### 2. Scenario state via typed `WorkflowState`, never `ScenarioContext.Set("...")`
 
 ```csharp
-// ✅ GOOD — typed properties, F12 navigates, rename works
 public class WorkflowState
 {
     public int OpportunityId { get; set; }
     public int ApplicationId { get; set; }
     public int? ConcertId { get; set; }
 }
-
-[Given(@"a venue manager has posted a (.*) opportunity")]
-public async Task PostsOpportunity(ContractType contract)
-{
-    var opp = await _vmPages.PostOpportunityAsync(contract);
-    _state.OpportunityId = opp.Id;
-}
-
-// ❌ BAD — magic string, runtime fails on typo
-_ctx.Set(opp.Id, "opportunityId");
-var oppId = _ctx.Get<int>("opportuntyId"); // typo — TestExecutionException at runtime
 ```
 
-`WorkflowState` is registered scenario-scoped via `Reqnroll.Microsoft.Extensions.DependencyInjection` and constructor-injected into step binding classes.
+`WorkflowState` is registered scenario-scoped via `Reqnroll.Microsoft.Extensions.DependencyInjection` and constructor-injected into step binding classes (DI already wired in `ScenarioDependencies.cs`).
 
 ### 3. Enum step parameters use `[StepArgumentTransformation]`
 
 ```csharp
-// ✅ GOOD — Gherkin reads naturally, binding is typed
 [StepArgumentTransformation]
 public ContractType TransformContractType(string value) => value switch
 {
@@ -184,12 +184,9 @@ public ContractType TransformContractType(string value) => value switch
     "venue hire" => ContractType.VenueHire,
     _ => throw new ArgumentException($"Unknown contract type: {value}")
 };
-
-[Given(@"a venue manager has posted a (.*) opportunity")]
-public async Task PostsOpportunity(ContractType contract) { /* typed */ }
 ```
 
-A unit test in `Concertable.E2ETests.Ui` asserts that every `ContractType` enum value has a transformation row, catching new enum values that didn't get a transformation update.
+A unit test in `Concertable.E2ETests.Ui` asserts that every `ContractType` enum value has a transformation row.
 
 ### 4. Page objects encapsulate all selector + Playwright + Stripe iframe logic
 
@@ -197,10 +194,10 @@ Steps don't know what a `data-testid` is. Pages don't know what a `[When]` is. S
 
 **Selector standard:**
 
-- **`data-testid` everywhere we touch DOM in the SPA** — every element a page object interacts with gets a stable `data-testid="<feature>-<element>"` (kebab-case, feature-prefixed: `login-email`, `vm-opportunity-create`, `ticket-checkout-pay`). Add the attribute in the same PR as the page object that needs it.
-- **Page objects use `page.GetByTestId(...)`**, not raw CSS — survives DOM/Tailwind churn, intent reads clearly.
-- **Selector strings live as `private const` fields at the top of the page object** — never inline literals in methods, never `public` (consumers go through `SignInAsync`, not raw selectors).
-- **Razor Pages on the Auth host (`/Account/Login`, `/Account/ForgotPassword`, etc) follow the same `data-testid` rule** — they're outside the SPA but still part of the UI surface page objects drive.
+- **`data-testid` everywhere we touch DOM in the SPA** — every element a page object interacts with gets a stable `data-testid="<feature>-<element>"` (kebab-case, feature-prefixed). Add the attribute in the same PR as the page object that needs it.
+- **Page objects use `page.GetByTestId(...)`**, not raw CSS — survives DOM/Tailwind churn.
+- **Selector strings live as `private const` fields at the top of the page object** — never inline literals, never `public`.
+- **Razor Pages on the Auth host follow the same `data-testid` rule.**
 - Stripe iframe content is the unavoidable exception — selectors there target Stripe's stable element names (`[name='cardnumber']` etc), encapsulated in `StripeUiHelpers`.
 
 Reference impl: `LoginPage.cs` + `Concertable.Auth/Pages/Account/Login.cshtml` (`login-email` / `login-password` / `login-submit`).
@@ -208,6 +205,28 @@ Reference impl: `LoginPage.cs` + `Concertable.Auth/Pages/Account/Login.cshtml` (
 ### 5. Background blocks for shared setup
 
 Each `.feature` file uses `Background:` for the "fresh DB reseed + role auth state hydrated" setup that every scenario needs. Reduces scenario noise.
+
+### 6. Money assertions go through `Money` helpers, never raw Stripe API
+
+Escrow makes money flow phase-dependent (auth → capture → transfer). Page-level assertions like "the artist received the fee" must abstract over phase so Gherkin reads as business behaviour, not Stripe API shape.
+
+```csharp
+// ✅ GOOD — phase-agnostic, reads as business intent
+[Then(@"the artist receives £(\d+)")]
+public Task ArtistReceives(decimal amount) =>
+    Money.AssertArtistReceivedAsync(fixture, _state, amount);
+
+// ❌ BAD — leaks Stripe API shape; breaks if escrow timing shifts
+[Then(@"the artist receives £(\d+)")]
+public async Task ArtistReceives(decimal amount)
+{
+    var intent = await fixture.StripePaymentIntents.GetAsync(_state.PaymentIntentId);
+    Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData?.DestinationId);
+    Assert.Equal((long)(amount * 100), intent.Amount);
+}
+```
+
+`Money.AssertArtistReceivedAsync` knows: at accept-time the funds are in platform balance, at settle-time a `Transfer` to the artist's connected account exists. Same Gherkin step, different assertion shape per phase.
 
 ## Authentication Strategy
 
@@ -217,12 +236,6 @@ Lifecycle:
 - `[BeforeTestRun]` in `LoginCaptureHooks` — for each role (`VenueManager`, `ArtistManager`, `Customer`), spin up a one-shot Playwright context, navigate to `/login`, complete the redirect dance with seeded credentials (`SeedData.Customer.Email` + `SeedData.TestPassword` etc), call `context.StorageStateAsync()` → string, cache by role.
 - `[BeforeScenario]` in `PlaywrightHooks` — read scenario tags (`@VenueManager`, `@Artist`, `@Customer`), create a fresh `IBrowserContext` with `BrowserNewContextOptions { StorageState = cachedStateForRole }`. Hydrated and ready to navigate.
 - `Login.feature` — explicitly does NOT use the cached state; drives the real redirect end-to-end. Single scenario, runs once. If it fails, the cache mechanism is broken.
-
-## Aspire Configuration
-
-The SPA is already registered via `builder.AddNpmApp("frontend", "../../app", "dev")` in `Concertable.AppHost/Program.cs`. No new resources needed. Common's `DistributedApplicationBuilderExtensions.AddE2E` adds port pinning (Step 3 below) so SPA's `.env.development` URLs (`https://localhost:7086` for API, `https://localhost:7083` for Auth) match the test stack.
-
-UI fixtures read the SPA URL via `DistributedApplication.GetEndpoint("frontend", "https")`.
 
 ## Per-Scenario Lifecycle
 
@@ -244,108 +257,43 @@ UI fixtures read the SPA URL via `DistributedApplication.GetEndpoint("frontend",
 
 ## Phased Implementation
 
-### ✅ Step 1 — Extract `Concertable.E2ETests.Common` + green API baseline (LANDED)
+### Step 5 — FlatFee happy path (`Feature/UiE2eFlatFeeWorkflow-2` — IN PROGRESS)
 
-What was originally one step grew (deliberately) to also fix the pre-existing red API suite — UI E2E needs a clean baseline to build on. **Final state: 12/12 API E2E tests green** (was 2/12 on master).
+**Prerequisite work (same branch):** VM "post opportunity" UI, BE `PUT /api/Venue/{id}/opportunities` declarative full-set sync endpoint, `useOpportunities` hook, `OpportunityList` + edit-mode `OpportunityCard`, `ContractFields` per-variant form fields, `DateRangeField`, `NumberInput`. Detailed in `OPPORTUNITY_SYNC_PR.md`.
 
-**Common class lib:**
-- New class lib at `api/Tests/Concertable.E2ETests.Common/`
-- Moved 8 infra files + collection definition + `appsettings.E2E.json` content include
-- Slimmed `Concertable.Web.E2ETests.csproj` to ref Common
-- Updated 3 test files' `using` directives
-- Added `CollectionRegistration.cs` to consumer for xUnit collection lookup in test assembly
-- Added Common to solution
+Multi-actor scenario covering the FlatFee strategy end-to-end via the UI, post-escrow:
+1. VM posts a FlatFee opportunity — **✅ green (6.4s)**
+2. Artist applies — **✅ green (6.8s)** (apply button unified; Sonner toast as success signal)
+3. VM accepts with valid card — **fix applied** (Stripe PaymentElement shows "Saved" tab with test card pre-selected; `PayWithSavedCardAsync` skips card entry and clicks "Confirm & Pay")
+4. Draft concert created — **pending** (assertion step wired; waiting on step 3 to be confirmed green)
+5. Settlement slice — deferred to `ConcertSettlement.feature` (Step 6)
 
-**API test fixes (separate from extraction, found during checkpoint):**
-- URL pattern: 4 sites `accept/{id}` → `{id}/accept` (after BE rename in commit `ff7555ec`)
-- Body: FlatFee/DoorSplit/Versus accept tests now send `new { PaymentMethodId = AppFixture.TestPaymentMethodId }`; VenueHire sends null body
-- TicketPurchase: added `PaymentMethodId` to all 4 test bodies
-- 9 files: `pm_test` → `pm_card_visa` (Stripe's permanent test PM ID — convention adoption across seeders + integration + unit + builders + assertions)
-- Removed `/e2e/payment-intent/{applicationId}` HTTP backdoor — replaced with reusable `DbAssertions.GetLatestSettlementPaymentIntentIdByApplicationIdAsync(connection, appId)` extension method that filters `WHERE PaymentIntentId LIKE 'pi[_]%'` (skips dev-seeded GUID rows)
+**Build order — completed:**
+1. ✅ `FlatFeeWorkflow.feature` — Gherkin written
+2. ✅ `LoginCaptureHooks` + `PlaywrightHooks` — real OIDC login per role → cached storageState
+3. ✅ `WorkflowState` + Reqnroll DI in `ScenarioDependencies`
+4. ✅ Per-step page objects: `MyVenuePage`, `ArtistFindVenuePage`, `VenueApplicationsPage`, `VenueAcceptApplicationPage`, `VenueApplicationCheckoutPage`
+5. ✅ `Browser.cs` — Playwright trace recording; `show-trace.ps1` helper
+6. ✅ Bug fixes: `GoogleApiKey` in `appsettings.E2E.json`; `GlobalExceptionHandler !IsProduction()`; unified Apply button in `OpportunityCard.tsx`; toast-based apply signal in `useApply.ts`
 
-**Reusable infrastructure improvements (apply beyond this fix):**
-- `AppFixture.Sql` promoted to public auto-property (matches `ApiFixture.ReadDbContext` style)
-- `SqlFixture.Connection` exposed for raw DB access in any future test
-- `CompletionDispatcher` gained `ILogger<CompletionDispatcher>` + `LogError(ex, ...)` in catch block — surfaces full exception detail when `BadRequestException` / similar gets swallowed by result-conversion. Same pattern should apply to any future catch-all that converts exceptions to `Result.Fail(ex.Message)`.
-- 3 tests migrated from raw `EnsureSuccessStatusCode` to `HttpResponseAssertions.ShouldBe(...)` for visible response body on assertion failures
+**Notable Stripe finding:** `PaymentElement` with `layout: "tabs"` pre-selects the "Saved" tab when the test user has a saved card. `StripeIframe.FillCardAsync` targets card-entry iframes on the "Card" tab — wrong tab. Fixed by using the saved card directly. A separate future test should cover the "Card" tab entry path (see memory note `project_e2e_stripe_card_tab.md`).
 
-### ✅ Step 2 — Port pinning + Auth env override (LANDED)
-- `ApiBaseUrl` `http://localhost:7001` → `https://localhost:7086` (matches `.env.development`)
-- Pinned Auth resource to `https://localhost:7083` via `EnvironmentCallbackAnnotation`
-- URLs sourced from `IConfiguration` (`Endpoints:Api` + `Endpoints:Auth` in `appsettings.E2E.json`) — no hardcoded constants. ASPNETCORE_ENVIRONMENT=E2E means these never bleed into prod (prod uses Azure App Settings → IConfiguration).
-- StripeCliFixture forwards via `--skip-verify` (HTTPS localhost dev cert)
-- 12/12 green
-
-### ✅ Step 3 — Rename `Concertable.Web.E2ETests` → `Concertable.E2ETests.Api` + nest both projects under `Tests/Concertable.E2ETests/` (LANDED)
-- Renamed folder, csproj, namespaces, asm name; updated sln + 4 IVTs (Concert.Api, Concert.Application, Contract.Application, Payment.Application)
-- Added `[AssemblyTrait("Category","Api")]` (alongside existing `Category=E2E`)
-- Both Common + Api moved into nested parent `Tests/Concertable.E2ETests/` — mirrors `Modules/<Domain>/` cohesion pattern (Common is private infra, Api+Ui never used independently). Adjusted relative paths in csprojs (`..\..\` → `..\..\..\` for cross-tree refs).
-- 12/12 still green
-
-### Step 4 — Create `Concertable.E2ETests.Ui` Reqnroll project + `UiFixture` composition
-
-**Composition pattern** (decided pre-Step 4):
-
-```csharp
-public class UiFixture : IAsyncLifetime
-{
-    public AppFixture App { get; }
-    public IBrowser Browser { get; private set; } = null!;
-    private IPlaywright playwright = null!;
-
-    public UiFixture(IMessageSink messageSink)
-    {
-        App = new AppFixture(messageSink);  // composes existing fixture
-    }
-
-    public async Task InitializeAsync()
-    {
-        await App.InitializeAsync();        // boots Aspire, Stripe CLI, SqlFixture
-        playwright = await Playwright.CreateAsync();
-        Browser = await playwright.Chromium.LaunchAsync();
-        // Reqnroll [BeforeTestRun] hook calls into this for OIDC login capture per role
-    }
-
-    public async Task DisposeAsync()
-    {
-        await Browser.DisposeAsync();
-        playwright.Dispose();
-        await App.DisposeAsync();
-    }
-}
-```
-
-`UiFixture` **composes** `AppFixture` rather than inheriting — keeps API-only fixture concerns separate from UI-only Playwright concerns. Tests reach API stuff via `fixture.App.Sql.Connection` etc; UI stuff via `fixture.Browser`. Clean cross-cutting access, no diamond inheritance, no leaky abstractions.
-
-**Project setup:**
-- New test project at `api/Tests/Concertable.E2ETests.Ui/`; refs Common
-- Packages: `Reqnroll.xUnit`, `Reqnroll.Microsoft.Extensions.DependencyInjection`, `Microsoft.Playwright`, `Microsoft.Playwright.Xunit`
-- `reqnroll.json` config
-- Skeleton folders: `Hooks/`, `Support/PageObjects/`, `Support/Helpers/`, `Steps/`, `Features/`
-- `UiFixture` (composition above) + `WorkflowState` + `EnumTransformations`
-- Hooks: `AspireHooks` (BeforeTestRun init / AfterTestRun dispose), `PlaywrightHooks` (BeforeScenario context creation from cached storageState by `@VenueManager`/`@Artist`/`@Customer` tag), `LoginCaptureHooks` (BeforeTestRun real OIDC login per role → cache)
-- One `Login.feature` smoke scenario — drives real OIDC login, asserts post-login URL
-- DoD: `dotnet test --filter "Category=Ui"` runs Login scenario green.
-- **Test Explorer trait hygiene:** Reqnroll's xUnit codegen hardcodes `[global::Xunit.TraitAttribute("FeatureTitle", ...)]` + `[Description, ...]` on every generated scenario, which duplicates the VS Test Explorer tree (one branch per trait). Suppressed via an MSBuild target `StripReqnrollFeatureTitleAndDescriptionTraits` in `Concertable.E2ETests.Ui.csproj` that runs `AfterTargets="GenerateFeatureFileCodeBehindFiles" BeforeTargets="CoreCompile"` and regex-strips both attributes from `*.feature.cs`. Result: only `[AssemblyTrait("Category", "Ui")]` survives, matching `Category=Api` symmetry. Headed Chromium is the local default (`Headless = CI=="true"`); CI will set `CI=true` automatically.
-
-### Step 5 — FlatFee happy path
-- Page objects for VM and Artist pages touched by FlatFee
-- `FlatFeeWorkflow.feature` — happy-path scenario covering full chain
-- Step bindings (thin) in `VenueManagerSteps`, `ArtistSteps`, `AssertionSteps`
-- DoD: scenario passes deterministically; trace viewer artefact saved on failure
+**DoD:** scenario passes deterministically locally; trace viewer artefact saved on failure; test runs in CI on push to master.
 
 ### Step 6 — Remaining happy-path workflows (one PR each, in order)
-- DoorSplit (no Stripe at apply/accept — simplest after FlatFee)
-- Versus (DoorSplit + extra contract field)
-- VenueHire (apply-checkout — exercises new SPA work in `ApplicationCheckoutPage`)
+- DoorSplit (no Stripe at apply/accept — payment moves to ticket purchase + settle)
+- Versus (DoorSplit + extra contract field — guarantee transferred at settle alongside door share)
+- VenueHire (apply-checkout — exercises new SPA work in `ApplicationCheckoutPage`; artist authorises at apply, captured + transferred to venue at settle)
 - Customer ticket purchase
-- Concert settlement (uses `/e2e/finish`)
+- Concert settlement (uses `/e2e/finish` — most workflows actually pay out here post-escrow, so this scenario gets real transfer assertions for FlatFee + VenueHire too)
 
 ### Phase 4 — Failure branches (deferred)
 For each workflow with a payment step:
 - Card declined (`Cards.Decline`)
 - 3DS challenge failed (`Cards.Insufficient3ds`)
 - User abandons checkout
+- Escrow transfer failure at settle (Stripe rejects transfer to connected account)
+
 For DoorSplit/Versus:
 - VM rejects application
 
@@ -354,23 +302,26 @@ For DoorSplit/Versus:
 - Stripe Elements iframes are cross-origin — Playwright handles via `page.FrameLocator("iframe[name^='__privateStripeFrame']")`. Encapsulated in `StripeUiHelpers`.
 - 3DS challenge is a nested iframe — helper walks the iframe tree.
 - Test cards: `Cards.Success = "4242424242424242"`, `Cards.Requires3ds = "4000002500003155"`, `Cards.Decline = "4000000000000002"`, `Cards.Insufficient3ds = "4000008400001629"`.
-- Webhook timing: after `confirmPayment()` resolves on FE, BE may not have processed `payment_intent.succeeded` yet. Use `PollingService.UntilAsync(...)` to wait for BE state — wrapped in step `Then the payment succeeds` so the wait is part of the documented behaviour.
+- Webhook timing: after `confirmPayment()` resolves on FE, BE may not have processed `payment_intent.succeeded` yet. Use `PollingService.UntilAsync(...)` to wait for BE state.
+- Transfer timing (post-escrow): at settle, `Transfer` creation is async — `Money.AssertArtistReceivedAsync` polls for the transfer to land.
 
 ## CI Considerations (post-v1)
 
 - UI tests run on push to `master` + nightly, NOT on every PR. API E2E + Unit + Integration on every PR.
 - Trace viewer + video output on failure → CI artefacts.
 - Browser install (`pwsh playwright.ps1 install chromium`) cached across CI runs.
+- `CI=true` env var triggers headless Chromium automatically (set by GitHub Actions / Azure DevOps / GitLab by default).
 
 ## Open Questions (resolved)
 
 - ~~ROPC vs UI login~~ — UI login per role, captured to storageState. Locked.
 - ~~Build from scratch vs pre-seeded~~ — build from scratch. Locked.
-- ~~Single project vs separate~~ — separate (`E2ETests.Common` + `.Api` + `.Ui`). Locked.
+- ~~Single project vs separate~~ — separate (parent `Concertable.E2ETests` + `.Api` + `.Ui`). Locked.
 - ~~Reqnroll vs xUnit-direct~~ — Reqnroll for Ui, xUnit for Api. Locked.
 - ~~Reqnroll vs SpecFlow~~ — Reqnroll. Locked.
 - ~~TS vs C# Playwright~~ — C#. Locked.
 - ~~Chromium-only v1~~ — yes. Locked.
+- ~~Build escrow before E2E or after?~~ — escrow landed first (PR #36). E2E built against final shape.
 
 ## What this plan does not cover
 
@@ -379,4 +330,4 @@ For DoorSplit/Versus:
 
 ## Next Step
 
-Step 4: Reqnroll project scaffolding at `Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/` + `UiFixture` composition + `Login.feature` smoke. Steps 1–3 all landed.
+**Once `Feature/UiE2eFlatFeeWorkflow-2` (opportunity-sync prereq) is merged:** branch off master for Step 5 — the actual FlatFee E2E test. Start by drafting `FlatFeeWorkflow.feature` Gherkin against the now-existing SPA UI, then build outside-in per the §Step 5 build order (auth hooks first, then per-step driven by missing-binding errors).

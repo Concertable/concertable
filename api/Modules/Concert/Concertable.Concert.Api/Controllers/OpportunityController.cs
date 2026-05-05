@@ -48,12 +48,19 @@ internal class OpportunityController : ControllerBase
         return Created();
     }
 
-    [Authorize(Roles = "VenueManager")]
-    [HttpPut("{id:int}")]
-    public async Task<ActionResult<OpportunityResponse>> Update(int id, [FromBody] OpportunityRequest request)
+    [HttpGet("/api/Venue/{venueId:int}/opportunities")]
+    public async Task<IActionResult> GetByVenueId(int venueId)
     {
-        var opportunity = await opportunityService.UpdateAsync(id, request);
-        return Ok(mapper.ToResponse(opportunity));
+        var opportunities = await opportunityService.GetActiveByVenueIdAsync(venueId);
+        return Ok(mapper.ToResponses(opportunities));
+    }
+
+    [Authorize(Roles = "VenueManager")]
+    [HttpPut("/api/Venue/{venueId:int}/opportunities")]
+    public async Task<IActionResult> Update(int venueId, [FromBody] IEnumerable<OpportunityRequest> desired)
+    {
+        var updated = await opportunityService.UpdateAsync(venueId, desired);
+        return Ok(mapper.ToResponses(updated));
     }
 
     [HttpGet("{id}/ownership")]

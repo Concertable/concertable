@@ -1,5 +1,5 @@
 using Concertable.E2ETests.Ui.Support;
-using Concertable.E2ETests.Ui.Support.PageObjects;
+using Concertable.E2ETests.Ui.PageObjects;
 
 namespace Concertable.E2ETests.Ui.Steps;
 
@@ -7,23 +7,21 @@ namespace Concertable.E2ETests.Ui.Steps;
 public class LoginSteps
 {
     private readonly UiFixture fixture;
-    private IBrowserContext context = null!;
-    private IPage page = null!;
+    private readonly Browser browser;
     private HomePage homePage = null!;
     private LoginPage loginPage = null!;
 
-    public LoginSteps(UiFixture fixture) => this.fixture = fixture;
+    public LoginSteps(UiFixture fixture, Browser browser)
+    {
+        this.fixture = fixture;
+        this.browser = browser;
+    }
 
     [Given(@"a visitor is on the home page")]
     public async Task VisitorOnHomePage()
     {
-        context = await fixture.Browser.NewContextAsync(new()
-        {
-            IgnoreHTTPSErrors = true
-        });
-        page = await context.NewPageAsync();
-        homePage = new HomePage(page, fixture.App.SpaBaseUrl);
-        loginPage = new LoginPage(page, fixture.App.SpaBaseUrl);
+        homePage = new HomePage(browser.Page, fixture.App.SpaBaseUrl);
+        loginPage = new LoginPage(browser.Page, fixture.App.SpaBaseUrl);
         await homePage.GotoAsync();
     }
 
@@ -39,11 +37,4 @@ public class LoginSteps
 
     [Then(@"they are returned to the home page")]
     public Task ReturnedToHomePage() => homePage.WaitUntilLoadedAsync();
-
-    [AfterScenario]
-    public async Task AfterScenarioCleanup()
-    {
-        if (context is not null)
-            await context.DisposeAsync();
-    }
 }

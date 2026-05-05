@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Stripe;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
 
@@ -52,7 +51,7 @@ public class AppFixture : IAsyncLifetime
         SpaBaseUrl = configuration["Endpoints:Spa"]
             ?? throw new InvalidOperationException("Endpoints:Spa is not configured in appsettings.E2E.json.");
 
-        tokenMinter = new TestTokenMinter(configuration, new JwtSecurityTokenHandler());
+        tokenMinter = new TestTokenMinter(configuration);
     }
 
     public async Task InitializeAsync()
@@ -88,17 +87,18 @@ public class AppFixture : IAsyncLifetime
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
     }
 
-    public HttpClient CreateAuthenticatedClient(Guid userId, Role role)
+    public async Task<HttpClient> CreateAuthenticatedClientAsync(string email)
     {
+        var token = await tokenMinter.MintAsync(email, SeedData.TestPassword);
         var client = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", tokenMinter.Mint(userId, role));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }
 
     public async Task DisposeAsync()
     {
         Client.Dispose();
+        tokenMinter.Dispose();
         await Sql.DisposeAsync();
         await app.DisposeAsync();
         await stripeCli.DisposeAsync();

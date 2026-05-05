@@ -56,6 +56,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConcertNotifier, ConcertNotifier>();
         services.AddScoped<ITicketNotifier, TicketNotifier>();
         services.AddScoped<IOpportunityService, OpportunityService>();
+        services.AddScoped<IOpportunitySyncer>(sp => new Sync.OpportunitySyncer(
+            sp.GetRequiredService<IOpportunityRepository>(),
+            sp.GetRequiredService<IContractModule>()));
         services.AddScoped<IApplicationService, ApplicationService>();
         services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();

@@ -117,13 +117,16 @@ export interface OpportunityActions {
   checkout?: ActionLink | null;
 }
 
-export interface Opportunity {
-  id: number;
-  venueId: number;
+export interface OpportunityDraft {
   startDate: string;
   endDate: string;
   genres: Genre[];
   contract: Contract;
+}
+
+export interface Opportunity extends OpportunityDraft {
+  id: number;
+  venueId: number;
   actions: OpportunityActions;
 }
 

@@ -75,6 +75,7 @@ export function AcceptApplicationPage() {
         <Button
           disabled={accountStatus !== "Verified" || acceptMutation.isPending}
           onClick={handleConfirm}
+          data-testid="confirm"
         >
           {requiresCheckout ? "Continue" : "Accept"}
         </Button>

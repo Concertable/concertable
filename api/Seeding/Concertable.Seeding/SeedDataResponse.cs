@@ -35,6 +35,7 @@ public class SeededVenueManager
     public Guid Id { get; set; }
     public string Email { get; set; } = null!;
     public string StripeAccountId { get; set; } = null!;
+    public int VenueId { get; set; }
 }
 
 public class SeededArtistManager
