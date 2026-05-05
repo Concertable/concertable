@@ -10,5 +10,5 @@ internal record OpportunityDto
     public IContract Contract { get; set; } = null!;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IReadOnlyList<GenreDto> Genres { get; set; } = [];
 }

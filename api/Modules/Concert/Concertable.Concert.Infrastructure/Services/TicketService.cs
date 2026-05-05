@@ -122,7 +122,7 @@ internal class TicketService : ITicketService
             return Result.Fail("Failed to create ticket. Please contact support.");
         }
 
-        var ticketIds = tickets.Select(t => t.Id);
+        var ticketIds = tickets.Select(t => t.Id).ToList();
         await emailService.SendTicketsToEmailAsync(purchaseCompleteDto.FromEmail, ticketIds);
 
         return Result.Ok(new TicketPaymentResponse

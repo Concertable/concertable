@@ -26,7 +26,7 @@ internal static class ConcertResponseMappers
             Id = dto.Artist.Id,
             Name = dto.Artist.Name,
             Rating = dto.Artist.Rating,
-            Genres = dto.Artist.Genres
+            Genres = dto.Artist.Genres.ToList()
         }
     };
 
@@ -47,7 +47,7 @@ internal static class ConcertResponseMappers
         StartDate = dto.StartDate,
         EndDate = dto.EndDate,
         DatePosted = dto.DatePosted,
-        Genres = dto.Genres,
+        Genres = dto.Genres.ToList(),
         Artist = new ConcertArtistResponse
         {
             Id = dto.Artist.Id,
@@ -56,7 +56,7 @@ internal static class ConcertResponseMappers
             Rating = dto.Artist.Rating,
             County = dto.Artist.County,
             Town = dto.Artist.Town,
-            Genres = dto.Artist.Genres
+            Genres = dto.Artist.Genres.ToList()
         },
         Venue = new ConcertVenueResponse
         {

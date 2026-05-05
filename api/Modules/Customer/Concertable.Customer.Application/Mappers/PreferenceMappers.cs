@@ -9,7 +9,7 @@ internal static class PreferenceMappers
         Id = preference.Id,
         RadiusKm = (int)preference.RadiusKm,
         UserId = preference.UserId,
-        Genres = preference.GenrePreferences.Select(gp => new GenreDto(gp.Genre.Id, gp.Genre.Name))
+        Genres = preference.GenrePreferences.Select(gp => new GenreDto(gp.Genre.Id, gp.Genre.Name)).ToList()
     };
 
     public static IEnumerable<PreferenceDto> ToDtos(this IEnumerable<PreferenceEntity> preferences) =>

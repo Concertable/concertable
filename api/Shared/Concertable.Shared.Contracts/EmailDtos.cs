@@ -12,5 +12,5 @@ public record EmailDto
     public required string To { get; set; }
     public string? Subject { get; set; }
     public string? Body { get; set; }
-    public IEnumerable<AttachmentDto> Attachments { get; set; } = [];
+    public IReadOnlyList<AttachmentDto> Attachments { get; set; } = [];
 }

@@ -2,7 +2,7 @@ namespace Concertable.Shared;
 
 public interface IPagination<out T>
 {
-    IEnumerable<T> Data { get; }
+    IReadOnlyList<T> Data { get; }
     int TotalCount { get; }
     int TotalPages { get; }
     int PageNumber { get; }

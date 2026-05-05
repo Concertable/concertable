@@ -2,7 +2,7 @@ namespace Concertable.Payment.Application.Responses;
 
 internal record TicketPaymentResponse : PaymentResponse
 {
-    public IEnumerable<Guid> TicketIds { get; set; } = [];
+    public IReadOnlyList<Guid> TicketIds { get; set; } = [];
     public int ConcertId { get; set; }
     public decimal Amount { get; set; }
     public string? Currency { get; set; }

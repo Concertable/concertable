@@ -12,7 +12,7 @@ public static class ArtistResponseMappers
         BannerUrl = dto.BannerUrl,
         Avatar = dto.Avatar,
         Rating = dto.Rating,
-        Genres = dto.Genres,
+        Genres = dto.Genres.ToList(),
         County = dto.County,
         Town = dto.Town,
         Email = dto.Email

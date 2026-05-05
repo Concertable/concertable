@@ -5,7 +5,7 @@ namespace Concertable.Concert.Application.Responses;
 internal record ConcertPostResponse
 {
     public required ConcertSnapshot ConcertHeader { get; set; }
-    public IEnumerable<Guid> UserIds { get; set; } = [];
+    public IReadOnlyList<Guid> UserIds { get; set; } = [];
 }
 
 internal record ConcertUpdateResponse

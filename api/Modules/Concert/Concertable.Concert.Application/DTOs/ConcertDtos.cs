@@ -82,6 +82,6 @@ internal record ConcertSnapshot
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime? DatePosted { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IReadOnlyList<GenreDto> Genres { get; set; } = [];
 }
 
