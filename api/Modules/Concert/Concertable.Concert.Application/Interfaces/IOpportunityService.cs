@@ -7,7 +7,7 @@ internal interface IOpportunityService
 {
     Task<OpportunityDto> CreateAsync(OpportunityRequest request);
     Task CreateMultipleAsync(IEnumerable<OpportunityRequest> requests);
-    Task UpdateAsync(int venueId, IEnumerable<OpportunityRequest> desired);
+    Task<IEnumerable<OpportunityDto>> UpdateAsync(int venueId, IEnumerable<OpportunityRequest> desired);
     Task<IPagination<OpportunityDto>> GetActiveByVenueIdAsync(int id, IPageParams pageParams);
     Task<IEnumerable<OpportunityDto>> GetActiveByVenueIdAsync(int venueId);
     Task<OpportunityDto> GetByIdAsync(int id);

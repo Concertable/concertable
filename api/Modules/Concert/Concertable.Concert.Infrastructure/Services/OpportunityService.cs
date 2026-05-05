@@ -99,7 +99,7 @@ internal class OpportunityService : IOpportunityService
         return await mapper.ToDtosAsync(opportunities);
     }
 
-    public async Task UpdateAsync(int venueId, IEnumerable<OpportunityRequest> desired)
+    public async Task<IEnumerable<OpportunityDto>> UpdateAsync(int venueId, IEnumerable<OpportunityRequest> desired)
     {
         var ownedVenueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
@@ -115,6 +115,9 @@ internal class OpportunityService : IOpportunityService
         var current = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
 
         await uowBehavior.ExecuteAsync(() => syncer.SyncAsync(venueId, current, desiredList));
+
+        var updated = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
+        return await mapper.ToDtosAsync(updated);
     }
 
     public async Task<OpportunityDto> GetByIdAsync(int id)

@@ -18,5 +18,5 @@ public class HomePage
     public Task ClickSignInAsync() => SignInLink.ClickAsync();
 
     public Task WaitUntilLoadedAsync(float timeoutMs = 15000) =>
-        page.WaitForURLAsync(url, new() { Timeout = timeoutMs });
+        page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = timeoutMs });
 }

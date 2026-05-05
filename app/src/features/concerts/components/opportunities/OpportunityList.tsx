@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { defaultContract } from "@/features/contracts";
 import { useOpportunities } from "../../hooks/useOpportunities";
-import { OpportunityCard } from "./OpportunityCard";
+import { OpportunityCard, DraftOpportunityCard } from "./OpportunityCard";
 import dayjs from "dayjs";
 import type { OpportunityDraft } from "../../types";
 
@@ -23,25 +23,42 @@ function buildDraft(): OpportunityDraft {
 }
 
 export function OpportunityList({ venueId }: Readonly<Props>) {
-  const { opportunities, isLoading, add, update, remove } =
+  const { opportunities, drafts, isLoading, addDraft, opportunityActions, draftActions } =
     useOpportunities(venueId);
 
   if (isLoading) return <OpportunityListSkeleton />;
 
   return (
     <div className="space-y-3">
-      {opportunities.map((opportunity, index) => (
+      {opportunities.map((opportunity, i) => (
         <OpportunityCard
-          key={"id" in opportunity ? `existing-${opportunity.id}` : `draft-${index}`}
+          key={`existing-${opportunity.id}`}
           opportunity={opportunity}
-          index={index}
-          onRemove={() => remove(index)}
+          onRemove={() => opportunityActions.remove(i)}
+          onSetDates={(s, e) => opportunityActions.setDates(i, s, e)}
+          onSetContractType={(t) => opportunityActions.setContractType(i, t)}
+          onSetContract={(c) => opportunityActions.setContract(i, c)}
+          onSetPaymentMethod={(m) => opportunityActions.setPaymentMethod(i, m)}
+          onToggleGenre={(g) => opportunityActions.toggleGenre(i, g)}
+        />
+      ))}
+
+      {drafts.map((draft, i) => (
+        <DraftOpportunityCard
+          key={`draft-${i}`}
+          draft={draft}
+          onRemove={() => draftActions.remove(i)}
+          onSetDates={(s, e) => draftActions.setDates(i, s, e)}
+          onSetContractType={(t) => draftActions.setContractType(i, t)}
+          onSetContract={(c) => draftActions.setContract(i, c)}
+          onSetPaymentMethod={(m) => draftActions.setPaymentMethod(i, m)}
+          onToggleGenre={(g) => draftActions.toggleGenre(i, g)}
         />
       ))}
 
       <Button
         variant="outline"
-        onClick={() => add(buildDraft())}
+        onClick={() => addDraft(buildDraft())}
         data-testid="opportunity-add"
       >
         <Plus className="mr-1.5 size-4" />

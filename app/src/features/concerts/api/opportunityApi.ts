@@ -25,8 +25,8 @@ const opportunityApi = {
   update: async (
     venueId: number,
     desired: (Opportunity | OpportunityDraft)[],
-  ): Promise<void> => {
-    await api.put(
+  ): Promise<Opportunity[]> => {
+    const { data } = await api.put<Opportunity[]>(
       `/venue/${venueId}/opportunities`,
       desired.map((o) => ({
         id: "id" in o ? o.id : undefined,
@@ -36,6 +36,7 @@ const opportunityApi = {
         contract: o.contract,
       })),
     );
+    return data;
   },
 };
 

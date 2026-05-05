@@ -59,8 +59,8 @@ internal class OpportunityController : ControllerBase
     [HttpPut("/api/Venue/{venueId:int}/opportunities")]
     public async Task<IActionResult> Update(int venueId, [FromBody] IEnumerable<OpportunityRequest> desired)
     {
-        await opportunityService.UpdateAsync(venueId, desired);
-        return NoContent();
+        var updated = await opportunityService.UpdateAsync(venueId, desired);
+        return Ok(mapper.ToResponses(updated));
     }
 
     [HttpGet("{id}/ownership")]
