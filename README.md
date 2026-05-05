@@ -8,6 +8,7 @@ From the repo root:
 ```
 dotnet run --project api/Concertable.AppHost
 ```
+Or alternatively, just click the play button on Visual Studio.
 The Aspire dashboard will open and list all service URLs.
 
 ---
