@@ -62,11 +62,11 @@ public class GlobalExceptionHandler : IExceptionHandler
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             problemDetails.Status = httpContext.Response.StatusCode;
             problemDetails.Title = "Internal Server Error";
-            problemDetails.Detail = env.IsDevelopment() || env.IsEnvironment("Testing")
+            problemDetails.Detail = !env.IsProduction()
                 ? exception.Message
                 : "An unexpected error occurred.";
 
-            if (env.IsDevelopment() || env.IsEnvironment("Testing"))
+            if (!env.IsProduction())
             {
                 problemDetails.Extensions["exceptionType"] = exception.GetType().FullName;
                 problemDetails.Extensions["stackTrace"] = exception.ToString();

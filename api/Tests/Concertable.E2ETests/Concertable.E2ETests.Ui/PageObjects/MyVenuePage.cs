@@ -21,11 +21,12 @@ public class MyVenuePage
     public async Task PostFlatFeeOpportunityAsync(decimal fee)
     {
         await EditButton.ClickAsync();
+        await Assertions.Expect(EditButton).ToHaveTextAsync("Editing");
         await AddOpportunityButton.ClickAsync();
         await FlatFeeFeeInput.FillAsync(fee.ToString());
         await SaveButton.ClickAsync();
     }
 
     public Task WaitUntilSavedAsync() =>
-        Assertions.Expect(SaveButton).ToBeDisabledAsync();
+        Assertions.Expect(EditButton).ToHaveTextAsync("Edit");
 }
