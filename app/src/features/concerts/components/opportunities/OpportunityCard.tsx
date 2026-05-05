@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -23,13 +22,13 @@ import {
   ContractDetails,
   ContractFields,
   ContractSummaryLabel,
-  defaultContract,
   CONTRACT_TYPE_LABELS,
 } from "@/features/contracts";
 import { useApply } from "../../hooks/useApply";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore, isVenueManager } from "@/features/auth";
 import { useGenresQuery } from "@/features/search/hooks/useGenreQuery";
+import { useOpportunitiesStore } from "../../store/useOpportunitiesStore";
 import { X } from "lucide-react";
 import dayjs from "dayjs";
 import type { Opportunity, OpportunityDraft } from "../../types";
@@ -37,25 +36,15 @@ import type { Contract, PaymentMethod } from "@/features/contracts";
 
 interface Props {
   opportunity: Opportunity | OpportunityDraft;
-  onUpdate?: (next: Opportunity | OpportunityDraft) => void;
-  onRemove?: () => void;
+  index: number;
+  onRemove: () => void;
 }
 
-export function OpportunityCard({
-  opportunity,
-  onUpdate,
-  onRemove,
-}: Readonly<Props>) {
+export function OpportunityCard({ opportunity, index, onRemove }: Readonly<Props>) {
   return (
     <Editable
       view={<ReadView opportunity={opportunity as Opportunity} />}
-      edit={
-        <EditView
-          opportunity={opportunity}
-          onUpdate={onUpdate}
-          onRemove={onRemove}
-        />
-      }
+      edit={<EditView index={index} onRemove={onRemove} />}
     />
   );
 }
@@ -85,9 +74,7 @@ function ReadView({ opportunity }: { opportunity: Opportunity }) {
             <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
               View Contract
             </Button>
-            {user &&
-            isVenueManager(user) &&
-            user.venueId === opportunity.venueId ? (
+            {user && isVenueManager(user) && user.venueId === opportunity.venueId ? (
               <Button
                 size="sm"
                 onClick={() =>
@@ -150,41 +137,16 @@ function ReadView({ opportunity }: { opportunity: Opportunity }) {
   );
 }
 
-interface EditViewProps {
-  opportunity: Opportunity | OpportunityDraft;
-  onUpdate?: (next: Opportunity | OpportunityDraft) => void;
-  onRemove?: () => void;
-}
-
-function EditView({ opportunity, onUpdate, onRemove }: EditViewProps) {
+function EditView({ index, onRemove }: { index: number; onRemove: () => void }) {
+  const opportunity = useOpportunitiesStore((s) => s.opportunities[index]);
+  const setDates = useOpportunitiesStore((s) => s.setDates);
+  const setContractType = useOpportunitiesStore((s) => s.setContractType);
+  const setContract = useOpportunitiesStore((s) => s.setContract);
+  const setPaymentMethod = useOpportunitiesStore((s) => s.setPaymentMethod);
+  const toggleGenre = useOpportunitiesStore((s) => s.toggleGenre);
   const { data: genres } = useGenresQuery();
+
   const contract = opportunity.contract;
-
-  function patch(next: Partial<OpportunityDraft>) {
-    onUpdate?.({ ...opportunity, ...next });
-  }
-
-  function setContract(next: Contract) {
-    patch({ contract: next });
-  }
-
-  function changeContractType(type: Contract["$type"]) {
-    setContract(defaultContract(type, contract.paymentMethod));
-  }
-
-  function setPaymentMethod(paymentMethod: PaymentMethod) {
-    setContract({ ...contract, paymentMethod });
-  }
-
-  function toggleGenre(genreId: number) {
-    const exists = opportunity.genres.some((g) => g.id === genreId);
-    if (exists) {
-      patch({ genres: opportunity.genres.filter((g) => g.id !== genreId) });
-    } else {
-      const genre = genres?.find((g) => g.id === genreId);
-      if (genre) patch({ genres: [...opportunity.genres, genre] });
-    }
-  }
 
   return (
     <div
@@ -196,41 +158,35 @@ function EditView({ opportunity, onUpdate, onRemove }: EditViewProps) {
           <DateRangeField
             startDate={opportunity.startDate}
             endDate={opportunity.endDate}
-            onChange={(start, end) => patch({ startDate: start, endDate: end })}
+            onChange={(start, end) => setDates(index, start, end)}
           />
 
           <div>
-            <Label className="text-muted-foreground text-xs">
-              Contract type
-            </Label>
+            <Label className="text-muted-foreground text-xs">Contract type</Label>
             <Select
               value={contract.$type}
-              onValueChange={(v) => changeContractType(v as Contract["$type"])}
+              onValueChange={(v) => setContractType(index, v as Contract["$type"])}
             >
               <SelectTrigger data-testid="opportunity-contract-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(CONTRACT_TYPE_LABELS) as Contract["$type"][]).map(
-                  (type) => (
-                    <SelectItem key={type} value={type}>
-                      {CONTRACT_TYPE_LABELS[type]}
-                    </SelectItem>
-                  ),
-                )}
+                {(Object.keys(CONTRACT_TYPE_LABELS) as Contract["$type"][]).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {CONTRACT_TYPE_LABELS[type]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
-          <ContractFields contract={contract} onChange={setContract} />
+          <ContractFields contract={contract} onChange={(c) => setContract(index, c)} />
 
           <div>
-            <Label className="text-muted-foreground text-xs">
-              Payment method
-            </Label>
+            <Label className="text-muted-foreground text-xs">Payment method</Label>
             <Select
               value={contract.paymentMethod}
-              onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
+              onValueChange={(v) => setPaymentMethod(index, v as PaymentMethod)}
             >
               <SelectTrigger data-testid="opportunity-payment-method">
                 <SelectValue placeholder="Select" />
@@ -246,9 +202,7 @@ function EditView({ opportunity, onUpdate, onRemove }: EditViewProps) {
             <Label className="text-muted-foreground text-xs">Genres</Label>
             <div className="flex flex-wrap gap-2 pt-1">
               {genres?.map((genre) => {
-                const checked = opportunity.genres.some(
-                  (g) => g.id === genre.id,
-                );
+                const checked = opportunity.genres.some((g) => g.id === genre.id);
                 return (
                   <label
                     key={genre.id}
@@ -257,7 +211,7 @@ function EditView({ opportunity, onUpdate, onRemove }: EditViewProps) {
                   >
                     <Checkbox
                       checked={checked}
-                      onCheckedChange={() => toggleGenre(genre.id)}
+                      onCheckedChange={() => toggleGenre(index, genre)}
                     />
                     {genre.name}
                   </label>
@@ -280,4 +234,3 @@ function EditView({ opportunity, onUpdate, onRemove }: EditViewProps) {
     </div>
   );
 }
-

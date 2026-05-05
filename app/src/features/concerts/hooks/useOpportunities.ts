@@ -17,7 +17,6 @@ export function useOpportunities(venueId: number) {
   const hydrate = useOpportunitiesStore((s) => s.hydrate);
   const reset = useOpportunitiesStore((s) => s.reset);
   const add = useOpportunitiesStore((s) => s.add);
-  const update = useOpportunitiesStore((s) => s.update);
   const remove = useOpportunitiesStore((s) => s.remove);
 
   return {
@@ -28,7 +27,6 @@ export function useOpportunities(venueId: number) {
     hydrate,
     reset,
     add,
-    update,
     remove,
     save: async () => {
       await opportunityApi.update(venueId, opportunities);

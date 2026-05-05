@@ -32,11 +32,9 @@ export function OpportunityList({ venueId }: Readonly<Props>) {
     <div className="space-y-3">
       {opportunities.map((opportunity, index) => (
         <OpportunityCard
-          key={
-            "id" in opportunity ? `existing-${opportunity.id}` : `draft-${index}`
-          }
+          key={"id" in opportunity ? `existing-${opportunity.id}` : `draft-${index}`}
           opportunity={opportunity}
-          onUpdate={(next) => update(index, next)}
+          index={index}
           onRemove={() => remove(index)}
         />
       ))}
