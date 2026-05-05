@@ -1,4 +1,5 @@
 using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Concertable.Seeding;
 using Microsoft.Extensions.Configuration;
@@ -42,6 +43,7 @@ public class AppFixture : IAsyncLifetime
 
         configuration = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.E2E.json"))
+            .AddEnvironmentVariables()
             .Build();
 
         ApiBaseUrl = configuration["Endpoints:Api"]
@@ -104,6 +106,8 @@ public class AppFixture : IAsyncLifetime
         await stripeCli.DisposeAsync();
         loggerFactory.Dispose();
     }
+
+    public ResourceNotificationService ResourceNotifications => app.ResourceNotifications;
 
     private async Task WaitForAppAsync()
     {

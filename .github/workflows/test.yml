@@ -89,6 +89,9 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Run API E2E tests
+        env:
+          GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
+          Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
         run: dotnet test api/Tests/Concertable.E2ETests/Concertable.E2ETests.Api/Concertable.E2ETests.Api.csproj --configuration Release
 
   e2e-ui-tests:
@@ -111,4 +114,7 @@ jobs:
         run: pwsh api/Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
       - name: Run UI E2E tests
+        env:
+          GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
+          Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
         run: dotnet test api/Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/Concertable.E2ETests.Ui.csproj --configuration Release --no-build

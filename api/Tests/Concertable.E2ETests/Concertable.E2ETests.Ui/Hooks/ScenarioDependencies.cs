@@ -12,7 +12,7 @@ public static class ScenarioDependencies
     {
         var services = new ServiceCollection();
         services.AddLogging(b => b.AddConsole());
-        services.AddSingleton(_ => TestRunHooks.Fixture);
+        services.AddSingleton(_ => PlaywrightHooks.Fixture);
         services.AddScoped<Browser>();
         services.AddScoped<WorkflowState>();
         return services;

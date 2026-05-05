@@ -21,6 +21,7 @@ public class StripeCliFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var secretFound = new TaskCompletionSource<string>();
+        var output = new System.Text.StringBuilder();
 
         process = new Process
         {
@@ -37,6 +38,7 @@ public class StripeCliFixture : IAsyncLifetime
         void ParseSecret(string? line)
         {
             if (line is null) return;
+            output.AppendLine(line);
             var match = Regex.Match(line, @"whsec_\w+");
             if (match.Success)
                 secretFound.TrySetResult(match.Value);
@@ -49,8 +51,9 @@ public class StripeCliFixture : IAsyncLifetime
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        cts.Token.Register(() => secretFound.TrySetCanceled());
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        cts.Token.Register(() => secretFound.TrySetException(
+            new InvalidOperationException($"Stripe CLI did not emit webhook secret within timeout. Output:\n{output}")));
 
         WebhookSecret = await secretFound.Task;
     }

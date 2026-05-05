@@ -1,3 +1,4 @@
+using Aspire.Hosting.ApplicationModel;
 using Xunit.Abstractions;
 
 namespace Concertable.E2ETests.Ui.Support;

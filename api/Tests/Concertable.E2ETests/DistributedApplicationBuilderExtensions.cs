@@ -16,7 +16,7 @@ internal static class DistributedApplicationBuilderExtensions
         string apiBaseUrl)
     {
         var apiKey = config["Stripe:SecretKey"]
-            ?? throw new InvalidOperationException("Stripe:SecretKey is not configured in appsettings.E2E.json.");
+            ?? throw new InvalidOperationException("Stripe:SecretKey is not configured. Set it in appsettings.E2E.json or as Stripe__SecretKey env var.");
 
         return new StripeCliFixture(apiKey, apiBaseUrl);
     }
@@ -43,6 +43,9 @@ internal static class DistributedApplicationBuilderExtensions
             .OfType<ProjectResource>()
             .Single(r => r.Name == ApiResourceName);
 
+        var googleApiKey = builder.Configuration["GoogleApiKey"];
+        var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+
         api.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
@@ -52,6 +55,10 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
             context.EnvironmentVariables["ExternalServices__UseRealEmail"] = "false";
             context.EnvironmentVariables["ExternalServices__UseRealBlob"] = "false";
+            if (!string.IsNullOrEmpty(googleApiKey))
+                context.EnvironmentVariables["GoogleApiKey"] = googleApiKey;
+            if (!string.IsNullOrEmpty(stripeSecretKey))
+                context.EnvironmentVariables["Stripe__SecretKey"] = stripeSecretKey;
         }));
     }
 
