@@ -3,8 +3,8 @@ using Concertable.Shared;
 
 namespace Concertable.Application.Diffing;
 
-public abstract class CollectionSyncer<TEntity, TDto, TContext>
-    : ICollectionSyncer<TEntity, TDto, TContext>
+public abstract class CollectionSyncer<TEntity, TDto>
+    : ICollectionSyncer<TEntity, TDto>
     where TEntity : class, IIdEntity, IEquatable<TEntity>
     where TDto : ISyncRequest
 {
@@ -13,7 +13,7 @@ public abstract class CollectionSyncer<TEntity, TDto, TContext>
     protected CollectionSyncer(IBaseRepository<TEntity> repo) => this.repo = repo;
 
     public async Task SyncAsync(
-        TContext context,
+        int ownerId,
         IEnumerable<TEntity> current,
         IEnumerable<TDto> desired)
     {
@@ -36,14 +36,14 @@ public abstract class CollectionSyncer<TEntity, TDto, TContext>
 
         var creates = new List<TEntity>();
         foreach (var dto in desired.Where(d => !d.Id.HasValue))
-            creates.Add(await CreateAsync(context, dto));
+            creates.Add(await CreateAsync(ownerId, dto));
 
         await repo.AddRangeAsync(creates);
         foreach (var entity in currentList.Except(kept)) await DeleteAsync(entity);
         await repo.SaveChangesAsync();
     }
 
-    protected abstract Task<TEntity> CreateAsync(TContext context, TDto dto);
+    protected abstract Task<TEntity> CreateAsync(int ownerId, TDto dto);
     protected abstract Task UpdateAsync(TEntity entity, TDto dto);
 
     protected virtual Task DeleteAsync(TEntity entity)

@@ -107,14 +107,13 @@ internal class OpportunityService : IOpportunityService
         if (ownedVenueId != venueId)
             throw new ForbiddenException("You do not own this venue");
 
-        var desiredList = desired.ToList();
-        foreach (var req in desiredList)
+        foreach (var req in desired)
             if (!await stripeValidationFactory.Create(req.Contract.ContractType).ValidateAsync())
                 throw new ForbiddenException("You do not have the required Stripe account set up");
 
         var current = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
 
-        await uowBehavior.ExecuteAsync(() => syncer.SyncAsync(venueId, current, desiredList));
+        await uowBehavior.ExecuteAsync(() => syncer.SyncAsync(venueId, current, desired));
 
         var updated = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
         return await mapper.ToDtosAsync(updated);

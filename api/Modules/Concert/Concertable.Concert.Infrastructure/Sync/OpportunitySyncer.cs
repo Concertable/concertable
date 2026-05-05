@@ -3,7 +3,7 @@ using Concertable.Application.Diffing;
 namespace Concertable.Concert.Infrastructure.Sync;
 
 internal sealed class OpportunitySyncer
-    : CollectionSyncer<OpportunityEntity, OpportunityRequest, int>, IOpportunitySyncer
+    : CollectionSyncer<OpportunityEntity, OpportunityRequest>, IOpportunitySyncer
 {
     private readonly IContractModule contractModule;
 
