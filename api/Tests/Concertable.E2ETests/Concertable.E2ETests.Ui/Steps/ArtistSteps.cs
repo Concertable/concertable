@@ -10,7 +10,7 @@ public class ArtistSteps
     private readonly UiFixture fixture;
     private readonly Browser browser;
     private readonly WorkflowState state;
-    private ArtistFindVenuePage venuePage = null!;
+    private ArtistVenueDetailsPage venuePage = null!;
 
     public ArtistSteps(UiFixture fixture, Browser browser, WorkflowState state)
     {
@@ -24,7 +24,7 @@ public class ArtistSteps
     {
         await browser.UseRoleAsync(Role.ArtistManager);
 
-        venuePage = new ArtistFindVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        venuePage = new ArtistVenueDetailsPage(browser.Page, fixture.App.SpaBaseUrl);
         await venuePage.GotoAsync(state.VenueId);
         await venuePage.ApplyAsync(state.OpportunityId);
         await venuePage.WaitUntilAppliedAsync(state.OpportunityId);

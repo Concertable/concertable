@@ -1,10 +1,10 @@
 namespace Concertable.E2ETests.Ui.PageObjects;
 
-public class VenueAcceptApplicationPage
+public class AcceptApplicationPage
 {
     private readonly IPage page;
 
-    public VenueAcceptApplicationPage(IPage page) => this.page = page;
+    public AcceptApplicationPage(IPage page) => this.page = page;
 
     private ILocator ConfirmButton => page.GetByTestId("confirm");
 

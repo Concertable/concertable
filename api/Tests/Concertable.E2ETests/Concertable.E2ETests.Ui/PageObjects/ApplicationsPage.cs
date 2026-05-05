@@ -1,21 +1,20 @@
 namespace Concertable.E2ETests.Ui.PageObjects;
 
-public class VenueApplicationsPage
+public class ApplicationsPage
 {
     private readonly IPage page;
-    private readonly string spaBaseUrl;
+    private readonly string url;
 
-    public VenueApplicationsPage(IPage page, string spaBaseUrl)
+    public ApplicationsPage(IPage page, string spaBaseUrl)
     {
         this.page = page;
-        this.spaBaseUrl = spaBaseUrl;
+        this.url = $"{spaBaseUrl}/venue/my/applications";
     }
 
     private ILocator Application(int id) => page.GetByTestId($"application-{id}");
     private ILocator AcceptButton(int id) => Application(id).GetByTestId("accept");
 
-    public Task GotoAsync(int opportunityId) =>
-        page.GotoAsync($"{spaBaseUrl}/venue/my/applications/{opportunityId}");
+    public Task GotoAsync(int opportunityId) => page.GotoAsync($"{url}/{opportunityId}");
 
     public Task ClickAcceptAsync(int applicationId) => AcceptButton(applicationId).ClickAsync();
 }

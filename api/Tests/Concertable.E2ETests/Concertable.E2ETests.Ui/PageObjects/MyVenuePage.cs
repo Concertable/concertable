@@ -3,12 +3,12 @@ namespace Concertable.E2ETests.Ui.PageObjects;
 public class MyVenuePage
 {
     private readonly IPage page;
-    private readonly string spaBaseUrl;
+    private readonly string url;
 
     public MyVenuePage(IPage page, string spaBaseUrl)
     {
         this.page = page;
-        this.spaBaseUrl = spaBaseUrl;
+        this.url = $"{spaBaseUrl}/venue/my";
     }
 
     private ILocator EditButton => page.GetByTestId("edit");
@@ -16,7 +16,7 @@ public class MyVenuePage
     private ILocator AddOpportunityButton => page.GetByTestId("opportunity-add");
     private ILocator FlatFeeFeeInput => page.GetByTestId("opportunity-card-edit").Last.GetByTestId("contract-flatfee-fee");
 
-    public Task GotoAsync() => page.GotoAsync($"{spaBaseUrl}/venue/my");
+    public Task GotoAsync() => page.GotoAsync(url);
 
     public async Task PostFlatFeeOpportunityAsync(decimal fee)
     {

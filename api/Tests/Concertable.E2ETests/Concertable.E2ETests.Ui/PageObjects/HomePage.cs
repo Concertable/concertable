@@ -3,20 +3,20 @@ namespace Concertable.E2ETests.Ui.PageObjects;
 public class HomePage
 {
     private readonly IPage page;
-    private readonly string spaBaseUrl;
+    private readonly string url;
 
     public HomePage(IPage page, string spaBaseUrl)
     {
         this.page = page;
-        this.spaBaseUrl = spaBaseUrl;
+        this.url = spaBaseUrl;
     }
 
     private ILocator SignInLink => page.GetByTestId("header-login");
 
-    public Task GotoAsync() => page.GotoAsync($"{spaBaseUrl}/");
+    public Task GotoAsync() => page.GotoAsync(url);
 
     public Task ClickSignInAsync() => SignInLink.ClickAsync();
 
     public Task WaitUntilLoadedAsync(float timeoutMs = 15000) =>
-        page.WaitForURLAsync($"{spaBaseUrl}/", new() { Timeout = timeoutMs });
+        page.WaitForURLAsync(url, new() { Timeout = timeoutMs });
 }

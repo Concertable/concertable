@@ -40,11 +40,11 @@ public class VenueManagerSteps
     {
         await browser.UseRoleAsync(Role.VenueManager);
 
-        var applicationsPage = new VenueApplicationsPage(browser.Page, fixture.App.SpaBaseUrl);
+        var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.SpaBaseUrl);
         await applicationsPage.GotoAsync(state.OpportunityId);
         await applicationsPage.ClickAcceptAsync(state.ApplicationId);
 
-        var acceptPage = new VenueAcceptApplicationPage(browser.Page);
+        var acceptPage = new AcceptApplicationPage(browser.Page);
         await acceptPage.ClickConfirmAsync();
 
         checkoutPage = new ApplicationCheckoutPage(browser.Page);
