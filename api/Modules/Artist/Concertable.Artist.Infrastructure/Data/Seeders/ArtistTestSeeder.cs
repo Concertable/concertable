@@ -33,13 +33,13 @@ internal class ArtistTestSeeder : ITestSeeder
         await context.Artists.SeedIfEmptyAsync(async () =>
         {
             seed.Artist = ArtistFaker.GetFaker(
-                seed.ArtistManager.Id,
+                seed.ArtistManager1.Id,
                 "Test Artist",
                 "artist.jpg",
                 "avatar.jpg",
                 geometryProvider.CreatePoint(51, 0),
                 new Address("Test County", "Test Town"),
-                seed.ArtistManager.Email,
+                seed.ArtistManager1.Email,
                 [seed.Rock.Id]).Generate();
 
             context.Artists.Add(seed.Artist);

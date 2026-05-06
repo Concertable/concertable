@@ -72,7 +72,7 @@ public class ArtistApiTests : IAsyncLifetime
     [Fact]
     public async Task GetDetailsForCurrentUser_ShouldReturn200_WhenArtistExists()
     {
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
 
         var response = await client.GetAsync("/api/Artist/user");
 
@@ -200,7 +200,7 @@ public class ArtistApiTests : IAsyncLifetime
     [Fact]
     public async Task Update_ShouldReturn404_WhenArtistDoesNotExist()
     {
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var request = BuildUpdateRequest();
 
         var response = await client.PutAsync("/api/Artist/99999", await request.ToFormContent());
@@ -211,7 +211,7 @@ public class ArtistApiTests : IAsyncLifetime
     [Fact]
     public async Task Update_ShouldReturn200_WithUpdatedArtistDto_WhenValidRequest()
     {
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var request = BuildUpdateRequest();
 
         var response = await client.PutAsync($"/api/Artist/{fixture.SeedData.Artist.Id}", await request.ToFormContent());
@@ -228,7 +228,7 @@ public class ArtistApiTests : IAsyncLifetime
     [Fact]
     public async Task Update_ShouldReturn400_WhenNameIsEmpty()
     {
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var request = BuildUpdateRequest(name: "");
 
         var response = await client.PutAsync($"/api/Artist/{fixture.SeedData.Artist.Id}", await request.ToFormContent());

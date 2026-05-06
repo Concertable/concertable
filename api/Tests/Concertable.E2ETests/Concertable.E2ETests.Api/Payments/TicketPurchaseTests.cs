@@ -116,6 +116,6 @@ public class TicketPurchaseTests : IAsyncLifetime
 
         // VenueHire: artist hired the venue, so ticket revenue routes to the artist manager
         var intent = await fixture.StripePaymentIntents.GetAsync(purchase.TransactionId);
-        Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
+        Assert.Equal(fixture.SeedData.ArtistManager1.StripeAccountId, intent.TransferData.DestinationId);
     }
 }

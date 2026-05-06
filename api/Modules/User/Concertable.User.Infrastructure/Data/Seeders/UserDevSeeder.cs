@@ -58,8 +58,8 @@ internal class UserDevSeeder : IDevSeeder
                 context.Users.Add(c);
             }
 
-            seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
-            context.Users.Add(seedData.ArtistManager);
+            seedData.ArtistManager1 = UserFactory.ArtistManager("artistmanager1@test.com", hash);
+            context.Users.Add(seedData.ArtistManager1);
 
             var artistManager2 = UserFactory.ArtistManager("artistmanager2@test.com", hash);
             context.Users.Add(artistManager2);

@@ -72,7 +72,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task GetDetailsForCurrentUser_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
 
         // Act
         var response = await client.GetAsync("/api/Venue/user");
@@ -132,7 +132,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Create_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var request = BuildCreateRequest();
 
         // Act
@@ -219,7 +219,7 @@ public class VenueApiTests : IAsyncLifetime
     public async Task Update_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var request = BuildUpdateRequest();
 
         // Act

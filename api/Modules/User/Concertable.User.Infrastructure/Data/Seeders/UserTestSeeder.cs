@@ -40,7 +40,7 @@ internal class UserTestSeeder : ITestSeeder
 
             seedData.VenueManager1 = UserFactory.VenueManager("venuemanager1@test.com", hash);
             seedData.VenueManager2 = UserFactory.VenueManager("venuemanager2@test.com", hash);
-            seedData.ArtistManager = UserFactory.ArtistManager("artistmanager1@test.com", hash);
+            seedData.ArtistManager1 = UserFactory.ArtistManager("artistmanager1@test.com", hash);
 
             seedData.ArtistManagerNoArtist = UserFactory.ArtistManager("artistmanager2@test.com", hash);
             seedData.ArtistManagerNoArtist.UpdateLocation(geometryProvider.CreatePoint(51, 0), new Address("Test County", "Test Town"));
@@ -57,7 +57,7 @@ internal class UserTestSeeder : ITestSeeder
             context.Users.AddRange(
                 seedData.VenueManager1,
                 seedData.VenueManager2,
-                seedData.ArtistManager,
+                seedData.ArtistManager1,
                 seedData.ArtistManagerNoArtist,
                 seedData.Customer,
                 seedData.Admin);

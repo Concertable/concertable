@@ -45,7 +45,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
     public async Task ApplyCheckout_ShouldReturn400_WhenContractDoesNotSupportApplyTimeCheckout()
     {
         // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
 
         // Act
         var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.VersusApp.OpportunityId}/checkout");
@@ -87,7 +87,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
         Assert.Null(concert.DatePosted);
         Assert.Equal(2, fixture.NotificationService.DraftCreated.Count);
         var notifiedUserIds = fixture.NotificationService.DraftCreated.Select(n => n.UserId).ToList();
-        Assert.Contains(fixture.SeedData.ArtistManager.Id.ToString(), notifiedUserIds);
+        Assert.Contains(fixture.SeedData.ArtistManager1.Id.ToString(), notifiedUserIds);
         Assert.Contains(fixture.SeedData.VenueManager1.Id.ToString(), notifiedUserIds);
         Assert.All(fixture.NotificationService.DraftCreated, n => Assert.NotNull(n.Payload));
     }

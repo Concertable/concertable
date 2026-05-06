@@ -8,7 +8,7 @@ public class SeedData
 
     public VenueManagerEntity VenueManager1 { get; set; } = null!;
     public VenueManagerEntity VenueManager2 { get; set; } = null!;
-    public ArtistManagerEntity ArtistManager { get; set; } = null!;
+    public ArtistManagerEntity ArtistManager1 { get; set; } = null!;
     public ArtistManagerEntity ArtistManagerNoArtist { get; set; } = null!;
     public CustomerEntity Customer { get; set; } = null!;
     public AdminEntity Admin { get; set; } = null!;
@@ -18,7 +18,10 @@ public class SeedData
     public IReadOnlyList<Guid> VenueManagerIds { get; set; } = [];
 
     public string VenueManager1StripeAccountId { get; set; } = null!;
-    public string ArtistManagerStripeAccountId { get; set; } = null!;
+    public string VenueManager1StripeCustomerId { get; set; } = null!;
+    public string ArtistManager1StripeAccountId { get; set; } = null!;
+    public string ArtistManager1StripeCustomerId { get; set; } = null!;
+
 
     public GenreEntity Rock { get; set; } = null!;
     public GenreEntity Jazz { get; set; } = null!;

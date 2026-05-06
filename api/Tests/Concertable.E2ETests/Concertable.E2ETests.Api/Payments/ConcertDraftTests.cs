@@ -44,7 +44,7 @@ public class ConcertDraftTests : IAsyncLifetime
             timeout: TimeSpan.FromSeconds(15));
 
         var intent = await fixture.StripePaymentIntents.GetAsync(paymentIntentId);
-        Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
+        Assert.Equal(fixture.SeedData.ArtistManager1.StripeAccountId, intent.TransferData.DestinationId);
 
         // Webhook fires SettleAsync â†’ draft concert created
         await fixture.Polling.UntilAsync(

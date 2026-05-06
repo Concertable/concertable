@@ -44,12 +44,12 @@ public class TicketVenueHireApiTests : IAsyncLifetime
         var (userId, _) = Assert.Single(fixture.NotificationService.TicketPurchased);
         Assert.Equal(fixture.SeedData.Customer.Id.ToString(), userId);
         Assert.Equal(fixture.SeedData.Customer.Id.ToString(), fixture.StripeApiClient.LastMetadata["fromUserId"]);
-        Assert.Equal(fixture.SeedData.ArtistManager.Id.ToString(), fixture.StripeApiClient.LastMetadata["toUserId"]);
+        Assert.Equal(fixture.SeedData.ArtistManager1.Id.ToString(), fixture.StripeApiClient.LastMetadata["toUserId"]);
         var transactions = await client.GetAsync<Pagination<TicketTransactionDto>>("/api/Transaction");
         var transaction = Assert.Single(transactions!.Data);
         Assert.Equal(TransactionStatus.Complete, transaction.Status);
         Assert.Equal(fixture.SeedData.Customer.Id, transaction.FromUserId);
-        Assert.Equal(fixture.SeedData.ArtistManager.Id, transaction.ToUserId);
+        Assert.Equal(fixture.SeedData.ArtistManager1.Id, transaction.ToUserId);
     }
 
     [Fact]

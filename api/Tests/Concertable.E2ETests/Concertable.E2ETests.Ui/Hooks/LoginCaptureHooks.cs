@@ -16,7 +16,7 @@ public static class LoginCaptureHooks
     {
         var seed = fixture.App.SeedData;
         await CaptureAsync(fixture, Role.VenueManager, seed.VenueManager1.Email, seed.TestPassword);
-        await CaptureAsync(fixture, Role.ArtistManager, seed.ArtistManager.Email, seed.TestPassword);
+        await CaptureAsync(fixture, Role.ArtistManager, seed.ArtistManager1.Email, seed.TestPassword);
         await CaptureAsync(fixture, Role.Customer, seed.Customer.Email, seed.TestPassword);
     }
 

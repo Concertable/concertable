@@ -65,7 +65,7 @@ public class ConcertFinishedTests : IAsyncLifetime
             timeout: TimeSpan.FromSeconds(15));
 
         var intent = await fixture.StripePaymentIntents.GetAsync(paymentIntentId);
-        Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
+        Assert.Equal(fixture.SeedData.ArtistManager1.StripeAccountId, intent.TransferData.DestinationId);
         Assert.Equal(1400L, intent.Amount);
 
         await fixture.Polling.UntilAsync(
@@ -88,7 +88,7 @@ public class ConcertFinishedTests : IAsyncLifetime
             timeout: TimeSpan.FromSeconds(15));
 
         var intent = await fixture.StripePaymentIntents.GetAsync(paymentIntentId);
-        Assert.Equal(fixture.SeedData.ArtistManager.StripeAccountId, intent.TransferData.DestinationId);
+        Assert.Equal(fixture.SeedData.ArtistManager1.StripeAccountId, intent.TransferData.DestinationId);
         Assert.Equal(11400L, intent.Amount);
 
         await fixture.Polling.UntilAsync(
