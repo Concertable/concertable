@@ -17,13 +17,18 @@ public class StripeIframe
     private IFrameLocator PaymentFrame =>
         page.FrameLocator("iframe[name^='__privateStripeFrame']").First;
 
+    private ILocator NumberField => PaymentFrame.Locator("[name='number']");
+    private ILocator ExpirationField => PaymentFrame.Locator("[name='expiration']");
+    private ILocator CvcField => PaymentFrame.Locator("[name='cvc']");
+    private ILocator PostalField => PaymentFrame.Locator("[name='postalCode']");
+
     public async Task FillCardAsync(string cardNumber)
     {
-        await PaymentFrame.Locator("[name='number']").FillAsync(cardNumber);
-        await PaymentFrame.Locator("[name='expiration']").FillAsync("12 / 30");
-        await PaymentFrame.Locator("[name='cvc']").FillAsync("123");
-        var postal = PaymentFrame.Locator("[name='postalCode']");
-        if (await postal.CountAsync() > 0) await postal.FillAsync("12345");
+        await NumberField.WaitForAsync(new() { Timeout = 60_000 });
+        await NumberField.FillAsync(cardNumber);
+        await ExpirationField.FillAsync("12 / 30");
+        await CvcField.FillAsync("123");
+        if (await PostalField.CountAsync() > 0) await PostalField.FillAsync("12345");
     }
 
     public async Task Complete3dsChallengeAsync()

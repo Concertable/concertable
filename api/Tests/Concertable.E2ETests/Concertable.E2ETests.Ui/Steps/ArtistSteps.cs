@@ -32,6 +32,23 @@ public class ArtistSteps
         state.ApplicationId = await FetchNewestApplicationIdAsync(state.OpportunityId);
     }
 
+    [When(@"the artist applies to the venue hire opportunity with a valid card")]
+    public async Task ArtistAppliesToVenueHireWithValidCard()
+    {
+        await browser.UseRoleAsync(Role.ArtistManager);
+
+        venuePage = new ArtistVenueDetailsPage(browser.Page, fixture.App.SpaBaseUrl);
+        await venuePage.GotoAsync(state.VenueId);
+        await venuePage.ApplyAsync(state.OpportunityId);
+
+        var applyCheckoutPage = new ApplyCheckoutPage(browser.Page);
+        var applied = browser.Page.WaitForResponseAsync($"**/application/{state.OpportunityId}");
+        await applyCheckoutPage.PayWithSavedCardAsync();
+        await applied;
+
+        state.ApplicationId = await FetchNewestApplicationIdAsync(state.OpportunityId);
+    }
+
     [Then(@"the application is created")]
     public Task ApplicationIsCreated() => venuePage.WaitUntilAppliedAsync(state.OpportunityId);
 

@@ -51,8 +51,44 @@ public class VenueManagerSteps
         await checkoutPage.PayWithSavedCardAsync();
     }
 
+    [When(@"the venue manager posts a venue hire opportunity for £(\d+)")]
+    public async Task PostsVenueHireOpportunity(decimal fee)
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+
+        state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
+
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        await myVenuePage.GotoAsync();
+        await myVenuePage.PostVenueHireOpportunityAsync(fee);
+        await myVenuePage.WaitUntilSavedAsync();
+
+        state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
+    }
+
+    [When(@"the venue manager accepts the application")]
+    public async Task AcceptsApplication()
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+
+        var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.SpaBaseUrl);
+        await applicationsPage.GotoAsync(state.OpportunityId);
+        await applicationsPage.ClickAcceptAsync(state.ApplicationId);
+
+        var acceptPage = new AcceptApplicationPage(browser.Page);
+        await acceptPage.ClickConfirmAsync();
+    }
+
     [Then(@"a draft concert is created")]
-    public Task DraftConcertCreated() => checkoutPage.WaitForSuccessAsync();
+    public async Task DraftConcertCreated()
+    {
+        if (checkoutPage is not null)
+        {
+            await checkoutPage.WaitForSuccessAsync();
+            return;
+        }
+        await browser.Page.WaitForURLAsync("**/venue/my/applications/**");
+    }
 
     private async Task<int> FetchNewestOpportunityIdAsync(int venueId)
     {

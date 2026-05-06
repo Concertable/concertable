@@ -14,7 +14,10 @@ public class MyVenuePage
     private ILocator EditButton => page.GetByTestId("edit");
     private ILocator SaveButton => page.GetByTestId("save");
     private ILocator AddOpportunityButton => page.GetByTestId("opportunity-add");
-    private ILocator FlatFeeFeeInput => page.GetByTestId("opportunity-card-edit").Last.GetByTestId("contract-flatfee-fee");
+    private ILocator LastCardEdit => page.GetByTestId("opportunity-card-edit").Last;
+    private ILocator FlatFeeFeeInput => LastCardEdit.GetByTestId("contract-flatfee-fee");
+    private ILocator ContractTypeSelect => LastCardEdit.GetByTestId("opportunity-contract-type");
+    private ILocator VenueHireFeeInput => LastCardEdit.GetByTestId("contract-venuehire-fee");
 
     public Task GotoAsync() => page.GotoAsync(url);
 
@@ -24,6 +27,17 @@ public class MyVenuePage
         await Assertions.Expect(EditButton).ToHaveTextAsync("Editing");
         await AddOpportunityButton.ClickAsync();
         await FlatFeeFeeInput.FillAsync(fee.ToString());
+        await SaveButton.ClickAsync();
+    }
+
+    public async Task PostVenueHireOpportunityAsync(decimal fee)
+    {
+        await EditButton.ClickAsync();
+        await Assertions.Expect(EditButton).ToHaveTextAsync("Editing");
+        await AddOpportunityButton.ClickAsync();
+        await ContractTypeSelect.ClickAsync();
+        await page.GetByRole(AriaRole.Option, new() { Name = "Venue Hire" }).ClickAsync();
+        await VenueHireFeeInput.FillAsync(fee.ToString());
         await SaveButton.ClickAsync();
     }
 
