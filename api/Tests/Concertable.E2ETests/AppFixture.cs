@@ -32,8 +32,6 @@ public class AppFixture : IAsyncLifetime
     public SqlFixture Sql { get; private set; } = null!;
     public TestDb Db { get; private set; } = null!;
 
-    public AppFixture() : this(LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(LogLevel.Information))) { }
-
     public AppFixture(IMessageSink messageSink) : this(BuildMessageSinkLoggerFactory(messageSink)) { }
 
     private AppFixture(ILoggerFactory loggerFactory)
