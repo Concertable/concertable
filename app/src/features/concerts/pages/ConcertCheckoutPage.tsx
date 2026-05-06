@@ -130,7 +130,7 @@ function ConcertSuccess({
         </>
       }
       footer={
-        <Button onClick={onView} className="mt-2">
+        <Button onClick={onView} className="mt-2" data-testid="view-tickets">
           View tickets
         </Button>
       }

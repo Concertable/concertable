@@ -47,6 +47,7 @@ export function ConcertCard({ concert }: Readonly<Props>) {
 
       <Button
         className="w-full"
+        data-testid="buy-tickets"
         onClick={() =>
           void navigate({
             to: "/concert/checkout/$id",

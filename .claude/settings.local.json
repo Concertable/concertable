@@ -64,7 +64,12 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\" -Recurse -Filter \"appsettings*.json\")",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Tests\\\\Concertable.E2ETests\" -Recurse -File)",
       "Bash(Select-Object FullName)",
-      "Bash(Sort-Object FullName)"
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Recurse -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\" -Filter \"*Seeder*\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Tests\\\\Concertable.E2ETests\\\\Concertable.E2ETests.Ui\\\\Hooks\" -Filter \"*.cs\")",
+      "Bash(Select-Object Name)",
+      "Bash(grep -i \"\\\\.cs$\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\src\\\\features\" -Directory)"
     ]
   }
 }

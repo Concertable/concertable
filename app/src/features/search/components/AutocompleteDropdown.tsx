@@ -21,6 +21,7 @@ export function AutocompleteDropdown({
 
   return (
     <div
+      data-testid="autocomplete-dropdown"
       className={cn(
         "bg-popover text-popover-foreground absolute top-full z-50 mt-1 rounded-lg border shadow-md",
         className,
@@ -32,6 +33,7 @@ export function AutocompleteDropdown({
       {data?.map((result, i) => (
         <button
           key={`${result.$type}-${i}`}
+          data-testid="autocomplete-item"
           onMouseDown={() => onSelect(result)}
           className="hover:bg-accent flex w-full items-center justify-between px-3 py-2 text-left text-sm first:rounded-t-lg last:rounded-b-lg"
         >

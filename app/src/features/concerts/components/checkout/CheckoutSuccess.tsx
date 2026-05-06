@@ -20,6 +20,7 @@ export function CheckoutSuccess({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      data-testid="checkout-success"
       className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-12 text-center"
     >
       <motion.div

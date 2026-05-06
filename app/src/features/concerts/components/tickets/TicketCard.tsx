@@ -12,7 +12,7 @@ export function TicketCard({ ticket }: Readonly<Props>) {
   const start = new Date(concert.startDate);
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row">
+    <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row" data-testid="ticket-card">
       <div className="flex-1 space-y-2">
         <h3 className="font-medium">{concert.name}</h3>
         <div className="text-muted-foreground space-y-1 text-sm">

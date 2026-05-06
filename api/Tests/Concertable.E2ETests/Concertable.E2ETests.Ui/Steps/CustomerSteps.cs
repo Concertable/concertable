@@ -1,0 +1,108 @@
+using Concertable.E2ETests.Ui.PageObjects;
+using Concertable.E2ETests.Ui.Support;
+
+namespace Concertable.E2ETests.Ui.Steps;
+
+[Binding]
+public class CustomerSteps
+{
+    private readonly UiFixture fixture;
+    private readonly Browser browser;
+    private FindPage findPage = null!;
+    private ConcertDetailsPage concertDetailsPage = null!;
+    private TicketCheckoutPage checkoutPage = null!;
+    private CustomerUpcomingTicketsPage upcomingTicketsPage = null!;
+
+    public CustomerSteps(UiFixture fixture, Browser browser)
+    {
+        this.fixture = fixture;
+        this.browser = browser;
+    }
+
+    [When(@"the customer opens the filter panel on the find page")]
+    public async Task OpensFilterPanelOnFindPage()
+    {
+        findPage = new FindPage(browser.Page, fixture.App.SpaBaseUrl);
+        await findPage.GotoAsync();
+        await findPage.OpenFilterPanelAsync();
+    }
+
+    [When(@"the customer selects the header type ""(.*)""")]
+    public Task SelectsHeaderType(string type) =>
+        findPage.SelectHeaderTypeAsync(type);
+
+    [When(@"the customer applies the filters")]
+    public Task AppliesFilters() =>
+        findPage.ApplyFiltersAsync();
+
+    [Then(@"concert results should be visible")]
+    public Task ConcertResultsVisible() =>
+        findPage.WaitForResultsAsync();
+
+    [When(@"the customer clicks the first concert result")]
+    public Task ClicksFirstResult() =>
+        findPage.ClickFirstResultAsync();
+
+    [Then(@"the customer should be on the concert detail page")]
+    public async Task OnConcertDetailPage()
+    {
+        await browser.Page.WaitForURLAsync("**/find/concert/**");
+        concertDetailsPage = new ConcertDetailsPage(browser.Page);
+        await concertDetailsPage.WaitUntilLoadedAsync();
+    }
+
+    [When(@"the customer clicks buy tickets")]
+    public Task ClicksBuyTickets() =>
+        concertDetailsPage.ClickBuyTicketsAsync();
+
+    [Then(@"the customer should be on the checkout page")]
+    public async Task OnCheckoutPage()
+    {
+        await browser.Page.WaitForURLAsync("**/concert/checkout/**");
+        checkoutPage = new TicketCheckoutPage(browser.Page);
+    }
+
+    [When(@"the customer pays with a test card and confirms")]
+    public Task PaysWithTestCard() =>
+        checkoutPage.PayWithTestCardAsync();
+
+    [Then(@"the checkout awaiting screen should be visible")]
+    public Task CheckoutAwaitingVisible() =>
+        checkoutPage.WaitForAwaitingScreenAsync();
+
+    [Then(@"the checkout success screen should be visible")]
+    public Task CheckoutSuccessVisible() =>
+        checkoutPage.WaitForSuccessScreenAsync();
+
+    [Then(@"a ticket purchased toast should appear")]
+    public Task TicketPurchasedToastAppears() =>
+        checkoutPage.WaitForTicketPurchasedToastAsync();
+
+    [When(@"the customer clicks view tickets")]
+    public Task ClicksViewTickets() =>
+        checkoutPage.ClickViewTicketsAsync();
+
+    [Then(@"the customer should be on the upcoming tickets page")]
+    public async Task OnUpcomingTicketsPage()
+    {
+        await browser.Page.WaitForURLAsync("**/profile/tickets/upcoming");
+        upcomingTicketsPage = new CustomerUpcomingTicketsPage(browser.Page);
+        await upcomingTicketsPage.WaitForTicketListAsync();
+    }
+
+    [Then(@"a ticket card should be listed")]
+    public Task TicketCardListed() =>
+        upcomingTicketsPage.WaitForTicketCardsAsync();
+
+    [When(@"the customer opens the QR code")]
+    public Task OpensQrCode() =>
+        upcomingTicketsPage.OpenQrCodeAsync();
+
+    [Then(@"the QR dialog should be visible")]
+    public Task QrDialogVisible() =>
+        upcomingTicketsPage.WaitForQrDialogAsync();
+
+    [Then(@"the QR image should be present")]
+    public Task QrImagePresent() =>
+        upcomingTicketsPage.WaitForQrImageAsync();
+}

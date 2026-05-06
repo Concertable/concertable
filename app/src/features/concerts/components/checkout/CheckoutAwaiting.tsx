@@ -18,6 +18,7 @@ export function CheckoutAwaiting({ title, description, steps }: Props) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      data-testid="checkout-awaiting"
       className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 py-12 text-center"
     >
       <div className="bg-primary/10 mb-5 flex size-20 items-center justify-center rounded-full">
