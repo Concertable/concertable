@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Concertable.E2ETests.Ui.PageObjects;
 using Concertable.E2ETests.Ui.Support;
 
@@ -11,7 +10,6 @@ public class VenueManagerSteps
     private readonly Browser browser;
     private readonly WorkflowState state;
     private MyVenuePage myVenuePage = null!;
-    private ApplicationCheckoutPage checkoutPage = null!;
 
     public VenueManagerSteps(UiFixture fixture, Browser browser, WorkflowState state)
     {
@@ -47,7 +45,7 @@ public class VenueManagerSteps
         var acceptPage = new AcceptApplicationPage(browser.Page);
         await acceptPage.ClickConfirmAsync();
 
-        checkoutPage = new ApplicationCheckoutPage(browser.Page);
+        var checkoutPage = new ApplicationCheckoutPage(browser.Page);
         await checkoutPage.PayWithSavedCardAsync();
     }
 
@@ -110,24 +108,9 @@ public class VenueManagerSteps
     }
 
     [Then(@"a draft concert is created")]
-    public async Task DraftConcertCreated()
-    {
-        if (checkoutPage is not null)
-        {
-            await checkoutPage.WaitForSuccessAsync();
-            return;
-        }
-        await browser.Page.WaitForURLAsync("**/venue/my/applications/**");
-    }
+    public Task DraftConcertCreated() =>
+        browser.Page.WaitForURLAsync("**/venue/my/concerts/concert/**");
 
-    private async Task<int> FetchNewestOpportunityIdAsync(int venueId)
-    {
-        var seed = fixture.App.SeedData;
-        using var client = await fixture.App.CreateAuthenticatedClientAsync(seed.VenueManager1.Email);
-        var json = await client.GetStringAsync($"/api/Venue/{venueId}/opportunities");
-        using var doc = JsonDocument.Parse(json);
-        return doc.RootElement.EnumerateArray()
-            .Select(o => o.GetProperty("id").GetInt32())
-            .Max();
-    }
+    private Task<int> FetchNewestOpportunityIdAsync(int venueId) =>
+        fixture.App.Db.Opportunity.GetNewestAsync(venueId);
 }

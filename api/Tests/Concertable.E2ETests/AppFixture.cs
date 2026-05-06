@@ -32,6 +32,7 @@ public class AppFixture : IAsyncLifetime
     public DateTime LastReset { get; private set; }
     public SeedDataResponse SeedData { get; private set; } = null!;
     public SqlFixture Sql { get; private set; } = null!;
+    public TestDb Db { get; private set; } = null!;
 
     public AppFixture() : this(BuildConsoleLoggerFactory()) { }
 
@@ -82,6 +83,7 @@ public class AppFixture : IAsyncLifetime
 
         Sql = new SqlFixture();
         await Sql.InitializeAsync(app);
+        Db = new TestDb(Sql.Connection);
 
         logger.LogInformation("E2E test fixture ready");
     }
