@@ -28,13 +28,13 @@ public class PlaywrightHooks
     public async Task BeforeScenario(ScenarioContext scenarioContext)
     {
         await Fixture.App.ResetAsync();
-        await LoginCaptureHooks.CaptureAllAsync(Fixture);
+        LoginCaptureHooks.Reset();
 
         var role = scenarioContext.ScenarioInfo.Tags
             .Select(tag => Enum.TryParse<Role>(tag, out var r) ? (Role?)r : null)
             .FirstOrDefault(r => r is not null);
 
-        await browser.InitializeAsync(Fixture.Browser, role);
+        await browser.InitializeAsync(Fixture.Browser, role, Fixture);
     }
 
     [AfterScenario]

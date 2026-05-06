@@ -16,6 +16,10 @@ public class SeedDataResponse
     public SeedApplication PostedVenueHireApp { get; set; } = null!;
     public SeedApplication FinishedDoorSplitApp { get; set; } = null!;
     public SeedApplication FinishedVersusApp { get; set; } = null!;
+    public SeedApplication PastVersusApp { get; set; } = null!;
+    public SeedApplication PastFlatFeeApp { get; set; } = null!;
+    public SeedApplication PastVenueHireApp { get; set; } = null!;
+    public SeedApplication PastDoorSplitApp { get; set; } = null!;
     public SeedApplication UpcomingFlatFeeApp { get; set; } = null!;
     public SeedApplication UpcomingVenueHireApp { get; set; } = null!;
     public SeedConcert FlatFeeUpcomingConcert { get; set; } = null!;

@@ -32,6 +32,7 @@ export function FilterSlider() {
   const { filters, setFilters } = useSearchFiltersStore();
   const { updateFilters } = useSearchFilters();
   const { data: genres } = useGenresQuery();
+  const [open, setOpen] = useState(false);
   const [pendingGenre, setPendingGenre] = useState("");
 
   function update(next: Partial<SearchFilters>) {
@@ -48,6 +49,7 @@ export function FilterSlider() {
 
   function apply() {
     updateFilters(filters);
+    setOpen(false);
   }
 
   const selectedGenres =
@@ -56,7 +58,7 @@ export function FilterSlider() {
     genres?.filter((g) => !filters.genreIds?.includes(g.id)) ?? [];
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
           variant="secondary"

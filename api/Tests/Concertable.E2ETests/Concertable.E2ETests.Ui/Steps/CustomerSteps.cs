@@ -31,6 +31,14 @@ public class CustomerSteps
     public Task SelectsHeaderType(string type) =>
         findPage.SelectHeaderTypeAsync(type);
 
+    [When(@"the customer adds the genre filter ""(.*)""")]
+    public Task AddsGenreFilter(string genre) =>
+        findPage.AddGenreFilterAsync(genre);
+
+    [When(@"the customer sets the radius to (\d+) km")]
+    public Task SetsRadius(int km) =>
+        findPage.SetRadiusAsync(km);
+
     [When(@"the customer applies the filters")]
     public Task AppliesFilters() =>
         findPage.ApplyFiltersAsync();
@@ -38,6 +46,14 @@ public class CustomerSteps
     [Then(@"concert results should be visible")]
     public Task ConcertResultsVisible() =>
         findPage.WaitForResultsAsync();
+
+    [Then(@"the find URL should contain ""(.*)""")]
+    public Task FindUrlContains(string substring) =>
+        findPage.AssertUrlContainsAsync(substring);
+
+    [Then(@"at least (\d+) concert result cards should be visible")]
+    public Task AtLeastNConcertResultCardsVisible(int n) =>
+        findPage.AssertMinimumResultCardsAsync(n);
 
     [When(@"the customer clicks the first concert result")]
     public Task ClicksFirstResult() =>

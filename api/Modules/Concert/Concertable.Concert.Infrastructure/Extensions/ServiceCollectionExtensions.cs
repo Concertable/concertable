@@ -85,6 +85,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
         services.AddScoped<ICheckoutDispatcher, CheckoutDispatcher>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
+        services.AddScoped<IConcertCompletionRunner, ConcertCompletionRunner>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
 

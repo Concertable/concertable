@@ -153,7 +153,7 @@ internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         return await context.Concerts
             .Where(c => c.Booking.Application.Status == ApplicationStatus.Accepted
                      && c.Booking.Status == BookingStatus.Confirmed
-                     && c.Booking.Application.Opportunity.Period.Start < now)
+                     && c.StartDate < now)
             .Select(c => c.Id)
             .ToListAsync();
     }

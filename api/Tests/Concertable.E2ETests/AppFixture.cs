@@ -4,7 +4,6 @@ using Aspire.Hosting.Testing;
 using Concertable.Seeding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Stripe;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
@@ -29,12 +28,11 @@ public class AppFixture : IAsyncLifetime
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
     public StripeFixture Stripe { get; private set; } = null!;
-    public DateTime LastReset { get; private set; }
     public SeedDataResponse SeedData { get; private set; } = null!;
     public SqlFixture Sql { get; private set; } = null!;
     public TestDb Db { get; private set; } = null!;
 
-    public AppFixture() : this(BuildConsoleLoggerFactory()) { }
+    public AppFixture() : this(LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(LogLevel.Information))) { }
 
     public AppFixture(IMessageSink messageSink) : this(BuildMessageSinkLoggerFactory(messageSink)) { }
 
@@ -72,7 +70,7 @@ public class AppFixture : IAsyncLifetime
         builder.AddE2E(ApiBaseUrl, AuthBaseUrl, stripeCli.WebhookSecret);
         var stripeClient = new StripeClient(stripeCli.ApiKey);
         StripePaymentIntents = new PaymentIntentService(stripeClient);
-        Stripe = new StripeFixture(stripeClient, this);
+        Stripe = new StripeFixture(stripeClient);
 
         app = await builder.BuildAsync();
         await app.StartAsync();
@@ -90,7 +88,7 @@ public class AppFixture : IAsyncLifetime
 
     public async Task ResetAsync()
     {
-        LastReset = DateTime.UtcNow;
+        Stripe.Reset();
         await Sql.ResetAsync();
         var response = await Client.PostAsync("/e2e/reseed");
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
@@ -131,11 +129,6 @@ public class AppFixture : IAsyncLifetime
 
         logger.LogInformation("App is healthy");
     }
-
-    private static ILoggerFactory BuildConsoleLoggerFactory() =>
-        LoggerFactory.Create(b => b
-            .AddSimpleConsole(o => o.SingleLine = true)
-            .SetMinimumLevel(LogLevel.Debug));
 
     private static ILoggerFactory BuildMessageSinkLoggerFactory(IMessageSink messageSink) =>
         LoggerFactory.Create(b => b

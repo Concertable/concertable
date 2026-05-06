@@ -7,17 +7,24 @@ public static class LoginCaptureHooks
 {
     private static readonly Dictionary<Role, string> storageStateByRole = [];
 
-    public static string GetStorageState(Role role) =>
-        storageStateByRole.TryGetValue(role, out var state)
-            ? state
-            : throw new InvalidOperationException($"No cached storage state for role '{role}'.");
+    public static void Reset() => storageStateByRole.Clear();
 
-    public static async Task CaptureAllAsync(UiFixture fixture)
+    public static async Task<string> GetOrCaptureAsync(UiFixture fixture, Role role)
     {
+        if (storageStateByRole.TryGetValue(role, out var state))
+            return state;
+
         var seed = fixture.App.SeedData;
-        await CaptureAsync(fixture, Role.VenueManager, seed.VenueManager1.Email, seed.TestPassword);
-        await CaptureAsync(fixture, Role.ArtistManager, seed.ArtistManager1.Email, seed.TestPassword);
-        await CaptureAsync(fixture, Role.Customer, seed.Customer.Email, seed.TestPassword);
+        var (email, password) = role switch
+        {
+            Role.Customer      => (seed.Customer.Email,       seed.TestPassword),
+            Role.VenueManager  => (seed.VenueManager1.Email,  seed.TestPassword),
+            Role.ArtistManager => (seed.ArtistManager1.Email, seed.TestPassword),
+            _ => throw new ArgumentOutOfRangeException(nameof(role))
+        };
+
+        await CaptureAsync(fixture, role, email, password);
+        return storageStateByRole[role];
     }
 
     private static async Task CaptureAsync(UiFixture fixture, Role role, string email, string password)

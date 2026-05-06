@@ -100,6 +100,10 @@ internal class ConcertDevSeeder : IDevSeeder
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(42), now.AddDays(42).AddHours(3)), contractId: contracts[60].Id),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(44), now.AddDays(44).AddHours(3)), contractId: contracts[61].Id),
                 OpportunityFactory.Create(1, new DateRange(now.AddDays(46), now.AddDays(46).AddHours(3)), contractId: contracts[62].Id),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-120), now.AddDays(-120).AddHours(3)), contractId: contracts[63].Id),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-85), now.AddDays(-85).AddHours(3)), contractId: contracts[64].Id),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-40), now.AddDays(-40).AddHours(3)), contractId: contracts[65].Id),
+                OpportunityFactory.Create(1, new DateRange(now.AddDays(-60), now.AddDays(-60).AddHours(3)), contractId: contracts[66].Id),
             ];
 
             context.Opportunities.AddRange(seed.Opportunities);
@@ -168,7 +172,11 @@ internal class ConcertDevSeeder : IDevSeeder
                 new OpportunityGenreEntity { OpportunityId = 60, GenreId = 1 },
                 new OpportunityGenreEntity { OpportunityId = 61, GenreId = 1 },
                 new OpportunityGenreEntity { OpportunityId = 62, GenreId = 1 },
-                new OpportunityGenreEntity { OpportunityId = 63, GenreId = 1 }
+                new OpportunityGenreEntity { OpportunityId = 63, GenreId = 1 },
+                new OpportunityGenreEntity { OpportunityId = 64, GenreId = 1 },
+                new OpportunityGenreEntity { OpportunityId = 65, GenreId = 1 },
+                new OpportunityGenreEntity { OpportunityId = 66, GenreId = 1 },
+                new OpportunityGenreEntity { OpportunityId = 67, GenreId = 1 }
             };
             context.OpportunityGenres.AddRange(opportunityGenres);
             await context.SaveChangesAsync(ct);
@@ -176,7 +184,7 @@ internal class ConcertDevSeeder : IDevSeeder
 
         await context.Applications.SeedIfEmptyAsync(async () =>
         {
-            seed.ConfirmedBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Ultimate Dance Party", 27m, 160, 140, 1, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(2)).Generate());
+            seed.ConfirmedBooking = BookingFactory.Complete(ConcertFaker.GetFaker("Ultimate Dance Party", 27m, 160, 140, 1, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(2)).Generate());
             seed.ConfirmedApp = ApplicationFactory.Accepted(1, 6, seed.ConfirmedBooking);
 
             seed.PostedDoorSplitBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Boogie Wonderland", 25m, 120, 100, 1, seed.Opportunities[52].VenueId, seed.Opportunities[52].Period.Start, seed.Opportunities[52].Period.End, now.AddDays(150)).Generate());
@@ -185,10 +193,10 @@ internal class ConcertDevSeeder : IDevSeeder
             seed.PostedVersusBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Funk it up", 20m, 150, 130, 2, seed.Opportunities[53].VenueId, seed.Opportunities[53].Period.Start, seed.Opportunities[53].Period.End, now.AddDays(180)).Generate());
             seed.PostedVersusApp = ApplicationFactory.Accepted(2, 54, seed.PostedVersusBooking);
 
-            seed.PostedFlatFeeBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Boogie it up!", 20m, 150, 130, 2, seed.Opportunities[30].VenueId, seed.Opportunities[30].Period.Start, seed.Opportunities[30].Period.End, now.AddDays(-85)).Generate());
+            seed.PostedFlatFeeBooking = BookingFactory.Complete(ConcertFaker.GetFaker("Boogie it up!", 20m, 150, 130, 2, seed.Opportunities[30].VenueId, seed.Opportunities[30].Period.Start, seed.Opportunities[30].Period.End, now.AddDays(-85)).Generate());
             seed.PostedFlatFeeApp = ApplicationFactory.Accepted(2, 31, seed.PostedFlatFeeBooking);
 
-            seed.PostedVenueHireBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("VenueHire Spectacular", 30m, 200, 180, 1, seed.Opportunities[20].VenueId, seed.Opportunities[20].Period.Start, seed.Opportunities[20].Period.End, now.AddDays(-40)).Generate());
+            seed.PostedVenueHireBooking = BookingFactory.Complete(ConcertFaker.GetFaker("VenueHire Spectacular", 30m, 200, 180, 1, seed.Opportunities[20].VenueId, seed.Opportunities[20].Period.Start, seed.Opportunities[20].Period.End, now.AddDays(-40)).Generate());
             seed.PostedVenueHireApp = ApplicationFactory.AcceptedPrepaid(1, 21, seed.PostedVenueHireBooking);
 
             seed.DoorSplitApp = ApplicationFactory.Create(1, 56);
@@ -199,11 +207,23 @@ internal class ConcertDevSeeder : IDevSeeder
             seed.AwaitingPaymentBooking = BookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Awaiting Show", 15m, 100, 80, 1, seed.Opportunities[32].VenueId, seed.Opportunities[32].Period.Start, seed.Opportunities[32].Period.End, now.AddDays(3)).Generate());
             seed.AwaitingPaymentApp = ApplicationFactory.Accepted(1, 33, seed.AwaitingPaymentBooking);
 
-            seed.FinishedDoorSplitBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("DoorSplit Settlement Show", 20m, 100, 99, 1, seed.Opportunities[49].VenueId, seed.Opportunities[49].Period.Start, seed.Opportunities[49].Period.End, now.AddDays(-60)).Generate());
+            seed.FinishedDoorSplitBooking = BookingFactory.CompleteDeferred(ConcertFaker.GetFaker("DoorSplit Settlement Show", 20m, 100, 99, 1, seed.Opportunities[49].VenueId, seed.Opportunities[49].Period.Start, seed.Opportunities[49].Period.End, now.AddDays(-60)).Generate());
             seed.FinishedDoorSplitApp = ApplicationFactory.Accepted(1, 50, seed.FinishedDoorSplitBooking);
 
-            seed.FinishedVersusBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Versus Settlement Show", 20m, 100, 99, 1, seed.Opportunities[50].VenueId, seed.Opportunities[50].Period.Start, seed.Opportunities[50].Period.End, now.AddDays(-90)).Generate());
+            seed.FinishedVersusBooking = BookingFactory.CompleteDeferred(ConcertFaker.GetFaker("Versus Settlement Show", 20m, 100, 99, 1, seed.Opportunities[50].VenueId, seed.Opportunities[50].Period.Start, seed.Opportunities[50].Period.End, now.AddDays(-90)).Generate());
             seed.FinishedVersusApp = ApplicationFactory.Accepted(1, 51, seed.FinishedVersusBooking);
+
+            seed.PastVersusBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Past Versus Show", 20m, 100, 99, 1, seed.Opportunities[63].VenueId, seed.Opportunities[63].Period.Start, seed.Opportunities[63].Period.End, now.AddDays(-120)).Generate());
+            seed.PastVersusApp = ApplicationFactory.Accepted(1, seed.Opportunities[63].Id, seed.PastVersusBooking);
+
+            seed.PastFlatFeeBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Past FlatFee Show", 20m, 100, 100, 1, seed.Opportunities[64].VenueId, seed.Opportunities[64].Period.Start, seed.Opportunities[64].Period.End, now.AddDays(-85)).Generate());
+            seed.PastFlatFeeApp = ApplicationFactory.Accepted(1, seed.Opportunities[64].Id, seed.PastFlatFeeBooking);
+
+            seed.PastVenueHireBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Past VenueHire Show", 30m, 100, 100, 1, seed.Opportunities[65].VenueId, seed.Opportunities[65].Period.Start, seed.Opportunities[65].Period.End, now.AddDays(-40)).Generate());
+            seed.PastVenueHireApp = ApplicationFactory.AcceptedPrepaid(1, seed.Opportunities[65].Id, seed.PastVenueHireBooking);
+
+            seed.PastDoorSplitBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Past DoorSplit Show", 20m, 100, 99, 1, seed.Opportunities[66].VenueId, seed.Opportunities[66].Period.Start, seed.Opportunities[66].Period.End, now.AddDays(-60)).Generate());
+            seed.PastDoorSplitApp = ApplicationFactory.Accepted(1, seed.Opportunities[66].Id, seed.PastDoorSplitBooking);
 
             seed.UpcomingFlatFeeBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Upcoming FlatFee Show", 20m, 150, 150, 2, seed.Opportunities[57].VenueId, seed.Opportunities[57].Period.Start, seed.Opportunities[57].Period.End, now).Generate());
             seed.UpcomingFlatFeeApp = ApplicationFactory.Accepted(2, 58, seed.UpcomingFlatFeeBooking);
@@ -236,11 +256,11 @@ internal class ConcertDevSeeder : IDevSeeder
                 ApplicationFactory.Accepted(12, 5, BookingFactory.Complete(ConcertFaker.GetFaker("Vibin' till Night", 24m, 150, 130, 12, seed.Opportunities[4].VenueId, seed.Opportunities[4].Period.Start, seed.Opportunities[4].Period.End, now.AddDays(-1)).Generate())),
                 // Apps 21-26: Accepted (upcoming concerts)
                 seed.ConfirmedApp,
-                ApplicationFactory.Accepted(2, 6, BookingFactory.Confirmed(ConcertFaker.GetFaker("Rock Your Soul", 23m, 130, 100, 2, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(5)).Generate())),
-                ApplicationFactory.Accepted(13, 6, BookingFactory.Confirmed(ConcertFaker.GetFaker("Danceaway", 29m, 155, 140, 13, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(8)).Generate())),
-                ApplicationFactory.Accepted(14, 6, BookingFactory.Confirmed(ConcertFaker.GetFaker("Bassline Groove Beats", 10m, 110, 70, 14, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(11)).Generate())),
-                ApplicationFactory.Accepted(1, 7, BookingFactory.Confirmed(ConcertFaker.GetFaker("Once in a Lifetime!", 15m, 125, 90, 1, seed.Opportunities[6].VenueId, seed.Opportunities[6].Period.Start, seed.Opportunities[6].Period.End, now.AddDays(14)).Generate())),
-                ApplicationFactory.Accepted(2, 7, BookingFactory.Confirmed(ConcertFaker.GetFaker("Jungle Fever", 30m, 180, 170, 2, seed.Opportunities[6].VenueId, seed.Opportunities[6].Period.Start, seed.Opportunities[6].Period.End, now.AddDays(17)).Generate())),
+                ApplicationFactory.Accepted(2, 6, BookingFactory.Complete(ConcertFaker.GetFaker("Rock Your Soul", 23m, 130, 100, 2, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(5)).Generate())),
+                ApplicationFactory.Accepted(13, 6, BookingFactory.Complete(ConcertFaker.GetFaker("Danceaway", 29m, 155, 140, 13, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(8)).Generate())),
+                ApplicationFactory.Accepted(14, 6, BookingFactory.Complete(ConcertFaker.GetFaker("Bassline Groove Beats", 10m, 110, 70, 14, seed.Opportunities[5].VenueId, seed.Opportunities[5].Period.Start, seed.Opportunities[5].Period.End, now.AddDays(11)).Generate())),
+                ApplicationFactory.Accepted(1, 7, BookingFactory.Complete(ConcertFaker.GetFaker("Once in a Lifetime!", 15m, 125, 90, 1, seed.Opportunities[6].VenueId, seed.Opportunities[6].Period.Start, seed.Opportunities[6].Period.End, now.AddDays(14)).Generate())),
+                ApplicationFactory.Accepted(2, 7, BookingFactory.Complete(ConcertFaker.GetFaker("Jungle Fever", 30m, 180, 170, 2, seed.Opportunities[6].VenueId, seed.Opportunities[6].Period.Start, seed.Opportunities[6].Period.End, now.AddDays(17)).Generate())),
                 // Apps 27-34: Pending (no concert)
                 ApplicationFactory.Create(15, 7),
                 ApplicationFactory.Create(16, 7),
@@ -309,9 +329,17 @@ internal class ConcertDevSeeder : IDevSeeder
                 seed.FinishedDoorSplitApp,
                 // App 79: FinishedVersusApp (concert 36) — VenueId=1, Versus 100+70%
                 seed.FinishedVersusApp,
-                // App 80: UpcomingFlatFeeApp — VenueId=1, FlatFee (future)
+                // App 80: PastVersusApp — VenueId=1, Versus £100+70%, past start date
+                seed.PastVersusApp,
+                // App 81: PastFlatFeeApp — VenueId=1, FlatFee £200, past start date
+                seed.PastFlatFeeApp,
+                // App 82: PastVenueHireApp — VenueId=1, VenueHire £300, past start date
+                seed.PastVenueHireApp,
+                // App 83: PastDoorSplitApp — VenueId=1, DoorSplit 70%, past start date
+                seed.PastDoorSplitApp,
+                // App 84: UpcomingFlatFeeApp — VenueId=1, FlatFee (future)
                 seed.UpcomingFlatFeeApp,
-                // App 81: UpcomingVenueHireApp — VenueId=1, VenueHire (future)
+                // App 85: UpcomingVenueHireApp — VenueId=1, VenueHire (future)
                 seed.UpcomingVenueHireApp,
                 // Accepted + pending apps for opps 34, 35, 46, 47, 48
                 ApplicationFactory.Accepted(3, 34, BookingFactory.Confirmed(ConcertFaker.GetFaker("Groove Night", 18m, 130, 100, 3, seed.Opportunities[33].VenueId, seed.Opportunities[33].Period.Start, seed.Opportunities[33].Period.End, now.AddDays(-1)).Generate())),
@@ -510,6 +538,8 @@ internal class ConcertDevSeeder : IDevSeeder
                 TicketFactory.Create(Guid.CreateVersion7(), customerIds[4], 26, Array.Empty<byte>(), now.AddDays(-2)),
                 TicketFactory.Create(Guid.CreateVersion7(), customerIds[0], seed.FinishedDoorSplitBooking.Concert!.Id, Array.Empty<byte>(), now.AddDays(-60)),
                 TicketFactory.Create(Guid.CreateVersion7(), customerIds[0], seed.FinishedVersusBooking.Concert!.Id, Array.Empty<byte>(), now.AddDays(-90)),
+                TicketFactory.Create(Guid.CreateVersion7(), customerIds[0], seed.PastVersusBooking.Concert!.Id, Array.Empty<byte>(), now.AddDays(-120)),
+                TicketFactory.Create(Guid.CreateVersion7(), customerIds[0], seed.PastDoorSplitBooking.Concert!.Id, Array.Empty<byte>(), now.AddDays(-60)),
             };
             context.Tickets.AddRange(tickets);
             await context.SaveChangesAsync(ct);

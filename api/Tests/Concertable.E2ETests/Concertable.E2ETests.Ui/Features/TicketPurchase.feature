@@ -6,8 +6,15 @@ Feature: Ticket purchase happy path
   Scenario: Customer searches for concerts, purchases a ticket, and views the QR code
     When the customer opens the filter panel on the find page
     And the customer selects the header type "Concert"
+    And the customer adds the genre filter "Rock"
+    And the customer adds the genre filter "Indie"
+    And the customer sets the radius to 20 km
     And the customer applies the filters
     Then concert results should be visible
+    And the find URL should contain "headerType=concert"
+    And the find URL should contain "genreIds=1,6"
+    And the find URL should contain "radius=20"
+    And at least 2 concert result cards should be visible
     When the customer clicks the first concert result
     Then the customer should be on the concert detail page
     When the customer clicks buy tickets

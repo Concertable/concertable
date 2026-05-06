@@ -28,6 +28,10 @@ public static class E2EEndpointExtensions
                 PostedVenueHireApp = new SeedApplication { ApplicationId = seedData.PostedVenueHireApp.Id, ConcertId = seedData.PostedVenueHireApp.Booking!.Concert!.Id },
                 FinishedDoorSplitApp = new SeedApplication { ApplicationId = seedData.FinishedDoorSplitApp.Id, ConcertId = seedData.FinishedDoorSplitApp.Booking!.Concert!.Id },
                 FinishedVersusApp = new SeedApplication { ApplicationId = seedData.FinishedVersusApp.Id, ConcertId = seedData.FinishedVersusApp.Booking!.Concert!.Id },
+                PastVersusApp = new SeedApplication { ApplicationId = seedData.PastVersusApp.Id, ConcertId = seedData.PastVersusApp.Booking!.Concert!.Id },
+                PastFlatFeeApp = new SeedApplication { ApplicationId = seedData.PastFlatFeeApp.Id, ConcertId = seedData.PastFlatFeeApp.Booking!.Concert!.Id },
+                PastVenueHireApp = new SeedApplication { ApplicationId = seedData.PastVenueHireApp.Id, ConcertId = seedData.PastVenueHireApp.Booking!.Concert!.Id },
+                PastDoorSplitApp = new SeedApplication { ApplicationId = seedData.PastDoorSplitApp.Id, ConcertId = seedData.PastDoorSplitApp.Booking!.Concert!.Id },
                 UpcomingFlatFeeApp = new SeedApplication { ApplicationId = seedData.UpcomingFlatFeeApp.Id, ConcertId = seedData.UpcomingFlatFeeApp.Booking!.Concert!.Id },
                 UpcomingVenueHireApp = new SeedApplication { ApplicationId = seedData.UpcomingVenueHireApp.Id, ConcertId = seedData.UpcomingVenueHireApp.Booking!.Concert!.Id },
                 FlatFeeUpcomingConcert = new SeedConcert { Id = seedData.UpcomingFlatFeeBooking.Concert!.Id },
@@ -43,6 +47,12 @@ public static class E2EEndpointExtensions
             return result.IsFailed
                 ? Results.BadRequest(result.Errors.SelectMessages())
                 : Results.Ok();
+        });
+
+        app.MapPost("/e2e/finish-ended-confirmed", async (IConcertCompletionRunner runner) =>
+        {
+            await runner.RunAsync();
+            return Results.Ok();
         });
     }
 }

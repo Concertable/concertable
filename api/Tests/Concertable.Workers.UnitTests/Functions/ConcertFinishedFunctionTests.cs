@@ -1,68 +1,87 @@
-﻿using FluentResults;
+using Concertable.Concert.Infrastructure.Services.Completion;
+using FluentResults;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Workers.Functions;
 using Xunit;
 
 namespace Concertable.Workers.UnitTests.Functions;
-public class ConcertFinishedFunctionTests
+
+public class ConcertCompletionRunnerTests
 {
     private readonly Mock<IConcertRepository> concertRepository;
-    private readonly Mock<ICompletionDispatcher> CompletionDispatcher;
-    private readonly Mock<ILogger<ConcertFinishedFunction>> logger;
-    private readonly ConcertFinishedFunction sut;
+    private readonly Mock<ICompletionDispatcher> completionDispatcher;
+    private readonly Mock<ILogger<ConcertCompletionRunner>> logger;
+    private readonly ConcertCompletionRunner sut;
 
-    public ConcertFinishedFunctionTests()
+    public ConcertCompletionRunnerTests()
     {
         concertRepository = new Mock<IConcertRepository>();
-        CompletionDispatcher = new Mock<ICompletionDispatcher>();
-        logger = new Mock<ILogger<ConcertFinishedFunction>>();
-        sut = new ConcertFinishedFunction(concertRepository.Object, CompletionDispatcher.Object, logger.Object);
+        completionDispatcher = new Mock<ICompletionDispatcher>();
+        logger = new Mock<ILogger<ConcertCompletionRunner>>();
+        sut = new ConcertCompletionRunner(concertRepository.Object, completionDispatcher.Object, logger.Object);
 
-        CompletionDispatcher.Setup(p => p.FinishAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok());
+        completionDispatcher.Setup(p => p.FinishAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok());
     }
 
     [Fact]
-    public async Task Run_ShouldCallFinishAsync_ForEachEndedConcert()
+    public async Task RunAsync_ShouldCallFinishAsync_ForEachEndedConcert()
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([1, 2, 3]);
 
         // Act
-        await sut.Run(null!);
+        await sut.RunAsync();
 
         // Assert
-        CompletionDispatcher.Verify(p => p.FinishAsync(1), Times.Once);
-        CompletionDispatcher.Verify(p => p.FinishAsync(2), Times.Once);
-        CompletionDispatcher.Verify(p => p.FinishAsync(3), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(1), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(2), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(3), Times.Once);
     }
 
     [Fact]
-    public async Task Run_ShouldContinueProcessing_WhenOneFinishFails()
+    public async Task RunAsync_ShouldContinueProcessing_WhenOneFinishFails()
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([1, 2, 3]);
-        CompletionDispatcher.Setup(p => p.FinishAsync(2)).ReturnsAsync(Result.Fail("Payment failed"));
+        completionDispatcher.Setup(p => p.FinishAsync(2)).ReturnsAsync(Result.Fail("Payment failed"));
 
         // Act
-        await sut.Run(null!);
+        await sut.RunAsync();
 
         // Assert
-        CompletionDispatcher.Verify(p => p.FinishAsync(1), Times.Once);
-        CompletionDispatcher.Verify(p => p.FinishAsync(2), Times.Once);
-        CompletionDispatcher.Verify(p => p.FinishAsync(3), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(1), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(2), Times.Once);
+        completionDispatcher.Verify(p => p.FinishAsync(3), Times.Once);
     }
 
     [Fact]
-    public async Task Run_ShouldNotCallFinishAsync_WhenNoEndedConcerts()
+    public async Task RunAsync_ShouldNotCallFinishAsync_WhenNoEndedConcerts()
     {
         // Arrange
         concertRepository.Setup(r => r.GetEndedConfirmedIdsAsync()).ReturnsAsync([]);
 
         // Act
+        await sut.RunAsync();
+
+        // Assert
+        completionDispatcher.Verify(p => p.FinishAsync(It.IsAny<int>()), Times.Never);
+    }
+}
+
+public class ConcertFinishedFunctionTests
+{
+    [Fact]
+    public async Task Run_ShouldDelegateToRunner()
+    {
+        // Arrange
+        var runner = new Mock<IConcertCompletionRunner>();
+        var sut = new ConcertFinishedFunction(runner.Object);
+
+        // Act
         await sut.Run(null!);
 
         // Assert
-        CompletionDispatcher.Verify(p => p.FinishAsync(It.IsAny<int>()), Times.Never);
+        runner.Verify(r => r.RunAsync(default), Times.Once);
     }
 }

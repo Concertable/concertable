@@ -45,6 +45,10 @@ public class SeedData
     public DoorSplitContractEntity PostedDoorSplitAppContract { get; set; } = null!;
     public VersusContractEntity PostedVersusAppContract { get; set; } = null!;
     public VenueHireContractEntity PostedVenueHireAppContract { get; set; } = null!;
+    public VersusContractEntity PastVersusAppContract { get; set; } = null!;
+    public FlatFeeContractEntity PastFlatFeeAppContract { get; set; } = null!;
+    public VenueHireContractEntity PastVenueHireAppContract { get; set; } = null!;
+    public DoorSplitContractEntity PastDoorSplitAppContract { get; set; } = null!;
 
     // Pending applications (no booking)
     public ApplicationEntity FlatFeeApp { get; set; } = null!;
@@ -76,6 +80,18 @@ public class SeedData
 
     public ApplicationEntity FinishedVersusApp { get; set; } = null!;
     public BookingEntity FinishedVersusBooking { get; set; } = null!;
+
+    public ApplicationEntity PastVersusApp { get; set; } = null!;
+    public BookingEntity PastVersusBooking { get; set; } = null!;
+
+    public ApplicationEntity PastFlatFeeApp { get; set; } = null!;
+    public BookingEntity PastFlatFeeBooking { get; set; } = null!;
+
+    public ApplicationEntity PastVenueHireApp { get; set; } = null!;
+    public BookingEntity PastVenueHireBooking { get; set; } = null!;
+
+    public ApplicationEntity PastDoorSplitApp { get; set; } = null!;
+    public BookingEntity PastDoorSplitBooking { get; set; } = null!;
 
     public ApplicationEntity UpcomingFlatFeeApp { get; set; } = null!;
     public BookingEntity UpcomingFlatFeeBooking { get; set; } = null!;
