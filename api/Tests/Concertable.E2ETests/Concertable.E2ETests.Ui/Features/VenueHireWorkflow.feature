@@ -8,3 +8,4 @@ Feature: VenueHire workflow happy path
     And the artist applies to the venue hire opportunity with a valid card
     And the venue manager accepts the application
     Then a draft concert is created
+    And a payment hold of £300 is captured from the artist

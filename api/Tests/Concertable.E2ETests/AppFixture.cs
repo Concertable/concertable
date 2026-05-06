@@ -28,6 +28,8 @@ public class AppFixture : IAsyncLifetime
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
+    public StripeFixture Stripe { get; private set; } = null!;
+    public DateTime LastReset { get; private set; }
     public SeedDataResponse SeedData { get; private set; } = null!;
     public SqlFixture Sql { get; private set; } = null!;
 
@@ -67,7 +69,9 @@ public class AppFixture : IAsyncLifetime
         await stripeCli.InitializeAsync();
 
         builder.AddE2E(ApiBaseUrl, AuthBaseUrl, stripeCli.WebhookSecret);
-        StripePaymentIntents = new PaymentIntentService(new StripeClient(stripeCli.ApiKey));
+        var stripeClient = new StripeClient(stripeCli.ApiKey);
+        StripePaymentIntents = new PaymentIntentService(stripeClient);
+        Stripe = new StripeFixture(stripeClient, this);
 
         app = await builder.BuildAsync();
         await app.StartAsync();
@@ -84,6 +88,7 @@ public class AppFixture : IAsyncLifetime
 
     public async Task ResetAsync()
     {
+        LastReset = DateTime.UtcNow;
         await Sql.ResetAsync();
         var response = await Client.PostAsync("/e2e/reseed");
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
