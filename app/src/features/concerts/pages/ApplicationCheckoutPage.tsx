@@ -4,10 +4,7 @@ import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ConcertDraftCreatedPayload } from "@/features/notifications";
-import type {
-  Application,
-  Checkout,
-} from "../types";
+import type { Application, Checkout } from "../types";
 import {
   useAcceptApplicationMutation,
   useAcceptCheckoutQuery,
@@ -57,15 +54,46 @@ export function ApplicationCheckoutPage() {
   );
 }
 
-function ApplicationCheckoutForm({
-  applicationId,
-  application,
-  checkout,
-}: {
+interface Props {
+  artistName: string;
+}
+
+export function ApplicationCheckoutFlow({ artistName }: Readonly<Props>) {
+  const router = useRouter();
+  const flow = useCheckoutFlow<ConcertDraftCreatedPayload>({ event: "ConcertDraftCreated" });
+  const config = {
+    title: "Finalising acceptance",
+    timeoutTitle: "Still finalising",
+    pendingHint: "Your concert will appear in your dashboard",
+    steps: { first: "Acceptance confirmed", final: "Creating concert draft" },
+  };
+
+  return (
+    <CheckoutFlow
+      flow={flow}
+      {...config}
+      renderSuccess={(concertId) => (
+        <ApplicationCheckoutSuccess
+          artistName={artistName}
+          onView={() =>
+            void router.navigate({
+              to: "/venue/my/concerts/concert/$id",
+              params: { id: concertId },
+            })
+          }
+        />
+      )}
+    />
+  );
+}
+
+interface ApplicationCheckoutFormProps {
   applicationId: number;
   application: Application;
   checkout: Checkout;
-}) {
+}
+
+function ApplicationCheckoutForm({ applicationId, application, checkout }: ApplicationCheckoutFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const acceptMutation = useAcceptApplicationMutation(application.opportunity.id);
@@ -74,12 +102,7 @@ function ApplicationCheckoutForm({
   const isDeferred = checkout.timing === "Deferred";
 
   if (submitted)
-    return (
-      <ApplicationCheckoutResolution
-        artistName={artist.name}
-        firstStep={isDeferred ? "Card saved" : "Payment authorised"}
-      />
-    );
+    return <ApplicationCheckoutFlow artistName={artist.name} />;
 
   const summary = summaryFor(checkout.amount);
 
@@ -136,47 +159,12 @@ function ApplicationCheckoutForm({
   );
 }
 
-function ApplicationCheckoutResolution({
-  artistName,
-  firstStep,
-}: {
-  artistName: string;
-  firstStep: string;
-}) {
-  const router = useRouter();
-  const flow = useCheckoutFlow<ConcertDraftCreatedPayload>({
-    event: "ConcertDraftCreated",
-  });
-
-  return (
-    <CheckoutFlow
-      flow={flow}
-      title="Finalising acceptance"
-      timeoutTitle="Still finalising"
-      pendingHint="Your concert will appear in your dashboard"
-      steps={{ first: firstStep, final: "Creating concert draft" }}
-      renderSuccess={(concertId) => (
-        <ApplicationSuccess
-          artistName={artistName}
-          onView={() =>
-            void router.navigate({
-              to: "/venue/my/concerts/concert/$id",
-              params: { id: concertId },
-            })
-          }
-        />
-      )}
-    />
-  );
-}
-
-function ApplicationSuccess({
-  artistName,
-  onView,
-}: {
+interface ApplicationCheckoutSuccessProps {
   artistName: string;
   onView: () => void;
-}) {
+}
+
+function ApplicationCheckoutSuccess({ artistName, onView }: ApplicationCheckoutSuccessProps) {
   return (
     <CheckoutSuccess
       title="Application Accepted"

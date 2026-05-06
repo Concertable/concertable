@@ -7,6 +7,7 @@ import { opportunitiesQueryKey } from "@/features/concerts/hooks/useOpportunitie
 import type { Venue } from "../types";
 import type { Opportunity } from "@/features/concerts/types";
 import type { UseVenueResult } from "./useVenue";
+import { toast } from "sonner";
 
 interface UseMyVenueResult extends UseVenueResult {
   draft: Venue | undefined;
@@ -50,7 +51,9 @@ export function useMyVenue(): UseMyVenueResult {
       queryClient.setQueryData(["venue", "my"], saved);
       storeResetDraft(saved);
       resetOpportunities();
+      toast.success("Venue saved!");
     },
+    onError: () => toast.error("Failed to save venue."),
   });
 
   return {

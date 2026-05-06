@@ -30,16 +30,15 @@ export function ApplyCheckoutPage() {
       <div className="text-destructive p-6">Could not start checkout.</div>
     );
 
-  return <ApplyCheckoutForm opportunityId={opportunityId} checkout={checkout} />;
+  return <ApplyCheckoutFlow opportunityId={opportunityId} checkout={checkout} />;
 }
 
-function ApplyCheckoutForm({
-  opportunityId,
-  checkout,
-}: {
+interface Props {
   opportunityId: number;
   checkout: Checkout;
-}) {
+}
+
+export function ApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) {
   const [submitted, setSubmitted] = useState(false);
   const applyMutation = useMutation({
     mutationFn: (paymentMethodId: string) =>

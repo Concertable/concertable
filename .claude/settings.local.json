@@ -69,7 +69,10 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Tests\\\\Concertable.E2ETests\\\\Concertable.E2ETests.Ui\\\\Hooks\" -Filter \"*.cs\")",
       "Bash(Select-Object Name)",
       "Bash(grep -i \"\\\\.cs$\")",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\src\\\\features\" -Directory)"
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\src\\\\features\" -Directory)",
+      "Bash(del *)",
+      "Bash(dotnet restore *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Tests\" -Recurse -Filter \"*.cs\")"
     ]
   }
 }

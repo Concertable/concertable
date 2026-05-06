@@ -15,20 +15,16 @@ import { QuantitySelector } from "../components/checkout/QuantitySelector";
 import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
 import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
 import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
-import type { Concert } from "../types";
+import type { Concert, TicketCheckout } from "../types";
 
-export function ConcertCheckoutPage() {
+export function TicketCheckoutPage() {
   const { id } = useParams({ from: "/_customer/concert/checkout/$id" });
-  const router = useRouter();
   const { concert, isLoading, isError } = useConcert(id);
   const {
     data: checkout,
     isLoading: isCheckoutLoading,
     isError: isCheckoutError,
   } = useTicketCheckoutQuery(id);
-
-  const [quantity, setQuantity] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
 
   if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
   if (isError || !concert)
@@ -38,7 +34,50 @@ export function ConcertCheckoutPage() {
       <div className="text-destructive p-6">Could not start checkout.</div>
     );
 
-  if (submitted) return <ConcertCheckoutResolution concert={concert} />;
+  return <TicketCheckoutForm concert={concert} checkout={checkout} />;
+}
+
+const config = {
+  title: "Processing your payment",
+  timeoutTitle: "Still confirming your payment",
+  pendingHint: "Your tickets will appear in your profile",
+  steps: { first: "Payment authorised", final: "Issuing your tickets" },
+};
+
+interface Props {
+  concert: Concert;
+}
+
+export function TicketCheckoutFlow({ concert }: Readonly<Props>) {
+  const router = useRouter();
+  const flow = useCheckoutFlow<TicketPurchasedPayload>({ event: "TicketPurchased" });
+
+  return (
+    <CheckoutFlow
+      flow={flow}
+      {...config}
+      renderSuccess={(payload) => (
+        <TicketCheckoutSuccess
+          concert={concert}
+          ticketCount={payload.ticketIds.length}
+          onView={() => void router.navigate({ to: "/profile/tickets/upcoming" })}
+        />
+      )}
+    />
+  );
+}
+
+function TicketCheckoutForm({
+  concert,
+  checkout,
+}: {
+  concert: Concert;
+  checkout: TicketCheckout;
+}) {
+  const [quantity, setQuantity] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
+
+  if (submitted) return <TicketCheckoutFlow concert={concert} />;
 
   const total = concert.price * quantity;
 
@@ -84,33 +123,7 @@ export function ConcertCheckoutPage() {
   );
 }
 
-function ConcertCheckoutResolution({ concert }: { concert: Concert }) {
-  const router = useRouter();
-  const flow = useCheckoutFlow<TicketPurchasedPayload>({
-    event: "TicketPurchased",
-  });
-
-  return (
-    <CheckoutFlow
-      flow={flow}
-      title="Processing your payment"
-      timeoutTitle="Still confirming your payment"
-      pendingHint="Your tickets will appear in your profile"
-      steps={{ first: "Payment authorised", final: "Issuing your tickets" }}
-      renderSuccess={(payload) => (
-        <ConcertSuccess
-          concert={concert}
-          ticketCount={payload.ticketIds.length}
-          onView={() =>
-            void router.navigate({ to: "/profile/tickets/upcoming" })
-          }
-        />
-      )}
-    />
-  );
-}
-
-function ConcertSuccess({
+function TicketCheckoutSuccess({
   concert,
   ticketCount,
   onView,
