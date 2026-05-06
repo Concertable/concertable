@@ -13,7 +13,7 @@ public class HomePage
 
     private ILocator SignInLink => page.GetByTestId("header-login");
 
-    public Task GotoAsync() => page.GotoAsync(url);
+    public Task GotoAsync() => page.GotoAsync(url, new() { WaitUntil = WaitUntilState.DOMContentLoaded });
 
     public Task ClickSignInAsync() => SignInLink.ClickAsync();
 

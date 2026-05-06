@@ -23,6 +23,14 @@ public class UiFixture : IAsyncLifetime
             Headless = Environment.GetEnvironmentVariable("CI") == "true",
             SlowMo = Environment.GetEnvironmentVariable("CI") == "true" ? 0 : 250
         });
+        await WarmUpSpaAsync();
+    }
+
+    private async Task WarmUpSpaAsync()
+    {
+        await using var context = await Browser.NewContextAsync(new() { IgnoreHTTPSErrors = true });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(App.SpaBaseUrl, new() { Timeout = 120_000, WaitUntil = WaitUntilState.DOMContentLoaded });
     }
 
     public async Task DisposeAsync()

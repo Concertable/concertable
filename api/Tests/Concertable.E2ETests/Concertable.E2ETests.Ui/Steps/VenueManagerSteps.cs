@@ -66,6 +66,36 @@ public class VenueManagerSteps
         state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
     }
 
+    [When(@"the venue manager posts a door split opportunity for (\d+)% door")]
+    public async Task PostsDoorSplitOpportunity(int doorPercent)
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+
+        state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
+
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        await myVenuePage.GotoAsync();
+        await myVenuePage.PostDoorSplitOpportunityAsync(doorPercent);
+        await myVenuePage.WaitUntilSavedAsync();
+
+        state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
+    }
+
+    [When(@"the venue manager posts a versus opportunity for £(\d+) guarantee and (\d+)% door")]
+    public async Task PostsVersusOpportunity(int guarantee, int doorPercent)
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+
+        state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
+
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        await myVenuePage.GotoAsync();
+        await myVenuePage.PostVersusOpportunityAsync(guarantee, doorPercent);
+        await myVenuePage.WaitUntilSavedAsync();
+
+        state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
+    }
+
     [When(@"the venue manager accepts the application")]
     public async Task AcceptsApplication()
     {

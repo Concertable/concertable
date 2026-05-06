@@ -18,6 +18,9 @@ public class MyVenuePage
     private ILocator FlatFeeFeeInput => LastCardEdit.GetByTestId("contract-flatfee-fee");
     private ILocator ContractTypeSelect => LastCardEdit.GetByTestId("opportunity-contract-type");
     private ILocator VenueHireFeeInput => LastCardEdit.GetByTestId("contract-venuehire-fee");
+    private ILocator DoorSplitPercentInput => LastCardEdit.GetByTestId("contract-doorsplit-percent");
+    private ILocator VersusGuaranteeInput => LastCardEdit.GetByTestId("contract-versus-guarantee");
+    private ILocator VersusPercentInput => LastCardEdit.GetByTestId("contract-versus-percent");
 
     public Task GotoAsync() => page.GotoAsync(url);
 
@@ -38,6 +41,29 @@ public class MyVenuePage
         await ContractTypeSelect.ClickAsync();
         await page.GetByRole(AriaRole.Option, new() { Name = "Venue Hire" }).ClickAsync();
         await VenueHireFeeInput.FillAsync(fee.ToString());
+        await SaveButton.ClickAsync();
+    }
+
+    public async Task PostDoorSplitOpportunityAsync(int doorPercent)
+    {
+        await EditButton.ClickAsync();
+        await Assertions.Expect(EditButton).ToHaveTextAsync("Editing");
+        await AddOpportunityButton.ClickAsync();
+        await ContractTypeSelect.ClickAsync();
+        await page.GetByRole(AriaRole.Option, new() { Name = "Door Split" }).ClickAsync();
+        await DoorSplitPercentInput.FillAsync(doorPercent.ToString());
+        await SaveButton.ClickAsync();
+    }
+
+    public async Task PostVersusOpportunityAsync(int guarantee, int doorPercent)
+    {
+        await EditButton.ClickAsync();
+        await Assertions.Expect(EditButton).ToHaveTextAsync("Editing");
+        await AddOpportunityButton.ClickAsync();
+        await ContractTypeSelect.ClickAsync();
+        await page.GetByRole(AriaRole.Option, new() { Name = "Versus" }).ClickAsync();
+        await VersusGuaranteeInput.FillAsync(guarantee.ToString());
+        await VersusPercentInput.FillAsync(doorPercent.ToString());
         await SaveButton.ClickAsync();
     }
 
