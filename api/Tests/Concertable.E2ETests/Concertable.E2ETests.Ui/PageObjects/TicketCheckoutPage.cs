@@ -1,10 +1,17 @@
+using Concertable.E2ETests.Ui.Support;
+
 namespace Concertable.E2ETests.Ui.PageObjects;
 
 public class TicketCheckoutPage
 {
     private readonly IPage page;
+    private readonly StripePayment stripePayment;
 
-    public TicketCheckoutPage(IPage page) => this.page = page;
+    public TicketCheckoutPage(IPage page)
+    {
+        this.page = page;
+        stripePayment = new StripePayment(page);
+    }
 
     private ILocator ConfirmButton     => page.GetByTestId("confirm");
     private ILocator AwaitingScreen    => page.GetByTestId("checkout-awaiting");
@@ -14,6 +21,9 @@ public class TicketCheckoutPage
         page.Locator("[data-sonner-toast]").Filter(new() { HasText = text });
 
     public Task PayWithTestCardAsync() => ConfirmButton.ClickAsync();
+
+    public Task PayWithNewCardAsync(string cardNumber) =>
+        stripePayment.PayWithNewCardAsync(cardNumber);
 
     public Task WaitForAwaitingScreenAsync() =>
         Assertions.Expect(AwaitingScreen).ToBeVisibleAsync();

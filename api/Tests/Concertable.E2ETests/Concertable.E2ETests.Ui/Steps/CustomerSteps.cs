@@ -19,6 +19,21 @@ public class CustomerSteps
         this.browser = browser;
     }
 
+    [Given(@"the customer is on a concert detail page")]
+    public async Task GivenOnConcertDetailPage()
+    {
+        findPage = new FindPage(browser.Page, fixture.App.SpaBaseUrl);
+        await findPage.GotoAsync();
+        await findPage.OpenFilterPanelAsync();
+        await findPage.SelectHeaderTypeAsync("Concert");
+        await findPage.ApplyFiltersAsync();
+        await findPage.WaitForResultsAsync();
+        await findPage.ClickFirstResultAsync();
+        await browser.Page.WaitForURLAsync("**/find/concert/**");
+        concertDetailsPage = new ConcertDetailsPage(browser.Page);
+        await concertDetailsPage.WaitUntilLoadedAsync();
+    }
+
     [When(@"the customer opens the filter panel on the find page")]
     public async Task OpensFilterPanelOnFindPage()
     {
@@ -81,6 +96,10 @@ public class CustomerSteps
     [When(@"the customer pays with a test card and confirms")]
     public Task PaysWithTestCard() =>
         checkoutPage.PayWithTestCardAsync();
+
+    [When(@"the customer pays with a new card and confirms")]
+    public Task PaysWithNewCard() =>
+        checkoutPage.PayWithNewCardAsync(StripeCards.Success);
 
     [Then(@"the checkout awaiting screen should be visible")]
     public Task CheckoutAwaitingVisible() =>

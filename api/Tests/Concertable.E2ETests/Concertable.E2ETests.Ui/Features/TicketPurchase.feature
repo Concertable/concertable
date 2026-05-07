@@ -29,3 +29,19 @@ Feature: Ticket purchase happy path
     When the customer opens the QR code
     Then the QR dialog should be visible
     And the QR image should be present
+
+  @Customer
+  Scenario: Customer purchases a ticket using a new card and views the QR code
+    Given the customer is on a concert detail page
+    When the customer clicks buy tickets
+    Then the customer should be on the checkout page
+    When the customer pays with a new card and confirms
+    Then the checkout awaiting screen should be visible
+    And the checkout success screen should be visible
+    And a ticket purchased toast should appear
+    When the customer clicks view tickets
+    Then the customer should be on the upcoming tickets page
+    And a ticket card should be listed
+    When the customer opens the QR code
+    Then the QR dialog should be visible
+    And the QR image should be present
