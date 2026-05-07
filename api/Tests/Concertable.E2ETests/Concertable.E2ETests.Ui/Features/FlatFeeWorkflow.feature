@@ -9,3 +9,9 @@ Feature: FlatFee workflow happy path
     And the artist applies to the opportunity
     And the venue manager accepts the application with a valid card
     Then a draft concert is created
+
+  @VenueManager
+  Scenario: Venue manager books artist on a flat fee with a new card
+    Given a flat fee opportunity has been applied to
+    When the venue manager pays the flat fee with a new card
+    Then a draft concert is created

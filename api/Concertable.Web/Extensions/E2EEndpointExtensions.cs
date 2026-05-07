@@ -18,6 +18,7 @@ public static class E2EEndpointExtensions
                 Customer = new SeedUser { Id = seedData.Customer.Id, Email = seedData.Customer.Email },
                 VenueManager1 = new SeedVenueManager { Id = seedData.VenueManager1.Id, Email = seedData.VenueManager1.Email, StripeAccountId = seedData.VenueManager1StripeAccountId, VenueId = seedData.Venue.Id },
                 ArtistManager1 = new SeedArtistManager { Id = seedData.ArtistManager1.Id, Email = seedData.ArtistManager1.Email, StripeAccountId = seedData.ArtistManager1StripeAccountId, StripeCustomerId = seedData.ArtistManager1StripeCustomerId },
+                FreshVenueHireOpportunity = new SeedOpportunity { OpportunityId = seedData.FreshVenueHireOpportunity.Id, VenueId = seedData.FreshVenueHireOpportunity.VenueId },
                 PendingFlatFeeApp = new SeedApplication { ApplicationId = seedData.FlatFeeApp.Id },
                 PendingVenueHireApp = new SeedApplication { ApplicationId = seedData.VenueHireApp.Id },
                 PendingDoorSplitApp = new SeedApplication { ApplicationId = seedData.DoorSplitApp.Id },

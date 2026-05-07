@@ -49,6 +49,29 @@ public class ArtistSteps
         state.ApplicationId = await FetchNewestApplicationIdAsync(state.OpportunityId);
     }
 
+    [Given(@"a venue hire opportunity is open for application")]
+    public async Task AVenueHireOpportunityIsOpen()
+    {
+        await browser.UseRoleAsync(Role.ArtistManager);
+
+        var opp = fixture.App.SeedData.FreshVenueHireOpportunity;
+        state.VenueId = opp.VenueId;
+        state.OpportunityId = opp.OpportunityId;
+
+        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/artist/opportunity/checkout/{state.OpportunityId}");
+    }
+
+    [When(@"the artist pays the venue hire fee with a new card")]
+    public async Task PaysVenueHireFeeWithNewCard()
+    {
+        var applyCheckoutPage = new ApplyCheckoutPage(browser.Page);
+        var applied = browser.Page.WaitForResponseAsync($"**/application/{state.OpportunityId}");
+        await applyCheckoutPage.PayWithNewCardAsync(StripeCards.Success);
+        await applied;
+
+        state.ApplicationId = await FetchNewestApplicationIdAsync(state.OpportunityId);
+    }
+
     [Then(@"the application is created")]
     public Task ApplicationIsCreated() => venuePage.WaitUntilAppliedAsync(state.OpportunityId);
 

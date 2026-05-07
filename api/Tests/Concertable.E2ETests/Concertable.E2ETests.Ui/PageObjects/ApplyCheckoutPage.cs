@@ -5,26 +5,23 @@ namespace Concertable.E2ETests.Ui.PageObjects;
 public class ApplyCheckoutPage
 {
     private readonly IPage page;
-    private readonly StripeIframe stripe;
+    private readonly StripePayment payment;
 
     public ApplyCheckoutPage(IPage page)
     {
         this.page = page;
-        stripe = new StripeIframe(page);
+        payment = new StripePayment(page);
     }
-
-    private ILocator ConfirmButton => page.GetByTestId("confirm");
 
     public async Task PayWithNewCardAsync(string cardNumber)
     {
         await page.WaitForURLAsync("**/artist/opportunity/checkout/**");
-        await stripe.FillCardAsync(cardNumber);
-        await ConfirmButton.ClickAsync();
+        await payment.PayWithNewCardAsync(cardNumber);
     }
 
     public async Task PayWithSavedCardAsync()
     {
         await page.WaitForURLAsync("**/artist/opportunity/checkout/**");
-        await ConfirmButton.ClickAsync();
+        await payment.PayWithSavedCardAsync();
     }
 }

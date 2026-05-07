@@ -107,6 +107,21 @@ public class VenueManagerSteps
         await acceptPage.ClickConfirmAsync();
     }
 
+    [Given(@"a flat fee opportunity has been applied to")]
+    public async Task AFlatFeeOpportunityHasBeenAppliedTo()
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+        state.ApplicationId = fixture.App.SeedData.PendingFlatFeeApp.ApplicationId;
+        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+    }
+
+    [When(@"the venue manager pays the flat fee with a new card")]
+    public async Task PaysWithNewCard()
+    {
+        var checkoutPage = new ApplicationCheckoutPage(browser.Page);
+        await checkoutPage.PayWithNewCardAsync(StripeCards.Success);
+    }
+
     [Then(@"a draft concert is created")]
     public Task DraftConcertCreated() =>
         browser.Page.WaitForURLAsync("**/venue/my/concerts/concert/**");

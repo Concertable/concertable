@@ -4,6 +4,7 @@ using Aspire.Hosting.Testing;
 using Concertable.Seeding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stripe;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
@@ -32,6 +33,7 @@ public class AppFixture : IAsyncLifetime
     public SqlFixture Sql { get; private set; } = null!;
     public TestDb Db { get; private set; } = null!;
 
+    public AppFixture() : this(NullLoggerFactory.Instance) { }
     public AppFixture(IMessageSink messageSink) : this(BuildMessageSinkLoggerFactory(messageSink)) { }
 
     private AppFixture(ILoggerFactory loggerFactory)

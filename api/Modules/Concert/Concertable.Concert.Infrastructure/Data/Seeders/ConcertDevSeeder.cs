@@ -199,6 +199,8 @@ internal class ConcertDevSeeder : IDevSeeder
             seed.PostedVenueHireBooking = BookingFactory.Complete(ConcertFaker.GetFaker("VenueHire Spectacular", 30m, 200, 180, 1, seed.Opportunities[20].VenueId, seed.Opportunities[20].Period.Start, seed.Opportunities[20].Period.End, now.AddDays(-40)).Generate());
             seed.PostedVenueHireApp = ApplicationFactory.AcceptedPrepaid(1, 21, seed.PostedVenueHireBooking);
 
+            seed.FreshVenueHireOpportunity = seed.Opportunities[62];
+
             seed.DoorSplitApp = ApplicationFactory.Create(1, 56);
             seed.VersusApp = ApplicationFactory.Create(1, 57);
             seed.VenueHireApp = ApplicationFactory.CreatePrepaid(1, 52);

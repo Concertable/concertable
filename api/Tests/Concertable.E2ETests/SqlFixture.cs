@@ -16,7 +16,8 @@ public class SqlFixture
     public async Task InitializeAsync(DistributedApplication app)
     {
         var connectionString = await app.GetConnectionStringAsync("DefaultConnection");
-        connection = new SqlConnection(connectionString);
+        var builder = new SqlConnectionStringBuilder(connectionString) { MultipleActiveResultSets = true };
+        connection = new SqlConnection(builder.ConnectionString);
         await connection.OpenAsync();
 
         respawner = await Respawner.CreateAsync(connection, new RespawnerOptions

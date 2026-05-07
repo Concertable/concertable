@@ -50,6 +50,8 @@ public class SeedData
     public VenueHireContractEntity PastVenueHireAppContract { get; set; } = null!;
     public DoorSplitContractEntity PastDoorSplitAppContract { get; set; } = null!;
 
+    public OpportunityEntity FreshVenueHireOpportunity { get; set; } = null!;
+
     // Pending applications (no booking)
     public ApplicationEntity FlatFeeApp { get; set; } = null!;
     public ApplicationEntity VersusApp { get; set; } = null!;

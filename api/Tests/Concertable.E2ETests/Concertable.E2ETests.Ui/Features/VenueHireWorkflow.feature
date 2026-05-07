@@ -9,3 +9,11 @@ Feature: VenueHire workflow happy path
     And the venue manager accepts the application
     Then a draft concert is created
     And a payment hold of £300 is captured from the artist
+
+  @VenueManager
+  Scenario: Artist pays hire fee upfront with a new card
+    Given a venue hire opportunity is open for application
+    When the artist pays the venue hire fee with a new card
+    And the venue manager accepts the application
+    Then a draft concert is created
+    And a payment hold of £250 is captured from the artist

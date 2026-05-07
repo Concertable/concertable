@@ -11,7 +11,6 @@ public class UiFixture : IAsyncLifetime
     public IBrowser Browser { get; private set; } = null!;
 
     public UiFixture() => App = new AppFixture();
-
     public UiFixture(IMessageSink messageSink) => App = new AppFixture(messageSink);
 
     public async Task InitializeAsync()
