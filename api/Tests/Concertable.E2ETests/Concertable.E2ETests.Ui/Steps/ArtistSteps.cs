@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Concertable.E2ETests.Ui.PageObjects;
 using Concertable.E2ETests.Ui.Support;
 
@@ -26,10 +25,12 @@ public class ArtistSteps
 
         venuePage = new ArtistVenueDetailsPage(browser.Page, fixture.App.SpaBaseUrl);
         await venuePage.GotoAsync(state.VenueId);
-        await venuePage.ApplyAsync(state.OpportunityId);
-        await venuePage.WaitUntilAppliedAsync(state.OpportunityId);
 
-        state.ApplicationId = await FetchNewestApplicationIdAsync(state.OpportunityId);
+        var applied = browser.Page.WaitForResponseAsync($"**/api/application/{state.OpportunityId}");
+        await venuePage.ApplyAsync(state.OpportunityId);
+        state.ApplicationId = await ReadApplicationIdAsync(await applied);
+
+        await venuePage.WaitUntilAppliedAsync(state.OpportunityId);
     }
 
     [When(@"the artist applies to the venue hire opportunity with a valid card")]
@@ -42,11 +43,9 @@ public class ArtistSteps
         await venuePage.ApplyAsync(state.OpportunityId);
 
         var applyCheckoutPage = new ApplyCheckoutPage(browser.Page);
-        var applied = browser.Page.WaitForResponseAsync($"**/application/{state.OpportunityId}");
+        var applied = browser.Page.WaitForResponseAsync($"**/api/application/{state.OpportunityId}");
         await applyCheckoutPage.PayWithSavedCardAsync();
-        await applied;
-
-        state.ApplicationId = await FetchNewestApplicationIdAsync(state.OpportunityId);
+        state.ApplicationId = await ReadApplicationIdAsync(await applied);
     }
 
     [Given(@"a venue hire opportunity is open for application")]
@@ -65,24 +64,17 @@ public class ArtistSteps
     public async Task PaysVenueHireFeeWithNewCard()
     {
         var applyCheckoutPage = new ApplyCheckoutPage(browser.Page);
-        var applied = browser.Page.WaitForResponseAsync($"**/application/{state.OpportunityId}");
+        var applied = browser.Page.WaitForResponseAsync($"**/api/application/{state.OpportunityId}");
         await applyCheckoutPage.PayWithNewCardAsync(StripeCards.Success);
-        await applied;
-
-        state.ApplicationId = await FetchNewestApplicationIdAsync(state.OpportunityId);
+        state.ApplicationId = await ReadApplicationIdAsync(await applied);
     }
 
     [Then(@"the application is created")]
     public Task ApplicationIsCreated() => venuePage.WaitUntilAppliedAsync(state.OpportunityId);
 
-    private async Task<int> FetchNewestApplicationIdAsync(int opportunityId)
+    private static async Task<int> ReadApplicationIdAsync(IResponse response)
     {
-        var seed = fixture.App.SeedData;
-        using var client = await fixture.App.CreateAuthenticatedClientAsync(seed.VenueManager1.Email);
-        var json = await client.GetStringAsync($"/api/application/opportunity/{opportunityId}");
-        using var doc = JsonDocument.Parse(json);
-        return doc.RootElement.EnumerateArray()
-            .Select(a => a.GetProperty("id").GetInt32())
-            .Max();
+        var json = await response.JsonAsync();
+        return json!.Value.GetProperty("id").GetInt32();
     }
 }
