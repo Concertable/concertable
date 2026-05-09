@@ -104,7 +104,7 @@ export function ApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) 
         />
       </CheckoutSection>
       {applyMutation.error && (
-        <p className="text-destructive text-sm">{applyMutation.error.message}</p>
+        <p data-testid="payment-error" className="text-destructive text-sm">{applyMutation.error.message}</p>
       )}
     </CheckoutLayout>
   );

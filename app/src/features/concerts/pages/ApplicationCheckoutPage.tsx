@@ -154,7 +154,7 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Appli
           onSuccess={handleAccept}
         />
       </CheckoutSection>
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p data-testid="payment-error" className="text-destructive text-sm">{error}</p>}
     </CheckoutLayout>
   );
 }

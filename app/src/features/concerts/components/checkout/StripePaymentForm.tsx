@@ -90,7 +90,7 @@ function Form({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement options={{ layout: "tabs" }} />
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p data-testid="payment-error" className="text-destructive text-sm">{error}</p>}
       <Button
         type="submit"
         className="w-full"

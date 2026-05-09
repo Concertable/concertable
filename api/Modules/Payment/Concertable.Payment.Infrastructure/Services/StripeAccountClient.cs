@@ -154,7 +154,11 @@ internal class StripeAccountClient : IStripeAccountClient
         var intent = await setupIntentService.CreateAsync(new SetupIntentCreateOptions
         {
             Customer = stripeCustomerId,
-            PaymentMethodTypes = ["card"],
+            AutomaticPaymentMethods = new SetupIntentAutomaticPaymentMethodsOptions
+            {
+                Enabled = true,
+                AllowRedirects = "never",
+            },
             Usage = "off_session",
             Metadata = metadata.ToDictionary(kv => kv.Key, kv => kv.Value),
         }, cancellationToken: ct);

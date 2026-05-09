@@ -5,12 +5,12 @@ namespace Concertable.E2ETests.Ui.PageObjects;
 public class ApplicationCheckoutPage
 {
     private readonly IPage page;
-    private readonly StripePayment payment;
+    private readonly IStripePayment payment;
 
-    public ApplicationCheckoutPage(IPage page)
+    public ApplicationCheckoutPage(IPage page, IStripePayment payment)
     {
         this.page = page;
-        payment = new StripePayment(page);
+        this.payment = payment;
     }
 
     public Task PayWithSavedCardAsync() => payment.PayWithSavedCardAsync();

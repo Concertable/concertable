@@ -8,15 +8,20 @@ public class CustomerSteps
 {
     private readonly UiFixture fixture;
     private readonly Browser browser;
+    private readonly IStripePayment payment;
     private FindPage findPage = null!;
     private ConcertDetailsPage concertDetailsPage = null!;
     private TicketCheckoutPage checkoutPage = null!;
     private CustomerUpcomingTicketsPage upcomingTicketsPage = null!;
 
-    public CustomerSteps(UiFixture fixture, Browser browser)
+    public CustomerSteps(
+        UiFixture fixture,
+        Browser browser,
+        IStripePayment payment)
     {
         this.fixture = fixture;
         this.browser = browser;
+        this.payment = payment;
     }
 
     [Given(@"the customer is on a concert detail page")]
@@ -90,7 +95,7 @@ public class CustomerSteps
     public async Task OnCheckoutPage()
     {
         await browser.Page.WaitForURLAsync("**/concert/checkout/**");
-        checkoutPage = new TicketCheckoutPage(browser.Page);
+        checkoutPage = new TicketCheckoutPage(browser.Page, payment);
     }
 
     [When(@"the customer pays with a test card and confirms")]
@@ -100,6 +105,24 @@ public class CustomerSteps
     [When(@"the customer pays with a new card and confirms")]
     public Task PaysWithNewCard() =>
         checkoutPage.PayWithNewCardAsync(StripeCards.Success);
+
+    [When(@"the customer pays with a declined card")]
+    public Task PaysWithDeclinedCard() =>
+        checkoutPage.PayWithNewCardAsync(StripeCards.Decline);
+
+    [When(@"the customer pays with a 3DS card")]
+    public async Task PaysWith3dsCard()
+    {
+        await checkoutPage.PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.CompleteChallengeAsync();
+    }
+
+    [When(@"the customer pays with a 3DS-failing card")]
+    public async Task PaysWith3dsFailingCard()
+    {
+        await checkoutPage.PayWithNewCardAsync(StripeCards.Insufficient3ds);
+        await payment.CompleteChallengeAsync();
+    }
 
     [Then(@"the checkout awaiting screen should be visible")]
     public Task CheckoutAwaitingVisible() =>

@@ -15,3 +15,21 @@ Feature: FlatFee workflow happy path
     Given a flat fee opportunity has been applied to
     When the venue manager pays the flat fee with a new card
     Then a draft concert is created
+
+  @VenueManager @PaymentFailure
+  Scenario: Venue manager flat fee attempt is declined
+    Given a flat fee opportunity has been applied to
+    When the venue manager pays the flat fee with a declined card
+    Then the payment is rejected
+
+  @VenueManager @PaymentFailure
+  Scenario: Venue manager completes 3DS challenge on flat fee
+    Given a flat fee opportunity has been applied to
+    When the venue manager pays the flat fee with a 3DS card
+    Then a draft concert is created
+
+  @VenueManager @PaymentFailure
+  Scenario: Venue manager 3DS authentication fails on flat fee
+    Given a flat fee opportunity has been applied to
+    When the venue manager pays the flat fee with a 3DS-failing card
+    Then the payment is rejected

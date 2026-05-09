@@ -1,61 +1,24 @@
 namespace Concertable.E2ETests.Ui.Support;
 
-public static class StripeCards
+internal sealed class StripePayment(Browser browser, StripeCardEntry cardEntry) : IStripePayment
 {
-    public const string Success = "4242424242424242";
-    public const string Requires3ds = "4000002500003155";
-    public const string Decline = "4000000000000002";
-    public const string Insufficient3ds = "4000008400001629";
-}
+    private IPage Page => browser.Page;
 
-public class StripePayment
-{
-    private readonly IPage page;
+    public Task PayWithSavedCardAsync() => cardEntry.PayWithSavedCardAsync();
+    public Task PayWithNewCardAsync(string cardNumber) => cardEntry.PayWithNewCardAsync(cardNumber);
 
-    public StripePayment(IPage page) => this.page = page;
-
-    // Card inputs (and tab strip when a saved card is present) are always rendered inside
-    // elements-inner-accessory-target. elements-inner-easel is the Stripe developer tools
-    // frame and never contains card inputs.
-    private IFrameLocator CardForm =>
-        page.FrameLocator("iframe[src*='elements-inner-accessory-target']");
-
-    private ILocator CardTab => CardForm.GetByText("Card", new() { Exact = true });
-    private ILocator ConfirmButton => page.GetByTestId("confirm");
-
-    public Task PayWithSavedCardAsync() => ConfirmButton.ClickAsync();
-
-    public async Task PayWithNewCardAsync(string cardNumber)
+    public async Task CompleteChallengeAsync()
     {
-        await CardTab.ClickAsync();
-        await FillCardAsync(cardNumber);
-        await ConfirmButton.ClickAsync();
-    }
+        var outer = Page.Locator("iframe[src*='three-ds-2-challenge']");
+        await outer.WaitForAsync(new() { State = WaitForSelectorState.Attached, Timeout = 30_000 });
 
-    public Task Complete3dsChallengeAsync() =>
-        CardForm.FrameLocator("iframe")
-            .GetByText("Complete authentication")
-            .ClickAsync(new() { Timeout = 15000 });
+        var challengeFrame = outer.ContentFrame.Locator("#challengeFrame");
+        await challengeFrame.WaitForAsync(new() { Timeout = 30_000 });
 
-    private async Task FillCardAsync(string cardNumber)
-    {
-        var number = CardForm.Locator("[name='number']");
-        var expiry = CardForm.Locator("[autocomplete='cc-exp']");
-        var cvc = CardForm.Locator("[autocomplete='cc-csc']");
-        var postalCode = CardForm.Locator("[name='postalCode']");
+        var button = challengeFrame.ContentFrame.Locator("#test-source-authorize-3ds");
+        await button.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 30_000 });
 
-        await number.ClickAsync();
-        await number.PressSequentiallyAsync(cardNumber, new() { Delay = 30 });
-        await number.PressAsync("Tab");
-
-        await expiry.ClickAsync();
-        await expiry.PressSequentiallyAsync("1230", new() { Delay = 30 });
-        await expiry.PressAsync("Tab");
-
-        await cvc.ClickAsync();
-        await cvc.PressSequentiallyAsync("123", new() { Delay = 30 });
-
-        if (await postalCode.CountAsync() > 0)
-            await postalCode.FillAsync("12345");
+        await button.EvaluateAsync("el => el.click()");
+        await outer.WaitForAsync(new() { State = WaitForSelectorState.Detached, Timeout = 30_000 });
     }
 }

@@ -9,13 +9,19 @@ public class VenueManagerSteps
     private readonly UiFixture fixture;
     private readonly Browser browser;
     private readonly WorkflowState state;
+    private readonly IStripePayment payment;
     private MyVenuePage myVenuePage = null!;
 
-    public VenueManagerSteps(UiFixture fixture, Browser browser, WorkflowState state)
+    public VenueManagerSteps(
+        UiFixture fixture,
+        Browser browser,
+        WorkflowState state,
+        IStripePayment payment)
     {
         this.fixture = fixture;
         this.browser = browser;
         this.state = state;
+        this.payment = payment;
     }
 
     [When(@"the venue manager posts a flat fee opportunity for £(\d+)")]
@@ -45,7 +51,7 @@ public class VenueManagerSteps
         var acceptPage = new AcceptApplicationPage(browser.Page);
         await acceptPage.ClickConfirmAsync();
 
-        var checkoutPage = new ApplicationCheckoutPage(browser.Page);
+        var checkoutPage = new ApplicationCheckoutPage(browser.Page, payment);
         await checkoutPage.PayWithSavedCardAsync();
     }
 
@@ -115,11 +121,67 @@ public class VenueManagerSteps
         await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
     }
 
+    [Given(@"a door split opportunity has been applied to")]
+    public async Task ADoorSplitOpportunityHasBeenAppliedTo()
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+        state.ApplicationId = fixture.App.SeedData.PendingDoorSplitApp.ApplicationId;
+        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+    }
+
+    [Given(@"a versus opportunity has been applied to")]
+    public async Task AVersusOpportunityHasBeenAppliedTo()
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+        state.ApplicationId = fixture.App.SeedData.PendingVersusApp.ApplicationId;
+        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+    }
+
     [When(@"the venue manager pays the flat fee with a new card")]
     public async Task PaysWithNewCard()
     {
-        var checkoutPage = new ApplicationCheckoutPage(browser.Page);
+        var checkoutPage = new ApplicationCheckoutPage(browser.Page, payment);
         await checkoutPage.PayWithNewCardAsync(StripeCards.Success);
+    }
+
+    [When(@"the venue manager pays the flat fee with a declined card")]
+    public Task PaysFlatFeeWithDeclinedCard() =>
+        new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Decline);
+
+    [When(@"the venue manager pays the flat fee with a 3DS card")]
+    public async Task PaysFlatFeeWith3dsCard()
+    {
+        await new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.CompleteChallengeAsync();
+    }
+
+    [When(@"the venue manager pays the flat fee with a 3DS-failing card")]
+    public async Task PaysFlatFeeWith3dsFailingCard()
+    {
+        await new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Insufficient3ds);
+        await payment.CompleteChallengeAsync();
+    }
+
+    [When(@"the venue manager registers a card with a new card")]
+    public Task RegistersCardWithNewCard() =>
+        new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Success);
+
+    [When(@"the venue manager registers a card with a declined card")]
+    public Task RegistersCardWithDeclinedCard() =>
+        new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Decline);
+
+    [When(@"the venue manager registers a card with a 3DS card")]
+    public async Task RegistersCardWith3dsCard()
+    {
+        await new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.CompleteChallengeAsync();
+    }
+
+    [When(@"the venue manager registers a card with a 3DS-failing card")]
+    public async Task RegistersCardWith3dsFailingCard()
+    {
+        await new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Setup3dsAuthFailure);
+        await payment.CompleteChallengeAsync();
     }
 
     [Then(@"a draft concert is created")]

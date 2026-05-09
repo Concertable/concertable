@@ -20,7 +20,12 @@ public class UiFixture : IAsyncLifetime
         Browser = await playwright.Chromium.LaunchAsync(new()
         {
             Headless = Environment.GetEnvironmentVariable("CI") == "true",
-            SlowMo = Environment.GetEnvironmentVariable("CI") == "true" ? 0 : 250
+            SlowMo = Environment.GetEnvironmentVariable("CI") == "true" ? 0 : 250,
+            Args = new[]
+            {
+                "--disable-features=IsolateOrigins,site-per-process",
+                "--disable-site-isolation-trials",
+            }
         });
         await WarmUpSpaAsync();
     }

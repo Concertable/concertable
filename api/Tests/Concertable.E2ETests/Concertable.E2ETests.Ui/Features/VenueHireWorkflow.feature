@@ -17,3 +17,22 @@ Feature: VenueHire workflow happy path
     And the venue manager accepts the application
     Then a draft concert is created
     And a payment hold of £250 is captured from the artist
+
+  @VenueManager @PaymentFailure
+  Scenario: Artist venue hire attempt is declined
+    Given a venue hire opportunity is open for application
+    When the artist pays the venue hire fee with a declined card
+    Then the payment is rejected
+
+  @VenueManager @PaymentFailure
+  Scenario: Artist completes 3DS challenge on venue hire
+    Given a venue hire opportunity is open for application
+    When the artist pays the venue hire fee with a 3DS card
+    And the venue manager accepts the application
+    Then a draft concert is created
+
+  @VenueManager @PaymentFailure
+  Scenario: Artist 3DS authentication fails on venue hire
+    Given a venue hire opportunity is open for application
+    When the artist pays the venue hire fee with a 3DS-failing card
+    Then the payment is rejected

@@ -45,3 +45,29 @@ Feature: Ticket purchase happy path
     When the customer opens the QR code
     Then the QR dialog should be visible
     And the QR image should be present
+
+  @Customer @PaymentFailure
+  Scenario: Customer purchase is declined
+    Given the customer is on a concert detail page
+    When the customer clicks buy tickets
+    Then the customer should be on the checkout page
+    When the customer pays with a declined card
+    Then the payment is rejected
+
+  @Customer @PaymentFailure
+  Scenario: Customer completes 3DS challenge
+    Given the customer is on a concert detail page
+    When the customer clicks buy tickets
+    Then the customer should be on the checkout page
+    When the customer pays with a 3DS card
+    Then the checkout awaiting screen should be visible
+    And the checkout success screen should be visible
+    And a ticket purchased toast should appear
+
+  @Customer @PaymentFailure
+  Scenario: Customer 3DS authentication fails
+    Given the customer is on a concert detail page
+    When the customer clicks buy tickets
+    Then the customer should be on the checkout page
+    When the customer pays with a 3DS-failing card
+    Then the payment is rejected

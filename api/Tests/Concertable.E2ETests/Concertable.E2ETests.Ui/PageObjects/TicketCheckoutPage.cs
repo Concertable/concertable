@@ -5,12 +5,12 @@ namespace Concertable.E2ETests.Ui.PageObjects;
 public class TicketCheckoutPage
 {
     private readonly IPage page;
-    private readonly StripePayment stripePayment;
+    private readonly IStripePayment payment;
 
-    public TicketCheckoutPage(IPage page)
+    public TicketCheckoutPage(IPage page, IStripePayment payment)
     {
         this.page = page;
-        stripePayment = new StripePayment(page);
+        this.payment = payment;
     }
 
     private ILocator ConfirmButton     => page.GetByTestId("confirm");
@@ -23,10 +23,10 @@ public class TicketCheckoutPage
     public Task PayWithTestCardAsync() => ConfirmButton.ClickAsync();
 
     public Task PayWithNewCardAsync(string cardNumber) =>
-        stripePayment.PayWithNewCardAsync(cardNumber);
+        payment.PayWithNewCardAsync(cardNumber);
 
     public Task WaitForAwaitingScreenAsync() =>
-        Assertions.Expect(AwaitingScreen).ToBeVisibleAsync();
+        Assertions.Expect(AwaitingScreen).ToBeVisibleAsync(new() { Timeout = 30_000 });
 
     public Task WaitForSuccessScreenAsync() =>
         Assertions.Expect(SuccessScreen).ToBeVisibleAsync(new() { Timeout = 30_000 });
