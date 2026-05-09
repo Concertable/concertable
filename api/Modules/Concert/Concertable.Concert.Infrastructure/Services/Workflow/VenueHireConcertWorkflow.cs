@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Enums;
+using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -31,11 +31,8 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
         this.currentUser = currentUser;
     }
 
-    public async Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId)
-    {
-        await managerPaymentModule.VerifyAndVoidAsync(currentUser.GetId(), paymentMethodId);
-        return PrepaidApplication.Create(artistId, opportunityId, paymentMethodId);
-    }
+    public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId)
+        => Task.FromResult<ApplicationEntity>(PrepaidApplication.Create(artistId, opportunityId, paymentMethodId));
 
     public async Task<Checkout> CheckoutAsync(int opportunityId)
     {
@@ -50,7 +47,7 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
         };
 
         var session = await managerPaymentModule.CreateSetupSessionAsync(currentUser.GetId(), metadata);
-        return new Checkout(PaymentTiming.Authorize, new FlatPayment(contract.HireFee), venue, session);
+        return new Checkout(new FlatPayment(contract.HireFee), venue, session, CheckoutLabels.Charge);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId)

@@ -61,6 +61,8 @@ public class AppFixture : IAsyncLifetime
     {
         logger.LogInformation("Initializing E2E test fixture");
 
+        await DockerLeakReaper.ReapAsync();
+
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 

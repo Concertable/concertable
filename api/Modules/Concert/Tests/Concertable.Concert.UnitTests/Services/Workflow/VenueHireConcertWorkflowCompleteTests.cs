@@ -38,15 +38,4 @@ public class VenueHireConcertWorkflowCompleteTests
         upfrontConcertService.Verify(s => s.FinishedAsync(10), Times.Once);
     }
 
-    [Fact]
-    public async Task ApplyAsync_ShouldThrow_WhenVerifyFails()
-    {
-        // Arrange
-        managerPaymentModule
-            .Setup(m => m.VerifyAndVoidAsync(userId, "pm_bad", default))
-            .ThrowsAsync(new BadRequestException("Your card was declined."));
-
-        // Act + Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => sut.ApplyAsync(1, 1, "pm_bad"));
-    }
 }

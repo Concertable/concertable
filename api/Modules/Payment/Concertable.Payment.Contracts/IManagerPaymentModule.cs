@@ -13,9 +13,9 @@ public interface IManagerPaymentModule
         int bookingId,
         CancellationToken ct = default);
 
-    Task<CheckoutSession> CreatePaymentSessionAsync(
+    Task<PaymentResponse> VerifyAndVoidAsync(
         Guid payerId,
-        IDictionary<string, string> metadata,
+        string paymentMethodId,
         CancellationToken ct = default);
 
     Task<CheckoutSession> CreateSetupSessionAsync(
@@ -23,8 +23,4 @@ public interface IManagerPaymentModule
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
 
-    Task VerifyAndVoidAsync(
-        Guid payerId,
-        string paymentMethodId,
-        CancellationToken ct = default);
 }

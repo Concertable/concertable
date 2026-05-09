@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import {
   useAcceptCheckoutQuery,
   useApplicationQuery,
 } from "../hooks/useApplicationQuery";
-import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
+import { useCheckoutFlow, type CheckoutFlowState } from "../hooks/useCheckoutFlow";
 import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
 import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
 import { CheckoutSection } from "../components/checkout/CheckoutSection";
@@ -56,11 +56,17 @@ export function ApplicationCheckoutPage() {
 
 interface Props {
   artistName: string;
+  flow: CheckoutFlowState<ConcertDraftCreatedPayload>;
 }
 
-export function ApplicationCheckoutFlow({ artistName }: Readonly<Props>) {
+export function ApplicationCheckoutFlow({ artistName, flow }: Readonly<Props>) {
   const router = useRouter();
-  const flow = useCheckoutFlow<ConcertDraftCreatedPayload>({ event: "ConcertDraftCreated" });
+
+  useEffect(() => {
+    if (flow.phase === "success")
+      void router.navigate({ to: "/venue/my/concerts/concert/$id", params: { id: flow.result } });
+  }, [flow, router]);
+
   const config = {
     title: "Finalising acceptance",
     timeoutTitle: "Still finalising",
@@ -97,12 +103,13 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Appli
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const acceptMutation = useAcceptApplicationMutation(application.opportunity.id);
+  const flow = useCheckoutFlow<ConcertDraftCreatedPayload>({ event: "ConcertDraftCreated" });
 
   const { artist, opportunity } = application;
-  const isDeferred = checkout.timing === "Deferred";
+  const { labels } = checkout;
 
   if (submitted)
-    return <ApplicationCheckoutFlow artistName={artist.name} />;
+    return <ApplicationCheckoutFlow artistName={artist.name} flow={flow} />;
 
   const summary = summaryFor(checkout.amount);
 
@@ -110,8 +117,7 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Appli
     setError(null);
     try {
       const outcome = await acceptMutation.mutateAsync({ applicationId, paymentMethodId });
-      if (outcome.$type === "immediate")
-        await handle3ds(outcome.payment);
+      if (outcome.$type === "immediate") await handle3ds(outcome.payment);
       setSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Acceptance failed. Please try again.");
@@ -129,7 +135,7 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Appli
       }
       summary={
         <OrderSummaryCard
-          title={isDeferred ? "Settlement" : "Summary"}
+          title={labels.summaryTitle}
           lines={summary.lines}
           total={summary.total}
         />
@@ -141,15 +147,11 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Appli
 
       <CheckoutSection
         title="Payment Method"
-        description={
-          isDeferred
-            ? "Saved card required for settlement after the concert."
-            : undefined
-        }
+        description={labels.paymentHint ?? undefined}
       >
         <StripePaymentForm
           session={checkout.session}
-          submitLabel={isDeferred ? "Confirm" : "Confirm & Pay"}
+          submitLabel={labels.submitLabel}
           disabled={acceptMutation.isPending}
           onSuccess={handleAccept}
         />

@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
-using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Requests;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
@@ -39,7 +38,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         await response.ShouldBe(HttpStatusCode.OK);
         var checkout = await response.Content.ReadAsync<Checkout>();
         Assert.NotNull(checkout);
-        Assert.Equal(PaymentTiming.Authorize, checkout!.Timing);
+        Assert.Equal(CheckoutLabels.Charge, checkout!.Labels);
         Assert.IsType<FlatPayment>(checkout.Amount);
         Assert.NotEmpty(checkout.Session.ClientSecret);
     }

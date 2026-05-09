@@ -1,4 +1,3 @@
-using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -39,13 +38,11 @@ internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
         var metadata = new Dictionary<string, string>
         {
             ["type"] = "applicationAccept",
-            ["applicationId"] = applicationId.ToString(),
-            ["amount"] = ((long)(contract.Fee * 100)).ToString(),
-            ["currency"] = "gbp"
+            ["applicationId"] = applicationId.ToString()
         };
 
-        var session = await managerPaymentModule.CreatePaymentSessionAsync(venueManagerId, metadata);
-        return new Checkout(PaymentTiming.Immediate, new FlatPayment(contract.Fee), artist, session);
+        var session = await managerPaymentModule.CreateSetupSessionAsync(venueManagerId, metadata);
+        return new Checkout(new FlatPayment(contract.Fee), artist, session, CheckoutLabels.Charge);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)

@@ -1,4 +1,3 @@
-using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -53,7 +52,7 @@ internal class DoorSplitConcertWorkflow : IStandardConcertWorkflow
         };
 
         var session = await managerPaymentModule.CreateSetupSessionAsync(venueManagerId, metadata);
-        return new Checkout(PaymentTiming.Deferred, new DoorSharePayment(contract.ArtistDoorPercent), artist, session);
+        return new Checkout(new DoorSharePayment(contract.ArtistDoorPercent), artist, session, CheckoutLabels.Settlement);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)

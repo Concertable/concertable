@@ -33,7 +33,6 @@ export {
   useTicketHistoryQuery,
   useTicketCheckoutQuery,
 } from "./hooks/useTicketsQuery";
-export { useTicketCheckout } from "./hooks/useTicketCheckout";
 export { useConcertStore } from "./store/useConcertStore";
 export type {
   Concert,
@@ -47,7 +46,7 @@ export type {
   TicketConcert,
   CheckoutSession,
   TicketCheckout,
-  PaymentTiming,
+  CheckoutLabels,
   PaymentAmount,
   FlatPayment,
   DoorSharePayment,

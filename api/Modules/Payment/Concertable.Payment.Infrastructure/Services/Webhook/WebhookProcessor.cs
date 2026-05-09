@@ -8,17 +8,20 @@ internal class WebhookProcessor : IWebhookProcessor
 {
     private readonly IStripeEventRepository stripeEventRepository;
     private readonly IIntegrationEventBus integrationEventBus;
+    private readonly IStripeAccountClient stripeAccountClient;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<WebhookProcessor> logger;
 
     public WebhookProcessor(
         IStripeEventRepository stripeEventRepository,
         IIntegrationEventBus integrationEventBus,
+        IStripeAccountClient stripeAccountClient,
         TimeProvider timeProvider,
         ILogger<WebhookProcessor> logger)
     {
         this.stripeEventRepository = stripeEventRepository;
         this.integrationEventBus = integrationEventBus;
+        this.stripeAccountClient = stripeAccountClient;
         this.timeProvider = timeProvider;
         this.logger = logger;
     }
@@ -56,6 +59,16 @@ internal class WebhookProcessor : IWebhookProcessor
                         "Publishing PaymentSucceededEvent for PaymentIntent {IntentId} (event {EventId}) of transaction type {TransactionType}",
                         intent.Id, stripeEvent.Id, intent.Metadata.GetValueOrDefault("type", "unknown"));
                     await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, intent.Metadata), cancellationToken);
+                    break;
+
+                case "payment_intent.amount_capturable_updated":
+                    if (intent.Metadata.TryGetValue("verify", out var verifyFlag) && verifyFlag == "true")
+                    {
+                        logger.LogInformation(
+                            "Cancelling verify PaymentIntent {IntentId} after 3DS completion (event {EventId})",
+                            intent.Id, stripeEvent.Id);
+                        await stripeAccountClient.CancelAsync(intent.Id, cancellationToken);
+                    }
                     break;
 
                 case "payment_intent.payment_failed":

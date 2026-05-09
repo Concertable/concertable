@@ -1,4 +1,5 @@
 using Concertable.Concert.Infrastructure.Services.Apply;
+using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 using Moq;
 
@@ -37,6 +38,7 @@ public class ApplyDispatcherTests
     [Fact]
     public async Task ApplyAsync_WithPaymentMethod_DelegatesToPaidApplyCapability()
     {
+        // Arrange
         var contract = new VenueHireContract { Id = 99, HireFee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
         var paid = workflow.As<IPaidApply>();
@@ -46,8 +48,10 @@ public class ApplyDispatcherTests
         contractLoader.Setup(l => l.LoadByOpportunityIdAsync(11)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.VenueHire)).Returns(workflow.Object);
 
+        // Act
         var result = await sut.ApplyAsync(11, 7, "pm_123");
 
+        // Assert
         Assert.Same(application, result);
         paid.Verify(s => s.ApplyAsync(7, 11, "pm_123"), Times.Once);
     }

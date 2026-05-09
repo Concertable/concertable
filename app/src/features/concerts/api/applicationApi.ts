@@ -2,13 +2,18 @@ import api from "@/lib/axios";
 import type { AcceptOutcome, Application, Checkout } from "../types";
 
 const applicationApi = {
-  applyToOpportunity: async (
+  applyToOpportunity: async (opportunityId: number): Promise<Application> => {
+    const { data } = await api.post<Application>(`/application/${opportunityId}`);
+    return data;
+  },
+
+  applyToOpportunityWithPayment: async (
     opportunityId: number,
-    paymentMethodId?: string,
+    paymentMethodId: string,
   ): Promise<Application> => {
     const { data } = await api.post<Application>(
       `/application/${opportunityId}`,
-      paymentMethodId ? { paymentMethodId } : undefined,
+      { paymentMethodId },
     );
     return data;
   },

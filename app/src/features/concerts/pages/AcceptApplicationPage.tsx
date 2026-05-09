@@ -3,10 +3,12 @@ import { useParams, useNavigate } from "@tanstack/react-router";
 import { usePayoutAccountStatusQuery, StripeOnboardingBanner } from "@/features/payments";
 import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
+import type { ConcertDraftCreatedPayload } from "@/features/notifications";
 import {
   useApplicationQuery,
   useAcceptApplicationMutation,
 } from "../hooks/useApplicationQuery";
+import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
 import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
 import { ApplicationCheckoutFlow } from "./ApplicationCheckoutPage";
 
@@ -19,13 +21,14 @@ export function AcceptApplicationPage() {
   const acceptMutation = useAcceptApplicationMutation(
     application?.opportunity.id ?? 0,
   );
+  const flow = useCheckoutFlow<ConcertDraftCreatedPayload>({ event: "ConcertDraftCreated" });
 
   if (isLoading || !application) return null;
 
   const { artist, opportunity, actions } = application;
   const requiresCheckout = actions.checkout != null;
 
-  if (accepted) return <ApplicationCheckoutFlow artistName={artist.name} />;
+  if (accepted) return <ApplicationCheckoutFlow artistName={artist.name} flow={flow} />;
 
   function handleConfirm() {
     if (requiresCheckout) {

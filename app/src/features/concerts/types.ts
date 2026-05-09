@@ -23,8 +23,8 @@ export interface Ticket {
 
 export interface CheckoutSession {
   clientSecret: string;
-  customerSession: string;
-  customerId: string;
+  customerSession?: string;
+  customerId?: string;
   intentType: "Payment" | "Setup";
 }
 
@@ -34,7 +34,11 @@ export interface TicketCheckout {
   concertId: number;
 }
 
-export type PaymentTiming = "Immediate" | "Deferred" | "Authorize";
+export interface CheckoutLabels {
+  summaryTitle: string;
+  submitLabel: string;
+  paymentHint: string | null;
+}
 
 export interface FlatPayment {
   $type: "flat";
@@ -63,10 +67,10 @@ export interface PayeeSummary {
 }
 
 export interface Checkout {
-  timing: PaymentTiming;
   amount: PaymentAmount;
   payee: PayeeSummary;
   session: CheckoutSession;
+  labels: CheckoutLabels;
 }
 
 export type ApplicationStatus =
@@ -102,16 +106,9 @@ interface PaymentResponse {
   transactionId?: string;
 }
 
-interface ImmediateAcceptOutcome {
-  $type: "immediate";
-  payment: PaymentResponse;
-}
-
-interface DeferredAcceptOutcome {
-  $type: "deferred";
-}
-
-export type AcceptOutcome = ImmediateAcceptOutcome | DeferredAcceptOutcome;
+export type AcceptOutcome =
+  | { $type: "immediate"; payment: PaymentResponse }
+  | { $type: "deferred" };
 
 export interface OpportunityActions {
   checkout?: ActionLink | null;

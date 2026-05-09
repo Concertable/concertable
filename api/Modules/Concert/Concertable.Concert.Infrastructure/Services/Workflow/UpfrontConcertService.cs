@@ -42,7 +42,10 @@ internal class UpfrontConcertService : IUpfrontConcertService
         if (hold.IsFailed)
             throw new BadRequestException(hold.Errors);
 
-        return new ImmediateAcceptOutcome(hold.Value);
+        var payment = hold.Value.ClientSecret is not null
+            ? new PaymentResponse { RequiresAction = true, ClientSecret = hold.Value.ClientSecret, TransactionId = hold.Value.ChargeId }
+            : new PaymentResponse();
+        return new ImmediateAcceptOutcome(payment);
     }
 
     public async Task SettleAsync(int bookingId)

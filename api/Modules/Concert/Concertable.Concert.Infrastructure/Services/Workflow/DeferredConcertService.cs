@@ -32,8 +32,6 @@ internal class DeferredConcertService : IDeferredConcertService
         if (appCheck.IsFailed)
             throw new BadRequestException(appCheck.Errors);
 
-        await managerPaymentModule.VerifyAndVoidAsync(payerId, paymentMethodId);
-
         var booking = await bookingService.CreateDeferredAsync(applicationId, paymentMethodId);
 
         var draftResult = await concertDraftService.CreateAsync(booking.Id);

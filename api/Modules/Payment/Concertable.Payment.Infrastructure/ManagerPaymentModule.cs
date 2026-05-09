@@ -84,15 +84,6 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return charge;
     }
 
-    public async Task<CheckoutSession> CreatePaymentSessionAsync(
-        Guid payerId,
-        IDictionary<string, string> metadata,
-        CancellationToken ct = default)
-    {
-        var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
-        return await stripeAccountClient.CreatePaymentSessionAsync(stripeCustomerId, metadata, ct);
-    }
-
     public async Task<CheckoutSession> CreateSetupSessionAsync(
         Guid payerId,
         IDictionary<string, string> metadata,
@@ -102,10 +93,10 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return await stripeAccountClient.CreateSetupSessionAsync(stripeCustomerId, metadata, ct);
     }
 
-    public async Task VerifyAndVoidAsync(Guid payerId, string paymentMethodId, CancellationToken ct = default)
+    public async Task<PaymentResponse> VerifyAndVoidAsync(Guid payerId, string paymentMethodId, CancellationToken ct = default)
     {
         var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
-        await stripeAccountClient.VerifyAndVoidAsync(stripeCustomerId, paymentMethodId, ct);
+        return await stripeAccountClient.VerifyAndVoidAsync(stripeCustomerId, paymentMethodId, ct);
     }
 
     private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)

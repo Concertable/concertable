@@ -37,6 +37,9 @@ internal class MockStripeAccountClient : IStripeAccountClient
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("seti_mock_secret", "cuss_mock_secret", stripeCustomerId, IntentType.Setup));
 
-    public Task VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default) =>
+    public Task<PaymentResponse> VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default) =>
+        Task.FromResult(new PaymentResponse());
+
+    public Task CancelAsync(string intentId, CancellationToken ct = default) =>
         Task.CompletedTask;
 }

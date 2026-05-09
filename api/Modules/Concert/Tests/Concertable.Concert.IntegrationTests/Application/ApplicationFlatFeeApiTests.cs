@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
-using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
@@ -25,7 +24,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task AcceptCheckout_ShouldReturnImmediateFlatPaymentSession()
+    public async Task AcceptCheckout_ShouldReturnSetupSessionWithChargeLabels()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
@@ -37,7 +36,8 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         await response.ShouldBe(HttpStatusCode.OK);
         var checkout = await response.Content.ReadAsync<Checkout>();
         Assert.NotNull(checkout);
-        Assert.Equal(PaymentTiming.Immediate, checkout!.Timing);
+        Assert.Equal(CheckoutLabels.Charge, checkout!.Labels);
+        Assert.Equal(IntentType.Setup, checkout.Session.IntentType);
         Assert.IsType<FlatPayment>(checkout.Amount);
         Assert.NotEmpty(checkout.Session.ClientSecret);
     }

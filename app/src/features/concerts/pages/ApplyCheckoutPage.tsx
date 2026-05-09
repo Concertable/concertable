@@ -40,9 +40,9 @@ interface Props {
 
 export function ApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) {
   const [submitted, setSubmitted] = useState(false);
-  const applyMutation = useMutation({
+  const { mutate, isPending, error } = useMutation({
     mutationFn: (paymentMethodId: string) =>
-      applicationApi.applyToOpportunity(opportunityId, paymentMethodId),
+      applicationApi.applyToOpportunityWithPayment(opportunityId, paymentMethodId),
     onSuccess: () => setSubmitted(true),
   });
 
@@ -62,7 +62,7 @@ export function ApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) 
       />
     );
 
-  if (applyMutation.isPending)
+  if (isPending)
     return (
       <CheckoutAwaiting
         title="Submitting application"
@@ -100,11 +100,11 @@ export function ApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) 
         <StripePaymentForm
           session={checkout.session}
           submitLabel="Authorise & Apply"
-          onSuccess={(paymentMethodId) => applyMutation.mutate(paymentMethodId)}
+          onSuccess={mutate}
         />
       </CheckoutSection>
-      {applyMutation.error && (
-        <p data-testid="payment-error" className="text-destructive text-sm">{applyMutation.error.message}</p>
+      {error && (
+        <p data-testid="payment-error" className="text-destructive text-sm">{error.message}</p>
       )}
     </CheckoutLayout>
   );

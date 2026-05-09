@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
-using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
@@ -36,7 +35,7 @@ public class ApplicationVersusApiTests : IAsyncLifetime
         await response.ShouldBe(HttpStatusCode.OK);
         var checkout = await response.Content.ReadAsync<Checkout>();
         Assert.NotNull(checkout);
-        Assert.Equal(PaymentTiming.Deferred, checkout!.Timing);
+        Assert.Equal(CheckoutLabels.Settlement, checkout!.Labels);
         Assert.IsType<GuaranteedDoorPayment>(checkout.Amount);
         Assert.NotEmpty(checkout.Session.ClientSecret);
     }

@@ -1,4 +1,3 @@
-using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
@@ -54,10 +53,10 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
 
         var session = await managerPaymentModule.CreateSetupSessionAsync(venueManagerId, metadata);
         return new Checkout(
-            PaymentTiming.Deferred,
             new GuaranteedDoorPayment(contract.Guarantee, contract.ArtistDoorPercent),
             artist,
-            session);
+            session,
+            CheckoutLabels.Settlement);
     }
 
     public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)

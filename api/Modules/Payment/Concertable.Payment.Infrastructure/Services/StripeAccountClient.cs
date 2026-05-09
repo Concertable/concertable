@@ -167,7 +167,7 @@ internal class StripeAccountClient : IStripeAccountClient
         return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Setup);
     }
 
-    public async Task VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default)
+    public async Task<PaymentResponse> VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default)
     {
         try
         {
@@ -177,20 +177,38 @@ internal class StripeAccountClient : IStripeAccountClient
                 Currency = "gbp",
                 Customer = stripeCustomerId,
                 PaymentMethod = paymentMethodId,
+                PaymentMethodTypes = ["card"],
                 Confirm = true,
                 CaptureMethod = "manual",
-                OffSession = true,
-                Description = "Card verification (auto-voided)"
+                Description = "Card verification (auto-voided)",
+                Metadata = new Dictionary<string, string> { ["verify"] = "true" },
             }, cancellationToken: ct);
 
             if (intent.Status == "requires_capture" || intent.Status == "succeeded")
+            {
                 await paymentIntentService.CancelAsync(intent.Id, cancellationToken: ct);
+                return new PaymentResponse();
+            }
+
+            if (intent.Status == "requires_action")
+                return new PaymentResponse
+                {
+                    RequiresAction = true,
+                    ClientSecret = intent.ClientSecret,
+                    TransactionId = intent.Id,
+                };
+
+            throw new BadRequestException(intent.LastPaymentError?.Message ?? "Card verification failed.");
         }
         catch (StripeException ex)
         {
             throw new BadRequestException(ex.StripeError?.Message ?? ex.Message);
         }
     }
+
+
+    public Task CancelAsync(string intentId, CancellationToken ct = default) =>
+        paymentIntentService.CancelAsync(intentId, cancellationToken: ct);
 
     private async Task<string> CreateCustomerSessionAsync(string stripeCustomerId, CancellationToken ct)
     {
