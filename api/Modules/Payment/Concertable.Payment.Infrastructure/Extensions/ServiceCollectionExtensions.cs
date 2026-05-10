@@ -61,6 +61,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<Stripe.RefundService>();
             services.AddSingleton<Stripe.TransferReversalService>();
             services.AddScoped<IStripeAccountClient, StripeAccountClient>();
+            services.AddScoped<IStripeHoldClient, StripeHoldClient>();
             services.AddSingleton<IStripeApiClient, StripeApiClient>();
             services.AddKeyedSingleton<IPaymentSessionConfigurator, OnSessionConfigurator>(PaymentSession.OnSession);
             services.AddKeyedSingleton<IPaymentSessionConfigurator, OffSessionConfigurator>(PaymentSession.OffSession);
@@ -82,6 +83,7 @@ public static class ServiceCollectionExtensions
         else
         {
             services.AddScoped<IStripeAccountClient, FakeStripeAccountClient>();
+            services.AddScoped<IStripeHoldClient, FakeStripeHoldClient>();
             services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OnSession);
             services.AddKeyedScoped<IStripePaymentIntentClient, FakeStripePaymentIntentClient>(PaymentSession.OffSession);
             services.AddScoped<IStripeTransferClient, StripeTransferClient>();
@@ -108,6 +110,7 @@ public static class ServiceCollectionExtensions
         // Module facades â€” public Payment.Contracts surface
         services.AddScoped<ICustomerPaymentModule, CustomerPaymentModule>();
         services.AddScoped<IManagerPaymentModule, ManagerPaymentModule>();
+        services.AddScoped<IEscrowService, EscrowService>();
         services.AddScoped<IEscrowModule, EscrowModule>();
 
         // Integration event handlers

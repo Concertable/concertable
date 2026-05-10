@@ -51,12 +51,4 @@ internal class MockStripeAccountClientFail : IStripeAccountClient
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("pi_mock_hold_secret", "cuss_mock_secret", stripeCustomerId));
 
-    public Task<string> FindHeldIntentAsync(
-        string stripeCustomerId,
-        int applicationId,
-        CancellationToken ct = default) =>
-        throw new NotFoundException("No held payment intent found");
-
-    public Task CancelAsync(string intentId, CancellationToken ct = default) =>
-        Task.CompletedTask;
 }

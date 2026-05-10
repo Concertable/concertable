@@ -8,20 +8,20 @@ internal class WebhookProcessor : IWebhookProcessor
 {
     private readonly IStripeEventRepository stripeEventRepository;
     private readonly IIntegrationEventBus integrationEventBus;
-    private readonly IStripeAccountClient stripeAccountClient;
+    private readonly IStripeHoldClient stripeHoldClient;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<WebhookProcessor> logger;
 
     public WebhookProcessor(
         IStripeEventRepository stripeEventRepository,
         IIntegrationEventBus integrationEventBus,
-        IStripeAccountClient stripeAccountClient,
+        IStripeHoldClient stripeHoldClient,
         TimeProvider timeProvider,
         ILogger<WebhookProcessor> logger)
     {
         this.stripeEventRepository = stripeEventRepository;
         this.integrationEventBus = integrationEventBus;
-        this.stripeAccountClient = stripeAccountClient;
+        this.stripeHoldClient = stripeHoldClient;
         this.timeProvider = timeProvider;
         this.logger = logger;
     }
@@ -67,7 +67,7 @@ internal class WebhookProcessor : IWebhookProcessor
                         logger.LogInformation(
                             "Cancelling verify PaymentIntent {IntentId} after 3DS completion (event {EventId})",
                             intent.Id, stripeEvent.Id);
-                        await stripeAccountClient.CancelAsync(intent.Id, cancellationToken);
+                        await stripeHoldClient.CancelAsync(intent.Id, cancellationToken);
                     }
                     break;
 

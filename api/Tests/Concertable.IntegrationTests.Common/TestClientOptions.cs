@@ -27,7 +27,11 @@ public class TestClientOptions
 
     public TestClientOptions UseDeclineAtVerify()
     {
-        Services += services => services.Replace(ServiceDescriptor.Scoped<IStripeAccountClient, MockStripeAccountClientFail>());
+        Services += services =>
+        {
+            services.Replace(ServiceDescriptor.Scoped<IStripeAccountClient, MockStripeAccountClientFail>());
+            services.Replace(ServiceDescriptor.Scoped<IStripeHoldClient, MockStripeHoldClientFail>());
+        };
         return this;
     }
 

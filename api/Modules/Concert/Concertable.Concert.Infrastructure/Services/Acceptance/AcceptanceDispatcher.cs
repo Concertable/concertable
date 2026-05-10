@@ -20,7 +20,7 @@ internal class AcceptanceDispatcher : IAcceptanceDispatcher
 
         switch (workflow)
         {
-            case IAuthAccept w when paymentMethodId is not null:
+            case IPaidAccept w when paymentMethodId is not null:
                 await w.AcceptAsync(applicationId, paymentMethodId);
                 break;
 

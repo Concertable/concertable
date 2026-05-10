@@ -216,28 +216,6 @@ internal class StripeAccountClient : IStripeAccountClient
         return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
     }
 
-    public async Task<string> FindHeldIntentAsync(
-        string stripeCustomerId,
-        int applicationId,
-        CancellationToken ct = default)
-    {
-        var intents = await paymentIntentService.ListAsync(new PaymentIntentListOptions
-        {
-            Customer = stripeCustomerId,
-            Limit = 10,
-        }, cancellationToken: ct);
-
-        var held = intents.FirstOrDefault(pi =>
-            pi.Status == "requires_capture" &&
-            pi.Metadata.TryGetValue("applicationId", out var id) &&
-            id == applicationId.ToString());
-
-        return held?.Id ?? throw new NotFoundException($"No held payment intent found for application {applicationId}");
-    }
-
-    public Task CancelAsync(string intentId, CancellationToken ct = default) =>
-        paymentIntentService.CancelAsync(intentId, cancellationToken: ct);
-
     private async Task<string> CreateCustomerSessionAsync(string stripeCustomerId, CancellationToken ct)
     {
         var session = await customerSessionService.CreateAsync(new CustomerSessionCreateOptions

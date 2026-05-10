@@ -10,27 +10,27 @@ using Moq;
 
 namespace Concertable.Payment.UnitTests.Infrastructure;
 
-public class EscrowModuleTests
+public class EscrowServiceTests
 {
     private readonly Mock<IPaymentManager> paymentManager = new();
     private readonly Mock<IEscrowRepository> escrowRepository = new();
     private readonly Mock<IPayoutAccountRepository> payoutAccountRepository = new();
     private readonly Mock<IUserModule> userModule = new();
     private readonly TimeProvider timeProvider = new FakeTimeProvider();
-    private readonly EscrowModule sut;
+    private readonly EscrowService sut;
 
     private readonly Guid payerId = Guid.NewGuid();
     private readonly Guid payeeId = Guid.NewGuid();
 
-    public EscrowModuleTests()
+    public EscrowServiceTests()
     {
-        sut = new EscrowModule(
+        sut = new EscrowService(
             paymentManager.Object,
             escrowRepository.Object,
             payoutAccountRepository.Object,
             userModule.Object,
             timeProvider,
-            NullLogger<EscrowModule>.Instance);
+            NullLogger<EscrowService>.Instance);
 
         userModule
             .Setup(u => u.GetManagerByIdAsync(It.IsAny<Guid>()))

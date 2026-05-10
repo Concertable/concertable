@@ -33,10 +33,4 @@ internal interface IStripeAccountClient
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
 
-    Task<string> FindHeldIntentAsync(
-        string stripeCustomerId,
-        int applicationId,
-        CancellationToken ct = default);
-
-    Task CancelAsync(string intentId, CancellationToken ct = default);
 }

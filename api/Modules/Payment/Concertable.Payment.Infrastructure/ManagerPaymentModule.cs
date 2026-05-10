@@ -11,6 +11,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
 {
     private readonly IPaymentManager paymentManager;
     private readonly IStripeAccountClient stripeAccountClient;
+    private readonly IStripeHoldClient stripeHoldClient;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly ITransactionRepository transactionRepository;
     private readonly IUserModule userModule;
@@ -18,12 +19,14 @@ internal class ManagerPaymentModule : IManagerPaymentModule
     public ManagerPaymentModule(
         IPaymentManager paymentManager,
         IStripeAccountClient stripeAccountClient,
+        IStripeHoldClient stripeHoldClient,
         IPayoutAccountRepository payoutAccountRepository,
         ITransactionRepository transactionRepository,
         IUserModule userModule)
     {
         this.paymentManager = paymentManager;
         this.stripeAccountClient = stripeAccountClient;
+        this.stripeHoldClient = stripeHoldClient;
         this.payoutAccountRepository = payoutAccountRepository;
         this.transactionRepository = transactionRepository;
         this.userModule = userModule;
@@ -120,7 +123,7 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         var account = await payoutAccountRepository.GetByUserIdAsync(payerId, ct);
         var stripeCustomerId = account?.StripeCustomerId
             ?? throw new NotFoundException($"No Stripe customer for payer {payerId}");
-        return await stripeAccountClient.FindHeldIntentAsync(stripeCustomerId, applicationId, ct);
+        return await stripeHoldClient.FindHeldIntentAsync(stripeCustomerId, applicationId, ct);
     }
 
     private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)

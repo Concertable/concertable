@@ -21,7 +21,7 @@ public class AcceptanceDispatcherTests
     {
         var contract = new FlatFeeContract { Id = 99, Fee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
-        var auth = workflow.As<IAuthAccept>();
+        var auth = workflow.As<IPaidAccept>();
 
         contractLoader.Setup(l => l.LoadByApplicationIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(workflow.Object);
@@ -66,7 +66,7 @@ public class AcceptanceDispatcherTests
     {
         var contract = new FlatFeeContract { Id = 99, Fee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
-        workflow.As<IAuthAccept>();
+        workflow.As<IPaidAccept>();
 
         contractLoader.Setup(l => l.LoadByApplicationIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(workflow.Object);

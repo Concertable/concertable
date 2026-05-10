@@ -49,12 +49,4 @@ internal class FakeStripeAccountClient : IStripeAccountClient
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("pi_fake_hold_secret", "cuss_fake_secret", stripeCustomerId));
 
-    public Task<string> FindHeldIntentAsync(
-        string stripeCustomerId,
-        int applicationId,
-        CancellationToken ct = default) =>
-        Task.FromResult("pi_fake_hold_id");
-
-    public Task CancelAsync(string intentId, CancellationToken ct = default) =>
-        Task.CompletedTask;
 }
