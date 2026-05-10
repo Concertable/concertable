@@ -50,7 +50,7 @@ public static class E2EEndpointExtensions
                 : Results.Ok();
         });
 
-        app.MapPost("/e2e/finish-ended-confirmed", async (IConcertCompletionRunner runner) =>
+        app.MapPost("/e2e/run-completion", async (IConcertCompletionRunner runner) =>
         {
             await runner.RunAsync();
             return Results.Ok();
