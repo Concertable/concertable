@@ -17,18 +17,18 @@ public class AcceptanceDispatcherTests
     }
 
     [Fact]
-    public async Task AcceptAsync_WithPaymentMethod_DelegatesToPaidAcceptCapability()
+    public async Task AcceptAsync_WithPaymentMethod_DelegatesToAuthAcceptCapability()
     {
         var contract = new FlatFeeContract { Id = 99, Fee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
-        var paid = workflow.As<IPaidAccept>();
+        var auth = workflow.As<IAuthAccept>();
 
         contractLoader.Setup(l => l.LoadByApplicationIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(workflow.Object);
 
         await sut.AcceptAsync(1, "pm_123");
 
-        paid.Verify(s => s.AcceptAsync(1, "pm_123"), Times.Once);
+        auth.Verify(s => s.AcceptAsync(1, "pm_123"), Times.Once);
     }
 
     [Fact]
@@ -41,22 +41,24 @@ public class AcceptanceDispatcherTests
         contractLoader.Setup(l => l.LoadByApplicationIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.VenueHire)).Returns(workflow.Object);
 
-        await sut.AcceptAsync(1);
+        await sut.AcceptAsync(1, null);
 
         simple.Verify(s => s.AcceptAsync(1), Times.Once);
     }
 
     [Fact]
-    public async Task AcceptAsync_WithPaymentMethod_Throws_WhenContractDoesNotAcceptPaymentMethod()
+    public async Task AcceptAsync_WithPaymentMethod_DelegatesToSimpleAcceptCapability_IgnoringPaymentMethod()
     {
         var contract = new VenueHireContract { Id = 99, HireFee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
-        workflow.As<ISimpleAccept>();
+        var simple = workflow.As<ISimpleAccept>();
 
         contractLoader.Setup(l => l.LoadByApplicationIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.VenueHire)).Returns(workflow.Object);
 
-        await Assert.ThrowsAsync<BadRequestException>(() => sut.AcceptAsync(1, "pm_123"));
+        await sut.AcceptAsync(1, "pm_123");
+
+        simple.Verify(s => s.AcceptAsync(1), Times.Once);
     }
 
     [Fact]
@@ -64,11 +66,11 @@ public class AcceptanceDispatcherTests
     {
         var contract = new FlatFeeContract { Id = 99, Fee = 500, PaymentMethod = PaymentMethod.Cash };
         var workflow = new Mock<IConcertWorkflow>();
-        workflow.As<IPaidAccept>();
+        workflow.As<IAuthAccept>();
 
         contractLoader.Setup(l => l.LoadByApplicationIdAsync(1)).ReturnsAsync(contract);
         workflowFactory.Setup(f => f.Create(ContractType.FlatFee)).Returns(workflow.Object);
 
-        await Assert.ThrowsAsync<BadRequestException>(() => sut.AcceptAsync(1));
+        await Assert.ThrowsAsync<BadRequestException>(() => sut.AcceptAsync(1, null));
     }
 }

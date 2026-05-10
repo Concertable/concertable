@@ -25,7 +25,6 @@ export interface CheckoutSession {
   clientSecret: string;
   customerSession?: string;
   customerId?: string;
-  intentType: "Payment" | "Setup";
 }
 
 export interface TicketCheckout {
@@ -100,15 +99,11 @@ export interface Application {
   actions: ApplicationActions;
 }
 
-interface PaymentResponse {
+export interface PaymentResponse {
   requiresAction: boolean;
   clientSecret?: string;
   transactionId?: string;
 }
-
-export type AcceptOutcome =
-  | { $type: "immediate"; payment: PaymentResponse }
-  | { $type: "deferred" };
 
 export interface OpportunityActions {
   checkout?: ActionLink | null;

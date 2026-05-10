@@ -41,7 +41,7 @@ export type {
   Opportunity,
   Application,
   ApplicationStatus,
-  AcceptOutcome,
+  PaymentResponse,
   Ticket,
   TicketConcert,
   CheckoutSession,

@@ -26,7 +26,7 @@ internal class UpfrontConcertService : IUpfrontConcertService
         this.logger = logger;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, Guid payeeId, decimal amount, string paymentMethodId, PaymentSession session)
+    public async Task InitiateAsync(int applicationId, Guid payerId, Guid payeeId, decimal amount, string paymentMethodId, PaymentSession session)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
         if (result.IsFailed)
@@ -41,11 +41,6 @@ internal class UpfrontConcertService : IUpfrontConcertService
         var hold = await escrowModule.HoldAsync(payerId, payeeId, amount, paymentMethodId, session, booking.Id);
         if (hold.IsFailed)
             throw new BadRequestException(hold.Errors);
-
-        var payment = hold.Value.ClientSecret is not null
-            ? new PaymentResponse { RequiresAction = true, ClientSecret = hold.Value.ClientSecret, TransactionId = hold.Value.ChargeId }
-            : new PaymentResponse();
-        return new ImmediateAcceptOutcome(payment);
     }
 
     public async Task SettleAsync(int bookingId)

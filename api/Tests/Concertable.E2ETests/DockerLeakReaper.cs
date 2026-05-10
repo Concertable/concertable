@@ -10,7 +10,6 @@ internal static class DockerLeakReaper
         {
             ["label"] = new Dictionary<string, bool>
             {
-                ["com.microsoft.developer.usvc-dev.name"] = true,
                 ["concertable-e2e=1"] = true,
             },
         };

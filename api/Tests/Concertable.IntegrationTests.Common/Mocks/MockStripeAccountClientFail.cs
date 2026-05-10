@@ -30,16 +30,32 @@ internal class MockStripeAccountClientFail : IStripeAccountClient
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("pi_mock_secret", "cuss_mock_secret", stripeCustomerId, IntentType.Payment));
+        Task.FromResult(new CheckoutSession("pi_mock_secret", "cuss_mock_secret", stripeCustomerId));
 
     public Task<CheckoutSession> CreateSetupSessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("seti_mock_secret", "cuss_mock_secret", stripeCustomerId, IntentType.Setup));
+        Task.FromResult(new CheckoutSession("seti_mock_secret", "cuss_mock_secret", stripeCustomerId));
 
-    public Task<PaymentResponse> VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default) =>
-        throw new BadRequestException("Your card was declined.");
+    public Task<CheckoutSession> CreateVerifySessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default) =>
+        Task.FromResult(new CheckoutSession("pi_mock_verify_secret", "cuss_mock_secret", stripeCustomerId));
+
+    public Task<CheckoutSession> CreateHoldSessionAsync(
+        string stripeCustomerId,
+        decimal amount,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default) =>
+        Task.FromResult(new CheckoutSession("pi_mock_hold_secret", "cuss_mock_secret", stripeCustomerId));
+
+    public Task<string> FindHeldIntentAsync(
+        string stripeCustomerId,
+        int applicationId,
+        CancellationToken ct = default) =>
+        throw new NotFoundException("No held payment intent found");
 
     public Task CancelAsync(string intentId, CancellationToken ct = default) =>
         Task.CompletedTask;

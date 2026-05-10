@@ -1,4 +1,3 @@
-using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
@@ -6,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class VersusConcertWorkflow : IStandardConcertWorkflow
+internal class VersusConcertWorkflow : IDeferredConcertWorkflow
 {
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IConcertRepository concertRepository;
@@ -51,7 +50,7 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
             ["applicationId"] = applicationId.ToString()
         };
 
-        var session = await managerPaymentModule.CreateSetupSessionAsync(venueManagerId, metadata);
+        var session = await managerPaymentModule.CreateVerifySessionAsync(venueManagerId, metadata);
         return new Checkout(
             new GuaranteedDoorPayment(contract.Guarantee, contract.ArtistDoorPercent),
             artist,
@@ -59,12 +58,12 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
             CheckoutLabels.Settlement);
     }
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
+    public async Task AcceptAsync(int applicationId, string paymentMethodId)
     {
         var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        return await deferredConcertService.InitiateAsync(applicationId, venueManagerId, paymentMethodId);
+        await deferredConcertService.InitiateAsync(applicationId, venueManagerId, paymentMethodId);
     }
 
     public Task SettleAsync(int bookingId) =>

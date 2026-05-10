@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
@@ -24,7 +24,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task AcceptCheckout_ShouldReturnSetupSessionWithChargeLabels()
+    public async Task AcceptCheckout_ShouldReturnHoldSessionWithChargeLabels()
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
@@ -37,7 +37,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var checkout = await response.Content.ReadAsync<Checkout>();
         Assert.NotNull(checkout);
         Assert.Equal(CheckoutLabels.Charge, checkout!.Labels);
-        Assert.Equal(IntentType.Setup, checkout.Session.IntentType);
+        Assert.StartsWith("pi_", checkout.Session.ClientSecret);
         Assert.IsType<FlatPayment>(checkout.Amount);
         Assert.NotEmpty(checkout.Session.ClientSecret);
     }
@@ -62,10 +62,10 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var firstResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
-        await firstResponse.ShouldBe(HttpStatusCode.OK);
+        var firstResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
+        await firstResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
-        var response = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
 
         // Assert
         await response.ShouldBe(HttpStatusCode.BadRequest);
@@ -78,8 +78,8 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
-        await acceptResponse.ShouldBe(HttpStatusCode.OK);
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
+        await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
@@ -110,8 +110,8 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
-        await acceptResponse.ShouldBe(HttpStatusCode.OK);
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
+        await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
         await fixture.StripeClient.SendWebhookAsync();
 
@@ -127,8 +127,8 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
-        await acceptResponse.ShouldBe(HttpStatusCode.OK);
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
+        await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
@@ -144,7 +144,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingPayment());
 
         // Act
-        await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
+        await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
 
         // Assert
         var draft = await fixture.ReadDbContext.Concerts.FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.FlatFeeApp.Id);

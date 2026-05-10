@@ -1,5 +1,4 @@
 using Concertable.Concert.Application.Interfaces;
-using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
@@ -50,7 +49,7 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
         return new Checkout(new FlatPayment(contract.HireFee), venue, session, CheckoutLabels.Charge);
     }
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId)
+    public async Task AcceptAsync(int applicationId)
     {
         var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
@@ -63,7 +62,7 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
 
         var contract = (VenueHireContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId, PaymentSession.OffSession);
+        await upfrontConcertService.InitiateAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId, PaymentSession.OffSession);
     }
 
     public Task SettleAsync(int bookingId) =>

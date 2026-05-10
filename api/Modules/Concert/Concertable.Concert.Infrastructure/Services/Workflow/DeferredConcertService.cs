@@ -26,7 +26,7 @@ internal class DeferredConcertService : IDeferredConcertService
         this.logger = logger;
     }
 
-    public async Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string paymentMethodId)
+    public async Task InitiateAsync(int applicationId, Guid payerId, string paymentMethodId)
     {
         var appCheck = await applicationValidator.CanAcceptAsync(applicationId);
         if (appCheck.IsFailed)
@@ -37,8 +37,6 @@ internal class DeferredConcertService : IDeferredConcertService
         var draftResult = await concertDraftService.CreateAsync(booking.Id);
         if (draftResult.IsFailed)
             throw new BadRequestException(draftResult.Errors);
-
-        return new DeferredAcceptOutcome();
     }
 
     public async Task FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount)

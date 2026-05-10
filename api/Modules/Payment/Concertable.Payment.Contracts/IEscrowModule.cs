@@ -27,6 +27,14 @@ public interface IEscrowModule
         string? reason = null,
         CancellationToken ct = default);
 
+    Task<Result<EscrowResponse>> BindAsync(
+        Guid payerId,
+        Guid payeeId,
+        decimal amount,
+        string paymentIntentId,
+        int bookingId,
+        CancellationToken ct = default);
+
     Task<EscrowDto?> GetByBookingIdAsync(
         int bookingId,
         CancellationToken ct = default);

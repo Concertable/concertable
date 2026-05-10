@@ -64,10 +64,10 @@ function Form({
       return;
     }
 
-    const isPayment = session.intentType === "Payment";
-    const result = isPayment
-      ? await stripe.confirmPayment({ elements, redirect: "if_required" })
-      : await stripe.confirmSetup({ elements, redirect: "if_required" });
+    const isSetup = session.clientSecret.startsWith("seti_");
+    const result = isSetup
+      ? await stripe.confirmSetup({ elements, redirect: "if_required" })
+      : await stripe.confirmPayment({ elements, redirect: "if_required" });
 
     if (result.error) {
       setError(result.error.message ?? "Payment failed.");
@@ -75,7 +75,7 @@ function Form({
       return;
     }
 
-    const intent = isPayment ? result.paymentIntent : result.setupIntent;
+    const intent = isSetup ? result.setupIntent : result.paymentIntent;
     const paymentMethodId = intent?.payment_method as string | undefined;
     if (!paymentMethodId) {
       setError("Payment method missing from confirmation.");

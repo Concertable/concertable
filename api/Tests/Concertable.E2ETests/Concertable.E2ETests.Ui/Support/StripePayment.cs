@@ -18,7 +18,7 @@ internal sealed class StripePayment(Browser browser, StripeCardEntry cardEntry) 
         var button = challengeFrame.ContentFrame.Locator("#test-source-authorize-3ds");
         await button.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 30_000 });
 
-        await button.EvaluateAsync("el => el.click()");
+        await button.ClickAsync();
         await outer.WaitForAsync(new() { State = WaitForSelectorState.Detached, Timeout = 30_000 });
     }
 }

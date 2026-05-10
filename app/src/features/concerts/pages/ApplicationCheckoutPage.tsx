@@ -20,7 +20,6 @@ import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
 import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
 import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
 import { summaryFor } from "../utils/acceptCheckoutFormat";
-import { handle3ds } from "../utils/handle3ds";
 
 export function ApplicationCheckoutPage() {
   const { applicationId } = useParams({ strict: false }) as {
@@ -116,8 +115,7 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Appli
   async function handleAccept(paymentMethodId: string) {
     setError(null);
     try {
-      const outcome = await acceptMutation.mutateAsync({ applicationId, paymentMethodId });
-      if (outcome.$type === "immediate") await handle3ds(outcome.payment);
+      await acceptMutation.mutateAsync({ applicationId, body: { paymentMethodId } });
       setSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Acceptance failed. Please try again.");

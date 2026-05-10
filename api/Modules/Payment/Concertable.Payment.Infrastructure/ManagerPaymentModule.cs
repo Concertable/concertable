@@ -93,10 +93,34 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return await stripeAccountClient.CreateSetupSessionAsync(stripeCustomerId, metadata, ct);
     }
 
-    public async Task<PaymentResponse> VerifyAndVoidAsync(Guid payerId, string paymentMethodId, CancellationToken ct = default)
+    public async Task<CheckoutSession> CreateVerifySessionAsync(
+        Guid payerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
     {
         var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
-        return await stripeAccountClient.VerifyAndVoidAsync(stripeCustomerId, paymentMethodId, ct);
+        return await stripeAccountClient.CreateVerifySessionAsync(stripeCustomerId, metadata, ct);
+    }
+
+    public async Task<CheckoutSession> CreateHoldSessionAsync(
+        Guid payerId,
+        decimal amount,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
+        return await stripeAccountClient.CreateHoldSessionAsync(stripeCustomerId, amount, metadata, ct);
+    }
+
+    public async Task<string> FindHeldIntentAsync(
+        Guid payerId,
+        int applicationId,
+        CancellationToken ct = default)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(payerId, ct);
+        var stripeCustomerId = account?.StripeCustomerId
+            ?? throw new NotFoundException($"No Stripe customer for payer {payerId}");
+        return await stripeAccountClient.FindHeldIntentAsync(stripeCustomerId, applicationId, ct);
     }
 
     private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)

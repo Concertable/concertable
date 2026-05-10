@@ -30,7 +30,7 @@ export function NewCardSection({ onConfirmed }: Props) {
       )}
       {clientSecret && (
         <StripePaymentForm
-          session={{ clientSecret, intentType: "Setup" }}
+          session={{ clientSecret }}
           submitLabel="Use this card"
           onSuccess={onConfirmed}
         />

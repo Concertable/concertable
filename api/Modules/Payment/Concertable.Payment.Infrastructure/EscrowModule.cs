@@ -88,6 +88,24 @@ internal class EscrowModule : IEscrowModule
         return Result.Ok(new EscrowResponse(escrow.Id, escrow.ChargeId, escrow.Status, hold.Value.ClientSecret));
     }
 
+    public async Task<Result<EscrowResponse>> BindAsync(
+        Guid payerId,
+        Guid payeeId,
+        decimal amount,
+        string paymentIntentId,
+        int bookingId,
+        CancellationToken ct = default)
+    {
+        var escrow = EscrowEntity.Create(bookingId, payerId, payeeId, (long)(amount * 100), paymentIntentId);
+        await escrowRepository.AddAsync(escrow);
+        await escrowRepository.SaveChangesAsync();
+
+        escrow.Confirm();
+        await escrowRepository.SaveChangesAsync();
+
+        return Result.Ok(new EscrowResponse(escrow.Id, escrow.ChargeId, escrow.Status, null));
+    }
+
     public async Task<Result<TransferResponse>> ReleaseAsync(int escrowId, CancellationToken ct = default)
     {
         var escrow = await escrowRepository.GetByIdAsync(escrowId)

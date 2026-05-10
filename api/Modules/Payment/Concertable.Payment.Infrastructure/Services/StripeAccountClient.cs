@@ -143,7 +143,7 @@ internal class StripeAccountClient : IStripeAccountClient
         }, cancellationToken: ct);
 
         var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
-        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Payment);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
     }
 
     public async Task<CheckoutSession> CreateSetupSessionAsync(
@@ -164,48 +164,76 @@ internal class StripeAccountClient : IStripeAccountClient
         }, cancellationToken: ct);
 
         var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
-        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId, IntentType.Setup);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
     }
 
-    public async Task<PaymentResponse> VerifyAndVoidAsync(string stripeCustomerId, string paymentMethodId, CancellationToken ct = default)
+    public async Task<CheckoutSession> CreateVerifySessionAsync(
+        string stripeCustomerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
     {
-        try
+        var intent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions
         {
-            var intent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions
+            Amount = 100,
+            Currency = "gbp",
+            Customer = stripeCustomerId,
+            SetupFutureUsage = "off_session",
+            CaptureMethod = "manual",
+            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
             {
-                Amount = 100,
-                Currency = "gbp",
-                Customer = stripeCustomerId,
-                PaymentMethod = paymentMethodId,
-                PaymentMethodTypes = ["card"],
-                Confirm = true,
-                CaptureMethod = "manual",
-                Description = "Card verification (auto-voided)",
-                Metadata = new Dictionary<string, string> { ["verify"] = "true" },
-            }, cancellationToken: ct);
+                Enabled = true,
+                AllowRedirects = "never",
+            },
+            Metadata = metadata.With("verify", "true"),
+        }, cancellationToken: ct);
 
-            if (intent.Status == "requires_capture" || intent.Status == "succeeded")
-            {
-                await paymentIntentService.CancelAsync(intent.Id, cancellationToken: ct);
-                return new PaymentResponse();
-            }
-
-            if (intent.Status == "requires_action")
-                return new PaymentResponse
-                {
-                    RequiresAction = true,
-                    ClientSecret = intent.ClientSecret,
-                    TransactionId = intent.Id,
-                };
-
-            throw new BadRequestException(intent.LastPaymentError?.Message ?? "Card verification failed.");
-        }
-        catch (StripeException ex)
-        {
-            throw new BadRequestException(ex.StripeError?.Message ?? ex.Message);
-        }
+        var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
     }
 
+    public async Task<CheckoutSession> CreateHoldSessionAsync(
+        string stripeCustomerId,
+        decimal amount,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default)
+    {
+        var intent = await paymentIntentService.CreateAsync(new PaymentIntentCreateOptions
+        {
+            Amount = (long)(amount * 100),
+            Currency = "gbp",
+            Customer = stripeCustomerId,
+            SetupFutureUsage = "off_session",
+            CaptureMethod = "manual",
+            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+            {
+                Enabled = true,
+                AllowRedirects = "never",
+            },
+            Metadata = metadata.ToDictionary(kv => kv.Key, kv => kv.Value),
+        }, cancellationToken: ct);
+
+        var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);
+        return new CheckoutSession(intent.ClientSecret, customerSession, stripeCustomerId);
+    }
+
+    public async Task<string> FindHeldIntentAsync(
+        string stripeCustomerId,
+        int applicationId,
+        CancellationToken ct = default)
+    {
+        var intents = await paymentIntentService.ListAsync(new PaymentIntentListOptions
+        {
+            Customer = stripeCustomerId,
+            Limit = 10,
+        }, cancellationToken: ct);
+
+        var held = intents.FirstOrDefault(pi =>
+            pi.Status == "requires_capture" &&
+            pi.Metadata.TryGetValue("applicationId", out var id) &&
+            id == applicationId.ToString());
+
+        return held?.Id ?? throw new NotFoundException($"No held payment intent found for application {applicationId}");
+    }
 
     public Task CancelAsync(string intentId, CancellationToken ct = default) =>
         paymentIntentService.CancelAsync(intentId, cancellationToken: ct);

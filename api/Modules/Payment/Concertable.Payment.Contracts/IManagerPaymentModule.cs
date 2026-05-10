@@ -13,14 +13,24 @@ public interface IManagerPaymentModule
         int bookingId,
         CancellationToken ct = default);
 
-    Task<PaymentResponse> VerifyAndVoidAsync(
-        Guid payerId,
-        string paymentMethodId,
-        CancellationToken ct = default);
-
     Task<CheckoutSession> CreateSetupSessionAsync(
         Guid payerId,
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
 
+    Task<CheckoutSession> CreateVerifySessionAsync(
+        Guid payerId,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default);
+
+    Task<CheckoutSession> CreateHoldSessionAsync(
+        Guid payerId,
+        decimal amount,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default);
+
+    Task<string> FindHeldIntentAsync(
+        Guid payerId,
+        int applicationId,
+        CancellationToken ct = default);
 }
