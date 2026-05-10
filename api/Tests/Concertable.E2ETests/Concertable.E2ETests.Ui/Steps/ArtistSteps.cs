@@ -57,8 +57,6 @@ public class ArtistSteps
     [Given(@"a venue hire opportunity is open for application")]
     public async Task AVenueHireOpportunityIsOpen()
     {
-        await browser.UseRoleAsync(Role.ArtistManager);
-
         var opp = fixture.App.SeedData.FreshVenueHireOpportunity;
         state.VenueId = opp.VenueId;
         state.OpportunityId = opp.OpportunityId;

@@ -6,7 +6,6 @@ namespace Concertable.E2ETests.Ui.Hooks;
 public class PlaywrightHooks
 {
     public static UiFixture Fixture { get; private set; } = null!;
-    private static int _runnerCount;
     private readonly Browser browser;
 
     public PlaywrightHooks(Browser browser) => this.browser = browser;
@@ -14,17 +13,14 @@ public class PlaywrightHooks
     [BeforeTestRun]
     public static async Task BeforeTestRun()
     {
-        if (Interlocked.Increment(ref _runnerCount) == 1)
-        {
-            Fixture = new UiFixture();
-            await Fixture.InitializeAsync();
-        }
+        Fixture = new UiFixture();
+        await Fixture.InitializeAsync();
     }
 
     [AfterTestRun]
     public static async Task AfterTestRun()
     {
-        if (Interlocked.Decrement(ref _runnerCount) == 0 && Fixture is not null)
+        if (Fixture is not null)
             await Fixture.DisposeAsync();
     }
 

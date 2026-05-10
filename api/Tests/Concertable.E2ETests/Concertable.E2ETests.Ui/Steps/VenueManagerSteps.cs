@@ -27,8 +27,6 @@ public class VenueManagerSteps
     [When(@"the venue manager posts a flat fee opportunity for £(\d+)")]
     public async Task PostsFlatFeeOpportunity(decimal fee)
     {
-        await browser.UseRoleAsync(Role.VenueManager);
-
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
         myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
@@ -58,8 +56,6 @@ public class VenueManagerSteps
     [When(@"the venue manager posts a venue hire opportunity for £(\d+)")]
     public async Task PostsVenueHireOpportunity(decimal fee)
     {
-        await browser.UseRoleAsync(Role.VenueManager);
-
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
         myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
@@ -73,8 +69,6 @@ public class VenueManagerSteps
     [When(@"the venue manager posts a door split opportunity for (\d+)% door")]
     public async Task PostsDoorSplitOpportunity(int doorPercent)
     {
-        await browser.UseRoleAsync(Role.VenueManager);
-
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
         myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
@@ -88,8 +82,6 @@ public class VenueManagerSteps
     [When(@"the venue manager posts a versus opportunity for £(\d+) guarantee and (\d+)% door")]
     public async Task PostsVersusOpportunity(int guarantee, int doorPercent)
     {
-        await browser.UseRoleAsync(Role.VenueManager);
-
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
         myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
@@ -116,7 +108,6 @@ public class VenueManagerSteps
     [Given(@"a flat fee opportunity has been applied to")]
     public async Task AFlatFeeOpportunityHasBeenAppliedTo()
     {
-        await browser.UseRoleAsync(Role.VenueManager);
         state.ApplicationId = fixture.App.SeedData.PendingFlatFeeApp.ApplicationId;
         await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
     }
@@ -124,7 +115,6 @@ public class VenueManagerSteps
     [Given(@"a door split opportunity has been applied to")]
     public async Task ADoorSplitOpportunityHasBeenAppliedTo()
     {
-        await browser.UseRoleAsync(Role.VenueManager);
         state.ApplicationId = fixture.App.SeedData.PendingDoorSplitApp.ApplicationId;
         await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
     }
@@ -132,7 +122,6 @@ public class VenueManagerSteps
     [Given(@"a versus opportunity has been applied to")]
     public async Task AVersusOpportunityHasBeenAppliedTo()
     {
-        await browser.UseRoleAsync(Role.VenueManager);
         state.ApplicationId = fixture.App.SeedData.PendingVersusApp.ApplicationId;
         await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
     }

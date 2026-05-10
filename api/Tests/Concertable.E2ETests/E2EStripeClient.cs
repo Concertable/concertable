@@ -2,7 +2,7 @@ using Stripe;
 
 namespace Concertable.E2ETests;
 
-public class StripeFixture
+public class E2EStripeClient
 {
     private readonly PaymentIntentService paymentIntents;
     private readonly TransferService transfers;
@@ -11,7 +11,7 @@ public class StripeFixture
 
     public void Reset() => LastReset = DateTime.UtcNow;
 
-    internal StripeFixture(StripeClient client)
+    internal E2EStripeClient(StripeClient client)
     {
         paymentIntents = new PaymentIntentService(client);
         transfers = new TransferService(client);
