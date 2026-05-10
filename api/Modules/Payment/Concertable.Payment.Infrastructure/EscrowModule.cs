@@ -13,7 +13,7 @@ internal class EscrowModule : IEscrowModule
         this.escrowService = escrowService;
     }
 
-    public Task<Result<EscrowResponse>> HoldAsync(
+    public Task<Result<EscrowResponse>> DepositAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,
@@ -21,16 +21,16 @@ internal class EscrowModule : IEscrowModule
         PaymentSession session,
         int bookingId,
         CancellationToken ct = default) =>
-        escrowService.HoldAsync(payerId, payeeId, amount, paymentMethodId, session, bookingId, ct);
+        escrowService.DepositAsync(payerId, payeeId, amount, paymentMethodId, session, bookingId, ct);
 
-    public Task<Result<EscrowResponse>> CaptureHoldAsync(
+    public Task<Result<EscrowResponse>> CaptureAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,
         string paymentIntentId,
         int bookingId,
         CancellationToken ct = default) =>
-        escrowService.CaptureHoldAsync(payerId, payeeId, amount, paymentIntentId, bookingId, ct);
+        escrowService.CaptureAsync(payerId, payeeId, amount, paymentIntentId, bookingId, ct);
 
     public Task<Result<TransferResponse?>> ReleaseByBookingIdAsync(int bookingId, CancellationToken ct = default) =>
         escrowService.ReleaseByBookingIdAsync(bookingId, ct);

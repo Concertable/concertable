@@ -42,7 +42,7 @@ public class EscrowServiceTests
     }
 
     [Fact]
-    public async Task HoldAsync_OnSynchronousSuccess_PersistsEscrowAtHeld()
+    public async Task DepositAsync_OnSynchronousSuccess_PersistsEscrowAtHeld()
     {
         paymentManager
             .Setup(p => p.HoldAsync(It.IsAny<HoldRequest>(), It.IsAny<CancellationToken>()))
@@ -54,7 +54,7 @@ public class EscrowServiceTests
             .Callback<EscrowEntity>(e => captured = e)
             .ReturnsAsync(() => captured!);
 
-        var result = await sut.HoldAsync(payerId, payeeId, 50m, "pm_test", PaymentSession.OnSession, bookingId: 7);
+        var result = await sut.DepositAsync(payerId, payeeId, 50m, "pm_test", PaymentSession.OnSession, bookingId: 7);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(EscrowStatus.Held, result.Value.Status);
@@ -66,7 +66,7 @@ public class EscrowServiceTests
     }
 
     [Fact]
-    public async Task HoldAsync_OnRequiresAction_PersistsEscrowAtPendingWithClientSecret()
+    public async Task DepositAsync_OnRequiresAction_PersistsEscrowAtPendingWithClientSecret()
     {
         paymentManager
             .Setup(p => p.HoldAsync(It.IsAny<HoldRequest>(), It.IsAny<CancellationToken>()))
@@ -83,7 +83,7 @@ public class EscrowServiceTests
             .Callback<EscrowEntity>(e => captured = e)
             .ReturnsAsync(() => captured!);
 
-        var result = await sut.HoldAsync(payerId, payeeId, 50m, "pm_test", PaymentSession.OnSession, bookingId: 7);
+        var result = await sut.DepositAsync(payerId, payeeId, 50m, "pm_test", PaymentSession.OnSession, bookingId: 7);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(EscrowStatus.Pending, result.Value.Status);
@@ -93,13 +93,13 @@ public class EscrowServiceTests
     }
 
     [Fact]
-    public async Task HoldAsync_OnStripeFailure_DoesNotPersistEscrow()
+    public async Task DepositAsync_OnStripeFailure_DoesNotPersistEscrow()
     {
         paymentManager
             .Setup(p => p.HoldAsync(It.IsAny<HoldRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail<PaymentResponse>("card_declined"));
 
-        var result = await sut.HoldAsync(payerId, payeeId, 50m, "pm_test", PaymentSession.OnSession, bookingId: 7);
+        var result = await sut.DepositAsync(payerId, payeeId, 50m, "pm_test", PaymentSession.OnSession, bookingId: 7);
 
         Assert.True(result.IsFailed);
         escrowRepository.Verify(

@@ -7,7 +7,7 @@ using Moq;
 namespace Concertable.Concert.UnitTests.Services.Workflow;
 public class VenueHireConcertWorkflowCompleteTests
 {
-    private readonly Mock<IUpfrontConcertService> upfrontConcertService;
+    private readonly Mock<IImmediateConcertService> upfrontConcertService;
     private readonly Mock<IManagerPaymentModule> managerPaymentModule;
     private readonly Mock<ICurrentUser> currentUser;
     private readonly VenueHireConcertWorkflow sut;
@@ -16,7 +16,7 @@ public class VenueHireConcertWorkflowCompleteTests
 
     public VenueHireConcertWorkflowCompleteTests()
     {
-        upfrontConcertService = new Mock<IUpfrontConcertService>();
+        upfrontConcertService = new Mock<IImmediateConcertService>();
         managerPaymentModule = new Mock<IManagerPaymentModule>();
         currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.Id).Returns(userId);
@@ -31,11 +31,11 @@ public class VenueHireConcertWorkflowCompleteTests
     }
 
     [Fact]
-    public async Task FinishAsync_ShouldDelegateToUpfrontConcertService()
+    public async Task FinishAsync_ShouldDelegateToImmediateConcertService()
     {
         await sut.FinishAsync(10);
 
-        upfrontConcertService.Verify(s => s.FinishedAsync(10), Times.Once);
+        upfrontConcertService.Verify(s => s.FinishAsync(10), Times.Once);
     }
 
 }

@@ -59,7 +59,7 @@ internal class DoorSplitConcertWorkflow : IDeferredConcertWorkflow
         var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        await deferredConcertService.InitiateAsync(applicationId, venueManagerId, paymentMethodId);
+        await deferredConcertService.RegisterPaymentAsync(applicationId, venueManagerId, paymentMethodId);
     }
 
     public Task SettleAsync(int bookingId) =>
@@ -78,7 +78,7 @@ internal class DoorSplitConcertWorkflow : IDeferredConcertWorkflow
             "Calculated door-split artist share for concert {ConcertId}: {Revenue} {Currency} revenue at {Percent}% = {Share} {Currency}",
             concertId, totalRevenue, "GBP", contract.ArtistDoorPercent, artistShare);
 
-        await deferredConcertService.FinishedAsync(
+        await deferredConcertService.FinishAsync(
             concertId,
             booking.Application.Opportunity.Venue.UserId,
             booking.Application.Artist.UserId,

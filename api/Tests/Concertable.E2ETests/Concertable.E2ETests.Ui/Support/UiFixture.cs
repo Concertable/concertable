@@ -17,10 +17,12 @@ public class UiFixture : IAsyncLifetime
     {
         await App.InitializeAsync();
         playwright = await Playwright.CreateAsync();
+        var headless = Environment.GetEnvironmentVariable("CI") == "true"
+            || Environment.GetEnvironmentVariable("HEADLESS") == "true";
         Browser = await playwright.Chromium.LaunchAsync(new()
         {
-            Headless = Environment.GetEnvironmentVariable("CI") == "true",
-            SlowMo = Environment.GetEnvironmentVariable("CI") == "true" ? 0 : 250,
+            Headless = headless,
+            SlowMo = headless ? 0 : 250,
             Args = new[]
             {
                 "--disable-features=IsolateOrigins,site-per-process",

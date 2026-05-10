@@ -33,7 +33,7 @@ internal class EscrowService : IEscrowService
         this.logger = logger;
     }
 
-    public async Task<Result<EscrowResponse>> HoldAsync(
+    public async Task<Result<EscrowResponse>> DepositAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,
@@ -88,7 +88,7 @@ internal class EscrowService : IEscrowService
         return Result.Ok(new EscrowResponse(escrow.Id, escrow.ChargeId, escrow.Status, hold.Value.ClientSecret));
     }
 
-    public async Task<Result<EscrowResponse>> CaptureHoldAsync(
+    public async Task<Result<EscrowResponse>> CaptureAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,

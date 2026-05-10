@@ -1,6 +1,6 @@
 namespace Concertable.Concert.Application.Interfaces;
 
-internal interface IPrepaidConcertWorkflow
+internal interface IApplyCommittedConcertWorkflow
     : IConcertWorkflow, IPaidApply, IApplyCheckout, ISimpleAccept
 {
 }

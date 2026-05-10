@@ -5,7 +5,7 @@ namespace Concertable.Payment.Application.Interfaces;
 
 internal interface IEscrowService
 {
-    Task<Result<EscrowResponse>> HoldAsync(
+    Task<Result<EscrowResponse>> DepositAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,
@@ -14,7 +14,7 @@ internal interface IEscrowService
         int bookingId,
         CancellationToken ct = default);
 
-    Task<Result<EscrowResponse>> CaptureHoldAsync(
+    Task<Result<EscrowResponse>> CaptureAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,

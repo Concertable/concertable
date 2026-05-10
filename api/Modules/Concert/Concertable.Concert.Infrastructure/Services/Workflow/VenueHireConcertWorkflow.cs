@@ -5,9 +5,9 @@ using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
+internal class VenueHireConcertWorkflow : IApplyCommittedConcertWorkflow
 {
-    private readonly IUpfrontConcertService upfrontConcertService;
+    private readonly IImmediateConcertService immediateConcertService;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
     private readonly IApplicationRepository applicationRepository;
@@ -15,14 +15,14 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
     private readonly ICurrentUser currentUser;
 
     public VenueHireConcertWorkflow(
-        IUpfrontConcertService upfrontConcertService,
+        IImmediateConcertService immediateConcertService,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
         IApplicationRepository applicationRepository,
         IManagerPaymentModule managerPaymentModule,
         ICurrentUser currentUser)
     {
-        this.upfrontConcertService = upfrontConcertService;
+        this.immediateConcertService = immediateConcertService;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
         this.applicationRepository = applicationRepository;
@@ -62,12 +62,12 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
 
         var contract = (VenueHireContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
-        await upfrontConcertService.InitiateAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId, PaymentSession.OffSession);
+        await immediateConcertService.ChargeAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId, PaymentSession.OffSession);
     }
 
     public Task SettleAsync(int bookingId) =>
-        upfrontConcertService.SettleAsync(bookingId);
+        immediateConcertService.SettleAsync(bookingId);
 
     public Task FinishAsync(int concertId) =>
-        upfrontConcertService.FinishedAsync(concertId);
+        immediateConcertService.FinishAsync(concertId);
 }

@@ -4,7 +4,7 @@ namespace Concertable.Payment.Contracts;
 
 public interface IEscrowModule
 {
-    Task<Result<EscrowResponse>> HoldAsync(
+    Task<Result<EscrowResponse>> DepositAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,
@@ -13,7 +13,7 @@ public interface IEscrowModule
         int bookingId,
         CancellationToken ct = default);
 
-    Task<Result<EscrowResponse>> CaptureHoldAsync(
+    Task<Result<EscrowResponse>> CaptureAsync(
         Guid payerId,
         Guid payeeId,
         decimal amount,

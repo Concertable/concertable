@@ -45,7 +45,7 @@ public class DoorSplitConcertWorkflowCompleteTests
     {
         await sut.FinishAsync(10);
 
-        deferredConcertService.Verify(s => s.FinishedAsync(10, venueUserId, artistUserId, 500m), Times.Once);
+        deferredConcertService.Verify(s => s.FinishAsync(10, venueUserId, artistUserId, 500m), Times.Once);
     }
 
     internal static class BookingFactory

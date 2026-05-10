@@ -63,7 +63,7 @@ internal class VersusConcertWorkflow : IDeferredConcertWorkflow
         var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
 
-        await deferredConcertService.InitiateAsync(applicationId, venueManagerId, paymentMethodId);
+        await deferredConcertService.RegisterPaymentAsync(applicationId, venueManagerId, paymentMethodId);
     }
 
     public Task SettleAsync(int bookingId) =>
@@ -82,7 +82,7 @@ internal class VersusConcertWorkflow : IDeferredConcertWorkflow
             "Calculated versus artist share for concert {ConcertId}: {Guarantee} {Currency} guarantee + ({Revenue} {Currency} revenue at {Percent}%) = {Share} {Currency}",
             concertId, contract.Guarantee, "GBP", totalRevenue, contract.ArtistDoorPercent, artistShare);
 
-        await deferredConcertService.FinishedAsync(
+        await deferredConcertService.FinishAsync(
             concertId,
             booking.Application.Opportunity.Venue.UserId,
             booking.Application.Artist.UserId,

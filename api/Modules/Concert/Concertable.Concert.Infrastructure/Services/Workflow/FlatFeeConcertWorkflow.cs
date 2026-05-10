@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class FlatFeeConcertWorkflow : IDirectConcertWorkflow
+internal class FlatFeeConcertWorkflow : IHeldConcertWorkflow
 {
     private readonly IApplicationValidator applicationValidator;
     private readonly IBookingService bookingService;
@@ -74,7 +74,7 @@ internal class FlatFeeConcertWorkflow : IDirectConcertWorkflow
             "Accepting application {ApplicationId} (booking {BookingId}): binding pre-authorised PaymentIntent {PaymentIntentId} for {Amount} {Currency} from {PayerId} on behalf of {PayeeId}",
             applicationId, booking.Id, paymentIntentId, contract.Fee, "GBP", venueManagerId, artistManagerId);
 
-        var bind = await escrowModule.CaptureHoldAsync(venueManagerId, artistManagerId, contract.Fee, paymentIntentId, booking.Id);
+        var bind = await escrowModule.CaptureAsync(venueManagerId, artistManagerId, contract.Fee, paymentIntentId, booking.Id);
         if (bind.IsFailed)
             throw new BadRequestException(bind.Errors);
     }

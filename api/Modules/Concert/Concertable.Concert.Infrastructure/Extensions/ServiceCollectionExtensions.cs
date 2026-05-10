@@ -60,7 +60,7 @@ public static class ServiceCollectionExtensions
             sp.GetRequiredService<IOpportunityRepository>(),
             sp.GetRequiredService<IContractModule>()));
         services.AddScoped<IApplicationService, ApplicationService>();
-        services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
+        services.AddScoped<IImmediateConcertService, ImmediateConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
         services.AddScoped<IContractLoader, ContractLoader>();
         services.AddScoped<IPayerLookup, PayerLookup>();
