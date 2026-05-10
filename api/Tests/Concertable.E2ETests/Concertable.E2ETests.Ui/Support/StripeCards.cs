@@ -6,5 +6,4 @@ public static class StripeCards
     public const string Requires3ds = "4000002500003155";
     public const string Decline = "4000000000000002";
     public const string Insufficient3ds = "4000008400001629";
-    public const string Setup3dsAuthFailure = "4000000000003220";
 }

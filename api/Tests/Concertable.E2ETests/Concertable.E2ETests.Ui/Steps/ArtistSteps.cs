@@ -91,8 +91,8 @@ public class ArtistSteps
     [When(@"the artist pays the venue hire fee with a 3DS-failing card")]
     public async Task PaysVenueHireFeeWith3dsFailingCard()
     {
-        await new ApplyCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Setup3dsAuthFailure);
-        await payment.CompleteChallengeAsync();
+        await new ApplyCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.FailChallengeAsync();
     }
 
     [Then(@"the application is created")]

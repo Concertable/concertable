@@ -21,4 +21,19 @@ internal sealed class StripePayment(Browser browser, StripeCardEntry cardEntry) 
         await button.ClickAsync();
         await outer.WaitForAsync(new() { State = WaitForSelectorState.Detached, Timeout = 30_000 });
     }
+
+    public async Task FailChallengeAsync()
+    {
+        var outer = Page.Locator("iframe[src*='three-ds-2-challenge']");
+        await outer.WaitForAsync(new() { State = WaitForSelectorState.Attached, Timeout = 30_000 });
+
+        var challengeFrame = outer.ContentFrame.Locator("#challengeFrame");
+        await challengeFrame.WaitForAsync(new() { Timeout = 30_000 });
+
+        var button = challengeFrame.ContentFrame.Locator("#test-source-fail-3ds");
+        await button.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 30_000 });
+
+        await button.ClickAsync();
+        await outer.WaitForAsync(new() { State = WaitForSelectorState.Detached, Timeout = 30_000 });
+    }
 }

@@ -83,7 +83,8 @@ export function useCustomerNotifications() {
     notificationConnection.on(
       "TicketPurchased",
       (payload: TicketPurchasedPayload) => {
-        void queryClient.invalidateQueries({ queryKey: ["tickets"] });
+        void queryClient.invalidateQueries({ queryKey: ["tickets", "upcoming"] });
+        void queryClient.invalidateQueries({ queryKey: ["tickets", "history"] });
         const count = payload.ticketIds.length;
         toast.success(
           count > 1

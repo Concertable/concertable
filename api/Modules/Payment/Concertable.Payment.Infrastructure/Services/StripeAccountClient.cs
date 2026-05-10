@@ -138,7 +138,11 @@ internal class StripeAccountClient : IStripeAccountClient
             Currency = metadata.TryGetValue("currency", out var c) ? c : "GBP",
             Customer = stripeCustomerId,
             SetupFutureUsage = "off_session",
-            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions { Enabled = true },
+            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+            {
+                Enabled = true,
+                AllowRedirects = "never",
+            },
             Metadata = metadata.ToDictionary(kv => kv.Key, kv => kv.Value),
         }, cancellationToken: ct);
 

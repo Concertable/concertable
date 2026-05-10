@@ -180,8 +180,8 @@ public class VenueManagerSteps
     [When(@"the venue manager registers a card with a 3DS-failing card")]
     public async Task RegistersCardWith3dsFailingCard()
     {
-        await new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Setup3dsAuthFailure);
-        await payment.CompleteChallengeAsync();
+        await new ApplicationCheckoutPage(browser.Page, payment).PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.FailChallengeAsync();
     }
 
     [Then(@"a draft concert is created")]
