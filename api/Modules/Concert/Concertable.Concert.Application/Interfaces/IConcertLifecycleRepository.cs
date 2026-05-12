@@ -10,4 +10,8 @@ internal interface IConcertLifecycleRepository
     Task<int?> GetIdByApplicationIdAsync(int applicationId);
     Task<int?> GetIdByBookingIdAsync(int bookingId);
     Task<int?> GetIdByConcertIdAsync(int concertId);
+
+    Task<int?> GetApplicationIdByLifecycleIdAsync(int lifecycleId);
+    Task<int?> GetBookingIdByLifecycleIdAsync(int lifecycleId);
+    Task<int?> GetConcertIdByLifecycleIdAsync(int lifecycleId);
 }

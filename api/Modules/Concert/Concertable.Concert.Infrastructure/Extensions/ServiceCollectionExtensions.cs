@@ -4,6 +4,8 @@ using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Mappers;
 using Concertable.Concert.Application.Validators;
 using Concertable.Concert.Application.Workflow;
+using Concertable.Concert.Infrastructure.Services.Workflow.StateMachines;
+using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 using Concertable.Concert.Contracts;
 using Concertable.Concert.Contracts.Events;
 using Concertable.Concert.Domain.Events;
@@ -81,23 +83,54 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPdfService, PdfService>();
 
-        // Dispatchers
-        services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
-        services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
-        services.AddScoped<ICheckoutDispatcher, CheckoutDispatcher>();
-        services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<IConcertCompletionRunner, ConcertCompletionRunner>();
-        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
-        services.AddScoped<IVerifyDispatcher, VerifyDispatcher>();
         services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
 
-        var workflowTypes = new Dictionary<ContractType, Type>();
-        services.AddConcertWorkflow<FlatFeeConcertWorkflow>(ContractType.FlatFee, workflowTypes);
-        services.AddConcertWorkflow<DoorSplitConcertWorkflow>(ContractType.DoorSplit, workflowTypes);
-        services.AddConcertWorkflow<VersusConcertWorkflow>(ContractType.Versus, workflowTypes);
-        services.AddConcertWorkflow<VenueHireConcertWorkflow>(ContractType.VenueHire, workflowTypes);
-        services.AddSingleton(new ConcertWorkflowCapabilityRegistry(workflowTypes));
-        services.AddScoped<IConcertWorkflowFactory, ConcertWorkflowFactory>();
+        services.AddScoped<IConcertLifecycleRepository, ConcertLifecycleRepository>();
+        services.AddScoped<IConcertPipelineFactory, ConcertPipelineFactory>();
+        services.AddScoped<IConcertStateMachineFactory, ConcertStateMachineFactory>();
+
+        services.AddScoped<ConcertPipelineExecutor>();
+        services.AddScoped<IApplyDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
+        services.AddScoped<ICheckoutDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
+        services.AddScoped<IAcceptanceDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
+        services.AddScoped<ISettlementDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
+        services.AddScoped<ICompletionDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
+        services.AddScoped<IVerifyDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
+
+        services.AddConcertPipeline(ContractType.FlatFee, p => p
+            .WithSimpleApply<SimpleApplyStep>()
+            .WithAcceptCheckout<FlatFeeAcceptCheckoutStep>()
+            .WithSimpleAccept<FlatFeeAcceptStep>()
+            .WithSettle<HeldSettleStep>()
+            .WithFinish<FlatFeeFinishStep>()
+            .WithStateMachine<HeldStateMachine>());
+
+        services.AddConcertPipeline(ContractType.DoorSplit, p => p
+            .WithSimpleApply<SimpleApplyStep>()
+            .WithAcceptCheckout<DoorSplitAcceptCheckoutStep>()
+            .WithVerify<DeferredVerifyStep>()
+            .WithPaidAccept<DoorSplitAcceptStep>()
+            .WithSettle<DeferredSettleStep>()
+            .WithFinish<DoorSplitFinishStep>()
+            .WithStateMachine<DeferredStateMachine>());
+
+        services.AddConcertPipeline(ContractType.Versus, p => p
+            .WithSimpleApply<SimpleApplyStep>()
+            .WithAcceptCheckout<VersusAcceptCheckoutStep>()
+            .WithVerify<DeferredVerifyStep>()
+            .WithPaidAccept<VersusAcceptStep>()
+            .WithSettle<DeferredSettleStep>()
+            .WithFinish<VersusFinishStep>()
+            .WithStateMachine<DeferredStateMachine>());
+
+        services.AddConcertPipeline(ContractType.VenueHire, p => p
+            .WithApplyCheckout<VenueHireApplyCheckoutStep>()
+            .WithPaidApply<VenueHirePaidApplyStep>()
+            .WithSimpleAccept<VenueHireAcceptStep>()
+            .WithSettle<ApplyCommittedSettleStep>()
+            .WithFinish<VenueHireFinishStep>()
+            .WithStateMachine<ApplyCommittedStateMachine>());
 
         // Ticket payee â€” composite dispatches by ContractType to artist vs venue
         services.AddSingleton<ArtistTicketPayee>();
@@ -124,6 +157,7 @@ public static class ServiceCollectionExtensions
 
         // Domain event â†’ integration event + read-model projection handlers
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<StageAdvancedDomainEvent>, StageAdvancedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
@@ -155,14 +189,4 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddConcertWorkflow<TWorkflow>(
-        this IServiceCollection services,
-        ContractType contractType,
-        Dictionary<ContractType, Type> strategyTypes)
-        where TWorkflow : class, IConcertWorkflow
-    {
-        services.AddKeyedScoped<IConcertWorkflow, TWorkflow>(contractType);
-        strategyTypes[contractType] = typeof(TWorkflow);
-        return services;
-    }
 }

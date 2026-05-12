@@ -30,4 +30,22 @@ internal class ConcertLifecycleRepository : Repository<ConcertLifecycleEntity>, 
             .Where(c => c.Id == concertId)
             .Select(c => (int?)c.Booking.Application.LifecycleId)
             .FirstOrDefaultAsync();
+
+    public Task<int?> GetApplicationIdByLifecycleIdAsync(int lifecycleId) =>
+        context.Applications
+            .Where(a => a.LifecycleId == lifecycleId)
+            .Select(a => (int?)a.Id)
+            .FirstOrDefaultAsync();
+
+    public Task<int?> GetBookingIdByLifecycleIdAsync(int lifecycleId) =>
+        context.Bookings
+            .Where(b => b.Application.LifecycleId == lifecycleId)
+            .Select(b => (int?)b.Id)
+            .FirstOrDefaultAsync();
+
+    public Task<int?> GetConcertIdByLifecycleIdAsync(int lifecycleId) =>
+        context.Concerts
+            .Where(c => c.Booking.Application.LifecycleId == lifecycleId)
+            .Select(c => (int?)c.Id)
+            .FirstOrDefaultAsync();
 }
