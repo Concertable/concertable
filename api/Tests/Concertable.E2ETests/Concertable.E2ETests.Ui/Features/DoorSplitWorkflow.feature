@@ -6,7 +6,7 @@ Feature: DoorSplit workflow happy path
   Scenario: Venue manager books artist on a door split
     When the venue manager posts a door split opportunity for 70% door
     And the artist applies to the opportunity
-    And the venue manager accepts the application with a valid card
+    And the venue manager accepts and registers a valid card
     Then a draft concert is created
 
   @VenueManager

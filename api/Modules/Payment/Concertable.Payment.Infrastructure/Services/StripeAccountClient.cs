@@ -5,6 +5,7 @@ using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Stripe;
+using static Concertable.Payment.Contracts.TransactionTypes;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
@@ -188,7 +189,7 @@ internal class StripeAccountClient : IStripeAccountClient
                 Enabled = true,
                 AllowRedirects = "never",
             },
-            Metadata = metadata.With("verify", "true"),
+            Metadata = metadata.ToDictionary(kv => kv.Key, kv => kv.Value),
         }, cancellationToken: ct);
 
         var customerSession = await CreateCustomerSessionAsync(stripeCustomerId, ct);

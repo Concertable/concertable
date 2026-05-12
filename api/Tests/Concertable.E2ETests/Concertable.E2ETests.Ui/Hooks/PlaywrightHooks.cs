@@ -6,6 +6,7 @@ namespace Concertable.E2ETests.Ui.Hooks;
 public class PlaywrightHooks
 {
     public static UiFixture Fixture { get; private set; } = null!;
+    private static readonly SemaphoreSlim InitLock = new(1, 1);
     private readonly Browser browser;
 
     public PlaywrightHooks(Browser browser) => this.browser = browser;
@@ -13,8 +14,17 @@ public class PlaywrightHooks
     [BeforeTestRun]
     public static async Task BeforeTestRun()
     {
-        Fixture = new UiFixture();
-        await Fixture.InitializeAsync();
+        await InitLock.WaitAsync();
+        try
+        {
+            if (Fixture is not null) return;
+            Fixture = new UiFixture();
+            await Fixture.InitializeAsync();
+        }
+        finally
+        {
+            InitLock.Release();
+        }
     }
 
     [AfterTestRun]

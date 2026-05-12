@@ -11,6 +11,7 @@ internal sealed class PaymentConfigurationProvider : IEntityTypeConfigurationPro
         modelBuilder.ApplyConfiguration(new TransactionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TicketTransactionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SettlementTransactionEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new VerifyTransactionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new StripeEventEntityConfiguration());
         modelBuilder.ApplyConfiguration(new PayoutAccountEntityConfiguration());
         modelBuilder.ApplyConfiguration(new EscrowEntityConfiguration());

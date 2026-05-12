@@ -49,6 +49,7 @@ function Form({
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentReady, setPaymentReady] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -85,11 +86,11 @@ function Form({
     onSuccess(paymentMethodId);
   }
 
-  const isDisabled = !stripe || !elements || disabled || isSubmitting;
+  const isDisabled = !stripe || !elements || !paymentReady || disabled || isSubmitting;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement options={{ layout: "tabs" }} />
+      <PaymentElement options={{ layout: "tabs" }} onReady={() => setPaymentReady(true)} />
       {error && <p data-testid="payment-error" className="text-destructive text-sm">{error}</p>}
       <Button
         type="submit"

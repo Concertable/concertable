@@ -86,51 +86,13 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Discriminator = table.Column<string>(type: "nvarchar(34)", maxLength: 34, nullable: false),
+                    ContextId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transactions", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SettlementTransactions",
-                schema: "payment",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    BookingId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SettlementTransactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SettlementTransactions_Transactions_Id",
-                        column: x => x.Id,
-                        principalSchema: "payment",
-                        principalTable: "Transactions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TicketTransactions",
-                schema: "payment",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    ConcertId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TicketTransactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TicketTransactions_Transactions_Id",
-                        column: x => x.Id,
-                        principalSchema: "payment",
-                        principalTable: "Transactions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -204,15 +166,7 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                 schema: "payment");
 
             migrationBuilder.DropTable(
-                name: "SettlementTransactions",
-                schema: "payment");
-
-            migrationBuilder.DropTable(
                 name: "StripeEvents",
-                schema: "payment");
-
-            migrationBuilder.DropTable(
-                name: "TicketTransactions",
                 schema: "payment");
 
             migrationBuilder.DropTable(

@@ -13,9 +13,13 @@ public class ApplicationCheckoutPage
         this.payment = payment;
     }
 
-    public Task PayWithSavedCardAsync() => payment.PayWithSavedCardAsync();
-    public Task PayWithNewCardAsync(string cardNumber) => payment.PayWithNewCardAsync(cardNumber);
+    public Task SubmitWithSavedCardAsync() => payment.PayWithSavedCardAsync();
 
-    public Task WaitForSuccessAsync() =>
-        page.WaitForURLAsync("**/venue/my/concerts/concert/**");
+    public async Task SubmitWithSavedCardAndVerifyAsync()
+    {
+        await payment.PayWithSavedCardAsync();
+        await payment.CompleteChallengeIfRequiredAsync();
+    }
+
+    public Task SubmitWithNewCardAsync(string cardNumber) => payment.PayWithNewCardAsync(cardNumber);
 }

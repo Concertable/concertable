@@ -28,8 +28,9 @@ internal class PaymentDevSeeder : IDevSeeder
     {
         await context.PayoutAccounts.SeedIfEmptyAsync(async () =>
         {
+            seedData.CustomerStripeCustomerId = "cus_UIIy9Gbwfr3uAP";
             var firstCustomer = PayoutAccountEntity.Create(seedData.CustomerIds[0]);
-            firstCustomer.LinkCustomer("cus_UIIy9Gbwfr3uAP");
+            firstCustomer.LinkCustomer(seedData.CustomerStripeCustomerId);
             context.PayoutAccounts.Add(firstCustomer);
 
             seedData.ArtistManager1StripeAccountId = "acct_1TJiMePysoXmht10";

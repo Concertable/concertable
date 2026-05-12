@@ -46,8 +46,9 @@ internal class VersusConcertWorkflow : IDeferredConcertWorkflow
 
         var metadata = new Dictionary<string, string>
         {
-            ["type"] = "applicationAccept",
-            ["applicationId"] = applicationId.ToString()
+            ["type"] = TransactionTypes.Verify,
+            ["applicationId"] = applicationId.ToString(),
+            ["venueManagerId"] = venueManagerId.ToString()
         };
 
         var session = await managerPaymentModule.CreateVerifySessionAsync(venueManagerId, metadata);
@@ -58,13 +59,11 @@ internal class VersusConcertWorkflow : IDeferredConcertWorkflow
             CheckoutLabels.Settlement);
     }
 
-    public async Task AcceptAsync(int applicationId, string paymentMethodId)
-    {
-        var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
+    public Task AcceptAsync(int applicationId, string paymentMethodId) =>
+        deferredConcertService.RegisterPaymentAsync(applicationId, paymentMethodId);
 
-        await deferredConcertService.RegisterPaymentAsync(applicationId, venueManagerId, paymentMethodId);
-    }
+    public Task VerifyAsync(int applicationId) =>
+        deferredConcertService.VerifyAsync(applicationId);
 
     public Task SettleAsync(int bookingId) =>
         deferredConcertService.SettleAsync(bookingId);

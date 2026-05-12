@@ -17,6 +17,7 @@ internal sealed class StripeCardEntry(Browser browser)
         await CardTab.ClickAsync();
         await ConfirmButton.ScrollIntoViewIfNeededAsync();
         await FillCardAsync(cardNumber);
+        await ConfirmButton.WaitForAsync(new() { State = WaitForSelectorState.Attached });
         await ConfirmButton.ClickAsync();
     }
 
@@ -36,5 +37,6 @@ internal sealed class StripeCardEntry(Browser browser)
 
         await cvc.ClickAsync();
         await cvc.PressSequentiallyAsync("123", new() { Delay = 30 });
+        await cvc.PressAsync("Tab");
     }
 }

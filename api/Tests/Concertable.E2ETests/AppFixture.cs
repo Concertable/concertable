@@ -14,7 +14,6 @@ namespace Concertable.E2ETests;
 public class AppFixture : IAsyncLifetime
 {
     private DistributedApplication app = null!;
-    private StripeCliFixture stripeCli = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
     private readonly IConfiguration configuration;
@@ -61,16 +60,11 @@ public class AppFixture : IAsyncLifetime
     {
         logger.LogInformation("Initializing E2E test fixture");
 
-        await DockerLeakReaper.ReapAsync();
-
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
-        stripeCli = builder.AddStripe(configuration, ApiBaseUrl);
-        await stripeCli.InitializeAsync();
-
-        builder.AddE2E(ApiBaseUrl, AuthBaseUrl, stripeCli.WebhookSecret);
-        var stripeClient = new StripeClient(stripeCli.ApiKey);
+        builder.AddE2E(ApiBaseUrl, AuthBaseUrl);
+        var stripeClient = new StripeClient(configuration["Stripe:SecretKey"]);
         StripePaymentIntents = new PaymentIntentService(stripeClient);
         Stripe = new E2EStripeClient(stripeClient);
 
@@ -110,7 +104,6 @@ public class AppFixture : IAsyncLifetime
         tokenMinter.Dispose();
         await Sql.DisposeAsync();
         await app.DisposeAsync();
-        await stripeCli.DisposeAsync();
         loggerFactory.Dispose();
     }
 
@@ -126,7 +119,7 @@ public class AppFixture : IAsyncLifetime
             logger.LogDebug("Health check: {StatusCode}", response.StatusCode);
             return response.IsSuccessStatusCode;
         },
-        timeout: TimeSpan.FromSeconds(60),
+        timeout: TimeSpan.FromMinutes(3),
         interval: TimeSpan.FromSeconds(1));
 
         logger.LogInformation("App is healthy");

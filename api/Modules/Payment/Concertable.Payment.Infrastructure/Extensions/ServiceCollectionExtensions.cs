@@ -122,6 +122,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<ITransactionHandler, TicketTransactionHandler>(TransactionTypes.Ticket);
         services.AddKeyedScoped<ITransactionHandler, SettlementTransactionHandler>(TransactionTypes.Settlement);
         services.AddKeyedScoped<ITransactionHandler, EscrowConfirmedHandler>(TransactionTypes.Escrow);
+        services.AddKeyedScoped<ITransactionHandler, VerifyTransactionHandler>(TransactionTypes.Verify);
         services.AddKeyedScoped<IPaymentFailureHandler, EscrowFailedHandler>(TransactionTypes.Escrow);
         services.AddKeyedScoped<IPaymentFailureHandler, SettlementFailedHandler>(TransactionTypes.Settlement);
 

@@ -10,6 +10,7 @@ internal class TransactionMapper : ITransactionMapper
         {
             [TransactionType.Ticket] = new TicketTransactionMapper(),
             [TransactionType.Settlement] = new SettlementTransactionMapper(),
+            [TransactionType.Verify] = new VerifyTransactionMapper(),
         }.ToFrozenDictionary();
 
     public TransactionEntity ToEntity(ITransaction dto) => mappers[dto.TransactionType].ToEntity(dto);

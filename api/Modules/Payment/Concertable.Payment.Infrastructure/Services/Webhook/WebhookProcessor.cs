@@ -1,3 +1,4 @@
+using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Stripe;
@@ -62,12 +63,20 @@ internal class WebhookProcessor : IWebhookProcessor
                     break;
 
                 case "payment_intent.amount_capturable_updated":
-                    if (intent.Metadata.TryGetValue("verify", out var verifyFlag) && verifyFlag == "true")
+                    if (intent.Metadata.TryGetValue("type", out var capturedType) && capturedType == TransactionTypes.Verify)
                     {
                         logger.LogInformation(
                             "Cancelling verify PaymentIntent {IntentId} after 3DS completion (event {EventId})",
                             intent.Id, stripeEvent.Id);
                         await stripeHoldClient.CancelAsync(intent.Id, cancellationToken);
+                        var enrichedMetadata = new Dictionary<string, string>(intent.Metadata)
+                        {
+                            ["paymentMethodId"] = intent.PaymentMethodId
+                        };
+                        logger.LogInformation(
+                            "Publishing PaymentSucceededEvent for verify PaymentIntent {IntentId} (event {EventId})",
+                            intent.Id, stripeEvent.Id);
+                        await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, enrichedMetadata), cancellationToken);
                     }
                     break;
 

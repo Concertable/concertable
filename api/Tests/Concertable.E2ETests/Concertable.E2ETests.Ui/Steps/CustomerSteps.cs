@@ -124,10 +124,6 @@ public class CustomerSteps
         await payment.CompleteChallengeAsync();
     }
 
-    [Then(@"the checkout awaiting screen should be visible")]
-    public Task CheckoutAwaitingVisible() =>
-        checkoutPage.WaitForAwaitingScreenAsync();
-
     [Then(@"the checkout success screen should be visible")]
     public Task CheckoutSuccessVisible() =>
         checkoutPage.WaitForSuccessScreenAsync();

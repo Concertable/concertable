@@ -20,8 +20,7 @@ Feature: Ticket purchase happy path
     When the customer clicks buy tickets
     Then the customer should be on the checkout page
     When the customer pays with a test card and confirms
-    Then the checkout awaiting screen should be visible
-    And the checkout success screen should be visible
+    Then the checkout success screen should be visible
     And a ticket purchased toast should appear
     When the customer clicks view tickets
     Then the customer should be on the upcoming tickets page
@@ -36,8 +35,7 @@ Feature: Ticket purchase happy path
     When the customer clicks buy tickets
     Then the customer should be on the checkout page
     When the customer pays with a new card and confirms
-    Then the checkout awaiting screen should be visible
-    And the checkout success screen should be visible
+    Then the checkout success screen should be visible
     And a ticket purchased toast should appear
     When the customer clicks view tickets
     Then the customer should be on the upcoming tickets page
@@ -60,8 +58,7 @@ Feature: Ticket purchase happy path
     When the customer clicks buy tickets
     Then the customer should be on the checkout page
     When the customer pays with a 3DS card
-    Then the checkout awaiting screen should be visible
-    And the checkout success screen should be visible
+    Then the checkout success screen should be visible
     And a ticket purchased toast should appear
 
   @Customer @PaymentFailure

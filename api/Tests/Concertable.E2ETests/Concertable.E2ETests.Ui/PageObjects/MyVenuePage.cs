@@ -68,5 +68,5 @@ public class MyVenuePage
     }
 
     public Task WaitUntilSavedAsync() =>
-        Assertions.Expect(EditButton).ToHaveTextAsync("Edit");
+        Assertions.Expect(EditButton).ToHaveTextAsync("Edit", new() { Timeout = 15_000 });
 }

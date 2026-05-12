@@ -9,35 +9,24 @@ internal static class DistributedApplicationBuilderExtensions
 {
     private const string ApiResourceName = "api";
     private const string AuthResourceName = "auth";
-
-    public static StripeCliFixture AddStripe(
-        this IDistributedApplicationTestingBuilder builder,
-        IConfiguration config,
-        string apiBaseUrl)
-    {
-        var apiKey = config["Stripe:SecretKey"]
-            ?? throw new InvalidOperationException("Stripe:SecretKey is not configured. Set it in appsettings.E2E.json or as Stripe__SecretKey env var.");
-
-        return new StripeCliFixture(apiKey, apiBaseUrl);
-    }
+    private const string StripeCliResourceName = "stripe-cli";
 
     public static IDistributedApplicationTestingBuilder AddE2E(
         this IDistributedApplicationTestingBuilder builder,
         string apiBaseUrl,
-        string authBaseUrl,
-        string webhookSecret)
+        string authBaseUrl)
     {
         builder.PinAuth(authBaseUrl);
-        builder.PinApi(apiBaseUrl, authBaseUrl, webhookSecret);
+        builder.PinApi(apiBaseUrl, authBaseUrl);
         builder.AddEphemeralSql();
+        builder.PinStripeCli(apiBaseUrl);
         return builder;
     }
 
     private static void PinApi(
         this IDistributedApplicationTestingBuilder builder,
         string apiBaseUrl,
-        string authBaseUrl,
-        string webhookSecret)
+        string authBaseUrl)
     {
         var api = builder.Resources
             .OfType<ProjectResource>()
@@ -51,7 +40,6 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = apiBaseUrl;
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
-            context.EnvironmentVariables["Stripe__WebhookSecret"] = webhookSecret;
             context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
             context.EnvironmentVariables["ExternalServices__UseRealEmail"] = "false";
             context.EnvironmentVariables["ExternalServices__UseRealBlob"] = "false";
@@ -74,6 +62,40 @@ internal static class DistributedApplicationBuilderExtensions
         {
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = authBaseUrl;
+        }));
+    }
+
+    private static void PinStripeCli(
+        this IDistributedApplicationTestingBuilder builder,
+        string apiBaseUrl)
+    {
+        var stripeCli = builder.Resources
+            .OfType<ContainerResource>()
+            .FirstOrDefault(r => r.Name == StripeCliResourceName);
+
+        if (stripeCli is null) return;
+
+        var apiKey = builder.Configuration["Stripe:SecretKey"]
+            ?? throw new InvalidOperationException("Stripe:SecretKey is not configured.");
+        var forwardTo = $"{apiBaseUrl.Replace("localhost", "host.docker.internal")}/api/Webhook";
+
+        foreach (var annotation in stripeCli.Annotations.OfType<CommandLineArgsCallbackAnnotation>().ToList())
+            stripeCli.Annotations.Remove(annotation);
+
+        var volume = stripeCli.Annotations.OfType<ContainerMountAnnotation>()
+            .FirstOrDefault(m => m.Source == "stripe-cli-config");
+        if (volume is not null)
+            stripeCli.Annotations.Remove(volume);
+
+        stripeCli.Annotations.Add(new CommandLineArgsCallbackAnnotation(ctx =>
+        {
+            ctx.Args.Add("listen");
+            ctx.Args.Add("--skip-verify");
+            ctx.Args.Add("--api-key");
+            ctx.Args.Add(apiKey);
+            ctx.Args.Add("--forward-to");
+            ctx.Args.Add(forwardTo);
+            return Task.CompletedTask;
         }));
     }
 
