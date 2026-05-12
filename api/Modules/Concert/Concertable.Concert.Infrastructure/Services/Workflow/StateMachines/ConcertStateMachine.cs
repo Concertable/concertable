@@ -17,7 +17,7 @@ internal abstract class ConcertStateMachine : IConcertStateMachine
 
     public async Task GuardAsync<TStep>(int lifecycleId) where TStep : IConcertStep
     {
-        var lifecycle = await repository.GetAsync(lifecycleId)
+        var lifecycle = await repository.GetByIdAsync(lifecycleId)
             ?? throw new NotFoundException("Concert lifecycle not found");
 
         var expected = PreviousStage<TStep>();
@@ -27,7 +27,7 @@ internal abstract class ConcertStateMachine : IConcertStateMachine
 
     public async Task AdvanceAsync<TStep>(int lifecycleId) where TStep : IConcertStep
     {
-        var lifecycle = await repository.GetAsync(lifecycleId)
+        var lifecycle = await repository.GetByIdAsync(lifecycleId)
             ?? throw new NotFoundException("Concert lifecycle not found");
 
         lifecycle.AdvanceTo(TStep.Stage);

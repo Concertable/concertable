@@ -6,6 +6,7 @@ public abstract class ApplicationEntity : IIdEntity
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Pending;
     public int OpportunityId { get; private set; }
     public int ArtistId { get; private set; }
+    public int LifecycleId { get; private set; }
     public OpportunityEntity Opportunity { get; set; } = null!;
     public ArtistReadModel Artist { get; set; } = null!;
     public BookingEntity? Booking { get; set; }
@@ -16,6 +17,13 @@ public abstract class ApplicationEntity : IIdEntity
     {
         ArtistId = artistId;
         OpportunityId = opportunityId;
+    }
+
+    public void SetLifecycleId(int lifecycleId)
+    {
+        if (LifecycleId != 0)
+            throw new DomainException("LifecycleId has already been set.");
+        LifecycleId = lifecycleId;
     }
 
     public void Accept(BookingEntity bookingConcert)

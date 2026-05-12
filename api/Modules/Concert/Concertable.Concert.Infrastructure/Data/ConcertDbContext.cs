@@ -13,6 +13,7 @@ internal class ConcertDbContext(
     : DbContextBase(options)
 {
     public DbSet<ConcertEntity> Concerts => Set<ConcertEntity>();
+    public DbSet<ConcertLifecycleEntity> ConcertLifecycles => Set<ConcertLifecycleEntity>();
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
     public DbSet<ConcertGenreEntity> ConcertGenres => Set<ConcertGenreEntity>();
     public DbSet<ConcertImageEntity> ConcertImages => Set<ConcertImageEntity>();

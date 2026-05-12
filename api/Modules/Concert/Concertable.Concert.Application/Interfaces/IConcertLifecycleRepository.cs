@@ -2,7 +2,7 @@ namespace Concertable.Concert.Application.Interfaces;
 
 internal interface IConcertLifecycleRepository
 {
-    Task<ConcertLifecycleEntity?> GetAsync(int id);
-    Task AddAsync(ConcertLifecycleEntity entity);
+    Task<ConcertLifecycleEntity?> GetByIdAsync(int id);
+    Task<ConcertLifecycleEntity> AddAsync(ConcertLifecycleEntity entity);
     Task SaveChangesAsync();
 }
