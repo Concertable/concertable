@@ -25,9 +25,6 @@ public class ConcertLifecycleEntity : IIdEntity, IEventRaiser
 
     public void AdvanceTo(ConcertStage to)
     {
-        if (to <= Stage)
-            throw new DomainException($"Cannot advance lifecycle from {Stage} to {to}.");
-
         Stage = to;
         events.Raise(new StageAdvancedDomainEvent(Id, to));
     }

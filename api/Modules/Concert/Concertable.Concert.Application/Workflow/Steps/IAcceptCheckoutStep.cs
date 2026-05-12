@@ -4,5 +4,6 @@ namespace Concertable.Concert.Application.Workflow.Steps;
 
 internal interface IAcceptCheckoutStep : IConcertStep
 {
+    static ConcertStage IConcertStep.Stage => ConcertStage.CheckedOut;
     Task<Checkout> ExecuteAsync(int applicationId);
 }
