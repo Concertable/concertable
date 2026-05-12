@@ -39,6 +39,7 @@ public class SeedUser
 {
     public Guid Id { get; set; }
     public string Email { get; set; } = null!;
+    public string StripeCustomerId { get; set; } = null!;
 }
 
 public class SeedVenueManager
@@ -46,6 +47,7 @@ public class SeedVenueManager
     public Guid Id { get; set; }
     public string Email { get; set; } = null!;
     public string StripeAccountId { get; set; } = null!;
+    public string StripeCustomerId { get; set; } = null!;
     public int VenueId { get; set; }
 }
 

@@ -11,7 +11,7 @@ public class PlaywrightHooks
 
     public PlaywrightHooks(Browser browser) => this.browser = browser;
 
-    [BeforeTestRun]
+    [BeforeTestRun(Order = 1)]
     public static async Task BeforeTestRun()
     {
         await InitLock.WaitAsync();
@@ -34,7 +34,7 @@ public class PlaywrightHooks
             await Fixture.DisposeAsync();
     }
 
-    [BeforeScenario]
+    [BeforeScenario(Order = 1)]
     public async Task BeforeScenario(ScenarioContext scenarioContext)
     {
         await Fixture.App.ResetAsync();

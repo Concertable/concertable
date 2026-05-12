@@ -3,7 +3,7 @@ Feature: Versus workflow happy path
   applies, the venue manager accepts and registers a card for future settlement. A draft
   concert is created.
 
-  @VenueManager
+  @VenueManager @ResetsStripe
   Scenario: Venue manager books artist on a versus deal
     When the venue manager posts a versus opportunity for £100 guarantee and 70% door
     And the artist applies to the opportunity

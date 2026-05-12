@@ -3,7 +3,7 @@ Feature: FlatFee workflow happy path
   manager accepts and pays the flat fee. The booking lands in escrow and a
   draft concert is created.
 
-  @VenueManager
+  @VenueManager @ResetsStripe
   Scenario: Venue manager books artist on a flat fee
     When the venue manager posts a flat fee opportunity for £500
     And the artist applies to the opportunity

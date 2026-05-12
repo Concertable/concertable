@@ -24,4 +24,5 @@ public class ApplyCheckoutPage
         await page.WaitForURLAsync("**/artist/opportunity/checkout/**");
         await payment.PayWithSavedCardAsync();
     }
+
 }

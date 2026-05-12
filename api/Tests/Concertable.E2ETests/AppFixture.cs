@@ -27,7 +27,7 @@ public class AppFixture : IAsyncLifetime
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
-    public E2EStripeClient Stripe { get; private set; } = null!;
+    public StripeFixture Stripe { get; private set; } = null!;
     public SeedDataResponse SeedData { get; private set; } = null!;
     public SqlFixture Sql { get; private set; } = null!;
     public TestDb Db { get; private set; } = null!;
@@ -66,7 +66,7 @@ public class AppFixture : IAsyncLifetime
         builder.AddE2E(ApiBaseUrl, AuthBaseUrl);
         var stripeClient = new StripeClient(configuration["Stripe:SecretKey"]);
         StripePaymentIntents = new PaymentIntentService(stripeClient);
-        Stripe = new E2EStripeClient(stripeClient);
+        Stripe = new StripeFixture(stripeClient);
 
         app = await builder.BuildAsync();
         await app.StartAsync();
