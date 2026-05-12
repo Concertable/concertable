@@ -62,17 +62,17 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldFail_WhenCardWillDecline()
+    public async Task Accept_ShouldCreateBooking_WithoutDraft()
     {
-        // Arrange — verify-and-void is stubbed to decline
-        var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseDeclineAtVerify());
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
         var response = await client.PostAsync(
             $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
-        // Assert — 400 returned, no DeferredBooking or concert draft created
-        await response.ShouldBe(HttpStatusCode.BadRequest);
+        // Assert — booking created but draft not created until verify webhook fires
+        await response.ShouldBe(HttpStatusCode.NoContent);
         var concert = await fixture.ReadDbContext.Concerts
             .FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.DoorSplitApp.Id);
         Assert.Null(concert);
@@ -81,12 +81,17 @@ public class ApplicationDoorSplitApiTests : IAsyncLifetime
     [Fact]
     public async Task Accept_ShouldCreateDraftConcertAndNotifyArtistAndVenue()
     {
+        // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/checkout");
 
+        // Act
         var acceptResponse = await client.PostAsync(
             $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
-        await acceptResponse.ShouldBe(HttpStatusCode.OK);
+        await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
+        await fixture.StripeClient.SendWebhookAsync();
 
+        // Assert
         var application = await client.GetAsync<ApplicationResponse>(
             $"/api/Application/{fixture.SeedData.DoorSplitApp.Id}");
 

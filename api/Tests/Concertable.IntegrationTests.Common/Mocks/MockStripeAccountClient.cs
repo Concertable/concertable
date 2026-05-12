@@ -2,11 +2,19 @@ using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Contracts;
 using Concertable.Payment.Domain;
+using Stripe;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 
 internal class MockStripeAccountClient : IStripeAccountClient
 {
+    private readonly IMockStripeApiClient stripeApiClient;
+
+    public MockStripeAccountClient(IMockStripeApiClient stripeApiClient)
+    {
+        this.stripeApiClient = stripeApiClient;
+    }
+
     public Task ProvisionCustomerAsync(Guid userId, string email, CancellationToken ct = default) =>
         Task.CompletedTask;
 
@@ -37,11 +45,17 @@ internal class MockStripeAccountClient : IStripeAccountClient
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("seti_mock_secret", "cuss_mock_secret", stripeCustomerId));
 
-    public Task<CheckoutSession> CreateVerifySessionAsync(
+    public async Task<CheckoutSession> CreateVerifySessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
-        CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("pi_mock_verify_secret", "cuss_mock_secret", stripeCustomerId));
+        CancellationToken ct = default)
+    {
+        var intent = await stripeApiClient.CreatePaymentIntentAsync(new PaymentIntentCreateOptions
+        {
+            Metadata = new Dictionary<string, string>(metadata)
+        });
+        return new CheckoutSession(intent.Id, "cuss_mock_secret", stripeCustomerId);
+    }
 
     public Task<CheckoutSession> CreateHoldSessionAsync(
         string stripeCustomerId,
@@ -49,5 +63,4 @@ internal class MockStripeAccountClient : IStripeAccountClient
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("pi_mock_hold_secret", "cuss_mock_secret", stripeCustomerId));
-
 }

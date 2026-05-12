@@ -54,17 +54,17 @@ public class ApplicationVersusApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Accept_ShouldFail_WhenCardWillDecline()
+    public async Task Accept_ShouldCreateBooking_WithoutDraft()
     {
-        // Arrange — verify-and-void is stubbed to decline
-        var client = fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseDeclineAtVerify());
+        // Arrange
+        var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
 
         // Act
         var response = await client.PostAsync(
             $"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
 
-        // Assert — 400 returned, no concert draft created
-        await response.ShouldBe(HttpStatusCode.BadRequest);
+        // Assert — booking created but draft not created until verify webhook fires
+        await response.ShouldBe(HttpStatusCode.NoContent);
         var concert = await fixture.ReadDbContext.Concerts
             .FirstOrDefaultAsync(c => c.Booking.ApplicationId == fixture.SeedData.VersusApp.Id);
         Assert.Null(concert);
@@ -75,10 +75,12 @@ public class ApplicationVersusApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.VersusApp.Id}/checkout");
 
         // Act
         var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.VersusApp.Id}/accept", new { paymentMethodId = "pm_card_visa" });
-        await acceptResponse.ShouldBe(HttpStatusCode.OK);
+        await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
+        await fixture.StripeClient.SendWebhookAsync();
 
         // Assert
         var concert = await client.GetAssertAsync<ConcertDetailsResponse>($"/api/Concert/application/{fixture.SeedData.VersusApp.Id}");
