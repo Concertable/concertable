@@ -20,7 +20,7 @@ public static class HttpClientExtensions
 
     public static async Task<HttpResponseMessage> PostAsync(this HttpClient client, string url)
     {
-        return await client.PostAsync(url, new StringContent("{}", Encoding.UTF8, "application/json"));
+        return await client.PostAsJsonAsync<object?>(url, null, JsonOptions);
     }
 
     public static async Task<HttpResponseMessage> PostAsJsonEnsureSuccessAsync<T>(this HttpClient client, string url, T body)

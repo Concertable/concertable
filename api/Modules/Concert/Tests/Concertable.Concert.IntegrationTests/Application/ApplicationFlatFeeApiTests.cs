@@ -60,6 +60,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/checkout");
 
         // Act
         var firstResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
@@ -76,6 +77,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/checkout");
 
         // Act
         var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
@@ -108,6 +110,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/checkout");
 
         // Act
         var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");
@@ -125,6 +128,7 @@ public class ApplicationFlatFeeApiTests : IAsyncLifetime
         // Arrange
         fixture.CreateClient(fixture.SeedData.VenueManager1, o => o.UseFailingStripe());
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
+        await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/checkout");
 
         // Act
         var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept");

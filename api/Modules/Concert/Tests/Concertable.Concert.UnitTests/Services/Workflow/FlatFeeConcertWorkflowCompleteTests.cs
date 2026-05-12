@@ -29,8 +29,8 @@ public class FlatFeeConcertWorkflowCompleteTests
     public async Task FinishAsync_CompletesBookingAndReleasesEscrow()
     {
         // Arrange
-        var booking = new Mock<StandardBooking>();
-        bookingService.Setup(s => s.CompleteByConcertIdAsync(10)).ReturnsAsync(booking.Object);
+        var booking = StandardBooking.Create(1);
+        bookingService.Setup(s => s.CompleteByConcertIdAsync(10)).ReturnsAsync(booking);
         escrowModule.Setup(e => e.ReleaseByBookingIdAsync(It.IsAny<int>())).ReturnsAsync(Result.Ok());
 
         // Act
