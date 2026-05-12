@@ -1,3 +1,4 @@
+using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Stripe;
@@ -8,17 +9,20 @@ internal class WebhookProcessor : IWebhookProcessor
 {
     private readonly IStripeEventRepository stripeEventRepository;
     private readonly IIntegrationEventBus integrationEventBus;
+    private readonly IStripeHoldClient stripeHoldClient;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<WebhookProcessor> logger;
 
     public WebhookProcessor(
         IStripeEventRepository stripeEventRepository,
         IIntegrationEventBus integrationEventBus,
+        IStripeHoldClient stripeHoldClient,
         TimeProvider timeProvider,
         ILogger<WebhookProcessor> logger)
     {
         this.stripeEventRepository = stripeEventRepository;
         this.integrationEventBus = integrationEventBus;
+        this.stripeHoldClient = stripeHoldClient;
         this.timeProvider = timeProvider;
         this.logger = logger;
     }
@@ -56,6 +60,24 @@ internal class WebhookProcessor : IWebhookProcessor
                         "Publishing PaymentSucceededEvent for PaymentIntent {IntentId} (event {EventId}) of transaction type {TransactionType}",
                         intent.Id, stripeEvent.Id, intent.Metadata.GetValueOrDefault("type", "unknown"));
                     await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, intent.Metadata), cancellationToken);
+                    break;
+
+                case "payment_intent.amount_capturable_updated":
+                    if (intent.Metadata.TryGetValue("type", out var capturedType) && capturedType == TransactionTypes.Verify)
+                    {
+                        logger.LogInformation(
+                            "Cancelling verify PaymentIntent {IntentId} after 3DS completion (event {EventId})",
+                            intent.Id, stripeEvent.Id);
+                        await stripeHoldClient.CancelAsync(intent.Id, cancellationToken);
+                        var enrichedMetadata = new Dictionary<string, string>(intent.Metadata)
+                        {
+                            ["paymentMethodId"] = intent.PaymentMethodId
+                        };
+                        logger.LogInformation(
+                            "Publishing PaymentSucceededEvent for verify PaymentIntent {IntentId} (event {EventId})",
+                            intent.Id, stripeEvent.Id);
+                        await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, enrichedMetadata), cancellationToken);
+                    }
                     break;
 
                 case "payment_intent.payment_failed":

@@ -1,28 +1,39 @@
-using Concertable.Concert.Application.Enums;
-using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
+internal class FlatFeeConcertWorkflow : IHeldConcertWorkflow
 {
-    private readonly IUpfrontConcertService upfrontConcertService;
+    private readonly IApplicationValidator applicationValidator;
+    private readonly IBookingService bookingService;
+    private readonly IEscrowModule escrowModule;
+    private readonly IConcertDraftService concertDraftService;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
     private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly ILogger<FlatFeeConcertWorkflow> logger;
 
     public FlatFeeConcertWorkflow(
-        IUpfrontConcertService upfrontConcertService,
+        IApplicationValidator applicationValidator,
+        IBookingService bookingService,
+        IEscrowModule escrowModule,
+        IConcertDraftService concertDraftService,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
-        IManagerPaymentModule managerPaymentModule)
+        IManagerPaymentModule managerPaymentModule,
+        ILogger<FlatFeeConcertWorkflow> logger)
     {
-        this.upfrontConcertService = upfrontConcertService;
+        this.applicationValidator = applicationValidator;
+        this.bookingService = bookingService;
+        this.escrowModule = escrowModule;
+        this.concertDraftService = concertDraftService;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
         this.managerPaymentModule = managerPaymentModule;
+        this.logger = logger;
     }
 
     public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId) =>
@@ -39,28 +50,48 @@ internal class FlatFeeConcertWorkflow : IStandardConcertWorkflow
         var metadata = new Dictionary<string, string>
         {
             ["type"] = "applicationAccept",
-            ["applicationId"] = applicationId.ToString(),
-            ["amount"] = ((long)(contract.Fee * 100)).ToString(),
-            ["currency"] = "gbp"
+            ["applicationId"] = applicationId.ToString()
         };
 
-        var session = await managerPaymentModule.CreatePaymentSessionAsync(venueManagerId, metadata);
-        return new Checkout(PaymentTiming.Immediate, new FlatPayment(contract.Fee), artist, session);
+        var session = await managerPaymentModule.CreateHoldSessionAsync(venueManagerId, contract.Fee, metadata);
+        return new Checkout(new FlatPayment(contract.Fee), artist, session, CheckoutLabels.Charge);
     }
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
+    public async Task AcceptAsync(int applicationId)
     {
+        var result = await applicationValidator.CanAcceptAsync(applicationId);
+        if (result.IsFailed)
+            throw new BadRequestException(result.Errors);
+
         var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
-
         var contract = (FlatFeeContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
+        var booking = await bookingService.CreateStandardAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, venueManagerId, artistManagerId, contract.Fee, paymentMethodId, PaymentSession.OnSession);
+        var paymentIntentId = await managerPaymentModule.FindHeldIntentAsync(venueManagerId, applicationId);
+
+        logger.LogInformation(
+            "Accepting application {ApplicationId} (booking {BookingId}): binding pre-authorised PaymentIntent {PaymentIntentId} for {Amount} {Currency} from {PayerId} on behalf of {PayeeId}",
+            applicationId, booking.Id, paymentIntentId, contract.Fee, "GBP", venueManagerId, artistManagerId);
+
+        var bind = await escrowModule.CaptureAsync(venueManagerId, artistManagerId, contract.Fee, paymentIntentId, booking.Id);
+        if (bind.IsFailed)
+            throw new BadRequestException(bind.Errors);
     }
 
-    public Task SettleAsync(int bookingId) =>
-        upfrontConcertService.SettleAsync(bookingId);
+    public async Task SettleAsync(int bookingId)
+    {
+        var draftResult = await concertDraftService.CreateAsync(bookingId);
+        if (draftResult.IsFailed)
+            throw new BadRequestException(draftResult.Errors);
+    }
 
-    public Task FinishAsync(int concertId) =>
-        upfrontConcertService.FinishedAsync(concertId);
+    public async Task FinishAsync(int concertId)
+    {
+        var booking = await bookingService.CompleteByConcertIdAsync(concertId);
+
+        var release = await escrowModule.ReleaseByBookingIdAsync(booking.Id);
+        if (release.IsFailed)
+            throw new BadRequestException(release.Errors);
+    }
 }

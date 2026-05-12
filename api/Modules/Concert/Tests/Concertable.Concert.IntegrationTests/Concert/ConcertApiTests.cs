@@ -37,7 +37,7 @@ public class ConcertApiTests : IAsyncLifetime
     [Fact]
     public async Task Post_ShouldReturn403_WhenNotVenueManager()
     {
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var request = BuildPostRequest();
 
         var response = await client.PutAsync(

@@ -151,6 +151,11 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
+
                     b.Property<Guid>("FromUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -181,7 +186,9 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
 
                     b.ToTable("Transactions", "payment");
 
-                    b.UseTptMappingStrategy();
+                    b.HasDiscriminator<string>("Discriminator").HasValue("TransactionEntity");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Concertable.Payment.Domain.SettlementTransactionEntity", b =>
@@ -189,9 +196,11 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
 
                     b.Property<int>("BookingId")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("int")
+                        .HasColumnName("ContextId");
 
-                    b.ToTable("SettlementTransactions", "payment");
+                    b.HasDiscriminator().HasValue("SettlementTransactionEntity");
                 });
 
             modelBuilder.Entity("Concertable.Payment.Domain.TicketTransactionEntity", b =>
@@ -199,27 +208,23 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
 
                     b.Property<int>("ConcertId")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("int")
+                        .HasColumnName("ContextId");
 
-                    b.ToTable("TicketTransactions", "payment");
+                    b.HasDiscriminator().HasValue("TicketTransactionEntity");
                 });
 
-            modelBuilder.Entity("Concertable.Payment.Domain.SettlementTransactionEntity", b =>
+            modelBuilder.Entity("Concertable.Payment.Domain.VerifyTransactionEntity", b =>
                 {
-                    b.HasOne("Concertable.Payment.Domain.TransactionEntity", null)
-                        .WithOne()
-                        .HasForeignKey("Concertable.Payment.Domain.SettlementTransactionEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                    b.HasBaseType("Concertable.Payment.Domain.TransactionEntity");
 
-            modelBuilder.Entity("Concertable.Payment.Domain.TicketTransactionEntity", b =>
-                {
-                    b.HasOne("Concertable.Payment.Domain.TransactionEntity", null)
-                        .WithOne()
-                        .HasForeignKey("Concertable.Payment.Domain.TicketTransactionEntity", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("ApplicationId")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("int")
+                        .HasColumnName("ContextId");
+
+                    b.HasDiscriminator().HasValue("VerifyTransactionEntity");
                 });
 #pragma warning restore 612, 618
         }

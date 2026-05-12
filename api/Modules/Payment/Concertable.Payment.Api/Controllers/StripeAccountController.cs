@@ -1,5 +1,4 @@
 ﻿using Concertable.Authorization.Contracts;
-using Concertable.Customer.Contracts;
 using Concertable.User.Contracts;
 using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Interfaces;
@@ -15,20 +14,17 @@ internal class StripeAccountController : ControllerBase
     private readonly IStripeAccountClient stripeAccountClient;
     private readonly ICurrentUser currentUser;
     private readonly IUserModule userModule;
-    private readonly ICustomerModule customerModule;
     private readonly IPayoutAccountRepository payoutAccountRepository;
 
     public StripeAccountController(
         IStripeAccountClient stripeAccountClient,
         ICurrentUser currentUser,
         IUserModule userModule,
-        ICustomerModule customerModule,
         IPayoutAccountRepository payoutAccountRepository)
     {
         this.stripeAccountClient = stripeAccountClient;
         this.currentUser = currentUser;
         this.userModule = userModule;
-        this.customerModule = customerModule;
         this.payoutAccountRepository = payoutAccountRepository;
     }
 
@@ -72,15 +68,14 @@ internal class StripeAccountController : ControllerBase
             return Ok(await stripeAccountClient.CreateSetupIntentAsync(null));
 
         var userId = currentUser.GetId();
-        var customer = await customerModule.GetCustomerAsync(userId);
-        if (customer is null) return Unauthorized();
-
         var account = await payoutAccountRepository.GetByUserIdAsync(userId);
         var stripeCustomerId = account?.StripeCustomerId;
 
         if (string.IsNullOrWhiteSpace(stripeCustomerId))
         {
-            await stripeAccountClient.ProvisionCustomerAsync(userId, customer.Email!);
+            var user = await userModule.GetByIdAsync(userId);
+            if (user is null) return Unauthorized();
+            await stripeAccountClient.ProvisionCustomerAsync(userId, user.Email);
             account = await payoutAccountRepository.GetByUserIdAsync(userId);
             stripeCustomerId = account?.StripeCustomerId
                 ?? throw new InvalidOperationException("Failed to provision Stripe customer.");

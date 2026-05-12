@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Concertable.E2ETests.Ui.PageObjects;
 using Concertable.E2ETests.Ui.Support;
 
@@ -10,21 +9,24 @@ public class VenueManagerSteps
     private readonly UiFixture fixture;
     private readonly Browser browser;
     private readonly WorkflowState state;
+    private readonly IStripePayment payment;
     private MyVenuePage myVenuePage = null!;
-    private ApplicationCheckoutPage checkoutPage = null!;
 
-    public VenueManagerSteps(UiFixture fixture, Browser browser, WorkflowState state)
+    public VenueManagerSteps(
+        UiFixture fixture,
+        Browser browser,
+        WorkflowState state,
+        IStripePayment payment)
     {
         this.fixture = fixture;
         this.browser = browser;
         this.state = state;
+        this.payment = payment;
     }
 
     [When(@"the venue manager posts a flat fee opportunity for £(\d+)")]
     public async Task PostsFlatFeeOpportunity(decimal fee)
     {
-        await browser.UseRoleAsync(Role.VenueManager);
-
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
         myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
@@ -35,8 +37,13 @@ public class VenueManagerSteps
         state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
     }
 
-    [When(@"the venue manager accepts the application with a valid card")]
-    public async Task AcceptsWithValidCard()
+    [When(@"the venue manager accepts and pays with a valid card")]
+    public Task AcceptsAndPaysWithValidCard() => AcceptWithSavedCardAsync(verify: false);
+
+    [When(@"the venue manager accepts and registers a valid card")]
+    public Task AcceptsAndRegistersValidCard() => AcceptWithSavedCardAsync(verify: true);
+
+    private async Task AcceptWithSavedCardAsync(bool verify)
     {
         await browser.UseRoleAsync(Role.VenueManager);
 
@@ -47,21 +54,136 @@ public class VenueManagerSteps
         var acceptPage = new AcceptApplicationPage(browser.Page);
         await acceptPage.ClickConfirmAsync();
 
-        checkoutPage = new ApplicationCheckoutPage(browser.Page);
-        await checkoutPage.PayWithSavedCardAsync();
+        await browser.Page.WaitForURLAsync("**/venue/application/checkout/**", new() { Timeout = 15_000 });
+
+        var checkoutPage = new ApplicationCheckoutPage(browser.Page, payment);
+        if (verify)
+            await checkoutPage.SubmitWithSavedCardAndVerifyAsync();
+        else
+            await checkoutPage.SubmitWithSavedCardAsync();
+    }
+
+    [When(@"the venue manager posts a venue hire opportunity for £(\d+)")]
+    public async Task PostsVenueHireOpportunity(decimal fee)
+    {
+        state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
+
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        await myVenuePage.GotoAsync();
+        await myVenuePage.PostVenueHireOpportunityAsync(fee);
+        await myVenuePage.WaitUntilSavedAsync();
+
+        state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
+    }
+
+    [When(@"the venue manager posts a door split opportunity for (\d+)% door")]
+    public async Task PostsDoorSplitOpportunity(int doorPercent)
+    {
+        state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
+
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        await myVenuePage.GotoAsync();
+        await myVenuePage.PostDoorSplitOpportunityAsync(doorPercent);
+        await myVenuePage.WaitUntilSavedAsync();
+
+        state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
+    }
+
+    [When(@"the venue manager posts a versus opportunity for £(\d+) guarantee and (\d+)% door")]
+    public async Task PostsVersusOpportunity(int guarantee, int doorPercent)
+    {
+        state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
+
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        await myVenuePage.GotoAsync();
+        await myVenuePage.PostVersusOpportunityAsync(guarantee, doorPercent);
+        await myVenuePage.WaitUntilSavedAsync();
+
+        state.OpportunityId = await FetchNewestOpportunityIdAsync(state.VenueId);
+    }
+
+    [When(@"the venue manager accepts the application")]
+    public async Task AcceptsApplication()
+    {
+        await browser.UseRoleAsync(Role.VenueManager);
+
+        var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.SpaBaseUrl);
+        await applicationsPage.GotoAsync(state.OpportunityId);
+        await applicationsPage.ClickAcceptAsync(state.ApplicationId);
+
+        var acceptPage = new AcceptApplicationPage(browser.Page);
+        await acceptPage.ClickConfirmAsync();
+    }
+
+    [Given(@"a flat fee opportunity has been applied to")]
+    public async Task AFlatFeeOpportunityHasBeenAppliedTo()
+    {
+        state.ApplicationId = fixture.App.SeedData.PendingFlatFeeApp.ApplicationId;
+        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+    }
+
+    [Given(@"a door split opportunity has been applied to")]
+    public async Task ADoorSplitOpportunityHasBeenAppliedTo()
+    {
+        state.ApplicationId = fixture.App.SeedData.PendingDoorSplitApp.ApplicationId;
+        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+    }
+
+    [Given(@"a versus opportunity has been applied to")]
+    public async Task AVersusOpportunityHasBeenAppliedTo()
+    {
+        state.ApplicationId = fixture.App.SeedData.PendingVersusApp.ApplicationId;
+        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+    }
+
+    [When(@"the venue manager pays the flat fee with a new card")]
+    public Task PaysWithNewCard() =>
+        new ApplicationCheckoutPage(browser.Page, payment).SubmitWithNewCardAsync(StripeCards.Success);
+
+    [When(@"the venue manager pays the flat fee with a declined card")]
+    public Task PaysFlatFeeWithDeclinedCard() =>
+        payment.PayWithNewCardAsync(StripeCards.Decline);
+
+    [When(@"the venue manager pays the flat fee with a 3DS card")]
+    public async Task PaysFlatFeeWith3dsCard()
+    {
+        await payment.PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.CompleteChallengeAsync();
+    }
+
+    [When(@"the venue manager pays the flat fee with a 3DS-failing card")]
+    public async Task PaysFlatFeeWith3dsFailingCard()
+    {
+        await payment.PayWithNewCardAsync(StripeCards.Insufficient3ds);
+        await payment.CompleteChallengeAsync();
+    }
+
+    [When(@"the venue manager registers a card with a new card")]
+    public Task RegistersCardWithNewCard() =>
+        new ApplicationCheckoutPage(browser.Page, payment).SubmitWithNewCardAsync(StripeCards.Success);
+
+    [When(@"the venue manager registers a card with a declined card")]
+    public Task RegistersCardWithDeclinedCard() =>
+        payment.PayWithNewCardAsync(StripeCards.Decline);
+
+    [When(@"the venue manager registers a card with a 3DS card")]
+    public async Task RegistersCardWith3dsCard()
+    {
+        await payment.PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.CompleteChallengeAsync();
+    }
+
+    [When(@"the venue manager registers a card with a 3DS-failing card")]
+    public async Task RegistersCardWith3dsFailingCard()
+    {
+        await payment.PayWithNewCardAsync(StripeCards.Requires3ds);
+        await payment.FailChallengeAsync();
     }
 
     [Then(@"a draft concert is created")]
-    public Task DraftConcertCreated() => checkoutPage.WaitForSuccessAsync();
+    public Task DraftConcertCreated() =>
+        browser.Page.WaitForURLAsync("**/venue/my/concerts/concert/**", new() { Timeout = 60_000 });
 
-    private async Task<int> FetchNewestOpportunityIdAsync(int venueId)
-    {
-        var seed = fixture.App.SeedData;
-        using var client = await fixture.App.CreateAuthenticatedClientAsync(seed.VenueManager1.Email);
-        var json = await client.GetStringAsync($"/api/Venue/{venueId}/opportunities");
-        using var doc = JsonDocument.Parse(json);
-        return doc.RootElement.EnumerateArray()
-            .Select(o => o.GetProperty("id").GetInt32())
-            .Max();
-    }
+    private Task<int> FetchNewestOpportunityIdAsync(int venueId) =>
+        fixture.App.Db.Opportunity.GetNewestAsync(venueId);
 }

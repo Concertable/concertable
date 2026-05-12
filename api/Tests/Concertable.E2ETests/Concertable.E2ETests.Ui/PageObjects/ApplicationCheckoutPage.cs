@@ -1,15 +1,25 @@
+using Concertable.E2ETests.Ui.Support;
+
 namespace Concertable.E2ETests.Ui.PageObjects;
 
 public class ApplicationCheckoutPage
 {
     private readonly IPage page;
+    private readonly IStripePayment payment;
 
-    public ApplicationCheckoutPage(IPage page) => this.page = page;
+    public ApplicationCheckoutPage(IPage page, IStripePayment payment)
+    {
+        this.page = page;
+        this.payment = payment;
+    }
 
-    private ILocator ConfirmButton => page.GetByTestId("confirm");
+    public Task SubmitWithSavedCardAsync() => payment.PayWithSavedCardAsync();
 
-    public Task PayWithSavedCardAsync() => ConfirmButton.ClickAsync();
+    public async Task SubmitWithSavedCardAndVerifyAsync()
+    {
+        await payment.PayWithSavedCardAsync();
+        await payment.CompleteChallengeIfRequiredAsync();
+    }
 
-    public Task WaitForSuccessAsync() =>
-        page.WaitForURLAsync("**/venue/my/concerts/concert/**");
+    public Task SubmitWithNewCardAsync(string cardNumber) => payment.PayWithNewCardAsync(cardNumber);
 }

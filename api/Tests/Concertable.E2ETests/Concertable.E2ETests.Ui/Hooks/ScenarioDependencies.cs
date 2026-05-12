@@ -15,6 +15,8 @@ public static class ScenarioDependencies
         services.AddSingleton(_ => PlaywrightHooks.Fixture);
         services.AddScoped<Browser>();
         services.AddScoped<WorkflowState>();
+        services.AddScoped<StripeCardEntry>();
+        services.AddScoped<IStripePayment, StripePayment>();
         return services;
     }
 }

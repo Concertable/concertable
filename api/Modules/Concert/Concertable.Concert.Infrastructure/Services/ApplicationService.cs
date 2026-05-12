@@ -1,5 +1,5 @@
-using Concertable.Concert.Application.Responses;
 using Concertable.Payment.Application.Interfaces;
+using Concertable.Payment.Contracts;
 using Concertable.Messaging.Contracts;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
@@ -166,29 +166,18 @@ internal class ApplicationService : IApplicationService
     public Task<Checkout> AcceptCheckoutAsync(int applicationId) =>
         checkoutDispatcher.AcceptCheckoutAsync(applicationId);
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId)
+    public async Task AcceptAsync(int applicationId, string? paymentMethodId)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var outcome = await acceptanceDispatcher.AcceptAsync(applicationId);
-        return await NotifyAcceptedAsync(applicationId, outcome);
+        await acceptanceDispatcher.AcceptAsync(applicationId, paymentMethodId);
+        await NotifyAcceptedAsync(applicationId);
     }
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
-    {
-        var result = await applicationValidator.CanAcceptAsync(applicationId);
-
-        if (result.IsFailed)
-            throw new BadRequestException(result.Errors);
-
-        var outcome = await acceptanceDispatcher.AcceptAsync(applicationId, paymentMethodId);
-        return await NotifyAcceptedAsync(applicationId, outcome);
-    }
-
-    private async Task<IAcceptOutcome> NotifyAcceptedAsync(int applicationId, IAcceptOutcome outcome)
+    private async Task NotifyAcceptedAsync(int applicationId)
     {
         var (artist, venue) = await applicationRepository.GetArtistAndVenueByIdAsync(applicationId)
             ?? throw new NotFoundException("Concert application not found");
@@ -200,8 +189,6 @@ internal class ApplicationService : IApplicationService
             action: MessageAction.ApplicationAccepted);
 
         await emailService.SendEmailAsync(artist.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
-
-        return outcome;
     }
 
     public async Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id) =>

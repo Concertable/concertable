@@ -28,13 +28,16 @@ internal class PaymentDevSeeder : IDevSeeder
     {
         await context.PayoutAccounts.SeedIfEmptyAsync(async () =>
         {
+            seedData.CustomerStripeCustomerId = "cus_UIIy9Gbwfr3uAP";
             var firstCustomer = PayoutAccountEntity.Create(seedData.CustomerIds[0]);
-            firstCustomer.LinkCustomer("cus_UIIy9Gbwfr3uAP");
+            firstCustomer.LinkCustomer(seedData.CustomerStripeCustomerId);
             context.PayoutAccounts.Add(firstCustomer);
 
+            seedData.ArtistManager1StripeAccountId = "acct_1TJiMePysoXmht10";
+            seedData.ArtistManager1StripeCustomerId = "cus_UIIy5mCilBtJbR";
             var artistManager1 = PayoutAccountEntity.Create(seedData.ArtistManagerIds[0]);
-            artistManager1.LinkAccount("acct_1TJiMePysoXmht10");
-            artistManager1.LinkCustomer("cus_UIIy5mCilBtJbR");
+            artistManager1.LinkAccount(seedData.ArtistManager1StripeAccountId);
+            artistManager1.LinkCustomer(seedData.ArtistManager1StripeCustomerId);
             artistManager1.MarkVerified();
             context.PayoutAccounts.Add(artistManager1);
 
@@ -54,9 +57,11 @@ internal class PaymentDevSeeder : IDevSeeder
                 context.PayoutAccounts.Add(account);
             }
 
+            seedData.VenueManager1StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
+            seedData.VenueManager1StripeCustomerId = "cus_UIIymKfHijbNVO";
             var venueManager1 = PayoutAccountEntity.Create(seedData.VenueManagerIds[0]);
-            venueManager1.LinkAccount("acct_1TJiMjLxk4aCq1Ui");
-            venueManager1.LinkCustomer("cus_UIIymKfHijbNVO");
+            venueManager1.LinkAccount(seedData.VenueManager1StripeAccountId);
+            venueManager1.LinkCustomer(seedData.VenueManager1StripeCustomerId);
             venueManager1.MarkVerified();
             context.PayoutAccounts.Add(venueManager1);
 
@@ -75,9 +80,6 @@ internal class PaymentDevSeeder : IDevSeeder
                 account.MarkVerified();
                 context.PayoutAccounts.Add(account);
             }
-
-            seedData.VenueManager1StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
-            seedData.ArtistManagerStripeAccountId = "acct_1TJiMePysoXmht10";
 
             await context.SaveChangesAsync(ct);
         });

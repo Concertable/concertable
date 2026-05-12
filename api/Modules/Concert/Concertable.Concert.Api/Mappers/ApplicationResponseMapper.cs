@@ -36,4 +36,5 @@ internal sealed class ApplicationResponseMapper : IApplicationResponseMapper
 
     public IEnumerable<ApplicationResponse> ToResponses(IEnumerable<ApplicationDto> dtos) =>
         dtos.Select(ToResponse);
+
 }

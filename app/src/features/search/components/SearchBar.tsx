@@ -64,6 +64,7 @@ export function SearchBar() {
           onChange={(e) => setFilters({ ...filters, query: e.target.value })}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           {...inputProps}
+          data-testid="search-query"
           placeholder="Search"
           className="text-foreground placeholder:text-muted-foreground w-full bg-transparent px-4 py-3 text-sm outline-none"
         />
@@ -85,7 +86,7 @@ export function SearchBar() {
       </div>
 
       <div className="flex items-center pr-2">
-        <Button onClick={handleSearch} size="icon" className="rounded-full">
+        <Button onClick={handleSearch} size="icon" className="rounded-full" data-testid="search-submit">
           <Search size={16} />
         </Button>
       </div>

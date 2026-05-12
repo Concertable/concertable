@@ -26,6 +26,7 @@
   <ItemGroup>
     <Content Include="..\..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="reqnroll.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

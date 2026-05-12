@@ -41,6 +41,6 @@ export function HeaderCard<T extends Header>({
     </div>
   );
 
-  if (to) return <Link to={to}>{content}</Link>;
+  if (to) return <Link to={to} data-testid="header-card">{content}</Link>;
   return content;
 }

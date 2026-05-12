@@ -7,6 +7,7 @@ public class Browser : IAsyncDisposable, IDisposable
 {
     private readonly ILogger<Browser> logger;
     private IBrowser playwrightBrowser = null!;
+    private UiFixture fixture = null!;
     private Role? currentRole;
 
     public IBrowserContext Context { get; private set; } = null!;
@@ -17,9 +18,10 @@ public class Browser : IAsyncDisposable, IDisposable
         this.logger = logger;
     }
 
-    public async Task InitializeAsync(IBrowser playwrightBrowser, Role? role)
+    public async Task InitializeAsync(IBrowser playwrightBrowser, Role? role, UiFixture fixture)
     {
         this.playwrightBrowser = playwrightBrowser;
+        this.fixture = fixture;
         await CreateContextAsync(role);
     }
 
@@ -33,7 +35,7 @@ public class Browser : IAsyncDisposable, IDisposable
     private async Task CreateContextAsync(Role? role)
     {
         var options = new BrowserNewContextOptions { IgnoreHTTPSErrors = true };
-        if (role is not null) options.StorageState = LoginCaptureHooks.GetStorageState(role.Value);
+        if (role is not null) options.StorageState = await LoginCaptureHooks.GetOrCaptureAsync(fixture, role.Value);
         Context = await playwrightBrowser.NewContextAsync(options);
         await Context.Tracing.StartAsync(new TracingStartOptions
         {

@@ -26,11 +26,13 @@ internal class PaymentTestSeeder : ITestSeeder
         await context.PayoutAccounts.SeedIfEmptyAsync(async () =>
         {
             seedData.VenueManager1StripeAccountId = "acct_test_venue1";
-            seedData.ArtistManagerStripeAccountId = "acct_test_artist1";
+            seedData.VenueManager1StripeCustomerId = "cus_test_venue1";
+            seedData.ArtistManager1StripeAccountId = "acct_test_artist1";
+            seedData.ArtistManager1StripeCustomerId = "cus_test_artist1";
 
             var venueManager1 = PayoutAccountEntity.Create(seedData.VenueManager1.Id);
             venueManager1.LinkAccount(seedData.VenueManager1StripeAccountId);
-            venueManager1.LinkCustomer("cus_test_venue1");
+            venueManager1.LinkCustomer(seedData.VenueManager1StripeCustomerId);
             venueManager1.MarkVerified();
 
             var venueManager2 = PayoutAccountEntity.Create(seedData.VenueManager2.Id);
@@ -38,9 +40,9 @@ internal class PaymentTestSeeder : ITestSeeder
             venueManager2.LinkCustomer("cus_test_venue2");
             venueManager2.MarkVerified();
 
-            var artistManager = PayoutAccountEntity.Create(seedData.ArtistManager.Id);
-            artistManager.LinkAccount(seedData.ArtistManagerStripeAccountId);
-            artistManager.LinkCustomer("cus_test_artist1");
+            var artistManager = PayoutAccountEntity.Create(seedData.ArtistManager1.Id);
+            artistManager.LinkAccount(seedData.ArtistManager1StripeAccountId);
+            artistManager.LinkCustomer(seedData.ArtistManager1StripeCustomerId);
             artistManager.MarkVerified();
 
             var artistManagerNoArtist = PayoutAccountEntity.Create(seedData.ArtistManagerNoArtist.Id);

@@ -3,7 +3,6 @@ using Concertable.Notification.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.User.Contracts;
 using Concertable.User.Domain;
-using Concertable.Payment.Application.Interfaces;
 using Concertable.IntegrationTests.Common.Mocks;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
@@ -66,6 +65,7 @@ public async Task InitializeAsync()
             builder.ConfigureTestServices(services =>
             {
                 services.AddScoped<IStripeAccountClient, MockStripeAccountClient>();
+                services.AddScoped<IStripeHoldClient, MockStripeHoldClient>();
                 services.AddSingleton<INotificationModule>(NotificationService);
                 services.AddSingleton<IMockStripeApiClient>(StripeApiClient);
                 services.AddSingleton<IStripeApiClient>(StripeApiClient);

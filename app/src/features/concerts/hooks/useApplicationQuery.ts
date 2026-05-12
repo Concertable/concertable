@@ -35,11 +35,11 @@ export function useAcceptApplicationMutation(opportunityId: number) {
   return useMutation({
     mutationFn: ({
       applicationId,
-      paymentMethodId,
+      body,
     }: {
       applicationId: number;
-      paymentMethodId?: string;
-    }) => applicationApi.acceptApplication(applicationId, paymentMethodId),
+      body: { paymentMethodId: string };
+    }) => applicationApi.acceptApplication(applicationId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["applications", "opportunity", opportunityId],

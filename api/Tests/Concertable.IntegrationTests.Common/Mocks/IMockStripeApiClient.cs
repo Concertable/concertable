@@ -7,4 +7,5 @@ public interface IMockStripeApiClient : IStripeApiClient, IResettable
     string LastPaymentIntentId { get; }
     string LastEventId { get; }
     Dictionary<string, string> LastMetadata { get; }
+    void UpdateLastMetadata(IDictionary<string, string> metadata);
 }

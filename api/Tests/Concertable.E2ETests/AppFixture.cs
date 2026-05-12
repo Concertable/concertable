@@ -4,7 +4,7 @@ using Aspire.Hosting.Testing;
 using Concertable.Seeding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stripe;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
@@ -14,7 +14,6 @@ namespace Concertable.E2ETests;
 public class AppFixture : IAsyncLifetime
 {
     private DistributedApplication app = null!;
-    private StripeCliFixture stripeCli = null!;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<AppFixture> logger;
     private readonly IConfiguration configuration;
@@ -28,11 +27,12 @@ public class AppFixture : IAsyncLifetime
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
+    public StripeFixture Stripe { get; private set; } = null!;
     public SeedDataResponse SeedData { get; private set; } = null!;
     public SqlFixture Sql { get; private set; } = null!;
+    public TestDb Db { get; private set; } = null!;
 
-    public AppFixture() : this(BuildConsoleLoggerFactory()) { }
-
+    public AppFixture() : this(NullLoggerFactory.Instance) { }
     public AppFixture(IMessageSink messageSink) : this(BuildMessageSinkLoggerFactory(messageSink)) { }
 
     private AppFixture(ILoggerFactory loggerFactory)
@@ -63,11 +63,10 @@ public class AppFixture : IAsyncLifetime
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
-        stripeCli = builder.AddStripe(configuration, ApiBaseUrl);
-        await stripeCli.InitializeAsync();
-
-        builder.AddE2E(ApiBaseUrl, AuthBaseUrl, stripeCli.WebhookSecret);
-        StripePaymentIntents = new PaymentIntentService(new StripeClient(stripeCli.ApiKey));
+        builder.AddE2E(ApiBaseUrl, AuthBaseUrl);
+        var stripeClient = new StripeClient(configuration["Stripe:SecretKey"]);
+        StripePaymentIntents = new PaymentIntentService(stripeClient);
+        Stripe = new StripeFixture(stripeClient);
 
         app = await builder.BuildAsync();
         await app.StartAsync();
@@ -78,12 +77,14 @@ public class AppFixture : IAsyncLifetime
 
         Sql = new SqlFixture();
         await Sql.InitializeAsync(app);
+        Db = new TestDb(Sql.Connection);
 
         logger.LogInformation("E2E test fixture ready");
     }
 
     public async Task ResetAsync()
     {
+        Stripe.Reset();
         await Sql.ResetAsync();
         var response = await Client.PostAsync("/e2e/reseed");
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
@@ -103,7 +104,6 @@ public class AppFixture : IAsyncLifetime
         tokenMinter.Dispose();
         await Sql.DisposeAsync();
         await app.DisposeAsync();
-        await stripeCli.DisposeAsync();
         loggerFactory.Dispose();
     }
 
@@ -119,16 +119,11 @@ public class AppFixture : IAsyncLifetime
             logger.LogDebug("Health check: {StatusCode}", response.StatusCode);
             return response.IsSuccessStatusCode;
         },
-        timeout: TimeSpan.FromSeconds(60),
+        timeout: TimeSpan.FromMinutes(3),
         interval: TimeSpan.FromSeconds(1));
 
         logger.LogInformation("App is healthy");
     }
-
-    private static ILoggerFactory BuildConsoleLoggerFactory() =>
-        LoggerFactory.Create(b => b
-            .AddSimpleConsole(o => o.SingleLine = true)
-            .SetMinimumLevel(LogLevel.Debug));
 
     private static ILoggerFactory BuildMessageSinkLoggerFactory(IMessageSink messageSink) =>
         LoggerFactory.Create(b => b

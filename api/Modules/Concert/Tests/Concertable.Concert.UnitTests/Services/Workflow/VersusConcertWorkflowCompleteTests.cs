@@ -45,7 +45,7 @@ public class VersusConcertWorkflowCompleteTests
     {
         await sut.FinishAsync(10);
 
-        deferredConcertService.Verify(s => s.FinishedAsync(10, venueUserId, artistUserId, 700m), Times.Once);
+        deferredConcertService.Verify(s => s.FinishAsync(10, venueUserId, artistUserId, 700m), Times.Once);
     }
 
     internal static class BookingFactory

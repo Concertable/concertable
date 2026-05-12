@@ -6,7 +6,8 @@ namespace Concertable.Concert.Infrastructure;
 
 internal sealed class ConcertWorkflowModule(
     ISettlementDispatcher SettlementDispatcher,
-    ICompletionDispatcher CompletionDispatcher) : IConcertWorkflowModule
+    ICompletionDispatcher CompletionDispatcher,
+    IVerifyDispatcher VerifyDispatcher) : IConcertWorkflowModule
 {
     public Task SettleAsync(int bookingId, CancellationToken ct = default)
         => SettlementDispatcher.SettleAsync(bookingId);
@@ -17,4 +18,7 @@ internal sealed class ConcertWorkflowModule(
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
     }
+
+    public Task VerifyAsync(int applicationId, CancellationToken ct = default)
+        => VerifyDispatcher.VerifyAsync(applicationId);
 }

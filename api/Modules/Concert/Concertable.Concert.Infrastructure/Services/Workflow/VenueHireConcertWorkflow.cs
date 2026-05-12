@@ -1,14 +1,13 @@
-using Concertable.Concert.Application.Enums;
-using Concertable.Concert.Application.Responses;
+using Concertable.Concert.Application.Interfaces;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
+internal class VenueHireConcertWorkflow : IApplyCommittedConcertWorkflow
 {
-    private readonly IUpfrontConcertService upfrontConcertService;
+    private readonly IImmediateConcertService immediateConcertService;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
     private readonly IApplicationRepository applicationRepository;
@@ -16,14 +15,14 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
     private readonly ICurrentUser currentUser;
 
     public VenueHireConcertWorkflow(
-        IUpfrontConcertService upfrontConcertService,
+        IImmediateConcertService immediateConcertService,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
         IApplicationRepository applicationRepository,
         IManagerPaymentModule managerPaymentModule,
         ICurrentUser currentUser)
     {
-        this.upfrontConcertService = upfrontConcertService;
+        this.immediateConcertService = immediateConcertService;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
         this.applicationRepository = applicationRepository;
@@ -31,11 +30,8 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
         this.currentUser = currentUser;
     }
 
-    public async Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId)
-    {
-        await managerPaymentModule.VerifyAndVoidAsync(currentUser.GetId(), paymentMethodId);
-        return PrepaidApplication.Create(artistId, opportunityId, paymentMethodId);
-    }
+    public Task<ApplicationEntity> ApplyAsync(int artistId, int opportunityId, string paymentMethodId)
+        => Task.FromResult<ApplicationEntity>(PrepaidApplication.Create(artistId, opportunityId, paymentMethodId));
 
     public async Task<Checkout> CheckoutAsync(int opportunityId)
     {
@@ -50,10 +46,10 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
         };
 
         var session = await managerPaymentModule.CreateSetupSessionAsync(currentUser.GetId(), metadata);
-        return new Checkout(PaymentTiming.Authorize, new FlatPayment(contract.HireFee), venue, session);
+        return new Checkout(new FlatPayment(contract.HireFee), venue, session, CheckoutLabels.Charge);
     }
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId)
+    public async Task AcceptAsync(int applicationId)
     {
         var (venueManagerId, artistManagerId) = await payerLookup.GetManagerIdsAsync(applicationId)
             ?? throw new NotFoundException("Application not found");
@@ -66,12 +62,12 @@ internal class VenueHireConcertWorkflow : IPrepaidConcertWorkflow
 
         var contract = (VenueHireContract)await contractLoader.LoadByApplicationIdAsync(applicationId);
 
-        return await upfrontConcertService.InitiateAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId, PaymentSession.OffSession);
+        await immediateConcertService.ChargeAsync(applicationId, artistManagerId, venueManagerId, contract.HireFee, paymentMethodId, PaymentSession.OffSession);
     }
 
     public Task SettleAsync(int bookingId) =>
-        upfrontConcertService.SettleAsync(bookingId);
+        immediateConcertService.SettleAsync(bookingId);
 
     public Task FinishAsync(int concertId) =>
-        upfrontConcertService.FinishedAsync(concertId);
+        immediateConcertService.FinishAsync(concertId);
 }

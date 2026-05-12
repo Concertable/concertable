@@ -13,10 +13,10 @@ public class HomePage
 
     private ILocator SignInLink => page.GetByTestId("header-login");
 
-    public Task GotoAsync() => page.GotoAsync(url);
+    public Task GotoAsync() => page.GotoAsync(url, new() { WaitUntil = WaitUntilState.Load });
 
     public Task ClickSignInAsync() => SignInLink.ClickAsync();
 
-    public Task WaitUntilLoadedAsync(float timeoutMs = 15000) =>
-        page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = timeoutMs });
+    public Task WaitUntilLoadedAsync() =>
+        page.WaitForLoadStateAsync(LoadState.Load);
 }

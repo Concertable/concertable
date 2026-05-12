@@ -1,10 +1,9 @@
-using Concertable.Concert.Application.Responses;
-
 namespace Concertable.Concert.Application.Interfaces;
 
 internal interface IDeferredConcertService
 {
-    Task<IAcceptOutcome> InitiateAsync(int applicationId, Guid payerId, string paymentMethodId);
+    Task RegisterPaymentAsync(int applicationId, string paymentMethodId);
+    Task VerifyAsync(int applicationId);
     Task SettleAsync(int bookingId);
-    Task FinishedAsync(int concertId, Guid payerId, Guid payeeId, decimal amount);
+    Task FinishAsync(int concertId, Guid payerId, Guid payeeId, decimal amount);
 }

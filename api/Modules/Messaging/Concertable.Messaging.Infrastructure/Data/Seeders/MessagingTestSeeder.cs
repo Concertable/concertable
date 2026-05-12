@@ -31,14 +31,14 @@ internal class MessagingTestSeeder : ITestSeeder
 
             context.Messages.AddRange(
                 MessageEntity.Create(
-                    seedData.ArtistManager.Id,
+                    seedData.ArtistManager1.Id,
                     seedData.VenueManager1.Id,
                     "Test inbox message — artist to venue.",
                     now.AddDays(-1),
                     MessageAction.ApplicationReceived),
                 MessageEntity.Create(
                     seedData.VenueManager1.Id,
-                    seedData.ArtistManager.Id,
+                    seedData.ArtistManager1.Id,
                     "Test inbox message — venue to artist.",
                     now,
                     MessageAction.ApplicationAccepted));

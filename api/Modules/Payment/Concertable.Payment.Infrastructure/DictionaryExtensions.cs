@@ -11,4 +11,14 @@ internal static class DictionaryExtensions
                 seed.TryAdd(kvp.Key, kvp.Value);
         return seed;
     }
+
+    internal static Dictionary<string, string> With(
+        this IDictionary<string, string> source,
+        string key,
+        string value)
+    {
+        var result = source.ToDictionary(kv => kv.Key, kv => kv.Value);
+        result[key] = value;
+        return result;
+    }
 }

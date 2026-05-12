@@ -1,6 +1,7 @@
 using Concertable.Shared.Exceptions;
 using FluentResults;
 using Microsoft.Extensions.Logging;
+using Stripe;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
@@ -9,17 +10,20 @@ internal sealed class PaymentManager : IPaymentManager
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly IStripePaymentIntentClientFactory intentClientFactory;
     private readonly IStripeTransferClient transferClient;
+    private readonly IStripeHoldClient stripeHoldClient;
     private readonly ILogger<PaymentManager> logger;
 
     public PaymentManager(
         IPayoutAccountRepository payoutAccountRepository,
         IStripePaymentIntentClientFactory intentClientFactory,
         IStripeTransferClient transferClient,
+        IStripeHoldClient stripeHoldClient,
         ILogger<PaymentManager> logger)
     {
         this.payoutAccountRepository = payoutAccountRepository;
         this.intentClientFactory = intentClientFactory;
         this.transferClient = transferClient;
+        this.stripeHoldClient = stripeHoldClient;
         this.logger = logger;
     }
 
@@ -143,5 +147,32 @@ internal sealed class PaymentManager : IPaymentManager
             Reason = r.Reason,
             Metadata = metadata
         });
+    }
+
+    public async Task<Result> CaptureAsync(CaptureRequest r, CancellationToken ct = default)
+    {
+        try
+        {
+            logger.LogInformation(
+                "Capturing PaymentIntent {PaymentIntentId} for {Purpose}",
+                r.PaymentIntentId, r.Metadata["type"]);
+
+            await stripeHoldClient.CaptureAsync(r.PaymentIntentId, r.Metadata, ct);
+            return Result.Ok();
+        }
+        catch (StripeException ex)
+        {
+            logger.LogError(ex,
+                "Stripe capture failed for PaymentIntent {PaymentIntentId}: {StripeCode}",
+                r.PaymentIntentId, ex.StripeError?.Code);
+            return Result.Fail($"Stripe Error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Capture failed for PaymentIntent {PaymentIntentId}",
+                r.PaymentIntentId);
+            return Result.Fail($"General Error: {ex.Message}");
+        }
     }
 }

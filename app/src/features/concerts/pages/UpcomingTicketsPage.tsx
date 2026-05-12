@@ -26,7 +26,7 @@ export function UpcomingTicketsPage() {
           You don't have any upcoming tickets yet.
         </p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="upcoming-tickets-list">
           {data.map((t) => (
             <TicketCard key={t.id} ticket={t} />
           ))}

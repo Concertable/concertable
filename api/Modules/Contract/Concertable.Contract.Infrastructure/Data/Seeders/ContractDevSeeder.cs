@@ -34,6 +34,10 @@ internal class ContractDevSeeder : IDevSeeder
             seed.PostedVersusAppContract = VersusContractEntity.Create(120m, 60m, PaymentMethod.Cash);
             seed.FlatFeeAppContract = FlatFeeContractEntity.Create(150m, PaymentMethod.Cash);
             seed.VenueHireAppContract = VenueHireContractEntity.Create(300m, PaymentMethod.Cash);
+            seed.PastVersusAppContract = VersusContractEntity.Create(100m, 70m, PaymentMethod.Cash);
+            seed.PastFlatFeeAppContract = FlatFeeContractEntity.Create(200m, PaymentMethod.Cash);
+            seed.PastVenueHireAppContract = VenueHireContractEntity.Create(300m, PaymentMethod.Cash);
+            seed.PastDoorSplitAppContract = DoorSplitContractEntity.Create(70m, PaymentMethod.Cash);
 
             seed.Contracts =
             [
@@ -101,6 +105,10 @@ internal class ContractDevSeeder : IDevSeeder
                 DoorSplitContractEntity.Create(70m, PaymentMethod.Cash),        // 61 — opp[60]
                 VersusContractEntity.Create(100m, 60m, PaymentMethod.Cash),     // 62 — opp[61]
                 VenueHireContractEntity.Create(250m, PaymentMethod.Cash),       // 63 — opp[62]
+                seed.PastVersusAppContract,                                     // 64 — opp[63] PastVersus (E2E expects £100 + 70%)
+                seed.PastFlatFeeAppContract,                                    // 65 — opp[64] PastFlatFee
+                seed.PastVenueHireAppContract,                                  // 66 — opp[65] PastVenueHire
+                seed.PastDoorSplitAppContract,                                  // 67 — opp[66] PastDoorSplit (E2E expects 70%)
             ];
 
             context.Contracts.AddRange(seed.Contracts);

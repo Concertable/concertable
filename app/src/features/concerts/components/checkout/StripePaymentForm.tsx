@@ -49,6 +49,7 @@ function Form({
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentReady, setPaymentReady] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -64,10 +65,10 @@ function Form({
       return;
     }
 
-    const isPayment = session.intentType === "Payment";
-    const result = isPayment
-      ? await stripe.confirmPayment({ elements, redirect: "if_required" })
-      : await stripe.confirmSetup({ elements, redirect: "if_required" });
+    const isSetup = session.clientSecret.startsWith("seti_");
+    const result = isSetup
+      ? await stripe.confirmSetup({ elements, redirect: "if_required" })
+      : await stripe.confirmPayment({ elements, redirect: "if_required" });
 
     if (result.error) {
       setError(result.error.message ?? "Payment failed.");
@@ -75,7 +76,7 @@ function Form({
       return;
     }
 
-    const intent = isPayment ? result.paymentIntent : result.setupIntent;
+    const intent = isSetup ? result.setupIntent : result.paymentIntent;
     const paymentMethodId = intent?.payment_method as string | undefined;
     if (!paymentMethodId) {
       setError("Payment method missing from confirmation.");
@@ -85,12 +86,12 @@ function Form({
     onSuccess(paymentMethodId);
   }
 
-  const isDisabled = !stripe || !elements || disabled || isSubmitting;
+  const isDisabled = !stripe || !elements || !paymentReady || disabled || isSubmitting;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement options={{ layout: "tabs" }} />
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      <PaymentElement options={{ layout: "tabs" }} onReady={() => setPaymentReady(true)} />
+      {error && <p data-testid="payment-error" className="text-destructive text-sm">{error}</p>}
       <Button
         type="submit"
         className="w-full"

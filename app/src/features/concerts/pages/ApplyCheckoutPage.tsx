@@ -30,20 +30,19 @@ export function ApplyCheckoutPage() {
       <div className="text-destructive p-6">Could not start checkout.</div>
     );
 
-  return <ApplyCheckoutForm opportunityId={opportunityId} checkout={checkout} />;
+  return <ApplyCheckoutFlow opportunityId={opportunityId} checkout={checkout} />;
 }
 
-function ApplyCheckoutForm({
-  opportunityId,
-  checkout,
-}: {
+interface Props {
   opportunityId: number;
   checkout: Checkout;
-}) {
+}
+
+export function ApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) {
   const [submitted, setSubmitted] = useState(false);
-  const applyMutation = useMutation({
+  const { mutate, isPending, error } = useMutation({
     mutationFn: (paymentMethodId: string) =>
-      applicationApi.applyToOpportunity(opportunityId, paymentMethodId),
+      applicationApi.applyToOpportunityWithPayment(opportunityId, paymentMethodId),
     onSuccess: () => setSubmitted(true),
   });
 
@@ -63,7 +62,7 @@ function ApplyCheckoutForm({
       />
     );
 
-  if (applyMutation.isPending)
+  if (isPending)
     return (
       <CheckoutAwaiting
         title="Submitting application"
@@ -101,11 +100,11 @@ function ApplyCheckoutForm({
         <StripePaymentForm
           session={checkout.session}
           submitLabel="Authorise & Apply"
-          onSuccess={(paymentMethodId) => applyMutation.mutate(paymentMethodId)}
+          onSuccess={mutate}
         />
       </CheckoutSection>
-      {applyMutation.error && (
-        <p className="text-destructive text-sm">{applyMutation.error.message}</p>
+      {error && (
+        <p data-testid="payment-error" className="text-destructive text-sm">{error.message}</p>
       )}
     </CheckoutLayout>
   );

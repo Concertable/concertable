@@ -1,5 +1,3 @@
-using Concertable.Concert.Application.Enums;
-using Concertable.Concert.Application.Responses;
 using Concertable.Contract.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
@@ -7,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal class VersusConcertWorkflow : IStandardConcertWorkflow
+internal class VersusConcertWorkflow : IDeferredConcertWorkflow
 {
     private readonly IDeferredConcertService deferredConcertService;
     private readonly IConcertRepository concertRepository;
@@ -48,25 +46,24 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
 
         var metadata = new Dictionary<string, string>
         {
-            ["type"] = "applicationAccept",
-            ["applicationId"] = applicationId.ToString()
+            ["type"] = TransactionTypes.Verify,
+            ["applicationId"] = applicationId.ToString(),
+            ["venueManagerId"] = venueManagerId.ToString()
         };
 
-        var session = await managerPaymentModule.CreateSetupSessionAsync(venueManagerId, metadata);
+        var session = await managerPaymentModule.CreateVerifySessionAsync(venueManagerId, metadata);
         return new Checkout(
-            PaymentTiming.Deferred,
             new GuaranteedDoorPayment(contract.Guarantee, contract.ArtistDoorPercent),
             artist,
-            session);
+            session,
+            CheckoutLabels.Settlement);
     }
 
-    public async Task<IAcceptOutcome> AcceptAsync(int applicationId, string paymentMethodId)
-    {
-        var venueManagerId = await payerLookup.GetVenueManagerIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
+    public Task AcceptAsync(int applicationId, string paymentMethodId) =>
+        deferredConcertService.RegisterPaymentAsync(applicationId, paymentMethodId);
 
-        return await deferredConcertService.InitiateAsync(applicationId, venueManagerId, paymentMethodId);
-    }
+    public Task VerifyAsync(int applicationId) =>
+        deferredConcertService.VerifyAsync(applicationId);
 
     public Task SettleAsync(int bookingId) =>
         deferredConcertService.SettleAsync(bookingId);
@@ -84,7 +81,7 @@ internal class VersusConcertWorkflow : IStandardConcertWorkflow
             "Calculated versus artist share for concert {ConcertId}: {Guarantee} {Currency} guarantee + ({Revenue} {Currency} revenue at {Percent}%) = {Share} {Currency}",
             concertId, contract.Guarantee, "GBP", totalRevenue, contract.ArtistDoorPercent, artistShare);
 
-        await deferredConcertService.FinishedAsync(
+        await deferredConcertService.FinishAsync(
             concertId,
             booking.Application.Opportunity.Venue.UserId,
             booking.Application.Artist.UserId,

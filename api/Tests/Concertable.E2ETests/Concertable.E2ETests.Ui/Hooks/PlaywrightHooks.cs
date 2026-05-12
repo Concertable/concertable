@@ -6,15 +6,25 @@ namespace Concertable.E2ETests.Ui.Hooks;
 public class PlaywrightHooks
 {
     public static UiFixture Fixture { get; private set; } = null!;
+    private static readonly SemaphoreSlim InitLock = new(1, 1);
     private readonly Browser browser;
 
     public PlaywrightHooks(Browser browser) => this.browser = browser;
 
-    [BeforeTestRun]
+    [BeforeTestRun(Order = 1)]
     public static async Task BeforeTestRun()
     {
-        Fixture = new UiFixture();
-        await Fixture.InitializeAsync();
+        await InitLock.WaitAsync();
+        try
+        {
+            if (Fixture is not null) return;
+            Fixture = new UiFixture();
+            await Fixture.InitializeAsync();
+        }
+        finally
+        {
+            InitLock.Release();
+        }
     }
 
     [AfterTestRun]
@@ -24,17 +34,17 @@ public class PlaywrightHooks
             await Fixture.DisposeAsync();
     }
 
-    [BeforeScenario]
+    [BeforeScenario(Order = 1)]
     public async Task BeforeScenario(ScenarioContext scenarioContext)
     {
         await Fixture.App.ResetAsync();
-        await LoginCaptureHooks.CaptureAllAsync(Fixture);
+        LoginCaptureHooks.Reset();
 
         var role = scenarioContext.ScenarioInfo.Tags
             .Select(tag => Enum.TryParse<Role>(tag, out var r) ? (Role?)r : null)
             .FirstOrDefault(r => r is not null);
 
-        await browser.InitializeAsync(Fixture.Browser, role);
+        await browser.InitializeAsync(Fixture.Browser, role, Fixture);
     }
 
     [AfterScenario]

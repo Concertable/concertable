@@ -55,7 +55,7 @@ internal class OpportunityApiTests : IAsyncLifetime
     public async Task Create_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
 
         // Act
         var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest(fixture.SeedData.Rock.Id));

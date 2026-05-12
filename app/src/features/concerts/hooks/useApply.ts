@@ -20,12 +20,11 @@ export function useApply(opportunityId: number) {
     isPending,
     error,
   } = useMutation({
-    mutationFn: (paymentMethodId?: string) =>
-      applicationApi.applyToOpportunity(opportunityId, paymentMethodId),
+    mutationFn: () => applicationApi.applyToOpportunity(opportunityId),
     onSuccess: () => toast.success("Application submitted!"),
   });
 
-  const apply = (paymentMethodId?: string) => applyMutate(paymentMethodId);
+  const apply = () => applyMutate();
 
   return { apply, isPending, error, canApply };
 }

@@ -22,8 +22,15 @@ internal interface IStripeAccountClient
         IDictionary<string, string> metadata,
         CancellationToken ct = default);
 
-    Task VerifyAndVoidAsync(
+    Task<CheckoutSession> CreateVerifySessionAsync(
         string stripeCustomerId,
-        string paymentMethodId,
+        IDictionary<string, string> metadata,
         CancellationToken ct = default);
+
+    Task<CheckoutSession> CreateHoldSessionAsync(
+        string stripeCustomerId,
+        decimal amount,
+        IDictionary<string, string> metadata,
+        CancellationToken ct = default);
+
 }

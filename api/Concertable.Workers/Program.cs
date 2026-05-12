@@ -13,6 +13,7 @@ builder.Services
     .ConfigureFunctionsApplicationInsights();
 
 builder.Services
+    .AddSingleton<IKeyedServiceProvider>(sp => (IKeyedServiceProvider)sp)
     .AddInfrastructure(builder.Configuration);
 
 builder.Build().Run();

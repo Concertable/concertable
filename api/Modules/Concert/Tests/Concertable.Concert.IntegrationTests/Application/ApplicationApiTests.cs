@@ -24,7 +24,7 @@ public class ApplicationApiTests : IAsyncLifetime
     public async Task Accept_ShouldReturn403_WhenNotVenueManager()
     {
         // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
 
         // Act
         var response = await client.PostAsync($"/api/Application/{fixture.SeedData.FlatFeeApp.Id}/accept", (object?)null);

@@ -16,6 +16,11 @@ internal class MockStripeApiClient : IMockStripeApiClient
         LastMetadata = [];
     }
 
+    public void UpdateLastMetadata(IDictionary<string, string> metadata)
+    {
+        LastMetadata = new Dictionary<string, string>(metadata);
+    }
+
     public Task<PaymentIntent> CreatePaymentIntentAsync(PaymentIntentCreateOptions options)
     {
         LastPaymentIntentId = $"pi_test_{Guid.NewGuid():N}";

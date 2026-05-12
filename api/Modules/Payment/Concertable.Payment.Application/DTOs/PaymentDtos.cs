@@ -40,6 +40,19 @@ internal record SettlementTransactionDto : ITransaction
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
+internal record VerifyTransactionDto : ITransaction
+{
+    public int Id { get; set; }
+    public TransactionType TransactionType => TransactionType.Verify;
+    public int ApplicationId { get; set; }
+    public Guid FromUserId { get; set; }
+    public Guid ToUserId { get; set; }
+    public required string PaymentIntentId { get; set; }
+    public long Amount { get; set; }
+    public TransactionStatus Status { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
 internal record PurchaseCompleteDto
 {
     public int EntityId { get; set; }

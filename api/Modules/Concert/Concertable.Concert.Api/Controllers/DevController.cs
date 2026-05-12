@@ -14,8 +14,8 @@ internal class DevController : ControllerBase
         [FromQuery] int applicationId,
         [FromServices] IAcceptanceDispatcher AcceptanceDispatcher)
     {
-        var outcome = await AcceptanceDispatcher.AcceptAsync(applicationId);
-        return Ok(outcome);
+        await AcceptanceDispatcher.AcceptAsync(applicationId, null);
+        return NoContent();
     }
 
     [Authorize]

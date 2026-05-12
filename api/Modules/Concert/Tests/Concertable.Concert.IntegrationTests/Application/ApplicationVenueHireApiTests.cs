@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Concertable.Concert.Application.DTOs;
-using Concertable.Concert.Application.Enums;
 using Concertable.Concert.Application.Requests;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
@@ -30,7 +29,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
     public async Task ApplyCheckout_ShouldReturnAuthorizeFlatPaymentSession()
     {
         // Arrange
-        var client = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
 
         // Act
         var response = await client.PostAsync($"/api/Application/opportunity/{fixture.SeedData.VenueHireApp.OpportunityId}/checkout");
@@ -39,7 +38,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         await response.ShouldBe(HttpStatusCode.OK);
         var checkout = await response.Content.ReadAsync<Checkout>();
         Assert.NotNull(checkout);
-        Assert.Equal(PaymentTiming.Authorize, checkout!.Timing);
+        Assert.Equal(CheckoutLabels.Charge, checkout!.Labels);
         Assert.IsType<FlatPayment>(checkout.Amount);
         Assert.NotEmpty(checkout.Session.ClientSecret);
     }
@@ -73,7 +72,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var opportunity = await oppResponse.Content.ReadAsync<OpportunityResponse>();
 
         // Act — artist runs apply-checkout, then applies with the PM
-        var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager);
+        var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var checkoutResponse = await artistClient.PostAsync($"/api/Application/opportunity/{opportunity!.Id}/checkout");
         await checkoutResponse.ShouldBe(HttpStatusCode.OK);
 
@@ -121,7 +120,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         Assert.Null(concert.DatePosted);
         Assert.Equal(2, fixture.NotificationService.DraftCreated.Count);
         var notifiedUserIds = fixture.NotificationService.DraftCreated.Select(n => n.UserId).ToList();
-        Assert.Contains(fixture.SeedData.ArtistManager.Id.ToString(), notifiedUserIds);
+        Assert.Contains(fixture.SeedData.ArtistManager1.Id.ToString(), notifiedUserIds);
         Assert.Contains(fixture.SeedData.VenueManager1.Id.ToString(), notifiedUserIds);
         Assert.All(fixture.NotificationService.DraftCreated, n => Assert.NotNull(n.Payload));
 
@@ -130,7 +129,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         Assert.NotNull(escrow);
         Assert.Equal(EscrowStatus.Held, escrow!.Status);
         Assert.NotEmpty(escrow.ChargeId);
-        Assert.Equal(fixture.SeedData.ArtistManager.Id, escrow.FromUserId);
+        Assert.Equal(fixture.SeedData.ArtistManager1.Id, escrow.FromUserId);
         Assert.Equal(fixture.SeedData.VenueManager1.Id, escrow.ToUserId);
     }
 
@@ -181,7 +180,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Apply_ShouldFail_WhenCardWillDecline()
+    public async Task Apply_ShouldCreatePrepaidApplication_WithoutCheckout()
     {
         // Arrange — venue manager creates a fresh VenueHire opportunity
         var venueClient = fixture.CreateClient(fixture.SeedData.VenueManager1);
@@ -195,15 +194,16 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         var oppResponse = await venueClient.PostAsync("/api/Opportunity", oppRequest);
         var opportunity = await oppResponse.Content.ReadAsync<OpportunityResponse>();
 
-        // Act — artist applies; verify-and-void is stubbed to decline
-        var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager, o => o.UseDeclineAtVerify());
+        // Act — artist applies directly with a payment method (no prior /checkout call)
+        var artistClient = fixture.CreateClient(fixture.SeedData.ArtistManager1);
         var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity!.Id}", new { paymentMethodId = "pm_card_visa" });
 
-        // Assert — 400 returned, no PrepaidApplication row created
-        Assert.Equal(HttpStatusCode.BadRequest, applyResponse.StatusCode);
+        // Assert — 201 Created, PrepaidApplication row created with stored PM
+        Assert.Equal(HttpStatusCode.Created, applyResponse.StatusCode);
         var prepaid = await fixture.ReadDbContext.Applications
             .OfType<PrepaidApplication>()
             .FirstOrDefaultAsync(a => a.OpportunityId == opportunity.Id);
-        Assert.Null(prepaid);
+        Assert.NotNull(prepaid);
+        Assert.Equal("pm_card_visa", prepaid!.PaymentMethodId);
     }
 }

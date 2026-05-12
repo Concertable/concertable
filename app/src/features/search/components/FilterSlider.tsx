@@ -32,6 +32,7 @@ export function FilterSlider() {
   const { filters, setFilters } = useSearchFiltersStore();
   const { updateFilters } = useSearchFilters();
   const { data: genres } = useGenresQuery();
+  const [open, setOpen] = useState(false);
   const [pendingGenre, setPendingGenre] = useState("");
 
   function update(next: Partial<SearchFilters>) {
@@ -48,6 +49,7 @@ export function FilterSlider() {
 
   function apply() {
     updateFilters(filters);
+    setOpen(false);
   }
 
   const selectedGenres =
@@ -56,18 +58,19 @@ export function FilterSlider() {
     genres?.filter((g) => !filters.genreIds?.includes(g.id)) ?? [];
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
           variant="secondary"
           size="icon"
           className="shrink-0 rounded-full"
+          data-testid="filter-open"
         >
           <FunnelIcon />
         </Button>
       </SheetTrigger>
 
-      <SheetContent>
+      <SheetContent data-testid="filter-panel">
         <SheetHeader>
           <SheetTitle>Filter</SheetTitle>
         </SheetHeader>
@@ -81,7 +84,7 @@ export function FilterSlider() {
                 update({ headerType: v as SearchFilters["headerType"] })
               }
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full" data-testid="filter-header-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -96,7 +99,7 @@ export function FilterSlider() {
             <p className="text-muted-foreground text-xs">Genre</p>
             <div className="flex gap-2">
               <Select value={pendingGenre} onValueChange={setPendingGenre}>
-                <SelectTrigger className="flex-1">
+                <SelectTrigger className="flex-1" data-testid="filter-genre-select">
                   <SelectValue placeholder="Select genre" />
                 </SelectTrigger>
                 <SelectContent>
@@ -107,7 +110,7 @@ export function FilterSlider() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button size="icon" onClick={addGenre} disabled={!pendingGenre}>
+              <Button size="icon" onClick={addGenre} disabled={!pendingGenre} data-testid="filter-genre-add">
                 <PlusIcon />
               </Button>
             </div>
@@ -142,7 +145,7 @@ export function FilterSlider() {
               <p className="text-muted-foreground text-xs">
                 Distance Radius (km)
               </p>
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium" data-testid="filter-radius-value">
                 {filters.radius ?? 50} km
               </span>
             </div>
@@ -152,6 +155,7 @@ export function FilterSlider() {
               step={1}
               defaultValue={[filters.radius ?? 50]}
               onValueChange={([v]) => update({ radius: v })}
+              data-testid="filter-radius-slider"
             />
           </div>
 
@@ -160,7 +164,7 @@ export function FilterSlider() {
               value={filters.orderBy ?? ""}
               onValueChange={(v) => update({ orderBy: v })}
             >
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1" data-testid="filter-order-by">
                 <SelectValue placeholder="Order By" />
               </SelectTrigger>
               <SelectContent>
@@ -175,7 +179,7 @@ export function FilterSlider() {
               value={filters.sortOrder ?? ""}
               onValueChange={(v) => update({ sortOrder: v as "asc" | "desc" })}
             >
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1" data-testid="filter-sort-order">
                 <SelectValue placeholder="Sort Order" />
               </SelectTrigger>
               <SelectContent>
@@ -190,6 +194,7 @@ export function FilterSlider() {
               <Checkbox
                 checked={filters.showHistory ?? false}
                 onCheckedChange={(v) => update({ showHistory: !!v })}
+                data-testid="filter-show-history"
               />
               Show History
             </label>
@@ -197,12 +202,13 @@ export function FilterSlider() {
               <Checkbox
                 checked={filters.showSold ?? false}
                 onCheckedChange={(v) => update({ showSold: !!v })}
+                data-testid="filter-show-sold"
               />
               Show Sold
             </label>
           </div>
 
-          <Button className="w-full" onClick={apply}>
+          <Button className="w-full" onClick={apply} data-testid="filter-apply">
             Apply
           </Button>
         </div>

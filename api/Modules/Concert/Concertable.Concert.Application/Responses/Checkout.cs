@@ -1,10 +1,19 @@
 using System.Text.Json.Serialization;
-using Concertable.Concert.Application.Enums;
 using Concertable.Payment.Contracts;
 
 namespace Concertable.Concert.Application.Responses;
 
-internal record Checkout(PaymentTiming Timing, IPaymentAmount Amount, PayeeSummary Payee, CheckoutSession Session);
+internal record Checkout(IPaymentAmount Amount, PayeeSummary Payee, CheckoutSession Session, CheckoutLabels Labels);
+
+internal record CheckoutLabels(string SummaryTitle, string SubmitLabel, string? PaymentHint)
+{
+    internal static readonly CheckoutLabels Charge = new("Summary", "Confirm & Pay", null);
+
+    internal static readonly CheckoutLabels Settlement = new(
+        "Settlement",
+        "Confirm",
+        "Saved card required for settlement after the concert.");
+}
 
 internal record PayeeSummary(string Name, string? Email);
 

@@ -21,6 +21,7 @@ using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Payment;
 using Concertable.Concert.Infrastructure.Services.Review;
 using Concertable.Concert.Infrastructure.Services.Settlement;
+using Concertable.Concert.Infrastructure.Services.Verify;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Payment.Contracts;
@@ -60,7 +61,7 @@ public static class ServiceCollectionExtensions
             sp.GetRequiredService<IOpportunityRepository>(),
             sp.GetRequiredService<IContractModule>()));
         services.AddScoped<IApplicationService, ApplicationService>();
-        services.AddScoped<IUpfrontConcertService, UpfrontConcertService>();
+        services.AddScoped<IImmediateConcertService, ImmediateConcertService>();
         services.AddScoped<IDeferredConcertService, DeferredConcertService>();
         services.AddScoped<IContractLoader, ContractLoader>();
         services.AddScoped<IPayerLookup, PayerLookup>();
@@ -85,7 +86,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
         services.AddScoped<ICheckoutDispatcher, CheckoutDispatcher>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
+        services.AddScoped<IConcertCompletionRunner, ConcertCompletionRunner>();
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
+        services.AddScoped<IVerifyDispatcher, VerifyDispatcher>();
         services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
 
         var workflowTypes = new Dictionary<ContractType, Type>();
@@ -129,6 +132,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IPaymentSucceededProcessor, TicketPaymentProcessor>(TransactionTypes.Ticket);
         services.AddKeyedScoped<IPaymentSucceededProcessor, SettlementPaymentProcessor>(TransactionTypes.Settlement);
         services.AddKeyedScoped<IPaymentSucceededProcessor, EscrowPaymentProcessor>(TransactionTypes.Escrow);
+        services.AddKeyedScoped<IPaymentSucceededProcessor, VerifyPaymentProcessor>(TransactionTypes.Verify);
 
         services.AddSingleton<ConcertConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ConcertConfigurationProvider>());

@@ -11,18 +11,32 @@ public class UiFixture : IAsyncLifetime
     public IBrowser Browser { get; private set; } = null!;
 
     public UiFixture() => App = new AppFixture();
-
     public UiFixture(IMessageSink messageSink) => App = new AppFixture(messageSink);
 
     public async Task InitializeAsync()
     {
         await App.InitializeAsync();
         playwright = await Playwright.CreateAsync();
+        var headless = Environment.GetEnvironmentVariable("CI") == "true"
+            || Environment.GetEnvironmentVariable("HEADLESS") == "true";
         Browser = await playwright.Chromium.LaunchAsync(new()
         {
-            Headless = Environment.GetEnvironmentVariable("CI") == "true",
-            SlowMo = Environment.GetEnvironmentVariable("CI") == "true" ? 0 : 250
+            Headless = headless,
+            SlowMo = headless ? 0 : 250,
+            Args = new[]
+            {
+                "--disable-features=IsolateOrigins,site-per-process",
+                "--disable-site-isolation-trials",
+            }
         });
+        await WarmUpSpaAsync();
+    }
+
+    private async Task WarmUpSpaAsync()
+    {
+        await using var context = await Browser.NewContextAsync(new() { IgnoreHTTPSErrors = true });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(App.SpaBaseUrl, new() { Timeout = 120_000, WaitUntil = WaitUntilState.DOMContentLoaded });
     }
 
     public async Task DisposeAsync()

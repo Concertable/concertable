@@ -8,7 +8,7 @@ internal class TransactionEntityConfiguration : IEntityTypeConfiguration<Transac
     public void Configure(EntityTypeBuilder<TransactionEntity> builder)
     {
         builder.ToTable("Transactions", Schema.Name);
-        builder.UseTptMappingStrategy();
+        builder.Ignore(t => t.TransactionType);
         builder.HasIndex(t => t.PaymentIntentId).IsUnique();
         builder.HasIndex(t => t.FromUserId);
         builder.HasIndex(t => t.ToUserId);
@@ -19,7 +19,7 @@ internal class TicketTransactionEntityConfiguration : IEntityTypeConfiguration<T
 {
     public void Configure(EntityTypeBuilder<TicketTransactionEntity> builder)
     {
-        builder.ToTable("TicketTransactions", Schema.Name);
+        builder.Property(t => t.ConcertId).HasColumnName("ContextId");
     }
 }
 
@@ -27,6 +27,14 @@ internal class SettlementTransactionEntityConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<SettlementTransactionEntity> builder)
     {
-        builder.ToTable("SettlementTransactions", Schema.Name);
+        builder.Property(t => t.BookingId).HasColumnName("ContextId");
+    }
+}
+
+internal class VerifyTransactionEntityConfiguration : IEntityTypeConfiguration<VerifyTransactionEntity>
+{
+    public void Configure(EntityTypeBuilder<VerifyTransactionEntity> builder)
+    {
+        builder.Property(t => t.ApplicationId).HasColumnName("ContextId");
     }
 }

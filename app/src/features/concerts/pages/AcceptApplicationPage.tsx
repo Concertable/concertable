@@ -1,26 +1,34 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { usePayoutAccountStatusQuery, StripeOnboardingBanner } from "@/features/payments";
 import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
+import type { ConcertDraftCreatedPayload } from "@/features/notifications";
 import {
   useApplicationQuery,
   useAcceptApplicationMutation,
 } from "../hooks/useApplicationQuery";
+import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
 import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
+import { ApplicationCheckoutFlow } from "./ApplicationCheckoutPage";
 
 export function AcceptApplicationPage() {
   const { applicationId } = useParams({ from: "/venue/accept/$applicationId" });
   const navigate = useNavigate();
+  const [accepted, setAccepted] = useState(false);
   const { data: application, isLoading } = useApplicationQuery(applicationId);
   const { data: accountStatus } = usePayoutAccountStatusQuery(true);
   const acceptMutation = useAcceptApplicationMutation(
     application?.opportunity.id ?? 0,
   );
+  const flow = useCheckoutFlow<ConcertDraftCreatedPayload>({ event: "ConcertDraftCreated" });
 
   if (isLoading || !application) return null;
 
   const { artist, opportunity, actions } = application;
   const requiresCheckout = actions.checkout != null;
+
+  if (accepted) return <ApplicationCheckoutFlow artistName={artist.name} flow={flow} />;
 
   function handleConfirm() {
     if (requiresCheckout) {
@@ -31,17 +39,7 @@ export function AcceptApplicationPage() {
       return;
     }
 
-    acceptMutation.mutate(
-      { applicationId },
-      {
-        onSuccess: () => {
-          void navigate({
-            to: "/venue/my/applications/$id",
-            params: { id: opportunity.id },
-          });
-        },
-      },
-    );
+    acceptMutation.mutate({ applicationId }, { onSuccess: () => setAccepted(true) });
   }
 
   return (
