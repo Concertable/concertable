@@ -59,6 +59,9 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
 
+                    b.Property<int>("LifecycleId")
+                        .HasColumnType("int");
+
                     b.Property<int>("OpportunityId")
                         .HasColumnType("int");
 
@@ -68,6 +71,9 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ArtistId");
+
+                    b.HasIndex("LifecycleId")
+                        .IsUnique();
 
                     b.HasIndex("OpportunityId", "ArtistId")
                         .IsUnique();
@@ -262,6 +268,33 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.HasIndex("ConcertId");
 
                     b.ToTable("ConcertImages", "concert");
+                });
+
+            modelBuilder.Entity("Concertable.Concert.Domain.ConcertLifecycleEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArtistId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OpportunityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Stage")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OpportunityId", "ArtistId");
+
+                    b.ToTable("ConcertLifecycles", "concert");
                 });
 
             modelBuilder.Entity("Concertable.Concert.Domain.ConcertRatingProjection", b =>

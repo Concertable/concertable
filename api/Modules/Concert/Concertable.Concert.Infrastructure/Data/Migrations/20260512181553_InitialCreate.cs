@@ -35,6 +35,23 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ConcertLifecycles",
+                schema: "concert",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OpportunityId = table.Column<int>(type: "int", nullable: false),
+                    ArtistId = table.Column<int>(type: "int", nullable: false),
+                    Stage = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConcertLifecycles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ConcertRatingProjections",
                 schema: "concert",
                 columns: table => new
@@ -126,6 +143,7 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     OpportunityId = table.Column<int>(type: "int", nullable: false),
                     ArtistId = table.Column<int>(type: "int", nullable: false),
+                    LifecycleId = table.Column<int>(type: "int", nullable: false),
                     Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     PaymentMethodId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -343,6 +361,13 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                 column: "ArtistId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Applications_LifecycleId",
+                schema: "concert",
+                table: "Applications",
+                column: "LifecycleId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Applications_OpportunityId_ArtistId",
                 schema: "concert",
                 table: "Applications",
@@ -380,6 +405,12 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                 schema: "concert",
                 table: "ConcertImages",
                 column: "ConcertId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ConcertLifecycles_OpportunityId_ArtistId",
+                schema: "concert",
+                table: "ConcertLifecycles",
+                columns: new[] { "OpportunityId", "ArtistId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Concerts_ArtistId",
@@ -497,6 +528,10 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "ConcertImages",
+                schema: "concert");
+
+            migrationBuilder.DropTable(
+                name: "ConcertLifecycles",
                 schema: "concert");
 
             migrationBuilder.DropTable(
