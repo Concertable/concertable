@@ -1,46 +1,24 @@
 using Concertable.Concert.Application.Workflow;
-using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.StateMachines;
 
 internal abstract class ConcertStateMachine : IConcertStateMachine
 {
-    private readonly IConcertLifecycleRepository repository;
-
-    protected ConcertStateMachine(IConcertLifecycleRepository repository)
-    {
-        this.repository = repository;
-    }
-
     protected abstract ConcertStage[] Sequence { get; }
 
-    public async Task GuardAsync<TStep>(int lifecycleId) where TStep : IConcertStep
+    public bool CanTransitionTo(ConcertStage target, ConcertStage current)
     {
-        var lifecycle = await repository.GetByIdAsync(lifecycleId)
-            ?? throw new NotFoundException("Concert lifecycle not found");
-
-        var expected = PreviousStage<TStep>();
-        if (lifecycle.Stage != expected)
-            throw new ConflictException($"Cannot run {typeof(TStep).Name} from stage {lifecycle.Stage}");
+        var ci = Array.IndexOf(Sequence, current);
+        var ti = Array.IndexOf(Sequence, target);
+        return ci >= 0 && ti == ci + 1;
     }
 
-    public async Task AdvanceAsync<TStep>(int lifecycleId) where TStep : IConcertStep
+    public ConcertStage NextStage(ConcertStage current)
     {
-        var lifecycle = await repository.GetByIdAsync(lifecycleId)
-            ?? throw new NotFoundException("Concert lifecycle not found");
-
-        lifecycle.AdvanceTo(TStep.Stage);
-        await repository.SaveChangesAsync();
-    }
-
-    private ConcertStage PreviousStage<TStep>() where TStep : IConcertStep
-    {
-        var index = Array.IndexOf(Sequence, TStep.Stage);
-        if (index < 0)
-            throw new BadRequestException($"Stage {TStep.Stage} is not part of this contract's pipeline");
-        if (index == 0)
-            throw new BadRequestException($"Stage {TStep.Stage} has no predecessor");
-        return Sequence[index - 1];
+        var ci = Array.IndexOf(Sequence, current);
+        if (ci < 0 || ci + 1 >= Sequence.Length)
+            throw new BadRequestException($"No next stage from {current}");
+        return Sequence[ci + 1];
     }
 }

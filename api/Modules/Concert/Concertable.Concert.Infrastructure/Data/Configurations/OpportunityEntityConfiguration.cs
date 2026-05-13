@@ -30,7 +30,6 @@ internal class ApplicationEntityConfiguration : IEntityTypeConfiguration<Applica
     {
         builder.ToTable("Applications", Schema.Name);
         builder.HasIndex(ca => new { ca.OpportunityId, ca.ArtistId }).IsUnique();
-        builder.HasIndex(ca => ca.LifecycleId).IsUnique();
         builder.HasOne(ca => ca.Opportunity)
             .WithMany(o => o.Applications)
             .HasForeignKey(ca => ca.OpportunityId)

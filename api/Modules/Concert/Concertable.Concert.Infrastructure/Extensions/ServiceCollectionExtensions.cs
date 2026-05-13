@@ -4,8 +4,12 @@ using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Mappers;
 using Concertable.Concert.Application.Validators;
 using Concertable.Concert.Application.Workflow;
+using Concertable.Concert.Application.Workflow.Executors;
+using Concertable.Concert.Infrastructure.Services.Workflow.Dispatchers;
+using Concertable.Concert.Infrastructure.Services.Workflow.Executors;
 using Concertable.Concert.Infrastructure.Services.Workflow.StateMachines;
 using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
+using Concertable.Concert.Infrastructure.Services.Workflow.Workflows;
 using Concertable.Concert.Contracts;
 using Concertable.Concert.Contracts.Events;
 using Concertable.Concert.Domain.Events;
@@ -80,53 +84,63 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPdfService, PdfService>();
 
         services.AddScoped<IConcertCompletionRunner, ConcertCompletionRunner>();
-        services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
 
-        services.AddScoped<IConcertLifecycleRepository, ConcertLifecycleRepository>();
-        services.AddScoped<IConcertPipelineFactory, ConcertPipelineFactory>();
         services.AddScoped<IConcertStateMachineFactory, ConcertStateMachineFactory>();
+        services.AddScoped<IConcertWorkflowFactory, ConcertWorkflowFactory>();
+        services.AddScoped<IConcertWorkflowCapabilityRegistry, ConcertWorkflowCapabilityRegistry>();
+        services.AddScoped(typeof(ILifecycleRepository<>), typeof(LifecycleRepository<>));
+        services.AddScoped(typeof(IStepExecutor<>), typeof(StepExecutor<>));
 
-        services.AddScoped<ConcertPipelineExecutor>();
-        services.AddScoped<IApplyDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
-        services.AddScoped<ICheckoutDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
-        services.AddScoped<IAcceptanceDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
-        services.AddScoped<ISettlementDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
-        services.AddScoped<ICompletionDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
-        services.AddScoped<IVerifyDispatcher>(sp => sp.GetRequiredService<ConcertPipelineExecutor>());
+        services.AddScoped<IApplyExecutor, ApplyExecutor>();
+        services.AddScoped<IAcceptExecutor, AcceptExecutor>();
+        services.AddScoped<IVerifyExecutor, VerifyExecutor>();
+        services.AddScoped<ISettleExecutor, SettleExecutor>();
+        services.AddScoped<IFinishExecutor, FinishExecutor>();
+
+        services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
+        services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
+        services.AddScoped<ICheckoutDispatcher, CheckoutDispatcher>();
+        services.AddScoped<IVerifyDispatcher, VerifyDispatcher>();
+        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
+        services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
 
         services.AddConcertPipeline(ContractType.FlatFee, p => p
+            .WithStateMachine<HeldStateMachine>()
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<FlatFeeAcceptCheckoutStep>()
             .WithSimpleAccept<FlatFeeAcceptStep>()
             .WithSettle<HeldSettleStep>()
             .WithFinish<FlatFeeFinishStep>()
-            .WithStateMachine<HeldStateMachine>());
+            .WithWorkflow<FlatFeeWorkflow>());
 
         services.AddConcertPipeline(ContractType.DoorSplit, p => p
+            .WithStateMachine<DeferredStateMachine>()
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<DoorSplitAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
             .WithPaidAccept<DoorSplitAcceptStep>()
             .WithSettle<DeferredSettleStep>()
             .WithFinish<DoorSplitFinishStep>()
-            .WithStateMachine<DeferredStateMachine>());
+            .WithWorkflow<DoorSplitWorkflow>());
 
         services.AddConcertPipeline(ContractType.Versus, p => p
+            .WithStateMachine<DeferredStateMachine>()
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<VersusAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
             .WithPaidAccept<VersusAcceptStep>()
             .WithSettle<DeferredSettleStep>()
             .WithFinish<VersusFinishStep>()
-            .WithStateMachine<DeferredStateMachine>());
+            .WithWorkflow<VersusWorkflow>());
 
         services.AddConcertPipeline(ContractType.VenueHire, p => p
+            .WithStateMachine<ApplyCommittedStateMachine>()
             .WithApplyCheckout<VenueHireApplyCheckoutStep>()
             .WithPaidApply<VenueHirePaidApplyStep>()
             .WithSimpleAccept<VenueHireAcceptStep>()
             .WithSettle<ApplyCommittedSettleStep>()
             .WithFinish<VenueHireFinishStep>()
-            .WithStateMachine<ApplyCommittedStateMachine>());
+            .WithWorkflow<VenueHireWorkflow>());
 
         // Ticket payee â€” composite dispatches by ContractType to artist vs venue
         services.AddSingleton<ArtistTicketPayee>();
@@ -153,7 +167,8 @@ public static class ServiceCollectionExtensions
 
         // Domain event â†’ integration event + read-model projection handlers
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();
-        services.AddScoped<IDomainEventHandler<StageAdvancedDomainEvent>, StageAdvancedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<ApplicationAcceptedDomainEvent>, ApplicationAcceptedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<BookingSettledDomainEvent>, BookingSettledDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();

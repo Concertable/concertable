@@ -6,14 +6,11 @@ internal class DeferredStateMachine : ConcertStateMachine
     [
         ConcertStage.None,
         ConcertStage.Applied,
-        ConcertStage.CheckedOut,
         ConcertStage.Verified,
         ConcertStage.Accepted,
         ConcertStage.Settled,
         ConcertStage.Finished
     ];
-
-    public DeferredStateMachine(IConcertLifecycleRepository repository) : base(repository) { }
 
     protected override ConcertStage[] Sequence => sequence;
 }

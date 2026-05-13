@@ -7,9 +7,8 @@ public enum ConcertStage
 {
     None = 0,
     Applied = 1,
-    CheckedOut = 2,
-    Verified = 3,
-    Accepted = 4,
-    Settled = 5,
-    Finished = 6
+    Verified = 2,
+    Accepted = 3,
+    Settled = 4,
+    Finished = 5
 }

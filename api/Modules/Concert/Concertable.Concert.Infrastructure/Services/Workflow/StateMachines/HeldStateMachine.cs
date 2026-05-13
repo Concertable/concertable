@@ -6,13 +6,10 @@ internal class HeldStateMachine : ConcertStateMachine
     [
         ConcertStage.None,
         ConcertStage.Applied,
-        ConcertStage.CheckedOut,
         ConcertStage.Accepted,
         ConcertStage.Settled,
         ConcertStage.Finished
     ];
-
-    public HeldStateMachine(IConcertLifecycleRepository repository) : base(repository) { }
 
     protected override ConcertStage[] Sequence => sequence;
 }
