@@ -1,0 +1,39 @@
+{
+  "name": "@concertable/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./lib": "./src/lib/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./types": "./src/types/index.ts",
+    "./features/*": "./src/features/*.ts",
+    "./lib/*": "./src/lib/*.ts",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./types/*": "./src/types/*.ts"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
+    "@tanstack/react-query": "^5.90.21",
+    "@types/qs": "^6.15.0",
+    "axios": "^1.13.6",
+    "dayjs": "^1.11.20",
+    "immer": "^11.1.4",
+    "oidc-client-ts": "^3.5.0",
+    "qs": "^6.15.0",
+    "query-string": "^9.3.1",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "typescript": "~5.9.3"
+  }
+}
