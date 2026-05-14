@@ -81,7 +81,9 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Modules\\\\Concert\\\\Concertable.Concert.Infrastructure\" -File | Where-Object { $_.Name -match \"Extension|DI|Register\" })",
       "PowerShell(Get-Content *)",
       "PowerShell(dotnet test *)",
-      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; cat \"{}\"')"
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; cat \"{}\"')",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Get-Content \"C:\\\\Users\\\\TOMMYS~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-TommySeery-source-repos-Concertable\\\\7c465f08-1043-4b70-a176-6cfc6ca9ce03\\\\tasks\\\\bw0ce4iwp.output\" | Where-Object { $_ -match \"Failed\" } | Select-Object -First 30)"
     ]
   }
 }

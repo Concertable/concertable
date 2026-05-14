@@ -21,7 +21,8 @@ internal class WorkflowStateMachine<TEntity> : IWorkflowStateMachine<TEntity> wh
         var entity = await create();
         Guard(entity, target);
         entity.AdvanceStage(target);
-        await repository.SaveAsync(entity);
+        await repository.AddAsync(entity);
+        await repository.SaveChangesAsync();
         return entity;
     }
 
@@ -31,7 +32,7 @@ internal class WorkflowStateMachine<TEntity> : IWorkflowStateMachine<TEntity> wh
         Guard(entity, target);
         await execute(entity);
         entity.AdvanceStage(target);
-        await repository.SaveAsync(entity);
+        await repository.SaveChangesAsync();
     }
 
     private void Guard(TEntity entity, ConcertStage target)

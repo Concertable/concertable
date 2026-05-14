@@ -7,11 +7,4 @@ internal class LifecycleRepository<TEntity> : Repository<TEntity>, ILifecycleRep
     where TEntity : class, ILifecycleEntity
 {
     public LifecycleRepository(ConcertDbContext context) : base(context) { }
-
-    public async Task SaveAsync(TEntity entity)
-    {
-        if (entity.Id == 0)
-            await context.Set<TEntity>().AddAsync(entity);
-        await context.SaveChangesAsync();
-    }
 }
