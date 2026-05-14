@@ -1,0 +1,47 @@
+{
+  "name": "@concertable/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./features/artists": "./src/features/artists/index.ts",
+    "./features/auth": "./src/features/auth/index.ts",
+    "./features/concerts": "./src/features/concerts/index.ts",
+    "./features/contracts": "./src/features/contracts/index.ts",
+    "./features/customer": "./src/features/customer/index.ts",
+    "./features/messaging": "./src/features/messaging/index.ts",
+    "./features/notifications": "./src/features/notifications/index.ts",
+    "./features/payments": "./src/features/payments/index.ts",
+    "./features/reviews": "./src/features/reviews/index.ts",
+    "./features/search": "./src/features/search/index.ts",
+    "./features/user": "./src/features/user/index.ts",
+    "./features/venues": "./src/features/venues/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./lib": "./src/lib/index.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
+    "@tanstack/react-query": "^5.90.21",
+    "@types/qs": "^6.15.0",
+    "axios": "^1.13.6",
+    "dayjs": "^1.11.20",
+    "immer": "^11.1.4",
+    "oidc-client-ts": "^3.5.0",
+    "qs": "^6.15.0",
+    "query-string": "^9.3.1",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "typescript": "~5.9.3"
+  }
+}
