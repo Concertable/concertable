@@ -2,7 +2,7 @@ using Concertable.Concert.Application.Workflow.Steps;
 
 namespace Concertable.Concert.Application.Workflow.Capabilities;
 
-internal interface IHasAcceptCheckout
+internal interface IAppliesCheckout
 {
-    IAcceptCheckoutStep AcceptCheckout { get; }
+    IApplyCheckoutStep ApplyCheckout { get; }
 }

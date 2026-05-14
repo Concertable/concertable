@@ -1,4 +1,4 @@
-using Concertable.Concert.Api.Responses;
+﻿using Concertable.Concert.Api.Responses;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Application.Workflow;
@@ -19,7 +19,7 @@ internal sealed class ApplicationResponseMapper : IApplicationResponseMapper
 
         var actions = new ApplicationActions(
             Accept: new ActionLink($"/api/Application/{dto.Id}/accept", "POST"),
-            Checkout: registry.Has<IHasAcceptCheckout>(ct)
+            Checkout: registry.Has<IAcceptsCheckout>(ct)
                 ? new ActionLink($"/api/Application/{dto.Id}/checkout", "POST")
                 : null);
 

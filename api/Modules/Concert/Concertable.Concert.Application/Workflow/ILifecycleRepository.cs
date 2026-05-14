@@ -1,7 +1,9 @@
+using Concertable.Application.Interfaces;
+
 namespace Concertable.Concert.Application.Workflow;
 
-internal interface ILifecycleRepository<TEntity> where TEntity : ILifecycleEntity
+internal interface ILifecycleRepository<TEntity> : IIdRepository<TEntity>
+    where TEntity : class, ILifecycleEntity
 {
-    Task<TEntity?> GetByIdAsync(int id);
     Task SaveAsync(TEntity entity);
 }

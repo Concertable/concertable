@@ -5,7 +5,7 @@ using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.Workflows;
 
-internal sealed class VersusWorkflow : IConcertWorkflow, IAppliesSimple, IHasAcceptCheckout, IVerifies, IAcceptsPaid
+internal sealed class VersusWorkflow : IConcertWorkflow, IAppliesSimple, IAcceptsCheckout, IVerifies, IAcceptsPaid
 {
     private readonly ISimpleApplyStep apply;
     private readonly IAcceptCheckoutStep acceptCheckout;

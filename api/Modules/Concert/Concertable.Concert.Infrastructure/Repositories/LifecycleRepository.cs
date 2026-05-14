@@ -1,21 +1,12 @@
 using Concertable.Concert.Application.Workflow;
 using Concertable.Concert.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;
 
-internal class LifecycleRepository<TEntity> : ILifecycleRepository<TEntity>
+internal class LifecycleRepository<TEntity> : Repository<TEntity>, ILifecycleRepository<TEntity>
     where TEntity : class, ILifecycleEntity
 {
-    private readonly ConcertDbContext context;
-
-    public LifecycleRepository(ConcertDbContext context)
-    {
-        this.context = context;
-    }
-
-    public async Task<TEntity?> GetByIdAsync(int id)
-        => await context.Set<TEntity>().FindAsync(id);
+    public LifecycleRepository(ConcertDbContext context) : base(context) { }
 
     public async Task SaveAsync(TEntity entity)
     {

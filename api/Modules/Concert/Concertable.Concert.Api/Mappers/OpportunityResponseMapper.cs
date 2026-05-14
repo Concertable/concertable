@@ -1,4 +1,4 @@
-using Concertable.Concert.Api.Responses;
+﻿using Concertable.Concert.Api.Responses;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Application.Workflow;
@@ -19,7 +19,7 @@ internal sealed class OpportunityResponseMapper : IOpportunityResponseMapper
         var ct = dto.Contract.ContractType;
 
         var actions = new OpportunityActions(
-            Checkout: registry.Has<IHasApplyCheckout>(ct)
+            Checkout: registry.Has<IAppliesCheckout>(ct)
                 ? new ActionLink($"/api/Application/opportunity/{dto.Id}/checkout", "POST")
                 : null);
 

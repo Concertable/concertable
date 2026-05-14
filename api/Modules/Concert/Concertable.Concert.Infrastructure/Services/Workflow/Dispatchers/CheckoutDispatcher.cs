@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Responses;
+﻿using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Application.Workflow;
 using Concertable.Concert.Application.Workflow.Capabilities;
 using Concertable.Shared.Exceptions;
@@ -21,7 +21,7 @@ internal class CheckoutDispatcher : ICheckoutDispatcher
         var contract = await contractLoader.LoadByOpportunityIdAsync(opportunityId);
         var workflow = workflows.Create(contract.ContractType);
 
-        return workflow is IHasApplyCheckout w
+        return workflow is IAppliesCheckout w
             ? await w.ApplyCheckout.ExecuteAsync(opportunityId)
             : throw new BadRequestException("This contract does not support a pre-apply checkout");
     }
@@ -31,7 +31,7 @@ internal class CheckoutDispatcher : ICheckoutDispatcher
         var contract = await contractLoader.LoadByApplicationIdAsync(applicationId);
         var workflow = workflows.Create(contract.ContractType);
 
-        return workflow is IHasAcceptCheckout w
+        return workflow is IAcceptsCheckout w
             ? await w.AcceptCheckout.ExecuteAsync(applicationId)
             : throw new BadRequestException("This contract does not support an accept checkout");
     }

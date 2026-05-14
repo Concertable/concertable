@@ -5,7 +5,7 @@ using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.Workflows;
 
-internal sealed class VenueHireWorkflow : IConcertWorkflow, IAppliesPaid, IHasApplyCheckout, IAcceptsSimple
+internal sealed class VenueHireWorkflow : IConcertWorkflow, IAppliesPaid, IAppliesCheckout, IAcceptsSimple
 {
     private readonly IPaidApplyStep apply;
     private readonly IApplyCheckoutStep applyCheckout;

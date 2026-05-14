@@ -1,11 +1,11 @@
-using Concertable.Concert.Application.Workflow;
+﻿using Concertable.Concert.Application.Workflow;
 using Concertable.Concert.Application.Workflow.Capabilities;
 using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.Workflows;
 
-internal sealed class DoorSplitWorkflow : IConcertWorkflow, IAppliesSimple, IHasAcceptCheckout, IVerifies, IAcceptsPaid
+internal sealed class DoorSplitWorkflow : IConcertWorkflow, IAppliesSimple, IAcceptsCheckout, IVerifies, IAcceptsPaid
 {
     private readonly ISimpleApplyStep apply;
     private readonly IAcceptCheckoutStep acceptCheckout;

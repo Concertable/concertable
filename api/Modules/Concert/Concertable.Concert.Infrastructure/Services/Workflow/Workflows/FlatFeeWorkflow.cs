@@ -5,7 +5,7 @@ using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.Workflows;
 
-internal sealed class FlatFeeWorkflow : IConcertWorkflow, IAppliesSimple, IHasAcceptCheckout, IAcceptsSimple
+internal sealed class FlatFeeWorkflow : IConcertWorkflow, IAppliesSimple, IAcceptsCheckout, IAcceptsSimple
 {
     private readonly ISimpleApplyStep apply;
     private readonly IAcceptCheckoutStep acceptCheckout;
