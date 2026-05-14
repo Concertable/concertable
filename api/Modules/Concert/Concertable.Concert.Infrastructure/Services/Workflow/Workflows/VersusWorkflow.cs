@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Workflow;
+﻿using Concertable.Concert.Application.Workflow;
 using Concertable.Concert.Application.Workflow.Capabilities;
 using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
@@ -18,7 +18,7 @@ internal sealed class VersusWorkflow : IConcertWorkflow, IAppliesSimple, IHasAcc
         SimpleApplyStep apply,
         VersusAcceptCheckoutStep acceptCheckout,
         DeferredVerifyStep verify,
-        VersusAcceptStep accept,
+        PaidAcceptStep accept,
         DeferredSettleStep settle,
         VersusFinishStep finish)
     {

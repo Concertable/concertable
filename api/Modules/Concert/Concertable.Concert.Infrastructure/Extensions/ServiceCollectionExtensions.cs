@@ -105,36 +105,36 @@ public static class ServiceCollectionExtensions
         var workflowTypes = new Dictionary<ContractType, Type>();
 
         workflowTypes[ContractType.FlatFee] = services.AddConcertWorkflow(ContractType.FlatFee, p => p
-            .WithSimpleApply<SimpleApplyStep>()
-            .WithAcceptCheckout<FlatFeeAcceptCheckoutStep>()
-            .WithSimpleAccept<FlatFeeAcceptStep>()
-            .WithSettle<HeldSettleStep>()
+            .WithApply<SimpleApplyStep>()
+            .WithCheckout<FlatFeeAcceptCheckoutStep>()
+            .WithAccept<FlatFeeAcceptStep>()
+            .WithSettle<NoOpSettleStep>()
             .WithFinish<FlatFeeFinishStep>()
             .WithWorkflow<FlatFeeWorkflow>());
 
         workflowTypes[ContractType.DoorSplit] = services.AddConcertWorkflow(ContractType.DoorSplit, p => p
-            .WithSimpleApply<SimpleApplyStep>()
-            .WithAcceptCheckout<DoorSplitAcceptCheckoutStep>()
+            .WithApply<SimpleApplyStep>()
+            .WithCheckout<DoorSplitAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
-            .WithPaidAccept<DoorSplitAcceptStep>()
+            .WithAccept<PaidAcceptStep>()
             .WithSettle<DeferredSettleStep>()
             .WithFinish<DoorSplitFinishStep>()
             .WithWorkflow<DoorSplitWorkflow>());
 
         workflowTypes[ContractType.Versus] = services.AddConcertWorkflow(ContractType.Versus, p => p
-            .WithSimpleApply<SimpleApplyStep>()
-            .WithAcceptCheckout<VersusAcceptCheckoutStep>()
+            .WithApply<SimpleApplyStep>()
+            .WithCheckout<VersusAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
-            .WithPaidAccept<VersusAcceptStep>()
+            .WithAccept<PaidAcceptStep>()
             .WithSettle<DeferredSettleStep>()
             .WithFinish<VersusFinishStep>()
             .WithWorkflow<VersusWorkflow>());
 
         workflowTypes[ContractType.VenueHire] = services.AddConcertWorkflow(ContractType.VenueHire, p => p
-            .WithApplyCheckout<VenueHireApplyCheckoutStep>()
-            .WithPaidApply<PaidApplyStep>()
-            .WithSimpleAccept<VenueHireAcceptStep>()
-            .WithSettle<ApplyCommittedSettleStep>()
+            .WithCheckout<VenueHireApplyCheckoutStep>()
+            .WithApply<PaidApplyStep>()
+            .WithAccept<VenueHireAcceptStep>()
+            .WithSettle<NoOpSettleStep>()
             .WithFinish<VenueHireFinishStep>()
             .WithWorkflow<VenueHireWorkflow>());
 

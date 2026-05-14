@@ -18,7 +18,7 @@ internal sealed class DoorSplitWorkflow : IConcertWorkflow, IAppliesSimple, IHas
         SimpleApplyStep apply,
         DoorSplitAcceptCheckoutStep acceptCheckout,
         DeferredVerifyStep verify,
-        DoorSplitAcceptStep accept,
+        PaidAcceptStep accept,
         DeferredSettleStep settle,
         DoorSplitFinishStep finish)
     {

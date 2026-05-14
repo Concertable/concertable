@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Workflow;
+﻿using Concertable.Concert.Application.Workflow;
 using Concertable.Concert.Application.Workflow.Capabilities;
 using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
@@ -17,7 +17,7 @@ internal sealed class VenueHireWorkflow : IConcertWorkflow, IAppliesPaid, IHasAp
         PaidApplyStep apply,
         VenueHireApplyCheckoutStep applyCheckout,
         VenueHireAcceptStep accept,
-        ApplyCommittedSettleStep settle,
+        NoOpSettleStep settle,
         VenueHireFinishStep finish)
     {
         this.apply = apply;

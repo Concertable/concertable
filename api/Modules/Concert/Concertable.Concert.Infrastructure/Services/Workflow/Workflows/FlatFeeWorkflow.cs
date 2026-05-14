@@ -1,4 +1,4 @@
-using Concertable.Concert.Application.Workflow;
+﻿using Concertable.Concert.Application.Workflow;
 using Concertable.Concert.Application.Workflow.Capabilities;
 using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
@@ -17,7 +17,7 @@ internal sealed class FlatFeeWorkflow : IConcertWorkflow, IAppliesSimple, IHasAc
         SimpleApplyStep apply,
         FlatFeeAcceptCheckoutStep acceptCheckout,
         FlatFeeAcceptStep accept,
-        HeldSettleStep settle,
+        NoOpSettleStep settle,
         FlatFeeFinishStep finish)
     {
         this.apply = apply;
