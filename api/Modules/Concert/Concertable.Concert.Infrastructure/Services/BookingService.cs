@@ -16,6 +16,7 @@ internal class BookingService : IBookingService
         var booking = StandardBooking.Create(applicationId);
         booking.AwaitPayment();
         await bookingRepository.AddAsync(booking);
+        await bookingRepository.SaveChangesAsync();
         return booking;
     }
 
@@ -23,6 +24,7 @@ internal class BookingService : IBookingService
     {
         var booking = DeferredBooking.Create(applicationId, paymentMethodId);
         await bookingRepository.AddAsync(booking);
+        await bookingRepository.SaveChangesAsync();
         return booking;
     }
 
