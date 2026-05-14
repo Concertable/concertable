@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { userManager } from "@/features/auth";
-import api from "@concertable/shared/lib";
+import api from "@concertable/shared/lib/axiosClient";
 
 type ProblemDetails = {
   title?: string;
