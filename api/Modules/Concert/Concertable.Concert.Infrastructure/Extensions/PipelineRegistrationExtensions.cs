@@ -11,7 +11,9 @@ internal static class PipelineRegistrationExtensions
         ContractType contractType,
         Action<ConcertPipelineBuilder> configure)
     {
-        configure(new ConcertPipelineBuilder(contractType, services));
+        var builder = new ConcertPipelineBuilder(contractType, services);
+        configure(builder);
+        builder.Build();
         return services;
     }
 }

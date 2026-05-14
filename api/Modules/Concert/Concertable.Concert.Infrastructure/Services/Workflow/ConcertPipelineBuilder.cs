@@ -8,6 +8,7 @@ internal class ConcertPipelineBuilder
 {
     private readonly ContractType contractType;
     private readonly IServiceCollection services;
+    private readonly List<ConcertStage> stages = new();
 
     public ConcertPipelineBuilder(ContractType contractType, IServiceCollection services)
     {
@@ -15,21 +16,15 @@ internal class ConcertPipelineBuilder
         this.services = services;
     }
 
-    public ConcertPipelineBuilder WithSimpleApply<TStep>() where TStep : class, ISimpleApplyStep => Register<TStep>();
-    public ConcertPipelineBuilder WithPaidApply<TStep>() where TStep : class, IPaidApplyStep => Register<TStep>();
-    public ConcertPipelineBuilder WithAcceptCheckout<TStep>() where TStep : class, IAcceptCheckoutStep => Register<TStep>();
-    public ConcertPipelineBuilder WithApplyCheckout<TStep>() where TStep : class, IApplyCheckoutStep => Register<TStep>();
-    public ConcertPipelineBuilder WithSimpleAccept<TStep>() where TStep : class, ISimpleAcceptStep => Register<TStep>();
-    public ConcertPipelineBuilder WithPaidAccept<TStep>() where TStep : class, IPaidAcceptStep => Register<TStep>();
-    public ConcertPipelineBuilder WithVerify<TStep>() where TStep : class, IVerifyStep => Register<TStep>();
-    public ConcertPipelineBuilder WithSettle<TStep>() where TStep : class, ISettleStep => Register<TStep>();
-    public ConcertPipelineBuilder WithFinish<TStep>() where TStep : class, IFinishStep => Register<TStep>();
-
-    public ConcertPipelineBuilder WithStateMachine<TStateMachine>() where TStateMachine : class, IConcertStateMachine
-    {
-        services.AddKeyedSingleton<IConcertStateMachine, TStateMachine>(contractType);
-        return this;
-    }
+    public ConcertPipelineBuilder WithSimpleApply<TStep>() where TStep : class, ISimpleApplyStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithPaidApply<TStep>() where TStep : class, IPaidApplyStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithAcceptCheckout<TStep>() where TStep : class, IAcceptCheckoutStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithApplyCheckout<TStep>() where TStep : class, IApplyCheckoutStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithSimpleAccept<TStep>() where TStep : class, ISimpleAcceptStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithPaidAccept<TStep>() where TStep : class, IPaidAcceptStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithVerify<TStep>() where TStep : class, IVerifyStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithSettle<TStep>() where TStep : class, ISettleStep => RegisterStep<TStep>();
+    public ConcertPipelineBuilder WithFinish<TStep>() where TStep : class, IFinishStep => RegisterStep<TStep>();
 
     public ConcertPipelineBuilder WithWorkflow<TWorkflow>() where TWorkflow : class, IConcertWorkflow
     {
@@ -37,8 +32,17 @@ internal class ConcertPipelineBuilder
         return this;
     }
 
-    private ConcertPipelineBuilder Register<TImpl>() where TImpl : class
+    public void Build()
     {
+        var sequence = new[] { ConcertStage.None }.Concat(stages).ToArray();
+        services.AddKeyedSingleton<IConcertTransitionValidator>(contractType, (_, _) => new ConcertTransitionValidator(sequence));
+    }
+
+    private ConcertPipelineBuilder RegisterStep<TImpl>() where TImpl : class, IConcertStep
+    {
+        var stage = TImpl.Stage;
+        if (!stages.Contains(stage))
+            stages.Add(stage);
         services.AddScoped<TImpl>();
         return this;
     }

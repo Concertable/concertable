@@ -7,27 +7,25 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow.Executors;
 
 internal class AcceptExecutor : IAcceptExecutor
 {
-    private readonly IStepExecutor<ApplicationEntity> stepExecutor;
+    private readonly IWorkflowStateMachine<ApplicationEntity> stateMachine;
     private readonly IConcertWorkflowFactory workflows;
 
-    public AcceptExecutor(IStepExecutor<ApplicationEntity> stepExecutor, IConcertWorkflowFactory workflows)
+    public AcceptExecutor(IWorkflowStateMachine<ApplicationEntity> stateMachine, IConcertWorkflowFactory workflows)
     {
-        this.stepExecutor = stepExecutor;
+        this.stateMachine = stateMachine;
         this.workflows = workflows;
     }
 
     public Task ExecuteAsync(int applicationId, string? paymentMethodId)
-        => stepExecutor.ExecuteAsync(applicationId, ConcertStage.Accepted, Dispatch, paymentMethodId);
-
-    private Task Dispatch(ApplicationEntity app, string? pmId)
-    {
-        var workflow = workflows.Create(app.ContractType);
-        return workflow switch
+        => stateMachine.TransitionAsync(applicationId, ConcertStage.Accepted, async app =>
         {
-            IAcceptsPaid w when pmId is { } p => w.Accept.ExecuteAsync(app.Id, p),
-            IAcceptsPaid => throw new BadRequestException("This contract requires a payment method at acceptance"),
-            IAcceptsSimple w => w.Accept.ExecuteAsync(app.Id),
-            _ => throw new BadRequestException($"Contract {workflow.Type} does not support Accept")
-        };
-    }
+            var workflow = workflows.Create(app.ContractType);
+            await (workflow switch
+            {
+                IAcceptsPaid w when paymentMethodId is not null => w.Accept.ExecuteAsync(app.Id, paymentMethodId),
+                IAcceptsPaid => throw new BadRequestException("This contract requires a payment method at acceptance"),
+                IAcceptsSimple w => w.Accept.ExecuteAsync(app.Id),
+                _ => throw new BadRequestException($"Contract {workflow.Type} does not support Accept")
+            });
+        });
 }

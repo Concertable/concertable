@@ -7,7 +7,6 @@ using Concertable.Concert.Application.Workflow;
 using Concertable.Concert.Application.Workflow.Executors;
 using Concertable.Concert.Infrastructure.Services.Workflow.Dispatchers;
 using Concertable.Concert.Infrastructure.Services.Workflow.Executors;
-using Concertable.Concert.Infrastructure.Services.Workflow.StateMachines;
 using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 using Concertable.Concert.Infrastructure.Services.Workflow.Workflows;
 using Concertable.Concert.Contracts;
@@ -85,11 +84,11 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IConcertCompletionRunner, ConcertCompletionRunner>();
 
-        services.AddScoped<IConcertStateMachineFactory, ConcertStateMachineFactory>();
+        services.AddScoped<IConcertTransitionValidatorFactory, ConcertTransitionValidatorFactory>();
         services.AddScoped<IConcertWorkflowFactory, ConcertWorkflowFactory>();
         services.AddScoped<IConcertWorkflowCapabilityRegistry, ConcertWorkflowCapabilityRegistry>();
         services.AddScoped(typeof(ILifecycleRepository<>), typeof(LifecycleRepository<>));
-        services.AddScoped(typeof(IStepExecutor<>), typeof(StepExecutor<>));
+        services.AddScoped(typeof(IWorkflowStateMachine<>), typeof(WorkflowStateMachine<>));
 
         services.AddScoped<IApplyExecutor, ApplyExecutor>();
         services.AddScoped<IAcceptExecutor, AcceptExecutor>();
@@ -105,7 +104,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
 
         services.AddConcertPipeline(ContractType.FlatFee, p => p
-            .WithStateMachine<HeldStateMachine>()
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<FlatFeeAcceptCheckoutStep>()
             .WithSimpleAccept<FlatFeeAcceptStep>()
@@ -114,7 +112,6 @@ public static class ServiceCollectionExtensions
             .WithWorkflow<FlatFeeWorkflow>());
 
         services.AddConcertPipeline(ContractType.DoorSplit, p => p
-            .WithStateMachine<DeferredStateMachine>()
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<DoorSplitAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
@@ -124,7 +121,6 @@ public static class ServiceCollectionExtensions
             .WithWorkflow<DoorSplitWorkflow>());
 
         services.AddConcertPipeline(ContractType.Versus, p => p
-            .WithStateMachine<DeferredStateMachine>()
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<VersusAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
@@ -134,9 +130,8 @@ public static class ServiceCollectionExtensions
             .WithWorkflow<VersusWorkflow>());
 
         services.AddConcertPipeline(ContractType.VenueHire, p => p
-            .WithStateMachine<ApplyCommittedStateMachine>()
             .WithApplyCheckout<VenueHireApplyCheckoutStep>()
-            .WithPaidApply<VenueHirePaidApplyStep>()
+            .WithPaidApply<PaidApplyStep>()
             .WithSimpleAccept<VenueHireAcceptStep>()
             .WithSettle<ApplyCommittedSettleStep>()
             .WithFinish<VenueHireFinishStep>()

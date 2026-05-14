@@ -14,7 +14,7 @@ internal sealed class VenueHireWorkflow : IConcertWorkflow, IAppliesPaid, IHasAp
     private readonly IFinishStep finish;
 
     public VenueHireWorkflow(
-        VenueHirePaidApplyStep apply,
+        PaidApplyStep apply,
         VenueHireApplyCheckoutStep applyCheckout,
         VenueHireAcceptStep accept,
         ApplyCommittedSettleStep settle,

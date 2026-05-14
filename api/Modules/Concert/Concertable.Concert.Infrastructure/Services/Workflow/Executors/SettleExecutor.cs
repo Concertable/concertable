@@ -5,21 +5,19 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow.Executors;
 
 internal class SettleExecutor : ISettleExecutor
 {
-    private readonly IStepExecutor<BookingEntity> stepExecutor;
+    private readonly IWorkflowStateMachine<BookingEntity> stateMachine;
     private readonly IConcertWorkflowFactory workflows;
 
-    public SettleExecutor(IStepExecutor<BookingEntity> stepExecutor, IConcertWorkflowFactory workflows)
+    public SettleExecutor(IWorkflowStateMachine<BookingEntity> stateMachine, IConcertWorkflowFactory workflows)
     {
-        this.stepExecutor = stepExecutor;
+        this.stateMachine = stateMachine;
         this.workflows = workflows;
     }
 
     public Task ExecuteAsync(int bookingId)
-        => stepExecutor.ExecuteAsync(bookingId, ConcertStage.Settled, Dispatch);
-
-    private Task Dispatch(BookingEntity booking)
-    {
-        var workflow = workflows.Create(booking.ContractType);
-        return workflow.Settle.ExecuteAsync(booking.Id);
-    }
+        => stateMachine.TransitionAsync(bookingId, ConcertStage.Settled, async booking =>
+        {
+            var workflow = workflows.Create(booking.ContractType);
+            await workflow.Settle.ExecuteAsync(booking.Id);
+        });
 }

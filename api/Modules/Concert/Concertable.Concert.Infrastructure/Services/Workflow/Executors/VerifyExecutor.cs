@@ -7,23 +7,21 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow.Executors;
 
 internal class VerifyExecutor : IVerifyExecutor
 {
-    private readonly IStepExecutor<ApplicationEntity> stepExecutor;
+    private readonly IWorkflowStateMachine<ApplicationEntity> stateMachine;
     private readonly IConcertWorkflowFactory workflows;
 
-    public VerifyExecutor(IStepExecutor<ApplicationEntity> stepExecutor, IConcertWorkflowFactory workflows)
+    public VerifyExecutor(IWorkflowStateMachine<ApplicationEntity> stateMachine, IConcertWorkflowFactory workflows)
     {
-        this.stepExecutor = stepExecutor;
+        this.stateMachine = stateMachine;
         this.workflows = workflows;
     }
 
     public Task ExecuteAsync(int applicationId)
-        => stepExecutor.ExecuteAsync(applicationId, ConcertStage.Verified, Dispatch);
-
-    private Task Dispatch(ApplicationEntity app)
-    {
-        var workflow = workflows.Create(app.ContractType);
-        return workflow is IVerifies v
-            ? v.Verify.ExecuteAsync(app.Id)
-            : throw new BadRequestException($"Contract {workflow.Type} does not support Verify");
-    }
+        => stateMachine.TransitionAsync(applicationId, ConcertStage.Verified, async app =>
+        {
+            var workflow = workflows.Create(app.ContractType);
+            if (workflow is not IVerifies v)
+                throw new BadRequestException($"Contract {workflow.Type} does not support Verify");
+            await v.Verify.ExecuteAsync(app.Id);
+        });
 }
