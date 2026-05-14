@@ -1,8 +1,8 @@
-﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.Geometries;
 
 namespace Concertable.Concert.Domain;
 
-public class ConcertEntity : IIdEntity, IHasName, IHasLocation
+public class ConcertEntity : IIdEntity, IHasName, IHasLocation, ILifecycleEntity
 {
     public int Id { get; private set; }
     public int BookingId { get; private set; }
@@ -19,6 +19,8 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation
     public DateTime EndDate { get; private set; }
     public DateTime? DatePosted { get; private set; }
     public Point? Location { get; set; }
+    public ContractType ContractType { get; private set; }
+    public ConcertStage CurrentStage { get; private set; } = ConcertStage.Settled;
     public BookingEntity Booking { get; set; } = null!;
     public ArtistReadModel Artist { get; set; } = null!;
     public VenueReadModel Venue { get; set; } = null!;
@@ -47,6 +49,35 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation
         About = about,
         ConcertGenres = genreIds.Select(id => new ConcertGenreEntity { GenreId = id }).ToHashSet()
     };
+
+    public static ConcertEntity CreateDraft(
+        int bookingId,
+        int artistId,
+        int venueId,
+        DateTime startDate,
+        DateTime endDate,
+        string name,
+        string about,
+        ContractType contractType,
+        IEnumerable<int> genreIds) => new()
+    {
+        BookingId = bookingId,
+        ArtistId = artistId,
+        VenueId = venueId,
+        StartDate = startDate,
+        EndDate = endDate,
+        Name = name,
+        About = about,
+        ContractType = contractType,
+        ConcertGenres = genreIds.Select(id => new ConcertGenreEntity { GenreId = id }).ToHashSet()
+    };
+
+    public void AdvanceStage(ConcertStage next)
+    {
+        if (next is not (ConcertStage.Settled or ConcertStage.Finished))
+            throw new DomainException($"ConcertEntity cannot advance to {next}.");
+        CurrentStage = next;
+    }
 
     public void Update(string name, string about, decimal price, int totalTickets)
     {

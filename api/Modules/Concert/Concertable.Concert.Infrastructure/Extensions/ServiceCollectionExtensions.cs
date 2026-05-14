@@ -4,6 +4,11 @@ using Concertable.Concert.Application.Interfaces.Reviews;
 using Concertable.Concert.Application.Mappers;
 using Concertable.Concert.Application.Validators;
 using Concertable.Concert.Application.Workflow;
+using Concertable.Concert.Application.Workflow.Executors;
+using Concertable.Concert.Infrastructure.Services.Workflow.Dispatchers;
+using Concertable.Concert.Infrastructure.Services.Workflow.Executors;
+using Concertable.Concert.Infrastructure.Services.Workflow.Steps;
+using Concertable.Concert.Infrastructure.Services.Workflow.Workflows;
 using Concertable.Concert.Contracts;
 using Concertable.Concert.Contracts.Events;
 using Concertable.Concert.Domain.Events;
@@ -14,14 +19,10 @@ using Concertable.Concert.Infrastructure.Handlers;
 using Concertable.Concert.Infrastructure.Repositories;
 using Concertable.Concert.Infrastructure.Repositories.Review;
 using Concertable.Concert.Infrastructure.Services;
-using Concertable.Concert.Infrastructure.Services.Acceptance;
-using Concertable.Concert.Infrastructure.Services.Apply;
 using Concertable.Concert.Infrastructure.Services.Workflow;
 using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Payment;
 using Concertable.Concert.Infrastructure.Services.Review;
-using Concertable.Concert.Infrastructure.Services.Settlement;
-using Concertable.Concert.Infrastructure.Services.Verify;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.Payment.Contracts;
@@ -61,8 +62,7 @@ public static class ServiceCollectionExtensions
             sp.GetRequiredService<IOpportunityRepository>(),
             sp.GetRequiredService<IContractModule>()));
         services.AddScoped<IApplicationService, ApplicationService>();
-        services.AddScoped<IImmediateConcertService, ImmediateConcertService>();
-        services.AddScoped<IDeferredConcertService, DeferredConcertService>();
+
         services.AddScoped<IContractLoader, ContractLoader>();
         services.AddScoped<IPayerLookup, PayerLookup>();
         services.AddScoped<ITicketService, TicketService>();
@@ -81,23 +81,63 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPdfService, PdfService>();
 
-        // Dispatchers
-        services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
-        services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
-        services.AddScoped<ICheckoutDispatcher, CheckoutDispatcher>();
-        services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
         services.AddScoped<IConcertCompletionRunner, ConcertCompletionRunner>();
-        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
+
+        services.AddScoped<IConcertTransitionValidatorFactory, ConcertTransitionValidatorFactory>();
+        services.AddScoped<IConcertWorkflowFactory, ConcertWorkflowFactory>();
+        services.AddScoped(typeof(ILifecycleRepository<>), typeof(LifecycleRepository<>));
+        services.AddScoped(typeof(IWorkflowStateMachine<>), typeof(WorkflowStateMachine<>));
+
+        services.AddScoped<IApplyExecutor, ApplyExecutor>();
+        services.AddScoped<IAcceptExecutor, AcceptExecutor>();
+        services.AddScoped<IVerifyExecutor, VerifyExecutor>();
+        services.AddScoped<ISettleExecutor, SettleExecutor>();
+        services.AddScoped<IFinishExecutor, FinishExecutor>();
+
+        services.AddScoped<IApplyDispatcher, ApplyDispatcher>();
+        services.AddScoped<IAcceptanceDispatcher, AcceptanceDispatcher>();
+        services.AddScoped<ICheckoutDispatcher, CheckoutDispatcher>();
         services.AddScoped<IVerifyDispatcher, VerifyDispatcher>();
-        services.AddScoped<IApplicationAcceptor, ApplicationAcceptor>();
+        services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
+        services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
 
         var workflowTypes = new Dictionary<ContractType, Type>();
-        services.AddConcertWorkflow<FlatFeeConcertWorkflow>(ContractType.FlatFee, workflowTypes);
-        services.AddConcertWorkflow<DoorSplitConcertWorkflow>(ContractType.DoorSplit, workflowTypes);
-        services.AddConcertWorkflow<VersusConcertWorkflow>(ContractType.Versus, workflowTypes);
-        services.AddConcertWorkflow<VenueHireConcertWorkflow>(ContractType.VenueHire, workflowTypes);
-        services.AddSingleton(new ConcertWorkflowCapabilityRegistry(workflowTypes));
-        services.AddScoped<IConcertWorkflowFactory, ConcertWorkflowFactory>();
+
+        workflowTypes[ContractType.FlatFee] = services.AddConcertWorkflow(ContractType.FlatFee, p => p
+            .WithApply<SimpleApplyStep>()
+            .WithCheckout<FlatFeeAcceptCheckoutStep>()
+            .WithAccept<FlatFeeAcceptStep>()
+            .WithSettle<NoOpSettleStep>()
+            .WithFinish<FlatFeeFinishStep>()
+            .WithWorkflow<FlatFeeWorkflow>());
+
+        workflowTypes[ContractType.DoorSplit] = services.AddConcertWorkflow(ContractType.DoorSplit, p => p
+            .WithApply<SimpleApplyStep>()
+            .WithCheckout<DoorSplitAcceptCheckoutStep>()
+            .WithVerify<DeferredVerifyStep>()
+            .WithAccept<PaidAcceptStep>()
+            .WithSettle<DeferredSettleStep>()
+            .WithFinish<DoorSplitFinishStep>()
+            .WithWorkflow<DoorSplitWorkflow>());
+
+        workflowTypes[ContractType.Versus] = services.AddConcertWorkflow(ContractType.Versus, p => p
+            .WithApply<SimpleApplyStep>()
+            .WithCheckout<VersusAcceptCheckoutStep>()
+            .WithVerify<DeferredVerifyStep>()
+            .WithAccept<PaidAcceptStep>()
+            .WithSettle<DeferredSettleStep>()
+            .WithFinish<VersusFinishStep>()
+            .WithWorkflow<VersusWorkflow>());
+
+        workflowTypes[ContractType.VenueHire] = services.AddConcertWorkflow(ContractType.VenueHire, p => p
+            .WithCheckout<VenueHireApplyCheckoutStep>()
+            .WithApply<PaidApplyStep>()
+            .WithAccept<VenueHireAcceptStep>()
+            .WithSettle<NoOpSettleStep>()
+            .WithFinish<VenueHireFinishStep>()
+            .WithWorkflow<VenueHireWorkflow>());
+
+        services.AddSingleton<IConcertWorkflowCapabilityRegistry>(new ConcertWorkflowCapabilityRegistry(workflowTypes));
 
         // Ticket payee â€” composite dispatches by ContractType to artist vs venue
         services.AddSingleton<ArtistTicketPayee>();
@@ -124,6 +164,8 @@ public static class ServiceCollectionExtensions
 
         // Domain event â†’ integration event + read-model projection handlers
         services.AddScoped<IDomainEventHandler<ReviewCreatedDomainEvent>, ReviewCreatedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<ApplicationAcceptedDomainEvent>, ApplicationAcceptedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<BookingSettledDomainEvent>, BookingSettledDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
@@ -143,6 +185,16 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    private static Type AddConcertWorkflow(
+        this IServiceCollection services,
+        ContractType contractType,
+        Action<ConcertWorkflowBuilder> configure)
+    {
+        var builder = new ConcertWorkflowBuilder(contractType, services);
+        configure(builder);
+        return builder.Build();
+    }
+
     public static IServiceCollection AddConcertDevSeeder(this IServiceCollection services)
     {
         services.AddScoped<IDevSeeder, ConcertDevSeeder>();
@@ -155,14 +207,4 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddConcertWorkflow<TWorkflow>(
-        this IServiceCollection services,
-        ContractType contractType,
-        Dictionary<ContractType, Type> strategyTypes)
-        where TWorkflow : class, IConcertWorkflow
-    {
-        services.AddKeyedScoped<IConcertWorkflow, TWorkflow>(contractType);
-        strategyTypes[contractType] = typeof(TWorkflow);
-        return services;
-    }
 }

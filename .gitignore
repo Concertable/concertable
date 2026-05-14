@@ -1,3 +1,6 @@
+# Claude Code local settings
+.claude/settings.local.json
+
 # Duende IdentityServer developer signing keys
 *.jwk
 tempkey.jwk

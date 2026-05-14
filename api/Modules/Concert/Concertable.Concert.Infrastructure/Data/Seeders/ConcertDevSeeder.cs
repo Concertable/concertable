@@ -201,10 +201,10 @@ internal class ConcertDevSeeder : IDevSeeder
 
             seed.FreshVenueHireOpportunity = seed.Opportunities[62];
 
-            seed.DoorSplitApp = ApplicationFactory.Create(1, 56);
-            seed.VersusApp = ApplicationFactory.Create(1, 57);
-            seed.VenueHireApp = ApplicationFactory.CreatePrepaid(1, 52);
-            seed.FlatFeeApp = ApplicationFactory.Create(1, 55);
+            seed.DoorSplitApp = ApplicationFactory.Create(1, seed.Opportunities[55].Id, seed.Contracts[55].ContractType);
+            seed.VersusApp = ApplicationFactory.Create(1, seed.Opportunities[56].Id, seed.Contracts[56].ContractType);
+            seed.VenueHireApp = ApplicationFactory.CreatePrepaid(1, seed.Opportunities[51].Id, seed.Contracts[51].ContractType);
+            seed.FlatFeeApp = ApplicationFactory.Create(1, seed.Opportunities[54].Id, seed.Contracts[54].ContractType);
 
             seed.AwaitingPaymentBooking = BookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Awaiting Show", 15m, 100, 80, 1, seed.Opportunities[32].VenueId, seed.Opportunities[32].Period.Start, seed.Opportunities[32].Period.End, now.AddDays(3)).Generate());
             seed.AwaitingPaymentApp = ApplicationFactory.Accepted(1, 33, seed.AwaitingPaymentBooking);

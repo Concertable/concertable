@@ -1,3 +1,5 @@
+using Concertable.Concert.Domain;
+using Concertable.Contract.Contracts;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Factories;
@@ -7,8 +9,22 @@ public static class ApplicationFactory
     public static StandardApplication Create(int artistId, int opportunityId)
         => StandardApplication.Create(artistId, opportunityId);
 
+    public static StandardApplication Create(int artistId, int opportunityId, ContractType contractType)
+    {
+        var app = StandardApplication.Create(artistId, opportunityId, contractType);
+        app.AdvanceStage(ConcertStage.Applied);
+        return app;
+    }
+
     public static PrepaidApplication CreatePrepaid(int artistId, int opportunityId, string paymentMethodId = "pm_card_visa")
         => PrepaidApplication.Create(artistId, opportunityId, paymentMethodId);
+
+    public static PrepaidApplication CreatePrepaid(int artistId, int opportunityId, ContractType contractType, string paymentMethodId = "pm_card_visa")
+    {
+        var app = PrepaidApplication.Create(artistId, opportunityId, contractType, paymentMethodId);
+        app.AdvanceStage(ConcertStage.Applied);
+        return app;
+    }
 
     public static StandardApplication Accepted(int artistId, int opportunityId, BookingEntity booking)
     {

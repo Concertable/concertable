@@ -1,0 +1,43 @@
+using Concertable.Concert.Application.Responses;
+using Concertable.Concert.Application.Workflow.Steps;
+using Concertable.Contract.Contracts;
+using Concertable.Payment.Contracts;
+using Concertable.Shared.Exceptions;
+
+namespace Concertable.Concert.Infrastructure.Services.Workflow.Steps;
+
+internal class VenueHireApplyCheckoutStep : IApplyCheckoutStep
+{
+    private readonly IPayerLookup payerLookup;
+    private readonly IContractLoader contractLoader;
+    private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly ICurrentUser currentUser;
+
+    public VenueHireApplyCheckoutStep(
+        IPayerLookup payerLookup,
+        IContractLoader contractLoader,
+        IManagerPaymentModule managerPaymentModule,
+        ICurrentUser currentUser)
+    {
+        this.payerLookup = payerLookup;
+        this.contractLoader = contractLoader;
+        this.managerPaymentModule = managerPaymentModule;
+        this.currentUser = currentUser;
+    }
+
+    public async Task<Checkout> ExecuteAsync(int opportunityId)
+    {
+        var venue = await payerLookup.GetVenueByOpportunityIdAsync(opportunityId)
+            ?? throw new NotFoundException("Opportunity not found");
+        var contract = (VenueHireContract)await contractLoader.LoadByOpportunityIdAsync(opportunityId);
+
+        var metadata = new Dictionary<string, string>
+        {
+            ["type"] = "applicationApply",
+            ["opportunityId"] = opportunityId.ToString()
+        };
+
+        var session = await managerPaymentModule.CreateSetupSessionAsync(currentUser.GetId(), metadata);
+        return new Checkout(new FlatPayment(contract.HireFee), venue, session, CheckoutLabels.Charge);
+    }
+}

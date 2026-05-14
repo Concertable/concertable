@@ -5,14 +5,10 @@ namespace Concertable.Concert.Infrastructure.Services;
 internal class BookingService : IBookingService
 {
     private readonly IBookingRepository bookingRepository;
-    private readonly IApplicationAcceptor applicationAcceptor;
 
-    public BookingService(
-        IBookingRepository bookingRepository,
-        IApplicationAcceptor applicationAcceptor)
+    public BookingService(IBookingRepository bookingRepository)
     {
         this.bookingRepository = bookingRepository;
-        this.applicationAcceptor = applicationAcceptor;
     }
 
     public async Task<StandardBooking> CreateStandardAsync(int applicationId)
@@ -20,7 +16,7 @@ internal class BookingService : IBookingService
         var booking = StandardBooking.Create(applicationId);
         booking.AwaitPayment();
         await bookingRepository.AddAsync(booking);
-        await applicationAcceptor.AcceptAsync(applicationId, booking);
+        await bookingRepository.SaveChangesAsync();
         return booking;
     }
 
@@ -28,7 +24,7 @@ internal class BookingService : IBookingService
     {
         var booking = DeferredBooking.Create(applicationId, paymentMethodId);
         await bookingRepository.AddAsync(booking);
-        await applicationAcceptor.AcceptAsync(applicationId, booking);
+        await bookingRepository.SaveChangesAsync();
         return booking;
     }
 

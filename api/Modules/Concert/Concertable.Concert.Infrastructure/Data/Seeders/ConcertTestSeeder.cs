@@ -53,7 +53,7 @@ internal class ConcertTestSeeder : ITestSeeder
         {
             var opps = seed.Opportunities;
 
-            seed.FlatFeeApp = ApplicationFactory.Create(seed.Artist.Id, opps[0].Id);
+            seed.FlatFeeApp = ApplicationFactory.Create(seed.Artist.Id, opps[0].Id, seed.FlatFeeAppContract.ContractType);
 
             seed.ConfirmedBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Draft Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[1].Period.Start, opps[1].Period.End).Generate());
             seed.ConfirmedApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[1].Id, seed.ConfirmedBooking);
@@ -61,9 +61,9 @@ internal class ConcertTestSeeder : ITestSeeder
             seed.AwaitingPaymentBooking = BookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Unsettled Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[2].Period.Start, opps[2].Period.End).Generate());
             seed.AwaitingPaymentApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[2].Id, seed.AwaitingPaymentBooking);
 
-            seed.VersusApp = ApplicationFactory.Create(seed.Artist.Id, opps[3].Id);
-            seed.DoorSplitApp = ApplicationFactory.Create(seed.Artist.Id, opps[4].Id);
-            seed.VenueHireApp = ApplicationFactory.CreatePrepaid(seed.Artist.Id, opps[5].Id);
+            seed.VersusApp = ApplicationFactory.Create(seed.Artist.Id, opps[3].Id, seed.VersusAppContract.ContractType);
+            seed.DoorSplitApp = ApplicationFactory.Create(seed.Artist.Id, opps[4].Id, seed.DoorSplitAppContract.ContractType);
+            seed.VenueHireApp = ApplicationFactory.CreatePrepaid(seed.Artist.Id, opps[5].Id, seed.VenueHireAppContract.ContractType);
 
             seed.PostedFlatFeeBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[6].Period.Start, opps[6].Period.End, now).Generate());
             seed.PostedFlatFeeBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });

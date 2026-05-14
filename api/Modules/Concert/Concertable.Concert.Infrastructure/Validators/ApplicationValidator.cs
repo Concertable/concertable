@@ -54,6 +54,9 @@ internal class ApplicationValidator : IApplicationValidator
     {
         var errors = new List<string>();
 
+        if (application.Status == ApplicationStatus.Accepted)
+            return Result.Fail("This application has already been accepted");
+
         if (opportunity.Venue.UserId != currentUser.GetId())
             errors.Add("You do not own this concert opportunity");
 

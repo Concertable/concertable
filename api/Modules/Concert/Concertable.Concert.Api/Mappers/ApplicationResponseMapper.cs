@@ -1,15 +1,16 @@
-using Concertable.Concert.Api.Responses;
+﻿using Concertable.Concert.Api.Responses;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Concert.Application.Workflow;
+using Concertable.Concert.Application.Workflow.Capabilities;
 
 namespace Concertable.Concert.Api.Mappers;
 
 internal sealed class ApplicationResponseMapper : IApplicationResponseMapper
 {
-    private readonly ConcertWorkflowCapabilityRegistry registry;
+    private readonly IConcertWorkflowCapabilityRegistry registry;
 
-    public ApplicationResponseMapper(ConcertWorkflowCapabilityRegistry registry)
+    public ApplicationResponseMapper(IConcertWorkflowCapabilityRegistry registry)
         => this.registry = registry;
 
     public ApplicationResponse ToResponse(ApplicationDto dto)
@@ -18,7 +19,7 @@ internal sealed class ApplicationResponseMapper : IApplicationResponseMapper
 
         var actions = new ApplicationActions(
             Accept: new ActionLink($"/api/Application/{dto.Id}/accept", "POST"),
-            Checkout: registry.Has<IAcceptCheckout>(ct)
+            Checkout: registry.Has<IAcceptsCheckout>(ct)
                 ? new ActionLink($"/api/Application/{dto.Id}/checkout", "POST")
                 : null);
 

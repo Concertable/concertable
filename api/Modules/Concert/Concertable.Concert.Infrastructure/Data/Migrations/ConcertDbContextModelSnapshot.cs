@@ -54,6 +54,12 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<int>("ArtistId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ContractType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentStage")
+                        .HasColumnType("int");
+
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasMaxLength(21)
@@ -140,6 +146,12 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                     b.Property<int>("ApplicationId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ContractType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentStage")
+                        .HasColumnType("int");
+
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasMaxLength(21)
@@ -185,6 +197,12 @@ namespace Concertable.Concert.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ContractType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentStage")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("DatePosted")

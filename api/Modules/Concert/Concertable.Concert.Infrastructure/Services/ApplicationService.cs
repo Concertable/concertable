@@ -3,8 +3,7 @@ using Concertable.Payment.Contracts;
 using Concertable.Messaging.Contracts;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
-using Concertable.Shared.Infrastructure.Extensions;
-using Microsoft.EntityFrameworkCore;
+using Concertable.User.Contracts;
 
 namespace Concertable.Concert.Infrastructure.Services;
 
@@ -91,8 +90,12 @@ internal class ApplicationService : IApplicationService
             throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
 
         var artistId = await ResolveArtistIdAsync();
+        var opportunityOwner = await ValidateAndLoadOwnerAsync(opportunityId, artistId);
+
         var application = await applyDispatcher.ApplyAsync(opportunityId, artistId);
-        return await ApplyAsync(application);
+        await NotifyAppliedAsync(opportunityOwner);
+
+        return await GetByIdAsync(application.Id);
     }
 
     public async Task<ApplicationDto> ApplyAsync(int opportunityId, string paymentMethodId)
@@ -101,36 +104,42 @@ internal class ApplicationService : IApplicationService
             throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
 
         var artistId = await ResolveArtistIdAsync();
+        var opportunityOwner = await ValidateAndLoadOwnerAsync(opportunityId, artistId);
+
         var application = await applyDispatcher.ApplyAsync(opportunityId, artistId, paymentMethodId);
-        return await ApplyAsync(application);
+        await NotifyAppliedAsync(opportunityOwner);
+
+        return await GetByIdAsync(application.Id);
     }
 
     private async Task<int> ResolveArtistIdAsync() =>
         await artistModule.GetIdByUserIdAsync(currentUser.GetId())
             ?? throw new ForbiddenException("You must create an Artist account before you apply for a concert opportunity");
 
-    private async Task<ApplicationDto> ApplyAsync(ApplicationEntity application)
+    private async Task<ManagerDto> ValidateAndLoadOwnerAsync(int opportunityId, int artistId)
     {
-        var opportunityOwnerId = await opportunityRepository.GetOwnerByIdAsync(application.OpportunityId)
+        var opportunityOwnerId = await opportunityRepository.GetOwnerByIdAsync(opportunityId)
             ?? throw new NotFoundException("Concert Opportunity owner not found");
         var opportunityOwner = await userModule.GetManagerByIdAsync(opportunityOwnerId)
             ?? throw new NotFoundException("Venue manager not found for opportunity owner");
-        var opportunity = await opportunityRepository.GetByIdAsync(application.OpportunityId)
+        var opportunity = await opportunityRepository.GetByIdAsync(opportunityId)
             ?? throw new NotFoundException("Concert Opportunity not found");
 
-        var result = await applicationValidator.CanApplyAsync(opportunity, application.ArtistId);
-
+        var result = await applicationValidator.CanApplyAsync(opportunity, artistId);
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        var artistGenreIds = await artistModule.GetGenreIdsAsync(application.ArtistId);
+        var artistGenreIds = await artistModule.GetGenreIdsAsync(artistId);
         var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId).ToHashSet();
 
         if (opportunityGenreIds.Count > 0 && !artistGenreIds.Overlaps(opportunityGenreIds))
             throw new BadRequestException("You need to have the same genres as the Concert Opportunity to be able to apply to it");
 
-        await applicationRepository.AddAsync(application);
+        return opportunityOwner;
+    }
 
+    private async Task NotifyAppliedAsync(ManagerDto opportunityOwner)
+    {
         await messagingModule.SendAsync(
             fromUserId: currentUser.GetId(),
             toUserId: opportunityOwner.Id,
@@ -138,19 +147,6 @@ internal class ApplicationService : IApplicationService
             action: MessageAction.ApplicationReceived);
 
         await emailService.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{currentUser.Email} has applied to your concert opportunity");
-
-        try
-        {
-            await applicationRepository.SaveChangesAsync();
-        }
-        catch (DbUpdateException ex) when (ex.IsDuplicateKey())
-        {
-            throw new BadRequestException("You cannot apply to the same concert opportunity twice");
-        }
-
-        var saved = await applicationRepository.GetByIdAsync(application.Id)
-            ?? throw new NotFoundException("Application not found after save");
-        return await mapper.ToDtoAsync(saved);
     }
 
     public async Task<Checkout> ApplyCheckoutAsync(int opportunityId)
