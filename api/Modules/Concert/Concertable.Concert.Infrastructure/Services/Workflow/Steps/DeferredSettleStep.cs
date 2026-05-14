@@ -4,13 +4,13 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 
 internal class DeferredSettleStep : ISettleStep
 {
-    private readonly IDeferredConcertService deferredConcertService;
+    private readonly IBookingService bookingService;
 
-    public DeferredSettleStep(IDeferredConcertService deferredConcertService)
+    public DeferredSettleStep(IBookingService bookingService)
     {
-        this.deferredConcertService = deferredConcertService;
+        this.bookingService = bookingService;
     }
 
     public Task ExecuteAsync(int bookingId) =>
-        deferredConcertService.SettleAsync(bookingId);
+        bookingService.CompleteAsync(bookingId);
 }

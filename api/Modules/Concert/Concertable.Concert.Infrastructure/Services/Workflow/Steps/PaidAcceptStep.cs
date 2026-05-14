@@ -1,16 +1,25 @@
 using Concertable.Concert.Application.Workflow.Steps;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 
 internal class PaidAcceptStep : IPaidAcceptStep
 {
-    private readonly IDeferredConcertService deferredConcertService;
+    private readonly IApplicationValidator applicationValidator;
+    private readonly IBookingService bookingService;
 
-    public PaidAcceptStep(IDeferredConcertService deferredConcertService)
+    public PaidAcceptStep(IApplicationValidator applicationValidator, IBookingService bookingService)
     {
-        this.deferredConcertService = deferredConcertService;
+        this.applicationValidator = applicationValidator;
+        this.bookingService = bookingService;
     }
 
-    public Task ExecuteAsync(int applicationId, string paymentMethodId) =>
-        deferredConcertService.RegisterPaymentAsync(applicationId, paymentMethodId);
+    public async Task ExecuteAsync(int applicationId, string paymentMethodId)
+    {
+        var result = await applicationValidator.CanAcceptAsync(applicationId);
+        if (result.IsFailed)
+            throw new BadRequestException(result.Errors);
+
+        await bookingService.CreateDeferredAsync(applicationId, paymentMethodId);
+    }
 }

@@ -1,16 +1,26 @@
 using Concertable.Concert.Application.Workflow.Steps;
+using Concertable.Payment.Contracts;
+using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.Steps;
 
 internal class VenueHireFinishStep : IFinishStep
 {
-    private readonly IImmediateConcertService immediateConcertService;
+    private readonly IBookingService bookingService;
+    private readonly IEscrowModule escrowModule;
 
-    public VenueHireFinishStep(IImmediateConcertService immediateConcertService)
+    public VenueHireFinishStep(IBookingService bookingService, IEscrowModule escrowModule)
     {
-        this.immediateConcertService = immediateConcertService;
+        this.bookingService = bookingService;
+        this.escrowModule = escrowModule;
     }
 
-    public Task ExecuteAsync(int concertId) =>
-        immediateConcertService.FinishAsync(concertId);
+    public async Task ExecuteAsync(int concertId)
+    {
+        var booking = await bookingService.CompleteByConcertIdAsync(concertId);
+
+        var release = await escrowModule.ReleaseByBookingIdAsync(booking.Id);
+        if (release.IsFailed)
+            throw new BadRequestException(release.Errors);
+    }
 }

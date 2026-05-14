@@ -72,7 +72,16 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\src\\\\features\" -Directory)",
       "Bash(del *)",
       "Bash(dotnet restore *)",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Tests\" -Recurse -Filter \"*.cs\")"
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Tests\" -Recurse -Filter \"*.cs\")",
+      "Bash(grep -E \"\\\\.cs$\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Modules\\\\Concert\" -Recurse -File)",
+      "Bash(Select-String -Pattern \"notes\" -SimpleMatch)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Modules\\\\Concert\\\\*\\\\Services\\\\Workflow\" -Recurse -Directory)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Modules\\\\Concert\\\\Concertable.Concert.Infrastructure\\\\Services\\\\Workflow\" -Recurse -File | Where-Object { $_.FullName -notmatch \"Executors\" -and $_.FullName -notmatch \"StateMachines\" } | Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Modules\\\\Concert\\\\Concertable.Concert.Infrastructure\" -File | Where-Object { $_.Name -match \"Extension|DI|Register\" })",
+      "PowerShell(Get-Content *)",
+      "PowerShell(dotnet test *)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; cat \"{}\"')"
     ]
   }
 }
