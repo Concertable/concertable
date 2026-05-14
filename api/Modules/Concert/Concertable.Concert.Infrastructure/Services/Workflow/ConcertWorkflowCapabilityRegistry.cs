@@ -4,11 +4,11 @@ namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
 internal sealed class ConcertWorkflowCapabilityRegistry : IConcertWorkflowCapabilityRegistry
 {
-    private readonly IConcertWorkflowFactory workflows;
+    private readonly IReadOnlyDictionary<ContractType, Type> strategyTypes;
 
-    public ConcertWorkflowCapabilityRegistry(IConcertWorkflowFactory workflows)
-        => this.workflows = workflows;
+    public ConcertWorkflowCapabilityRegistry(IReadOnlyDictionary<ContractType, Type> strategyTypes)
+        => this.strategyTypes = strategyTypes;
 
     public bool Has<TCapability>(ContractType contractType) where TCapability : class
-        => workflows.Create(contractType) is TCapability;
+        => strategyTypes[contractType].IsAssignableTo(typeof(TCapability));
 }

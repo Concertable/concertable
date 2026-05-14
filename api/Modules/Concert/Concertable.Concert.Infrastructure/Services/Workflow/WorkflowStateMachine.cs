@@ -16,14 +16,16 @@ internal class WorkflowStateMachine<TEntity> : IWorkflowStateMachine<TEntity> wh
         this.validators = validators;
     }
 
-    public async Task TransitionAsync(TEntity entity, ConcertStage target)
+    public async Task<TEntity> TransitionAsync(ConcertStage target, CreateStep<TEntity> create)
     {
+        var entity = await create();
         Guard(entity, target);
         entity.AdvanceStage(target);
         await repository.SaveAsync(entity);
+        return entity;
     }
 
-    public async Task TransitionAsync(int entityId, ConcertStage target, Func<TEntity, Task> execute)
+    public async Task TransitionAsync(int entityId, ConcertStage target, ExecuteStep<TEntity> execute)
     {
         var entity = await LoadAsync(entityId);
         Guard(entity, target);

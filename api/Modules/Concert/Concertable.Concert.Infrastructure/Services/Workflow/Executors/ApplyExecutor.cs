@@ -25,24 +25,21 @@ internal class ApplyExecutor : IApplyExecutor
 
     public async Task<ApplicationEntity> ExecuteAsync(int opportunityId, int artistId, string? paymentMethodId)
     {
-        var contract = await contractLoader.LoadByOpportunityIdAsync(opportunityId);
-        var workflow = workflows.Create(contract.ContractType);
-
-        ApplicationEntity transient = workflow switch
-        {
-            IAppliesPaid w when paymentMethodId is { } p
-                => await w.Apply.ApplyAsync(artistId, opportunityId, contract.ContractType, p),
-            IAppliesPaid
-                => throw new BadRequestException("This contract requires a payment method at apply"),
-            IAppliesSimple w
-                => await w.Apply.ApplyAsync(artistId, opportunityId, contract.ContractType),
-            _ => throw new BadRequestException($"Contract {workflow.Type} does not support Apply")
-        };
-
         try
         {
-            await stateMachine.TransitionAsync(transient, ConcertStage.Applied);
-            return transient;
+            return await stateMachine.TransitionAsync(ConcertStage.Applied, async () =>
+            {
+                var contract = await contractLoader.LoadByOpportunityIdAsync(opportunityId);
+                var workflow = workflows.Create(contract.ContractType);
+                return workflow switch
+                {
+                    IAppliesPaid w when paymentMethodId is not null
+                        => await w.Apply.ApplyAsync(artistId, opportunityId, contract.ContractType, paymentMethodId),
+                    IAppliesSimple w
+                        => await w.Apply.ApplyAsync(artistId, opportunityId, contract.ContractType),
+                    _ => throw new BadRequestException($"Contract {workflow.Type} does not support Apply")
+                };
+            });
         }
         catch (DbUpdateException ex) when (ex.IsDuplicateKey())
         {

@@ -86,7 +86,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IConcertTransitionValidatorFactory, ConcertTransitionValidatorFactory>();
         services.AddScoped<IConcertWorkflowFactory, ConcertWorkflowFactory>();
-        services.AddScoped<IConcertWorkflowCapabilityRegistry, ConcertWorkflowCapabilityRegistry>();
         services.AddScoped(typeof(ILifecycleRepository<>), typeof(LifecycleRepository<>));
         services.AddScoped(typeof(IWorkflowStateMachine<>), typeof(WorkflowStateMachine<>));
 
@@ -103,7 +102,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISettlementDispatcher, SettlementDispatcher>();
         services.AddScoped<ICompletionDispatcher, CompletionDispatcher>();
 
-        services.AddConcertPipeline(ContractType.FlatFee, p => p
+        var workflowTypes = new Dictionary<ContractType, Type>();
+
+        workflowTypes[ContractType.FlatFee] = services.AddConcertWorkflow(ContractType.FlatFee, p => p
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<FlatFeeAcceptCheckoutStep>()
             .WithSimpleAccept<FlatFeeAcceptStep>()
@@ -111,7 +112,7 @@ public static class ServiceCollectionExtensions
             .WithFinish<FlatFeeFinishStep>()
             .WithWorkflow<FlatFeeWorkflow>());
 
-        services.AddConcertPipeline(ContractType.DoorSplit, p => p
+        workflowTypes[ContractType.DoorSplit] = services.AddConcertWorkflow(ContractType.DoorSplit, p => p
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<DoorSplitAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
@@ -120,7 +121,7 @@ public static class ServiceCollectionExtensions
             .WithFinish<DoorSplitFinishStep>()
             .WithWorkflow<DoorSplitWorkflow>());
 
-        services.AddConcertPipeline(ContractType.Versus, p => p
+        workflowTypes[ContractType.Versus] = services.AddConcertWorkflow(ContractType.Versus, p => p
             .WithSimpleApply<SimpleApplyStep>()
             .WithAcceptCheckout<VersusAcceptCheckoutStep>()
             .WithVerify<DeferredVerifyStep>()
@@ -129,13 +130,15 @@ public static class ServiceCollectionExtensions
             .WithFinish<VersusFinishStep>()
             .WithWorkflow<VersusWorkflow>());
 
-        services.AddConcertPipeline(ContractType.VenueHire, p => p
+        workflowTypes[ContractType.VenueHire] = services.AddConcertWorkflow(ContractType.VenueHire, p => p
             .WithApplyCheckout<VenueHireApplyCheckoutStep>()
             .WithPaidApply<PaidApplyStep>()
             .WithSimpleAccept<VenueHireAcceptStep>()
             .WithSettle<ApplyCommittedSettleStep>()
             .WithFinish<VenueHireFinishStep>()
             .WithWorkflow<VenueHireWorkflow>());
+
+        services.AddSingleton<IConcertWorkflowCapabilityRegistry>(new ConcertWorkflowCapabilityRegistry(workflowTypes));
 
         // Ticket payee â€” composite dispatches by ContractType to artist vs venue
         services.AddSingleton<ArtistTicketPayee>();
@@ -181,6 +184,16 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssemblyContaining<OpportunityDtoValidator>();
 
         return services;
+    }
+
+    private static Type AddConcertWorkflow(
+        this IServiceCollection services,
+        ContractType contractType,
+        Action<ConcertWorkflowBuilder> configure)
+    {
+        var builder = new ConcertWorkflowBuilder(contractType, services);
+        configure(builder);
+        return builder.Build();
     }
 
     public static IServiceCollection AddConcertDevSeeder(this IServiceCollection services)
