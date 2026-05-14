@@ -1,4 +1,1 @@
-export interface LatLng {
-  lat: number;
-  lng: number;
-}
+export * from '@concertable/shared/types/location';

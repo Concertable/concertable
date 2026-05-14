@@ -13,6 +13,7 @@ import { shouldRetry } from "@/lib/queryRetry";
 import { routeTree } from "./routeTree.gen";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import "./lib/axios";
 import "./index.css";
 
 const queryClient = new QueryClient({

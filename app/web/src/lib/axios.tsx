@@ -1,24 +1,13 @@
-import axios, { AxiosError } from "axios";
-import qs from "qs";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { userManager } from "@/features/auth";
+import api from "@concertable/shared/lib";
 
 type ProblemDetails = {
   title?: string;
   detail?: string;
   errors?: string[];
 };
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-  paramsSerializer: (params) =>
-    qs.stringify(params, {
-      arrayFormat: "comma",
-      encode: false,
-      skipNulls: true,
-    }),
-});
 
 api.interceptors.request.use(async (config) => {
   const user = await userManager.getUser();

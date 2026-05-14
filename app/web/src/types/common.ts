@@ -1,12 +1,1 @@
-export interface Genre {
-  id: number;
-  name: string;
-}
-
-export interface Pagination<T> {
-  data: T[];
-  totalCount: number;
-  totalPages: number;
-  pageNumber: number;
-  pageSize: number;
-}
+export * from '@concertable/shared/types/common';

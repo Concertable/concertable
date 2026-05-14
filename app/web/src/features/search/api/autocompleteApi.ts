@@ -1,16 +1,2 @@
-import api from "@/lib/axios";
-import type { AutocompleteResult, HeaderType } from "../types";
-
-const autocompleteApi = {
-  getAutocomplete: async (
-    searchTerm: string,
-    headerType?: HeaderType,
-  ): Promise<AutocompleteResult[]> => {
-    const { data } = await api.get<AutocompleteResult[]>("/autocomplete", {
-      params: { searchTerm, headerType },
-    });
-    return data;
-  },
-};
-
-export default autocompleteApi;
+export { default } from '@concertable/shared/features/search/api/autocompleteApi';
+export * from '@concertable/shared/features/search/api/autocompleteApi';

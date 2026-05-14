@@ -1,18 +1,1 @@
-import queryString from "query-string";
-
-export function serializeSearch(search: Record<string, unknown>): string {
-  const str = queryString.stringify(search, {
-    arrayFormat: "comma",
-    skipNull: true,
-    sort: false,
-  });
-  return str ? `?${str}` : "";
-}
-
-export function deserializeSearch(searchStr: string): Record<string, unknown> {
-  return queryString.parse(searchStr, {
-    arrayFormat: "comma",
-    parseNumbers: true,
-    parseBooleans: true,
-  }) as Record<string, unknown>;
-}
+export * from '@concertable/shared/features/search/utils/searchSerializer';
