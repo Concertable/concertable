@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Blob;
 using Concertable.Shared.Infrastructure.Background;
+using Concertable.Shared.Infrastructure.Data.Seeders;
 using Concertable.Shared.Infrastructure.Events;
 using Concertable.Shared.Infrastructure.Services;
 using Concertable.Shared.Infrastructure.Services.Blob;
@@ -36,10 +37,7 @@ public static class ServiceCollectionExtensions
         else
             services.AddScoped<IEmailService, FakeEmailService>();
 
-        if (external.GetValue<bool>("UseRealImages"))
-            services.AddScoped<IImageService, ImageService>();
-        else
-            services.AddScoped<IImageService, FakeImageService>();
+        services.AddScoped<IImageService, ImageService>();
 
         services.AddHttpClient("Geocoding", client =>
         {
@@ -51,6 +49,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUriService, UriService>();
         services.AddScoped<IGenreService, GenreService>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddBlobDevSeeder(this IServiceCollection services)
+    {
+        services.AddScoped<IDevSeeder, BlobDevSeeder>();
         return services;
     }
 

@@ -28,6 +28,7 @@ using Concertable.Notification.Infrastructure.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+builder.AddAzureBlobClient("blobs");
 
 builder.Configuration.AddEnvironmentVariables();
 
@@ -90,6 +91,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddScoped<Concertable.Seeding.SeedData>();
     services.AddScoped<ILocationFaker, LocationFaker>();
     services.AddSharedDevSeeder();
+    services.AddBlobDevSeeder();
     services.AddUserDevSeeder();
     services.AddArtistDevSeeder();
     services.AddVenueDevSeeder();

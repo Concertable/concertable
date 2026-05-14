@@ -59,6 +59,7 @@ public async Task InitializeAsync()
                     ["ExternalServices:UseRealBlob"] = "false",
                     ["ExternalServices:UseRealEmail"] = "false",
                     ["Urls:Frontend"] = "https://localhost:5173",
+                    ["BlobStorage:ContainerName"] = "images",
                 });
             });
 
@@ -78,6 +79,7 @@ public async Task InitializeAsync()
                 services.AddSingleton<IWebhookSimulator, MockWebhookSimulator>();
                 services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));
                 services.AddScoped<IGeocodingService, MockGeocodingService>();
+                services.AddScoped<IImageService, MockImageService>();
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
                 services.AddScoped<SeedData>();
                 services.AddScoped<ILocationFaker, LocationFaker>();

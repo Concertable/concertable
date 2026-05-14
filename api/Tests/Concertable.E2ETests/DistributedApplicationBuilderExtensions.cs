@@ -42,7 +42,6 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
             context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
             context.EnvironmentVariables["ExternalServices__UseRealEmail"] = "false";
-            context.EnvironmentVariables["ExternalServices__UseRealBlob"] = "false";
             if (!string.IsNullOrEmpty(googleApiKey))
                 context.EnvironmentVariables["GoogleApiKey"] = googleApiKey;
             if (!string.IsNullOrEmpty(stripeSecretKey))
