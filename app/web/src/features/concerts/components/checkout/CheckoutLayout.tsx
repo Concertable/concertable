@@ -12,7 +12,7 @@ export function CheckoutLayout({
   banner,
   children,
   summary,
-}: Props) {
+}: Readonly<Props>) {
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 lg:px-8">
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">

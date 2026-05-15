@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute } from "@react-navigation/native";
@@ -26,7 +27,7 @@ export function TicketDetailScreen() {
 
   const prevBrightness = useRef<number | null>(null);
 
-  useEffect(() => {
+  useMountEffect(() => {
     Brightness.getBrightnessAsync().then((b) => {
       prevBrightness.current = b;
       Brightness.setBrightnessAsync(1);
@@ -36,7 +37,7 @@ export function TicketDetailScreen() {
         Brightness.setBrightnessAsync(prevBrightness.current);
       }
     };
-  }, []);
+  });
 
   if (!ticket) {
     return (

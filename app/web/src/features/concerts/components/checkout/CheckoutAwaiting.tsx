@@ -12,7 +12,7 @@ interface Props {
   steps: AwaitingStep[];
 }
 
-export function CheckoutAwaiting({ title, description, steps }: Props) {
+export function CheckoutAwaiting({ title, description, steps }: Readonly<Props>) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}

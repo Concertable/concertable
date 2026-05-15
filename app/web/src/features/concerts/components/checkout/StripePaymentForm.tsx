@@ -12,7 +12,7 @@ import type { CheckoutSession } from "../../types";
 
 const appearance: Appearance = { theme: "night" };
 
-export interface StripePaymentFormProps {
+export interface Props {
   session: CheckoutSession;
   submitLabel: string;
   disabled?: boolean;
@@ -20,7 +20,7 @@ export interface StripePaymentFormProps {
   onSuccess: (paymentMethodId: string) => void;
 }
 
-export function StripePaymentForm(props: StripePaymentFormProps) {
+export function StripePaymentForm(props: Readonly<Props>) {
   const { clientSecret, customerSession } = props.session;
   const options = useMemo<StripeElementsOptions>(
     () => ({
@@ -44,7 +44,7 @@ function Form({
   disabled,
   footer,
   onSuccess,
-}: StripePaymentFormProps) {
+}: Props) {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);

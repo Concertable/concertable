@@ -6,7 +6,7 @@ interface Props {
   id: number;
 }
 
-export function ConcertDetailsPage({ id }: Props) {
+export function ConcertDetailsPage({ id }: Readonly<Props>) {
   const { concert, isLoading, isError } = useConcert(id);
 
   if (isLoading) return <DetailsPageSkeleton sections={4} />;

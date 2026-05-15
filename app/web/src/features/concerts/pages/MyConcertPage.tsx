@@ -9,7 +9,7 @@ interface Props {
   id: number;
 }
 
-export function MyConcertPage({ id }: Props) {
+export function MyConcertPage({ id }: Readonly<Props>) {
   const { concert, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
     useMyConcert(id);
 

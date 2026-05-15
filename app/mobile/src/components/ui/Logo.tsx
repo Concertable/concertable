@@ -23,7 +23,7 @@ export function Logo({ size = "md", withWordmark = false, style }: Readonly<Prop
     const { height, width } = wordmarkSizes[size];
     return (
       <Image
-        source={require("../../assets/brand/logo-long.png")}
+        source={require("../../../assets/brand/logo-long.png")}
         style={[{ height, width, resizeMode: "contain" }, style]}
       />
     );
@@ -31,7 +31,7 @@ export function Logo({ size = "md", withWordmark = false, style }: Readonly<Prop
   const { height, aspectRatio } = sizes[size];
   return (
     <Image
-      source={require("../../assets/brand/logo.png")}
+      source={require("../../../assets/brand/logo.png")}
       style={[{ height, aspectRatio, resizeMode: "contain" }, style]}
     />
   );

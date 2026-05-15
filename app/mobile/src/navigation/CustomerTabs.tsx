@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Home, Search, Ticket, MessageCircle, User } from "lucide-react-native";
+import { Home, MessageCircle, Search, Ticket, User } from "lucide-react-native";
 import { HomeStack } from "./HomeStack";
 import { SearchStack } from "./SearchStack";
 import { TicketsStack } from "./TicketsStack";
-import { ProfileScreen } from "../features/user/screens/ProfileScreen";
-import { PlaceholderScreen } from "../screens/shared/PlaceholderScreen";
+import { ProfileStack } from "./ProfileStack";
+import { MessagesScreen } from "../features/user/screens/MessagesScreen";
 import { theme } from "../lib/theme";
 import type { CustomerTabParamList } from "./types";
 
@@ -37,12 +37,12 @@ export function CustomerTabs() {
       />
       <Tab.Screen
         name="Messages"
-        children={() => <PlaceholderScreen name="Messages" />}
+        component={MessagesScreen}
         options={{ title: "Messages", tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} /> }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
+        name="ProfileTab"
+        component={ProfileStack}
         options={{ title: "Profile", tabBarIcon: ({ color, size }) => <User size={size} color={color} /> }}
       />
     </Tab.Navigator>

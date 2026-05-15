@@ -26,7 +26,7 @@ export function CheckoutFlow<TResult>({
   pendingHint,
   steps,
   renderSuccess,
-}: Props<TResult>) {
+}: Readonly<Props<TResult>>) {
   if (flow.phase === "success") return <>{renderSuccess(flow.result)}</>;
 
   const stepList: AwaitingStep[] = [

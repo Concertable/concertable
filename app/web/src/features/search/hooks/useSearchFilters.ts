@@ -1,5 +1,5 @@
 import { useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 import { useSearchFiltersStore } from "../store/useSearchFiltersStore";
 import type { SearchFilters } from "../schemas/searchSchema";
 

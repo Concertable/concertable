@@ -6,7 +6,7 @@ interface Props {
   id: number;
 }
 
-export function ArtistDetailsPage({ id }: Props) {
+export function ArtistDetailsPage({ id }: Readonly<Props>) {
   const { data: artist, isLoading, isError } = useArtistQuery(id);
 
   if (isLoading) return <DetailsPageSkeleton sections={5} />;

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavbarHeight } from "@/context/NavbarHeightContext";
 import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 
-interface ConfigBarProps {
+interface Props {
   editMode: boolean;
   isDirty: boolean;
   isSaving: boolean;
@@ -19,7 +19,7 @@ export function ConfigBar({
   onToggleEdit,
   onSave,
   onCancel,
-}: Readonly<ConfigBarProps>) {
+}: Readonly<Props>) {
   const ref = useRef<HTMLDivElement>(null);
   const { navbarHeight, setConfigHeight } = useNavbarHeight();
 

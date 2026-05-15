@@ -1,7 +1,11 @@
 {
   "name": "concertable-app",
   "private": true,
-  "workspaces": ["web", "mobile", "shared"],
+  "workspaces": [
+    "web",
+    "mobile",
+    "shared"
+  ],
   "scripts": {
     "dev:web": "npm -w web run dev",
     "dev:mobile": "npm -w mobile run start",
@@ -14,5 +18,8 @@
     },
     "react": "19.1.0",
     "react-dom": "19.1.0"
+  },
+  "dependencies": {
+    "react-native-worklets": "0.5.1"
   }
 }

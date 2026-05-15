@@ -25,12 +25,19 @@ export type TicketsStackParamList = {
   TicketDetail: { ticketId: string };
 };
 
+export type ProfileStackParamList = {
+  ProfileMain: undefined;
+  EditProfile: undefined;
+  Location: undefined;
+  Preferences: undefined;
+};
+
 export type CustomerTabParamList = {
   HomeTab: NavigatorScreenParams<HomeStackParamList>;
   SearchTab: NavigatorScreenParams<SearchStackParamList>;
   TicketsTab: NavigatorScreenParams<TicketsStackParamList>;
   Messages: undefined;
-  Profile: undefined;
+  ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
 };
 
 export type ArtistTabParamList = {
