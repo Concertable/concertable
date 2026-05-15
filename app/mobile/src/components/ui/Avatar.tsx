@@ -1,15 +1,15 @@
 import { Image, View, Text } from "react-native";
 
-interface AvatarProps {
+interface Props {
   uri?: string | null;
   name?: string;
   size?: number;
   className?: string;
 }
 
-export function Avatar({ uri, name, size = 40, className }: AvatarProps) {
+export function Avatar({ uri, name, size = 40, className }: Readonly<Props>) {
   const initials = name
-    ? name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+    ? name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()
     : "?";
 
   return uri ? (
@@ -21,9 +21,9 @@ export function Avatar({ uri, name, size = 40, className }: AvatarProps) {
   ) : (
     <View
       style={{ width: size, height: size, borderRadius: size / 2 }}
-      className={`bg-gray-200 items-center justify-center ${className ?? ""}`}
+      className={`bg-muted items-center justify-center ${className ?? ""}`}
     >
-      <Text className="text-gray-600 font-semibold" style={{ fontSize: size * 0.38 }}>
+      <Text className="text-muted-foreground font-semibold" style={{ fontSize: size * 0.38 }}>
         {initials}
       </Text>
     </View>

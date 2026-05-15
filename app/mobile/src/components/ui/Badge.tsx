@@ -1,19 +1,21 @@
 import { View, Text } from "react-native";
 
-interface BadgeProps {
+interface Props {
   children: React.ReactNode;
-  variant?: "default" | "secondary" | "destructive" | "outline";
+  variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning";
   className?: string;
 }
 
-const variantClasses: Record<NonNullable<BadgeProps["variant"]>, { container: string; text: string }> = {
-  default: { container: "bg-black", text: "text-white" },
-  secondary: { container: "bg-gray-100", text: "text-gray-800" },
-  destructive: { container: "bg-red-100", text: "text-red-700" },
-  outline: { container: "border border-gray-300", text: "text-gray-800" },
+const variantClasses: Record<NonNullable<Props["variant"]>, { container: string; text: string }> = {
+  default: { container: "bg-primary", text: "text-primary-foreground" },
+  secondary: { container: "bg-muted", text: "text-muted-foreground" },
+  destructive: { container: "bg-destructive/15", text: "text-destructive" },
+  outline: { container: "border border-border", text: "text-foreground" },
+  success: { container: "bg-success/15", text: "text-success" },
+  warning: { container: "bg-warning/15", text: "text-warning" },
 };
 
-export function Badge({ children, variant = "secondary", className }: BadgeProps) {
+export function Badge({ children, variant = "secondary", className }: Readonly<Props>) {
   const { container, text } = variantClasses[variant];
   return (
     <View className={`rounded-full px-2.5 py-0.5 self-start ${container} ${className ?? ""}`}>

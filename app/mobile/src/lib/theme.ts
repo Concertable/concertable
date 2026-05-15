@@ -1,0 +1,17 @@
+export const theme = {
+  primary: "hsl(268, 75%, 38%)",
+  primaryForeground: "hsl(0, 0%, 98%)",
+  secondary: "hsl(268, 65%, 55%)",
+  secondaryForeground: "hsl(0, 0%, 98%)",
+  background: "hsl(0, 0%, 100%)",
+  foreground: "hsl(240, 10%, 4%)",
+  card: "hsl(0, 0%, 100%)",
+  border: "hsl(0, 0%, 92%)",
+  muted: "hsl(0, 0%, 96%)",
+  mutedForeground: "hsl(240, 4%, 46%)",
+  destructive: "hsl(0, 75%, 52%)",
+  success: "hsl(145, 55%, 40%)",
+  warning: "hsl(38, 92%, 50%)",
+  gold: "hsl(42, 80%, 55%)",
+  ring: "hsl(268, 65%, 55%)",
+} as const;

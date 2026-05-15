@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
-import { Animated, View } from "react-native";
+import { Animated } from "react-native";
 
-interface SkeletonProps {
+interface Props {
   width?: number | `${number}%`;
   height?: number;
   rounded?: boolean;
   className?: string;
 }
 
-export function Skeleton({ width, height = 16, rounded, className }: SkeletonProps) {
+export function Skeleton({ width, height = 16, rounded, className }: Readonly<Props>) {
   const opacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function Skeleton({ width, height = 16, rounded, className }: SkeletonPro
   return (
     <Animated.View
       style={{ opacity, width, height }}
-      className={`bg-gray-200 ${rounded ? "rounded-full" : "rounded-lg"} ${className ?? ""}`}
+      className={`bg-muted ${rounded ? "rounded-full" : "rounded-lg"} ${className ?? ""}`}
     />
   );
 }

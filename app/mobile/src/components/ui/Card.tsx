@@ -1,9 +1,13 @@
 import { View, type ViewProps } from "react-native";
 
-export function Card({ children, className, ...props }: ViewProps) {
+interface Props extends ViewProps {
+  children: React.ReactNode;
+}
+
+export function Card({ children, className, ...props }: Readonly<Props>) {
   return (
     <View
-      className={`bg-white rounded-2xl border border-gray-200 p-4 ${className ?? ""}`}
+      className={`bg-card rounded-2xl border border-border p-4 ${className ?? ""}`}
       {...props}
     >
       {children}

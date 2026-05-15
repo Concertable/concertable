@@ -8,6 +8,8 @@ export type ConcertNavParamList = {
   ConcertDetail: { concertId: number };
   TicketCheckout: { concertId: number };
   CheckoutSuccess: undefined;
+  ArtistDetail: { artistId: number };
+  VenueDetail: { venueId: number };
 };
 
 export type HomeStackParamList = {
