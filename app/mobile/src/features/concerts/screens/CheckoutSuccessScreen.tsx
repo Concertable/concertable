@@ -1,29 +1,60 @@
-import { View, Text } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { Screen } from "../../../components/ui/Screen";
+import { CheckCircle } from "lucide-react-native";
 import { Button } from "../../../components/ui/Button";
+import { theme } from "../../../lib/theme";
 import type { CustomerTabParamList } from "../../../navigation/types";
 
+type TabNav = BottomTabNavigationProp<CustomerTabParamList>;
+
 export function CheckoutSuccessScreen() {
-  const tabNav = useNavigation<BottomTabNavigationProp<CustomerTabParamList>>();
+  const tabNav = useNavigation<TabNav>();
+  const scale = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(scale, {
+      toValue: 1,
+      tension: 60,
+      friction: 6,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   return (
-    <Screen>
-      <View className="flex-1 items-center justify-center gap-6 px-6">
-        <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center">
-          <Text className="text-4xl">✓</Text>
-        </View>
+    <SafeAreaView className="flex-1 bg-background">
+      <View className="flex-1 items-center justify-center gap-8 px-6">
+        <Animated.View style={{ transform: [{ scale }] }}>
+          <View className="w-24 h-24 rounded-full bg-success/15 items-center justify-center">
+            <CheckCircle size={52} color={theme.success} strokeWidth={1.5} />
+          </View>
+        </Animated.View>
+
         <View className="items-center gap-2">
-          <Text className="text-2xl font-bold text-gray-900">You're going!</Text>
-          <Text className="text-gray-500 text-center">
-            Your ticket has been confirmed. See you there!
+          <Text className="text-2xl font-bold text-foreground">You're going!</Text>
+          <Text className="text-sm text-muted-foreground text-center leading-relaxed">
+            Your ticket has been confirmed.{"\n"}See you there!
           </Text>
         </View>
-        <Button onPress={() => tabNav.navigate("TicketsTab", { screen: "TicketsMain" })} size="lg">
-          View My Tickets
-        </Button>
+
+        <View className="w-full gap-3">
+          <Button
+            size="lg"
+            onPress={() => tabNav.navigate("TicketsTab", { screen: "TicketsMain" })}
+          >
+            View My Tickets
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onPress={() => tabNav.navigate("HomeTab", { screen: "HomeMain" })}
+          >
+            Back to Home
+          </Button>
+        </View>
       </View>
-    </Screen>
+    </SafeAreaView>
   );
 }

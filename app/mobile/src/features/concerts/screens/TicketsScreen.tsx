@@ -1,61 +1,76 @@
-import { useState } from "react";
-import { FlatList, Pressable, Text, View, ActivityIndicator } from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import {
-  useUpcomingTicketsQuery,
-  useTicketHistoryQuery,
-} from "@concertable/shared/features/concerts";
+import { useRef, useState } from "react";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import QRCode from "react-native-qrcode-svg";
+import { CalendarDays, MapPin, Music, Ticket as TicketIcon } from "lucide-react-native";
+import { useUpcomingTicketsQuery, useTicketHistoryQuery } from "@concertable/shared/features/concerts";
 import type { Ticket } from "@concertable/shared/features/concerts";
 import { Screen } from "../../../components/ui/Screen";
-import { Card } from "../../../components/ui/Card";
-import { Badge } from "../../../components/ui/Badge";
+import { SegmentedControl } from "../../../components/ui/SegmentedControl";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { Skeleton } from "../../../components/ui/Skeleton";
+import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
 import type { TicketsStackParamList } from "../../../navigation/types";
 
-type Props = NativeStackScreenProps<TicketsStackParamList, "TicketsMain">;
+const TAB_OPTIONS = [
+  { value: "upcoming" as const, label: "Upcoming" },
+  { value: "history" as const, label: "History" },
+];
 
-export function TicketsScreen({ navigation }: Props) {
+type TicketsNav = NativeStackNavigationProp<TicketsStackParamList>;
+
+export function TicketsScreen() {
+  const nav = useNavigation<TicketsNav>();
   const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
-  const { data: upcoming, isLoading: upLoading } = useUpcomingTicketsQuery();
-  const { data: history, isLoading: histLoading } = useTicketHistoryQuery();
 
-  const tickets = tab === "upcoming" ? upcoming : history;
+  const { data: upcoming, isLoading: upLoading, refetch: refetchUpcoming } = useUpcomingTicketsQuery();
+  const { data: history, isLoading: histLoading, refetch: refetchHistory } = useTicketHistoryQuery();
+
+  const tickets = tab === "upcoming" ? (upcoming ?? []) : (history ?? []);
   const isLoading = tab === "upcoming" ? upLoading : histLoading;
+  const refreshing = upLoading || histLoading;
+
+  function onRefresh() {
+    refetchUpcoming();
+    refetchHistory();
+  }
 
   return (
-    <Screen>
-      <View className="flex-row rounded-xl overflow-hidden border border-gray-200 mb-4">
-        {(["upcoming", "history"] as const).map((t) => (
-          <Pressable
-            key={t}
-            onPress={() => setTab(t)}
-            className={`flex-1 py-2.5 items-center ${tab === t ? "bg-black" : "bg-white"}`}
-          >
-            <Text className={`font-semibold ${tab === t ? "text-white" : "text-gray-600"}`}>
-              {t === "upcoming" ? "Upcoming" : "History"}
-            </Text>
-          </Pressable>
-        ))}
+    <Screen padded={false}>
+      <View className="px-4 pt-3 pb-3 border-b border-border">
+        <SegmentedControl options={TAB_OPTIONS} value={tab} onChange={setTab} />
       </View>
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" />
+        <View className="p-4 gap-3">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} width="100%" height={90} className="rounded-2xl" />
+          ))}
         </View>
       ) : (
         <FlatList
           data={tickets}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          contentContainerClassName="gap-3 pb-4"
+          contentContainerStyle={{ padding: 16, gap: 12 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+          }
           renderItem={({ item }) => (
             <TicketCard
               ticket={item}
-              onPress={() => navigation.navigate("TicketDetail", { ticketId: item.id })}
+              onPress={() => nav.navigate("TicketDetail", { ticketId: item.id })}
             />
           )}
           ListEmptyComponent={
-            <Text className="text-gray-500 text-center mt-12">No tickets here.</Text>
+            <EmptyState
+              icon={TicketIcon}
+              title={tab === "upcoming" ? "No upcoming tickets" : "No past tickets"}
+              description="Tickets you purchase will appear here"
+              className="mt-8"
+            />
           }
         />
       )}
@@ -64,26 +79,43 @@ export function TicketsScreen({ navigation }: Props) {
 }
 
 function TicketCard({ ticket, onPress }: { ticket: Ticket; onPress: () => void }) {
-  const isUpcoming = dayjs(ticket.concert.startDate).isAfter(dayjs());
   return (
     <Pressable onPress={onPress}>
-      <Card className="gap-2">
-        <View className="flex-row items-start justify-between">
-          <Text className="font-semibold text-gray-900 flex-1 mr-2" numberOfLines={1}>
+      <View className="bg-card rounded-2xl border border-border flex-row items-center p-3 gap-3">
+        <View className="w-16 h-16 rounded-xl bg-primary/15 items-center justify-center shrink-0">
+          <Text className="text-xl font-bold text-primary">
+            {ticket.concert.name.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+
+        <View className="flex-1 gap-1 min-w-0">
+          <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
             {ticket.concert.name}
           </Text>
-          <Badge variant={isUpcoming ? "default" : "secondary"}>
-            {isUpcoming ? "Upcoming" : "Past"}
-          </Badge>
+          <View className="flex-row items-center gap-1">
+            <Music size={11} color={theme.mutedForeground} />
+            <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+              {ticket.concert.artistName}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <MapPin size={11} color={theme.mutedForeground} />
+            <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+              {ticket.concert.venueName}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <CalendarDays size={11} color={theme.mutedForeground} />
+            <Text className="text-xs text-muted-foreground">
+              {dayjs(ticket.concert.startDate).format("D MMM YYYY")}
+            </Text>
+          </View>
         </View>
-        <Text className="text-sm text-gray-500">{ticket.concert.venueName}</Text>
-        <Text className="text-sm text-gray-500">
-          {dayjs(ticket.concert.startDate).format("ddd D MMM YYYY")}
-        </Text>
-        <Text className="text-xs text-gray-400">
-          Artist: {ticket.concert.artistName} · £{ticket.concert.price.toFixed(2)}
-        </Text>
-      </Card>
+
+        <View className="shrink-0 rounded-lg overflow-hidden bg-white p-1">
+          <QRCode value={ticket.qrCode} size={44} />
+        </View>
+      </View>
     </Pressable>
   );
 }

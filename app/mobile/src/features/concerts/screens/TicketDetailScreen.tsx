@@ -1,62 +1,97 @@
-import { View, Text, ScrollView } from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useUpcomingTicketsQuery, useTicketHistoryQuery } from "@concertable/shared/features/concerts";
+import { useEffect, useRef } from "react";
+import { Pressable, ScrollView, Share, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRoute } from "@react-navigation/native";
+import type { RouteProp } from "@react-navigation/native";
 import QRCode from "react-native-qrcode-svg";
-import { Screen } from "../../../components/ui/Screen";
+import * as Brightness from "expo-brightness";
+import { CalendarDays, Hash, Mail, MapPin, Music, Share2, Ticket } from "lucide-react-native";
+import type { LucideIcon } from "lucide-react-native";
+import { useUpcomingTicketsQuery, useTicketHistoryQuery } from "@concertable/shared/features/concerts";
+import { ErrorState } from "../../../components/ui/ErrorState";
+import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
 import type { TicketsStackParamList } from "../../../navigation/types";
 
-type Props = NativeStackScreenProps<TicketsStackParamList, "TicketDetail">;
+type TicketDetailRoute = RouteProp<TicketsStackParamList, "TicketDetail">;
 
-export function TicketDetailScreen({ route }: Props) {
+export function TicketDetailScreen() {
+  const route = useRoute<TicketDetailRoute>();
   const { ticketId } = route.params;
+
   const { data: upcoming } = useUpcomingTicketsQuery();
   const { data: history } = useTicketHistoryQuery();
 
   const ticket = [...(upcoming ?? []), ...(history ?? [])].find((t) => t.id === ticketId);
 
-  if (!ticket)
+  const prevBrightness = useRef<number | null>(null);
+
+  useEffect(() => {
+    Brightness.getBrightnessAsync().then((b) => {
+      prevBrightness.current = b;
+      Brightness.setBrightnessAsync(1);
+    });
+    return () => {
+      if (prevBrightness.current !== null) {
+        Brightness.setBrightnessAsync(prevBrightness.current);
+      }
+    };
+  }, []);
+
+  if (!ticket) {
     return (
-      <Screen>
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-500">Ticket not found.</Text>
-        </View>
-      </Screen>
+      <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
+        <ErrorState message="Ticket not found." />
+      </SafeAreaView>
     );
+  }
+
+  async function handleShare() {
+    await Share.share({ message: `I'm going to ${ticket!.concert.name}! 🎵` });
+  }
 
   return (
-    <Screen scroll>
-      <View className="items-center gap-6">
-        <View className="bg-white rounded-3xl p-6 shadow-sm items-center gap-4 w-full border border-gray-100">
-          <Text className="text-xl font-bold text-gray-900 text-center">{ticket.concert.name}</Text>
-          <Text className="text-gray-500 text-center">
+    <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
+      <View className="flex-row justify-end px-4 py-2">
+        <Pressable onPress={handleShare} className="p-2">
+          <Share2 size={20} color={theme.primary} />
+        </Pressable>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 16 }}>
+        <View className="bg-card rounded-3xl border-2 border-primary/20 p-6 items-center gap-4">
+          <Text className="text-lg font-bold text-foreground text-center" numberOfLines={2}>
+            {ticket.concert.name}
+          </Text>
+          <Text className="text-sm text-muted-foreground">
             {dayjs(ticket.concert.startDate).format("ddd D MMM YYYY")}
           </Text>
-
-          <View className="p-4 bg-white rounded-2xl border border-gray-200">
-            <QRCode value={ticket.qrCode} size={200} />
+          <View className="bg-white p-4 rounded-2xl">
+            <QRCode value={ticket.qrCode} size={240} />
           </View>
-
-          <Text className="text-xs text-gray-400 font-mono">{ticket.id}</Text>
+          <Text className="text-xs text-muted-foreground font-mono" numberOfLines={1}>
+            {ticket.id}
+          </Text>
         </View>
 
-        <View className="w-full gap-3">
-          <Row label="Venue" value={ticket.concert.venueName} />
-          <Row label="Artist" value={ticket.concert.artistName} />
-          <Row label="Price" value={`£${ticket.concert.price.toFixed(2)}`} />
-          <Row label="Purchased" value={dayjs(ticket.purchaseDate).format("D MMM YYYY, h:mm A")} />
-          <Row label="Email" value={ticket.userEmail} />
+        <View className="bg-card rounded-2xl border border-border overflow-hidden">
+          <DetailRow icon={Music} label={ticket.concert.artistName} />
+          <DetailRow icon={MapPin} label={ticket.concert.venueName} />
+          <DetailRow icon={CalendarDays} label={dayjs(ticket.concert.startDate).format("ddd D MMM YYYY")} />
+          <DetailRow icon={Ticket} label={`£${ticket.concert.price.toFixed(2)}`} />
+          <DetailRow icon={Mail} label={ticket.userEmail} />
+          <DetailRow icon={Hash} label={ticket.id} last />
         </View>
-      </View>
-    </Screen>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function DetailRow({ icon: Icon, label, last }: { icon: LucideIcon; label: string; last?: boolean }) {
   return (
-    <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-      <Text className="text-sm text-gray-500">{label}</Text>
-      <Text className="text-sm font-medium text-gray-900">{value}</Text>
+    <View className={`flex-row items-center gap-3 px-4 py-3.5 ${!last ? "border-b border-border" : ""}`}>
+      <Icon size={16} color={theme.mutedForeground} />
+      <Text className="text-sm text-foreground flex-1" numberOfLines={1}>{label}</Text>
     </View>
   );
 }
