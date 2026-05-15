@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { FlatList, Keyboard, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { FlatList, Keyboard, Pressable, ScrollView, TextInput, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -20,11 +20,12 @@ import type {
 } from "@concertable/shared/features/search";
 import { Screen } from "../../../components/ui/Screen";
 import { Navbar } from "../../../components/ui/Navbar";
-import { SegmentedControl } from "../../../components/ui/SegmentedControl";
 import { RatingStars } from "../../../components/ui/RatingStars";
 import { GenreChips } from "../../../components/ui/GenreChips";
 import { EmptyState } from "../../../components/ui/EmptyState";
-import { Skeleton } from "../../../components/ui/Skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { SearchFilterSheet } from "./SearchFilterSheet";
 import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
@@ -112,12 +113,12 @@ export function SearchScreen() {
 
   return (
     <Screen padded={false} header={<Navbar />}>
-      <View className="border-b border-border">
-        <View className="px-4 pt-3 pb-2">
-          <View className="flex-row items-center bg-muted rounded-full px-4 h-11 gap-2">
+      <View style={{ borderBottomWidth: 1, borderColor: theme.border }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: theme.muted, borderRadius: 9999, paddingHorizontal: 16, height: 44, gap: 8 }}>
             <Search size={16} color={theme.mutedForeground} />
             <TextInput
-              className="flex-1 text-sm text-foreground"
+              style={{ flex: 1, fontSize: 14, color: theme.foreground }}
               placeholder="Search concerts, artists, venues…"
               placeholderTextColor={theme.mutedForeground}
               value={filters.query ?? ""}
@@ -142,12 +143,16 @@ export function SearchScreen() {
           </View>
         </View>
 
-        <View className="px-4 pb-3">
-          <SegmentedControl
-            options={HEADER_TYPE_OPTIONS}
-            value={filters.headerType}
-            onChange={(v) => setFilters({ ...filters, headerType: v })}
-          />
+        <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+          <Tabs value={filters.headerType} onValueChange={(v) => setFilters({ ...filters, headerType: v as typeof filters.headerType })}>
+            <TabsList className="w-full">
+              {HEADER_TYPE_OPTIONS.map((opt) => (
+                <TabsTrigger key={opt.value} value={opt.value} className="flex-1">
+                  <Text>{opt.label}</Text>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </View>
 
         {filterChips.length > 0 && (
@@ -202,7 +207,7 @@ export function SearchScreen() {
             isFetching ? (
               <View className="flex-row flex-wrap gap-3">
                 {[0, 1, 2, 3].map((i) => (
-                  <Skeleton key={i} width={160} height={220} className="rounded-2xl" />
+                  <Skeleton key={i} className="w-40 h-[220px] rounded-2xl" />
                 ))}
               </View>
             ) : (

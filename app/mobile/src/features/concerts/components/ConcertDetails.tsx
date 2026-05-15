@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -8,11 +8,12 @@ import { Image } from "expo-image";
 import { CalendarDays, MapPin, Music, TriangleAlert } from "lucide-react-native";
 import type { Concert } from "@concertable/shared/features/concerts";
 import { Hero } from "../../../components/ui/Hero";
-import { SegmentedControl } from "../../../components/ui/SegmentedControl";
 import { RatingStars } from "../../../components/ui/RatingStars";
 import { GenreChips } from "../../../components/ui/GenreChips";
-import { Button } from "../../../components/ui/Button";
 import { EmptyState } from "../../../components/ui/EmptyState";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
 import type { ConcertNavParamList } from "../../../navigation/types";
@@ -70,7 +71,15 @@ export function ConcertDetails({ concert }: Readonly<Props>) {
         )}
 
         <View className="px-4 pt-5 pb-2">
-          <SegmentedControl options={SECTION_OPTIONS} value={section} onChange={setSection} />
+          <Tabs value={section} onValueChange={(v) => setSection(v as SectionKey)}>
+            <TabsList className="w-full">
+              {SECTION_OPTIONS.map((opt) => (
+                <TabsTrigger key={opt.value} value={opt.value} className="flex-1">
+                  <Text>{opt.label}</Text>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </View>
 
         {section === "about" && <AboutSection concert={concert} />}
@@ -96,7 +105,7 @@ export function ConcertDetails({ concert }: Readonly<Props>) {
           size="lg"
           onPress={() => nav.navigate("TicketCheckout", { concertId: concert.id })}
         >
-          {soldOut ? "Sold Out" : "Buy Tickets"}
+          <Text>{soldOut ? "Sold Out" : "Buy Tickets"}</Text>
         </Button>
       </View>
     </SafeAreaView>

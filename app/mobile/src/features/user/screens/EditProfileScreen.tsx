@@ -1,9 +1,10 @@
-import { Linking, Text, View } from "react-native";
+import { Linking, View } from "react-native";
 import { CheckCircle, XCircle } from "lucide-react-native";
 import { useAuthStore } from "@concertable/shared/features/auth";
 import { Screen } from "../../../components/ui/Screen";
-import { Button } from "../../../components/ui/Button";
-import { Avatar } from "../../../components/ui/Avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import Config from "../../../lib/config";
 
@@ -15,7 +16,11 @@ export function EditProfileScreen() {
   return (
     <Screen scroll>
       <View className="items-center gap-3 py-6">
-        <Avatar uri={undefined} name={user.email} size={80} />
+        <Avatar className="w-20 h-20">
+          <AvatarFallback>
+            <Text className="text-2xl font-semibold">{user.email.charAt(0).toUpperCase()}</Text>
+          </AvatarFallback>
+        </Avatar>
         <Text className="text-xl font-bold text-foreground">{user.email}</Text>
       </View>
 
@@ -50,7 +55,7 @@ export function EditProfileScreen() {
             variant="outline"
             onPress={() => Linking.openURL(`${Config.authAuthority}/Account/ChangePassword`)}
           >
-            Change Password
+            <Text>Change Password</Text>
           </Button>
         </View>
       </View>

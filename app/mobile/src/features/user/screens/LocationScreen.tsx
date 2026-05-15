@@ -1,14 +1,16 @@
 import { useRef, useState } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, type Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { MapPin } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useUserQuery, useUpdateLocationMutation } from "@concertable/shared/features/user";
-import { Button } from "../../../components/ui/Button";
-import { Skeleton } from "../../../components/ui/Skeleton";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { notify } from "../../../lib/toast";
+import { theme } from "../../../lib/theme";
 
 const UK_DEFAULT: Region = {
   latitude: 51.5074,
@@ -66,8 +68,8 @@ export function LocationScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-background p-4 gap-4">
-        <Skeleton width="100%" height={300} className="rounded-xl" />
-        <Skeleton width="100%" height={48} className="rounded-xl" />
+        <Skeleton className="w-full h-[300px] rounded-xl" />
+        <Skeleton className="w-full h-12 rounded-xl" />
       </View>
     );
   }
@@ -107,13 +109,17 @@ export function LocationScreen() {
           </View>
           <View className="flex-row gap-2">
             <View className="flex-1">
-              <Button variant="outline" loading={locating} onPress={handleUseMyLocation}>
-                Use My Location
+              <Button variant="outline" disabled={locating} onPress={handleUseMyLocation}>
+                {locating
+                  ? <ActivityIndicator size="small" color={theme.primary} />
+                  : <Text>Use My Location</Text>}
               </Button>
             </View>
             <View className="flex-1">
-              <Button loading={updateLocation.isPending} onPress={handleSave}>
-                Save
+              <Button disabled={updateLocation.isPending} onPress={handleSave}>
+                {updateLocation.isPending
+                  ? <ActivityIndicator size="small" color={theme.primaryForeground} />
+                  : <Text>Save</Text>}
               </Button>
             </View>
           </View>

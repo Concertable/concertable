@@ -1,5 +1,6 @@
 import { View, Text } from "react-native";
 import { Star } from "lucide-react-native";
+import { cn } from "@/lib/utils";
 import { theme } from "../../lib/theme";
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
 export function RatingStars({ rating, size = 14, className }: Readonly<Props>) {
   if (rating == null) return null;
   return (
-    <View className={`flex-row items-center gap-1 ${className ?? ""}`}>
+    <View className={cn("flex-row items-center gap-1", className)}>
       <Star size={size} color={theme.gold} fill={theme.gold} />
       <Text className="text-xs font-medium text-gold">{rating.toFixed(1)}</Text>
     </View>

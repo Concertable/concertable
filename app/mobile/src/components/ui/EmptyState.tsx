@@ -1,7 +1,9 @@
-import { View, Text, type ViewProps } from "react-native";
+import { View, type ViewProps } from "react-native";
 import type { LucideIcon } from "lucide-react-native";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { theme } from "../../lib/theme";
-import { Button } from "./Button";
 
 interface Props extends ViewProps {
   icon?: LucideIcon;
@@ -12,7 +14,7 @@ interface Props extends ViewProps {
 
 export function EmptyState({ icon: Icon, title, description, action, className, ...props }: Readonly<Props>) {
   return (
-    <View className={`flex-1 items-center justify-center gap-3 px-8 py-16 ${className ?? ""}`} {...props}>
+    <View className={cn("flex-1 items-center justify-center gap-3 px-8 py-16", className)} {...props}>
       {Icon && <Icon size={48} color={theme.mutedForeground} strokeWidth={1.5} />}
       <View className="items-center gap-1">
         <Text className="text-base font-semibold text-foreground text-center">{title}</Text>
@@ -22,7 +24,7 @@ export function EmptyState({ icon: Icon, title, description, action, className, 
       </View>
       {action && (
         <Button variant="outline" onPress={action.onPress} size="sm">
-          {action.label}
+          <Text>{action.label}</Text>
         </Button>
       )}
     </View>

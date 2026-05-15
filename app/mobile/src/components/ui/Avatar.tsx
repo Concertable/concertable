@@ -1,31 +1,38 @@
-import { Image, View, Text } from "react-native";
+import { cn } from '@/lib/utils';
+import * as AvatarPrimitive from '@rn-primitives/avatar';
 
-interface Props {
-  uri?: string | null;
-  name?: string;
-  size?: number;
-  className?: string;
-}
-
-export function Avatar({ uri, name, size = 40, className }: Readonly<Props>) {
-  const initials = name
-    ? name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()
-    : "?";
-
-  return uri ? (
-    <Image
-      source={{ uri }}
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-      className={className}
+function Avatar({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+  return (
+    <AvatarPrimitive.Root
+      className={cn('relative flex size-8 shrink-0 overflow-hidden rounded-full', className)}
+      {...props}
     />
-  ) : (
-    <View
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-      className={`bg-muted items-center justify-center ${className ?? ""}`}
-    >
-      <Text className="text-muted-foreground font-semibold" style={{ fontSize: size * 0.38 }}>
-        {initials}
-      </Text>
-    </View>
   );
 }
+
+function AvatarImage({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+  return <AvatarPrimitive.Image className={cn('aspect-square size-full', className)} {...props} />;
+}
+
+function AvatarFallback({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+  return (
+    <AvatarPrimitive.Fallback
+      className={cn(
+        'bg-muted flex size-full flex-row items-center justify-center rounded-full',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+export { Avatar, AvatarFallback, AvatarImage };

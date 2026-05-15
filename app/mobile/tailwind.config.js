@@ -1,5 +1,8 @@
+const { hairlineWidth } = require("nativewind/theme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: ["./App.{tsx,jsx}", "./src/**/*.{tsx,jsx,ts,js}"],
   presets: [require("nativewind/preset")],
   theme: {
@@ -37,6 +40,10 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -58,15 +65,18 @@ module.exports = {
         },
       },
       borderRadius: {
-        sm: "var(--radius-sm)",
-        md: "var(--radius-md)",
-        lg: "var(--radius)",
-        xl: "var(--radius-xl)",
-        "2xl": "var(--radius-2xl)",
-        "3xl": "var(--radius-3xl)",
+        sm: "6px",
+        md: "8px",
+        lg: "10px",
+        xl: "14px",
+        "2xl": "18px",
+        "3xl": "22px",
         "4xl": "9999px",
+      },
+      borderWidth: {
+        hairline: hairlineWidth(),
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };

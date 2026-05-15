@@ -1,5 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import type { Genre } from "@concertable/shared/types";
+import { cn } from "@/lib/utils";
 
 interface Props {
   genres: Genre[];
@@ -14,7 +15,7 @@ export function GenreChips({ genres, selected, onToggle, max, className }: Reado
   const isSelectable = onToggle !== undefined;
 
   return (
-    <View className={`flex-row flex-wrap gap-1.5 ${className ?? ""}`}>
+    <View className={cn("flex-row flex-wrap gap-1.5", className)}>
       {visible.map((genre) => {
         const active = selected?.includes(genre.id) ?? false;
         if (isSelectable) {
@@ -22,9 +23,12 @@ export function GenreChips({ genres, selected, onToggle, max, className }: Reado
             <Pressable
               key={genre.id}
               onPress={() => onToggle!(genre.id)}
-              className={`rounded-full px-2.5 py-1 border ${active ? "bg-primary border-primary" : "border-border bg-background"}`}
+              className={cn(
+                "rounded-full px-2.5 py-1 border",
+                active ? "bg-primary border-primary" : "border-border bg-background"
+              )}
             >
-              <Text className={`text-xs font-medium ${active ? "text-primary-foreground" : "text-foreground"}`}>
+              <Text className={cn("text-xs font-medium", active ? "text-primary-foreground" : "text-foreground")}>
                 {genre.name}
               </Text>
             </Pressable>

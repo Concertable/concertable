@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import QRCode from "react-native-qrcode-svg";
@@ -8,9 +8,10 @@ import { useUpcomingTicketsQuery, useTicketHistoryQuery } from "@concertable/sha
 import type { Ticket } from "@concertable/shared/features/concerts";
 import { Screen } from "../../../components/ui/Screen";
 import { Navbar } from "../../../components/ui/Navbar";
-import { SegmentedControl } from "../../../components/ui/SegmentedControl";
 import { EmptyState } from "../../../components/ui/EmptyState";
-import { Skeleton } from "../../../components/ui/Skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
 import type { TicketsStackParamList } from "../../../navigation/types";
@@ -41,13 +42,21 @@ export function TicketsScreen() {
   return (
     <Screen padded={false} header={<Navbar />}>
       <View className="px-4 pt-3 pb-3 border-b border-border">
-        <SegmentedControl options={TAB_OPTIONS} value={tab} onChange={setTab} />
+        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+          <TabsList className="w-full">
+            {TAB_OPTIONS.map((opt) => (
+              <TabsTrigger key={opt.value} value={opt.value} className="flex-1">
+                <Text>{opt.label}</Text>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </View>
 
       {isLoading ? (
         <View className="p-4 gap-3">
           {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} width="100%" height={90} className="rounded-2xl" />
+            <Skeleton key={i} className="w-full h-[90px] rounded-2xl" />
           ))}
         </View>
       ) : (

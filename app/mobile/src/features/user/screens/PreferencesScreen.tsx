@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useMyPreferenceQuery, useUpdateMyPreferenceMutation, useCreateMyPreferenceMutation } from "@concertable/shared/features/customer";
 import { useGenresQuery } from "@concertable/shared/features/search";
 import { GenreChips } from "../../../components/ui/GenreChips";
-import { Button } from "../../../components/ui/Button";
-import { Skeleton } from "../../../components/ui/Skeleton";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { notify } from "../../../lib/toast";
+import { theme } from "../../../lib/theme";
 
 const RADIUS_PRESETS = [5, 10, 25, 50, 100] as const;
 
@@ -50,8 +52,8 @@ export function PreferencesScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-background p-4 gap-4">
-        <Skeleton width="100%" height={48} className="rounded-xl" />
-        <Skeleton width="100%" height={120} className="rounded-xl" />
+        <Skeleton className="w-full h-12 rounded-xl" />
+        <Skeleton className="w-full h-[120px] rounded-xl" />
       </View>
     );
   }
@@ -69,7 +71,7 @@ export function PreferencesScreen() {
                 size="sm"
                 onPress={() => setRadiusKm(r)}
               >
-                {`${r}km`}
+                <Text>{`${r}km`}</Text>
               </Button>
             ))}
           </View>
@@ -90,7 +92,11 @@ export function PreferencesScreen() {
       </ScrollView>
 
       <View className="px-4 pt-3 pb-6 border-t border-border">
-        <Button loading={saving} onPress={handleSave} size="lg">Save</Button>
+        <Button disabled={saving} onPress={handleSave} size="lg">
+          {saving
+            ? <ActivityIndicator size="small" color={theme.primaryForeground} />
+            : <Text>Save</Text>}
+        </Button>
       </View>
     </SafeAreaView>
   );

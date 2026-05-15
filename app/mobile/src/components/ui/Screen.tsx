@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { SafeAreaView, ScrollView, View, type ViewProps } from "react-native";
 
 interface Props extends ViewProps {
@@ -10,10 +11,10 @@ interface Props extends ViewProps {
 export function Screen({ children, scroll, padded = true, header, className, ...props }: Readonly<Props>) {
   if (scroll) {
     return (
-      <SafeAreaView className={`flex-1 bg-background ${className ?? ""}`} {...props}>
+      <SafeAreaView className={cn("flex-1 bg-background", className)} {...props}>
         {header}
         <ScrollView
-          contentContainerClassName={`flex-grow ${padded ? "p-4" : ""}`}
+          contentContainerClassName={cn("flex-grow", padded && "p-4")}
           showsVerticalScrollIndicator={false}
         >
           {children}
@@ -22,9 +23,9 @@ export function Screen({ children, scroll, padded = true, header, className, ...
     );
   }
   return (
-    <SafeAreaView className={`flex-1 bg-background ${className ?? ""}`} {...props}>
+    <SafeAreaView className={cn("flex-1 bg-background", className)} {...props}>
       {header}
-      <View className={`flex-1 ${padded ? "p-4" : ""}`}>
+      <View style={{ flex: 1, flexDirection: "column", ...(padded && { padding: 16 }) }}>
         {children}
       </View>
     </SafeAreaView>

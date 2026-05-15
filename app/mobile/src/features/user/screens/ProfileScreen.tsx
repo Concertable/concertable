@@ -1,13 +1,14 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ChevronRight, CheckCircle, XCircle } from "lucide-react-native";
 import { useAuthStore } from "@concertable/shared/features/auth";
 import { Screen } from "../../../components/ui/Screen";
 import { Navbar } from "../../../components/ui/Navbar";
-import { Avatar } from "../../../components/ui/Avatar";
-import { Badge } from "../../../components/ui/Badge";
-import { Button } from "../../../components/ui/Button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { useLogout } from "../../../auth/useLogout";
 import { theme } from "../../../lib/theme";
 import type { ProfileStackParamList } from "../../../navigation/types";
@@ -24,11 +25,19 @@ export function ProfileScreen() {
   return (
     <Screen scroll header={<Navbar />}>
       <View className="items-center gap-3 py-6">
-        <Avatar uri={undefined} name={user.email} size={80} />
+        <Avatar className="w-20 h-20">
+          <AvatarFallback>
+            <Text className="text-2xl font-semibold">{user.email.charAt(0).toUpperCase()}</Text>
+          </AvatarFallback>
+        </Avatar>
         <View className="items-center gap-2">
           <Text className="text-xl font-bold text-foreground">{user.email}</Text>
           <View className="flex-row items-center gap-2">
-            {user.role && <Badge variant="secondary">{user.role}</Badge>}
+            {user.role && (
+              <Badge variant="secondary">
+                <Text>{user.role}</Text>
+              </Badge>
+            )}
             {user.isEmailVerified ? (
               <View className="flex-row items-center gap-1">
                 <CheckCircle size={14} color={theme.success} />
@@ -55,7 +64,9 @@ export function ProfileScreen() {
         <MenuRow label="Privacy Policy" onPress={() => {}} />
 
         <View className="mt-6">
-          <Button variant="destructive" onPress={logout}>Sign Out</Button>
+          <Button variant="destructive" onPress={logout}>
+            <Text>Sign Out</Text>
+          </Button>
         </View>
       </View>
     </Screen>

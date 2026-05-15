@@ -1,4 +1,4 @@
-import { ScrollView, Text, View, Pressable, RefreshControl } from "react-native";
+import { ScrollView, View, Pressable, RefreshControl } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -9,10 +9,11 @@ import { Image } from "expo-image";
 import { MapPin } from "lucide-react-native";
 import { Screen } from "../../../components/ui/Screen";
 import { Navbar } from "../../../components/ui/Navbar";
-import { Skeleton } from "../../../components/ui/Skeleton";
 import { RatingStars } from "../../../components/ui/RatingStars";
 import { GenreChips } from "../../../components/ui/GenreChips";
 import { EmptyState } from "../../../components/ui/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import type { HomeStackParamList, CustomerTabParamList } from "../../../navigation/types";
 import dayjs from "dayjs";
@@ -29,7 +30,6 @@ export function HomeScreen() {
   const { data: artists, isLoading: artistsLoading, refetch: refetchArtists } = useHeaderAmountQuery("artist", 15);
   const { data: venues, isLoading: venuesLoading, refetch: refetchVenues } = useHeaderAmountQuery("venue", 15);
 
-  const isLoading = concertsLoading && artistsLoading && venuesLoading;
   const refreshing = concertsLoading || artistsLoading || venuesLoading;
 
   function onRefresh() {
@@ -125,7 +125,7 @@ function Section({ title, onSeeAll, loading, children }: Readonly<SectionProps>)
       {loading ? (
         <View className="flex-row gap-3 px-4">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} width={180} height={200} className="rounded-2xl" />
+            <Skeleton key={i} className="w-[180px] h-[200px] rounded-2xl" />
           ))}
         </View>
       ) : (

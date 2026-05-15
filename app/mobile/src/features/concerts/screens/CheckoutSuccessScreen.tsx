@@ -1,11 +1,12 @@
 import { useRef } from "react";
-import { Animated, Text, View } from "react-native";
+import { Animated, View } from "react-native";
 import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { CheckCircle } from "lucide-react-native";
-import { Button } from "../../../components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import type { CustomerTabParamList } from "../../../navigation/types";
 
@@ -45,14 +46,14 @@ export function CheckoutSuccessScreen() {
             size="lg"
             onPress={() => tabNav.navigate("TicketsTab", { screen: "TicketsMain" })}
           >
-            View My Tickets
+            <Text>View My Tickets</Text>
           </Button>
           <Button
             variant="outline"
             size="lg"
             onPress={() => tabNav.navigate("HomeTab", { screen: "HomeMain" })}
           >
-            Back to Home
+            <Text>Back to Home</Text>
           </Button>
         </View>
       </View>

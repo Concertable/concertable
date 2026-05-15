@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
 import * as Location from "expo-location";
@@ -7,8 +7,9 @@ import { MapPin, X } from "lucide-react-native";
 import { useSearchFiltersStore, useGenresQuery } from "@concertable/shared/features/search";
 import type { SearchFilters } from "@concertable/shared/features/search";
 import { GenreChips } from "../../../components/ui/GenreChips";
-import { SegmentedControl } from "../../../components/ui/SegmentedControl";
-import { Button } from "../../../components/ui/Button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
 
@@ -238,13 +239,21 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
         </Section>
 
         <Section title="Sort By">
-          <SegmentedControl options={SORT_OPTIONS} value={sortOrder} onChange={setSortOrder} />
+          <Tabs value={sortOrder} onValueChange={(v) => setSortOrder(v as SortValue)}>
+            <TabsList className="w-full">
+              {SORT_OPTIONS.map((opt) => (
+                <TabsTrigger key={opt.value} value={opt.value} className="flex-1">
+                  <Text>{opt.label}</Text>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </Section>
       </BottomSheetScrollView>
 
       <View className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-4 pt-3 pb-8 border-t border-border bg-background">
-        <Button variant="outline" onPress={handleReset} className="flex-1">Reset</Button>
-        <Button onPress={handleApply} className="flex-1">Apply</Button>
+        <Button variant="outline" onPress={handleReset} className="flex-1"><Text>Reset</Text></Button>
+        <Button onPress={handleApply} className="flex-1"><Text>Apply</Text></Button>
       </View>
     </BottomSheetModal>
   );

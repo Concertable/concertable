@@ -4,7 +4,7 @@ import type { RouteProp } from "@react-navigation/native";
 import { useConcert } from "@concertable/shared/features/concerts";
 import { ConcertDetails } from "../components/ConcertDetails";
 import { ErrorState } from "../../../components/ui/ErrorState";
-import { Skeleton } from "../../../components/ui/Skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ConcertNavParamList } from "../../../navigation/types";
 
 type ConcertDetailRoute = RouteProp<ConcertNavParamList, "ConcertDetail">;
@@ -16,12 +16,12 @@ export function ConcertDetailScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-background">
-        <Skeleton width="100%" height={280} className="rounded-none" />
+        <Skeleton className="w-full h-[280px] rounded-none" />
         <View className="p-4 gap-4">
-          <Skeleton width="70%" height={28} />
-          <Skeleton width="50%" height={16} />
-          <Skeleton width="100%" height={48} className="rounded-xl" />
-          <Skeleton width="100%" height={120} />
+          <Skeleton className="w-[70%] h-7" />
+          <Skeleton className="w-1/2 h-4" />
+          <Skeleton className="w-full h-12 rounded-xl" />
+          <Skeleton className="w-full h-[120px]" />
         </View>
       </View>
     );

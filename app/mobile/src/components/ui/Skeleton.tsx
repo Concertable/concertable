@@ -1,31 +1,11 @@
-import { useEffect, useRef } from "react";
-import { Animated } from "react-native";
+import { cn } from '@/lib/utils';
+import { View } from 'react-native';
 
-interface Props {
-  width?: number | `${number}%`;
-  height?: number;
-  rounded?: boolean;
-  className?: string;
+function Skeleton({
+  className,
+  ...props
+}: React.ComponentProps<typeof View> & React.RefAttributes<View>) {
+  return <View className={cn('bg-accent animate-pulse rounded-md', className)} {...props} />;
 }
 
-export function Skeleton({ width, height = 16, rounded, className }: Readonly<Props>) {
-  const opacity = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1, duration: 800, useNativeDriver: true }),
-      ]),
-    );
-    anim.start();
-    return () => anim.stop();
-  }, []);
-
-  return (
-    <Animated.View
-      style={{ opacity, width, height }}
-      className={`bg-muted ${rounded ? "rounded-full" : "rounded-lg"} ${className ?? ""}`}
-    />
-  );
-}
+export { Skeleton };

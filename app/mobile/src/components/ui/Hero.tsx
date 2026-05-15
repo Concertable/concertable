@@ -1,4 +1,5 @@
 import { View, Text, Image, type ViewProps } from "react-native";
+import { cn } from "@/lib/utils";
 
 interface Props extends ViewProps {
   uri?: string | null;
@@ -10,7 +11,7 @@ interface Props extends ViewProps {
 
 export function Hero({ uri, title, subtitle, height = 280, trailing, className, ...props }: Readonly<Props>) {
   return (
-    <View style={{ height }} className={`relative overflow-hidden ${className ?? ""}`} {...props}>
+    <View style={{ height }} className={cn("relative overflow-hidden", className)} {...props}>
       {uri ? (
         <Image
           source={{ uri }}

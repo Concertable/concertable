@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
@@ -7,8 +7,9 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useStripe } from "@stripe/stripe-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConcert, useTicketCheckoutQuery } from "@concertable/shared/features/concerts";
-import { Button } from "../../../components/ui/Button";
-import { Skeleton } from "../../../components/ui/Skeleton";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 import { ErrorState } from "../../../components/ui/ErrorState";
 import { QuantitySelector } from "../../../components/ui/QuantitySelector";
 import { notify } from "../../../lib/toast";
@@ -64,9 +65,9 @@ export function TicketCheckoutScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-background p-4 gap-4">
-        <Skeleton width="100%" height={80} className="rounded-2xl" />
-        <Skeleton width="100%" height={140} className="rounded-2xl" />
-        <Skeleton width="100%" height={52} className="rounded-2xl mt-auto" />
+        <Skeleton className="w-full h-20 rounded-2xl" />
+        <Skeleton className="w-full h-[140px] rounded-2xl" />
+        <Skeleton className="w-full h-[52px] rounded-2xl mt-auto" />
       </View>
     );
   }
@@ -85,7 +86,6 @@ export function TicketCheckoutScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
       <View className="flex-1 p-4 gap-4">
-        {/* Event banner */}
         <View className="bg-card rounded-2xl border border-border px-4 py-3 gap-0.5">
           <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
             {concert?.name ?? "Loading…"}
@@ -97,7 +97,6 @@ export function TicketCheckoutScreen() {
           </Text>
         </View>
 
-        {/* Order summary */}
         <View className="bg-muted/40 rounded-2xl border border-border p-4 gap-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-sm text-muted-foreground">Price per ticket</Text>
@@ -115,8 +114,10 @@ export function TicketCheckoutScreen() {
         </View>
 
         <View className="mt-auto">
-          <Button loading={paying} disabled={!ready} onPress={handlePay} size="lg">
-            {ready ? `Pay £${total}` : "Loading…"}
+          <Button disabled={paying || !ready} onPress={handlePay} size="lg">
+            {paying
+              ? <ActivityIndicator size="small" color={theme.primaryForeground} />
+              : <Text>{ready ? `Pay £${total}` : "Loading…"}</Text>}
           </Button>
         </View>
       </View>
