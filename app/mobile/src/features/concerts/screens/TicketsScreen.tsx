@@ -7,6 +7,7 @@ import { CalendarDays, MapPin, Music, Ticket as TicketIcon } from "lucide-react-
 import { useUpcomingTicketsQuery, useTicketHistoryQuery } from "@concertable/shared/features/concerts";
 import type { Ticket } from "@concertable/shared/features/concerts";
 import { Screen } from "../../../components/ui/Screen";
+import { Navbar } from "../../../components/ui/Navbar";
 import { SegmentedControl } from "../../../components/ui/SegmentedControl";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { Skeleton } from "../../../components/ui/Skeleton";
@@ -38,7 +39,7 @@ export function TicketsScreen() {
   }
 
   return (
-    <Screen padded={false}>
+    <Screen padded={false} header={<Navbar />}>
       <View className="px-4 pt-3 pb-3 border-b border-border">
         <SegmentedControl options={TAB_OPTIONS} value={tab} onChange={setTab} />
       </View>

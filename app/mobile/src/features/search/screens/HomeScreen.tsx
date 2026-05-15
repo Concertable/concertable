@@ -8,8 +8,8 @@ import { useSearchFiltersStore } from "@concertable/shared/features/search";
 import { Image } from "expo-image";
 import { MapPin } from "lucide-react-native";
 import { Screen } from "../../../components/ui/Screen";
+import { Navbar } from "../../../components/ui/Navbar";
 import { Skeleton } from "../../../components/ui/Skeleton";
-import { Logo } from "../../../components/ui/Logo";
 import { RatingStars } from "../../../components/ui/RatingStars";
 import { GenreChips } from "../../../components/ui/GenreChips";
 import { EmptyState } from "../../../components/ui/EmptyState";
@@ -44,10 +44,7 @@ export function HomeScreen() {
   }
 
   return (
-    <Screen padded={false}>
-      <View className="flex-row items-center justify-between px-4 pt-2 pb-3 border-b border-border">
-        <Logo size="sm" withWordmark />
-      </View>
+    <Screen padded={false} header={<Navbar />}>
 
       <ScrollView
         showsVerticalScrollIndicator={false}

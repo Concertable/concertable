@@ -4,6 +4,12 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Geist_400Regular", "System"],
+        medium: ["Geist_500Medium", "System"],
+        semibold: ["Geist_600SemiBold", "System"],
+        bold: ["Geist_700Bold", "System"],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -52,9 +58,13 @@ module.exports = {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm: "6px",
+        md: "8px",
+        lg: "10px",
+        xl: "14px",
+        "2xl": "18px",
+        "3xl": "22px",
+        "4xl": "9999px",
       },
     },
   },

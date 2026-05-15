@@ -12,7 +12,7 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 export function HomeStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: "Home" }} />
+      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="ConcertDetail" component={ConcertDetailScreen} options={{ title: "Concert" }} />
       <Stack.Screen name="TicketCheckout" component={TicketCheckoutScreen} options={{ title: "Buy Ticket" }} />
       <Stack.Screen name="CheckoutSuccess" component={CheckoutSuccessScreen} options={{ headerShown: false }} />

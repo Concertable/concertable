@@ -7,10 +7,12 @@
     "start:ci": "node scripts/start.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "node ../scripts/patch-nativewind.js"
   },
   "dependencies": {
     "@concertable/shared": "*",
+    "@expo-google-fonts/geist": "^0.4.2",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/native": "^7.1.6",
@@ -21,10 +23,12 @@
     "expo-auth-session": "~7.0.11",
     "expo-brightness": "~14.0.8",
     "expo-crypto": "~15.0.9",
+    "expo-font": "^55.0.7",
     "expo-image": "~3.0.11",
     "expo-image-picker": "~17.0.11",
     "expo-location": "~19.0.8",
     "expo-secure-store": "~15.0.8",
+    "expo-splash-screen": "^55.0.21",
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~15.0.11",
     "lucide-react-native": "^1.16.0",
@@ -36,11 +40,11 @@
     "react-native-maps": "1.20.1",
     "react-native-qrcode-svg": "^6.3.21",
     "react-native-reanimated": "~4.1.1",
-    "react-native-worklets": "~0.5.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
     "react-native-toast-message": "^2.2.1",
+    "react-native-worklets": "~0.5.1",
     "tailwindcss": "^3.4.19"
   },
   "devDependencies": {

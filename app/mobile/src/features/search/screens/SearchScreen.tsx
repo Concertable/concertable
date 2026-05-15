@@ -19,6 +19,7 @@ import type {
   VenueHeader,
 } from "@concertable/shared/features/search";
 import { Screen } from "../../../components/ui/Screen";
+import { Navbar } from "../../../components/ui/Navbar";
 import { SegmentedControl } from "../../../components/ui/SegmentedControl";
 import { RatingStars } from "../../../components/ui/RatingStars";
 import { GenreChips } from "../../../components/ui/GenreChips";
@@ -110,7 +111,7 @@ export function SearchScreen() {
   }
 
   return (
-    <Screen padded={false}>
+    <Screen padded={false} header={<Navbar />}>
       <View className="border-b border-border">
         <View className="px-4 pt-3 pb-2">
           <View className="flex-row items-center bg-muted rounded-full px-4 h-11 gap-2">

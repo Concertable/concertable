@@ -4,6 +4,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ChevronRight, CheckCircle, XCircle } from "lucide-react-native";
 import { useAuthStore } from "@concertable/shared/features/auth";
 import { Screen } from "../../../components/ui/Screen";
+import { Navbar } from "../../../components/ui/Navbar";
 import { Avatar } from "../../../components/ui/Avatar";
 import { Badge } from "../../../components/ui/Badge";
 import { Button } from "../../../components/ui/Button";
@@ -21,7 +22,7 @@ export function ProfileScreen() {
   if (!user) return null;
 
   return (
-    <Screen scroll>
+    <Screen scroll header={<Navbar />}>
       <View className="items-center gap-3 py-6">
         <Avatar uri={undefined} name={user.email} size={80} />
         <View className="items-center gap-2">

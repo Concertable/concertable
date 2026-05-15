@@ -8,7 +8,7 @@ const Stack = createNativeStackNavigator<TicketsStackParamList>();
 export function TicketsStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="TicketsMain" component={TicketsScreen} options={{ title: "My Tickets" }} />
+      <Stack.Screen name="TicketsMain" component={TicketsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="TicketDetail" component={TicketDetailScreen} options={{ title: "Ticket" }} />
     </Stack.Navigator>
   );
