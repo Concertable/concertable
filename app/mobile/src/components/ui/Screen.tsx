@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { SafeAreaView, ScrollView, View, type ViewProps } from "react-native";
+import { ScrollView, View, type ViewProps } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Props extends ViewProps {
   children: React.ReactNode;
@@ -9,9 +10,11 @@ interface Props extends ViewProps {
 }
 
 export function Screen({ children, scroll, padded = true, header, className, ...props }: Readonly<Props>) {
+  const { top, bottom } = useSafeAreaInsets();
+
   if (scroll) {
     return (
-      <SafeAreaView className={cn("flex-1 bg-background", className)} {...props}>
+      <View className={cn("flex-1 bg-background", className)} style={{ paddingTop: top, paddingBottom: bottom }} {...props}>
         {header}
         <ScrollView
           contentContainerClassName={cn("flex-grow", padded && "p-4")}
@@ -19,15 +22,15 @@ export function Screen({ children, scroll, padded = true, header, className, ...
         >
           {children}
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
   return (
-    <SafeAreaView className={cn("flex-1 bg-background", className)} {...props}>
+    <View className={cn("flex-1 bg-background", className)} style={{ paddingTop: top, paddingBottom: bottom }} {...props}>
       {header}
       <View style={{ flex: 1, flexDirection: "column", ...(padded && { padding: 16 }) }}>
         {children}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

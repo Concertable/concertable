@@ -7,6 +7,7 @@ import MapView, { Marker } from "react-native-maps";
 import { Image } from "expo-image";
 import { CalendarDays, MapPin, Music, TriangleAlert } from "lucide-react-native";
 import type { Concert } from "@concertable/shared/features/concerts";
+import { useImageUrl } from "@concertable/shared/hooks";
 import { Hero } from "../../../components/ui/Hero";
 import { RatingStars } from "../../../components/ui/RatingStars";
 import { GenreChips } from "../../../components/ui/GenreChips";
@@ -36,18 +37,20 @@ export function ConcertDetails({ concert }: Readonly<Props>) {
   const nav = useNavigation<ConcertNav>();
   const [section, setSection] = useState<SectionKey>("about");
   const soldOut = concert.availableTickets === 0;
+  const { data: bannerSrc } = useImageUrl(concert.bannerUrl);
+  const { data: avatarSrc } = useImageUrl(concert.artist.avatar);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Hero
-          uri={concert.bannerUrl}
+          uri={bannerSrc}
           title={concert.name}
           subtitle={`${concert.venue.town}, ${concert.venue.county}`}
           trailing={
             concert.artist.avatar ? (
               <Image
-                source={{ uri: concert.artist.avatar }}
+                source={{ uri: avatarSrc }}
                 style={{
                   width: 48,
                   height: 48,
@@ -148,12 +151,13 @@ function AboutSection({ concert }: { concert: Concert }) {
 }
 
 function ArtistSection({ concert }: { concert: Concert }) {
+  const { data: avatarSrc } = useImageUrl(concert.artist.avatar);
   return (
     <View className="px-4 py-5 gap-4">
       <View className="flex-row items-center gap-4">
         {concert.artist.avatar ? (
           <Image
-            source={{ uri: concert.artist.avatar }}
+            source={{ uri: avatarSrc }}
             style={{ width: 64, height: 64, borderRadius: 32 }}
             contentFit="cover"
           />

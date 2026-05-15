@@ -1,8 +1,8 @@
-import { MapPin } from "lucide-react";
+﻿import { MapPin } from "lucide-react";
 import { EditableText } from "@/components/editable/EditableText";
 import { BannerUpload } from "@/components/BannerUpload";
 import { AvatarUpload } from "@/components/AvatarUpload";
-import { useImageUrl } from "@/hooks/query/useImageUrl";
+import { useImageUrl } from "@concertable/shared/hooks";
 import { useBannerTextColor } from "@/hooks/useBannerTextColor";
 
 interface Props {

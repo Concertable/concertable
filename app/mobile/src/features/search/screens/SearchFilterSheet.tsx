@@ -5,12 +5,13 @@ import { Calendar } from "react-native-calendars";
 import * as Location from "expo-location";
 import { MapPin, X } from "lucide-react-native";
 import { useSearchFiltersStore, useGenresQuery } from "@concertable/shared/features/search";
-import type { SearchFilters } from "@concertable/shared/features/search";
+import type { HeaderType, SearchFilters } from "@concertable/shared/features/search";
 import { GenreChips } from "../../../components/ui/GenreChips";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
+import { HEADER_TYPE_OPTIONS } from "../constants";
 import dayjs from "dayjs";
 
 const RADIUS_PRESETS = [5, 10, 25, 50, 100] as const;
@@ -46,6 +47,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
   const { filters, setFilters } = useSearchFiltersStore();
   const { data: genres } = useGenresQuery();
 
+  const [headerType, setHeaderType] = useState<HeaderType>("concert");
   const [genreIds, setGenreIds] = useState<number[]>([]);
   const [from, setFrom] = useState<string | undefined>();
   const [to, setTo] = useState<string | undefined>();
@@ -62,6 +64,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
   const handleChange = useCallback((index: number) => {
     if (index >= 0) {
       const f = filtersRef.current;
+      setHeaderType(f.headerType ?? "concert");
       setGenreIds(toGenreIdArray(f.genreIds));
       setFrom(f.from);
       setTo(f.to);
@@ -74,9 +77,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
 
   const markedDates = useMemo(() => {
     if (!from) return {};
-    if (!to) {
+    if (!to)
       return { [from]: { selected: true, color: theme.primary, textColor: theme.primaryForeground } };
-    }
     const result: Record<string, object> = {};
     let current = dayjs(from);
     const end = dayjs(to);
@@ -116,6 +118,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
   function handleApply() {
     setFilters({
       ...filtersRef.current,
+      headerType,
       genreIds: genreIds.length ? genreIds : undefined,
       from,
       to,
@@ -128,6 +131,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
   }
 
   function handleReset() {
+    setHeaderType("concert");
     setGenreIds([]);
     setFrom(undefined);
     setTo(undefined);
@@ -135,7 +139,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
     setLng(undefined);
     setRadius(25);
     setSortOrder("date");
-    setFilters({ headerType: filtersRef.current.headerType });
+    setFilters({ headerType: "concert" });
     internalRef.current?.dismiss();
   }
 
@@ -160,6 +164,18 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
       </View>
 
       <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <Section title="Type">
+          <Tabs value={headerType} onValueChange={(v) => setHeaderType(v as HeaderType)}>
+            <TabsList className="w-full">
+              {HEADER_TYPE_OPTIONS.map((opt) => (
+                <TabsTrigger key={opt.value} value={opt.value} className="flex-1">
+                  <Text>{opt.label}</Text>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </Section>
+
         <Section title="Genres">
           {genres && genres.length > 0 ? (
             <GenreChips genres={genres} selected={genreIds} onToggle={toggleGenre} />

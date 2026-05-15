@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { MapPin, Star } from "lucide-react";
-import { useImageUrl } from "@/hooks/query/useImageUrl";
+import { useImageUrl } from "@concertable/shared/hooks";
 import type { Header } from "../../types";
 
 interface Props<T extends Header> {

@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useImageUrl } from "@/hooks/query/useImageUrl";
+import { useImageUrl } from "@concertable/shared/hooks";
 import { useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import type { Application } from "../../types";
@@ -39,7 +39,7 @@ export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
           <div className="space-y-0.5">
             <p className="font-medium">{artist.name}</p>
             <p className="text-muted-foreground text-sm">
-              {dayjs(opportunity.startDate).format("D MMM YYYY")} —{" "}
+              {dayjs(opportunity.startDate).format("D MMM YYYY")} â€”{" "}
               {dayjs(opportunity.endDate).format("D MMM YYYY")}
             </p>
           </div>

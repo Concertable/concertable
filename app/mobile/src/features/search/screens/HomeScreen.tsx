@@ -4,6 +4,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { useHeaderAmountQuery } from "@concertable/shared/features/search";
 import type { ConcertHeader, ArtistHeader, VenueHeader } from "@concertable/shared/features/search";
+import { useImageUrl } from "@concertable/shared/hooks";
 import { useSearchFiltersStore } from "@concertable/shared/features/search";
 import { Image } from "expo-image";
 import { MapPin } from "lucide-react-native";
@@ -147,11 +148,12 @@ interface ConcertCardProps {
 }
 
 function ConcertCard({ concert, onPress }: Readonly<ConcertCardProps>) {
+  const { data: src } = useImageUrl(concert.imageUrl);
   return (
     <Pressable onPress={onPress} className="w-44">
       <View className="bg-card rounded-2xl border border-border overflow-hidden">
         <Image
-          source={{ uri: concert.imageUrl }}
+          source={{ uri: src }}
           style={{ width: "100%", height: 140 }}
           contentFit="cover"
           className="bg-muted"
@@ -183,11 +185,12 @@ interface ArtistCardProps {
 }
 
 function ArtistCard({ artist, onPress }: Readonly<ArtistCardProps>) {
+  const { data: src } = useImageUrl(artist.imageUrl);
   return (
     <Pressable onPress={onPress} className="w-36">
       <View className="bg-card rounded-2xl border border-border overflow-hidden items-center p-4 gap-2">
         <Image
-          source={{ uri: artist.imageUrl }}
+          source={{ uri: src }}
           style={{ width: 80, height: 80, borderRadius: 40 }}
           contentFit="cover"
           className="bg-muted rounded-full"
@@ -212,11 +215,12 @@ interface VenueCardProps {
 }
 
 function VenueCard({ venue, onPress }: Readonly<VenueCardProps>) {
+  const { data: src } = useImageUrl(venue.imageUrl);
   return (
     <Pressable onPress={onPress} className="w-44">
       <View className="bg-card rounded-2xl border border-border overflow-hidden">
         <Image
-          source={{ uri: venue.imageUrl }}
+          source={{ uri: src }}
           style={{ width: "100%", height: 110 }}
           contentFit="cover"
           className="bg-muted"
