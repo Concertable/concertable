@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Animated, Text, View } from "react-native";
+import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -14,14 +15,14 @@ export function CheckoutSuccessScreen() {
   const tabNav = useNavigation<TabNav>();
   const scale = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
+  useMountEffect(() => {
     Animated.spring(scale, {
       toValue: 1,
       tension: 60,
       friction: 6,
       useNativeDriver: true,
     }).start();
-  }, []);
+  });
 
   return (
     <SafeAreaView className="flex-1 bg-background">
