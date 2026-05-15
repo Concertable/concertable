@@ -1,9 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRole } from "../../auth/hooks/useRole";
 import applicationApi from "../api/applicationApi";
-import { toast } from "sonner";
 
-export function useApply(opportunityId: number) {
+export function useApply(opportunityId: number, options?: { onSuccess?: () => void }) {
   const role = useRole();
   const isArtistManager = role === "ArtistManager";
 
@@ -21,7 +20,7 @@ export function useApply(opportunityId: number) {
     error,
   } = useMutation({
     mutationFn: () => applicationApi.applyToOpportunity(opportunityId),
-    onSuccess: () => toast.success("Application submitted!"),
+    onSuccess: () => options?.onSuccess?.(),
   });
 
   const apply = () => applyMutate();

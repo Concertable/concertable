@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import { produce } from "immer";
 import type { Artist } from "../types";
+import type { ImageFile } from "../../../types/image";
 
 interface ArtistStore {
   draft: Artist | undefined;
   editMode: boolean;
   isDirty: boolean;
-  banner: File | undefined;
-  avatar: File | undefined;
+  banner: ImageFile | undefined;
+  avatar: ImageFile | undefined;
 
   toggleEdit: (artist: Artist) => void;
   resetDraft: (artist: Artist) => void;
@@ -15,8 +16,8 @@ interface ArtistStore {
   setName: (name: string) => void;
   setAbout: (about: string) => void;
   setLocation: (lat: number, lng: number, county: string, town: string) => void;
-  setBanner: (file: File) => void;
-  setAvatar: (file: File) => void;
+  setBanner: (file: ImageFile) => void;
+  setAvatar: (file: ImageFile) => void;
 }
 
 export const useArtistStore = create<ArtistStore>((set) => ({
@@ -81,7 +82,7 @@ export const useArtistStore = create<ArtistStore>((set) => ({
     set(
       produce((state: ArtistStore) => {
         if (!state.draft) return;
-        state.draft.bannerUrl = URL.createObjectURL(file);
+        state.draft.bannerUrl = file.uri;
         state.banner = file;
         state.isDirty = true;
       }),
@@ -91,7 +92,7 @@ export const useArtistStore = create<ArtistStore>((set) => ({
     set(
       produce((state: ArtistStore) => {
         if (!state.draft) return;
-        state.draft.avatar = URL.createObjectURL(file);
+        state.draft.avatar = file.uri;
         state.avatar = file;
         state.isDirty = true;
       }),

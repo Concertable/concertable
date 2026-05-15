@@ -115,7 +115,7 @@ services.AddCustomerApi(builder.Configuration);
 services.AddQueueHostedService();
 services.AddAuthorizationModule();
 services.AddUserApi(builder.Configuration);
-services.AddAuth(builder.Configuration);
+services.AddAuth(builder.Configuration, builder.Environment);
 services.AddValidation();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -145,7 +145,11 @@ app.MapFallback(async context =>
         context.Response.StatusCode = StatusCodes.Status404NotFound;
         return;
     }
-    await context.Response.SendFileAsync("wwwroot/index.html");
+    var indexPath = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "index.html");
+    if (File.Exists(indexPath))
+        await context.Response.SendFileAsync(indexPath);
+    else
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
 });
 
 if (app.Environment.IsDevelopment())

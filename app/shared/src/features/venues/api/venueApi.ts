@@ -1,5 +1,6 @@
 import api from "../../../lib/axiosClient";
 import type { Venue } from "../types";
+import type { ImageFile } from "../../../types/image";
 
 const venueApi = {
   getVenue: async (id: number): Promise<Venue> => {
@@ -14,8 +15,8 @@ const venueApi = {
 
   updateVenue: async (
     venue: Venue,
-    banner?: File,
-    avatar?: File,
+    banner?: ImageFile,
+    avatar?: ImageFile,
   ): Promise<Venue> => {
     const formData = new FormData();
     formData.append("Name", venue.name);
@@ -24,9 +25,9 @@ const venueApi = {
     formData.append("Longitude", String(venue.longitude));
     if (banner) {
       formData.append("Banner.Url", venue.bannerUrl);
-      formData.append("Banner.File", banner);
+      formData.append("Banner.File", banner as any);
     }
-    if (avatar) formData.append("Avatar", avatar);
+    if (avatar) formData.append("Avatar", avatar as any);
     const { data } = await api.put<Venue>(`/venue/${venue.id}`, formData);
     return data;
   },

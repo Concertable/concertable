@@ -1,2 +1,2 @@
-﻿export { default as api } from "./axiosClient";
+﻿export { default as api, configureApi } from "./axiosClient";
 export { shouldRetry } from "./queryRetry";

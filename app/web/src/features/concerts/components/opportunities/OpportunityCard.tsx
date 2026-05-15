@@ -27,6 +27,7 @@ import {
 } from "@/features/contracts";
 import { useApply } from "../../hooks/useApply";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { useAuthStore, isVenueManager } from "@/features/auth";
 import { useGenresQuery } from "@/features/search/hooks/useGenreQuery";
 import { X } from "lucide-react";
@@ -112,7 +113,9 @@ function DraftReadView({ draft }: { draft: OpportunityDraft }) {
 
 function ReadView({ opportunity }: { opportunity: Opportunity }) {
   const [open, setOpen] = useState(false);
-  const { apply, isPending, error, canApply } = useApply(opportunity.id);
+  const { apply, isPending, error, canApply } = useApply(opportunity.id, {
+    onSuccess: () => toast.success("Application submitted!"),
+  });
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const isArtistManager = user?.role === "ArtistManager";

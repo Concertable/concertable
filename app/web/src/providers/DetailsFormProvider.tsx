@@ -1,10 +1,11 @@
 import { createContext, useContext } from "react";
+import type { ImageFile } from "@concertable/shared";
 
 interface DetailsFormContextValue {
   setName: (name: string) => void;
   setAbout: (about: string) => void;
-  setBanner: (file: File) => void;
-  setAvatar: (file: File) => void;
+  setBanner: (file: ImageFile) => void;
+  setAvatar: (file: ImageFile) => void;
 }
 
 const DetailsFormContext = createContext<DetailsFormContextValue | null>(null);
