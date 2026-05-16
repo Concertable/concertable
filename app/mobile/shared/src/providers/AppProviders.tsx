@@ -22,7 +22,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StripeProvider publishableKey={Config.stripePublishableKey} urlScheme="concertable">
+        <StripeProvider publishableKey={Config.stripePublishableKey} urlScheme={Config.urlScheme}>
           <QueryClientProvider client={queryClient}>
             <BottomSheetModalProvider>
               {children}

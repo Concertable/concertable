@@ -17,9 +17,10 @@ export function useLogout() {
     setUser(null);
 
     if (discovery.endSessionEndpoint && idToken) {
+      const logoutUri = `${Config.urlScheme}://logout`;
       void WebBrowser.openAuthSessionAsync(
-        `${discovery.endSessionEndpoint}?id_token_hint=${idToken}&post_logout_redirect_uri=${encodeURIComponent("concertable://logout")}`,
-        "concertable://logout",
+        `${discovery.endSessionEndpoint}?id_token_hint=${idToken}&post_logout_redirect_uri=${encodeURIComponent(logoutUri)}`,
+        logoutUri,
       );
     }
   }

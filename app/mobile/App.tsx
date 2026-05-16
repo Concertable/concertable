@@ -1,4 +1,4 @@
-import "./global.css";
+import "./shared/global.css";
 import {
   useFonts,
   Geist_400Regular,
