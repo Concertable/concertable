@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Pressable, ScrollView } from "react-native";
-import { X } from "lucide-react-native";
+import { MapPin, X } from "lucide-react-native";
 import dayjs from "dayjs";
 import { useGenresQuery, useSearchFiltersStore } from "@concertable/shared/features/search";
 import { Text } from "@/components/ui/text";
@@ -12,7 +12,7 @@ export function FilterChipsRow() {
   const { data: genres } = useGenresQuery();
 
   const chips = useMemo(() => {
-    const result: { key: string; label: string; onRemove: () => void }[] = [];
+    const result: { key: string; label: string; icon?: boolean; onRemove: () => void }[] = [];
 
     if (filters.headerType !== "concert") {
       const opt = HEADER_TYPE_OPTIONS.find((o) => o.value === filters.headerType);
@@ -49,10 +49,19 @@ export function FilterChipsRow() {
 
     if (filters.lat != null) {
       const r = filters.radius ?? 25;
+      const place = filters.locationLabel ?? "me";
       result.push({
         key: "location",
-        label: `Within ${r}km`,
-        onRemove: () => setFilters({ ...filters, lat: undefined, lng: undefined, radius: undefined }),
+        label: `${r}km of ${place}`,
+        icon: true,
+        onRemove: () =>
+          setFilters({
+            ...filters,
+            lat: undefined,
+            lng: undefined,
+            locationLabel: undefined,
+            radius: undefined,
+          }),
       });
     }
 
@@ -74,6 +83,7 @@ export function FilterChipsRow() {
           onPress={chip.onRemove}
           className="flex-row items-center gap-1.5 bg-primary/15 rounded-full px-3 py-1.5"
         >
+          {chip.icon && <MapPin size={11} color={theme.primary} />}
           <Text className="text-xs font-medium text-primary">{chip.label}</Text>
           <X size={11} color={theme.primary} />
         </Pressable>

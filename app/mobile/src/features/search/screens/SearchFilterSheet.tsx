@@ -1,9 +1,9 @@
 import { forwardRef, useCallback, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
-import * as Location from "expo-location";
 import { MapPin, X } from "lucide-react-native";
+import { useCurrentLocation } from "../../../hooks/useCurrentLocation";
 import { useSearchFiltersStore, useGenresQuery } from "@concertable/shared/features/search";
 import type { HeaderType, SearchFilters } from "@concertable/shared/features/search";
 import { GenreChips } from "../../../components/ui/GenreChips";
@@ -53,8 +53,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
   const [to, setTo] = useState<string | undefined>();
   const [lat, setLat] = useState<number | undefined>();
   const [lng, setLng] = useState<number | undefined>();
+  const [locationLabel, setLocationLabel] = useState<string | undefined>();
   const [radius, setRadius] = useState(25);
   const [sortOrder, setSortOrder] = useState<SortValue>("date");
+  const { requestLocation, locating } = useCurrentLocation();
 
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
@@ -70,6 +72,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
       setTo(f.to);
       setLat(f.lat);
       setLng(f.lng);
+      setLocationLabel(f.locationLabel);
       setRadius(f.radius ?? 25);
       setSortOrder((f.orderBy as SortValue | undefined) ?? "date");
     }
@@ -108,11 +111,12 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
   }
 
   async function handleUseLocation() {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") return;
-    const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    setLat(loc.coords.latitude);
-    setLng(loc.coords.longitude);
+    const result = await requestLocation();
+    if (result) {
+      setLat(result.lat);
+      setLng(result.lng);
+      setLocationLabel(result.label);
+    }
   }
 
   function handleApply() {
@@ -124,6 +128,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
       to,
       lat,
       lng,
+      locationLabel: lat != null ? locationLabel : undefined,
       radius: lat != null ? radius : undefined,
       orderBy: sortOrder !== "date" ? sortOrder : undefined,
     });
@@ -137,6 +142,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
     setTo(undefined);
     setLat(undefined);
     setLng(undefined);
+    setLocationLabel(undefined);
     setRadius(25);
     setSortOrder("date");
     setFilters({ headerType: "concert" });
@@ -220,11 +226,13 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
           {lat != null ? (
             <View className="gap-3">
               <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
+                <View className="flex-row items-center gap-2 flex-1">
                   <MapPin size={14} color={theme.primary} />
-                  <Text className="text-sm text-foreground">Location set</Text>
+                  <Text className="text-sm text-foreground" numberOfLines={1}>
+                    {locationLabel ?? `${lat.toFixed(3)}, ${lng?.toFixed(3)}`}
+                  </Text>
                 </View>
-                <Pressable onPress={() => { setLat(undefined); setLng(undefined); }}>
+                <Pressable onPress={() => { setLat(undefined); setLng(undefined); setLocationLabel(undefined); }}>
                   <Text className="text-xs text-primary font-medium">Clear</Text>
                 </Pressable>
               </View>
@@ -246,10 +254,17 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
           ) : (
             <Pressable
               onPress={handleUseLocation}
+              disabled={locating}
               className="flex-row items-center gap-2 self-start border border-border rounded-2xl px-4 py-2.5"
             >
-              <MapPin size={14} color={theme.primary} />
-              <Text className="text-sm font-medium text-primary">Use my location</Text>
+              {locating ? (
+                <ActivityIndicator size="small" color={theme.primary} />
+              ) : (
+                <MapPin size={14} color={theme.primary} />
+              )}
+              <Text className="text-sm font-medium text-primary">
+                {locating ? "Getting location…" : "Use my location"}
+              </Text>
             </Pressable>
           )}
         </Section>

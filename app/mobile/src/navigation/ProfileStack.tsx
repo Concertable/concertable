@@ -1,11 +1,11 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ProfileScreen } from "../features/user/screens/ProfileScreen";
 import { EditProfileScreen } from "../features/user/screens/EditProfileScreen";
 import { LocationScreen } from "../features/user/screens/LocationScreen";
 import { PreferencesScreen } from "../features/user/screens/PreferencesScreen";
+import { createAppStack } from "./createAppStack";
 import type { ProfileStackParamList } from "./types";
 
-const Stack = createNativeStackNavigator<ProfileStackParamList>();
+const Stack = createAppStack<ProfileStackParamList>();
 
 export function ProfileStack() {
   return (

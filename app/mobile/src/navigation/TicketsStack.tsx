@@ -1,9 +1,9 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { TicketsScreen } from "../features/concerts/screens/TicketsScreen";
 import { TicketDetailScreen } from "../features/concerts/screens/TicketDetailScreen";
+import { createAppStack } from "./createAppStack";
 import type { TicketsStackParamList } from "./types";
 
-const Stack = createNativeStackNavigator<TicketsStackParamList>();
+const Stack = createAppStack<TicketsStackParamList>();
 
 export function TicketsStack() {
   return (

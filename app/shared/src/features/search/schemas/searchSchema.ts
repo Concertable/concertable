@@ -6,6 +6,7 @@ export const SearchSchema = () =>
     query: z.string().optional(),
     lat: z.number().optional(),
     lng: z.number().optional(),
+    locationLabel: z.string().optional(),
     from: z.string().optional(),
     to: z.string().optional(),
     genreIds: z

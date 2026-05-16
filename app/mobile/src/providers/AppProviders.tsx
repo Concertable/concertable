@@ -6,6 +6,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import Toast from "react-native-toast-message";
 import { shouldRetry } from "@concertable/shared/lib";
 import Config from "../lib/config";
+import "../lib/geocoding";
 import type { ReactNode } from "react";
 
 const queryClient = new QueryClient({

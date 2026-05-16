@@ -1,13 +1,13 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "../features/search/screens/HomeScreen";
 import { ConcertDetailScreen } from "../features/concerts/screens/ConcertDetailScreen";
 import { TicketCheckoutScreen } from "../features/concerts/screens/TicketCheckoutScreen";
 import { CheckoutSuccessScreen } from "../features/concerts/screens/CheckoutSuccessScreen";
 import { ArtistDetailScreen } from "../features/artists/screens/ArtistDetailScreen";
 import { VenueDetailScreen } from "../features/venues/screens/VenueDetailScreen";
+import { createAppStack } from "./createAppStack";
 import type { HomeStackParamList } from "./types";
 
-const Stack = createNativeStackNavigator<HomeStackParamList>();
+const Stack = createAppStack<HomeStackParamList>();
 
 export function HomeStack() {
   return (

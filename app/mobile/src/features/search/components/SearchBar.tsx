@@ -58,9 +58,13 @@ export function SearchBar({ focused, onFocusChange, onOpenFilters }: Props) {
         </Pressable>
       </View>
 
-      <Pressable onPress={onOpenFilters} style={{ marginLeft: 12 }}>
+      <Pressable
+        onPress={onOpenFilters}
+        hitSlop={12}
+        style={{ marginLeft: 4, width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
+      >
         <View>
-          <SlidersHorizontal size={20} color={hasActiveFilters ? theme.primary : theme.mutedForeground} />
+          <SlidersHorizontal size={22} color={hasActiveFilters ? theme.primary : theme.mutedForeground} />
           {hasActiveFilters && (
             <View style={{ position: "absolute", top: -2, right: -2, width: 7, height: 7, borderRadius: 4, backgroundColor: theme.primary }} />
           )}

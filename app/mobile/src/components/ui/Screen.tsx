@@ -10,11 +10,11 @@ interface Props extends ViewProps {
 }
 
 export function Screen({ children, scroll, padded = true, header, className, ...props }: Readonly<Props>) {
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
 
   if (scroll) {
     return (
-      <View className={cn("flex-1 bg-background", className)} style={{ paddingTop: top, paddingBottom: bottom }} {...props}>
+      <View className={cn("flex-1 bg-background", className)} style={{ paddingBottom: bottom }} {...props}>
         {header}
         <ScrollView
           contentContainerClassName={cn("flex-grow", padded && "p-4")}
@@ -26,7 +26,7 @@ export function Screen({ children, scroll, padded = true, header, className, ...
     );
   }
   return (
-    <View className={cn("flex-1 bg-background", className)} style={{ paddingTop: top, paddingBottom: bottom }} {...props}>
+    <View className={cn("flex-1 bg-background", className)} style={{ paddingBottom: bottom }} {...props}>
       {header}
       <View style={{ flex: 1, flexDirection: "column", ...(padded && { padding: 16 }) }}>
         {children}
