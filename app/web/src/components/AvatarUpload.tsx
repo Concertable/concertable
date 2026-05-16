@@ -1,5 +1,5 @@
 ﻿import { Camera } from "lucide-react";
-import { useEditableContext } from "@/providers/EditableProvider";
+import { useEditableContext } from "@concertable/shared/providers";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useImageUrl } from "@concertable/shared/hooks";
 

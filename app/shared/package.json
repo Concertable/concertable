@@ -22,6 +22,7 @@
     "./features/search": "./src/features/search/index.ts",
     "./features/user": "./src/features/user/index.ts",
     "./features/venues": "./src/features/venues/index.ts",
+    "./providers": "./src/providers/index.ts",
     "./features/*": "./src/features/*.ts",
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts",

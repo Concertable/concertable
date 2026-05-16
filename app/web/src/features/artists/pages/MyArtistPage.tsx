@@ -1,5 +1,5 @@
 import { ConfigBar } from "@/components/ConfigBar";
-import { EditableProvider } from "@/providers/EditableProvider";
+import { EditableProvider } from "@concertable/shared/providers";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 import { useMyArtist } from "../hooks/useMyArtist";
 import { useArtistStore } from "../store/useArtistStore";

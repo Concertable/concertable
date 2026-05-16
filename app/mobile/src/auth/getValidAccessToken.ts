@@ -14,7 +14,10 @@ export async function getValidAccessToken(): Promise<string> {
     return token;
   }
 
-  const refreshToken = await tokenStorage.getRefreshToken();
+  const [refreshToken, idToken] = await Promise.all([
+    tokenStorage.getRefreshToken(),
+    tokenStorage.getIdToken(),
+  ]);
   if (!refreshToken) return token;
 
   try {
@@ -29,7 +32,11 @@ export async function getValidAccessToken(): Promise<string> {
       { clientId: Config.authClientId, refreshToken },
       discovery,
     );
-    await tokenStorage.setTokens(tokens.accessToken, tokens.refreshToken ?? refreshToken);
+    await tokenStorage.setTokens(
+      tokens.accessToken,
+      tokens.refreshToken ?? refreshToken,
+      tokens.idToken ?? idToken ?? "",
+    );
     return tokens.accessToken;
   } catch {
     return token;

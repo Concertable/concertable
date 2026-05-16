@@ -1,9 +1,5 @@
 import type { NavigatorScreenParams } from "@react-navigation/native";
 
-export type AuthStackParamList = {
-  Login: undefined;
-};
-
 export type ConcertNavParamList = {
   ConcertDetail: { concertId: number };
   TicketCheckout: { concertId: number };
@@ -32,6 +28,14 @@ export type ProfileStackParamList = {
   Preferences: undefined;
 };
 
+export type MyArtistStackParamList = {
+  MyArtistMain: undefined;
+};
+
+export type MyVenueStackParamList = {
+  MyVenueMain: undefined;
+};
+
 export type CustomerTabParamList = {
   HomeTab: NavigatorScreenParams<HomeStackParamList>;
   SearchTab: NavigatorScreenParams<SearchStackParamList>;
@@ -43,14 +47,14 @@ export type CustomerTabParamList = {
 export type ArtistTabParamList = {
   Home: undefined;
   Search: undefined;
-  Applications: undefined;
+  MyArtistTab: NavigatorScreenParams<MyArtistStackParamList>;
   Messages: undefined;
-  Profile: undefined;
+  ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
 };
 
 export type VenueTabParamList = {
   Home: undefined;
-  Concerts: undefined;
+  MyVenueTab: NavigatorScreenParams<MyVenueStackParamList>;
   Messages: undefined;
-  Profile: undefined;
+  ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
 };

@@ -136,7 +136,16 @@
       "Bash(get-childitem -Recurse -Name \"package.json\")",
       "Bash(select-string \"shared|packages\")",
       "Bash(Find C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable *)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Concertable.Web\" -File -Recurse | Where-Object {$_.Name -match \"\\(Program|Startup|Auth|SignalR\\)\" -or $_.Name -eq \"appsettings.json\"} | Select-Object -ExpandProperty FullName)"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Concertable.Web\" -File -Recurse | Where-Object {$_.Name -match \"\\(Program|Startup|Auth|SignalR\\)\" -or $_.Name -eq \"appsettings.json\"} | Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\" -Recurse | Where-Object { $_.Name -match \"detox|maestro|jest\" })",
+      "Bash(Select-Object -First 30 FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\" | Select-Object -First 20 | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\\\\src\\\\navigation\" -Recurse | ForEach-Object { $_.FullName -replace [regex]::Escape\\(\"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\\\\\"\\), \"\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\\\\src\\\\features\" -Recurse -Directory | ForEach-Object { $_.FullName -replace [regex]::Escape\\(\"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\\\\src\\\\features\\\\\"\\), \"\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\\\\src\\\\lib\" | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\app\\\\mobile\\\\src\\\\auth\" | ForEach-Object { $_.Name })",
+      "Bash(git show *)"
     ]
   },
   "enabledPlugins": {

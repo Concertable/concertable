@@ -54,6 +54,7 @@ export function useLogin() {
         await tokenStorage.setTokens(
           tokens.accessToken,
           tokens.refreshToken ?? "",
+          tokens.idToken ?? "",
         );
         const user = await userApi.getMe();
         setUser(user);

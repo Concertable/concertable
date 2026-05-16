@@ -1,5 +1,5 @@
 import { ConfigBar } from "@/components/ConfigBar";
-import { EditableProvider } from "@/providers/EditableProvider";
+import { EditableProvider } from "@concertable/shared/providers";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 import { useMyConcert } from "../hooks/useMyConcert";
 import { useConcertStore } from "../store/useConcertStore";

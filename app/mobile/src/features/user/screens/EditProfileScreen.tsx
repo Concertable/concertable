@@ -16,7 +16,7 @@ export function EditProfileScreen() {
   return (
     <Screen scroll>
       <View className="items-center gap-3 py-6">
-        <Avatar className="w-20 h-20">
+        <Avatar alt={user.email} className="w-20 h-20">
           <AvatarFallback>
             <Text className="text-2xl font-semibold">{user.email.charAt(0).toUpperCase()}</Text>
           </AvatarFallback>

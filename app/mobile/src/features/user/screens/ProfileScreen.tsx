@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ChevronRight, CheckCircle, XCircle } from "lucide-react-native";
+import { ChevronRight, CheckCircle, LogIn, XCircle } from "lucide-react-native";
 import { useAuthStore } from "@concertable/shared/features/auth";
 import { Screen } from "../../../components/ui/Screen";
 import { Navbar } from "../../../components/ui/Navbar";
@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { useLogin } from "../../../auth/useLogin";
 import { useLogout } from "../../../auth/useLogout";
 import { theme } from "../../../lib/theme";
 import type { ProfileStackParamList } from "../../../navigation/types";
@@ -18,14 +19,39 @@ type ProfileNav = NativeStackNavigationProp<ProfileStackParamList>;
 export function ProfileScreen() {
   const nav = useNavigation<ProfileNav>();
   const user = useAuthStore((s) => s.user);
+  const { login, loading, error } = useLogin();
   const { logout } = useLogout();
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <Screen scroll header={<Navbar />}>
+        <View className="items-center gap-4 py-12">
+          <View className="bg-muted rounded-full p-6">
+            <LogIn size={32} color={theme.mutedForeground} />
+          </View>
+          <View className="items-center gap-1">
+            <Text className="text-xl font-bold text-foreground">
+              Sign in to Concertable
+            </Text>
+            <Text className="text-sm text-muted-foreground text-center px-8">
+              Buy tickets, message artists, and manage your profile.
+            </Text>
+          </View>
+          {error && (
+            <Text className="text-sm text-destructive">{error}</Text>
+          )}
+          <Button onPress={login} disabled={loading}>
+            <Text>{loading ? "Signing in..." : "Sign in"}</Text>
+          </Button>
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen scroll header={<Navbar />}>
       <View className="items-center gap-3 py-6">
-        <Avatar className="w-20 h-20">
+        <Avatar alt={user.email} className="w-20 h-20">
           <AvatarFallback>
             <Text className="text-2xl font-semibold">{user.email.charAt(0).toUpperCase()}</Text>
           </AvatarFallback>
