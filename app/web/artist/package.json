@@ -1,5 +1,5 @@
 {
-  "name": "@concertable/artist",
+  "name": "@concertable/web/artist",
   "private": true,
   "version": "0.0.0",
   "type": "module",

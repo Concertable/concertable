@@ -12,17 +12,17 @@
     "shared"
   ],
   "scripts": {
-    "dev:customer": "npm -w @concertable/customer run dev",
-    "dev:venue": "npm -w @concertable/venue run dev",
-    "dev:artist": "npm -w @concertable/artist run dev",
-    "dev:business": "npm -w @concertable/business run dev",
-    "dev:mobile:customer": "npm -w @concertable/customer-mobile run start",
-    "dev:mobile:venue": "npm -w @concertable/venue-mobile run start",
-    "dev:mobile:artist": "npm -w @concertable/artist-mobile run start",
-    "build:customer": "npm -w @concertable/customer run build",
-    "build:venue": "npm -w @concertable/venue run build",
-    "build:artist": "npm -w @concertable/artist run build",
-    "build:business": "npm -w @concertable/business run build",
+    "dev:customer": "npm -w @concertable/web/customer run dev",
+    "dev:venue": "npm -w @concertable/web/venue run dev",
+    "dev:artist": "npm -w @concertable/web/artist run dev",
+    "dev:business": "npm -w @concertable/web/business run dev",
+    "dev:mobile:customer": "npm -w @concertable/mobile/customer run start",
+    "dev:mobile:venue": "npm -w @concertable/mobile/venue run start",
+    "dev:mobile:artist": "npm -w @concertable/mobile/artist run start",
+    "build:customer": "npm -w @concertable/web/customer run build",
+    "build:venue": "npm -w @concertable/web/venue run build",
+    "build:artist": "npm -w @concertable/web/artist run build",
+    "build:business": "npm -w @concertable/web/business run build",
     "postinstall": "node scripts/patch-nativewind.js"
   },
   "overrides": {

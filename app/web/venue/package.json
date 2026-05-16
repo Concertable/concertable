@@ -1,5 +1,5 @@
 {
-  "name": "@concertable/venue",
+  "name": "@concertable/web/venue",
   "private": true,
   "version": "0.0.0",
   "type": "module",
