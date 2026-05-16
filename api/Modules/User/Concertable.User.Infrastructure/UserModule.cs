@@ -43,15 +43,15 @@ internal class UserModule : IUserModule
         return user is ManagerEntity manager ? manager.ToDto() : null;
     }
 
-    public Task<bool> EmailExistsAsync(string email, CancellationToken ct = default) =>
-        context.Users.AnyAsync(u => u.Email == email, ct);
+    public Task<bool> EmailExistsAsync(string email, Role role, CancellationToken ct = default) =>
+        context.Users.WhereCredentials(email, role).AnyAsync(ct);
 
     public Task CreateAsync(string email, string passwordHash, Role role, CancellationToken ct = default) =>
         userRegister.RegisterAsync(email, passwordHash, role);
 
-    public async Task<UserCredentials?> GetCredentialsByEmailAsync(string email, CancellationToken ct = default)
+    public async Task<UserCredentials?> GetCredentialsByEmailAsync(string email, Role? role, CancellationToken ct = default)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
+        var user = await context.Users.WhereCredentials(email, role).FirstOrDefaultAsync(ct);
         return user is null ? null : new UserCredentials(user.Id, user.Email, user.PasswordHash, user.IsEmailVerified, user.Role);
     }
 
@@ -103,9 +103,9 @@ internal class UserModule : IUserModule
         return true;
     }
 
-    public async Task<string?> CreatePasswordResetTokenAsync(string email, CancellationToken ct = default)
+    public async Task<string?> CreatePasswordResetTokenAsync(string email, Role role, CancellationToken ct = default)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
+        var user = await context.Users.WhereCredentials(email, role).FirstOrDefaultAsync(ct);
         if (user is null) return null;
 
         var token = GenerateToken();

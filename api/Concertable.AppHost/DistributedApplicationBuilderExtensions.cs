@@ -32,7 +32,11 @@ internal static class DistributedApplicationBuilderExtensions
 
         var lanIp = builder.Configuration["MobileLanIp"];
         if (!string.IsNullOrEmpty(lanIp))
-            auth.WithEnvironment("Auth__ExpoGoRedirectUri", $"exp://{lanIp}:8082");
+        {
+            auth.WithEnvironment("Auth__ExpoGoRedirectUri__Customer", $"exp://{lanIp}:8082");
+            auth.WithEnvironment("Auth__ExpoGoRedirectUri__Venue", $"exp://{lanIp}:8083");
+            auth.WithEnvironment("Auth__ExpoGoRedirectUri__Artist", $"exp://{lanIp}:8084");
+        }
 
         return auth;
     }
@@ -62,14 +66,26 @@ internal static class DistributedApplicationBuilderExtensions
                       .WaitFor(sql);
     }
 
-    public static IResourceBuilder<NodeAppResource> AddFrontend(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth)
-    {
-        return builder.AddNpmApp("frontend", "../../app/web", "dev")
-                      .WithHttpsEndpoint(port: 5173, isProxied: false)
-                      .WithHttpHealthCheck(endpointName: "https", path: "/")
-                      .WithReference(api)
-                      .WaitFor(api);
-    }
+    public static IResourceBuilder<NodeAppResource> AddCustomerWeb(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api) =>
+        AddWebSurface(builder, api, "customer", 5174);
+
+    public static IResourceBuilder<NodeAppResource> AddVenueWeb(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api) =>
+        AddWebSurface(builder, api, "venue", 5175);
+
+    public static IResourceBuilder<NodeAppResource> AddArtistWeb(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api) =>
+        AddWebSurface(builder, api, "artist", 5176);
+
+    public static IResourceBuilder<NodeAppResource> AddBusinessWeb(this IDistributedApplicationBuilder builder) =>
+        builder.AddNpmApp("business", "../../app/web/business", "dev")
+               .WithHttpsEndpoint(port: 5177, isProxied: false)
+               .WithHttpHealthCheck(endpointName: "https", path: "/");
+
+    private static IResourceBuilder<NodeAppResource> AddWebSurface(IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, string surface, int port) =>
+        builder.AddNpmApp(surface, $"../../app/web/{surface}", "dev")
+               .WithHttpsEndpoint(port: port, isProxied: false)
+               .WithHttpHealthCheck(endpointName: "https", path: "/")
+               .WithReference(api)
+               .WaitFor(api);
 
     public static void AddMobile(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth)
     {
@@ -80,15 +96,27 @@ internal static class DistributedApplicationBuilderExtensions
         var lanIp = builder.Configuration["MobileLanIp"] ?? "localhost";
 
         tunnel.WithReference(auth, allowAnonymous: true);
+        tunnel.WithReference(api, allowAnonymous: true);
         auth.WithEnvironment(ctx =>
         {
             if (ctx.EnvironmentVariables.TryGetValue("services__auth__https__0", out var authUrl))
                 ctx.EnvironmentVariables["Auth__PublicUrl"] = authUrl;
         });
 
-        tunnel.WithReference(api, allowAnonymous: true);
+        AddMobileSurface(builder, api, auth, tunnel, lanIp, "customer");
+        AddMobileSurface(builder, api, auth, tunnel, lanIp, "venue");
+        AddMobileSurface(builder, api, auth, tunnel, lanIp, "artist");
+    }
 
-        var mobile = builder.AddNpmApp("mobile", "../../app/mobile", "start:ci")
+    private static IResourceBuilder<NodeAppResource> AddMobileSurface(
+        IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> api,
+        IResourceBuilder<ProjectResource> auth,
+        IResourceBuilder<DevTunnelResource> tunnel,
+        string lanIp,
+        string surface)
+    {
+        var mobile = builder.AddNpmApp(surface, $"../../app/mobile/{surface}", "start:ci")
                .WithEnvironment("REACT_NATIVE_PACKAGER_HOSTNAME", lanIp)
                .WithReference(api, tunnel)
                .WithReference(auth, tunnel)
@@ -107,7 +135,7 @@ internal static class DistributedApplicationBuilderExtensions
             displayName: "Clear Metro Cache",
             executeCommand: async ctx =>
             {
-                var mobileDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "app", "mobile"));
+                var mobileDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "app", "mobile", surface));
                 File.WriteAllText(Path.Combine(mobileDir, ".metro-clear"), "");
 
                 var commands = ctx.ServiceProvider.GetRequiredService<ResourceCommandService>();
@@ -115,6 +143,8 @@ internal static class DistributedApplicationBuilderExtensions
                 return new ExecuteCommandResult { Success = true };
             },
             commandOptions: new CommandOptions { IconName = "ArrowCounterclockwise" });
+
+        return mobile;
     }
 
     public static void AddStripeCli(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api)

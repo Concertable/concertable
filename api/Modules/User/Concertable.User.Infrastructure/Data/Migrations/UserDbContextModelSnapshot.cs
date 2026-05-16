@@ -53,7 +53,7 @@ namespace Concertable.User.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
+                    b.HasIndex("Email", "Role")
                         .IsUnique();
 
                     b.ToTable("Users", "user");

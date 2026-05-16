@@ -2,14 +2,27 @@
   "name": "concertable-app",
   "private": true,
   "workspaces": [
-    "web",
-    "mobile",
+    "web/customer",
+    "web/venue",
+    "web/artist",
+    "web/business",
+    "mobile/customer",
+    "mobile/venue",
+    "mobile/artist",
     "shared"
   ],
   "scripts": {
-    "dev:web": "npm -w web run dev",
-    "dev:mobile": "npm -w mobile run start",
-    "build:web": "npm -w web run build",
+    "dev:customer": "npm -w @concertable/web/customer run dev",
+    "dev:venue": "npm -w @concertable/web/venue run dev",
+    "dev:artist": "npm -w @concertable/web/artist run dev",
+    "dev:business": "npm -w @concertable/web/business run dev",
+    "dev:mobile:customer": "npm -w @concertable/mobile/customer run start",
+    "dev:mobile:venue": "npm -w @concertable/mobile/venue run start",
+    "dev:mobile:artist": "npm -w @concertable/mobile/artist run start",
+    "build:customer": "npm -w @concertable/web/customer run build",
+    "build:venue": "npm -w @concertable/web/venue run build",
+    "build:artist": "npm -w @concertable/web/artist run build",
+    "build:business": "npm -w @concertable/web/business run build",
     "postinstall": "node scripts/patch-nativewind.js"
   },
   "overrides": {

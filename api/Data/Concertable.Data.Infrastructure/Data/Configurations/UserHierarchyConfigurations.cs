@@ -10,7 +10,7 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<UserEntity>
     {
         builder.ToTable("Users", "user");
         builder.Property(u => u.Location).HasColumnType("geography");
-        builder.HasIndex(u => u.Email).IsUnique();
+        builder.HasIndex(u => new { u.Email, u.Role }).IsUnique();
         builder.HasDiscriminator(u => u.Role)
             .HasValue<UserEntity>(Role.Admin)
             .HasValue<VenueManagerEntity>(Role.VenueManager)
