@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\Concertable.Web\appsettings.E2E.json')" />
   </ItemGroup>
 
   <ItemGroup>
