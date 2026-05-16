@@ -12,6 +12,8 @@ WebBrowser.maybeCompleteAuthSession();
 const REDIRECT_URI = AuthSession.makeRedirectUri();
 console.log("[auth] redirect URI:", REDIRECT_URI);
 
+export type SignupRole = "venue" | "artist" | "customer";
+
 export function useLogin() {
   const setUser = useAuthStore((s) => s.setUser);
   const [loading, setLoading] = useState(false);
@@ -20,7 +22,7 @@ export function useLogin() {
 
   const discovery = AuthSession.useAutoDiscovery(Config.authAuthority);
 
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+  const [loginRequest, loginResponse, loginPromptAsync] = AuthSession.useAuthRequest(
     {
       clientId: Config.authClientId,
       scopes: Config.authScopes,
@@ -30,9 +32,11 @@ export function useLogin() {
     discovery,
   );
 
-  useEffect(() => {
-    if (response?.type !== "success" || !request?.codeVerifier || !discovery)
-      return;
+  function handleResponse(
+    response: AuthSession.AuthSessionResult | null,
+    codeVerifier: string | undefined,
+  ) {
+    if (response?.type !== "success" || !codeVerifier || !discovery) return;
 
     const { code } = response.params;
     if (processedCode.current === code) return;
@@ -46,7 +50,7 @@ export function useLogin() {
         code,
         clientId: Config.authClientId,
         redirectUri: REDIRECT_URI,
-        extraParams: { code_verifier: request.codeVerifier },
+        extraParams: { code_verifier: codeVerifier },
       },
       discovery,
     )
@@ -64,14 +68,26 @@ export function useLogin() {
         setError(e.message ?? "Login failed");
       })
       .finally(() => setLoading(false));
-  }, [response]);
+  }
+
+  useEffect(() => {
+    handleResponse(loginResponse, loginRequest?.codeVerifier);
+  }, [loginResponse]);
+
+  const isReady = !!discovery && !!loginRequest;
 
   return {
     login: () => {
       setError(null);
-      promptAsync();
+      loginPromptAsync();
     },
-    loading: loading || !discovery || !request,
+    signup: (role?: SignupRole) => {
+      const url = role
+        ? `${Config.authAuthority}/Account/Register?roleHint=${role}`
+        : `${Config.authAuthority}/Account/Register`;
+      WebBrowser.openAuthSessionAsync(url, REDIRECT_URI);
+    },
+    loading: loading || !isReady,
     error,
   };
 }
