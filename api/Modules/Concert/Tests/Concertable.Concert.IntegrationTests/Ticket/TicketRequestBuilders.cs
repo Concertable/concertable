@@ -12,4 +12,7 @@ public static class TicketRequestBuilders
         PaymentMethodId = paymentMethodId,
         Quantity = quantity
     };
+
+    public static object BuildCheckoutRequest(int concertId, int quantity = 1) =>
+        new { ConcertId = concertId, Quantity = quantity };
 }

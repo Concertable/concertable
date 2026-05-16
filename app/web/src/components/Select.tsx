@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface SelectProps<TOption> {
+interface Props<TOption> {
   options: TOption[];
   value?: TOption;
   onChange: (value: TOption) => void;
@@ -22,7 +22,7 @@ export function Select<TOption>({
   getLabel,
   getValue,
   placeholder,
-}: SelectProps<TOption>) {
+}: Readonly<Props<TOption>>) {
   const currentValue = value ? getValue(value) : undefined;
 
   const handleChange = (val: string) => {

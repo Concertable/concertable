@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 
 export function StripeReturnPage() {
   const sent = useRef(false);

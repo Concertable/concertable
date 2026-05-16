@@ -12,7 +12,7 @@ export function CheckoutEventBanner({
   subtitle,
   meta,
   trailing,
-}: Props) {
+}: Readonly<Props>) {
   return (
     <div className="flex items-center justify-between gap-4 border-b pb-4">
       <div className="min-w-0">

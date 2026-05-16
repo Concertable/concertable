@@ -14,6 +14,7 @@ import { routeTree } from "./routeTree.gen";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./lib/axios";
+import "./lib/geocoding";
 import "./index.css";
 
 const queryClient = new QueryClient({

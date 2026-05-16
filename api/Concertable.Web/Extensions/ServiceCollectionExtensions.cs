@@ -75,18 +75,19 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.MapInboundClaims = false;
-                options.Authority = configuration["Auth:Authority"];
+                options.Authority = configuration["Auth:Authority"] ?? configuration["services__auth__https__0"];
                 options.Audience = "concertable.api";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     RoleClaimType = "role",
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero,
+                    ValidateIssuer = !environment.IsDevelopment()
                 };
                 options.Events = new JwtBearerEvents
                 {

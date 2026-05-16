@@ -1,0 +1,37 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this PR for a .NET 10 / React modular monolith called Concertable.
+
+            Follow the rules in `CLAUDE.md` and `MODULAR_MONOLITH_RULES.md` at the repo root.
+            Pay particular attention to:
+            - Module boundaries: cross-module calls must go through `IXModule` facades in `Module.Contracts`, never direct project references into another module's Application/Infrastructure.
+            - DTO vs Response: services return DTOs from `Module.Application/DTOs`; controllers return DTOs verbatim unless a `Response` shape is genuinely needed.
+            - Migrations: no additive migrations — model changes require re-running `initial-migrations.ps1`.
+            - Module services save their own context (`xRepository.SaveChangesAsync()`), never `IUnitOfWork`.
+            - Read-model `Id` must be `ValueGeneratedNever`.
+
+            Be terse. Flag real issues only — don't nit-pick style or restate what the diff does.
+            Group findings as: 🔴 Bugs/regressions, 🟡 Suggestions, 🟣 Pre-existing debt to ignore.
+          claude_args: "--model claude-sonnet-4-6 --max-turns 8"

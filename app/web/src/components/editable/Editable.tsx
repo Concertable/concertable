@@ -1,4 +1,4 @@
-import { useEditableContext } from "@/providers/EditableProvider";
+import { useEditableContext } from "@concertable/shared/providers";
 
 interface Props {
   view: React.ReactNode;

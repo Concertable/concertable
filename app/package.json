@@ -1,10 +1,25 @@
 {
   "name": "concertable-app",
   "private": true,
-  "workspaces": ["web", "mobile", "shared"],
+  "workspaces": [
+    "web",
+    "mobile",
+    "shared"
+  ],
   "scripts": {
     "dev:web": "npm -w web run dev",
     "dev:mobile": "npm -w mobile run start",
-    "build:web": "npm -w web run build"
+    "build:web": "npm -w web run build",
+    "postinstall": "node scripts/patch-nativewind.js"
+  },
+  "overrides": {
+    "react-native-css-interop": {
+      "tailwindcss": "^3"
+    },
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "dependencies": {
+    "react-native-worklets": "0.5.1"
   }
 }

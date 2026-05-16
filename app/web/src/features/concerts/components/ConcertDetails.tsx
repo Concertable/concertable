@@ -1,4 +1,4 @@
-import { Hero } from "@/components/Hero";
+﻿import { Hero } from "@/components/Hero";
 import { GoogleMap } from "@/components/GoogleMap";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
 import { ReviewSection, ReviewSummaryBadge, AddReview } from "@/features/reviews";
@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, TriangleAlertIcon } from "lucide-react";
 import { VenueLocation } from "@/features/venues";
 import { GenreTags } from "@/features/search";
-import { useImageUrl } from "@/hooks/query/useImageUrl";
+import { useImageUrl } from "@concertable/shared/hooks";
 import { ConcertCard } from "./ConcertCard";
 import type { Concert } from "../types";
 

@@ -36,8 +36,11 @@ internal class MockStripeAccountClient : IStripeAccountClient
     public Task<CheckoutSession> CreatePaymentSessionAsync(
         string stripeCustomerId,
         IDictionary<string, string> metadata,
-        CancellationToken ct = default) =>
-        Task.FromResult(new CheckoutSession("pi_mock_secret", "cuss_mock_secret", stripeCustomerId));
+        CancellationToken ct = default)
+    {
+        stripeApiClient.UpdateLastMetadata(metadata);
+        return Task.FromResult(new CheckoutSession("pi_mock_secret", "cuss_mock_secret", stripeCustomerId));
+    }
 
     public Task<CheckoutSession> CreateSetupSessionAsync(
         string stripeCustomerId,

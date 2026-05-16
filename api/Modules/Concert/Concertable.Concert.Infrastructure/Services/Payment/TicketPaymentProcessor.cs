@@ -1,5 +1,6 @@
 using Concertable.Payment.Contracts.Events;
 using Concertable.Shared.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
 
@@ -7,16 +8,20 @@ internal class TicketPaymentProcessor : IPaymentSucceededProcessor
 {
     private readonly ITicketService ticketService;
     private readonly ITicketNotifier notifier;
+    private readonly ILogger<TicketPaymentProcessor> logger;
 
-    public TicketPaymentProcessor(ITicketService ticketService, ITicketNotifier notifier)
+    public TicketPaymentProcessor(ITicketService ticketService, ITicketNotifier notifier, ILogger<TicketPaymentProcessor> logger)
     {
         this.ticketService = ticketService;
         this.notifier = notifier;
+        this.logger = logger;
     }
 
     public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct)
     {
         var meta = @event.Metadata;
+
+        logger.LogInformation("[TicketPaymentProcessor] fromUserId={FromUserId}", meta["fromUserId"]);
 
         var result = await ticketService.CompleteAsync(new()
         {

@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.2.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Reqnroll.xUnit" Version="3.3.4" />
+    <PackageReference Include="Reqnroll.Microsoft.Extensions.DependencyInjection" Version="3.3.4" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Concertable.E2ETests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\..\Concertable.Web\appsettings.E2E.json')" />
+    <None Update="reqnroll.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="TestAssets\concertable-debug.apk" CopyToOutputDirectory="PreserveNewest" Condition="Exists('TestAssets\concertable-debug.apk')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Concertable.E2ETests" />
+    <Using Include="Concertable.Tests.Common" />
+    <Using Include="Concertable.User.Contracts" />
+    <Using Include="OpenQA.Selenium" />
+    <Using Include="OpenQA.Selenium.Appium" />
+    <Using Include="OpenQA.Selenium.Appium.Android" />
+    <Using Include="Reqnroll" />
+  </ItemGroup>
+
+  <UsingTask TaskName="StripReqnrollTraits" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Files ParameterType="System.String[]" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var pattern = @"[ \t]*\[global::Xunit\.TraitAttribute\(""(FeatureTitle|Description|Category)"",[^\]]*\][ \t]*\r?\n";
+        foreach (var file in Files)
+        {
+            var text = System.IO.File.ReadAllText(file);
+            var stripped = System.Text.RegularExpressions.Regex.Replace(text, pattern, "");
+            if (stripped != text)
+                System.IO.File.WriteAllText(file, stripped);
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="StripReqnrollGeneratedTraits" AfterTargets="GenerateFeatureFileCodeBehindFiles" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_ReqnrollFeatureCs Include="**\*.feature.cs" />
+    </ItemGroup>
+    <StripReqnrollTraits Files="@(_ReqnrollFeatureCs->'%(FullPath)')" />
+  </Target>
+
+</Project>

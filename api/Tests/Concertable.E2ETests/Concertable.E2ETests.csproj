@@ -6,12 +6,12 @@
     <Nullable>enable</Nullable>
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Concertable.E2ETests.Api\**;Concertable.E2ETests.Ui\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Concertable.E2ETests.Api\**;Concertable.E2ETests.Ui\**;Concertable.E2ETests.Mobile\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.2.2" />
-    <PackageReference Include="Aspire.Hosting.Testing" Version="13.2.2" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.3.2" />
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.3.2" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageReference Include="Dapper" Version="2.1.72" />
     <PackageReference Include="Respawn" Version="7.0.0" />
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\Concertable.Web\appsettings.E2E.json')" />
   </ItemGroup>
 
   <ItemGroup>

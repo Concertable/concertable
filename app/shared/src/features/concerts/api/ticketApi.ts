@@ -29,9 +29,10 @@ const ticketApi = {
     );
     return data;
   },
-  checkout: async (concertId: number): Promise<TicketCheckout> => {
+  checkout: async (concertId: number, quantity: number): Promise<TicketCheckout> => {
     const { data } = await api.post<TicketCheckout>("/ticket/checkout", {
       concertId,
+      quantity,
     });
     return data;
   },

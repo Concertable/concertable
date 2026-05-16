@@ -15,26 +15,17 @@ import { QuantitySelector } from "../components/checkout/QuantitySelector";
 import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
 import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
 import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
-import type { Concert, TicketCheckout } from "../types";
+import type { Concert } from "../types";
 
 export function TicketCheckoutPage() {
   const { id } = useParams({ from: "/_customer/concert/checkout/$id" });
   const { concert, isLoading, isError } = useConcert(id);
-  const {
-    data: checkout,
-    isLoading: isCheckoutLoading,
-    isError: isCheckoutError,
-  } = useTicketCheckoutQuery(id);
 
-  if (isLoading || isCheckoutLoading) return <CheckoutSkeleton />;
+  if (isLoading) return <CheckoutSkeleton />;
   if (isError || !concert)
     return <div className="text-destructive p-6">Concert not found.</div>;
-  if (isCheckoutError || !checkout)
-    return (
-      <div className="text-destructive p-6">Could not start checkout.</div>
-    );
 
-  return <TicketCheckoutForm concert={concert} checkout={checkout} />;
+  return <TicketCheckoutForm concert={concert} />;
 }
 
 const config = {
@@ -67,17 +58,22 @@ export function TicketCheckoutFlow({ concert }: Readonly<Props>) {
   );
 }
 
-function TicketCheckoutForm({
-  concert,
-  checkout,
-}: {
-  concert: Concert;
-  checkout: TicketCheckout;
-}) {
+function TicketCheckoutForm({ concert }: { concert: Concert }) {
   const [quantity, setQuantity] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const {
+    data: checkout,
+    isLoading: isCheckoutLoading,
+    isError: isCheckoutError,
+    isFetching,
+  } = useTicketCheckoutQuery(concert.id, quantity);
 
   if (submitted) return <TicketCheckoutFlow concert={concert} />;
+  if (isCheckoutLoading) return <CheckoutSkeleton />;
+  if (isCheckoutError || !checkout)
+    return (
+      <div className="text-destructive p-6">Could not start checkout.</div>
+    );
 
   const total = concert.price * quantity;
 
@@ -117,6 +113,7 @@ function TicketCheckoutForm({
           session={checkout.session}
           submitLabel={`Pay £${total.toFixed(2)}`}
           onSuccess={() => setSubmitted(true)}
+          disabled={isFetching}
         />
       </CheckoutSection>
     </CheckoutLayout>

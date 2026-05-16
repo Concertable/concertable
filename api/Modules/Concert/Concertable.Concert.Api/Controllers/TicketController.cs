@@ -37,7 +37,7 @@ internal class TicketController : ControllerBase
     [HttpPost("checkout")]
     public async Task<ActionResult<TicketCheckout>> Checkout([FromBody] TicketCheckoutRequest request)
     {
-        var result = await ticketService.CheckoutAsync(request.ConcertId);
+        var result = await ticketService.CheckoutAsync(request.ConcertId, request.Quantity);
 
         if (result.IsFailed)
             return BadRequest(result.Errors.SelectMessages());

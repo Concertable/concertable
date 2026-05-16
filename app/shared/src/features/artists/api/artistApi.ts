@@ -1,5 +1,6 @@
 import api from "../../../lib/axiosClient";
 import type { Artist } from "../types";
+import type { ImageFile } from "../../../types/image";
 
 const artistApi = {
   getArtist: async (id: number): Promise<Artist> => {
@@ -14,13 +15,13 @@ const artistApi = {
 
   updateArtist: async (
     artist: Artist,
-    banner?: File,
-    avatar?: File,
+    banner?: ImageFile,
+    avatar?: ImageFile,
   ): Promise<Artist> => {
     const formData = new FormData();
     formData.append("artist", JSON.stringify(artist));
-    if (banner) formData.append("Banner", banner);
-    if (avatar) formData.append("Avatar", avatar);
+    if (banner) formData.append("Banner", banner as any);
+    if (avatar) formData.append("Avatar", avatar as any);
     const { data } = await api.put<Artist>(`/artist/${artist.id}`, formData);
     return data;
   },

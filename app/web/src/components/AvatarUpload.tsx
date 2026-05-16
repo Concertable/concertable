@@ -1,7 +1,7 @@
-import { Camera } from "lucide-react";
-import { useEditableContext } from "@/providers/EditableProvider";
+﻿import { Camera } from "lucide-react";
+import { useEditableContext } from "@concertable/shared/providers";
 import { useImageUpload } from "@/hooks/useImageUpload";
-import { useImageUrl } from "@/hooks/query/useImageUrl";
+import { useImageUrl } from "@concertable/shared/hooks";
 
 interface Props {
   avatar?: string;

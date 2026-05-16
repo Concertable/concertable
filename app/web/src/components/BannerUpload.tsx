@@ -1,6 +1,6 @@
 import { Camera } from "lucide-react";
 import { useScroll, useTransform, motion } from "framer-motion";
-import { useEditableContext } from "@/providers/EditableProvider";
+import { useEditableContext } from "@concertable/shared/providers";
 import { useImageUpload } from "@/hooks/useImageUpload";
 
 interface Props {

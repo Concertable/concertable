@@ -98,7 +98,7 @@ interface ApplicationCheckoutFormProps {
   checkout: Checkout;
 }
 
-function ApplicationCheckoutForm({ applicationId, application, checkout }: ApplicationCheckoutFormProps) {
+function ApplicationCheckoutForm({ applicationId, application, checkout }: Readonly<ApplicationCheckoutFormProps>) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const acceptMutation = useAcceptApplicationMutation(application.opportunity.id);
@@ -164,7 +164,7 @@ interface ApplicationCheckoutSuccessProps {
   onView: () => void;
 }
 
-function ApplicationCheckoutSuccess({ artistName, onView }: ApplicationCheckoutSuccessProps) {
+function ApplicationCheckoutSuccess({ artistName, onView }: Readonly<ApplicationCheckoutSuccessProps>) {
   return (
     <CheckoutSuccess
       title="Application Accepted"

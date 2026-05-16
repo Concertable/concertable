@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/features/auth";
 import { toast } from "sonner";
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 import {
   usePayoutAccountStatusQuery,
   useStripeOnboardingQuery,

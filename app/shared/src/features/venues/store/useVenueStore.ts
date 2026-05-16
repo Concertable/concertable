@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import { produce } from "immer";
 import type { Venue } from "../types";
+import type { ImageFile } from "../../../types/image";
 
 interface VenueStore {
   draft: Venue | undefined;
   editMode: boolean;
   isDirty: boolean;
-  banner: File | undefined;
-  avatar: File | undefined;
+  banner: ImageFile | undefined;
+  avatar: ImageFile | undefined;
 
   toggleEdit: (venue: Venue) => void;
   resetDraft: (venue: Venue) => void;
@@ -15,8 +16,8 @@ interface VenueStore {
   setName: (name: string) => void;
   setAbout: (about: string) => void;
   setLocation: (lat: number, lng: number, county: string, town: string) => void;
-  setBanner: (file: File) => void;
-  setAvatar: (file: File) => void;
+  setBanner: (file: ImageFile) => void;
+  setAvatar: (file: ImageFile) => void;
 }
 
 export const useVenueStore = create<VenueStore>((set) => ({
@@ -81,7 +82,7 @@ export const useVenueStore = create<VenueStore>((set) => ({
     set(
       produce((state: VenueStore) => {
         if (!state.draft) return;
-        state.draft.bannerUrl = URL.createObjectURL(file);
+        state.draft.bannerUrl = file.uri;
         state.banner = file;
         state.isDirty = true;
       }),
@@ -91,7 +92,7 @@ export const useVenueStore = create<VenueStore>((set) => ({
     set(
       produce((state: VenueStore) => {
         if (!state.draft) return;
-        state.draft.avatar = URL.createObjectURL(file);
+        state.draft.avatar = file.uri;
         state.avatar = file;
         state.isDirty = true;
       }),

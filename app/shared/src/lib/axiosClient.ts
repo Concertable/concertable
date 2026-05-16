@@ -2,8 +2,6 @@ import axios from "axios";
 import qs from "qs";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
   paramsSerializer: (params) =>
     qs.stringify(params, {
       arrayFormat: "comma",
@@ -11,5 +9,9 @@ const api = axios.create({
       skipNulls: true,
     }),
 });
+
+export function configureApi(baseURL: string) {
+  api.defaults.baseURL = baseURL;
+}
 
 export default api;

@@ -13,12 +13,12 @@ export interface NavLink {
   to: string;
 }
 
-interface NavbarProps {
+interface Props {
   links: NavLink[];
   onHeightChange: (height: number) => void;
 }
 
-export function Navbar({ links, onHeightChange }: Readonly<NavbarProps>) {
+export function Navbar({ links, onHeightChange }: Readonly<Props>) {
   const role = useRole();
   const baseUrl = useAuthStore((s) => s.user?.baseUrl ?? "/");
   const routeRole = useRouteRole();

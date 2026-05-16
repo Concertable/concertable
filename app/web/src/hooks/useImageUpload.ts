@@ -1,6 +1,7 @@
 import { useRef } from "react";
+import type { ImageFile } from "@concertable/shared";
 
-export function useImageUpload(onFileSelected?: (file: File) => void) {
+export function useImageUpload(onFileSelected?: (file: ImageFile) => void) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   function open() {
@@ -9,7 +10,7 @@ export function useImageUpload(onFileSelected?: (file: File) => void) {
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) onFileSelected?.(file);
+    if (file) onFileSelected?.(Object.assign(file, { uri: URL.createObjectURL(file) }));
   }
 
   return { inputRef, open, onChange };

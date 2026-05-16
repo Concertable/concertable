@@ -1,4 +1,4 @@
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 
 export function StripeRefreshPage() {
   useMountEffect(() => {

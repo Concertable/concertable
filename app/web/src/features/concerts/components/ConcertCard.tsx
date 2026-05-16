@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
-import { useImageUrl } from "@/hooks/query/useImageUrl";
+import { useImageUrl } from "@concertable/shared/hooks";
 import dayjs from "dayjs";
 import { CalendarDays, MapPin, Ticket } from "lucide-react";
 import type { Concert } from "../types";
@@ -25,7 +25,7 @@ export function ConcertCard({ concert }: Readonly<Props>) {
         <div className="text-muted-foreground flex items-center gap-2">
           <CalendarDays className="size-4 shrink-0" />
           <span>
-            {dayjs(concert.startDate).format("D MMM YYYY, HH:mm")} –{" "}
+            {dayjs(concert.startDate).format("D MMM YYYY, HH:mm")} â€“{" "}
             {dayjs(concert.endDate).format("HH:mm")}
           </span>
         </div>
@@ -40,7 +40,7 @@ export function ConcertCard({ concert }: Readonly<Props>) {
         <div className="text-muted-foreground flex items-center gap-2">
           <Ticket className="size-4 shrink-0" />
           <span>
-            £{concert.price.toFixed(2)} · {concert.availableTickets} left
+            Â£{concert.price.toFixed(2)} Â· {concert.availableTickets} left
           </span>
         </div>
       </div>

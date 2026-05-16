@@ -11,11 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { NewCardSection } from "./NewCardSection";
 
-export function AddPaymentMethodModal({
-  replace = false,
-}: {
+interface Props {
   replace?: boolean;
-}) {
+}
+
+export function AddPaymentMethodModal({ replace = false }: Readonly<Props>) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
