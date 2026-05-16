@@ -8,6 +8,8 @@
     "web/business",
     "mobile",
     "mobile/customer",
+    "mobile/venue",
+    "mobile/artist",
     "shared"
   ],
   "scripts": {
@@ -17,6 +19,8 @@
     "dev:business": "npm -w @concertable/business run dev",
     "dev:mobile": "npm -w mobile run start",
     "dev:mobile:customer": "npm -w @concertable/customer-mobile run start",
+    "dev:mobile:venue": "npm -w @concertable/venue-mobile run start",
+    "dev:mobile:artist": "npm -w @concertable/artist-mobile run start",
     "build:customer": "npm -w @concertable/customer run build",
     "build:venue": "npm -w @concertable/venue run build",
     "build:artist": "npm -w @concertable/artist run build",
