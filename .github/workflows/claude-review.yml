@@ -21,8 +21,10 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          use_sticky_comment: true
           prompt: |
             Review this PR for a .NET 10 / React modular monolith called Concertable.
+            Your final response will be posted verbatim as a PR comment, so write it as a review.
 
             Follow the rules in `CLAUDE.md` and `MODULAR_MONOLITH_RULES.md` at the repo root.
             Pay particular attention to:
@@ -34,4 +36,5 @@ jobs:
 
             Be terse. Flag real issues only — don't nit-pick style or restate what the diff does.
             Group findings as: 🔴 Bugs/regressions, 🟡 Suggestions, 🟣 Pre-existing debt to ignore.
-          claude_args: "--model claude-sonnet-4-6 --max-turns 8"
+            If there are no real issues, say so in one sentence.
+          claude_args: "--model claude-sonnet-4-6 --max-turns 10"
