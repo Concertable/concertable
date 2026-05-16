@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": [
     "web",
+    "web/customer",
     "mobile",
     "shared"
   ],
