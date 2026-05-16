@@ -96,10 +96,10 @@ namespace Concertable.User.Infrastructure.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
+                name: "IX_Users_Email_Role",
                 schema: "user",
                 table: "Users",
-                column: "Email",
+                columns: new[] { "Email", "Role" },
                 unique: true);
         }
 

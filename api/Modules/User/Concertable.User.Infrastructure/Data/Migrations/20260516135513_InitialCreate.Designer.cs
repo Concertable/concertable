@@ -13,7 +13,7 @@ using NetTopologySuite.Geometries;
 namespace Concertable.User.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20260514113059_InitialCreate")]
+    [Migration("20260516135513_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -56,7 +56,7 @@ namespace Concertable.User.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
+                    b.HasIndex("Email", "Role")
                         .IsUnique();
 
                     b.ToTable("Users", "user");
