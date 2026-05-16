@@ -11,11 +11,11 @@ import { AuthProvider } from "react-oidc-context";
 import { userManager, onSigninCallback } from "@/features/auth";
 import { shouldRetry } from "@/lib/queryRetry";
 import { routeTree } from "./routeTree.gen";
-import { ThemeProvider } from "./providers/ThemeProvider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import "./lib/axios";
-import "./lib/geocoding";
-import "./index.css";
+import { ThemeProvider } from "shared/providers/ThemeProvider";
+import { TooltipProvider } from "shared/components/ui/tooltip";
+import "shared/lib/axios";
+import "shared/lib/geocoding";
+import "shared/index.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

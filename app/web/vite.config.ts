@@ -5,12 +5,13 @@ import { defineConfig } from 'vite'
 import { tanstackRouter } from '@tanstack/router-vite-plugin'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [tanstackRouter(), react(), tailwindcss(), basicSsl()],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: [
+      { find: /^@\/(components|features|hooks|lib|providers|context|types|assets)(\/.*)?$/, replacement: path.resolve(__dirname, "./shared/src/$1$2") },
+      { find: /^shared\/(.*)$/, replacement: path.resolve(__dirname, "./shared/src/$1") },
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+    ],
   },
 })
