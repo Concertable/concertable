@@ -4,6 +4,8 @@
   "workspaces": [
     "web",
     "web/customer",
+    "web/venue",
+    "web/artist",
     "mobile",
     "shared"
   ],
