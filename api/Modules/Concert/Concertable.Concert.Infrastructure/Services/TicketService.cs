@@ -136,7 +136,7 @@ internal class TicketService : ITicketService
         });
     }
 
-    public async Task<Result<TicketCheckout>> CheckoutAsync(int concertId)
+    public async Task<Result<TicketCheckout>> CheckoutAsync(int concertId, int quantity)
     {
         if (currentUser.GetRole() != Role.Customer)
             throw new ForbiddenException("Only Customers can buy tickets");
@@ -144,7 +144,7 @@ internal class TicketService : ITicketService
         var concert = await concertRepository.GetFullByIdAsync(concertId)
             ?? throw new NotFoundException("Concert not found");
 
-        var validationResult = ticketValidator.CanBePurchased(concert);
+        var validationResult = ticketValidator.CanPurchaseTickets(concert, quantity);
         if (validationResult.IsFailed)
             return Result.Fail(validationResult.Errors);
 
@@ -156,13 +156,14 @@ internal class TicketService : ITicketService
             ["type"] = TransactionTypes.Ticket,
             ["concertId"] = concertId.ToString(),
             ["toUserId"] = payeeUserId.ToString(),
-            ["amount"] = ((long)(concert.Price * 100)).ToString(),
+            ["quantity"] = quantity.ToString(),
+            ["amount"] = ((long)(concert.Price * quantity * 100)).ToString(),
             ["currency"] = "gbp"
         };
 
         var session = await customerPaymentModule.CreatePaymentSessionAsync(currentUser.GetId(), metadata);
 
-        return Result.Ok(new TicketCheckout(session, concert.Price, concertId));
+        return Result.Ok(new TicketCheckout(session, concert.Price, concertId, quantity));
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()

@@ -5,7 +5,8 @@ namespace Concertable.Concert.Application.DTOs;
 internal record TicketCheckout(
     CheckoutSession Session,
     decimal Price,
-    int ConcertId);
+    int ConcertId,
+    int Quantity);
 
 internal record TicketConcertDto
 {

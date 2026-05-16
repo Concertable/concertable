@@ -2,18 +2,22 @@ import { useRef } from "react";
 import { Animated, View } from "react-native";
 import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import type { RouteProp } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { CheckCircle } from "lucide-react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
-import type { CustomerTabParamList } from "../../../navigation/types";
+import type { ConcertNavParamList, CustomerTabParamList } from "../../../navigation/types";
 
+type SuccessRoute = RouteProp<ConcertNavParamList, "CheckoutSuccess">;
 type TabNav = BottomTabNavigationProp<CustomerTabParamList>;
 
 export function CheckoutSuccessScreen() {
+  const route = useRoute<SuccessRoute>();
   const tabNav = useNavigation<TabNav>();
+  const ticketCount = route.params?.ticketCount ?? 1;
   const scale = useRef(new Animated.Value(0)).current;
 
   useMountEffect(() => {
@@ -37,7 +41,9 @@ export function CheckoutSuccessScreen() {
         <View className="items-center gap-2">
           <Text className="text-2xl font-bold text-foreground">You're going!</Text>
           <Text className="text-sm text-muted-foreground text-center leading-relaxed">
-            Your ticket has been confirmed.{"\n"}See you there!
+            {ticketCount > 1
+              ? `Your ${ticketCount} tickets have been confirmed.`
+              : "Your ticket has been confirmed."}{"\n"}See you there!
           </Text>
         </View>
 

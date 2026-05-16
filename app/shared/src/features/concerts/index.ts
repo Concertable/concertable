@@ -21,6 +21,8 @@ export {
   useTicketHistoryQuery,
   useTicketCheckoutQuery,
 } from "./hooks/useTicketsQuery";
+export { useCheckoutFlow } from "./hooks/useCheckoutFlow";
+export type { CheckoutFlowState } from "./hooks/useCheckoutFlow";
 export { useConcertStore } from "./store/useConcertStore";
 export { useOpportunitiesStore } from "./store/useOpportunitiesStore";
 export type {

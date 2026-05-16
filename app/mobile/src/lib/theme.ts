@@ -90,3 +90,9 @@ export const NAV_THEME = {
 
 // Transitional flat alias — remove once all consumers migrate to THEME.light.*
 export const theme = THEME.light;
+
+// Stripe appearance API requires hex — HSL strings are rejected.
+export const stripeColors = {
+  primary: "#5c18aa",      // hsl(268, 75%, 38%)
+  background: "#ffffff",   // hsl(0, 0%, 100%)
+} as const;

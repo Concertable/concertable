@@ -1,3 +1,3 @@
 namespace Concertable.Concert.Api.Requests;
 
-internal record TicketCheckoutRequest(int ConcertId);
+internal record TicketCheckoutRequest(int ConcertId, int Quantity);

@@ -7,7 +7,7 @@ export type AuthStackParamList = {
 export type ConcertNavParamList = {
   ConcertDetail: { concertId: number };
   TicketCheckout: { concertId: number };
-  CheckoutSuccess: undefined;
+  CheckoutSuccess: { ticketCount?: number } | undefined;
   ArtistDetail: { artistId: number };
   VenueDetail: { venueId: number };
 };

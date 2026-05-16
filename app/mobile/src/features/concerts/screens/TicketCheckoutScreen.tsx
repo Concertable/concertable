@@ -5,45 +5,77 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useStripe } from "@stripe/stripe-react-native";
-import { useQueryClient } from "@tanstack/react-query";
-import { useConcert, useTicketCheckoutQuery } from "@concertable/shared/features/concerts";
+import { useConcert, useTicketCheckoutQuery, useCheckoutFlow } from "@concertable/shared/features/concerts";
+import type { TicketPurchasedPayload } from "@concertable/shared/features/notifications";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { ErrorState } from "../../../components/ui/ErrorState";
 import { QuantitySelector } from "../../../components/ui/QuantitySelector";
+import { CheckoutAwaiting } from "../components/CheckoutAwaiting";
 import { notify } from "../../../lib/toast";
-import { theme } from "../../../lib/theme";
+import { logger } from "../../../lib/logger";
+import { notificationConnection } from "../../../lib/signalr";
+import { theme, stripeColors } from "../../../lib/theme";
 import dayjs from "dayjs";
 import type { ConcertNavParamList } from "../../../navigation/types";
 
 type CheckoutRoute = RouteProp<ConcertNavParamList, "TicketCheckout">;
 type CheckoutNav = NativeStackNavigationProp<ConcertNavParamList>;
 
+function TicketCheckoutAwaitingFlow() {
+  const nav = useNavigation<CheckoutNav>();
+  const flow = useCheckoutFlow<TicketPurchasedPayload>({
+    connection: notificationConnection,
+    event: "TicketPurchased",
+  });
+
+  useEffect(() => {
+    logger.log("[TicketCheckoutScreen] flow", {
+      phase: flow.phase,
+      hasResult: "result" in flow,
+    });
+    if (flow.phase === "success") {
+      logger.log("[TicketCheckoutScreen] phase=success → nav.replace");
+      nav.replace("CheckoutSuccess", { ticketCount: flow.result.ticketIds.length });
+    }
+  }, [flow, nav]);
+
+  logger.log("[TicketCheckoutScreen] rendering CheckoutAwaiting", { phase: flow.phase });
+  return <CheckoutAwaiting timed_out={flow.phase === "timeout"} />;
+}
+
 export function TicketCheckoutScreen() {
   const route = useRoute<CheckoutRoute>();
-  const nav = useNavigation<CheckoutNav>();
   const { concertId } = route.params;
 
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const queryClient = useQueryClient();
 
   const { concert } = useConcert(concertId);
-  const { data: checkout, isLoading, isError } = useTicketCheckoutQuery(concertId);
 
   const [qty, setQty] = useState(1);
   const [ready, setReady] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const { data: checkout, isLoading, isError, isFetching } = useTicketCheckoutQuery(concertId, qty);
 
   useEffect(() => {
     if (!checkout) return;
+    setReady(false);
     initPaymentSheet({
       merchantDisplayName: "Concertable",
       paymentIntentClientSecret: checkout.session.clientSecret,
-      customerEphemeralKeySecret: checkout.session.customerSession ?? undefined,
-      customerId: checkout.session.customerId ?? undefined,
+      returnURL: "concertable://checkout",
       allowsDelayedPaymentMethods: false,
-      appearance: { colors: { primary: theme.primary } },
+      appearance: {
+        colors: {
+          primary: stripeColors.primary,
+          background: stripeColors.background,
+        },
+      },
+      ...(checkout.session.customerId ? { customerId: checkout.session.customerId } : {}),
+      ...(checkout.session.customerSession ? { customerSessionClientSecret: checkout.session.customerSession } : {}),
     }).then(({ error }) => {
       if (error) notify(error.message, "error");
       else setReady(true);
@@ -54,13 +86,22 @@ export function TicketCheckoutScreen() {
     setPaying(true);
     const { error } = await presentPaymentSheet();
     setPaying(false);
+    logger.log("[TicketCheckoutScreen] presentPaymentSheet resolved", {
+      stripeError: error?.code,
+      connectionState: notificationConnection.state,
+    });
     if (error) {
       if (error.code !== "Canceled") notify(error.message, "error");
       return;
     }
-    await queryClient.invalidateQueries({ queryKey: ["tickets", "upcoming"] });
-    nav.replace("CheckoutSuccess");
+    logger.log("[TicketCheckoutScreen] submitted — waiting for TicketPurchased", {
+      connectionState: notificationConnection.state,
+    });
+    setSubmitted(true);
   }
+
+  if (submitted)
+    return <TicketCheckoutAwaitingFlow />;
 
   if (isLoading) {
     return (
@@ -114,8 +155,8 @@ export function TicketCheckoutScreen() {
         </View>
 
         <View className="mt-auto">
-          <Button disabled={paying || !ready} onPress={handlePay} size="lg">
-            {paying
+          <Button disabled={paying || !ready || isFetching} onPress={handlePay} size="lg">
+            {paying || isFetching
               ? <ActivityIndicator size="small" color={theme.primaryForeground} />
               : <Text>{ready ? `Pay £${total}` : "Loading…"}</Text>}
           </Button>

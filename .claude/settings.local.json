@@ -122,7 +122,21 @@
       "Bash(xargs -I{} node -e \"try{const p=require\\('{}'\\); console.log\\(p.version\\);}catch\\(e\\){}\")",
       "Bash(npm view *)",
       "Bash(xargs -I{} node -e \"const p=require\\('{}'\\); console.log\\('{}:', p.version\\);\")",
-      "Bash(read f *)"
+      "Bash(read f *)",
+      "Bash(Test-Path \"C:/Users/TommySeery/source/repos/Concertable/app/node_modules/nativewind/node_modules/tailwindcss\")",
+      "WebFetch(domain:www.react-native-reusables.com)",
+      "WebFetch(domain:reactnativereusables.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(curl -sL \"https://registry.npmjs.org/@react-native-reusables/cli/latest\")",
+      "WebFetch(domain:rnr-docs.vercel.app)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/founded-labs/react-native-reusables/main/apps/docs/content/docs/installation/manual.mdx\")",
+      "Bash(curl -sL \"https://api.github.com/repos/founded-labs/react-native-reusables/contents/apps/docs/content/docs/components\")",
+      "Bash(Write-Output \"done\")",
+      "Bash(get-childitem -Recurse -Name \"package.json\")",
+      "Bash(select-string \"shared|packages\")",
+      "Bash(Find C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\TommySeery\\\\source\\\\repos\\\\Concertable\\\\api\\\\Concertable.Web\" -File -Recurse | Where-Object {$_.Name -match \"\\(Program|Startup|Auth|SignalR\\)\" -or $_.Name -eq \"appsettings.json\"} | Select-Object -ExpandProperty FullName)"
     ]
   },
   "enabledPlugins": {

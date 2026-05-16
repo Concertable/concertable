@@ -5,12 +5,16 @@ import { SearchStack } from "./SearchStack";
 import { TicketsStack } from "./TicketsStack";
 import { ProfileStack } from "./ProfileStack";
 import { MessagesScreen } from "../features/user/screens/MessagesScreen";
+import { useCustomerNotifications } from "../features/notifications";
+import { logger } from "../lib/logger";
 import { theme } from "../lib/theme";
 import type { CustomerTabParamList } from "./types";
 
 const Tab = createBottomTabNavigator<CustomerTabParamList>();
 
 export function CustomerTabs() {
+  logger.log("[CustomerTabs] render");
+  useCustomerNotifications();
   return (
     <Tab.Navigator
       screenOptions={{

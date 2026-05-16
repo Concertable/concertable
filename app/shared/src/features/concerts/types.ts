@@ -31,6 +31,7 @@ export interface TicketCheckout {
   session: CheckoutSession;
   price: number;
   concertId: number;
+  quantity: number;
 }
 
 export interface CheckoutLabels {

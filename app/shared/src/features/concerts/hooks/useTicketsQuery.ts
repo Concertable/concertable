@@ -15,10 +15,10 @@ export function useTicketHistoryQuery() {
   });
 }
 
-export function useTicketCheckoutQuery(concertId: number) {
+export function useTicketCheckoutQuery(concertId: number, quantity: number) {
   return useQuery({
-    queryKey: ["tickets", "checkout", concertId],
-    queryFn: () => ticketApi.checkout(concertId),
+    queryKey: ["tickets", "checkout", concertId, quantity],
+    queryFn: () => ticketApi.checkout(concertId, quantity),
     staleTime: Infinity,
   });
 }
