@@ -90,7 +90,7 @@ export function TicketsScreen() {
 
 function TicketCard({ ticket, onPress }: { ticket: Ticket; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress}>
+    <Pressable onPress={onPress} testID="ticket-card">
       <View className="bg-card rounded-2xl border border-border flex-row items-center p-3 gap-3">
         <View className="w-16 h-16 rounded-xl bg-primary/15 items-center justify-center shrink-0">
           <Text className="text-xl font-bold text-primary">

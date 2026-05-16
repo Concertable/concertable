@@ -107,6 +107,7 @@ export function ConcertDetails({ concert }: Readonly<Props>) {
           disabled={soldOut}
           size="lg"
           onPress={() => nav.navigate("TicketCheckout", { concertId: concert.id })}
+          testID="buy-tickets"
         >
           <Text>{soldOut ? "Sold Out" : "Buy Tickets"}</Text>
         </Button>

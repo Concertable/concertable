@@ -150,7 +150,7 @@ interface ConcertCardProps {
 function ConcertCard({ concert, onPress }: Readonly<ConcertCardProps>) {
   const { data: src } = useImageUrl(concert.imageUrl);
   return (
-    <Pressable onPress={onPress} className="w-44">
+    <Pressable onPress={onPress} className="w-44" testID="concert-card">
       <View className="bg-card rounded-2xl border border-border overflow-hidden">
         <Image
           source={{ uri: src }}

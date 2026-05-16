@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Concertable.E2ETests.Api\**;Concertable.E2ETests.Ui\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Concertable.E2ETests.Api\**;Concertable.E2ETests.Ui\**;Concertable.E2ETests.Mobile\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

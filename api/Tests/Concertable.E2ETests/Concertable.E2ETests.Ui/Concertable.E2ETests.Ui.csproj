@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Concertable.E2ETests" />
     <Using Include="Concertable.Tests.Common" />
     <Using Include="Concertable.User.Contracts" />
     <Using Include="Microsoft.Playwright" />

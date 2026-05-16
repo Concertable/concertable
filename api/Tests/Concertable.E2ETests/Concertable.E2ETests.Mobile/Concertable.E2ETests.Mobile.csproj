@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.2.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Reqnroll.xUnit" Version="3.3.4" />
+    <PackageReference Include="Reqnroll.Microsoft.Extensions.DependencyInjection" Version="3.3.4" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Concertable.E2ETests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="reqnroll.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="TestAssets\concertable-debug.apk" CopyToOutputDirectory="PreserveNewest" Condition="Exists('TestAssets\concertable-debug.apk')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Concertable.E2ETests" />
+    <Using Include="Concertable.Tests.Common" />
+    <Using Include="Concertable.User.Contracts" />
+    <Using Include="OpenQA.Selenium" />
+    <Using Include="OpenQA.Selenium.Appium" />
+    <Using Include="OpenQA.Selenium.Appium.Android" />
+    <Using Include="Reqnroll" />
+  </ItemGroup>
+
+  <Target Name="StripReqnrollGeneratedTraits" AfterTargets="GenerateFeatureFileCodeBehindFiles" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_ReqnrollFeatureCs Include="**\*.feature.cs" />
+    </ItemGroup>
+    <WriteLinesToFile File="%(_ReqnrollFeatureCs.FullPath)" Overwrite="true" Lines="$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.File]::ReadAllText('%(_ReqnrollFeatureCs.FullPath)')), '[ \t]*\[global::Xunit\.TraitAttribute\(&quot;(FeatureTitle|Description|Category)&quot;,[^\]]*\][ \t]*\r?\n', ''))" />
+  </Target>
+
+</Project>

@@ -30,7 +30,7 @@ export function CheckoutSuccessScreen() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" testID="checkout-success">
       <View className="flex-1 items-center justify-center gap-8 px-6">
         <Animated.View style={{ transform: [{ scale }] }}>
           <View className="w-24 h-24 rounded-full bg-success/15 items-center justify-center">
@@ -51,6 +51,7 @@ export function CheckoutSuccessScreen() {
           <Button
             size="lg"
             onPress={() => tabNav.navigate("TicketsTab", { screen: "TicketsMain" })}
+            testID="view-tickets"
           >
             <Text>View My Tickets</Text>
           </Button>

@@ -1,4 +1,4 @@
-namespace Concertable.E2ETests.Ui.Support;
+namespace Concertable.E2ETests;
 
 public static class StripeCards
 {

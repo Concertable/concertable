@@ -12,6 +12,7 @@ export function LoginScreen() {
         style={[styles.button, loading && styles.buttonDisabled]}
         onPress={login}
         disabled={loading}
+        testID="login-submit"
       >
         {loading ? (
           <ActivityIndicator color="#fff" />

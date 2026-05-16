@@ -67,7 +67,7 @@ export function TicketDetailScreen() {
           <Text className="text-sm text-muted-foreground">
             {dayjs(ticket.concert.startDate).format("ddd D MMM YYYY")}
           </Text>
-          <View className="bg-white p-4 rounded-2xl">
+          <View className="bg-white p-4 rounded-2xl" testID="ticket-qr">
             <QRCode value={ticket.qrCode} size={240} />
           </View>
           <Text className="text-xs text-muted-foreground font-mono" numberOfLines={1}>

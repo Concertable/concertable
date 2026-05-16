@@ -155,7 +155,7 @@ export function TicketCheckoutScreen() {
         </View>
 
         <View className="mt-auto">
-          <Button disabled={paying || !ready || isFetching} onPress={handlePay} size="lg">
+          <Button disabled={paying || !ready || isFetching} onPress={handlePay} size="lg" testID="checkout-pay">
             {paying || isFetching
               ? <ActivityIndicator size="small" color={theme.primaryForeground} />
               : <Text>{ready ? `Pay £${total}` : "Loading…"}</Text>}
