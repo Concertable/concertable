@@ -38,11 +38,29 @@
     <Using Include="Reqnroll" />
   </ItemGroup>
 
+  <UsingTask TaskName="StripReqnrollTraits" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Files ParameterType="System.String[]" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var pattern = @"[ \t]*\[global::Xunit\.TraitAttribute\(""(FeatureTitle|Description|Category)"",[^\]]*\][ \t]*\r?\n";
+        foreach (var file in Files)
+        {
+            var text = System.IO.File.ReadAllText(file);
+            var stripped = System.Text.RegularExpressions.Regex.Replace(text, pattern, "");
+            if (stripped != text)
+                System.IO.File.WriteAllText(file, stripped);
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
   <Target Name="StripReqnrollGeneratedTraits" AfterTargets="GenerateFeatureFileCodeBehindFiles" BeforeTargets="CoreCompile">
     <ItemGroup>
       <_ReqnrollFeatureCs Include="**\*.feature.cs" />
     </ItemGroup>
-    <WriteLinesToFile File="%(_ReqnrollFeatureCs.FullPath)" Overwrite="true" Lines="$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.File]::ReadAllText('%(_ReqnrollFeatureCs.FullPath)')), '[ \t]*\[global::Xunit\.TraitAttribute\(&quot;(FeatureTitle|Description|Category)&quot;,[^\]]*\][ \t]*\r?\n', ''))" />
+    <StripReqnrollTraits Files="@(_ReqnrollFeatureCs->'%(FullPath)')" />
   </Target>
 
 </Project>
