@@ -3,7 +3,7 @@ import { FlatList, View } from "react-native";
 import { useHeaderQuery, useSearchFiltersStore } from "@concertable/shared/features/search";
 import type { Header, HeaderType } from "@concertable/shared/features/search";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "../../../components/ui/EmptyState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ConcertHeaderCard } from "./headers/ConcertHeaderCard";
 import { ArtistHeaderCard } from "./headers/ArtistHeaderCard";
 import { VenueHeaderCard } from "./headers/VenueHeaderCard";

@@ -3,7 +3,7 @@ import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { useConcert } from "@concertable/shared/features/concerts";
 import { ConcertDetails } from "../components/ConcertDetails";
-import { ErrorState } from "../../../components/ui/ErrorState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ConcertNavParamList } from "../../../navigation/types";
 

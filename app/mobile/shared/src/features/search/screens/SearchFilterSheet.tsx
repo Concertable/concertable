@@ -6,7 +6,7 @@ import { MapPin, X } from "lucide-react-native";
 import { useCurrentLocation } from "../../../hooks/useCurrentLocation";
 import { useSearchFiltersStore, useGenresQuery } from "@concertable/shared/features/search";
 import type { HeaderType, SearchFilters } from "@concertable/shared/features/search";
-import { GenreChips } from "../../../components/ui/GenreChips";
+import { GenreChips } from "@/components/ui/GenreChips";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";

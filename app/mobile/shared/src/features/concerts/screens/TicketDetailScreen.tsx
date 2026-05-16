@@ -9,7 +9,7 @@ import * as Brightness from "expo-brightness";
 import { CalendarDays, Hash, Mail, MapPin, Music, Share2, Ticket } from "lucide-react-native";
 import type { LucideIcon } from "lucide-react-native";
 import { useUpcomingTicketsQuery, useTicketHistoryQuery } from "@concertable/shared/features/concerts";
-import { ErrorState } from "../../../components/ui/ErrorState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
 import type { TicketsStackParamList } from "../../../navigation/types";

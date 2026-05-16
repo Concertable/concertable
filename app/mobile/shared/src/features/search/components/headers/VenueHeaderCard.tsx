@@ -5,7 +5,7 @@ import { Image } from "expo-image";
 import { MapPin } from "lucide-react-native";
 import type { Header, VenueHeader } from "@concertable/shared/features/search";
 import { useImageUrl } from "@concertable/shared/hooks";
-import { RatingStars } from "../../../../components/ui/RatingStars";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../../lib/theme";
 import type { SearchStackParamList } from "../../../../navigation/types";

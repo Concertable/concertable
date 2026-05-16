@@ -10,8 +10,8 @@ import type { TicketPurchasedPayload } from "@concertable/shared/features/notifi
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
-import { ErrorState } from "../../../components/ui/ErrorState";
-import { QuantitySelector } from "../../../components/ui/QuantitySelector";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { QuantitySelector } from "@/components/ui/QuantitySelector";
 import { CheckoutAwaiting } from "../components/CheckoutAwaiting";
 import { notify } from "../../../lib/toast";
 import { logger } from "../../../lib/logger";

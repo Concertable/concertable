@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useMyPreferenceQuery, useUpdateMyPreferenceMutation, useCreateMyPreferenceMutation } from "@concertable/shared/features/customer";
 import { useGenresQuery } from "@concertable/shared/features/search";
-import { GenreChips } from "../../../components/ui/GenreChips";
+import { GenreChips } from "@/components/ui/GenreChips";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";

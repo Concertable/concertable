@@ -1,8 +1,8 @@
 import { View } from "react-native";
 import { MessageCircle } from "lucide-react-native";
-import { Screen } from "../../../components/ui/Screen";
-import { Navbar } from "../../../components/ui/Navbar";
-import { EmptyState } from "../../../components/ui/EmptyState";
+import { Screen } from "@/components/ui/Screen";
+import { Navbar } from "@/components/ui/Navbar";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export function MessagesScreen() {
   return (

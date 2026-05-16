@@ -1,7 +1,7 @@
 import { Linking, View } from "react-native";
 import { CheckCircle, XCircle } from "lucide-react-native";
 import { useAuthStore } from "@concertable/shared/features/auth";
-import { Screen } from "../../../components/ui/Screen";
+import { Screen } from "@/components/ui/Screen";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";

@@ -3,6 +3,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { PortalHost } from "@rn-primitives/portal";
 import Toast from "react-native-toast-message";
 import { shouldRetry } from "@concertable/shared/lib";
 import Config from "../lib/config";
@@ -27,6 +28,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <BottomSheetModalProvider>
               {children}
               <Toast />
+              <PortalHost />
             </BottomSheetModalProvider>
           </QueryClientProvider>
         </StripeProvider>
