@@ -1,0 +1,28 @@
+{
+  "name": "@concertable/web-shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.2.8",
+    "@stripe/react-stripe-js": "^6.3.0",
+    "@stripe/stripe-js": "^9.5.0",
+    "@tanstack/react-router": "*",
+    "@vis.gl/react-google-maps": "*",
+    "class-variance-authority": "*",
+    "clsx": "*",
+    "embla-carousel-react": "*",
+    "framer-motion": "*",
+    "lucide-react": "*",
+    "radix-ui": "*",
+    "react-day-picker": "*",
+    "shadcn": "^4.7.0",
+    "sonner": "*",
+    "tailwind-merge": "*",
+    "use-places-autocomplete": "*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}

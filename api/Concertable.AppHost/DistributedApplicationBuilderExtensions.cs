@@ -103,9 +103,9 @@ internal static class DistributedApplicationBuilderExtensions
                 ctx.EnvironmentVariables["Auth__PublicUrl"] = authUrl;
         });
 
-        AddMobileSurface(builder, api, auth, tunnel, lanIp, "customer");
-        AddMobileSurface(builder, api, auth, tunnel, lanIp, "venue");
-        AddMobileSurface(builder, api, auth, tunnel, lanIp, "artist");
+        AddMobileSurface(builder, api, auth, tunnel, lanIp, "customer", "mobile-customer");
+        AddMobileSurface(builder, api, auth, tunnel, lanIp, "venue", "mobile-venue");
+        AddMobileSurface(builder, api, auth, tunnel, lanIp, "artist", "mobile-artist");
     }
 
     private static IResourceBuilder<NodeAppResource> AddMobileSurface(
@@ -114,9 +114,10 @@ internal static class DistributedApplicationBuilderExtensions
         IResourceBuilder<ProjectResource> auth,
         IResourceBuilder<DevTunnelResource> tunnel,
         string lanIp,
-        string surface)
+        string surface,
+        string resourceName)
     {
-        var mobile = builder.AddNpmApp(surface, $"../../app/mobile/{surface}", "start:ci")
+        var mobile = builder.AddNpmApp(resourceName, $"../../app/mobile/{surface}", "start:ci")
                .WithEnvironment("REACT_NATIVE_PACKAGER_HOSTNAME", lanIp)
                .WithReference(api, tunnel)
                .WithReference(auth, tunnel)

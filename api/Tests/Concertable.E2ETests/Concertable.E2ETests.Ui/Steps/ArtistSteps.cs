@@ -29,7 +29,7 @@ public class ArtistSteps
     {
         await browser.UseRoleAsync(Role.ArtistManager);
 
-        venuePage = new ArtistVenueDetailsPage(browser.Page, fixture.App.SpaBaseUrl);
+        venuePage = new ArtistVenueDetailsPage(browser.Page, fixture.App.ArtistSpaUrl);
         await venuePage.GotoAsync(state.VenueId);
 
         var applied = browser.Page.WaitForResponseAsync($"**/api/application/{state.OpportunityId}");
@@ -44,7 +44,7 @@ public class ArtistSteps
     {
         await browser.UseRoleAsync(Role.ArtistManager);
 
-        venuePage = new ArtistVenueDetailsPage(browser.Page, fixture.App.SpaBaseUrl);
+        venuePage = new ArtistVenueDetailsPage(browser.Page, fixture.App.ArtistSpaUrl);
         await venuePage.GotoAsync(state.VenueId);
         await venuePage.ApplyAsync(state.OpportunityId);
 
@@ -61,7 +61,7 @@ public class ArtistSteps
         state.VenueId = opp.VenueId;
         state.OpportunityId = opp.OpportunityId;
 
-        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/artist/opportunity/checkout/{state.OpportunityId}");
+        await browser.Page.GotoAsync($"{fixture.App.ArtistSpaUrl}/artist/opportunity/checkout/{state.OpportunityId}");
     }
 
     [When(@"the artist pays the venue hire fee with a new card")]

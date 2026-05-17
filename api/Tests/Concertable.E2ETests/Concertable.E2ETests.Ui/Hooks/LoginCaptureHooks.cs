@@ -31,8 +31,9 @@ public static class LoginCaptureHooks
     {
         await using var context = await fixture.Browser.NewContextAsync(new() { IgnoreHTTPSErrors = true });
         var page = await context.NewPageAsync();
-        var home = new HomePage(page, fixture.App.SpaBaseUrl);
-        var login = new LoginPage(page, fixture.App.SpaBaseUrl);
+        var spaUrl = fixture.App.GetSpaUrlForRole(role);
+        var home = new HomePage(page, spaUrl);
+        var login = new LoginPage(page, spaUrl);
 
         await home.GotoAsync();
         await home.ClickSignInAsync();

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/features/auth";
 import { useAuthStore, userManager } from "@/features/auth";
 import userApi from "../api/userApi";
 

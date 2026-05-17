@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useAuth } from "@/features/auth";
 
 function RegisterRedirect() {
+  const { register } = useAuth();
+
   useEffect(() => {
-    window.location.href = `${import.meta.env.VITE_AUTH_AUTHORITY}/Account/Register`;
-  }, []);
+    void register();
+  }, [register]);
 
   return null;
 }

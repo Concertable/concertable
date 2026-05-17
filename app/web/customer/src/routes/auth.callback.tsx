@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/features/auth";
 import { Loader2 } from "lucide-react";
 
 function AuthCallback() {

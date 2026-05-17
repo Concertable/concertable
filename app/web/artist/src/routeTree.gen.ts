@@ -16,6 +16,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FailRouteImport } from './routes/fail'
 import { Route as ArtistRouteRouteImport } from './routes/artist/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ArtistIndexRouteImport } from './routes/artist/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ArtistCreateRouteImport } from './routes/artist/create'
@@ -59,6 +60,11 @@ const FailRoute = FailRouteImport.update({
 const ArtistRouteRoute = ArtistRouteRouteImport.update({
   id: '/artist',
   path: '/artist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistIndexRoute = ArtistIndexRouteImport.update({
@@ -111,6 +117,7 @@ const ArtistMyConcertsConcertIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/artist': typeof ArtistRouteRouteWithChildren
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/artist': typeof ArtistRouteRouteWithChildren
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
@@ -167,6 +176,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/artist'
     | '/fail'
     | '/login'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/artist/my/concerts/concert/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/fail'
     | '/login'
     | '/register'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/artist/my/concerts/concert/$id'
   id:
     | '__root__'
+    | '/'
     | '/artist'
     | '/fail'
     | '/login'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   ArtistRouteRoute: typeof ArtistRouteRouteWithChildren
   FailRoute: typeof FailRoute
   LoginRoute: typeof LoginRoute
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       path: '/artist'
       fullPath: '/artist'
       preLoaderRoute: typeof ArtistRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/artist/': {
@@ -377,6 +397,7 @@ const ArtistRouteRouteWithChildren = ArtistRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   ArtistRouteRoute: ArtistRouteRouteWithChildren,
   FailRoute: FailRoute,
   LoginRoute: LoginRoute,

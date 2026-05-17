@@ -1,5 +1,5 @@
 {
-  "name": "@concertable/web/artist",
+  "name": "@concertable/web-artist",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,15 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@concertable/shared": "*"
+    "@concertable/shared": "*",
+    "@concertable/web-shared": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-oidc-context": "^3.0.0",
+    "tw-animate-css": "*"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.1",
+    "@tailwindcss/vite": "^4.3.0",
+    "@tanstack/router-devtools": "^1.167.0",
     "@tanstack/router-vite-plugin": "^1.166.13",
     "@types/node": "^24.12.0",
-    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.0",
-    "tailwindcss": "^4.2.1",
+    "tailwindcss": "^4.3.0",
     "typescript": "~5.9.3",
     "vite": "^8.0.0"
   }

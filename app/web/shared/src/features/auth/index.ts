@@ -1,4 +1,5 @@
 export { useAuthStore } from "./store/useAuthStore";
+export { useAuth } from "./hooks/useAuth";
 export { useRole } from "./hooks/useRole";
 export { useRouteRole } from "./hooks/useRouteRole";
 export { userManager, onSigninCallback } from "./config/oidcConfig";

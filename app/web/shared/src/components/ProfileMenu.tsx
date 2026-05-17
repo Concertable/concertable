@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
-import { useAuth } from "react-oidc-context";
-import { useAuthStore, isArtistManager, isVenueManager } from "@/features/auth";
+import { useAuth, useAuthStore, isArtistManager, isVenueManager } from "@/features/auth";
 import { useNavSection } from "@/hooks/useNavSection";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/IconButton";
