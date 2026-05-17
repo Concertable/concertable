@@ -8,7 +8,7 @@ public class ArtistVenueDetailsPage
     public ArtistVenueDetailsPage(IPage page, string spaBaseUrl)
     {
         this.page = page;
-        this.url = $"{spaBaseUrl}/artist/find/venue";
+        this.url = $"{spaBaseUrl}/find/venue";
     }
 
     private ILocator Opportunity(int id) => page.GetByTestId($"opportunity-{id}");

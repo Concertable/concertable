@@ -8,7 +8,7 @@ public class MyVenuePage
     public MyVenuePage(IPage page, string spaBaseUrl)
     {
         this.page = page;
-        this.url = $"{spaBaseUrl}/venue/my";
+        this.url = $"{spaBaseUrl}/my";
     }
 
     private ILocator EditButton => page.GetByTestId("edit");

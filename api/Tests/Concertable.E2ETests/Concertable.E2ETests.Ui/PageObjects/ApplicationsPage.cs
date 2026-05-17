@@ -8,7 +8,7 @@ public class ApplicationsPage
     public ApplicationsPage(IPage page, string spaBaseUrl)
     {
         this.page = page;
-        this.url = $"{spaBaseUrl}/venue/my/applications";
+        this.url = $"{spaBaseUrl}/my/applications";
     }
 
     private ILocator Application(int id) => page.GetByTestId($"application-{id}");
