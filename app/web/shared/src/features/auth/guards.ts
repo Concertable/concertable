@@ -21,6 +21,11 @@ async function ensureUser(): Promise<User | null> {
   }
 }
 
+function redirectToBusiness(): never {
+  window.location.href = import.meta.env.VITE_BUSINESS_URL;
+  throw new Error("redirecting to business");
+}
+
 export async function requireAuth({
   location,
 }: { location?: { pathname: string } } = {}) {
@@ -44,4 +49,10 @@ export async function requireRole(
 ) {
   const user = await requireAuth({ location });
   if (user.role !== role) throw redirect({ to: "/" });
+}
+
+export async function requireBusinessRole(role: Role) {
+  if (!(await hasValidSession())) redirectToBusiness();
+  const user = await ensureUser();
+  if (!user || user.role !== role) redirectToBusiness();
 }
