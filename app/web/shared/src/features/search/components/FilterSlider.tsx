@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FunnelIcon, PlusIcon, XIcon } from "lucide-react";
+import { FilterIcon, PlusIcon, XIcon } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -66,7 +66,7 @@ export function FilterSlider() {
           className="shrink-0 rounded-full"
           data-testid="filter-open"
         >
-          <FunnelIcon />
+          <FilterIcon />
         </Button>
       </SheetTrigger>
 

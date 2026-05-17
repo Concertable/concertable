@@ -66,9 +66,14 @@ function Form({
     }
 
     const isSetup = session.clientSecret.startsWith("seti_");
+    const confirmParams = {
+      payment_method_data: {
+        billing_details: { address: { postal_code: "SW1A 1AA" } },
+      },
+    };
     const result = isSetup
-      ? await stripe.confirmSetup({ elements, redirect: "if_required" })
-      : await stripe.confirmPayment({ elements, redirect: "if_required" });
+      ? await stripe.confirmSetup({ elements, confirmParams, redirect: "if_required" })
+      : await stripe.confirmPayment({ elements, confirmParams, redirect: "if_required" });
 
     if (result.error) {
       setError(result.error.message ?? "Payment failed.");
@@ -90,7 +95,13 @@ function Form({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement options={{ layout: "tabs" }} onReady={() => setPaymentReady(true)} />
+      <PaymentElement
+        options={{
+          layout: "tabs",
+          fields: { billingDetails: { address: { postalCode: "never" } } },
+        }}
+        onReady={() => setPaymentReady(true)}
+      />
       {error && <p data-testid="payment-error" className="text-destructive text-sm">{error}</p>}
       <Button
         type="submit"

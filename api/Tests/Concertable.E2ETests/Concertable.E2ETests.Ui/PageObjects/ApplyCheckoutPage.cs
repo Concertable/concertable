@@ -15,13 +15,13 @@ public class ApplyCheckoutPage
 
     public async Task PayWithNewCardAsync(string cardNumber)
     {
-        await page.WaitForURLAsync("**/artist/opportunity/checkout/**");
+        await page.WaitForURLAsync("**/opportunity/checkout/**");
         await payment.PayWithNewCardAsync(cardNumber);
     }
 
     public async Task PayWithSavedCardAsync()
     {
-        await page.WaitForURLAsync("**/artist/opportunity/checkout/**");
+        await page.WaitForURLAsync("**/opportunity/checkout/**");
         await payment.PayWithSavedCardAsync();
     }
 

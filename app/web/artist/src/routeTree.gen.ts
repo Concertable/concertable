@@ -15,16 +15,16 @@ import { Route as StripeRefreshRouteImport } from './routes/stripe-refresh'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FailRouteImport } from './routes/fail'
-import { Route as ArtistRouteRouteImport } from './routes/artist/route'
-import { Route as ArtistIndexRouteImport } from './routes/artist/index'
+import { Route as ArtistRouteRouteImport } from './routes/_artist/route'
+import { Route as ArtistIndexRouteImport } from './routes/_artist/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as ArtistCreateRouteImport } from './routes/artist/create'
-import { Route as ArtistMyIndexRouteImport } from './routes/artist/my/index'
-import { Route as ArtistFindIndexRouteImport } from './routes/artist/find/index'
-import { Route as ArtistOpportunityCheckoutOpportunityIdRouteImport } from './routes/artist/opportunity/checkout.$opportunityId'
-import { Route as ArtistFindVenueIdRouteImport } from './routes/artist/find/venue.$id'
-import { Route as ArtistApplicationCheckoutApplicationIdRouteImport } from './routes/artist/application/checkout.$applicationId'
-import { Route as ArtistMyConcertsConcertIdRouteImport } from './routes/artist/my/concerts/concert.$id'
+import { Route as ArtistCreateRouteImport } from './routes/_artist/create'
+import { Route as ArtistMyIndexRouteImport } from './routes/_artist/my/index'
+import { Route as ArtistFindIndexRouteImport } from './routes/_artist/find/index'
+import { Route as ArtistOpportunityCheckoutOpportunityIdRouteImport } from './routes/_artist/opportunity/checkout.$opportunityId'
+import { Route as ArtistFindVenueIdRouteImport } from './routes/_artist/find/venue.$id'
+import { Route as ArtistApplicationCheckoutApplicationIdRouteImport } from './routes/_artist/application/checkout.$applicationId'
+import { Route as ArtistMyConcertsConcertIdRouteImport } from './routes/_artist/my/concerts/concert.$id'
 
 const SuccessRoute = SuccessRouteImport.update({
   id: '/success',
@@ -57,8 +57,7 @@ const FailRoute = FailRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistRouteRoute = ArtistRouteRouteImport.update({
-  id: '/artist',
-  path: '/artist',
+  id: '/_artist',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistIndexRoute = ArtistIndexRouteImport.update({
@@ -111,22 +110,21 @@ const ArtistMyConcertsConcertIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/artist': typeof ArtistRouteRouteWithChildren
+  '/': typeof ArtistIndexRoute
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/stripe-refresh': typeof StripeRefreshRoute
   '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
-  '/artist/create': typeof ArtistCreateRoute
+  '/create': typeof ArtistCreateRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/artist/': typeof ArtistIndexRoute
-  '/artist/find/': typeof ArtistFindIndexRoute
-  '/artist/my/': typeof ArtistMyIndexRoute
-  '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
-  '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
-  '/artist/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
-  '/artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
+  '/find/': typeof ArtistFindIndexRoute
+  '/my/': typeof ArtistMyIndexRoute
+  '/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
+  '/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
+  '/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
 }
 export interface FileRoutesByTo {
   '/fail': typeof FailRoute
@@ -135,54 +133,53 @@ export interface FileRoutesByTo {
   '/stripe-refresh': typeof StripeRefreshRoute
   '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
-  '/artist/create': typeof ArtistCreateRoute
+  '/create': typeof ArtistCreateRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/artist': typeof ArtistIndexRoute
-  '/artist/find': typeof ArtistFindIndexRoute
-  '/artist/my': typeof ArtistMyIndexRoute
-  '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
-  '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
-  '/artist/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
-  '/artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
+  '/': typeof ArtistIndexRoute
+  '/find': typeof ArtistFindIndexRoute
+  '/my': typeof ArtistMyIndexRoute
+  '/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
+  '/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
+  '/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/artist': typeof ArtistRouteRouteWithChildren
+  '/_artist': typeof ArtistRouteRouteWithChildren
   '/fail': typeof FailRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/stripe-refresh': typeof StripeRefreshRoute
   '/stripe-return': typeof StripeReturnRoute
   '/success': typeof SuccessRoute
-  '/artist/create': typeof ArtistCreateRoute
+  '/_artist/create': typeof ArtistCreateRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/artist/': typeof ArtistIndexRoute
-  '/artist/find/': typeof ArtistFindIndexRoute
-  '/artist/my/': typeof ArtistMyIndexRoute
-  '/artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
-  '/artist/find/venue/$id': typeof ArtistFindVenueIdRoute
-  '/artist/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
-  '/artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
+  '/_artist/': typeof ArtistIndexRoute
+  '/_artist/find/': typeof ArtistFindIndexRoute
+  '/_artist/my/': typeof ArtistMyIndexRoute
+  '/_artist/application/checkout/$applicationId': typeof ArtistApplicationCheckoutApplicationIdRoute
+  '/_artist/find/venue/$id': typeof ArtistFindVenueIdRoute
+  '/_artist/opportunity/checkout/$opportunityId': typeof ArtistOpportunityCheckoutOpportunityIdRoute
+  '/_artist/my/concerts/concert/$id': typeof ArtistMyConcertsConcertIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/artist'
+    | '/'
     | '/fail'
     | '/login'
     | '/register'
     | '/stripe-refresh'
     | '/stripe-return'
     | '/success'
-    | '/artist/create'
+    | '/create'
     | '/auth/callback'
-    | '/artist/'
-    | '/artist/find/'
-    | '/artist/my/'
-    | '/artist/application/checkout/$applicationId'
-    | '/artist/find/venue/$id'
-    | '/artist/opportunity/checkout/$opportunityId'
-    | '/artist/my/concerts/concert/$id'
+    | '/find/'
+    | '/my/'
+    | '/application/checkout/$applicationId'
+    | '/find/venue/$id'
+    | '/opportunity/checkout/$opportunityId'
+    | '/my/concerts/concert/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/fail'
@@ -191,33 +188,33 @@ export interface FileRouteTypes {
     | '/stripe-refresh'
     | '/stripe-return'
     | '/success'
-    | '/artist/create'
+    | '/create'
     | '/auth/callback'
-    | '/artist'
-    | '/artist/find'
-    | '/artist/my'
-    | '/artist/application/checkout/$applicationId'
-    | '/artist/find/venue/$id'
-    | '/artist/opportunity/checkout/$opportunityId'
-    | '/artist/my/concerts/concert/$id'
+    | '/'
+    | '/find'
+    | '/my'
+    | '/application/checkout/$applicationId'
+    | '/find/venue/$id'
+    | '/opportunity/checkout/$opportunityId'
+    | '/my/concerts/concert/$id'
   id:
     | '__root__'
-    | '/artist'
+    | '/_artist'
     | '/fail'
     | '/login'
     | '/register'
     | '/stripe-refresh'
     | '/stripe-return'
     | '/success'
-    | '/artist/create'
+    | '/_artist/create'
     | '/auth/callback'
-    | '/artist/'
-    | '/artist/find/'
-    | '/artist/my/'
-    | '/artist/application/checkout/$applicationId'
-    | '/artist/find/venue/$id'
-    | '/artist/opportunity/checkout/$opportunityId'
-    | '/artist/my/concerts/concert/$id'
+    | '/_artist/'
+    | '/_artist/find/'
+    | '/_artist/my/'
+    | '/_artist/application/checkout/$applicationId'
+    | '/_artist/find/venue/$id'
+    | '/_artist/opportunity/checkout/$opportunityId'
+    | '/_artist/my/concerts/concert/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,17 +272,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FailRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/artist': {
-      id: '/artist'
-      path: '/artist'
-      fullPath: '/artist'
+    '/_artist': {
+      id: '/_artist'
+      path: ''
+      fullPath: '/'
       preLoaderRoute: typeof ArtistRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/artist/': {
-      id: '/artist/'
+    '/_artist/': {
+      id: '/_artist/'
       path: '/'
-      fullPath: '/artist/'
+      fullPath: '/'
       preLoaderRoute: typeof ArtistIndexRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
@@ -296,52 +293,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/artist/create': {
-      id: '/artist/create'
+    '/_artist/create': {
+      id: '/_artist/create'
       path: '/create'
-      fullPath: '/artist/create'
+      fullPath: '/create'
       preLoaderRoute: typeof ArtistCreateRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
-    '/artist/my/': {
-      id: '/artist/my/'
+    '/_artist/my/': {
+      id: '/_artist/my/'
       path: '/my'
-      fullPath: '/artist/my/'
+      fullPath: '/my/'
       preLoaderRoute: typeof ArtistMyIndexRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
-    '/artist/find/': {
-      id: '/artist/find/'
+    '/_artist/find/': {
+      id: '/_artist/find/'
       path: '/find'
-      fullPath: '/artist/find/'
+      fullPath: '/find/'
       preLoaderRoute: typeof ArtistFindIndexRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
-    '/artist/opportunity/checkout/$opportunityId': {
-      id: '/artist/opportunity/checkout/$opportunityId'
+    '/_artist/opportunity/checkout/$opportunityId': {
+      id: '/_artist/opportunity/checkout/$opportunityId'
       path: '/opportunity/checkout/$opportunityId'
-      fullPath: '/artist/opportunity/checkout/$opportunityId'
+      fullPath: '/opportunity/checkout/$opportunityId'
       preLoaderRoute: typeof ArtistOpportunityCheckoutOpportunityIdRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
-    '/artist/find/venue/$id': {
-      id: '/artist/find/venue/$id'
+    '/_artist/find/venue/$id': {
+      id: '/_artist/find/venue/$id'
       path: '/find/venue/$id'
-      fullPath: '/artist/find/venue/$id'
+      fullPath: '/find/venue/$id'
       preLoaderRoute: typeof ArtistFindVenueIdRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
-    '/artist/application/checkout/$applicationId': {
-      id: '/artist/application/checkout/$applicationId'
+    '/_artist/application/checkout/$applicationId': {
+      id: '/_artist/application/checkout/$applicationId'
       path: '/application/checkout/$applicationId'
-      fullPath: '/artist/application/checkout/$applicationId'
+      fullPath: '/application/checkout/$applicationId'
       preLoaderRoute: typeof ArtistApplicationCheckoutApplicationIdRouteImport
       parentRoute: typeof ArtistRouteRoute
     }
-    '/artist/my/concerts/concert/$id': {
-      id: '/artist/my/concerts/concert/$id'
+    '/_artist/my/concerts/concert/$id': {
+      id: '/_artist/my/concerts/concert/$id'
       path: '/my/concerts/concert/$id'
-      fullPath: '/artist/my/concerts/concert/$id'
+      fullPath: '/my/concerts/concert/$id'
       preLoaderRoute: typeof ArtistMyConcertsConcertIdRouteImport
       parentRoute: typeof ArtistRouteRoute
     }

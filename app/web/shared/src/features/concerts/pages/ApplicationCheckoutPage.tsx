@@ -63,7 +63,7 @@ export function ApplicationCheckoutFlow({ artistName, flow }: Readonly<Props>) {
 
   useEffect(() => {
     if (flow.phase === "success")
-      void router.navigate({ to: "/venue/my/concerts/concert/$id", params: { id: flow.result } });
+      void router.navigate({ to: "/my/concerts/concert/$id", params: { id: flow.result } });
   }, [flow, router]);
 
   const config = {
@@ -82,7 +82,7 @@ export function ApplicationCheckoutFlow({ artistName, flow }: Readonly<Props>) {
           artistName={artistName}
           onView={() =>
             void router.navigate({
-              to: "/venue/my/concerts/concert/$id",
+              to: "/my/concerts/concert/$id",
               params: { id: concertId },
             })
           }

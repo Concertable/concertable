@@ -32,7 +32,7 @@ export function useVenueNotifications() {
       (payload: ConcertDraftCreatedPayload) => {
         toast.success("Your concert has been created");
         void router.navigate({
-          to: "/venue/my/concerts/concert/$id",
+          to: "/my/concerts/concert/$id",
           params: { id: payload },
         });
       },
@@ -62,7 +62,7 @@ export function useArtistNotifications() {
       (payload: ApplicationAcceptedPayload) => {
         console.log("[SignalR] ApplicationAccepted:", payload);
         void router.navigate({
-          to: "/artist/my/concerts/concert/$id",
+          to: "/my/concerts/concert/$id",
           params: { id: payload },
         });
       },

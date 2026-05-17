@@ -29,7 +29,7 @@ public class VenueManagerSteps
     {
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
-        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.VenueSpaUrl);
         await myVenuePage.GotoAsync();
         await myVenuePage.PostFlatFeeOpportunityAsync(fee);
         await myVenuePage.WaitUntilSavedAsync();
@@ -47,14 +47,14 @@ public class VenueManagerSteps
     {
         await browser.UseRoleAsync(Role.VenueManager);
 
-        var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.SpaBaseUrl);
+        var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.VenueSpaUrl);
         await applicationsPage.GotoAsync(state.OpportunityId);
         await applicationsPage.ClickAcceptAsync(state.ApplicationId);
 
         var acceptPage = new AcceptApplicationPage(browser.Page);
         await acceptPage.ClickConfirmAsync();
 
-        await browser.Page.WaitForURLAsync("**/venue/application/checkout/**", new() { Timeout = 15_000 });
+        await browser.Page.WaitForURLAsync("**/applications/*/checkout", new() { Timeout = 15_000 });
 
         var checkoutPage = new ApplicationCheckoutPage(browser.Page, payment);
         if (verify)
@@ -68,7 +68,7 @@ public class VenueManagerSteps
     {
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
-        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.VenueSpaUrl);
         await myVenuePage.GotoAsync();
         await myVenuePage.PostVenueHireOpportunityAsync(fee);
         await myVenuePage.WaitUntilSavedAsync();
@@ -81,7 +81,7 @@ public class VenueManagerSteps
     {
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
-        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.VenueSpaUrl);
         await myVenuePage.GotoAsync();
         await myVenuePage.PostDoorSplitOpportunityAsync(doorPercent);
         await myVenuePage.WaitUntilSavedAsync();
@@ -94,7 +94,7 @@ public class VenueManagerSteps
     {
         state.VenueId = fixture.App.SeedData.VenueManager1.VenueId;
 
-        myVenuePage = new MyVenuePage(browser.Page, fixture.App.SpaBaseUrl);
+        myVenuePage = new MyVenuePage(browser.Page, fixture.App.VenueSpaUrl);
         await myVenuePage.GotoAsync();
         await myVenuePage.PostVersusOpportunityAsync(guarantee, doorPercent);
         await myVenuePage.WaitUntilSavedAsync();
@@ -107,7 +107,7 @@ public class VenueManagerSteps
     {
         await browser.UseRoleAsync(Role.VenueManager);
 
-        var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.SpaBaseUrl);
+        var applicationsPage = new ApplicationsPage(browser.Page, fixture.App.VenueSpaUrl);
         await applicationsPage.GotoAsync(state.OpportunityId);
         await applicationsPage.ClickAcceptAsync(state.ApplicationId);
 
@@ -119,21 +119,21 @@ public class VenueManagerSteps
     public async Task AFlatFeeOpportunityHasBeenAppliedTo()
     {
         state.ApplicationId = fixture.App.SeedData.PendingFlatFeeApp.ApplicationId;
-        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/applications/{state.ApplicationId}/checkout");
     }
 
     [Given(@"a door split opportunity has been applied to")]
     public async Task ADoorSplitOpportunityHasBeenAppliedTo()
     {
         state.ApplicationId = fixture.App.SeedData.PendingDoorSplitApp.ApplicationId;
-        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/applications/{state.ApplicationId}/checkout");
     }
 
     [Given(@"a versus opportunity has been applied to")]
     public async Task AVersusOpportunityHasBeenAppliedTo()
     {
         state.ApplicationId = fixture.App.SeedData.PendingVersusApp.ApplicationId;
-        await browser.Page.GotoAsync($"{fixture.App.SpaBaseUrl}/venue/application/checkout/{state.ApplicationId}");
+        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/applications/{state.ApplicationId}/checkout");
     }
 
     [When(@"the venue manager pays the flat fee with a new card")]
@@ -182,7 +182,7 @@ public class VenueManagerSteps
 
     [Then(@"a draft concert is created")]
     public Task DraftConcertCreated() =>
-        browser.Page.WaitForURLAsync("**/venue/my/concerts/concert/**", new() { Timeout = 60_000 });
+        browser.Page.WaitForURLAsync("**/my/concerts/concert/**", new() { Timeout = 60_000 });
 
     private Task<int> FetchNewestOpportunityIdAsync(int venueId) =>
         fixture.App.Db.Opportunity.GetNewestAsync(venueId);

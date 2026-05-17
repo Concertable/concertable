@@ -23,7 +23,9 @@ public class AppFixture : IAsyncLifetime
 
     public string ApiBaseUrl { get; }
     public string AuthBaseUrl { get; }
-    public string SpaBaseUrl { get; }
+    public string CustomerSpaUrl { get; }
+    public string VenueSpaUrl { get; }
+    public string ArtistSpaUrl { get; }
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
@@ -50,8 +52,12 @@ public class AppFixture : IAsyncLifetime
             ?? throw new InvalidOperationException("Endpoints:Api is not configured in appsettings.E2E.json.");
         AuthBaseUrl = configuration["Endpoints:Auth"]
             ?? throw new InvalidOperationException("Endpoints:Auth is not configured in appsettings.E2E.json.");
-        SpaBaseUrl = configuration["Endpoints:Spa"]
-            ?? throw new InvalidOperationException("Endpoints:Spa is not configured in appsettings.E2E.json.");
+        CustomerSpaUrl = configuration["Endpoints:CustomerSpa"]
+            ?? throw new InvalidOperationException("Endpoints:CustomerSpa is not configured in appsettings.E2E.json.");
+        VenueSpaUrl = configuration["Endpoints:VenueSpa"]
+            ?? throw new InvalidOperationException("Endpoints:VenueSpa is not configured in appsettings.E2E.json.");
+        ArtistSpaUrl = configuration["Endpoints:ArtistSpa"]
+            ?? throw new InvalidOperationException("Endpoints:ArtistSpa is not configured in appsettings.E2E.json.");
 
         tokenMinter = new TestTokenMinter(configuration);
     }

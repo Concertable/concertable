@@ -8,13 +8,13 @@ public class ApplicationsPage
     public ApplicationsPage(IPage page, string spaBaseUrl)
     {
         this.page = page;
-        this.url = $"{spaBaseUrl}/venue/my/applications";
+        this.url = spaBaseUrl;
     }
 
     private ILocator Application(int id) => page.GetByTestId($"application-{id}");
     private ILocator AcceptButton(int id) => Application(id).GetByTestId("accept");
 
-    public Task GotoAsync(int opportunityId) => page.GotoAsync($"{url}/{opportunityId}");
+    public Task GotoAsync(int opportunityId) => page.GotoAsync($"{url}/my/opportunities/{opportunityId}/applications");
 
     public Task ClickAcceptAsync(int applicationId) => AcceptButton(applicationId).ClickAsync();
 }

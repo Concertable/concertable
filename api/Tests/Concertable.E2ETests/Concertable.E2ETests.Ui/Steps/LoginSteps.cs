@@ -20,8 +20,8 @@ public class LoginSteps
     [Given(@"a visitor is on the home page")]
     public async Task VisitorOnHomePage()
     {
-        homePage = new HomePage(browser.Page, fixture.App.SpaBaseUrl);
-        loginPage = new LoginPage(browser.Page, fixture.App.SpaBaseUrl);
+        homePage = new HomePage(browser.Page, fixture.App.CustomerSpaUrl);
+        loginPage = new LoginPage(browser.Page, fixture.App.CustomerSpaUrl);
         await homePage.GotoAsync();
     }
 

@@ -91,10 +91,10 @@ export function ProfileMenu() {
         {isArtistManager(user) && (
           <>
             <DropdownMenuItem asChild>
-              <Link to="/artist/my">My Artist</Link>
+              <Link to="/my">My Artist</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/artist">Dashboard</Link>
+              <Link to="/">Dashboard</Link>
             </DropdownMenuItem>
           </>
         )}
@@ -102,10 +102,10 @@ export function ProfileMenu() {
         {isVenueManager(user) && (
           <>
             <DropdownMenuItem asChild>
-              <Link to="/venue/my">My Venue</Link>
+              <Link to="/my">My Venue</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/venue">Dashboard</Link>
+              <Link to="/">Dashboard</Link>
             </DropdownMenuItem>
           </>
         )}

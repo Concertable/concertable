@@ -3,9 +3,9 @@ import { useApplicationsByOpportunityQuery } from "../hooks/useApplicationQuery"
 import { ApplicationCard } from "../components/applications/ApplicationCard";
 
 export function ApplicationsPage() {
-  const { id } = useParams({ from: "/venue/my/applications/$id" });
+  const { opportunityId } = useParams({ from: "/_venue/my/opportunities/$opportunityId/applications" });
   const { data: applications, isLoading } = useApplicationsByOpportunityQuery(
-    Number(id),
+    Number(opportunityId),
   );
 
   if (isLoading) return null;

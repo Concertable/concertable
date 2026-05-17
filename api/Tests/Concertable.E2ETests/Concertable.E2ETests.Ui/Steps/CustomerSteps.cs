@@ -27,7 +27,7 @@ public class CustomerSteps
     [Given(@"the customer is on a concert detail page")]
     public async Task GivenOnConcertDetailPage()
     {
-        findPage = new FindPage(browser.Page, fixture.App.SpaBaseUrl);
+        findPage = new FindPage(browser.Page, fixture.App.CustomerSpaUrl);
         await findPage.GotoAsync();
         await findPage.OpenFilterPanelAsync();
         await findPage.SelectHeaderTypeAsync("Concert");
@@ -42,7 +42,7 @@ public class CustomerSteps
     [When(@"the customer opens the filter panel on the find page")]
     public async Task OpensFilterPanelOnFindPage()
     {
-        findPage = new FindPage(browser.Page, fixture.App.SpaBaseUrl);
+        findPage = new FindPage(browser.Page, fixture.App.CustomerSpaUrl);
         await findPage.GotoAsync();
         await findPage.OpenFilterPanelAsync();
     }

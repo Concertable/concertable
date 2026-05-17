@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { TicketPurchasedPayload } from "@/features/notifications";
 import { useConcert } from "../hooks/useConcert";
 import { useTicketCheckoutQuery } from "../hooks/useTicketsQuery";
-import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
+import { useCheckoutFlow, type CheckoutFlowState } from "../hooks/useCheckoutFlow";
 import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
 import { CheckoutSection } from "../components/checkout/CheckoutSection";
 import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
@@ -37,11 +37,11 @@ const config = {
 
 interface Props {
   concert: Concert;
+  flow: CheckoutFlowState<TicketPurchasedPayload>;
 }
 
-export function TicketCheckoutFlow({ concert }: Readonly<Props>) {
+export function TicketCheckoutFlow({ concert, flow }: Readonly<Props>) {
   const router = useRouter();
-  const flow = useCheckoutFlow<TicketPurchasedPayload>({ event: "TicketPurchased" });
 
   return (
     <CheckoutFlow
@@ -61,6 +61,7 @@ export function TicketCheckoutFlow({ concert }: Readonly<Props>) {
 function TicketCheckoutForm({ concert }: { concert: Concert }) {
   const [quantity, setQuantity] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const flow = useCheckoutFlow<TicketPurchasedPayload>({ event: "TicketPurchased" });
   const {
     data: checkout,
     isLoading: isCheckoutLoading,
@@ -68,7 +69,7 @@ function TicketCheckoutForm({ concert }: { concert: Concert }) {
     isFetching,
   } = useTicketCheckoutQuery(concert.id, quantity);
 
-  if (submitted) return <TicketCheckoutFlow concert={concert} />;
+  if (submitted) return <TicketCheckoutFlow concert={concert} flow={flow} />;
   if (isCheckoutLoading) return <CheckoutSkeleton />;
   if (isCheckoutError || !checkout)
     return (

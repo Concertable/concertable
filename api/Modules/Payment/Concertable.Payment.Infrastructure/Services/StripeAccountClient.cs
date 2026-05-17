@@ -47,7 +47,11 @@ internal class StripeAccountClient : IStripeAccountClient
 
     public async Task ProvisionCustomerAsync(Guid userId, string email, CancellationToken ct = default)
     {
-        var customer = await customerService.CreateAsync(new CustomerCreateOptions { Email = email }, cancellationToken: ct);
+        var customer = await customerService.CreateAsync(new CustomerCreateOptions
+        {
+            Email = email,
+            Address = new AddressOptions { Country = "GB" },
+        }, cancellationToken: ct);
         var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct) ?? PayoutAccountEntity.Create(userId);
         account.LinkCustomer(customer.Id);
         if (account.Id == 0)
