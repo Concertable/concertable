@@ -9,6 +9,7 @@ export const userManager = new UserManager({
   scope: "openid profile roles concertable.api offline_access",
   userStore: new WebStorageStateStore({ store: window.localStorage }),
   automaticSilentRenew: true,
+  loadUserInfo: true,
 });
 
 export const onSigninCallback = () => {
