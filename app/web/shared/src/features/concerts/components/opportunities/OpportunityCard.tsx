@@ -138,8 +138,8 @@ function ReadView({ opportunity }: { opportunity: Opportunity }) {
                   size="sm"
                   onClick={() =>
                     navigate({
-                      to: "/venue/my/applications/$id",
-                      params: { id: opportunity.id },
+                      to: "/my/opportunities/$opportunityId/applications",
+                      params: { opportunityId: opportunity.id },
                     })
                   }
                 >
@@ -154,7 +154,7 @@ function ReadView({ opportunity }: { opportunity: Opportunity }) {
                     onClick={() =>
                       opportunity.actions.checkout != null
                         ? navigate({
-                            to: "/artist/opportunity/checkout/$opportunityId",
+                            to: "/opportunity/checkout/$opportunityId",
                             params: { opportunityId: opportunity.id },
                           })
                         : apply()

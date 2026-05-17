@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AcceptApplicationPage } from "@/features/concerts";
+import { ApplicationCheckoutPage } from "@/features/concerts";
 
-export const Route = createFileRoute("/_venue/accept/$applicationId")({
+export const Route = createFileRoute("/_venue/applications/$applicationId/checkout")({
   params: {
     parse: (params) => ({ applicationId: Number(params.applicationId) }),
     stringify: (params) => ({ applicationId: String(params.applicationId) }),
   },
-  component: AcceptApplicationPage,
+  component: ApplicationCheckoutPage,
 });

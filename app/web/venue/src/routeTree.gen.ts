@@ -21,10 +21,10 @@ import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as VenueCreateRouteImport } from './routes/_venue/create'
 import { Route as VenueMyIndexRouteImport } from './routes/_venue/my/index'
 import { Route as VenueFindIndexRouteImport } from './routes/_venue/find/index'
-import { Route as VenueAcceptApplicationIdRouteImport } from './routes/_venue/accept/$applicationId'
-import { Route as VenueMyApplicationsIdRouteImport } from './routes/_venue/my/applications.$id'
 import { Route as VenueFindArtistIdRouteImport } from './routes/_venue/find/artist.$id'
-import { Route as VenueApplicationCheckoutApplicationIdRouteImport } from './routes/_venue/application/checkout.$applicationId'
+import { Route as VenueApplicationsApplicationIdCheckoutRouteImport } from './routes/_venue/applications/$applicationId/checkout'
+import { Route as VenueApplicationsApplicationIdAcceptRouteImport } from './routes/_venue/applications/$applicationId/accept'
+import { Route as VenueMyOpportunitiesOpportunityIdApplicationsRouteImport } from './routes/_venue/my/opportunities/$opportunityId/applications'
 import { Route as VenueMyConcertsConcertIdRouteImport } from './routes/_venue/my/concerts/concert.$id'
 
 const SuccessRoute = SuccessRouteImport.update({
@@ -86,26 +86,27 @@ const VenueFindIndexRoute = VenueFindIndexRouteImport.update({
   path: '/find/',
   getParentRoute: () => VenueRouteRoute,
 } as any)
-const VenueAcceptApplicationIdRoute =
-  VenueAcceptApplicationIdRouteImport.update({
-    id: '/accept/$applicationId',
-    path: '/accept/$applicationId',
-    getParentRoute: () => VenueRouteRoute,
-  } as any)
-const VenueMyApplicationsIdRoute = VenueMyApplicationsIdRouteImport.update({
-  id: '/my/applications/$id',
-  path: '/my/applications/$id',
-  getParentRoute: () => VenueRouteRoute,
-} as any)
 const VenueFindArtistIdRoute = VenueFindArtistIdRouteImport.update({
   id: '/find/artist/$id',
   path: '/find/artist/$id',
   getParentRoute: () => VenueRouteRoute,
 } as any)
-const VenueApplicationCheckoutApplicationIdRoute =
-  VenueApplicationCheckoutApplicationIdRouteImport.update({
-    id: '/application/checkout/$applicationId',
-    path: '/application/checkout/$applicationId',
+const VenueApplicationsApplicationIdCheckoutRoute =
+  VenueApplicationsApplicationIdCheckoutRouteImport.update({
+    id: '/applications/$applicationId/checkout',
+    path: '/applications/$applicationId/checkout',
+    getParentRoute: () => VenueRouteRoute,
+  } as any)
+const VenueApplicationsApplicationIdAcceptRoute =
+  VenueApplicationsApplicationIdAcceptRouteImport.update({
+    id: '/applications/$applicationId/accept',
+    path: '/applications/$applicationId/accept',
+    getParentRoute: () => VenueRouteRoute,
+  } as any)
+const VenueMyOpportunitiesOpportunityIdApplicationsRoute =
+  VenueMyOpportunitiesOpportunityIdApplicationsRouteImport.update({
+    id: '/my/opportunities/$opportunityId/applications',
+    path: '/my/opportunities/$opportunityId/applications',
     getParentRoute: () => VenueRouteRoute,
   } as any)
 const VenueMyConcertsConcertIdRoute =
@@ -125,13 +126,13 @@ export interface FileRoutesByFullPath {
   '/success': typeof SuccessRoute
   '/create': typeof VenueCreateRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/find/': typeof VenueFindIndexRoute
   '/my/': typeof VenueMyIndexRoute
-  '/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
+  '/applications/$applicationId/accept': typeof VenueApplicationsApplicationIdAcceptRoute
+  '/applications/$applicationId/checkout': typeof VenueApplicationsApplicationIdCheckoutRoute
   '/find/artist/$id': typeof VenueFindArtistIdRoute
-  '/my/applications/$id': typeof VenueMyApplicationsIdRoute
   '/my/concerts/concert/$id': typeof VenueMyConcertsConcertIdRoute
+  '/my/opportunities/$opportunityId/applications': typeof VenueMyOpportunitiesOpportunityIdApplicationsRoute
 }
 export interface FileRoutesByTo {
   '/fail': typeof FailRoute
@@ -143,13 +144,13 @@ export interface FileRoutesByTo {
   '/create': typeof VenueCreateRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/': typeof VenueIndexRoute
-  '/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/find': typeof VenueFindIndexRoute
   '/my': typeof VenueMyIndexRoute
-  '/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
+  '/applications/$applicationId/accept': typeof VenueApplicationsApplicationIdAcceptRoute
+  '/applications/$applicationId/checkout': typeof VenueApplicationsApplicationIdCheckoutRoute
   '/find/artist/$id': typeof VenueFindArtistIdRoute
-  '/my/applications/$id': typeof VenueMyApplicationsIdRoute
   '/my/concerts/concert/$id': typeof VenueMyConcertsConcertIdRoute
+  '/my/opportunities/$opportunityId/applications': typeof VenueMyOpportunitiesOpportunityIdApplicationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -163,13 +164,13 @@ export interface FileRoutesById {
   '/_venue/create': typeof VenueCreateRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_venue/': typeof VenueIndexRoute
-  '/_venue/accept/$applicationId': typeof VenueAcceptApplicationIdRoute
   '/_venue/find/': typeof VenueFindIndexRoute
   '/_venue/my/': typeof VenueMyIndexRoute
-  '/_venue/application/checkout/$applicationId': typeof VenueApplicationCheckoutApplicationIdRoute
+  '/_venue/applications/$applicationId/accept': typeof VenueApplicationsApplicationIdAcceptRoute
+  '/_venue/applications/$applicationId/checkout': typeof VenueApplicationsApplicationIdCheckoutRoute
   '/_venue/find/artist/$id': typeof VenueFindArtistIdRoute
-  '/_venue/my/applications/$id': typeof VenueMyApplicationsIdRoute
   '/_venue/my/concerts/concert/$id': typeof VenueMyConcertsConcertIdRoute
+  '/_venue/my/opportunities/$opportunityId/applications': typeof VenueMyOpportunitiesOpportunityIdApplicationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -183,13 +184,13 @@ export interface FileRouteTypes {
     | '/success'
     | '/create'
     | '/auth/callback'
-    | '/accept/$applicationId'
     | '/find/'
     | '/my/'
-    | '/application/checkout/$applicationId'
+    | '/applications/$applicationId/accept'
+    | '/applications/$applicationId/checkout'
     | '/find/artist/$id'
-    | '/my/applications/$id'
     | '/my/concerts/concert/$id'
+    | '/my/opportunities/$opportunityId/applications'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/fail'
@@ -201,13 +202,13 @@ export interface FileRouteTypes {
     | '/create'
     | '/auth/callback'
     | '/'
-    | '/accept/$applicationId'
     | '/find'
     | '/my'
-    | '/application/checkout/$applicationId'
+    | '/applications/$applicationId/accept'
+    | '/applications/$applicationId/checkout'
     | '/find/artist/$id'
-    | '/my/applications/$id'
     | '/my/concerts/concert/$id'
+    | '/my/opportunities/$opportunityId/applications'
   id:
     | '__root__'
     | '/_venue'
@@ -220,13 +221,13 @@ export interface FileRouteTypes {
     | '/_venue/create'
     | '/auth/callback'
     | '/_venue/'
-    | '/_venue/accept/$applicationId'
     | '/_venue/find/'
     | '/_venue/my/'
-    | '/_venue/application/checkout/$applicationId'
+    | '/_venue/applications/$applicationId/accept'
+    | '/_venue/applications/$applicationId/checkout'
     | '/_venue/find/artist/$id'
-    | '/_venue/my/applications/$id'
     | '/_venue/my/concerts/concert/$id'
+    | '/_venue/my/opportunities/$opportunityId/applications'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -326,20 +327,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VenueFindIndexRouteImport
       parentRoute: typeof VenueRouteRoute
     }
-    '/_venue/accept/$applicationId': {
-      id: '/_venue/accept/$applicationId'
-      path: '/accept/$applicationId'
-      fullPath: '/accept/$applicationId'
-      preLoaderRoute: typeof VenueAcceptApplicationIdRouteImport
-      parentRoute: typeof VenueRouteRoute
-    }
-    '/_venue/my/applications/$id': {
-      id: '/_venue/my/applications/$id'
-      path: '/my/applications/$id'
-      fullPath: '/my/applications/$id'
-      preLoaderRoute: typeof VenueMyApplicationsIdRouteImport
-      parentRoute: typeof VenueRouteRoute
-    }
     '/_venue/find/artist/$id': {
       id: '/_venue/find/artist/$id'
       path: '/find/artist/$id'
@@ -347,11 +334,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VenueFindArtistIdRouteImport
       parentRoute: typeof VenueRouteRoute
     }
-    '/_venue/application/checkout/$applicationId': {
-      id: '/_venue/application/checkout/$applicationId'
-      path: '/application/checkout/$applicationId'
-      fullPath: '/application/checkout/$applicationId'
-      preLoaderRoute: typeof VenueApplicationCheckoutApplicationIdRouteImport
+    '/_venue/applications/$applicationId/checkout': {
+      id: '/_venue/applications/$applicationId/checkout'
+      path: '/applications/$applicationId/checkout'
+      fullPath: '/applications/$applicationId/checkout'
+      preLoaderRoute: typeof VenueApplicationsApplicationIdCheckoutRouteImport
+      parentRoute: typeof VenueRouteRoute
+    }
+    '/_venue/applications/$applicationId/accept': {
+      id: '/_venue/applications/$applicationId/accept'
+      path: '/applications/$applicationId/accept'
+      fullPath: '/applications/$applicationId/accept'
+      preLoaderRoute: typeof VenueApplicationsApplicationIdAcceptRouteImport
+      parentRoute: typeof VenueRouteRoute
+    }
+    '/_venue/my/opportunities/$opportunityId/applications': {
+      id: '/_venue/my/opportunities/$opportunityId/applications'
+      path: '/my/opportunities/$opportunityId/applications'
+      fullPath: '/my/opportunities/$opportunityId/applications'
+      preLoaderRoute: typeof VenueMyOpportunitiesOpportunityIdApplicationsRouteImport
       parentRoute: typeof VenueRouteRoute
     }
     '/_venue/my/concerts/concert/$id': {
@@ -367,26 +368,28 @@ declare module '@tanstack/react-router' {
 interface VenueRouteRouteChildren {
   VenueCreateRoute: typeof VenueCreateRoute
   VenueIndexRoute: typeof VenueIndexRoute
-  VenueAcceptApplicationIdRoute: typeof VenueAcceptApplicationIdRoute
   VenueFindIndexRoute: typeof VenueFindIndexRoute
   VenueMyIndexRoute: typeof VenueMyIndexRoute
-  VenueApplicationCheckoutApplicationIdRoute: typeof VenueApplicationCheckoutApplicationIdRoute
+  VenueApplicationsApplicationIdAcceptRoute: typeof VenueApplicationsApplicationIdAcceptRoute
+  VenueApplicationsApplicationIdCheckoutRoute: typeof VenueApplicationsApplicationIdCheckoutRoute
   VenueFindArtistIdRoute: typeof VenueFindArtistIdRoute
-  VenueMyApplicationsIdRoute: typeof VenueMyApplicationsIdRoute
   VenueMyConcertsConcertIdRoute: typeof VenueMyConcertsConcertIdRoute
+  VenueMyOpportunitiesOpportunityIdApplicationsRoute: typeof VenueMyOpportunitiesOpportunityIdApplicationsRoute
 }
 
 const VenueRouteRouteChildren: VenueRouteRouteChildren = {
   VenueCreateRoute: VenueCreateRoute,
   VenueIndexRoute: VenueIndexRoute,
-  VenueAcceptApplicationIdRoute: VenueAcceptApplicationIdRoute,
   VenueFindIndexRoute: VenueFindIndexRoute,
   VenueMyIndexRoute: VenueMyIndexRoute,
-  VenueApplicationCheckoutApplicationIdRoute:
-    VenueApplicationCheckoutApplicationIdRoute,
+  VenueApplicationsApplicationIdAcceptRoute:
+    VenueApplicationsApplicationIdAcceptRoute,
+  VenueApplicationsApplicationIdCheckoutRoute:
+    VenueApplicationsApplicationIdCheckoutRoute,
   VenueFindArtistIdRoute: VenueFindArtistIdRoute,
-  VenueMyApplicationsIdRoute: VenueMyApplicationsIdRoute,
   VenueMyConcertsConcertIdRoute: VenueMyConcertsConcertIdRoute,
+  VenueMyOpportunitiesOpportunityIdApplicationsRoute:
+    VenueMyOpportunitiesOpportunityIdApplicationsRoute,
 }
 
 const VenueRouteRouteWithChildren = VenueRouteRoute._addFileChildren(

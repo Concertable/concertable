@@ -54,7 +54,7 @@ public class VenueManagerSteps
         var acceptPage = new AcceptApplicationPage(browser.Page);
         await acceptPage.ClickConfirmAsync();
 
-        await browser.Page.WaitForURLAsync("**/application/checkout/**", new() { Timeout = 15_000 });
+        await browser.Page.WaitForURLAsync("**/applications/*/checkout", new() { Timeout = 15_000 });
 
         var checkoutPage = new ApplicationCheckoutPage(browser.Page, payment);
         if (verify)
@@ -119,21 +119,21 @@ public class VenueManagerSteps
     public async Task AFlatFeeOpportunityHasBeenAppliedTo()
     {
         state.ApplicationId = fixture.App.SeedData.PendingFlatFeeApp.ApplicationId;
-        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/application/checkout/{state.ApplicationId}");
+        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/applications/{state.ApplicationId}/checkout");
     }
 
     [Given(@"a door split opportunity has been applied to")]
     public async Task ADoorSplitOpportunityHasBeenAppliedTo()
     {
         state.ApplicationId = fixture.App.SeedData.PendingDoorSplitApp.ApplicationId;
-        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/application/checkout/{state.ApplicationId}");
+        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/applications/{state.ApplicationId}/checkout");
     }
 
     [Given(@"a versus opportunity has been applied to")]
     public async Task AVersusOpportunityHasBeenAppliedTo()
     {
         state.ApplicationId = fixture.App.SeedData.PendingVersusApp.ApplicationId;
-        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/application/checkout/{state.ApplicationId}");
+        await browser.Page.GotoAsync($"{fixture.App.VenueSpaUrl}/applications/{state.ApplicationId}/checkout");
     }
 
     [When(@"the venue manager pays the flat fee with a new card")]

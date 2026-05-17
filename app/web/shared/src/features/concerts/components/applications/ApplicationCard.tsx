@@ -17,7 +17,7 @@ export function ApplicationCard({ application, onDeny }: Readonly<Props>) {
 
   function handleAccept() {
     navigate({
-      to: "/venue/accept/$applicationId",
+      to: "/applications/$applicationId/accept",
       params: { applicationId: application.id },
     });
   }
