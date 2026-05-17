@@ -103,7 +103,7 @@ internal class UserModule : IUserModule
         return true;
     }
 
-    public async Task<string?> CreatePasswordResetTokenAsync(string email, Role role, CancellationToken ct = default)
+    public async Task<string?> CreatePasswordResetTokenAsync(string email, Role? role, CancellationToken ct = default)
     {
         var user = await context.Users.WhereCredentials(email, role).FirstOrDefaultAsync(ct);
         if (user is null) return null;

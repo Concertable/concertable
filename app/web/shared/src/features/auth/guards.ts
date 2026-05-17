@@ -52,7 +52,8 @@ export async function requireRole(
 }
 
 export async function requireBusinessRole(role: Role) {
-  if (!(await hasValidSession())) return redirectToBusiness();
+  if (!(await hasValidSession()))
+    throw redirect({ to: "/login" });
   const user = await ensureUser();
   if (!user || user.role !== role) return redirectToBusiness();
 }

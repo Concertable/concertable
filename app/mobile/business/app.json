@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Concertable Artist",
-    "slug": "concertable-artist",
-    "scheme": "concertable-artist",
+    "name": "Concertable Business",
+    "slug": "concertable-business",
+    "scheme": "concertable-business",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "../assets/icon.png",
@@ -14,11 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "com.concertable.artist",
+      "bundleIdentifier": "com.concertable.business",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.concertable.artist",
+      "package": "com.concertable.business",
       "adaptiveIcon": {
         "foregroundImage": "../assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -33,7 +33,7 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-image-picker",
-      ["@stripe/stripe-react-native", { "merchantIdentifier": "merchant.concertable.artist" }]
+      ["@stripe/stripe-react-native", { "merchantIdentifier": "merchant.concertable.business" }]
     ]
   }
 }

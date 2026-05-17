@@ -17,6 +17,6 @@ public interface IUserModule
 
     Task<string?> CreateEmailVerificationTokenAsync(Guid userId, CancellationToken ct = default);
     Task<bool> VerifyEmailWithTokenAsync(string token, CancellationToken ct = default);
-    Task<string?> CreatePasswordResetTokenAsync(string email, Role role, CancellationToken ct = default);
+    Task<string?> CreatePasswordResetTokenAsync(string email, Role? role, CancellationToken ct = default);
     Task<bool> ResetPasswordWithTokenAsync(string token, string newPasswordHash, CancellationToken ct = default);
 }
