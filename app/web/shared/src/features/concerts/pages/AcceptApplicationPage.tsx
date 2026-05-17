@@ -13,7 +13,7 @@ import { AcceptContractSummary } from "../components/applications/AcceptContract
 import { ApplicationCheckoutFlow } from "./ApplicationCheckoutPage";
 
 export function AcceptApplicationPage() {
-  const { applicationId } = useParams({ from: "/venue/accept/$applicationId" });
+  const { applicationId } = useParams({ from: "/_venue/accept/$applicationId" });
   const navigate = useNavigate();
   const [accepted, setAccepted] = useState(false);
   const { data: application, isLoading } = useApplicationQuery(applicationId);

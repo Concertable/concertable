@@ -31,13 +31,11 @@ public static class LoginCaptureHooks
     {
         await using var context = await fixture.Browser.NewContextAsync(new() { IgnoreHTTPSErrors = true });
         var page = await context.NewPageAsync();
-        var home = new HomePage(page, spaUrl);
         var login = new LoginPage(page, spaUrl);
 
-        await home.GotoAsync();
-        await home.ClickSignInAsync();
+        await login.GotoAsync();
         await login.SignInAsync(email, password);
-        await home.WaitUntilLoadedAsync();
+        await page.WaitForURLAsync($"{spaUrl}/");
 
         storageStateByRole[role] = await context.StorageStateAsync();
     }
