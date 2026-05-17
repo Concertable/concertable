@@ -1,5 +1,5 @@
 {
-  "name": "@concertable/mobile/artist",
+  "name": "@concertable/mobile-artist",
   "version": "1.0.0",
   "main": "index.ts",
   "private": true,

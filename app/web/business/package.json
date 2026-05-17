@@ -1,5 +1,5 @@
 {
-  "name": "@concertable/web/business",
+  "name": "@concertable/web-business",
   "private": true,
   "version": "0.0.0",
   "type": "module",
