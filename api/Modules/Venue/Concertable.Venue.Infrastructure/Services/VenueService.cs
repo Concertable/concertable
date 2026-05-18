@@ -92,11 +92,8 @@ internal class VenueService : IVenueService
         return venue.ToDto();
     }
 
-    public async Task<VenueDto> GetDetailsForCurrentUserAsync()
-    {
-        return await venueRepository.GetDtoByUserIdAsync(currentUser.GetId())
-            ?? throw new NotFoundException("Venue not found");
-    }
+    public Task<VenueDto?> GetDetailsForCurrentUserAsync() =>
+        venueRepository.GetDtoByUserIdAsync(currentUser.GetId());
 
     public async Task<int> GetIdForCurrentUserAsync()
     {

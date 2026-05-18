@@ -28,7 +28,8 @@ internal class VenueController : ControllerBase
     [HttpGet("user")]
     public async Task<ActionResult<VenueDetailsResponse>> GetDetailsForCurrentUser()
     {
-        return Ok((await venueService.GetDetailsForCurrentUserAsync()).ToDetailsResponse());
+        var venue = await venueService.GetDetailsForCurrentUserAsync();
+        return venue is null ? NoContent() : Ok(venue.ToDetailsResponse());
     }
 
     [Authorize(Roles = "VenueManager")]

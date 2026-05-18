@@ -38,6 +38,7 @@ export function Hero({
         isPending={!!bannerUrl && bannerPending}
         name={name}
         onBannerChange={onBannerChange}
+        testId="hero-banner"
       />
 
       <div className="relative z-[5] flex w-full items-end justify-between gap-4 px-8 pb-6">
@@ -46,6 +47,7 @@ export function Hero({
             onChange={onNameChange}
             element="h1"
             placeholder={namePlaceholder}
+            testId="hero-name"
             className={`text-3xl font-bold${textColor ? ` text-${textColor}` : ""}`}
           >
             {name}
@@ -64,6 +66,7 @@ export function Hero({
           avatar={avatar}
           name={name}
           onAvatarChange={onAvatarChange}
+          testId="hero-avatar"
         />
       </div>
     </div>

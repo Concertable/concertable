@@ -32,9 +32,8 @@ internal class ArtistService : IArtistService
         this.geometryProvider = geometryProvider;
     }
 
-    public async Task<ArtistDto> GetDetailsForCurrentUserAsync() =>
-        await artistRepository.GetDtoByUserIdAsync(currentUser.GetId())
-            ?? throw new NotFoundException("Artist not found");
+    public Task<ArtistDto?> GetDetailsForCurrentUserAsync() =>
+        artistRepository.GetDtoByUserIdAsync(currentUser.GetId());
 
     public async Task<ArtistDto> GetDetailsByIdAsync(int id) =>
         await artistRepository.GetDtoByIdAsync(id)

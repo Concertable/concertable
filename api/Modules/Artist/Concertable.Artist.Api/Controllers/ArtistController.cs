@@ -26,7 +26,8 @@ internal class ArtistController : ControllerBase
     [HttpGet("user")]
     public async Task<ActionResult<ArtistDetailsResponse>> GetDetailsForCurrentUser()
     {
-        return Ok((await artistService.GetDetailsForCurrentUserAsync()).ToDetailsResponse());
+        var artist = await artistService.GetDetailsForCurrentUserAsync();
+        return artist is null ? NoContent() : Ok(artist.ToDetailsResponse());
     }
 
     [Authorize(Roles = "ArtistManager")]

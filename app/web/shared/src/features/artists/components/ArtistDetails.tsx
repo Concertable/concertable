@@ -1,29 +1,30 @@
+import { ReactNode } from "react";
 import { MapPin } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
-import { ReviewSection } from "@/features/reviews";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { useArtistStore } from "../store/useArtistStore";
 import type { Artist } from "../types";
 
-const SECTIONS = [
-  { id: "about", label: "About" },
-  { id: "location", label: "Location" },
-  { id: "concerts", label: "Concerts" },
-  { id: "opportunities", label: "Opportunities" },
-  { id: "reviews", label: "Reviews" },
-];
+interface Section {
+  id: string;
+  label: string;
+}
 
 interface Props {
   artist: Artist;
   onNameChange?: (value: string) => void;
   onAboutChange?: (value: string) => void;
+  sections?: Section[];
+  children?: ReactNode;
 }
 
 export function ArtistDetails({
   artist,
   onNameChange,
   onAboutChange,
+  sections,
+  children,
 }: Readonly<Props>) {
   const setBanner = useArtistStore((s) => s.setBanner);
   const setAvatar = useArtistStore((s) => s.setAvatar);
@@ -42,7 +43,7 @@ export function ArtistDetails({
         onAvatarChange={setAvatar}
       />
 
-      <ScrollspyNav sections={SECTIONS} />
+      {sections && <ScrollspyNav sections={sections} />}
 
       <div className="mx-auto max-w-4xl space-y-10 px-6 py-10">
         <section id="about" className="scroll-mt-24 space-y-2">
@@ -50,6 +51,7 @@ export function ArtistDetails({
           <EditableTextarea
             onChange={onAboutChange}
             placeholder="Tell venues about yourself..."
+            testId="about"
           >
             {artist.about}
           </EditableTextarea>
@@ -66,25 +68,7 @@ export function ArtistDetails({
           </p>
         </section>
 
-        <div className="border-border border-t" />
-
-        <section id="concerts" className="scroll-mt-24 space-y-2">
-          <h2 className="text-xl font-semibold">Concerts</h2>
-          <p className="text-muted-foreground">No upcoming concerts.</p>
-        </section>
-
-        <div className="border-border border-t" />
-
-        <section id="opportunities" className="scroll-mt-24 space-y-2">
-          <h2 className="text-xl font-semibold">Opportunities</h2>
-          <p className="text-muted-foreground">No opportunities yet.</p>
-        </section>
-
-        <div className="border-border border-t" />
-
-        <section id="reviews" className="scroll-mt-24">
-          <ReviewSection type="artist" id={artist.id} />
-        </section>
+        {children}
       </div>
     </div>
   );

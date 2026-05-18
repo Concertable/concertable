@@ -8,6 +8,7 @@ interface Props {
   isPending?: boolean;
   name: string;
   onBannerChange?: (file: File) => void;
+  testId?: string;
 }
 
 function BannerSkeleton() {
@@ -19,6 +20,7 @@ export function BannerUpload({
   isPending,
   name,
   onBannerChange,
+  testId,
 }: Readonly<Props>) {
   const editMode = useEditableContext();
   const { inputRef, open, onChange } = useImageUpload(onBannerChange);
@@ -54,6 +56,7 @@ export function BannerUpload({
             type="file"
             accept="image/*"
             className="hidden"
+            data-testid={testId}
             onChange={onChange}
           />
         </>

@@ -3,11 +3,11 @@ using Concertable.Contract.Contracts;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow;
 
-internal sealed class TicketPayee : ITicketPayee
+internal sealed class TicketPayeeResolver : ITicketPayee
 {
     private readonly FrozenDictionary<ContractType, ITicketPayee> payees;
 
-    public TicketPayee(ArtistTicketPayee artist, VenueTicketPayee venue)
+    public TicketPayeeResolver(ArtistTicketPayee artist, VenueTicketPayee venue)
     {
         payees = new Dictionary<ContractType, ITicketPayee>
         {

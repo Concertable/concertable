@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireBusinessRole } from "@/features/auth";
 import { useArtistNotifications } from "@/features/notifications";
+import { requireArtist } from "@/features/artists";
 import { AppLayout } from "@/components/AppLayout";
 
 const links = [
@@ -15,6 +16,9 @@ function ArtistLayout() {
 }
 
 export const Route = createFileRoute("/_artist")({
-  beforeLoad: () => requireBusinessRole("ArtistManager"),
+  beforeLoad: async ({ location }) => {
+    await requireBusinessRole("ArtistManager");
+    await requireArtist({ pathname: location.pathname });
+  },
   component: ArtistLayout,
 });

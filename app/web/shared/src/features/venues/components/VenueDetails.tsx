@@ -1,31 +1,31 @@
+import { ReactNode } from "react";
 import { MapPin } from "lucide-react";
 import { GoogleMap } from "@/components/GoogleMap";
 import { Hero } from "@/components/Hero";
 import { EditableTextarea } from "@/components/editable/EditableTextarea";
-import { ReviewSection } from "@/features/reviews";
-import { OpportunitySection } from "@/features/concerts";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { useVenueStore } from "../store/useVenueStore";
 import type { Venue } from "../types";
 
-const SECTIONS = [
-  { id: "about", label: "About" },
-  { id: "location", label: "Location" },
-  { id: "concerts", label: "Concerts" },
-  { id: "opportunities", label: "Opportunities" },
-  { id: "reviews", label: "Reviews" },
-];
+interface Section {
+  id: string;
+  label: string;
+}
 
 interface Props {
   venue: Venue;
   onNameChange?: (value: string) => void;
   onAboutChange?: (value: string) => void;
+  sections?: Section[];
+  children?: ReactNode;
 }
 
 export function VenueDetails({
   venue,
   onNameChange,
   onAboutChange,
+  sections,
+  children,
 }: Readonly<Props>) {
   const setBanner = useVenueStore((s) => s.setBanner);
   const setAvatar = useVenueStore((s) => s.setAvatar);
@@ -44,7 +44,7 @@ export function VenueDetails({
         onAvatarChange={setAvatar}
       />
 
-      <ScrollspyNav sections={SECTIONS} />
+      {sections && <ScrollspyNav sections={sections} />}
 
       <div className="mx-auto max-w-4xl space-y-10 px-6 py-10">
         <section id="about" className="scroll-mt-24 space-y-2">
@@ -52,6 +52,7 @@ export function VenueDetails({
           <EditableTextarea
             onChange={onAboutChange}
             placeholder="Tell artists about your venue..."
+            testId="about"
           >
             {venue.about}
           </EditableTextarea>
@@ -73,25 +74,7 @@ export function VenueDetails({
           />
         </section>
 
-        <div className="border-border border-t" />
-
-        <section id="concerts" className="scroll-mt-24 space-y-2">
-          <h2 className="text-xl font-semibold">Concerts</h2>
-          <p className="text-muted-foreground">No upcoming concerts.</p>
-        </section>
-
-        <div className="border-border border-t" />
-
-        <section id="opportunities" className="scroll-mt-24 space-y-2">
-          <h2 className="text-xl font-semibold">Opportunities</h2>
-          <OpportunitySection venueId={venue.id} />
-        </section>
-
-        <div className="border-border border-t" />
-
-        <section id="reviews" className="scroll-mt-24">
-          <ReviewSection type="venue" id={venue.id} />
-        </section>
+        {children}
       </div>
     </div>
   );

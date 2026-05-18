@@ -14,6 +14,7 @@ public class LoginPage
     private ILocator EmailInput => page.GetByTestId("login-email");
     private ILocator PasswordInput => page.GetByTestId("login-password");
     private ILocator SubmitButton => page.GetByTestId("login-submit");
+    private ILocator SignUpLink => page.GetByTestId("signup-link");
 
     public Task GotoAsync() => page.GotoAsync($"{spaBaseUrl}/login");
 
@@ -23,6 +24,8 @@ public class LoginPage
         await PasswordInput.FillAsync(password);
         await SubmitButton.ClickAsync();
     }
+
+    public Task ClickSignUpAsync() => SignUpLink.ClickAsync();
 
     public Task WaitForUrlAsync(string url, float timeoutMs = 15000) =>
         page.WaitForURLAsync(url, new() { Timeout = timeoutMs });

@@ -9,6 +9,7 @@ interface Props {
   className?: string;
   element: TextElement;
   placeholder?: string;
+  testId?: string;
 }
 
 export function EditableText({
@@ -17,6 +18,7 @@ export function EditableText({
   className,
   element,
   placeholder,
+  testId,
 }: Readonly<Props>) {
   const Tag = element;
   const debouncedOnChange = useDebounce(onChange, 300);
@@ -30,6 +32,7 @@ export function EditableText({
           onChange={(e) => debouncedOnChange?.(e.target.value)}
           className={className}
           placeholder={placeholder}
+          data-testid={testId}
         />
       }
     />

@@ -17,6 +17,13 @@ public class MockEmailService : IMockEmailService
 
     public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<Guid> ticketIds) => Task.CompletedTask;
 
+    public Task SendVerificationAsync(string toEmail, string token, string verifyBaseUrl, CancellationToken ct = default)
+    {
+        var link = $"{verifyBaseUrl}?token={Uri.EscapeDataString(token)}";
+        _sent.Add(new SentEmail(toEmail, "Verify your email", $"Click here to verify your email: {link}"));
+        return Task.CompletedTask;
+    }
+
     public void Reset() => _sent.Clear();
 
     public string? ExtractToken(string email)

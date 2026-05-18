@@ -26,6 +26,7 @@ public class AppFixture : IAsyncLifetime
     public string CustomerSpaUrl { get; }
     public string VenueSpaUrl { get; }
     public string ArtistSpaUrl { get; }
+    public string BusinessSpaUrl { get; }
     public HttpClient Client { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
@@ -58,6 +59,8 @@ public class AppFixture : IAsyncLifetime
             ?? throw new InvalidOperationException("Endpoints:VenueSpa is not configured in appsettings.E2E.json.");
         ArtistSpaUrl = configuration["Endpoints:ArtistSpa"]
             ?? throw new InvalidOperationException("Endpoints:ArtistSpa is not configured in appsettings.E2E.json.");
+        BusinessSpaUrl = configuration["Endpoints:BusinessSpa"]
+            ?? throw new InvalidOperationException("Endpoints:BusinessSpa is not configured in appsettings.E2E.json.");
 
         tokenMinter = new TestTokenMinter(configuration);
     }

@@ -40,7 +40,10 @@ public class PlaywrightHooks
         await Fixture.App.ResetAsync();
         LoginCaptureHooks.Reset();
 
-        var role = scenarioContext.ScenarioInfo.Tags
+        var tags = scenarioContext.ScenarioInfo.Tags;
+        var isSignUp = tags.Contains("SignUp");
+
+        var role = isSignUp ? null : tags
             .Select(tag => Enum.TryParse<Role>(tag, out var r) ? (Role?)r : null)
             .FirstOrDefault(r => r is not null);
 
