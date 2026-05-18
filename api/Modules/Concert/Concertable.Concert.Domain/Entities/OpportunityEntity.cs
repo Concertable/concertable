@@ -1,6 +1,6 @@
 ﻿namespace Concertable.Concert.Domain;
 
-public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntity>, IEquatable<OpportunityEntity>
+public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntity>, IHasDateRange, IEquatable<OpportunityEntity>
 {
     private OpportunityEntity() { }
 

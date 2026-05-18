@@ -3,7 +3,7 @@ using NetTopologySuite.Geometries;
 
 namespace Concertable.Concert.Domain;
 
-public class ConcertEntity : IIdEntity, IHasName, IHasLocation, ILifecycleEntity
+public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, ILifecycleEntity
 {
     public int Id { get; private set; }
     public int BookingId { get; private set; }
