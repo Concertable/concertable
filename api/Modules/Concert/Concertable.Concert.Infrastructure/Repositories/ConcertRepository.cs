@@ -1,3 +1,4 @@
+using Concertable.Application.Interfaces.Specifications;
 using Concertable.Concert.Infrastructure.Data;
 using Concertable.Concert.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
@@ -7,10 +8,15 @@ namespace Concertable.Concert.Infrastructure.Repositories;
 internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
 {
     private readonly TimeProvider timeProvider;
+    private readonly IUpcomingSpecification<ConcertEntity> upcomingSpecification;
 
-    public ConcertRepository(ConcertDbContext context, TimeProvider timeProvider) : base(context)
+    public ConcertRepository(
+        ConcertDbContext context,
+        TimeProvider timeProvider,
+        IUpcomingSpecification<ConcertEntity> upcomingSpecification) : base(context)
     {
         this.timeProvider = timeProvider;
+        this.upcomingSpecification = upcomingSpecification;
     }
 
     public async Task<ConcertEntity?> GetFullByIdAsync(int id)
@@ -164,5 +170,11 @@ internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
             .Where(c => c.Id == concertId)
             .Select(c => c.Price * (c.TotalTickets - c.AvailableTickets))
             .FirstOrDefaultAsync();
+    }
+
+    public Task<int> CountVenueUpcomingAsync(int venueId, CancellationToken ct = default)
+    {
+        var query = context.Concerts.Where(c => c.VenueId == venueId);
+        return upcomingSpecification.Apply(query).CountAsync(ct);
     }
 }

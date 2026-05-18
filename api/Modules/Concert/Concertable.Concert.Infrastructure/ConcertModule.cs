@@ -7,7 +7,10 @@ namespace Concertable.Concert.Infrastructure;
 internal sealed class ConcertModule(
     IArtistReviewRepository artistReviewRepository,
     IVenueReviewRepository venueReviewRepository,
-    IReviewValidator reviewValidator) : IConcertModule
+    IReviewValidator reviewValidator,
+    IApplicationRepository applicationRepository,
+    IOpportunityRepository opportunityRepository,
+    IConcertRepository concertRepository) : IConcertModule
 {
     public Task<IPagination<ReviewDto>> GetReviewsByArtistAsync(int artistId, IPageParams pageParams) =>
         artistReviewRepository.GetByArtistAsync(artistId, pageParams);
@@ -20,4 +23,13 @@ internal sealed class ConcertModule(
 
     public Task<bool> CanUserReviewVenueAsync(Guid userId, int venueId) =>
         reviewValidator.CanUserReviewVenueAsync(userId, venueId);
+
+    public Task<int> GetVenueApplicationsAwaitingReviewCountAsync(int venueId, CancellationToken ct = default) =>
+        applicationRepository.CountVenueAwaitingReviewAsync(venueId, ct);
+
+    public Task<int> GetVenueOpenOpportunitiesCountAsync(int venueId, CancellationToken ct = default) =>
+        opportunityRepository.CountVenueOpenAsync(venueId, ct);
+
+    public Task<int> GetVenueUpcomingConcertsCountAsync(int venueId, CancellationToken ct = default) =>
+        concertRepository.CountVenueUpcomingAsync(venueId, ct);
 }

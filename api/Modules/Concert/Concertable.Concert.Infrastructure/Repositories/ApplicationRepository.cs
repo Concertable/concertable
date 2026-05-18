@@ -92,4 +92,14 @@ internal class ApplicationRepository : Repository<ApplicationEntity>, IApplicati
             .Take(5)
             .ToListAsync();
     }
+
+    public Task<int> CountVenueAwaitingReviewAsync(int venueId, CancellationToken ct = default)
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        return context.Applications
+            .Where(a => a.Status == ApplicationStatus.Pending
+                     && a.Opportunity.VenueId == venueId
+                     && a.Opportunity.Period.End > now)
+            .CountAsync(ct);
+    }
 }
