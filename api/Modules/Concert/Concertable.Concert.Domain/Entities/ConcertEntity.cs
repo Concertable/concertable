@@ -1,3 +1,4 @@
+using Concertable.Shared;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Concert.Domain;
@@ -15,8 +16,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, ILifecycleEntity
     public decimal Price { get; private set; }
     public int TotalTickets { get; private set; }
     public int AvailableTickets { get; private set; }
-    public DateTime StartDate { get; private set; }
-    public DateTime EndDate { get; private set; }
+    public DateRange Period { get; private set; } = null!;
     public DateTime? DatePosted { get; private set; }
     public Point? Location { get; set; }
     public ContractType ContractType { get; private set; }
@@ -34,8 +34,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, ILifecycleEntity
         int bookingId,
         int artistId,
         int venueId,
-        DateTime startDate,
-        DateTime endDate,
+        DateRange period,
         string name,
         string about,
         IEnumerable<int> genreIds) => new()
@@ -43,8 +42,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, ILifecycleEntity
         BookingId = bookingId,
         ArtistId = artistId,
         VenueId = venueId,
-        StartDate = startDate,
-        EndDate = endDate,
+        Period = period,
         Name = name,
         About = about,
         ConcertGenres = genreIds.Select(id => new ConcertGenreEntity { GenreId = id }).ToHashSet()
@@ -54,8 +52,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, ILifecycleEntity
         int bookingId,
         int artistId,
         int venueId,
-        DateTime startDate,
-        DateTime endDate,
+        DateRange period,
         string name,
         string about,
         ContractType contractType,
@@ -64,8 +61,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, ILifecycleEntity
         BookingId = bookingId,
         ArtistId = artistId,
         VenueId = venueId,
-        StartDate = startDate,
-        EndDate = endDate,
+        Period = period,
         Name = name,
         About = about,
         ContractType = contractType,

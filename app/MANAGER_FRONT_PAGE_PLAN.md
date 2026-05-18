@@ -1,8 +1,21 @@
 # Manager Front Page Plan
 
-## Progress (2026-05-18, post-session-2)
+## Progress (2026-05-18, post-session-3)
 
-**Phase A: committed on `Feature/ManagerFrontPage` (5fb54e96).** Mocks running; BE (Phase B) not started. See [MANAGER_FRONT_PAGE_FEEDBACK.md](./MANAGER_FRONT_PAGE_FEEDBACK.md) for session decisions that supersede this plan in conflict.
+**Phase A: committed on `Feature/ManagerFrontPage` (5fb54e96).** Mocks running. **Phase B started.** See [MANAGER_FRONT_PAGE_FEEDBACK.md](./MANAGER_FRONT_PAGE_FEEDBACK.md) for session decisions that supersede this plan in conflict.
+
+**Web/shared cleanup blocker — RESOLVED** (commit `0f1a5df6`, 2026-05-18). `ApplicationCheckoutPage` split into per-SPA `VenueAcceptCheckoutPage` + `ArtistApplyCheckoutPage`; all route-file imports swapped from `@/features/x` (shared alias) → `../../features/x` (per-SPA path); orphan route deleted.
+
+**Phase B status:**
+
+| Step | Description | Status |
+|---|---|---|
+| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ⚠️ Code done, uncommitted; migration re-scaffold pending |
+| B.10 | Shared specifications (`IHasDateRange`, `IUpcomingSpecification<T>`, `IDateRangeSpecification<T>`) | ⏳ Next |
+| B.11 | Dashboard endpoints (`VenueDashboardController`, `ArtistDashboardController`, module facade methods + repos + C# DTOs) | ⏳ |
+| B.12 | Integration tests per new facade method | ⏳ |
+
+**B.9 code refactor (uncommitted)** — 6 files: `ConcertEntity.cs`, `ConcertEntityConfiguration.cs`, `ConcertDraftService.cs`, `ConcertFaker.cs`, `TicketValidator.cs`, `ConcertRepository.cs`. Compiles green (0 CS errors across solution). DTO mappers already projected from `Opportunity.Period.Start/End` via nav chain — no DTO-side changes needed. `ConcertSearchModel` shares the same `Concerts` table with `ExcludeFromMigrations`, so column names unchanged means Search module untouched. Migration re-scaffold (`./initial-migrations.ps1`) deferred — requires Concertable.Web stopped + Aspire DB tooling.
 
 | Phase | Step | Status |
 |---|---|---|
@@ -28,11 +41,7 @@
 
 **Open Phase A todo:**
 
-- **A.8 UX freeze** — spin up dev server, hit `/_venue/` and `/_artist/`, toggle `?persona=empty|mid|thriving`, verify responsive collapse. Auth-gated routes; either log in as seeded venue/artist manager or temporarily bypass guards in `_venue/route.tsx` / `_artist/route.tsx`.
-
-**Blocking other work:**
-
-- [WEB_SHARED_CLEANUP.md](./WEB_SHARED_CLEANUP.md) — handful of SPA-specific files leftover in `app/web/shared/`. Should be addressed before Phase B starts so import paths settle. High-confidence list is mechanical moves.
+- **A.8 UX freeze** — spin up dev server, hit `/_venue/` and `/_artist/`, toggle `?persona=empty|mid|thriving`, verify responsive collapse. Auth-gated routes; either log in as seeded venue/artist manager or temporarily bypass guards in `_venue/route.tsx` / `_artist/route.tsx`. Independent of Phase B work and can be picked up at any time.
 
 **Key divergences from original plan** (codified in FEEDBACK.md):
 

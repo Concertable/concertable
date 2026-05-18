@@ -21,7 +21,7 @@ internal class TicketValidator : ITicketValidator
         if (concert.DatePosted is null)
             errors.Add("Concert is not posted yet");
 
-        if (concert.StartDate < timeProvider.GetUtcNow())
+        if (concert.Period.Start < timeProvider.GetUtcNow())
             errors.Add("You cannot purchase a Ticket for a Concert that's already passed");
 
         if (concert.AvailableTickets <= 0)

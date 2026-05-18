@@ -50,8 +50,7 @@ internal class ConcertDraftService : IConcertDraftService
             bookingConcert.Id,
             artist.Id,
             venue.Id,
-            opportunity.Period.Start,
-            opportunity.Period.End,
+            opportunity.Period,
             $"{artist.Name} performing at {venue.Name}",
             venue.About,
             matchingGenreIds);
