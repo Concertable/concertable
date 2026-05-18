@@ -10,7 +10,7 @@ interface Props {
   title?: string;
   lines: SummaryLine[];
   total: SummaryLine;
-  action: ReactNode;
+  action?: ReactNode;
   footer?: ReactNode;
 }
 

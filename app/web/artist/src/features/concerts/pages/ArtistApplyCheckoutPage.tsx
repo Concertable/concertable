@@ -2,19 +2,18 @@ import { useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useApplyCheckoutQuery } from "../hooks/useApplicationQuery";
-import applicationApi from "../api/applicationApi";
-import { CheckoutAwaiting } from "../components/checkout/CheckoutAwaiting";
-import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
-import { CheckoutSection } from "../components/checkout/CheckoutSection";
-import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
-import { OrderSummaryCard } from "../components/checkout/OrderSummaryCard";
-import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
-import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
-import { summaryFor } from "../utils/acceptCheckoutFormat";
-import type { Checkout } from "../types";
+import { useApplyCheckoutQuery, type Checkout } from "@/features/concerts";
+import applicationApi from "@/features/concerts/api/applicationApi";
+import { CheckoutAwaiting } from "@/features/concerts/components/checkout/CheckoutAwaiting";
+import { CheckoutLayout } from "@/features/concerts/components/checkout/CheckoutLayout";
+import { CheckoutSection } from "@/features/concerts/components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "@/features/concerts/components/checkout/CheckoutEventBanner";
+import { OrderSummaryCard } from "@/features/concerts/components/checkout/OrderSummaryCard";
+import { CheckoutSuccess } from "@/features/concerts/components/checkout/CheckoutSuccess";
+import { StripePaymentForm } from "@/features/concerts/components/checkout/StripePaymentForm";
+import { summaryFor } from "@/features/concerts/utils/acceptCheckoutFormat";
 
-export function ApplyCheckoutPage() {
+export function ArtistApplyCheckoutPage() {
   const { opportunityId } = useParams({ strict: false }) as {
     opportunityId: number;
   };
@@ -30,7 +29,7 @@ export function ApplyCheckoutPage() {
       <div className="text-destructive p-6">Could not start checkout.</div>
     );
 
-  return <ApplyCheckoutFlow opportunityId={opportunityId} checkout={checkout} />;
+  return <ArtistApplyCheckoutFlow opportunityId={opportunityId} checkout={checkout} />;
 }
 
 interface Props {
@@ -38,7 +37,7 @@ interface Props {
   checkout: Checkout;
 }
 
-export function ApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) {
+export function ArtistApplyCheckoutFlow({ opportunityId, checkout }: Readonly<Props>) {
   const [submitted, setSubmitted] = useState(false);
   const { mutate, isPending, error } = useMutation({
     mutationFn: (paymentMethodId: string) =>

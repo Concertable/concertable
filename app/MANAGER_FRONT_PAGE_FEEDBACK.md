@@ -142,10 +142,20 @@ app/web/artist/src/features/dashboard/  # same shape, artist-specific
 
 ## Open Phase A todo
 
-✅ 1–9 all done (2026-05-18 follow-up session): venue+artist widgets now use local `./hooks/`; artist `dashboardApi.ts` + 8-file `hooks/` folder created; artist fixtures repointed at shared helpers; artist route updated; orphaned shared `ArtistDashboardPage.tsx` deleted; `isMockDashboard` reference scrubbed from `PersonaSwitcher`; both SPAs build with zero `features/dashboard` errors (pre-existing unrelated codebase errors remain in `ProfileMenu`, `ConcertCard`, `NavbarSearch`, etc.).
+✅ 1–10 all done. Phase A committed on `Feature/ManagerFrontPage` (commit `5fb54e96`) 2026-05-18.
 
-10. **Phase A.7 — Stripe + Profile-Health banner sanity check.** `StripeConnectBanner` primitive exists, `ProfileHealthCard` exists, both wired via venue/artist `WelcomeRow` + `StripeBanner` widgets. Need to eyeball the conditional render with all three personas.
 11. **Phase A.8 — UX freeze.** Spin up dev server, hit `/_venue/` and `/_artist/` (both gated by auth — log in as a venue manager + artist; alternatively temporarily bypass guards in `_venue/route.tsx` / `_artist/route.tsx`). Toggle persona via `?persona=empty|mid|thriving` and check each visual state. Verify responsive collapse at tablet + mobile breakpoints.
+
+## Session-2 deltas (2026-05-18, committed)
+
+- **Applications widgets** redesigned: flat 3-column table (counterparty / status / actions) on **shadcn DataTable + `@tanstack/react-table`** (installed via `npm -w @concertable/web-* install @tanstack/react-table`). Status grouping replaced with column. No FE sort — BE will `ORDER BY` when the endpoint lands.
+- **HATEOAS per-role `ApplicationActions`** — each SPA owns its own `applicationActions.ts` with `ApplicationActionName` union, `ApplicationActions` mapped type, and `APPLICATION_ACTION_LABELS` record. Mirrors `Concert.Api/Mappers/ApplicationResponseMapper.cs`.
+- **`Application` type per SPA** (`app/web/{role}/src/features/dashboard/types.ts`) — nests shared `OpportunitySummary` + (venue) `ArtistSummary`. Drops `href` (actions are the only way to act), drops flat opportunity fields and `canAccept/canDecline/canCheckout` booleans.
+- **`OpportunitySummary` + `OpportunityCard`** now carry structured `Contract`. New `contractSummary(contract)` helper at `app/shared/src/features/contracts/format.ts` registry-formats it (`flatFee` → "£N", `doorSplit` → "N% door", etc.). `ContractSummaryLabel.tsx` imports it.
+- **`ActionLink`** primitive lives in `app/shared/src/types/common.ts` next to `Pagination<T>`. Removed duplicate from `features/concerts/types.ts`.
+- **Reviews widgets** show recent excerpt list + aggregate header (was single-number tile). New shared `RecentReviewsList` primitive, new `useVenueRecentReviews` / `useArtistRecentReviews` hooks.
+- **Page wrapper** dropped `max-w-7xl` for full-bleed. `DashboardCard` is `h-full` so cards in paired-row sections stretch to the row's tallest height.
+- **Dashboard controller scope refined** — only owns aggregations (`overview`, `kpis`, `activity`). Plain list endpoints (`applications`, `inbox`, `upcoming-concerts`, `settlements`, `recommended-opportunities`) hit canonical resource controllers filtered to "me". Updates the round-trip plan in PLAN.md.
 
 ## Things NOT to redo
 
@@ -155,3 +165,8 @@ app/web/artist/src/features/dashboard/  # same shape, artist-specific
 - Don't inline ChartTooltip content callbacks in chart components — use `<ChartTooltip>`.
 - Don't duplicate `formatCurrency`.
 - Don't add `mock` to the api filename or export — it's just `dashboardApi`.
+- Don't sort applications on the FE — BE orders by date on the endpoint.
+- Don't put `ApplicationListItem` back in shared — each SPA owns its own `Application` type with role-specific `actions` + counterparty (artist | venue).
+- Don't reintroduce `contractLabel: string` — `OpportunitySummary.contract: Contract` is the canonical shape; format with `contractSummary()`.
+- Don't put `href` back on `Application` — the row IS the view; act via `actions`.
+- Don't duplicate `ActionLink` — single source at `shared/types/common.ts`.

@@ -4,24 +4,25 @@ import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ConcertDraftCreatedPayload } from "@/features/notifications";
-import type { Application, Checkout } from "../types";
 import {
+  AcceptContractSummary,
   useAcceptApplicationMutation,
   useAcceptCheckoutQuery,
   useApplicationQuery,
-} from "../hooks/useApplicationQuery";
-import { useCheckoutFlow, type CheckoutFlowState } from "../hooks/useCheckoutFlow";
-import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
-import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
-import { CheckoutSection } from "../components/checkout/CheckoutSection";
-import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
-import { OrderSummaryCard } from "../components/checkout/OrderSummaryCard";
-import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
-import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
-import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
-import { summaryFor } from "../utils/acceptCheckoutFormat";
+  type Application,
+  type Checkout,
+} from "@/features/concerts";
+import { useCheckoutFlow, type CheckoutFlowState } from "@/features/concerts/hooks/useCheckoutFlow";
+import { CheckoutLayout } from "@/features/concerts/components/checkout/CheckoutLayout";
+import { CheckoutSection } from "@/features/concerts/components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "@/features/concerts/components/checkout/CheckoutEventBanner";
+import { OrderSummaryCard } from "@/features/concerts/components/checkout/OrderSummaryCard";
+import { CheckoutSuccess } from "@/features/concerts/components/checkout/CheckoutSuccess";
+import { CheckoutFlow } from "@/features/concerts/components/checkout/CheckoutFlow";
+import { StripePaymentForm } from "@/features/concerts/components/checkout/StripePaymentForm";
+import { summaryFor } from "@/features/concerts/utils/acceptCheckoutFormat";
 
-export function ApplicationCheckoutPage() {
+export function VenueAcceptCheckoutPage() {
   const { applicationId } = useParams({ strict: false }) as {
     applicationId: number;
   };
@@ -45,7 +46,7 @@ export function ApplicationCheckoutPage() {
     );
 
   return (
-    <ApplicationCheckoutForm
+    <VenueAcceptCheckoutForm
       applicationId={applicationId}
       application={application}
       checkout={checkout}
@@ -58,7 +59,7 @@ interface Props {
   flow: CheckoutFlowState<ConcertDraftCreatedPayload>;
 }
 
-export function ApplicationCheckoutFlow({ artistName, flow }: Readonly<Props>) {
+export function VenueAcceptCheckoutFlow({ artistName, flow }: Readonly<Props>) {
   const router = useRouter();
 
   useEffect(() => {
@@ -78,7 +79,7 @@ export function ApplicationCheckoutFlow({ artistName, flow }: Readonly<Props>) {
       flow={flow}
       {...config}
       renderSuccess={(concertId) => (
-        <ApplicationCheckoutSuccess
+        <VenueAcceptCheckoutSuccess
           artistName={artistName}
           onView={() =>
             void router.navigate({
@@ -92,13 +93,13 @@ export function ApplicationCheckoutFlow({ artistName, flow }: Readonly<Props>) {
   );
 }
 
-interface ApplicationCheckoutFormProps {
+interface VenueAcceptCheckoutFormProps {
   applicationId: number;
   application: Application;
   checkout: Checkout;
 }
 
-function ApplicationCheckoutForm({ applicationId, application, checkout }: Readonly<ApplicationCheckoutFormProps>) {
+function VenueAcceptCheckoutForm({ applicationId, application, checkout }: Readonly<VenueAcceptCheckoutFormProps>) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const acceptMutation = useAcceptApplicationMutation(application.opportunity.id);
@@ -108,7 +109,7 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Reado
   const { labels } = checkout;
 
   if (submitted)
-    return <ApplicationCheckoutFlow artistName={artist.name} flow={flow} />;
+    return <VenueAcceptCheckoutFlow artistName={artist.name} flow={flow} />;
 
   const summary = summaryFor(checkout.amount);
 
@@ -159,12 +160,12 @@ function ApplicationCheckoutForm({ applicationId, application, checkout }: Reado
   );
 }
 
-interface ApplicationCheckoutSuccessProps {
+interface VenueAcceptCheckoutSuccessProps {
   artistName: string;
   onView: () => void;
 }
 
-function ApplicationCheckoutSuccess({ artistName, onView }: Readonly<ApplicationCheckoutSuccessProps>) {
+function VenueAcceptCheckoutSuccess({ artistName, onView }: Readonly<VenueAcceptCheckoutSuccessProps>) {
   return (
     <CheckoutSuccess
       title="Application Accepted"

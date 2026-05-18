@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ApplyCheckoutPage } from "@/features/concerts";
+import { ArtistApplyCheckoutPage } from "../../../features/concerts";
 
 export const Route = createFileRoute(
   "/_artist/opportunity/checkout/$opportunityId",
@@ -8,5 +8,5 @@ export const Route = createFileRoute(
     parse: (params) => ({ opportunityId: Number(params.opportunityId) }),
     stringify: (params) => ({ opportunityId: String(params.opportunityId) }),
   },
-  component: ApplyCheckoutPage,
+  component: ArtistApplyCheckoutPage,
 });

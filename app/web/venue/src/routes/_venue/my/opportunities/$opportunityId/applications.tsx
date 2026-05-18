@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ApplicationsPage } from "@/features/concerts";
+import { ApplicationsPage } from "../../../../../features/concerts";
 
 export const Route = createFileRoute("/_venue/my/opportunities/$opportunityId/applications")({
   params: {

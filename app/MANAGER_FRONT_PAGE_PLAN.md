@@ -1,21 +1,38 @@
 # Manager Front Page Plan
 
-## Progress (2026-05-18)
+## Progress (2026-05-18, post-session-2)
 
-**Phase A: ~80% done.** See [MANAGER_FRONT_PAGE_FEEDBACK.md](./MANAGER_FRONT_PAGE_FEEDBACK.md) for session decisions that supersede this plan in conflict.
+**Phase A: committed on `Feature/ManagerFrontPage` (5fb54e96).** Mocks running; BE (Phase B) not started. See [MANAGER_FRONT_PAGE_FEEDBACK.md](./MANAGER_FRONT_PAGE_FEEDBACK.md) for session decisions that supersede this plan in conflict.
 
 | Phase | Step | Status |
 |---|---|---|
 | A.1 | TS contracts (split: shared common DTOs + per-SPA overview/kpis) | ✅ |
 | A.2 | Fixtures × 6 (empty/mid/thriving per persona), pinned dayjs anchor | ✅ |
 | A.3 | `dashboardApi` per SPA (no interface, mock-bodied for now) | ✅ |
-| A.4 | Shared visual primitives (DashboardCard, KpiTile, ChartTooltip, MonthlyRevenueChart, ActivityFeed, SectionGrid, StripeConnectBanner, ProfileHealthCard, WidgetState, PersonaSwitcher) | ✅ |
-| A.5 | Venue widgets (11) + page + route | ⚠️ Wired against shared hooks; need to flip to local `./hooks/` |
-| A.6 | Artist widgets (10) + page; layout diverged from venue (NextConcertHero, ApplicationsPipeline, no Settlements/Open opps) | ⚠️ Files exist; needs `dashboardApi.ts` + `hooks/` folder + import fixes |
+| A.4 | Shared visual primitives (DashboardCard, KpiTile, ChartTooltip, MonthlyRevenueChart, ActivityFeed, RecentReviewsList, SectionGrid, StripeConnectBanner, ProfileHealthCard, WidgetState, PersonaSwitcher) | ✅ |
+| A.5 | Venue widgets + page + route | ✅ |
+| A.6 | Artist widgets + page; layout diverged from venue (NextConcertHero, ApplicationsPipeline, no Settlements/Open opps) | ✅ |
 | A.7 | Stripe + Profile-Health banners | ✅ Done via overview widgets |
-| A.8 | UX freeze, persona switch verification, builds green | ⏳ Pending |
+| A.8 | UX freeze, persona switch verification, builds green | ⏳ Pending (eyeball with three personas; tablet/mobile responsive pass) |
 
-**Open Phase A todo:** see [FEEDBACK.md → Open Phase A todo](./MANAGER_FRONT_PAGE_FEEDBACK.md#open-phase-a-todo-pick-up-here-post-compact).
+**Session-2 deltas (committed in 5fb54e96):**
+
+- **`ActionLink` primitive** moved to `app/shared/src/types/common.ts` (was duplicated in `features/concerts/types.ts`).
+- **HATEOAS per-role `ApplicationActions`** — each SPA owns its own action vocabulary (artist: `checkout|withdraw`, venue: `accept|decline`) as a typed mapped record + FE label dictionary. Mirrors BE `ApplicationActions(Accept, Checkout?)` from `Concert.Api/Mappers/ApplicationResponseMapper.cs`.
+- **Per-SPA `Application` type** nests shared `OpportunitySummary` + (venue) `ArtistSummary`, drops `href` (actions are the only way to do anything), drops flat `opportunityId/opportunityStartDate/amountLabel/canAccept/canDecline/canCheckout` booleans.
+- **`OpportunitySummary` + `OpportunityCard`** carry structured `Contract` instead of pre-baked `contractLabel: string`. New `contractSummary(contract)` helper at `app/shared/src/features/contracts/format.ts` is the canonical formatter; `ContractSummaryLabel.tsx` now imports it.
+- **`RecentReviewsList`** primitive replaces the single-number Reviews widget on both SPAs.
+- **Applications widgets** switched to **shadcn DataTable on `@tanstack/react-table`** — columns: counterparty / status / actions. No FE sort (BE orders by date when the endpoint lands).
+- **Page wrapper** drops `max-w-7xl` for full-bleed; `DashboardCard` is `h-full` so paired rows align.
+- BE endpoint refinement: dashboard controller only owns aggregations (`overview`, `kpis`, `activity`). Plain lists (`applications`, `inbox`, `upcoming-concerts`, `settlements`, `recommended-opportunities`) hit canonical resource controllers filtered to "me". Updates Round-trip plans below.
+
+**Open Phase A todo:**
+
+- **A.8 UX freeze** — spin up dev server, hit `/_venue/` and `/_artist/`, toggle `?persona=empty|mid|thriving`, verify responsive collapse. Auth-gated routes; either log in as seeded venue/artist manager or temporarily bypass guards in `_venue/route.tsx` / `_artist/route.tsx`.
+
+**Blocking other work:**
+
+- [WEB_SHARED_CLEANUP.md](./WEB_SHARED_CLEANUP.md) — handful of SPA-specific files leftover in `app/web/shared/`. Should be addressed before Phase B starts so import paths settle. High-confidence list is mechanical moves.
 
 **Key divergences from original plan** (codified in FEEDBACK.md):
 

@@ -8,9 +8,9 @@ import {
   useApplicationQuery,
   useAcceptApplicationMutation,
   AcceptContractSummary,
-  ApplicationCheckoutFlow,
 } from "@/features/concerts";
 import { useCheckoutFlow } from "@/features/concerts/hooks/useCheckoutFlow";
+import { VenueAcceptCheckoutFlow } from "./VenueAcceptCheckoutPage";
 
 export function AcceptApplicationPage() {
   const { applicationId } = useParams({ from: "/_venue/applications/$applicationId/accept" });
@@ -28,7 +28,7 @@ export function AcceptApplicationPage() {
   const { artist, opportunity, actions } = application;
   const requiresCheckout = actions.checkout != null;
 
-  if (accepted) return <ApplicationCheckoutFlow artistName={artist.name} flow={flow} />;
+  if (accepted) return <VenueAcceptCheckoutFlow artistName={artist.name} flow={flow} />;
 
   function handleConfirm() {
     if (requiresCheckout) {
