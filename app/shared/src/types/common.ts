@@ -10,3 +10,8 @@ export interface Pagination<T> {
   pageNumber: number;
   pageSize: number;
 }
+
+export interface ActionLink {
+  href: string;
+  method: string;
+}

@@ -45,7 +45,6 @@ export type {
   GuaranteedDoorPayment,
   PayeeSummary,
   Checkout,
-  ActionLink,
   ApplicationActions,
   OpportunityActions,
 } from "./types";
