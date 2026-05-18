@@ -7,6 +7,7 @@ interface Props {
   avatar?: string;
   name: string;
   onAvatarChange?: (file: File) => void;
+  testId?: string;
 }
 
 function AvatarSkeleton() {
@@ -19,6 +20,7 @@ export function AvatarUpload({
   avatar,
   name,
   onAvatarChange,
+  testId,
 }: Readonly<Props>) {
   const editMode = useEditableContext();
   const { inputRef, open, onChange } = useImageUpload(onAvatarChange);
@@ -49,6 +51,7 @@ export function AvatarUpload({
             type="file"
             accept="image/*"
             className="hidden"
+            data-testid={testId}
             onChange={onChange}
           />
         </>

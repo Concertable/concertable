@@ -7,6 +7,7 @@ interface Props {
   onChange?: (value: string) => void;
   className?: string;
   placeholder?: string;
+  testId?: string;
 }
 
 export function EditableTextarea({
@@ -14,6 +15,7 @@ export function EditableTextarea({
   onChange,
   className,
   placeholder,
+  testId,
 }: Readonly<Props>) {
   const debouncedOnChange = useDebounce(onChange, 300);
 
@@ -26,6 +28,7 @@ export function EditableTextarea({
           onChange={(e) => debouncedOnChange?.(e.target.value)}
           className={className}
           placeholder={placeholder}
+          data-testid={testId}
         />
       }
     />

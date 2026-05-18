@@ -9,6 +9,9 @@ tempkey.jwk
 # Reqnroll generated codebehind for .feature files
 *.feature.cs
 
+# MSBuild incremental build cache
+*.lscache
+
 # Mobile E2E APK (developers build locally; CI builds on its own runner)
 api/Tests/Concertable.E2ETests/Concertable.E2ETests.Mobile/TestAssets/*.apk
 

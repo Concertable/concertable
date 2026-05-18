@@ -142,7 +142,7 @@ public static class ServiceCollectionExtensions
         // Ticket payee â€” composite dispatches by ContractType to artist vs venue
         services.AddSingleton<ArtistTicketPayee>();
         services.AddSingleton<VenueTicketPayee>();
-        services.AddSingleton<ITicketPayee, TicketPayee>();
+        services.AddSingleton<ITicketPayee, TicketPayeeResolver>();
 
         // Repositories
         services.AddScoped<IConcertRepository, ConcertRepository>();

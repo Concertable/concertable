@@ -36,7 +36,7 @@ public class UiFixture : IAsyncLifetime
     {
         await using var context = await Browser.NewContextAsync(new() { IgnoreHTTPSErrors = true });
         var page = await context.NewPageAsync();
-        foreach (var url in new[] { App.CustomerSpaUrl, App.VenueSpaUrl, App.ArtistSpaUrl })
+        foreach (var url in new[] { App.CustomerSpaUrl, App.VenueSpaUrl, App.ArtistSpaUrl, App.BusinessSpaUrl })
             await page.GotoAsync(url, new() { Timeout = 120_000, WaitUntil = WaitUntilState.DOMContentLoaded });
     }
 

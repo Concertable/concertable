@@ -10,9 +10,6 @@ export default defineConfig({
     hmr: false,
   },
   envDir: "../",
-  define: {
-    "import.meta.env.VITE_OIDC_CLIENT_ID": JSON.stringify("business-web"),
-  },
   resolve: {
     alias: [
       { find: /^@\/(components|features|hooks|lib|providers|context|types|assets)(\/.*)?$/, replacement: path.resolve(__dirname, "../shared/src/$1$2") },

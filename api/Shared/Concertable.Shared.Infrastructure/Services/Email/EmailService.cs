@@ -75,6 +75,12 @@ public class EmailService : IEmailService
         await SendAsync(emailDto);
     }
 
+    public Task SendVerificationAsync(string toEmail, string token, string verifyBaseUrl, CancellationToken ct = default)
+    {
+        var link = $"{verifyBaseUrl}?token={Uri.EscapeDataString(token)}";
+        return SendEmailAsync(toEmail, "Verify your email", $"Click here to verify your email: {link}");
+    }
+
     public async Task SendTicketsToEmailAsync(string toEmail, IEnumerable<Guid> ticketIds)
     {
         var attachments = new List<AttachmentDto>();
