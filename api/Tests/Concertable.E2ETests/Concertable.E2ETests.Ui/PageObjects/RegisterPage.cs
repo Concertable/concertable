@@ -1,3 +1,5 @@
+using Concertable.E2ETests.Ui.Support;
+
 namespace Concertable.E2ETests.Ui.PageObjects;
 
 public class RegisterPage
@@ -17,7 +19,7 @@ public class RegisterPage
     private ILocator SuccessMessage => page.GetByTestId("success");
     private ILocator SignInLink => page.GetByTestId("signin-link");
     private ILocator ErrorMessage => page.GetByTestId("error");
-    private ILocator RoleRadio(Role role) => page.GetByTestId($"role-{role}");
+    private ILocator RoleRadio(Role role) => page.GetByTestId(role.ToTestId());
 
     public Task WaitForLoadAsync() =>
         page.WaitForURLAsync($"{authBaseUrl}/Account/Register**", new() { Timeout = 15_000 });

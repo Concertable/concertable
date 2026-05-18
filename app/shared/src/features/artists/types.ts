@@ -19,4 +19,6 @@ export interface Artist {
   email: string;
   county: string;
   town: string;
+  latitude: number;
+  longitude: number;
 }

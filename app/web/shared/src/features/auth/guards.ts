@@ -1,7 +1,7 @@
 import { redirect } from "@tanstack/react-router";
 import userApi from "@/features/user/api/userApi";
 import { meQueryKey } from "@/features/user/hooks/useSyncUser";
-import { getQueryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { userManager } from "./config/oidcConfig";
 import { useAuthStore } from "./store/useAuthStore";
 import type { Role, User } from "./types";
@@ -15,7 +15,7 @@ async function ensureUser(): Promise<User | null> {
   const cached = useAuthStore.getState().user;
   if (cached) return cached;
   try {
-    const user = await getQueryClient().ensureQueryData({
+    const user = await queryClient.ensureQueryData({
       queryKey: meQueryKey,
       queryFn: userApi.getMe,
       meta: { expectedErrors: [404] },

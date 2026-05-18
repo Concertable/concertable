@@ -49,25 +49,19 @@ function handleError(error: unknown, meta: ErrorMeta | undefined) {
   }
 }
 
-let instance: QueryClient | null = null;
-
-export function getQueryClient(): QueryClient {
-  if (instance) return instance;
-  instance = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000 * 5,
-        refetchOnWindowFocus: false,
-        retry: shouldRetry,
-      },
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000 * 5,
+      refetchOnWindowFocus: false,
+      retry: shouldRetry,
     },
-    queryCache: new QueryCache({
-      onError: (error, query) => handleError(error, query.meta as ErrorMeta | undefined),
-    }),
-    mutationCache: new MutationCache({
-      onError: (error, _vars, _ctx, mutation) =>
-        handleError(error, mutation.meta as ErrorMeta | undefined),
-    }),
-  });
-  return instance;
-}
+  },
+  queryCache: new QueryCache({
+    onError: (error, query) => handleError(error, query.meta as ErrorMeta | undefined),
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _vars, _ctx, mutation) =>
+      handleError(error, mutation.meta as ErrorMeta | undefined),
+  }),
+});

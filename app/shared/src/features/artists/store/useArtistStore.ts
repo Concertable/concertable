@@ -70,8 +70,8 @@ export const useArtistStore = create<ArtistStore>((set) => ({
     set(
       produce((state: ArtistStore) => {
         if (!state.draft) return;
-        (state.draft as any).latitude = latitude;
-        (state.draft as any).longitude = longitude;
+        state.draft.latitude = latitude;
+        state.draft.longitude = longitude;
         state.draft.county = county;
         state.draft.town = town;
         state.isDirty = true;

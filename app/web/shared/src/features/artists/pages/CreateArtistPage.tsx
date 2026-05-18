@@ -8,7 +8,7 @@ import { CreateBar } from "@/components/CreateBar";
 import { useArtistStore } from "../store/useArtistStore";
 import { ArtistDetails } from "../components/ArtistDetails";
 
-const blank: Artist & { latitude: number; longitude: number } = {
+const blank: Artist = {
   id: 0,
   name: "",
   about: "",
@@ -44,8 +44,8 @@ export function CreateArtistPage() {
       artistApi.createArtist({
         name: draft!.name,
         about: draft!.about,
-        latitude: (draft as any).latitude ?? blank.latitude,
-        longitude: (draft as any).longitude ?? blank.longitude,
+        latitude: draft!.latitude,
+        longitude: draft!.longitude,
         genres: draft!.genres,
         banner: banner! as unknown as File,
         avatar: avatar! as unknown as File,
