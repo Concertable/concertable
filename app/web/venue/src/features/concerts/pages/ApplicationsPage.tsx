@@ -1,6 +1,5 @@
 import { useParams } from "@tanstack/react-router";
-import { useApplicationsByOpportunityQuery } from "../hooks/useApplicationQuery";
-import { ApplicationCard } from "../components/applications/ApplicationCard";
+import { useApplicationsByOpportunityQuery, ApplicationCard } from "@/features/concerts";
 
 export function ApplicationsPage() {
   const { opportunityId } = useParams({ from: "/_venue/my/opportunities/$opportunityId/applications" });

@@ -1,8 +1,6 @@
 export { VenueDetails } from "./components/VenueDetails";
 export { VenueLocation } from "./components/VenueLocation";
 export { VenueDetailsPage } from "./pages/VenueDetailsPage";
-export { CreateVenuePage } from "./pages/CreateVenuePage";
-export { MyVenuePage } from "./pages/MyVenuePage";
 export { useVenueQuery, useMyVenueQuery } from "./hooks/useVenueQuery";
 export { useVenue } from "./hooks/useVenue";
 export { useMyVenue } from "./hooks/useMyVenue";

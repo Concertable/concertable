@@ -1,7 +1,5 @@
 export { ArtistDetails } from "./components/ArtistDetails";
 export { ArtistDetailsPage } from "./pages/ArtistDetailsPage";
-export { CreateArtistPage } from "./pages/CreateArtistPage";
-export { MyArtistPage } from "./pages/MyArtistPage";
 export { useArtistQuery, useMyArtistQuery } from "./hooks/useArtistQuery";
 export { useArtist } from "./hooks/useArtist";
 export { useMyArtist } from "./hooks/useMyArtist";

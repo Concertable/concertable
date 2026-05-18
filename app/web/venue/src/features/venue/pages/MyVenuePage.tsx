@@ -3,9 +3,7 @@ import { EditableProvider } from "@concertable/shared/providers";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 import { ReviewSection } from "@/features/reviews";
 import { OpportunitySection } from "@/features/concerts";
-import { useMyVenue } from "../hooks/useMyVenue";
-import { useVenueStore } from "../store/useVenueStore";
-import { VenueDetails } from "../components/VenueDetails";
+import { useMyVenue, useVenueStore, VenueDetails } from "@/features/venues";
 
 const SECTIONS = [
   { id: "about", label: "About" },

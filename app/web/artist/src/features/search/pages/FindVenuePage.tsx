@@ -1,4 +1,4 @@
-import { FindPage } from "../components/FindPage";
+import { FindPage } from "@/features/search";
 
 export function FindVenuePage() {
   return <FindPage />;

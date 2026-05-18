@@ -7,10 +7,10 @@ import type { ConcertDraftCreatedPayload } from "@/features/notifications";
 import {
   useApplicationQuery,
   useAcceptApplicationMutation,
-} from "../hooks/useApplicationQuery";
-import { useCheckoutFlow } from "../hooks/useCheckoutFlow";
-import { AcceptContractSummary } from "../components/applications/AcceptContractSummary";
-import { ApplicationCheckoutFlow } from "./ApplicationCheckoutPage";
+  AcceptContractSummary,
+  ApplicationCheckoutFlow,
+} from "@/features/concerts";
+import { useCheckoutFlow } from "@/features/concerts/hooks/useCheckoutFlow";
 
 export function AcceptApplicationPage() {
   const { applicationId } = useParams({ from: "/_venue/applications/$applicationId/accept" });

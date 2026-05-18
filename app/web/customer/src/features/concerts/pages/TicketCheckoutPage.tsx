@@ -4,18 +4,20 @@ import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { TicketPurchasedPayload } from "@/features/notifications";
-import { useConcert } from "../hooks/useConcert";
-import { useTicketCheckoutQuery } from "../hooks/useTicketsQuery";
-import { useCheckoutFlow, type CheckoutFlowState } from "../hooks/useCheckoutFlow";
-import { CheckoutLayout } from "../components/checkout/CheckoutLayout";
-import { CheckoutSection } from "../components/checkout/CheckoutSection";
-import { CheckoutEventBanner } from "../components/checkout/CheckoutEventBanner";
-import { OrderSummaryCard } from "../components/checkout/OrderSummaryCard";
-import { QuantitySelector } from "../components/checkout/QuantitySelector";
-import { CheckoutSuccess } from "../components/checkout/CheckoutSuccess";
-import { CheckoutFlow } from "../components/checkout/CheckoutFlow";
-import { StripePaymentForm } from "../components/checkout/StripePaymentForm";
-import type { Concert } from "../types";
+import {
+  useConcert,
+  useTicketCheckoutQuery,
+  type Concert,
+} from "@/features/concerts";
+import { useCheckoutFlow, type CheckoutFlowState } from "@/features/concerts/hooks/useCheckoutFlow";
+import { CheckoutLayout } from "@/features/concerts/components/checkout/CheckoutLayout";
+import { CheckoutSection } from "@/features/concerts/components/checkout/CheckoutSection";
+import { CheckoutEventBanner } from "@/features/concerts/components/checkout/CheckoutEventBanner";
+import { OrderSummaryCard } from "@/features/concerts/components/checkout/OrderSummaryCard";
+import { QuantitySelector } from "@/features/concerts/components/checkout/QuantitySelector";
+import { CheckoutSuccess } from "@/features/concerts/components/checkout/CheckoutSuccess";
+import { CheckoutFlow } from "@/features/concerts/components/checkout/CheckoutFlow";
+import { StripePaymentForm } from "@/features/concerts/components/checkout/StripePaymentForm";
 
 export function TicketCheckoutPage() {
   const { id } = useParams({ from: "/_customer/concert/checkout/$id" });

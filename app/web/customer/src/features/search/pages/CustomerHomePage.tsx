@@ -1,6 +1,8 @@
-import { ConcertHeaderCarousel } from "../components/headers/ConcertHeaderCarousel";
-import { ArtistHeaderCarousel } from "../components/headers/ArtistHeaderCarousel";
-import { VenueHeaderCarousel } from "../components/headers/VenueHeaderCarousel";
+import {
+  ConcertHeaderCarousel,
+  ArtistHeaderCarousel,
+  VenueHeaderCarousel,
+} from "@/features/search";
 
 export function CustomerHomePage() {
   return (

@@ -2,36 +2,36 @@ import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { EditableProvider } from "@concertable/shared/providers";
-import venueApi from "@concertable/shared/features/venues/api/venueApi";
-import type { Venue } from "@concertable/shared/features/venues/types";
+import artistApi from "@concertable/shared/features/artists/api/artistApi";
+import type { Artist } from "@concertable/shared/features/artists/types";
 import { CreateBar } from "@/components/CreateBar";
-import { useVenueStore } from "../store/useVenueStore";
-import { VenueDetails } from "../components/VenueDetails";
+import { useArtistStore, ArtistDetails } from "@/features/artists";
 
-const blank: Venue = {
+const blank: Artist = {
   id: 0,
   name: "",
   about: "",
   bannerUrl: "",
   rating: 0,
+  genres: [],
+  email: "",
   county: "",
   town: "",
-  email: "",
   latitude: 51.5074,
   longitude: -0.1278,
 };
 
-export function CreateVenuePage() {
+export function CreateArtistPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const draft = useVenueStore((s) => s.draft);
-  const banner = useVenueStore((s) => s.banner);
-  const avatar = useVenueStore((s) => s.avatar);
-  const setName = useVenueStore((s) => s.setName);
-  const setAbout = useVenueStore((s) => s.setAbout);
-  const resetDraft = useVenueStore((s) => s.resetDraft);
-  const toggleEdit = useVenueStore((s) => s.toggleEdit);
+  const draft = useArtistStore((s) => s.draft);
+  const banner = useArtistStore((s) => s.banner);
+  const avatar = useArtistStore((s) => s.avatar);
+  const setName = useArtistStore((s) => s.setName);
+  const setAbout = useArtistStore((s) => s.setAbout);
+  const resetDraft = useArtistStore((s) => s.resetDraft);
+  const toggleEdit = useArtistStore((s) => s.toggleEdit);
 
   useEffect(() => {
     toggleEdit(blank);
@@ -40,16 +40,17 @@ export function CreateVenuePage() {
 
   const mutation = useMutation({
     mutationFn: () =>
-      venueApi.createVenue({
+      artistApi.createArtist({
         name: draft!.name,
         about: draft!.about,
         latitude: draft!.latitude,
         longitude: draft!.longitude,
+        genres: draft!.genres,
         banner: banner! as unknown as File,
         avatar: avatar! as unknown as File,
       }),
     onSuccess: (saved) => {
-      queryClient.setQueryData(["venue", "my"], saved);
+      queryClient.setQueryData(["artist", "my"], saved);
       navigate({ to: "/" });
     },
   });
@@ -66,8 +67,8 @@ export function CreateVenuePage() {
         onCreate={() => mutation.mutate()}
       />
       <EditableProvider editMode>
-        <VenueDetails
-          venue={draft}
+        <ArtistDetails
+          artist={draft}
           onNameChange={setName}
           onAboutChange={setAbout}
         />

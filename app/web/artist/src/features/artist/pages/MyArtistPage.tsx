@@ -2,9 +2,7 @@ import { ConfigBar } from "@/components/ConfigBar";
 import { EditableProvider } from "@concertable/shared/providers";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
 import { ReviewSection } from "@/features/reviews";
-import { useMyArtist } from "../hooks/useMyArtist";
-import { useArtistStore } from "../store/useArtistStore";
-import { ArtistDetails } from "../components/ArtistDetails";
+import { useMyArtist, useArtistStore, ArtistDetails } from "@/features/artists";
 
 const SECTIONS = [
   { id: "about", label: "About" },
