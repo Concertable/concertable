@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavbarHeight } from "@/context/NavbarHeightContext";
 
-interface Section {
+export interface Section {
   id: string;
   label: string;
 }
