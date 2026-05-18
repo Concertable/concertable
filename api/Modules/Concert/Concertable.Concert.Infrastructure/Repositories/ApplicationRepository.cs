@@ -102,4 +102,14 @@ internal class ApplicationRepository : Repository<ApplicationEntity>, IApplicati
                      && a.Opportunity.Period.End > now)
             .CountAsync(ct);
     }
+
+    public Task<int> CountArtistPendingAsync(int artistId, CancellationToken ct = default)
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        return context.Applications
+            .Where(a => a.Status == ApplicationStatus.Pending
+                     && a.ArtistId == artistId
+                     && a.Opportunity.Period.End > now)
+            .CountAsync(ct);
+    }
 }

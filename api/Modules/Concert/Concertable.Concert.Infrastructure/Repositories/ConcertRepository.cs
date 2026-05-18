@@ -177,4 +177,10 @@ internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         var query = context.Concerts.Where(c => c.VenueId == venueId);
         return upcomingSpecification.Apply(query).CountAsync(ct);
     }
+
+    public Task<int> CountArtistUpcomingAsync(int artistId, CancellationToken ct = default)
+    {
+        var query = context.Concerts.Where(c => c.ArtistId == artistId);
+        return upcomingSpecification.Apply(query).CountAsync(ct);
+    }
 }

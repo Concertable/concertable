@@ -12,4 +12,7 @@ public interface IConcertModule
     Task<int> GetVenueApplicationsAwaitingReviewCountAsync(int venueId, CancellationToken ct = default);
     Task<int> GetVenueOpenOpportunitiesCountAsync(int venueId, CancellationToken ct = default);
     Task<int> GetVenueUpcomingConcertsCountAsync(int venueId, CancellationToken ct = default);
+
+    Task<int> GetArtistPendingApplicationsCountAsync(int artistId, CancellationToken ct = default);
+    Task<int> GetArtistUpcomingConcertsCountAsync(int artistId, CancellationToken ct = default);
 }

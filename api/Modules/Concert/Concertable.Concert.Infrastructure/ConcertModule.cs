@@ -32,4 +32,10 @@ internal sealed class ConcertModule(
 
     public Task<int> GetVenueUpcomingConcertsCountAsync(int venueId, CancellationToken ct = default) =>
         concertRepository.CountVenueUpcomingAsync(venueId, ct);
+
+    public Task<int> GetArtistPendingApplicationsCountAsync(int artistId, CancellationToken ct = default) =>
+        applicationRepository.CountArtistPendingAsync(artistId, ct);
+
+    public Task<int> GetArtistUpcomingConcertsCountAsync(int artistId, CancellationToken ct = default) =>
+        concertRepository.CountArtistUpcomingAsync(artistId, ct);
 }
