@@ -10,7 +10,8 @@ import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 
 export interface NavLink {
   label: string;
-  to: string;
+  to?: string;
+  href?: string;
 }
 
 interface Props {
@@ -48,17 +49,30 @@ export function Navbar({ links, onHeightChange }: Readonly<Props>) {
         </Link>
 
         <div className="flex items-center gap-6">
-          {links.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              activeOptions={{ exact: true }}
-              className="text-primary-foreground/70 hover:text-primary-foreground [&.active]:text-primary-foreground text-sm transition-colors [&.active]:font-medium"
-              data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) =>
+            link.href ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-foreground/70 hover:text-primary-foreground text-sm transition-colors"
+                data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.to}
+                to={link.to!}
+                activeOptions={{ exact: true }}
+                className="text-primary-foreground/70 hover:text-primary-foreground [&.active]:text-primary-foreground text-sm transition-colors [&.active]:font-medium"
+                data-testid={link.label.toLowerCase().replace(/\s+/g, "-")}
+              >
+                {link.label}
+              </Link>
+            )
+          )}
         </div>
       </div>
 
