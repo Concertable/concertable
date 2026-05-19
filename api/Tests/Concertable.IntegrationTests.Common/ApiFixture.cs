@@ -83,7 +83,6 @@ public async Task InitializeAsync()
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
                 services.AddScoped<SeedData>();
                 services.AddScoped<ILocationFaker, LocationFaker>();
-                services.AddSharedTestSeeder();
                 services.AddUserTestSeeder();
                 services.AddArtistTestSeeder();
                 services.AddVenueTestSeeder();

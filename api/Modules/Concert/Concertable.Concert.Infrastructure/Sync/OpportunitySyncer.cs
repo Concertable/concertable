@@ -20,12 +20,12 @@ internal sealed class OpportunitySyncer
             venueId,
             new DateRange(dto.StartDate, dto.EndDate),
             contractId,
-            dto.GenreIds);
+            dto.Genres);
     }
 
     protected override async Task UpdateAsync(OpportunityEntity entity, OpportunityRequest dto)
     {
         await contractModule.UpdateAsync(entity.ContractId, dto.Contract);
-        entity.Update(new DateRange(dto.StartDate, dto.EndDate), entity.ContractId, dto.GenreIds);
+        entity.Update(new DateRange(dto.StartDate, dto.EndDate), entity.ContractId, dto.Genres);
     }
 }

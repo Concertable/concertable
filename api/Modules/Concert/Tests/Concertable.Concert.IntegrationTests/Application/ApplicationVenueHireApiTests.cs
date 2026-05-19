@@ -6,6 +6,7 @@ using Concertable.Concert.Api.Responses;
 using Concertable.Concert.Domain;
 using Concertable.IntegrationTests.Common;
 using Concertable.Payment.Contracts;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -65,7 +66,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         {
             StartDate = DateTime.UtcNow.AddMonths(13),
             EndDate = DateTime.UtcNow.AddMonths(13).AddHours(3),
-            GenreIds = [fixture.SeedData.Rock.Id],
+            Genres = [Genre.Rock],
             Contract = new VenueHireContract { PaymentMethod = PaymentMethod.Cash, HireFee = 250m }
         };
         var oppResponse = await venueClient.PostAsync("/api/Opportunity", oppRequest);
@@ -188,7 +189,7 @@ public class ApplicationVenueHireApiTests : IAsyncLifetime
         {
             StartDate = DateTime.UtcNow.AddMonths(13),
             EndDate = DateTime.UtcNow.AddMonths(13).AddHours(3),
-            GenreIds = [fixture.SeedData.Rock.Id],
+            Genres = [Genre.Rock],
             Contract = new VenueHireContract { PaymentMethod = PaymentMethod.Cash, HireFee = 250m }
         };
         var oppResponse = await venueClient.PostAsync("/api/Opportunity", oppRequest);

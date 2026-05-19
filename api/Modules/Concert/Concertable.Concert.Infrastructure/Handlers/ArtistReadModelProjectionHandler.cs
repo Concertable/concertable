@@ -27,8 +27,8 @@ internal class ArtistReadModelProjectionHandler(ConcertDbContext db)
                 County = e.County,
                 Town = e.Town,
                 Email = e.Email,
-                Genres = e.GenreIds
-                    .Select(id => new ArtistReadModelGenre { ArtistReadModelId = e.ArtistId, GenreId = id })
+                Genres = e.Genres
+                    .Select(g => new ArtistReadModelGenre { ArtistReadModelId = e.ArtistId, Genre = g })
                     .ToList()
             };
             db.ArtistReadModels.Add(artist);
@@ -43,14 +43,14 @@ internal class ArtistReadModelProjectionHandler(ConcertDbContext db)
             artist.Town = e.Town;
             artist.Email = e.Email;
 
-            var desired = e.GenreIds.ToHashSet();
-            var current = artist.Genres.Select(g => g.GenreId).ToHashSet();
+            var desired = e.Genres.ToHashSet();
+            var current = artist.Genres.Select(g => g.Genre).ToHashSet();
 
-            foreach (var g in artist.Genres.Where(g => !desired.Contains(g.GenreId)).ToList())
+            foreach (var g in artist.Genres.Where(g => !desired.Contains(g.Genre)).ToList())
                 artist.Genres.Remove(g);
 
-            foreach (var id in desired.Where(id => !current.Contains(id)))
-                artist.Genres.Add(new ArtistReadModelGenre { ArtistReadModelId = e.ArtistId, GenreId = id });
+            foreach (var g in desired.Where(g => !current.Contains(g)))
+                artist.Genres.Add(new ArtistReadModelGenre { ArtistReadModelId = e.ArtistId, Genre = g });
         }
 
         await db.SaveChangesAsync(ct);

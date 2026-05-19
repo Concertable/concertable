@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Geometry;
+using Concertable.Shared;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
@@ -37,43 +38,43 @@ internal class ArtistDevSeeder : IDevSeeder
 
         await context.Artists.SeedIfEmptyAsync(async () =>
         {
-            var bands = new (string Name, string Banner, int[] GenreIds)[]
+            var bands = new (string Name, string Banner, Genre[] Genres)[]
             {
-                ("The Rockers", "rockers.jpg", [1, 2, 3]),
-                ("Indie Vibes", "indievibes.jpg", [1, 5, 4]),
-                ("Electronic Pulse", "electronicpulse.jpg", [5, 3]),
-                ("Hip-Hop Flow", "hiphopflow.jpg", [4]),
-                ("Jazz Masters", "jazzmaster.jpg", [6, 3]),
-                ("Always Punks", "alwayspunks.jpg", [1, 6]),
-                ("The Hollow Frequencies", "hollowfrequencies.jpg", [2]),
-                ("Neon Foxes", "neonfoxes.jpg", [4, 2]),
-                ("Velvet Static", "velvetstatic.jpg", [5, 3]),
-                ("Echo Bloom", "echobloom.jpg", [1, 7]),
-                ("The Wild Chords", "wildchords.jpg", [6, 1]),
-                ("Glitch & Glow", "glitchandglow.jpg", [2]),
-                ("Sonic Mirage", "sonicmirage.jpg", [6, 5]),
-                ("Neon Echoes", "neonechoes.jpg", [4]),
-                ("Dreamwave Collective", "dreamwavecollective.jpg", [7]),
-                ("Synth Pulse", "synthpulse.jpg", [1]),
-                ("The Brass Poets", "brasspoets.jpg", [3]),
-                ("Groove Alchemy", "groovealchemy.jpg", [6]),
-                ("Velvet Rhymes", "velvetrhymes.jpg", [4]),
-                ("The Lo-Fi Syndicate", "lofisyndicate.jpg", [7]),
-                ("Beats & Blue Notes", "beatsbluenotes.jpg", [8]),
-                ("Bass Pilots", "basspilots.jpg", [1]),
-                ("The Digital Prophets", "digitalprophets.jpg", [5]),
-                ("Neon Bass Theory", "neonbasstheory.jpg", [6]),
-                ("Wavelength 303", "wavelength303.jpg", [2]),
-                ("Gravity Loops", "gravityloops.jpg", [1]),
-                ("The Golden Reverie", "goldenreverie.jpg", [8]),
-                ("Fable Sound", "fablesound.jpg", [5]),
-                ("Moonlight Static", "moonlightstatic.jpg", [7]),
-                ("The Chromatics", "thechromatics.jpg", [3]),
-                ("Echo Reverberation", "echoreverberation.jpg", [6]),
-                ("Midnight Reverie", "midnightreverie.jpg", [1]),
-                ("Static Wolves", "staticwolves.jpg", [4]),
-                ("Echo Collapse", "echocollapse.jpg", [2]),
-                ("Violet Sundown", "violetsundown.jpg", [8])
+                ("The Rockers", "rockers.jpg", [Genre.Rock, Genre.Pop, Genre.Jazz]),
+                ("Indie Vibes", "indievibes.jpg", [Genre.Rock, Genre.Electronic, Genre.HipHop]),
+                ("Electronic Pulse", "electronicpulse.jpg", [Genre.Electronic, Genre.Jazz]),
+                ("Hip-Hop Flow", "hiphopflow.jpg", [Genre.HipHop]),
+                ("Jazz Masters", "jazzmaster.jpg", [Genre.Indie, Genre.Jazz]),
+                ("Always Punks", "alwayspunks.jpg", [Genre.Rock, Genre.Indie]),
+                ("The Hollow Frequencies", "hollowfrequencies.jpg", [Genre.Pop]),
+                ("Neon Foxes", "neonfoxes.jpg", [Genre.HipHop, Genre.Pop]),
+                ("Velvet Static", "velvetstatic.jpg", [Genre.Electronic, Genre.Jazz]),
+                ("Echo Bloom", "echobloom.jpg", [Genre.Rock, Genre.DnB]),
+                ("The Wild Chords", "wildchords.jpg", [Genre.Indie, Genre.Rock]),
+                ("Glitch & Glow", "glitchandglow.jpg", [Genre.Pop]),
+                ("Sonic Mirage", "sonicmirage.jpg", [Genre.Indie, Genre.Electronic]),
+                ("Neon Echoes", "neonechoes.jpg", [Genre.HipHop]),
+                ("Dreamwave Collective", "dreamwavecollective.jpg", [Genre.DnB]),
+                ("Synth Pulse", "synthpulse.jpg", [Genre.Rock]),
+                ("The Brass Poets", "brasspoets.jpg", [Genre.Jazz]),
+                ("Groove Alchemy", "groovealchemy.jpg", [Genre.Indie]),
+                ("Velvet Rhymes", "velvetrhymes.jpg", [Genre.HipHop]),
+                ("The Lo-Fi Syndicate", "lofisyndicate.jpg", [Genre.DnB]),
+                ("Beats & Blue Notes", "beatsbluenotes.jpg", [Genre.House]),
+                ("Bass Pilots", "basspilots.jpg", [Genre.Rock]),
+                ("The Digital Prophets", "digitalprophets.jpg", [Genre.Electronic]),
+                ("Neon Bass Theory", "neonbasstheory.jpg", [Genre.Indie]),
+                ("Wavelength 303", "wavelength303.jpg", [Genre.Pop]),
+                ("Gravity Loops", "gravityloops.jpg", [Genre.Rock]),
+                ("The Golden Reverie", "goldenreverie.jpg", [Genre.House]),
+                ("Fable Sound", "fablesound.jpg", [Genre.Electronic]),
+                ("Moonlight Static", "moonlightstatic.jpg", [Genre.DnB]),
+                ("The Chromatics", "thechromatics.jpg", [Genre.Jazz]),
+                ("Echo Reverberation", "echoreverberation.jpg", [Genre.Indie]),
+                ("Midnight Reverie", "midnightreverie.jpg", [Genre.Rock]),
+                ("Static Wolves", "staticwolves.jpg", [Genre.HipHop]),
+                ("Echo Collapse", "echocollapse.jpg", [Genre.Pop]),
+                ("Violet Sundown", "violetsundown.jpg", [Genre.House])
             };
 
             var artists = bands.Select((b, i) =>
@@ -87,7 +88,7 @@ internal class ArtistDevSeeder : IDevSeeder
                     geometryProvider.CreatePoint(loc.Latitude, loc.Longitude),
                     new Address(loc.County, loc.Town),
                     $"{b.Name.ToLowerInvariant().Replace(" ", "")}@test.com",
-                    b.GenreIds).Generate();
+                    b.Genres).Generate();
             }).ToArray();
 
             context.Artists.AddRange(artists);

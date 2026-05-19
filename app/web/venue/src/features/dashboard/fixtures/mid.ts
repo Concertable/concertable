@@ -31,14 +31,14 @@ export const venueMid: VenueDashboardFixture = {
     {
       id: 101,
       status: "Pending",
-      artist: { id: 41, name: "Lily Hayward", rating: 4.6, genres: [{ id: 1, name: "Folk" }] },
+      artist: { id: 41, name: "Lily Hayward", rating: 4.6, genres: ["Indie"] },
       opportunity: {
         id: 9001,
         venueId: 2,
         venueName: "The Crooked Owl",
         startDate: daysAhead(11),
         endDate: daysAhead(11),
-        genres: [{ id: 1, name: "Folk" }],
+        genres: ["Indie"],
         contract: { $type: "versus", paymentMethod: "Transfer", guarantee: 250, artistDoorPercent: 70 },
       },
       actions: {
@@ -49,14 +49,14 @@ export const venueMid: VenueDashboardFixture = {
     {
       id: 102,
       status: "Pending",
-      artist: { id: 42, name: "Brass Republic", rating: 4.4, genres: [{ id: 2, name: "Indie" }] },
+      artist: { id: 42, name: "Brass Republic", rating: 4.4, genres: ["Indie"] },
       opportunity: {
         id: 9002,
         venueId: 2,
         venueName: "The Crooked Owl",
         startDate: daysAhead(18),
         endDate: daysAhead(18),
-        genres: [{ id: 2, name: "Indie" }],
+        genres: ["Indie"],
         contract: { $type: "flatFee", paymentMethod: "Transfer", fee: 420 },
       },
       actions: {
@@ -67,14 +67,14 @@ export const venueMid: VenueDashboardFixture = {
     {
       id: 103,
       status: "Pending",
-      artist: { id: 43, name: "Mira Hollows", rating: 4.5, genres: [{ id: 1, name: "Folk" }] },
+      artist: { id: 43, name: "Mira Hollows", rating: 4.5, genres: ["Indie"] },
       opportunity: {
         id: 9001,
         venueId: 2,
         venueName: "The Crooked Owl",
         startDate: daysAhead(11),
         endDate: daysAhead(11),
-        genres: [{ id: 1, name: "Folk" }],
+        genres: ["Indie"],
         contract: { $type: "versus", paymentMethod: "Transfer", guarantee: 250, artistDoorPercent: 70 },
       },
       actions: {
@@ -85,14 +85,14 @@ export const venueMid: VenueDashboardFixture = {
     {
       id: 104,
       status: "Pending",
-      artist: { id: 44, name: "The Foundry", rating: 4.3, genres: [{ id: 3, name: "Electronic" }] },
+      artist: { id: 44, name: "The Foundry", rating: 4.3, genres: ["Electronic"] },
       opportunity: {
         id: 9003,
         venueId: 2,
         venueName: "The Crooked Owl",
         startDate: daysAhead(25),
         endDate: daysAhead(25),
-        genres: [{ id: 3, name: "Electronic" }],
+        genres: ["Electronic"],
         contract: { $type: "doorSplit", paymentMethod: "Transfer", artistDoorPercent: 60 },
       },
       actions: {
@@ -103,14 +103,14 @@ export const venueMid: VenueDashboardFixture = {
     {
       id: 105,
       status: "Pending",
-      artist: { id: 45, name: "Cara Nye", rating: 4.7, genres: [{ id: 2, name: "Indie" }] },
+      artist: { id: 45, name: "Cara Nye", rating: 4.7, genres: ["Indie"] },
       opportunity: {
         id: 9002,
         venueId: 2,
         venueName: "The Crooked Owl",
         startDate: daysAhead(18),
         endDate: daysAhead(18),
-        genres: [{ id: 2, name: "Indie" }],
+        genres: ["Indie"],
         contract: { $type: "flatFee", paymentMethod: "Transfer", fee: 420 },
       },
       actions: {
@@ -193,7 +193,7 @@ export const venueMid: VenueDashboardFixture = {
         venueName: "The Crooked Owl",
         startDate: daysAhead(11),
         endDate: daysAhead(11),
-        genres: [{ id: 1, name: "Folk" }],
+        genres: ["Indie"],
         contract: { $type: "versus", paymentMethod: "Transfer", guarantee: 250, artistDoorPercent: 70 },
       },
       applicationCount: 3,
@@ -206,7 +206,7 @@ export const venueMid: VenueDashboardFixture = {
         venueName: "The Crooked Owl",
         startDate: daysAhead(18),
         endDate: daysAhead(18),
-        genres: [{ id: 2, name: "Indie" }],
+        genres: ["Indie"],
         contract: { $type: "flatFee", paymentMethod: "Transfer", fee: 420 },
       },
       applicationCount: 2,
@@ -219,7 +219,7 @@ export const venueMid: VenueDashboardFixture = {
         venueName: "The Crooked Owl",
         startDate: daysAhead(25),
         endDate: daysAhead(25),
-        genres: [{ id: 3, name: "Electronic" }],
+        genres: ["Electronic"],
         contract: { $type: "doorSplit", paymentMethod: "Transfer", artistDoorPercent: 60 },
       },
       applicationCount: 1,

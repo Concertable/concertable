@@ -13,4 +13,4 @@ public record ArtistChangedEvent(
     double Latitude,
     double Longitude,
     string Email,
-    IReadOnlyCollection<int> GenreIds) : IIntegrationEvent;
+    IReadOnlyCollection<Genre> Genres) : IIntegrationEvent;

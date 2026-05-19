@@ -1,5 +1,6 @@
 import { Music } from "lucide-react";
 import type { Genre } from "@/types/common";
+import { genreLabel } from "@/types/common";
 
 interface Props {
   genres: Genre[];
@@ -10,7 +11,7 @@ export function GenreTags({ genres }: Readonly<Props>) {
 
   const display = genres
     .slice(0, 3)
-    .map((g) => g.name)
+    .map((g) => genreLabel(g))
     .join(", ");
 
   return (

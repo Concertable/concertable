@@ -23,15 +23,10 @@ internal class ArtistGenreEntityConfiguration : IEntityTypeConfiguration<ArtistG
     public void Configure(EntityTypeBuilder<ArtistGenreEntity> builder)
     {
         builder.ToTable("ArtistGenres", Schema.Name);
-        builder.HasKey(ag => new { ag.ArtistId, ag.GenreId });
+        builder.HasKey(ag => new { ag.ArtistId, ag.Genre });
         builder.HasOne(ag => ag.Artist)
             .WithMany(a => a.ArtistGenres)
             .HasForeignKey(ag => ag.ArtistId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
-        builder.HasOne(ag => ag.Genre)
-            .WithMany()
-            .HasForeignKey(ag => ag.GenreId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
     }

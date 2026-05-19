@@ -31,7 +31,7 @@ internal static class QueryableConcertMappers
             DatePosted = c.DatePosted,
             StartDate = c.Booking.Application.Opportunity.Period.Start,
             EndDate = c.Booking.Application.Opportunity.Period.End,
-            Genres = c.ConcertGenres.Select(cg => new GenreDto(cg.Genre.Id, cg.Genre.Name)),
+            Genres = c.ConcertGenres.Select(cg => cg.Genre),
             Venue = new ConcertVenueDto
             {
                 Id = c.Booking.Application.Opportunity.Venue.Id,
@@ -50,7 +50,7 @@ internal static class QueryableConcertMappers
                 County = c.Booking.Application.Artist.County ?? string.Empty,
                 Town = c.Booking.Application.Artist.Town ?? string.Empty,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
-                Genres = c.Booking.Application.Artist.Genres.Select(g => new GenreDto(g.Genre.Id, g.Genre.Name))
+                Genres = c.Booking.Application.Artist.Genres.Select(g => g.Genre)
             }
         };
 
@@ -85,7 +85,7 @@ internal static class QueryableConcertMappers
                 Id = c.Booking.Application.Artist.Id,
                 Name = c.Booking.Application.Artist.Name,
                 Rating = (double?)artistRating.AverageRating ?? 0.0,
-                Genres = c.Booking.Application.Artist.Genres.Select(g => new GenreDto(g.Genre.Id, g.Genre.Name))
+                Genres = c.Booking.Application.Artist.Genres.Select(g => g.Genre)
             }
         };
 }

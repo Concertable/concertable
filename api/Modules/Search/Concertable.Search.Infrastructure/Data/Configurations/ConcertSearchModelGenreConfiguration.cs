@@ -9,11 +9,6 @@ internal sealed class ConcertSearchModelGenreConfiguration : IEntityTypeConfigur
     public void Configure(EntityTypeBuilder<ConcertSearchModelGenre> builder)
     {
         builder.ToTable("ConcertGenres", "concert", t => t.ExcludeFromMigrations());
-        builder.HasKey(x => new { x.ConcertId, x.GenreId });
-        builder.HasOne(x => x.Genre)
-            .WithMany()
-            .HasForeignKey(x => x.GenreId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+        builder.HasKey(x => new { x.ConcertId, x.Genre });
     }
 }

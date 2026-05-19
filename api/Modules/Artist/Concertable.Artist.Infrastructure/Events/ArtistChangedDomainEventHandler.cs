@@ -20,6 +20,6 @@ internal class ArtistChangedDomainEventHandler(IIntegrationEventBus bus)
             artist.Location.Y,
             artist.Location.X,
             artist.Email,
-            artist.ArtistGenres.Select(g => g.GenreId).ToArray()), ct);
+            artist.ArtistGenres.Select(g => g.Genre).ToArray()), ct);
     }
 }

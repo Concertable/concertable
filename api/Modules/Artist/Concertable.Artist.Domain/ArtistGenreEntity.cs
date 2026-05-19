@@ -1,9 +1,10 @@
+using Concertable.Shared;
+
 namespace Concertable.Artist.Domain;
 
-public class ArtistGenreEntity : IGenreJoin
+public class ArtistGenreEntity
 {
     public int ArtistId { get; set; }
-    public int GenreId { get; set; }
+    public Genre Genre { get; set; }
     public ArtistEntity Artist { get; set; } = null!;
-    public GenreEntity Genre { get; set; } = null!;
 }

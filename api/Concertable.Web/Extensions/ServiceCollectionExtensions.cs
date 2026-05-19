@@ -41,7 +41,6 @@ public static class ServiceCollectionExtensions
         services.AddSharedInfrastructure(configuration);
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
-        services.AddSharedDbContext(configuration);
 
         services.AddReadDbContext(configuration);
 

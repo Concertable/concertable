@@ -32,6 +32,6 @@ internal class ApplicationMapper : IApplicationMapper
         Id = application.Artist.Id,
         Name = application.Artist.Name,
         Avatar = application.Artist.Avatar,
-        Genres = application.Artist.Genres.Select(g => new GenreDto(g.Genre.Id, g.Genre.Name))
+        Genres = application.Artist.Genres.Select(g => g.Genre)
     };
 }

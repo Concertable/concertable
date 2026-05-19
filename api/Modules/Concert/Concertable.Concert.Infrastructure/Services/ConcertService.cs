@@ -109,8 +109,8 @@ internal class ConcertService : IConcertService
         if (location is null)
             return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = [] };
 
-        var genreIds = concertEntity.ConcertGenres.Select(cg => cg.GenreId).ToList();
-        var userIdsToNotify = await customerModule.GetUserIdsByLocationAndGenresAsync(location.Y, location.X, genreIds);
+        var genres = concertEntity.ConcertGenres.Select(cg => cg.Genre).ToList();
+        var userIdsToNotify = await customerModule.GetUserIdsByLocationAndGenresAsync(location.Y, location.X, genres);
 
         return new ConcertPostResponse { ConcertHeader = concertHeaderDto, UserIds = userIdsToNotify.ToList() };
     }

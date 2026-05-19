@@ -1,4 +1,5 @@
 ﻿using Concertable.Application.Interfaces.Geometry;
+using Concertable.Shared;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Customer.Infrastructure.Services;
@@ -25,7 +26,7 @@ internal class PreferenceService : IPreferenceService
     public async Task<PreferenceDto> CreateAsync(CreatePreferenceRequest request, Guid? userId = null)
     {
         var resolvedUserId = userId ?? currentUser.GetId();
-        var preference = PreferenceEntity.Create(resolvedUserId, request.RadiusKm, request.Genres.Select(g => g.Id));
+        var preference = PreferenceEntity.Create(resolvedUserId, request.RadiusKm, request.Genres);
 
         await preferenceRepository.AddAsync(preference);
         await preferenceRepository.SaveChangesAsync();
@@ -55,7 +56,7 @@ internal class PreferenceService : IPreferenceService
         if (currentUser.GetId() != preference.UserId)
             throw new UnauthorizedAccessException("You do not own this preference");
 
-        preference.Update(preferenceDto.RadiusKm, preferenceDto.Genres.Select(g => g.Id));
+        preference.Update(preferenceDto.RadiusKm, preferenceDto.Genres);
 
         preferenceRepository.Update(preference);
         await preferenceRepository.SaveChangesAsync();
@@ -67,9 +68,9 @@ internal class PreferenceService : IPreferenceService
     public async Task<IReadOnlyCollection<Guid>> GetUserIdsByLocationAndGenresAsync(
         double latitude,
         double longitude,
-        IEnumerable<int> genreIds)
+        IEnumerable<Genre> genres)
     {
-        var preferences = (await preferenceRepository.GetByMatchingGenresAsync(genreIds)).ToList();
+        var preferences = (await preferenceRepository.GetByMatchingGenresAsync(genres)).ToList();
         if (preferences.Count == 0) return [];
 
         var users = await userModule.GetByIdsAsync(preferences.Select(p => p.UserId));

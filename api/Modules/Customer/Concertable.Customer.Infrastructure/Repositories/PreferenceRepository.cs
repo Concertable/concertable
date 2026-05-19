@@ -1,4 +1,5 @@
 using Concertable.Customer.Infrastructure.Data;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Customer.Infrastructure.Repositories;
@@ -11,7 +12,6 @@ internal class PreferenceRepository : Repository<PreferenceEntity>, IPreferenceR
     {
         return await context.Preferences
             .Include(p => p.GenrePreferences)
-                .ThenInclude(gp => gp.Genre)
             .ToListAsync();
     }
 
@@ -19,7 +19,6 @@ internal class PreferenceRepository : Repository<PreferenceEntity>, IPreferenceR
     {
         return await context.Preferences
             .Include(p => p.GenrePreferences)
-                .ThenInclude(gp => gp.Genre)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -27,15 +26,14 @@ internal class PreferenceRepository : Repository<PreferenceEntity>, IPreferenceR
     {
         return await context.Preferences
             .Include(p => p.GenrePreferences)
-                .ThenInclude(gp => gp.Genre)
             .FirstOrDefaultAsync(p => p.UserId == id);
     }
 
-    public async Task<IEnumerable<PreferenceEntity>> GetByMatchingGenresAsync(IEnumerable<int> genreIds)
+    public async Task<IEnumerable<PreferenceEntity>> GetByMatchingGenresAsync(IEnumerable<Genre> genres)
     {
-        var ids = genreIds.ToArray();
+        var target = genres.ToArray();
         return await context.Preferences
-            .Where(p => p.GenrePreferences.Any(gp => ids.Contains(gp.GenreId)))
+            .Where(p => p.GenrePreferences.Any(gp => target.Contains(gp.Genre)))
             .ToListAsync();
     }
 }

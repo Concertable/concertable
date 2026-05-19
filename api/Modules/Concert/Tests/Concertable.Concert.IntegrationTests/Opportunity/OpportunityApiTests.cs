@@ -1,8 +1,9 @@
-﻿using System.Net;
+using System.Net;
 using Concertable.Concert.Application.DTOs;
 
 using Concertable.Concert.Api.Responses;
 using Concertable.IntegrationTests.Common;
+using Concertable.Shared;
 using Xunit;
 using static Concertable.Concert.IntegrationTests.Opportunity.OpportunityRequestBuilders;
 
@@ -37,7 +38,7 @@ internal class OpportunityApiTests : IAsyncLifetime
     {
         // Arrange
         var client = fixture.CreateClient(fixture.SeedData.VenueManager1);
-        var request = BuildRequest(contract, fixture.SeedData.Rock.Id);
+        var request = BuildRequest(contract);
 
         // Act
         var response = await client.PostAsync("/api/Opportunity", request);
@@ -48,7 +49,7 @@ internal class OpportunityApiTests : IAsyncLifetime
         Assert.NotNull(opportunity.Id);
         Assert.Equal(request.StartDate, opportunity.StartDate);
         Assert.Equal(request.EndDate, opportunity.EndDate);
-        Assert.Contains(opportunity.Genres, g => g.Id == fixture.SeedData.Rock.Id);
+        Assert.Contains(Genre.Rock, opportunity.Genres);
     }
 
     [Fact]
@@ -58,7 +59,7 @@ internal class OpportunityApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.ArtistManager1);
 
         // Act
-        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest(fixture.SeedData.Rock.Id));
+        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest());
 
         // Assert
         await response.ShouldBe(HttpStatusCode.Forbidden);
@@ -71,7 +72,7 @@ internal class OpportunityApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         // Act
-        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest(fixture.SeedData.Rock.Id));
+        var response = await client.PostAsync("/api/Opportunity", BuildDefaultRequest());
 
         // Assert
         await response.ShouldBe(HttpStatusCode.Unauthorized);

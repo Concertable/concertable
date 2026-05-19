@@ -1,5 +1,6 @@
 ﻿using Concertable.Customer.Application.Interfaces;
 using Concertable.Customer.Contracts;
+using Concertable.Shared;
 using Concertable.User.Contracts;
 
 namespace Concertable.Customer.Infrastructure;
@@ -24,6 +25,6 @@ internal class CustomerModule : ICustomerModule
     public Task<IReadOnlyCollection<Guid>> GetUserIdsByLocationAndGenresAsync(
         double latitude,
         double longitude,
-        IEnumerable<int> genreIds) =>
-        preferenceService.GetUserIdsByLocationAndGenresAsync(latitude, longitude, genreIds);
+        IEnumerable<Genre> genres) =>
+        preferenceService.GetUserIdsByLocationAndGenresAsync(latitude, longitude, genres);
 }

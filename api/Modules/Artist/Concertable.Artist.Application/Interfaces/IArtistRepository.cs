@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Artist.Application.DTOs;
+using Concertable.Shared;
 
 namespace Concertable.Artist.Application.Interfaces;
 
@@ -11,5 +12,5 @@ internal interface IArtistRepository : IIdRepository<ArtistEntity>
     Task<ArtistSummaryDto?> GetSummaryAsync(int id);
     Task<ArtistDto?> GetDtoByIdAsync(int id);
     Task<ArtistDto?> GetDtoByUserIdAsync(Guid userId);
-    Task<IReadOnlySet<int>> GetGenreIdsAsync(int id);
+    Task<IReadOnlySet<Genre>> GetGenresAsync(int id);
 }

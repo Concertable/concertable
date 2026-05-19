@@ -14,10 +14,5 @@ internal class OpportunityGenreEntityConfiguration : IEntityTypeConfiguration<Op
             .HasForeignKey(og => og.OpportunityId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
-        builder.HasOne(og => og.Genre)
-            .WithMany()
-            .HasForeignKey(og => og.GenreId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
     }
 }

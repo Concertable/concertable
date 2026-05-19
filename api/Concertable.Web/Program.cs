@@ -91,7 +91,6 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddScoped<IDbInitializer, DevDbInitializer>();
     services.AddScoped<Concertable.Seeding.SeedData>();
     services.AddScoped<ILocationFaker, LocationFaker>();
-    services.AddSharedDevSeeder();
     services.AddBlobDevSeeder();
     services.AddUserDevSeeder();
     services.AddArtistDevSeeder();

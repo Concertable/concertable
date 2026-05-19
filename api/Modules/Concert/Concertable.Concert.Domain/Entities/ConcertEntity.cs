@@ -40,7 +40,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
         DateRange period,
         string name,
         string about,
-        IEnumerable<int> genreIds) => new()
+        IEnumerable<Genre> genres) => new()
     {
         BookingId = bookingId,
         ArtistId = artistId,
@@ -48,7 +48,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
         Period = period,
         Name = name,
         About = about,
-        ConcertGenres = genreIds.Select(id => new ConcertGenreEntity { GenreId = id }).ToHashSet()
+        ConcertGenres = genres.Select(g => new ConcertGenreEntity { Genre = g }).ToHashSet()
     };
 
     public static ConcertEntity CreateDraft(
@@ -59,7 +59,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
         string name,
         string about,
         ContractType contractType,
-        IEnumerable<int> genreIds) => new()
+        IEnumerable<Genre> genres) => new()
     {
         BookingId = bookingId,
         ArtistId = artistId,
@@ -68,7 +68,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
         Name = name,
         About = about,
         ContractType = contractType,
-        ConcertGenres = genreIds.Select(id => new ConcertGenreEntity { GenreId = id }).ToHashSet()
+        ConcertGenres = genres.Select(g => new ConcertGenreEntity { Genre = g }).ToHashSet()
     };
 
     public void AdvanceStage(ConcertStage next)

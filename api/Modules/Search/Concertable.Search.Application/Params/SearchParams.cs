@@ -1,3 +1,5 @@
+using Concertable.Shared;
+
 namespace Concertable.Search.Application;
 
 public class SearchParams : IPageParams, IGeoParams, ISortParams
@@ -12,7 +14,7 @@ public class SearchParams : IPageParams, IGeoParams, ISortParams
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public int? RadiusKm { get; set; }
-    public int[]? GenreIds { get; set; }
+    public Genre[]? Genres { get; set; }
     public bool? ShowHistory { get; set; }
     public bool? ShowSold { get; set; }
 }

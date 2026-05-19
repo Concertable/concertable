@@ -19,7 +19,7 @@ public record ArtistHeaderDto : IHeader, IAddress
     public double? Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IEnumerable<Genre> Genres { get; set; } = [];
 }
 
 public record VenueHeaderDto : IHeader, IAddress
@@ -30,7 +30,7 @@ public record VenueHeaderDto : IHeader, IAddress
     public double? Rating { get; set; }
     public required string County { get; set; }
     public required string Town { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IEnumerable<Genre> Genres { get; set; } = [];
 }
 
 public record ConcertHeaderDto : IHeader, IAddress
@@ -44,7 +44,7 @@ public record ConcertHeaderDto : IHeader, IAddress
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime? DatePosted { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IEnumerable<Genre> Genres { get; set; } = [];
 }
 
 public class AutocompleteDto : IHasName

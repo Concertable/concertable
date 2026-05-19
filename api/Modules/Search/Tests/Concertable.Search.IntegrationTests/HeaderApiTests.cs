@@ -131,7 +131,7 @@ public class HeaderApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         // Act
-        var response = await client.GetAsync($"/api/Header?headerType=Artist&genreIds={fixture.SeedData.Rock.Id},{fixture.SeedData.Jazz.Id}");
+        var response = await client.GetAsync($"/api/Header?headerType=Artist&genres={Genre.Rock},{Genre.Jazz}");
 
         // Assert
         await response.ShouldBe(HttpStatusCode.OK);
@@ -147,7 +147,7 @@ public class HeaderApiTests : IAsyncLifetime
         var client = fixture.CreateClient();
 
         // Act
-        var response = await client.GetAsync($"/api/Header?headerType=Artist&genreIds={fixture.SeedData.Jazz.Id},{fixture.SeedData.Electronic.Id}");
+        var response = await client.GetAsync($"/api/Header?headerType=Artist&genres={Genre.Jazz},{Genre.Electronic}");
 
         // Assert
         await response.ShouldBe(HttpStatusCode.OK);

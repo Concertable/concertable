@@ -10,11 +10,6 @@ internal sealed class ArtistSearchModelGenreConfiguration : IEntityTypeConfigura
     public void Configure(EntityTypeBuilder<ArtistSearchModelGenre> builder)
     {
         builder.ToTable("ArtistGenres", ArtistSchema.Name);
-        builder.HasKey(x => new { x.ArtistId, x.GenreId });
-        builder.HasOne(x => x.Genre)
-            .WithMany()
-            .HasForeignKey(x => x.GenreId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+        builder.HasKey(x => new { x.ArtistId, x.Genre });
     }
 }

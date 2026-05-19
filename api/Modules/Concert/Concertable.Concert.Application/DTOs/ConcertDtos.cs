@@ -16,7 +16,7 @@ internal record ConcertDto
     public DateTime? DatePosted { get; set; }
     public required ConcertVenueDto Venue { get; set; }
     public required ConcertArtistDto Artist { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IEnumerable<Genre> Genres { get; set; } = [];
 }
 
 internal record ConcertVenueDto
@@ -38,7 +38,7 @@ internal record ConcertArtistDto
     public required string County { get; set; }
     public required string Town { get; set; }
     public double Rating { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IEnumerable<Genre> Genres { get; set; } = [];
 }
 
 internal record ConcertSummaryDto
@@ -68,7 +68,7 @@ internal record ConcertArtistSummaryDto
     public int Id { get; set; }
     public required string Name { get; set; }
     public double Rating { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IEnumerable<Genre> Genres { get; set; } = [];
 }
 
 internal record ConcertSnapshot
@@ -82,6 +82,6 @@ internal record ConcertSnapshot
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime? DatePosted { get; set; }
-    public IReadOnlyList<GenreDto> Genres { get; set; } = [];
+    public IReadOnlyList<Genre> Genres { get; set; } = [];
 }
 
