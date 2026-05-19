@@ -31,7 +31,6 @@
     <ProjectReference Include="..\..\Notification\Concertable.Notification.Contracts\Concertable.Notification.Contracts.csproj" />
     <ProjectReference Include="..\..\Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj" />
     <ProjectReference Include="..\..\Customer\Concertable.Customer.Contracts\Concertable.Customer.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Concertable.Customer\Modules\Review\Concertable.Customer.Review.Contracts\Concertable.Customer.Review.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
   </ItemGroup>

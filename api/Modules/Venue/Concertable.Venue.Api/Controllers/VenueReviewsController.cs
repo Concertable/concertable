@@ -16,12 +16,4 @@ internal class VenueReviewsController : ControllerBase
     [HttpGet("summary")]
     public async Task<ActionResult<ReviewSummaryDto>> GetSummary(int venueId) =>
         Ok(await reviewService.GetSummaryAsync(venueId));
-
-    [HttpGet]
-    public async Task<ActionResult<IPagination<ReviewDto>>> Get(int venueId, [FromQuery] PageParams pageParams) =>
-        Ok(await reviewService.GetAsync(venueId, pageParams));
-
-    [HttpGet("eligibility")]
-    public async Task<ActionResult<bool>> CanCurrentUserReview(int venueId) =>
-        Ok(await reviewService.CanCurrentUserReviewAsync(venueId));
 }

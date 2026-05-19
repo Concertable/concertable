@@ -16,12 +16,4 @@ internal class ArtistReviewsController : ControllerBase
     [HttpGet("summary")]
     public async Task<ActionResult<ReviewSummaryDto>> GetSummary(int artistId) =>
         Ok(await reviewService.GetSummaryAsync(artistId));
-
-    [HttpGet]
-    public async Task<ActionResult<IPagination<ReviewDto>>> Get(int artistId, [FromQuery] PageParams pageParams) =>
-        Ok(await reviewService.GetAsync(artistId, pageParams));
-
-    [HttpGet("eligibility")]
-    public async Task<ActionResult<bool>> CanCurrentUserReview(int artistId) =>
-        Ok(await reviewService.CanCurrentUserReviewAsync(artistId));
 }
