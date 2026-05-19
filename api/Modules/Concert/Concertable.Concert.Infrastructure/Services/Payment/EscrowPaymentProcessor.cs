@@ -1,9 +1,10 @@
+using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
 
-internal class EscrowPaymentProcessor : IPaymentSucceededProcessor
+internal class EscrowPaymentProcessor : IIntegrationEventHandler<PaymentSucceededEvent>
 {
     private readonly IConcertWorkflowModule concertWorkflowModule;
     private readonly ILogger<EscrowPaymentProcessor> logger;
@@ -14,8 +15,11 @@ internal class EscrowPaymentProcessor : IPaymentSucceededProcessor
         this.logger = logger;
     }
 
-    public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct)
+    public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct = default)
     {
+        if (@event.Metadata.GetValueOrDefault("type") != TransactionTypes.Escrow)
+            return;
+
         var bookingId = int.Parse(@event.Metadata["bookingId"]);
         logger.LogDebug(
             "Escrow webhook received: payment intent {TransactionId} for booking {BookingId}",

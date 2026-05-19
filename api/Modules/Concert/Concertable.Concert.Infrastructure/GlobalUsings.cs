@@ -22,7 +22,6 @@ global using Concertable.Application.Mappers;
 global using Concertable.Payment.Application.Interfaces;
 global using Concertable.Payment.Application.DTOs;
 global using Concertable.Payment.Application.Requests;
-global using Concertable.Payment.Application.Responses;
 global using Concertable.Payment.Application.Mappers;
 global using Concertable.Data.Infrastructure;
 global using Concertable.Data.Infrastructure.Data;

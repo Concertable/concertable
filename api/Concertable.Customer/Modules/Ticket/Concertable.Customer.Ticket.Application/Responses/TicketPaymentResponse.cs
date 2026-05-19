@@ -1,4 +1,6 @@
-namespace Concertable.Payment.Application.Responses;
+using Concertable.Payment.Contracts;
+
+namespace Concertable.Customer.Ticket.Application.Responses;
 
 internal record TicketPaymentResponse : PaymentResponse
 {

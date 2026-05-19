@@ -1,7 +1,7 @@
 global using Concertable.Authorization.Contracts;
 global using Concertable.User.Contracts;
 global using Concertable.User.Domain;
-global using Concertable.Payment.Application.Responses;
+global using Concertable.Customer.Ticket.Application.Responses;
 global using Concertable.Concert.Domain;
 global using Concertable.Concert.Application.Interfaces;
 global using Concertable.Concert.Application.DTOs;

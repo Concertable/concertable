@@ -22,7 +22,6 @@ using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Payment;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
@@ -146,11 +145,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueReadModelProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, ConcertReviewProjectionHandler>();
-        services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentSucceededEventHandler>();
-        services.AddScoped<IPaymentSucceededProcessorFactory, PaymentSucceededProcessorFactory>();
-        services.AddKeyedScoped<IPaymentSucceededProcessor, SettlementPaymentProcessor>(TransactionTypes.Settlement);
-        services.AddKeyedScoped<IPaymentSucceededProcessor, EscrowPaymentProcessor>(TransactionTypes.Escrow);
-        services.AddKeyedScoped<IPaymentSucceededProcessor, VerifyPaymentProcessor>(TransactionTypes.Verify);
+        services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, SettlementPaymentProcessor>();
+        services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, EscrowPaymentProcessor>();
+        services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, VerifyPaymentProcessor>();
 
         services.AddSingleton<ConcertConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<ConcertConfigurationProvider>());
