@@ -21,7 +21,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-        services.AddScoped<IIntegrationEventBus, InProcessIntegrationEventBus>();
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
 

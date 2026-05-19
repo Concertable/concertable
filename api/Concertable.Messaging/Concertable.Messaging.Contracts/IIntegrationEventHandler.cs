@@ -1,4 +1,4 @@
-namespace Concertable.Shared;
+namespace Concertable.Messaging;
 
 public interface IIntegrationEventHandler<TEvent> where TEvent : IIntegrationEvent
 {

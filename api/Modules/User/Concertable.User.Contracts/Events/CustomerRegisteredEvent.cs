@@ -1,3 +1,4 @@
+using Concertable.Messaging;
 using Concertable.Shared;
 
 namespace Concertable.User.Contracts.Events;

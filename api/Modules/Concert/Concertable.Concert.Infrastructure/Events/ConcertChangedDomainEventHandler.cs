@@ -5,7 +5,7 @@ namespace Concertable.Concert.Infrastructure.Events;
 
 internal class ConcertChangedDomainEventHandler(
     IConcertRepository concertRepository,
-    IIntegrationEventBus bus)
+    IBus bus)
     : IDomainEventHandler<ConcertChangedDomainEvent>
 {
     public async Task HandleAsync(ConcertChangedDomainEvent e, CancellationToken ct = default)

@@ -1,3 +1,3 @@
-namespace Concertable.Shared;
+namespace Concertable.Messaging;
 
 public interface IIntegrationEvent { }
