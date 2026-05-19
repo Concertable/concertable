@@ -1,21 +1,92 @@
 # Manager Front Page Plan
 
-## Progress (2026-05-18, post-session-3)
+## Progress (2026-05-18, post-session-3 close-out)
 
-**Phase A: committed on `Feature/ManagerFrontPage` (5fb54e96).** Mocks running. **Phase B started.** See [MANAGER_FRONT_PAGE_FEEDBACK.md](./MANAGER_FRONT_PAGE_FEEDBACK.md) for session decisions that supersede this plan in conflict.
+**Branch:** `Feature/ManagerFrontPage` — **PR [#50](https://github.com/ThomasSeery/Concertable/pull/50)** open against `master`. **Head: `23c8fc4c`.** Pushed.
+
+**Phase A: ✅ committed (5fb54e96).** Mocks running. **Phase B partially landed** — B.9 + B.10 done; B.11 KPI endpoint shipped end-to-end; remaining B.11 endpoints (overview, activity, charts) and B.12 (tests) deferred. **Intent: merge as incomplete-but-ready-to-expand.**
+
+See [MANAGER_FRONT_PAGE_FEEDBACK.md](./MANAGER_FRONT_PAGE_FEEDBACK.md) for session decisions that supersede this plan in conflict.
 
 **Web/shared cleanup blocker — RESOLVED** (commit `0f1a5df6`, 2026-05-18). `ApplicationCheckoutPage` split into per-SPA `VenueAcceptCheckoutPage` + `ArtistApplyCheckoutPage`; all route-file imports swapped from `@/features/x` (shared alias) → `../../features/x` (per-SPA path); orphan route deleted.
 
 **Phase B status:**
 
-| Step | Description | Status |
-|---|---|---|
-| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ⚠️ Code done, uncommitted; migration re-scaffold pending |
-| B.10 | Shared specifications (`IHasDateRange`, `IUpcomingSpecification<T>`, `IDateRangeSpecification<T>`) | ⏳ Next |
-| B.11 | Dashboard endpoints (`VenueDashboardController`, `ArtistDashboardController`, module facade methods + repos + C# DTOs) | ⏳ |
-| B.12 | Integration tests per new facade method | ⏳ |
+| Step | Description | Status | Commit |
+|---|---|---|---|
+| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code; ⚠️ migration re-scaffold pending | `094fd4d4` |
+| B.10 | Shared `IHasDateRange` marker + `IUpcomingSpecification<T>` / `IDateRangeSpecification<T>` specs | ✅ | `e2193f46` + `23c8fc4c` (added `ApplyExpression<TParent>` overload + `BuildPredicate` helper) |
+| B.11 | Dashboard KPI endpoint (venue + artist) — orchestration via Venue/Artist dashboard services, one SQL round trip via `ConcertDashboardRepository` + queryable mapper | ✅ KPI slice only | `d4f9a3a6` + `a91c7271` + `23c8fc4c` |
+| B.11 | Dashboard overview + activity + charts endpoints | ⏳ Pending (see [pickup notes](#b11-pickup-notes-post-merge) below) | — |
+| B.12 | Integration tests per new facade method | ⏳ Pending | — |
 
-**B.9 code refactor (uncommitted)** — 6 files: `ConcertEntity.cs`, `ConcertEntityConfiguration.cs`, `ConcertDraftService.cs`, `ConcertFaker.cs`, `TicketValidator.cs`, `ConcertRepository.cs`. Compiles green (0 CS errors across solution). DTO mappers already projected from `Opportunity.Period.Start/End` via nav chain — no DTO-side changes needed. `ConcertSearchModel` shares the same `Concerts` table with `ExcludeFromMigrations`, so column names unchanged means Search module untouched. Migration re-scaffold (`./initial-migrations.ps1`) deferred — requires Concertable.Web stopped + Aspire DB tooling.
+### B.11 KPI endpoint — what shipped
+
+Wire shape: `GET /api/VenueDashboard/kpis` + `GET /api/ArtistDashboard/kpis`. `[Authorize(Roles = "VenueManager"|"ArtistManager")]`. Returns the full `VenueDashboardKpisDto` / `ArtistDashboardKpisDto` matching FE wire types verbatim, **with `mtdRevenueCents` / `mtdPayoutsCents` / `acceptedAwaitingCheckout` stubbed at 0** — TODO comments at the literal point at the exact missing dependency. Returns `NoContent` (204) when the read-model projection hasn't populated yet (`VenueReadModels`/`ArtistReadModels` row missing); 403 if the user doesn't own a venue/artist; 200 otherwise.
+
+**Files (Concert side, all committed in `23c8fc4c`):**
+
+- `Concert.Contracts/VenueDashboardCountsDto.cs` + `ArtistDashboardCountsDto.cs` — Concert's slice of the wire DTO (record). Counts only.
+- `Concert.Contracts/IConcertModule.cs` — adds `GetVenueDashboardCountsAsync(int venueId, ct)` + `GetArtistDashboardCountsAsync(int artistId, ct)`. Both nullable returns.
+- `Concert.Application/Interfaces/IConcertDashboardRepository.cs` — internal repo interface, two methods.
+- `Concert.Infrastructure/Repositories/ConcertDashboardRepository.cs` — composes three sub-`IQueryable`s (Opportunity via `spec.Apply`, Concert via `spec.Apply`, Application's nav-bound period via `spec.ApplyExpression(a => a.Opportunity)`), projects through queryable mapper, materialises once.
+- `Concert.Infrastructure/Mappers/QueryableVenueDashboardMappers.cs` + `QueryableArtistDashboardMappers.cs` — `.ToVenueCounts(...)` / `.ToArtistCounts(...)` extension on `IQueryable<VenueReadModel>` / `IQueryable<ArtistReadModel>`. The projection lives here.
+- `Concert.Infrastructure/ConcertModule.cs` — facade delegates to dashboard repo.
+- `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs` — registers `IConcertDashboardRepository`.
+
+**Files (Venue/Artist side):**
+
+- `Venue.Application/Interfaces/IVenueDashboardService.cs` + `Venue.Infrastructure/Services/VenueDashboardService.cs` — orchestration. Resolves "me" via `IVenueService.GetIdForCurrentUserAsync`, calls `IConcertModule` for counts, assembles wire DTO. `Task.WhenAll` of one task today; second slot ready for Payment.
+- `Venue.Api/Controllers/VenueDashboardController.cs` — one-line delegate, returns `NoContent` for null DTO. **`Venue.Api.csproj` no longer references `Concert.Contracts`** — controller doesn't touch Concert types.
+- Same files on Artist side.
+- `Venue.Infrastructure` / `Artist.Infrastructure` `ServiceCollectionExtensions.cs` — DI for new services.
+
+### B.10 specification pattern — locked shape
+
+```csharp
+public interface IUpcomingSpecification<TEntity> where TEntity : class, IHasDateRange
+{
+    IQueryable<TEntity> Apply(IQueryable<TEntity> query);
+
+    IQueryable<TParent> ApplyExpression<TParent>(
+        IQueryable<TParent> query,
+        Expression<Func<TParent, TEntity>> navigation);
+}
+```
+
+- **`Apply`** — direct, for consumers querying the range entity itself (`Concert`, `Opportunity`).
+- **`ApplyExpression<TParent>`** — for consumers querying a *parent* entity whose period is reached via a nav (only consumer today: `Application` filtered by `a.Opportunity.Period.End > now`). Internally uses the existing `Concertable.Shared.Infrastructure.Expressions.ExpressionExtensions.Substitute` (built on `ParameterReplacer`) to rewrite the spec's predicate onto the nav.
+- **Predicate body lives in `private Expression<Func<TEntity, bool>> BuildPredicate()`** — shared between both overloads. One source of truth for "what does upcoming mean", one `TimeProvider` read.
+- **`Expression` never leaves the spec impl** — consumers see `IQueryable<...>` in and out only.
+- `IDateRangeSpecification<T>` is symmetric — `Apply(query, range)` + `ApplyExpression<TParent>(query, nav, range)`.
+
+**Why this shape was chosen** (session-3 decision log, will keep falling out on follow-ups):
+
+- *Why not just `Apply(IQueryable<T>) → IQueryable<T>`?* Because the Application case (predicate on a nav) can't satisfy `IUpcomingSpecification<ApplicationEntity>` — `ApplicationEntity` doesn't implement `IHasDateRange`, and adding `IHasDateRangeExpression` to it is an anti-pattern (drags `System.Linq.Expressions` into Domain, pretends Application is a range entity when it isn't).
+- *Why not expose `Expression<Func<T, bool>> Predicate { get; }` on the interface?* Bloats the surface for the 2-of-3 generic instantiations that never need it. Concert/Opportunity consumers shouldn't see a `Predicate` member they never call.
+- *Why not an extension method `IQueryable<TParent>.WhereUpcoming<TParent, TChild>(spec, nav)`?* Same problem — exposing the predicate (even via reflection-ish trickery) leaks the abstraction.
+- *Why two methods on the same interface?* They serve symmetric purposes (apply the same predicate, different shapes of consumer). The asymmetry between "entity owns Period" and "entity has nav to entity that owns Period" is genuine; the API surface honestly reflects it.
+
+### B.11 pickup notes (post-merge)
+
+Each remaining endpoint has a clear docking point. Order by independence:
+
+1. **Venue revenue chart + MTD revenue** (most bounded).
+   - Add `IManagerPaymentModule.GetVenueTicketRevenueMtdAsync(int venueId, ct) → long` and `GetVenueTicketRevenueByMonthAsync(int venueId, int monthsBack, ct) → MonthlyRevenuePointDto[]`. Queries `TicketTransactionEntity` (Status=Complete, ToUserId = venue's UserId, CreatedAt range).
+   - Add MTD call to `VenueDashboardService.GetKpisAsync`'s `Task.WhenAll`. Replace `MtdRevenueCents: 0` literal with the result. Drop TODO comment.
+   - New endpoint: `GET /api/VenueDashboard/charts/ticket-revenue` returning `MonthlyRevenuePointDto[]`. Method on `IVenueDashboardService`.
+2. **Artist payout chart + MTD payouts** — mirror over `SettlementTransactionEntity`.
+3. **`acceptedAwaitingCheckout` count** — Artist side. Needs `IConcertWorkflowCapabilityRegistry`/`IAcceptsCheckout` lookup. Per-application logic lives in `Concert.Api/Mappers/ApplicationResponseMapper.cs` — lift it to an aggregate count. Probably new method on `IConcertModule` returning the count; add to `IConcertDashboardRepository.GetArtistCountsAsync` projection (extend `ArtistDashboardCountsDto` with the new field).
+4. **Overview endpoints** — both personas. Needs `IVenueModule.GetProfileHealthAsync` + `IArtistModule.GetProfileHealthAsync` (new), Stripe Connect status (probably new method on `IManagerPaymentModule`), review summary (`IConcertModule` reviews surface already exists). `IVenueDashboardService.GetOverviewAsync` orchestrates. New endpoint `GET /api/VenueDashboard/overview`.
+5. **Activity feed** — biggest. `INotificationModule` only has `SendAsync` today; needs a notification-log table + `GetRecentActivityAsync(Guid userId, int take, ct) → ActivityItemDto[]`. Migration territory.
+6. **B.12 integration tests** — at minimum, one per `IConcertModule.GetXxxDashboardCountsAsync` against seeded data; one boundary test on `IUpcomingSpecification<T>` at `Period.End == now`; one verifying `ApplyExpression`'s SQL translation contains the nav path.
+7. **B.9 migration re-scaffold** — `./initial-migrations.ps1`. Owned-type column names unchanged so the schema is identical; this is just to align the migration files with the new entity shape. Stop Concertable.Web first.
+
+### Period semantics (locked, document for future readers)
+
+- **"Upcoming" (concerts)**: `Period.End > now` — includes in-progress concerts. Used via `IUpcomingSpecification<ConcertEntity>`. Dashboard "upcoming concerts" count + future list endpoint use this.
+- **"Open" (opportunities)**: `Period.Start >= now` — excludes in-progress. Matches existing `OpportunityRepository.GetActiveByVenueIdAsync`. Inlined in `ConcertDashboardRepository.GetVenueCountsAsync`, not via spec — different rule than "upcoming."
+- **"Still relevant" (applications)**: filter by parent opportunity's `Period.End > now` — uses `IUpcomingSpecification<OpportunityEntity>.ApplyExpression(a => a.Opportunity)`. Pending applications attached to ended opportunities are excluded from the venue's "to-review" count.
 
 | Phase | Step | Status |
 |---|---|---|

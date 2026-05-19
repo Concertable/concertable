@@ -157,6 +157,62 @@ app/web/artist/src/features/dashboard/  # same shape, artist-specific
 - **Page wrapper** dropped `max-w-7xl` for full-bleed. `DashboardCard` is `h-full` so cards in paired-row sections stretch to the row's tallest height.
 - **Dashboard controller scope refined** — only owns aggregations (`overview`, `kpis`, `activity`). Plain list endpoints (`applications`, `inbox`, `upcoming-concerts`, `settlements`, `recommended-opportunities`) hit canonical resource controllers filtered to "me". Updates the round-trip plan in PLAN.md.
 
+## Session-3 deltas (2026-05-18, committed `094fd4d4` → `23c8fc4c`)
+
+### B.9 — `ConcertEntity.Period` (commit `094fd4d4`)
+
+- `ConcertEntity` drops `DateTime StartDate` / `EndDate`, owns `DateRange Period` (mirrors `OpportunityEntity`).
+- `OwnsOne(e => e.Period, p => { p.Property(x => x.Start).HasColumnName("StartDate"); p.Property(x => x.End).HasColumnName("EndDate"); })` keeps DB column names identical.
+- `ConcertSearchModel` (Search module's read projection over the same `Concerts` table with `ExcludeFromMigrations`) is untouched — same columns, no edits needed.
+- Existing `QueryableConcertMappers` already project from `c.Booking.Application.Opportunity.Period.Start/End` via the nav chain — no DTO mapper changes.
+- **Migration re-scaffold (`./initial-migrations.ps1`) deferred** until end of Phase B code work. Column names unchanged → no schema drift while deferred.
+
+### B.10 — Specification pattern locked at dual-method shape (commits `e2193f46` + `23c8fc4c`)
+
+```csharp
+public interface IUpcomingSpecification<TEntity> where TEntity : class, IHasDateRange
+{
+    IQueryable<TEntity> Apply(IQueryable<TEntity> query);
+
+    IQueryable<TParent> ApplyExpression<TParent>(
+        IQueryable<TParent> query,
+        Expression<Func<TParent, TEntity>> navigation);
+}
+```
+
+Both overloads return `IQueryable` — Expression never escapes the spec impl. Internally, both call `private Expression<Func<TEntity, bool>> BuildPredicate()` (one source of truth for the rule + one `TimeProvider` read).
+
+- **`ApplyExpression` uses `Concertable.Shared.Infrastructure.Expressions.ExpressionExtensions.Substitute`** — the existing extension (built on `ParameterReplacer`) that rewrites a predicate's parameter onto a navigation expression's body. Don't introduce a new `Lift` extension — `Substitute` is more general (returns `TResult`, not just `bool`) and already exists.
+- `IDateRangeSpecification<T>` is symmetric: `Apply(query, range)` + `ApplyExpression<TParent>(query, nav, range)`.
+- DI registered as open-generics in `AddSharedInfrastructure`.
+- Single consumer of `ApplyExpression` today: `ConcertDashboardRepository`'s Application filter (`a => a.Opportunity`).
+
+### B.11 — KPI endpoint shape (commits `d4f9a3a6` + `a91c7271` + `23c8fc4c`)
+
+- **One SQL round trip per persona**, anchored on `VenueReadModels` / `ArtistReadModels`, projecting three (venue) / two (artist) scalar subqueries through new `QueryableVenueDashboardMappers.ToVenueCounts` / `QueryableArtistDashboardMappers.ToArtistCounts`. Matches the `ConcertHeaderRepository.SearchAsync` / `QueryableConcertHeaderMappers.ToHeaderDtos` precedent — single composed `IQueryable`, single materialisation.
+- **`IConcertDashboardRepository`** is a dedicated read-shape repo (separate from `ConcertRepository` / `OpportunityRepository` / `ApplicationRepository`) — mirrors `ConcertHeaderRepository` precedent in Search. Per-aggregate count methods on the existing repos were tried then reverted; the dedicated repo is the right home for dashboard-shaped reads.
+- **Cross-module orchestration lives in `IVenueDashboardService` / `IArtistDashboardService`**, not in the controller. Resolves "me" via `IXService.GetIdForCurrentUserAsync`, calls `IConcertModule`, assembles wire DTO. `Task.WhenAll` of one task today; Payment slots into the second position when it lands.
+- **Controllers are one-line delegates.** Return `NoContent` (204) when the service returns null DTO — read-model projection hasn't populated yet for that venue/artist. Honest about "you exist by auth, the data just isn't here yet" vs a real 404.
+- **`Venue.Api.csproj` and `Artist.Api.csproj` no longer reference `Concert.Contracts`** — controllers don't touch Concert types anymore.
+
+### Period semantics — locked (codified in PLAN.md → "Period semantics")
+
+- **"Upcoming" (concerts)**: `Period.End > now` (includes in-progress). Via `IUpcomingSpecification<ConcertEntity>`.
+- **"Open" (opportunities)**: `Period.Start >= now` (excludes in-progress). Inlined in `ConcertDashboardRepository`, NOT via spec — different rule than "upcoming" by design (open = still accepting apps, not "still happening").
+- **"Still relevant" (applications)**: parent `Opportunity.Period.End > now`. Via `IUpcomingSpecification<OpportunityEntity>.ApplyExpression(a => a.Opportunity)`.
+
+### Wire-shape stubs at merge time (TODOs in code)
+
+The KPI DTO matches the FE wire shape verbatim, with three fields hard-stubbed at 0 because their dependencies aren't built yet. Each has a TODO at the literal pointing at the missing dependency:
+
+- `MtdRevenueCents: 0` → `IManagerPaymentModule.GetVenueTicketRevenueMtdAsync` (not built)
+- `MtdPayoutsCents: 0` → `IManagerPaymentModule.GetArtistPayoutsMtdAsync` (not built)
+- `AcceptedAwaitingCheckout: 0` → `IConcertWorkflowCapabilityRegistry` / `IAcceptsCheckout` workflow lookup (lift `ApplicationResponseMapper.cs` per-application logic to an aggregate count)
+
+### Phase A.8 still pending
+
+A.8 UX freeze (browser eyeball + responsive pass) was not done this session. Independent of Phase B. Pick up whenever — see Phase A todo above.
+
 ## Things NOT to redo
 
 - Don't put dashboardApi back in shared.
@@ -170,3 +226,11 @@ app/web/artist/src/features/dashboard/  # same shape, artist-specific
 - Don't reintroduce `contractLabel: string` — `OpportunitySummary.contract: Contract` is the canonical shape; format with `contractSummary()`.
 - Don't put `href` back on `Application` — the row IS the view; act via `actions`.
 - Don't duplicate `ActionLink` — single source at `shared/types/common.ts`.
+- **Don't expose `Expression<Func<T, bool>>` on the spec interface.** Two methods (`Apply` + `ApplyExpression<TParent>`), both IQueryable-shaped. Expression stays inside the impl. The `Substitute` extension on the navigation does the lift.
+- **Don't add per-aggregate dashboard count methods to `IConcertRepository` / `IOpportunityRepository` / `IApplicationRepository`.** Dashboard counts live in `IConcertDashboardRepository` as one composed projection — one SQL round trip. Tried per-aggregate, reverted.
+- **Don't make `ConcertModule` inline EF queries for dashboard reads.** `feedback_no_ef_in_facade` — facade impls delegate to repos. `IConcertDashboardRepository` is the right home.
+- **Don't put cross-module orchestration in the controller.** Controllers are thin delegates to `IXDashboardService`. The service owns `Task.WhenAll` of facade calls and assembles the wire DTO. Payment / future facades slot into the service without changing the controller.
+- **Don't change `Apply` on the spec to return `Expression<Func<T, bool>>` or expose a `Predicate` property.** Both shapes (`Apply` direct + `ApplyExpression<TParent>` via nav) are IQueryable-in/out by design — keeps the abstraction honest about what consumers receive.
+- **Don't add `IHasDateRangeExpression` or static-Expression members on entities for nav-lift convenience.** That's an anti-pattern — pretends `ApplicationEntity` is a range entity (it isn't), and pulls `System.Linq.Expressions` into Domain. The asymmetry is handled at the spec call site via `ApplyExpression(query, nav)`.
+- **Don't return `NotFound` from the dashboard KPI endpoint** when the read-model row is missing. The user owns the venue/artist by authorization (`GetIdForCurrentUserAsync` would have thrown 403 otherwise) — the projection just hasn't populated yet. Use `NoContent` (204).
+- **Don't rename `VenueDashboardCountsDto` to drop the `Dto` suffix.** Keep `Dto` on cross-module DTOs in `Concert.Contracts` (the user explicitly preferred this over the CLAUDE.md "drop suffix" guidance — Concert.Contracts has multiple `XxxDto` records and dropping for one creates inconsistency).
