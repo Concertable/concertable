@@ -1,4 +1,5 @@
 using Bogus;
+using Concertable.Shared;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Fakers;
@@ -25,8 +26,7 @@ public static class ConcertFaker
             .RuleFor(e => e.AvailableTickets, availableTickets)
             .RuleFor(e => e.ArtistId, artistId)
             .RuleFor(e => e.VenueId, venueId)
-            .RuleFor(e => e.StartDate, startDate)
-            .RuleFor(e => e.EndDate, endDate);
+            .RuleFor(e => e.Period, new DateRange(startDate, endDate));
 
         if (datePosted.HasValue)
             faker.RuleFor(e => e.DatePosted, datePosted.Value);

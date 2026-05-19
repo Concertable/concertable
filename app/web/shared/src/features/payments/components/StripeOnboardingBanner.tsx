@@ -16,7 +16,7 @@ export function StripeOnboardingBanner() {
           payments.
         </p>
       </div>
-      <Button size="sm" disabled={isLoadingLink} onClick={beginOnboarding}>
+      <Button size="sm" disabled={isLoadingLink} onClick={() => { void beginOnboarding(); }}>
         {isLoadingLink ? "Loading..." : "Set up payments"}
       </Button>
     </div>

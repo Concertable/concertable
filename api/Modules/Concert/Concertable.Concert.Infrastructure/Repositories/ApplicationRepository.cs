@@ -92,4 +92,5 @@ internal class ApplicationRepository : Repository<ApplicationEntity>, IApplicati
             .Take(5)
             .ToListAsync();
     }
+
 }

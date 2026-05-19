@@ -1,5 +1,6 @@
 using Concertable.Application.Interfaces;
 using Concertable.Application.Interfaces.Blob;
+using Concertable.Application.Interfaces.Specifications;
 using Concertable.Shared.Infrastructure.Background;
 using Concertable.Shared.Infrastructure.Data.Seeders;
 using Concertable.Shared.Infrastructure.Events;
@@ -8,6 +9,7 @@ using Concertable.Shared.Infrastructure.Services.Blob;
 using Concertable.Shared.Infrastructure.Services.Email;
 using Concertable.Shared.Infrastructure.Services.Geocoding;
 using Concertable.Shared.Infrastructure.Settings;
+using Concertable.Shared.Infrastructure.Specifications;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -48,6 +50,9 @@ public static class ServiceCollectionExtensions
         services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();
         services.AddScoped<IGenreService, GenreService>();
+
+        services.AddScoped(typeof(IUpcomingSpecification<>), typeof(UpcomingSpecification<>));
+        services.AddScoped(typeof(IDateRangeSpecification<>), typeof(DateRangeSpecification<>));
 
         return services;
     }

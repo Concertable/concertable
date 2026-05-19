@@ -9,6 +9,11 @@ internal class ConcertEntityConfiguration : IEntityTypeConfiguration<ConcertEnti
     public void Configure(EntityTypeBuilder<ConcertEntity> builder)
     {
         builder.ToTable("Concerts", Schema.Name);
+        builder.OwnsOne(e => e.Period, p =>
+        {
+            p.Property(x => x.Start).HasColumnName("StartDate");
+            p.Property(x => x.End).HasColumnName("EndDate");
+        });
         builder.HasOne(e => e.Booking)
             .WithOne(b => b.Concert)
             .HasForeignKey<ConcertEntity>(e => e.BookingId)

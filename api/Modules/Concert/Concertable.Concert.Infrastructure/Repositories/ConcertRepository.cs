@@ -153,7 +153,7 @@ internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
         return await context.Concerts
             .Where(c => c.Booking.Application.Status == ApplicationStatus.Accepted
                      && c.Booking.Status == BookingStatus.Confirmed
-                     && c.StartDate < now)
+                     && c.Period.Start < now)
             .Select(c => c.Id)
             .ToListAsync();
     }
@@ -165,4 +165,5 @@ internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
             .Select(c => c.Price * (c.TotalTickets - c.AvailableTickets))
             .FirstOrDefaultAsync();
     }
+
 }

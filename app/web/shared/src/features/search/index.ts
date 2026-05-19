@@ -14,10 +14,6 @@ export { VenueHeaderCard } from "./components/headers/VenueHeaderCard";
 export { VenueHeaderCarousel } from "./components/headers/VenueHeaderCarousel";
 export { ConcertHeaderCard } from "./components/headers/ConcertHeaderCard";
 export { ConcertHeaderCarousel } from "./components/headers/ConcertHeaderCarousel";
-export { CustomerHomePage } from "./pages/CustomerHomePage";
-export { CustomerFindPage } from "./pages/CustomerFindPage";
-export { FindVenuePage } from "./pages/FindVenuePage";
-export { FindArtistPage } from "./pages/FindArtistPage";
 export { useAutocompleteQuery } from "./hooks/useAutocompleteQuery";
 export { useGenresQuery } from "./hooks/useGenreQuery";
 export {

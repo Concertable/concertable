@@ -53,7 +53,7 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
   });
 
   return {
-    venue: query.data,
+    venue: query.data ?? undefined,
     draft,
     isLoading: query.isLoading,
     isError: query.isError,

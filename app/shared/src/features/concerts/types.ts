@@ -1,4 +1,4 @@
-import type { Genre } from "../../types/common";
+import type { ActionLink, Genre } from "../../types/common";
 import type { Contract } from "../contracts/types";
 import type { ArtistSummary } from "../artists/types";
 
@@ -81,11 +81,6 @@ export type ApplicationStatus =
   | "Confirmed"
   | "Complete"
   | "Settled";
-
-export interface ActionLink {
-  href: string;
-  method: string;
-}
 
 export interface ApplicationActions {
   accept: ActionLink;

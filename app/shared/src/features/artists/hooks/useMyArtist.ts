@@ -40,7 +40,7 @@ export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
   });
 
   return {
-    artist: query.data,
+    artist: query.data ?? undefined,
     draft,
     isLoading: query.isLoading,
     isError: query.isError,

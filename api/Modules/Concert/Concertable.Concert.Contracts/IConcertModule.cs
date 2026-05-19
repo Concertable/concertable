@@ -8,4 +8,7 @@ public interface IConcertModule
     Task<IPagination<ReviewDto>> GetReviewsByVenueAsync(int venueId, IPageParams pageParams);
     Task<bool> CanUserReviewArtistAsync(Guid userId, int artistId);
     Task<bool> CanUserReviewVenueAsync(Guid userId, int venueId);
+
+    Task<VenueDashboardCountsDto?> GetVenueDashboardCountsAsync(int venueId, CancellationToken ct = default);
+    Task<ArtistDashboardCountsDto?> GetArtistDashboardCountsAsync(int artistId, CancellationToken ct = default);
 }

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore, userManager } from "@/features/auth";
+import { useAuthStore } from "@/features/auth";
 import userApi from "../api/userApi";
 
 export const meQueryKey = ["auth", "me"] as const;
@@ -21,7 +21,6 @@ export function useSyncUser() {
     if (isLoading) return;
     if (!isAuthenticated) {
       setUser(null);
-      userManager.signinSilent().catch(() => {});
       return;
     }
     if (isError) setUser(null);

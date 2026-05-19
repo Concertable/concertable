@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.AddScoped<IVenueService, VenueService>();
+        services.AddScoped<IVenueDashboardService, VenueDashboardService>();
         services.AddScoped<IVenueReviewService, VenueReviewService>();
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IVenueModule, VenueModule>();

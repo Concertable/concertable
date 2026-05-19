@@ -3,6 +3,7 @@ export * from "./features/auth";
 export * from "./features/concerts";
 export * from "./features/contracts";
 export * from "./features/customer";
+export * from "./features/dashboard";
 export * from "./features/messaging";
 export * from "./features/notifications";
 export * from "./features/payments";
