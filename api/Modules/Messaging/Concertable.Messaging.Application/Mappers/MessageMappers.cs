@@ -16,7 +16,6 @@ internal static class MessageMappers
     {
         Id = user.Id,
         Email = user.Email,
-        Role = user.Role,
         Latitude = user.Latitude,
         Longitude = user.Longitude,
         County = user.County,

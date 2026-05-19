@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Concertable.Venue.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "VenueManager")]
+[Authorize(Policy = "VenueManager")]
 [Route("api/[controller]")]
 internal class VenueDashboardController : ControllerBase
 {

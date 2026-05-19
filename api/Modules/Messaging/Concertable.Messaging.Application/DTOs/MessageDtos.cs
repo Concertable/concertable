@@ -14,7 +14,6 @@ internal record MessageUserDto
 {
     public Guid Id { get; set; }
     public required string Email { get; set; }
-    public Role? Role { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public string? County { get; set; }

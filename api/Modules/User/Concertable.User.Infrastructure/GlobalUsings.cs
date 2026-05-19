@@ -9,4 +9,3 @@ global using Concertable.User.Application.Interfaces;
 global using Concertable.User.Application.Interfaces.Auth;
 global using Concertable.User.Infrastructure.Repositories;
 global using Concertable.User.Infrastructure.Services;
-global using Concertable.User.Infrastructure.Services.Auth;

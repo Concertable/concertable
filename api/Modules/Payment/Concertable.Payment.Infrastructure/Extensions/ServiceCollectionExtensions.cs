@@ -1,5 +1,4 @@
 using Concertable.Application.Interfaces;
-using Concertable.User.Contracts;
 using Concertable.User.Contracts.Events;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Contracts;
@@ -114,7 +113,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEscrowModule, EscrowModule>();
 
         // Integration event handlers
-        services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
+        services.AddScoped<IIntegrationEventHandler<CustomerRegisteredEvent>, CustomerRegisteredHandler>();
+        services.AddScoped<IIntegrationEventHandler<VenueManagerRegisteredEvent>, ManagerRegisteredHandler>();
+        services.AddScoped<IIntegrationEventHandler<ArtistManagerRegisteredEvent>, ManagerRegisteredHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentTransactionHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentFailedEvent>, PaymentFailureDispatcher>();
         services.AddScoped<ITransactionHandlerFactory, TransactionHandlerFactory>();

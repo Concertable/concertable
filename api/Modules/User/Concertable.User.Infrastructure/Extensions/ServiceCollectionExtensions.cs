@@ -4,12 +4,14 @@ using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
 using Concertable.User.Application.Validators;
 using Concertable.User.Domain.Events;
+using Concertable.User.Infrastructure.Authorization;
 using Concertable.User.Infrastructure.Data;
 using Concertable.User.Infrastructure.Data.Seeders;
 using Concertable.User.Infrastructure.Events;
 using Concertable.User.Infrastructure.Services.Email;
 using Concertable.Venue.Contracts.Events;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,13 +32,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserRepository, UserRepository>();
-
-        services.AddScoped<IUserRegister, UserRegister>();
-        services.AddKeyedScoped<IUserRegister, VenueManagerRegister>(Role.VenueManager);
-        services.AddKeyedScoped<IUserRegister, ArtistManagerRegister>(Role.ArtistManager);
-        services.AddKeyedScoped<IUserRegister, CustomerRegister>(Role.Customer);
-        services.AddKeyedScoped<IUserRegister, AdminRegister>(Role.Admin);
-
         services.AddScoped<IUserModule, UserModule>();
 
         var external = configuration.GetSection("ExternalServices");
@@ -53,6 +48,16 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<UserConfigurationProvider>());
 
         services.AddValidatorsFromAssemblyContaining<UpdateLocationRequestValidator>();
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("VenueManager", p => p.AddRequirements(new VenueManagerProfileRequirement()));
+            options.AddPolicy("ArtistManager", p => p.AddRequirements(new ArtistManagerProfileRequirement()));
+            options.AddPolicy("Admin", p => p.AddRequirements(new AdminProfileRequirement()));
+        });
+        services.AddScoped<IAuthorizationHandler, VenueManagerProfileHandler>();
+        services.AddScoped<IAuthorizationHandler, ArtistManagerProfileHandler>();
+        services.AddScoped<IAuthorizationHandler, AdminProfileHandler>();
 
         return services;
     }

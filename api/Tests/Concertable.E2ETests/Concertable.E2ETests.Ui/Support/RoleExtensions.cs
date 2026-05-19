@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Concertable.User.Contracts;
+using Concertable.User.Domain;
 
 namespace Concertable.E2ETests.Ui.Support;
 

@@ -7,6 +7,16 @@ namespace Concertable.User.Infrastructure.Events;
 internal class UserCreatedDomainEventHandler(IIntegrationEventBus bus)
     : IDomainEventHandler<UserCreatedDomainEvent>
 {
-    public Task HandleAsync(UserCreatedDomainEvent e, CancellationToken ct = default) =>
-        bus.PublishAsync(new UserRegisteredEvent(e.User.Id, e.User.Email, e.User.Role), ct);
+    public Task HandleAsync(UserCreatedDomainEvent e, CancellationToken ct = default)
+    {
+        IIntegrationEvent evt = e.User.Role switch
+        {
+            Role.Customer => new CustomerRegisteredEvent(e.User.Id, e.User.Email),
+            Role.VenueManager => new VenueManagerRegisteredEvent(e.User.Id, e.User.Email),
+            Role.ArtistManager => new ArtistManagerRegisteredEvent(e.User.Id, e.User.Email),
+            Role.Admin => new AdminRegisteredEvent(e.User.Id, e.User.Email),
+            _ => throw new ArgumentOutOfRangeException(nameof(e.User.Role))
+        };
+        return bus.PublishAsync(evt, ct);
+    }
 }

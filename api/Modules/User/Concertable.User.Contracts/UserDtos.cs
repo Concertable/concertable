@@ -10,7 +10,6 @@ public interface IUser
 {
     Guid Id { get; set; }
     string Email { get; set; }
-    Role? Role { get; set; }
     double? Latitude { get; set; }
     double? Longitude { get; set; }
     string? County { get; set; }
@@ -23,7 +22,6 @@ public record AdminDto : IUser
 {
     public Guid Id { get; set; }
     public required string Email { get; set; }
-    public Role? Role { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public string? County { get; set; }
@@ -36,7 +34,6 @@ public record VenueManagerDto : IUser
 {
     public Guid Id { get; set; }
     public required string Email { get; set; }
-    public Role? Role { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public string? County { get; set; }
@@ -50,7 +47,6 @@ public record ArtistManagerDto : IUser
 {
     public Guid Id { get; set; }
     public required string Email { get; set; }
-    public Role? Role { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public string? County { get; set; }
@@ -64,7 +60,6 @@ public record CustomerDto : IUser
 {
     public Guid Id { get; set; }
     public required string Email { get; set; }
-    public Role? Role { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public string? County { get; set; }
@@ -72,4 +67,3 @@ public record CustomerDto : IUser
     public string BaseUrl { get; set; } = "/";
     public bool IsEmailVerified { get; set; }
 }
-

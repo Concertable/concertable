@@ -8,16 +8,11 @@ internal class UserModule : IUserModule
 {
     private readonly UserDbContext context;
     private readonly IUserRepository userRepository;
-    private readonly IUserRegister userRegister;
 
-    public UserModule(
-        UserDbContext context,
-        IUserRepository userRepository,
-        IUserRegister userRegister)
+    public UserModule(UserDbContext context, IUserRepository userRepository)
     {
         this.context = context;
         this.userRepository = userRepository;
-        this.userRegister = userRegister;
     }
 
     public async Task<IUser?> GetByIdAsync(Guid id)
@@ -47,22 +42,48 @@ internal class UserModule : IUserModule
         return user is null ? null : new ManagerDto { Id = user.Id, Email = user.Email, Avatar = user.Avatar };
     }
 
-    public Task<bool> EmailExistsAsync(string email, Role role, CancellationToken ct = default) =>
-        context.Users.WhereCredentials(email, role).AnyAsync(ct);
+    public Task<bool> CustomerEmailExistsAsync(string email, CancellationToken ct = default) =>
+        context.Users.WhereCredentials(email, Role.Customer).AnyAsync(ct);
 
-    public Task CreateAsync(string email, string passwordHash, Role role, CancellationToken ct = default) =>
-        userRegister.RegisterAsync(email, passwordHash, role);
+    public Task<bool> VenueManagerEmailExistsAsync(string email, CancellationToken ct = default) =>
+        context.Users.WhereCredentials(email, Role.VenueManager).AnyAsync(ct);
+
+    public Task<bool> ArtistManagerEmailExistsAsync(string email, CancellationToken ct = default) =>
+        context.Users.WhereCredentials(email, Role.ArtistManager).AnyAsync(ct);
+
+    public async Task CreateCustomerAsync(string email, string passwordHash, CancellationToken ct = default)
+    {
+        var user = UserEntity.Create(email, passwordHash, Role.Customer);
+        context.Users.Add(user);
+        await context.SaveChangesAsync(ct);
+    }
+
+    public async Task CreateVenueManagerAsync(string email, string passwordHash, CancellationToken ct = default)
+    {
+        var user = UserEntity.Create(email, passwordHash, Role.VenueManager);
+        context.Users.Add(user);
+        context.VenueManagerProfiles.Add(new VenueManagerProfileEntity(user.Id));
+        await context.SaveChangesAsync(ct);
+    }
+
+    public async Task CreateArtistManagerAsync(string email, string passwordHash, CancellationToken ct = default)
+    {
+        var user = UserEntity.Create(email, passwordHash, Role.ArtistManager);
+        context.Users.Add(user);
+        context.ArtistManagerProfiles.Add(new ArtistManagerProfileEntity(user.Id));
+        await context.SaveChangesAsync(ct);
+    }
 
     public async Task<UserCredentials?> GetCredentialsByEmailAsync(string email, CancellationToken ct = default)
     {
         var user = await context.Users.Where(u => u.Email == email).FirstOrDefaultAsync(ct);
-        return user is null ? null : new UserCredentials(user.Id, user.Email, user.PasswordHash, user.IsEmailVerified, user.Role);
+        return user is null ? null : new UserCredentials(user.Id, user.Email, user.PasswordHash, user.IsEmailVerified);
     }
 
     public async Task<UserCredentials?> GetCredentialsByIdAsync(Guid userId, CancellationToken ct = default)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
-        return user is null ? null : new UserCredentials(user.Id, user.Email, user.PasswordHash, user.IsEmailVerified, user.Role);
+        return user is null ? null : new UserCredentials(user.Id, user.Email, user.PasswordHash, user.IsEmailVerified);
     }
 
     public async Task SetEmailVerifiedAsync(Guid userId, CancellationToken ct = default)
@@ -148,7 +169,6 @@ internal class UserModule : IUserModule
         {
             Id = user.Id,
             Email = user.Email,
-            Role = user.Role,
             Latitude = user.Location.ToLatitude(),
             Longitude = user.Location.ToLongitude(),
             County = user.Address?.County,
@@ -165,7 +185,6 @@ internal class UserModule : IUserModule
         {
             Id = user.Id,
             Email = user.Email,
-            Role = user.Role,
             Latitude = user.Location.ToLatitude(),
             Longitude = user.Location.ToLongitude(),
             County = user.Address?.County,
@@ -179,7 +198,6 @@ internal class UserModule : IUserModule
     {
         Id = user.Id,
         Email = user.Email,
-        Role = user.Role,
         Latitude = user.Location.ToLatitude(),
         Longitude = user.Location.ToLongitude(),
         County = user.Address?.County,
@@ -191,7 +209,6 @@ internal class UserModule : IUserModule
     {
         Id = user.Id,
         Email = user.Email,
-        Role = user.Role,
         Latitude = user.Location.ToLatitude(),
         Longitude = user.Location.ToLongitude(),
         County = user.Address?.County,

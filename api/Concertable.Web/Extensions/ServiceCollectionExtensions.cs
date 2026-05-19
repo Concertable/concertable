@@ -6,11 +6,9 @@ using Concertable.Data.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Repositories;
 using Concertable.Shared.Infrastructure.Services.Geometry;
-using Concertable.Web.Authorization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -81,7 +79,6 @@ public static class ServiceCollectionExtensions
                 options.Audience = "concertable.api";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    RoleClaimType = "role",
                     ClockSkew = TimeSpan.Zero,
                     ValidateIssuer = !environment.IsDevelopment()
                 };
@@ -98,8 +95,7 @@ public static class ServiceCollectionExtensions
                 };
             });
 
-        services.AddAuthorization()
-            .AddSingleton<IAuthorizationHandler, AdminAuthorizeHandler>();
+        services.AddAuthorization();
 
         return services;
     }

@@ -1,6 +1,6 @@
 namespace Concertable.User.Contracts;
 
-public record UserCredentials(Guid Id, string Email, string PasswordHash, bool IsEmailVerified, Role Role);
+public record UserCredentials(Guid Id, string Email, string PasswordHash, bool IsEmailVerified);
 
 public interface IUserModule
 {
@@ -8,8 +8,14 @@ public interface IUserModule
     Task<IReadOnlyCollection<IUser>> GetByIdsAsync(IEnumerable<Guid> ids);
     Task<ManagerDto?> GetManagerByIdAsync(Guid userId);
 
-    Task<bool> EmailExistsAsync(string email, Role role, CancellationToken ct = default);
-    Task CreateAsync(string email, string passwordHash, Role role, CancellationToken ct = default);
+    Task<bool> CustomerEmailExistsAsync(string email, CancellationToken ct = default);
+    Task<bool> VenueManagerEmailExistsAsync(string email, CancellationToken ct = default);
+    Task<bool> ArtistManagerEmailExistsAsync(string email, CancellationToken ct = default);
+
+    Task CreateCustomerAsync(string email, string passwordHash, CancellationToken ct = default);
+    Task CreateVenueManagerAsync(string email, string passwordHash, CancellationToken ct = default);
+    Task CreateArtistManagerAsync(string email, string passwordHash, CancellationToken ct = default);
+
     Task<UserCredentials?> GetCredentialsByEmailAsync(string email, CancellationToken ct = default);
     Task<UserCredentials?> GetCredentialsByIdAsync(Guid userId, CancellationToken ct = default);
     Task SetEmailVerifiedAsync(Guid userId, CancellationToken ct = default);
