@@ -15,7 +15,6 @@ public class EscrowServiceTests
     private readonly Mock<IPaymentManager> paymentManager = new();
     private readonly Mock<IEscrowRepository> escrowRepository = new();
     private readonly Mock<IPayoutAccountRepository> payoutAccountRepository = new();
-    private readonly Mock<IUserModule> userModule = new();
     private readonly TimeProvider timeProvider = new FakeTimeProvider();
     private readonly EscrowService sut;
 
@@ -28,13 +27,8 @@ public class EscrowServiceTests
             paymentManager.Object,
             escrowRepository.Object,
             payoutAccountRepository.Object,
-            userModule.Object,
             timeProvider,
             NullLogger<EscrowService>.Instance);
-
-        userModule
-            .Setup(u => u.GetManagerByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new ManagerDto { Id = payerId, Email = "payer@test.com" });
 
         payoutAccountRepository
             .Setup(r => r.GetByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -168,7 +162,7 @@ public class EscrowServiceTests
 
     private static PayoutAccountEntity PayoutAccountWith(string stripeCustomerId)
     {
-        var account = PayoutAccountEntity.Create(Guid.NewGuid());
+        var account = PayoutAccountEntity.Create(Guid.NewGuid(), "payer@test.com");
         account.LinkCustomer(stripeCustomerId);
         return account;
     }

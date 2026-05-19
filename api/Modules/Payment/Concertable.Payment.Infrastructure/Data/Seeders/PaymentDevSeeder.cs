@@ -29,19 +29,19 @@ internal class PaymentDevSeeder : IDevSeeder
         await context.PayoutAccounts.SeedIfEmptyAsync(async () =>
         {
             seedData.CustomerStripeCustomerId = "cus_UIIy9Gbwfr3uAP";
-            var firstCustomer = PayoutAccountEntity.Create(seedData.CustomerIds[0]);
+            var firstCustomer = PayoutAccountEntity.Create(seedData.CustomerIds[0], seedData.CustomerEmails[0]);
             firstCustomer.LinkCustomer(seedData.CustomerStripeCustomerId);
             context.PayoutAccounts.Add(firstCustomer);
 
             seedData.ArtistManager1StripeAccountId = "acct_1TJiMePysoXmht10";
             seedData.ArtistManager1StripeCustomerId = "cus_UIIy5mCilBtJbR";
-            var artistManager1 = PayoutAccountEntity.Create(seedData.ArtistManagerIds[0]);
+            var artistManager1 = PayoutAccountEntity.Create(seedData.ArtistManagerIds[0], seedData.ArtistManagerEmails[0]);
             artistManager1.LinkAccount(seedData.ArtistManager1StripeAccountId);
             artistManager1.LinkCustomer(seedData.ArtistManager1StripeCustomerId);
             artistManager1.MarkVerified();
             context.PayoutAccounts.Add(artistManager1);
 
-            var artistManager2 = PayoutAccountEntity.Create(seedData.ArtistManagerIds[1]);
+            var artistManager2 = PayoutAccountEntity.Create(seedData.ArtistManagerIds[1], seedData.ArtistManagerEmails[1]);
             artistManager2.LinkAccount("acct_1TJiMoPupFslP2qz");
             artistManager2.LinkCustomer("cus_UIIy5415r69RmJ");
             artistManager2.MarkVerified();
@@ -50,7 +50,7 @@ internal class PaymentDevSeeder : IDevSeeder
             for (int i = 2; i < seedData.ArtistManagerIds.Count; i++)
             {
                 var managerId = seedData.ArtistManagerIds[i];
-                var account = PayoutAccountEntity.Create(managerId);
+                var account = PayoutAccountEntity.Create(managerId, seedData.ArtistManagerEmails[i]);
                 account.LinkAccount($"acct_dev_artist_{i + 1}");
                 account.LinkCustomer($"cus_dev_artist_{i + 1}");
                 account.MarkVerified();
@@ -59,13 +59,13 @@ internal class PaymentDevSeeder : IDevSeeder
 
             seedData.VenueManager1StripeAccountId = "acct_1TJiMjLxk4aCq1Ui";
             seedData.VenueManager1StripeCustomerId = "cus_UIIymKfHijbNVO";
-            var venueManager1 = PayoutAccountEntity.Create(seedData.VenueManagerIds[0]);
+            var venueManager1 = PayoutAccountEntity.Create(seedData.VenueManagerIds[0], seedData.VenueManagerEmails[0]);
             venueManager1.LinkAccount(seedData.VenueManager1StripeAccountId);
             venueManager1.LinkCustomer(seedData.VenueManager1StripeCustomerId);
             venueManager1.MarkVerified();
             context.PayoutAccounts.Add(venueManager1);
 
-            var venueManager2 = PayoutAccountEntity.Create(seedData.VenueManagerIds[1]);
+            var venueManager2 = PayoutAccountEntity.Create(seedData.VenueManagerIds[1], seedData.VenueManagerEmails[1]);
             venueManager2.LinkAccount("acct_1TJiPJLLwGSDilbV");
             venueManager2.LinkCustomer("cus_UIJ1qfgxYu624Q");
             venueManager2.MarkVerified();
@@ -74,7 +74,7 @@ internal class PaymentDevSeeder : IDevSeeder
             for (int i = 2; i < seedData.VenueManagerIds.Count; i++)
             {
                 var managerId = seedData.VenueManagerIds[i];
-                var account = PayoutAccountEntity.Create(managerId);
+                var account = PayoutAccountEntity.Create(managerId, seedData.VenueManagerEmails[i]);
                 account.LinkAccount($"acct_dev_venue_{i + 1}");
                 account.LinkCustomer($"cus_dev_venue_{i + 1}");
                 account.MarkVerified();

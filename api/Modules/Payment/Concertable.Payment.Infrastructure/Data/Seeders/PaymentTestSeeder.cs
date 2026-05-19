@@ -30,27 +30,27 @@ internal class PaymentTestSeeder : ITestSeeder
             seedData.ArtistManager1StripeAccountId = "acct_test_artist1";
             seedData.ArtistManager1StripeCustomerId = "cus_test_artist1";
 
-            var venueManager1 = PayoutAccountEntity.Create(seedData.VenueManager1.Id);
+            var venueManager1 = PayoutAccountEntity.Create(seedData.VenueManager1.Id, seedData.VenueManager1.Email);
             venueManager1.LinkAccount(seedData.VenueManager1StripeAccountId);
             venueManager1.LinkCustomer(seedData.VenueManager1StripeCustomerId);
             venueManager1.MarkVerified();
 
-            var venueManager2 = PayoutAccountEntity.Create(seedData.VenueManager2.Id);
+            var venueManager2 = PayoutAccountEntity.Create(seedData.VenueManager2.Id, seedData.VenueManager2.Email);
             venueManager2.LinkAccount("acct_test_venue2");
             venueManager2.LinkCustomer("cus_test_venue2");
             venueManager2.MarkVerified();
 
-            var artistManager = PayoutAccountEntity.Create(seedData.ArtistManager1.Id);
+            var artistManager = PayoutAccountEntity.Create(seedData.ArtistManager1.Id, seedData.ArtistManager1.Email);
             artistManager.LinkAccount(seedData.ArtistManager1StripeAccountId);
             artistManager.LinkCustomer(seedData.ArtistManager1StripeCustomerId);
             artistManager.MarkVerified();
 
-            var artistManagerNoArtist = PayoutAccountEntity.Create(seedData.ArtistManagerNoArtist.Id);
+            var artistManagerNoArtist = PayoutAccountEntity.Create(seedData.ArtistManagerNoArtist.Id, seedData.ArtistManagerNoArtist.Email);
             artistManagerNoArtist.LinkAccount("acct_test_artist2");
             artistManagerNoArtist.LinkCustomer("cus_test_artist2");
             artistManagerNoArtist.MarkVerified();
 
-            var customer = PayoutAccountEntity.Create(seedData.Customer.Id);
+            var customer = PayoutAccountEntity.Create(seedData.Customer.Id, seedData.Customer.Email);
             customer.LinkCustomer("cus_test_customer");
 
             context.PayoutAccounts.AddRange(

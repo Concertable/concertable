@@ -6,11 +6,30 @@ namespace Concertable.Payment.Infrastructure.Services;
 
 internal class FakeStripeAccountClient : IStripeAccountClient
 {
-    public Task ProvisionCustomerAsync(Guid userId, string email, CancellationToken ct = default) =>
-        Task.CompletedTask;
+    private readonly IPayoutAccountRepository payoutAccountRepository;
 
-    public Task ProvisionConnectAccountAsync(Guid userId, string email, CancellationToken ct = default) =>
-        Task.CompletedTask;
+    public FakeStripeAccountClient(IPayoutAccountRepository payoutAccountRepository)
+    {
+        this.payoutAccountRepository = payoutAccountRepository;
+    }
+
+    public async Task ProvisionCustomerAsync(Guid userId, string email, CancellationToken ct = default)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct) ?? PayoutAccountEntity.Create(userId, email);
+        account.LinkCustomer($"cus_fake_{userId:N}");
+        if (account.Id == 0)
+            await payoutAccountRepository.AddAsync(account, ct);
+        await payoutAccountRepository.SaveChangesAsync(ct);
+    }
+
+    public async Task ProvisionConnectAccountAsync(Guid userId, string email, CancellationToken ct = default)
+    {
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct) ?? PayoutAccountEntity.Create(userId, email);
+        account.LinkAccount($"acct_fake_{userId:N}");
+        if (account.Id == 0)
+            await payoutAccountRepository.AddAsync(account, ct);
+        await payoutAccountRepository.SaveChangesAsync(ct);
+    }
 
     public Task<string> GetOnboardingLinkAsync(string stripeId) =>
         Task.FromResult("https://fake-stripe-onboarding.local");
@@ -48,5 +67,4 @@ internal class FakeStripeAccountClient : IStripeAccountClient
         IDictionary<string, string> metadata,
         CancellationToken ct = default) =>
         Task.FromResult(new CheckoutSession("pi_fake_hold_secret", "cuss_fake_secret", stripeCustomerId));
-
 }

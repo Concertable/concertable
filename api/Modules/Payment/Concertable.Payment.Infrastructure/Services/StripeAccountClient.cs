@@ -52,7 +52,7 @@ internal class StripeAccountClient : IStripeAccountClient
             Email = email,
             Address = new AddressOptions { Country = "GB" },
         }, cancellationToken: ct);
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct) ?? PayoutAccountEntity.Create(userId);
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct) ?? PayoutAccountEntity.Create(userId, email);
         account.LinkCustomer(customer.Id);
         if (account.Id == 0)
             await payoutAccountRepository.AddAsync(account, ct);
@@ -72,7 +72,7 @@ internal class StripeAccountClient : IStripeAccountClient
                 Transfers = new AccountCapabilitiesTransfersOptions { Requested = true }
             }
         }, cancellationToken: ct);
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct) ?? PayoutAccountEntity.Create(userId);
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct) ?? PayoutAccountEntity.Create(userId, email);
         account.LinkAccount(stripeAccount.Id);
         if (account.Id == 0)
             await payoutAccountRepository.AddAsync(account, ct);

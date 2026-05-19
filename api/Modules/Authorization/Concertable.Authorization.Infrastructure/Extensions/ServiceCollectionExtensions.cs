@@ -8,7 +8,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserAccessor>();
-        services.AddScoped<ICurrentUserResolver, CurrentUserResolver>();
         return services;
     }
 }

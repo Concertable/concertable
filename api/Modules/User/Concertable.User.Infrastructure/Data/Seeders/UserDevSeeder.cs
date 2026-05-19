@@ -104,16 +104,19 @@ internal class UserDevSeeder : IDevSeeder
         // Always resolve IDs from DB so downstream seeders work on first run and restarts
         var usersByEmail = await context.Users.ToDictionaryAsync(u => u.Email, u => u.Id, ct);
 
-        var customerIds = new List<Guid> { usersByEmail["customer1@test.com"] };
-        for (int i = 2; i <= 6; i++) customerIds.Add(usersByEmail[$"customer{i}@test.com"]);
-        seedData.CustomerIds = customerIds;
+        var customerEmails = new List<string> { "customer1@test.com" };
+        for (int i = 2; i <= 6; i++) customerEmails.Add($"customer{i}@test.com");
+        seedData.CustomerEmails = customerEmails;
+        seedData.CustomerIds = [.. customerEmails.Select(e => usersByEmail[e])];
 
-        var artistManagerIds = new List<Guid>();
-        for (int i = 1; i <= 35; i++) artistManagerIds.Add(usersByEmail[$"artistmanager{i}@test.com"]);
-        seedData.ArtistManagerIds = artistManagerIds;
+        var artistManagerEmails = new List<string>();
+        for (int i = 1; i <= 35; i++) artistManagerEmails.Add($"artistmanager{i}@test.com");
+        seedData.ArtistManagerEmails = artistManagerEmails;
+        seedData.ArtistManagerIds = [.. artistManagerEmails.Select(e => usersByEmail[e])];
 
-        var venueManagerIds = new List<Guid> { usersByEmail["venuemanager1@test.com"], usersByEmail["venuemanager2@test.com"] };
-        for (int i = 3; i <= 35; i++) venueManagerIds.Add(usersByEmail[$"venuemanager{i}@test.com"]);
-        seedData.VenueManagerIds = venueManagerIds;
+        var venueManagerEmails = new List<string> { "venuemanager1@test.com", "venuemanager2@test.com" };
+        for (int i = 3; i <= 35; i++) venueManagerEmails.Add($"venuemanager{i}@test.com");
+        seedData.VenueManagerEmails = venueManagerEmails;
+        seedData.VenueManagerIds = [.. venueManagerEmails.Select(e => usersByEmail[e])];
     }
 }

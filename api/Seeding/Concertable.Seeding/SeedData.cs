@@ -17,6 +17,10 @@ public class SeedData
     public IReadOnlyList<Guid> ArtistManagerIds { get; set; } = [];
     public IReadOnlyList<Guid> VenueManagerIds { get; set; } = [];
 
+    public IReadOnlyList<string> CustomerEmails { get; set; } = [];
+    public IReadOnlyList<string> ArtistManagerEmails { get; set; } = [];
+    public IReadOnlyList<string> VenueManagerEmails { get; set; } = [];
+
     public string CustomerStripeCustomerId { get; set; } = null!;
     public string VenueManager1StripeAccountId { get; set; } = null!;
     public string VenueManager1StripeCustomerId { get; set; } = null!;

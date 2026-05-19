@@ -1,4 +1,3 @@
-using Concertable.User.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
@@ -13,7 +12,6 @@ internal class EscrowService : IEscrowService
     private readonly IPaymentManager paymentManager;
     private readonly IEscrowRepository escrowRepository;
     private readonly IPayoutAccountRepository payoutAccountRepository;
-    private readonly IUserModule userModule;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<EscrowService> logger;
 
@@ -21,14 +19,12 @@ internal class EscrowService : IEscrowService
         IPaymentManager paymentManager,
         IEscrowRepository escrowRepository,
         IPayoutAccountRepository payoutAccountRepository,
-        IUserModule userModule,
         TimeProvider timeProvider,
         ILogger<EscrowService> logger)
     {
         this.paymentManager = paymentManager;
         this.escrowRepository = escrowRepository;
         this.payoutAccountRepository = payoutAccountRepository;
-        this.userModule = userModule;
         this.timeProvider = timeProvider;
         this.logger = logger;
     }
@@ -42,16 +38,16 @@ internal class EscrowService : IEscrowService
         int bookingId,
         CancellationToken ct = default)
     {
-        var payer = await userModule.GetManagerByIdAsync(payerId)
-            ?? throw new NotFoundException($"Payer manager not found for userId {payerId}");
+        var payer = await payoutAccountRepository.GetByUserIdAsync(payerId, ct)
+            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
 
-        if (session == PaymentSession.OffSession && !await HasStripeCustomerAsync(payerId, ct))
+        if (session == PaymentSession.OffSession && payer.StripeCustomerId is null)
             throw new BadRequestException("Stripe customer setup is required for off-session payments.");
 
         var hold = await paymentManager.HoldAsync(new HoldRequest
         {
             PayerId = payerId,
-            PayerEmail = payer.Email ?? string.Empty,
+            PayerEmail = payer.Email,
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
@@ -227,11 +223,5 @@ internal class EscrowService : IEscrowService
             escrow.RefundId,
             escrow.ReleasedAt,
             escrow.RefundedAt);
-    }
-
-    private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)
-    {
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
-        return account?.StripeCustomerId is not null;
     }
 }

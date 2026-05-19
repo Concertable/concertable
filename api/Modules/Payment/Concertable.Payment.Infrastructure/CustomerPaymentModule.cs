@@ -1,4 +1,3 @@
-using Concertable.Customer.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
@@ -12,18 +11,15 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
     private readonly IPaymentManager paymentManager;
     private readonly IStripeAccountClient stripeAccountClient;
     private readonly IPayoutAccountRepository payoutAccountRepository;
-    private readonly ICustomerModule customerModule;
 
     public CustomerPaymentModule(
         IPaymentManager paymentManager,
         IStripeAccountClient stripeAccountClient,
-        IPayoutAccountRepository payoutAccountRepository,
-        ICustomerModule customerModule)
+        IPayoutAccountRepository payoutAccountRepository)
     {
         this.paymentManager = paymentManager;
         this.stripeAccountClient = stripeAccountClient;
         this.payoutAccountRepository = payoutAccountRepository;
-        this.customerModule = customerModule;
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
@@ -34,13 +30,13 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         string paymentMethodId,
         CancellationToken ct = default)
     {
-        var customer = await customerModule.GetCustomerAsync(payerId)
-            ?? throw new ForbiddenException("Only customers can purchase tickets");
+        var account = await payoutAccountRepository.GetByUserIdAsync(payerId, ct)
+            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
 
         return await paymentManager.ChargeAsync(new ChargeRequest
         {
             PayerId = payerId,
-            PayerEmail = customer.Email ?? string.Empty,
+            PayerEmail = account.Email,
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
@@ -54,34 +50,30 @@ internal class CustomerPaymentModule : ICustomerPaymentModule
         IDictionary<string, string> metadata,
         CancellationToken ct = default)
     {
-        var customer = await customerModule.GetCustomerAsync(payerId)
-            ?? throw new ForbiddenException("Only customers can purchase tickets");
+        var account = await payoutAccountRepository.GetByUserIdAsync(payerId, ct)
+            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
 
-        var stripeCustomerId = await EnsureStripeCustomerAsync(payerId, ct);
+        var stripeCustomerId = await EnsureStripeCustomerAsync(account, ct);
 
         var mergedMetadata = new Dictionary<string, string>
         {
             ["fromUserId"] = payerId.ToString(),
-            ["fromUserEmail"] = customer.Email ?? string.Empty
+            ["fromUserEmail"] = account.Email
         }
         .Merge(metadata);
 
         return await stripeAccountClient.CreatePaymentSessionAsync(stripeCustomerId, mergedMetadata, ct);
     }
 
-    private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
+    private async Task<string> EnsureStripeCustomerAsync(PayoutAccountEntity account, CancellationToken ct)
     {
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
-        if (account?.StripeCustomerId is not null)
+        if (account.StripeCustomerId is not null)
             return account.StripeCustomerId;
 
-        var customer = await customerModule.GetCustomerAsync(userId)
-            ?? throw new ForbiddenException("Only customers can purchase tickets");
+        await stripeAccountClient.ProvisionCustomerAsync(account.UserId, account.Email, ct);
 
-        await stripeAccountClient.ProvisionCustomerAsync(userId, customer.Email ?? string.Empty, ct);
-
-        account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
-        return account?.StripeCustomerId
+        var refreshed = await payoutAccountRepository.GetByUserIdAsync(account.UserId, ct);
+        return refreshed?.StripeCustomerId
             ?? throw new InvalidOperationException("Failed to provision Stripe customer.");
     }
 }

@@ -1,4 +1,3 @@
-using Concertable.User.Contracts;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Contracts;
@@ -14,22 +13,19 @@ internal class ManagerPaymentModule : IManagerPaymentModule
     private readonly IStripeHoldClient stripeHoldClient;
     private readonly IPayoutAccountRepository payoutAccountRepository;
     private readonly ITransactionRepository transactionRepository;
-    private readonly IUserModule userModule;
 
     public ManagerPaymentModule(
         IPaymentManager paymentManager,
         IStripeAccountClient stripeAccountClient,
         IStripeHoldClient stripeHoldClient,
         IPayoutAccountRepository payoutAccountRepository,
-        ITransactionRepository transactionRepository,
-        IUserModule userModule)
+        ITransactionRepository transactionRepository)
     {
         this.paymentManager = paymentManager;
         this.stripeAccountClient = stripeAccountClient;
         this.stripeHoldClient = stripeHoldClient;
         this.payoutAccountRepository = payoutAccountRepository;
         this.transactionRepository = transactionRepository;
-        this.userModule = userModule;
     }
 
     public async Task<Result<PaymentResponse>> PayAsync(
@@ -41,16 +37,16 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         int bookingId,
         CancellationToken ct = default)
     {
-        var payer = await userModule.GetManagerByIdAsync(payerId)
-            ?? throw new NotFoundException($"Payer manager not found for userId {payerId}");
+        var payer = await payoutAccountRepository.GetByUserIdAsync(payerId, ct)
+            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
 
-        if (session == PaymentSession.OffSession && !await HasStripeCustomerAsync(payerId, ct))
+        if (session == PaymentSession.OffSession && payer.StripeCustomerId is null)
             throw new BadRequestException("Stripe customer setup is required for off-session payments.");
 
         var charge = await paymentManager.ChargeAsync(new ChargeRequest
         {
             PayerId = payerId,
-            PayerEmail = payer.Email ?? string.Empty,
+            PayerEmail = payer.Email,
             PayeeId = payeeId,
             Amount = amount,
             PaymentMethodId = paymentMethodId,
@@ -126,25 +122,18 @@ internal class ManagerPaymentModule : IManagerPaymentModule
         return await stripeHoldClient.FindHeldIntentAsync(stripeCustomerId, applicationId, ct);
     }
 
-    private async Task<bool> HasStripeCustomerAsync(Guid userId, CancellationToken ct)
-    {
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
-        return account?.StripeCustomerId is not null;
-    }
-
     private async Task<string> EnsureStripeCustomerAsync(Guid userId, CancellationToken ct)
     {
-        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
-        if (account?.StripeCustomerId is not null)
+        var account = await payoutAccountRepository.GetByUserIdAsync(userId, ct)
+            ?? throw new NotFoundException($"Payout account not found for userId {userId}");
+
+        if (account.StripeCustomerId is not null)
             return account.StripeCustomerId;
 
-        var manager = await userModule.GetManagerByIdAsync(userId)
-            ?? throw new NotFoundException($"Manager not found for userId {userId}");
+        await stripeAccountClient.ProvisionCustomerAsync(userId, account.Email, ct);
 
-        await stripeAccountClient.ProvisionCustomerAsync(userId, manager.Email ?? string.Empty, ct);
-
-        account = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
-        return account?.StripeCustomerId
+        var refreshed = await payoutAccountRepository.GetByUserIdAsync(userId, ct);
+        return refreshed?.StripeCustomerId
             ?? throw new InvalidOperationException("Failed to provision Stripe customer.");
     }
 }
