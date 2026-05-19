@@ -2,7 +2,7 @@
 
 > **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md). That doc is the *what*; this one is *what order, in phases*.
 >
-> **Status:** Phase 1 in progress. Steps 1–5 complete; Step 6 (Search upstream refs) next.
+> **Status:** Phase 1 COMPLETE. All 6 steps done. Exit criteria met.
 >
 > **Rule:** Don't open Phase N until Phase N−1 is done. Half-done migrations are worse than no migration.
 
@@ -29,7 +29,7 @@ Pre-execution doc work. No code refactor yet.
 3. ~~**Delete `SharedDbContext` + move Genre to `Concertable.Contracts`.**~~ **DONE `2832354b`.** Genre is a `JsonStringEnumConverter`-decorated enum in `Concertable.Contracts` with explicit int values (Rock=1..House=8). SharedDbContext, GenreEntity, GenreRepository, IGenreService, GenreService, GenreDto, GenreMappers, IGenreJoin, GenreJoinExtensions all deleted. EF stores as int, wire sends as string. Frontend: `Genre` TypeScript type is a string union; `genreLabel()` helper for display names. Migration re-scaffold deferred (ICustomerReviewModule DI gap is pre-existing; unblocked when Customer DI is wired in Step 1).
 4. ~~**Dismantle `Modules/User/` TPH.**~~ **DONE `cd872fad`.** Flat per-service profile tables: `VenueManagerProfile { Sub, VenueId }`, `ArtistManagerProfile { Sub, ArtistId }`, `AdminProfile { Sub }` in `UserDbContext`; `CustomerProfile { Sub }` in `Customer.Profile` module created via `UserRegisteredEvent` handler. IUserMapper + IUserLoader dispatcher patterns deleted; `UserModule` does inline profile-aware mapping. Seeders insert profile rows explicitly.
 5. ~~**Auth becomes identity-only.**~~ **DONE `4aa7e641`.** Delete `RoleEnforcingInteractionResponseGenerator`, `IClientRoleResolver`, `Concertable.User.Contracts.Role` enum. Auth issues tokens with `sub` + audience only. Per-service authorization rejects tokens whose `sub` isn't in the service's profile tables — that replaces the "user must have role X for client Y" Auth-side check. `UserRegisteredEvent` split into 4 typed events; `IUserRegister` dispatcher + per-role impls deleted; `Role` enum promoted to `User.Domain`.
-6. **Clean Search's upstream refs.** Remove `Search.Infrastructure` references to `Artist.Infrastructure` / `Venue.Infrastructure` (per `project_search_rating_projection_ownership` debt). Search consumes domain events only.
+6. ~~**Clean Search's upstream refs.**~~ **DONE `f62bc4fd`.** Remove `Search.Infrastructure` references to `Artist.Infrastructure` / `Venue.Infrastructure`. Replace with direct `Artist.Domain` / `Venue.Domain` refs; inline "artist"/"venue" schema strings in the 3 EF configs. Rating providers are injected via DI — no code-path changes needed.
 
 **Exit criteria:** monolith still ships. Internal boundary matches future split. `Concert.Domain` no longer god-entity. Auth has no role concept. Search has no upstream module refs.
 
