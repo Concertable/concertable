@@ -11,20 +11,20 @@ internal class UserService : IUserService
     private readonly ICurrentUser currentUser;
     private readonly IGeocodingService geocodingService;
     private readonly IGeometryProvider geometryProvider;
-    private readonly IUserMapper userMapper;
+    private readonly IUserModule userModule;
 
     public UserService(
         IUserRepository userRepsitory,
         ICurrentUser currentUser,
         IGeocodingService geocodingService,
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        IUserMapper userMapper)
+        IUserModule userModule)
     {
         this.userRepsitory = userRepsitory;
         this.currentUser = currentUser;
         this.geocodingService = geocodingService;
         this.geometryProvider = geometryProvider;
-        this.userMapper = userMapper;
+        this.userModule = userModule;
     }
 
     public async Task<IUser> SaveLocationAsync(double latitude, double longitude)
@@ -40,20 +40,7 @@ internal class UserService : IUserService
         userRepsitory.Update(user);
         await userRepsitory.SaveChangesAsync();
 
-        return userMapper.ToDto(user);
+        return await userModule.GetByIdAsync(user.Id)
+            ?? throw new UnauthorizedAccessException("User not found.");
     }
-
-    public async Task UpdateLocationAsync(UserEntity user, double latitude, double longitude)
-    {
-        var location = await geocodingService.GetLocationAsync(latitude, longitude);
-        user.UpdateLocation(
-            geometryProvider.CreatePoint(latitude, longitude),
-            new Address(location.County, location.Town));
-    }
-
-    public async Task<UserEntity?> GetUserEntityByIdAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await userRepsitory.GetByIdAsync(userId, cancellationToken);
-    }
-
 }

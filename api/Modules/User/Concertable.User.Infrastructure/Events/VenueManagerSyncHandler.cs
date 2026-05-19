@@ -1,4 +1,4 @@
-﻿using Concertable.User.Infrastructure.Data;
+using Concertable.User.Infrastructure.Data;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
@@ -23,8 +23,8 @@ internal class VenueManagerSyncHandler(UserDbContext db)
             GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude)),
             new Address(e.County, e.Town));
 
-        if (user is VenueManagerEntity vm)
-            vm.AssignVenue(e.VenueId);
+        var profile = await db.VenueManagerProfiles.FirstOrDefaultAsync(p => p.Sub == e.UserId, ct);
+        profile?.AssignVenue(e.VenueId);
 
         await db.SaveChangesAsync(ct);
     }

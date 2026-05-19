@@ -10,10 +10,9 @@ internal sealed class UserConfigurationProvider : IEntityTypeConfigurationProvid
     public void Configure(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UserEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new CustomerEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ManagerEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new VenueManagerEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ArtistManagerEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new VenueManagerProfileEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ArtistManagerProfileEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new AdminProfileEntityConfiguration());
         modelBuilder.ApplyConfiguration(new EmailVerificationTokenEntityConfiguration());
         modelBuilder.ApplyConfiguration(new PasswordResetTokenEntityConfiguration());
     }

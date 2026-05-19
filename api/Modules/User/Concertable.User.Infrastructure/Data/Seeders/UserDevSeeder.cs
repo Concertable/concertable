@@ -1,4 +1,4 @@
-﻿using Concertable.Application.Interfaces.Geometry;
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
@@ -75,6 +75,28 @@ internal class UserDevSeeder : IDevSeeder
 
             for (int i = 3; i <= 35; i++)
                 context.Users.Add(UserFactory.VenueManager($"venuemanager{i}@test.com", hash));
+
+            // EF assigns GUIDs when entities are tracked, so IDs are available before SaveChanges
+            await context.SaveChangesAsync(ct);
+
+            // Insert profiles for all B2B managers and admins
+            var venueManagerIds = await context.Users
+                .Where(u => u.Role == Role.VenueManager)
+                .Select(u => u.Id)
+                .ToListAsync(ct);
+            context.VenueManagerProfiles.AddRange(venueManagerIds.Select(id => new VenueManagerProfileEntity(id)));
+
+            var artistManagerIds = await context.Users
+                .Where(u => u.Role == Role.ArtistManager)
+                .Select(u => u.Id)
+                .ToListAsync(ct);
+            context.ArtistManagerProfiles.AddRange(artistManagerIds.Select(id => new ArtistManagerProfileEntity(id)));
+
+            var adminIds = await context.Users
+                .Where(u => u.Role == Role.Admin)
+                .Select(u => u.Id)
+                .ToListAsync(ct);
+            context.AdminProfiles.AddRange(adminIds.Select(id => new AdminProfileEntity(id)));
 
             await context.SaveChangesAsync(ct);
         });

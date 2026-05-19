@@ -2,7 +2,6 @@ using Concertable.Application.Interfaces;
 using Concertable.Artist.Contracts.Events;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
-using Concertable.Shared.Infrastructure.Services.Email;
 using Concertable.User.Application.Validators;
 using Concertable.User.Domain.Events;
 using Concertable.User.Infrastructure.Data;
@@ -31,13 +30,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddSingleton<IUserMapper, UserMapper>();
-
-        services.AddScoped<IUserLoader, UserLoader>();
-        services.AddKeyedScoped<IUserLoader, VenueManagerLoader>(Role.VenueManager);
-        services.AddKeyedScoped<IUserLoader, ArtistManagerLoader>(Role.ArtistManager);
-        services.AddKeyedScoped<IUserLoader, CustomerLoader>(Role.Customer);
-        services.AddKeyedScoped<IUserLoader, AdminLoader>(Role.Admin);
 
         services.AddScoped<IUserRegister, UserRegister>();
         services.AddKeyedScoped<IUserRegister, VenueManagerRegister>(Role.VenueManager);

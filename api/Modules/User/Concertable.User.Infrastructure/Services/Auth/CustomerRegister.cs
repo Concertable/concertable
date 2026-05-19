@@ -1,4 +1,4 @@
-﻿using Concertable.User.Infrastructure.Data;
+using Concertable.User.Infrastructure.Data;
 
 namespace Concertable.User.Infrastructure.Services.Auth;
 
@@ -13,8 +13,9 @@ internal class CustomerRegister : IUserRegister
 
     public async Task RegisterAsync(string email, string passwordHash, Role role)
     {
-        var user = CustomerEntity.Create(email, passwordHash);
+        var user = UserEntity.Create(email, passwordHash, Role.Customer);
         context.Users.Add(user);
         await context.SaveChangesAsync();
+        // CustomerProfile created via UserRegisteredEvent → CustomerProfileCreationHandler
     }
 }

@@ -1,4 +1,4 @@
-﻿using Concertable.Artist.Contracts.Events;
+using Concertable.Artist.Contracts.Events;
 using Concertable.User.Infrastructure.Data;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -23,8 +23,8 @@ internal class ArtistManagerSyncHandler(UserDbContext db)
             GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude)),
             new Address(e.County, e.Town));
 
-        if (user is ArtistManagerEntity am)
-            am.AssignArtist(e.ArtistId);
+        var profile = await db.ArtistManagerProfiles.FirstOrDefaultAsync(p => p.Sub == e.UserId, ct);
+        profile?.AssignArtist(e.ArtistId);
 
         await db.SaveChangesAsync(ct);
     }

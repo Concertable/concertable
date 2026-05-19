@@ -1,4 +1,4 @@
-﻿using Concertable.User.Infrastructure.Data;
+using Concertable.User.Infrastructure.Data;
 
 namespace Concertable.User.Infrastructure.Services.Auth;
 
@@ -13,8 +13,9 @@ internal class AdminRegister : IUserRegister
 
     public async Task RegisterAsync(string email, string passwordHash, Role role)
     {
-        var admin = AdminEntity.Create(email, passwordHash);
-        context.Users.Add(admin);
+        var user = UserEntity.Create(email, passwordHash, Role.Admin);
+        context.Users.Add(user);
+        context.AdminProfiles.Add(new AdminProfileEntity(user.Id));
         await context.SaveChangesAsync();
     }
 }

@@ -1,4 +1,4 @@
-﻿using Concertable.Application.Interfaces.Geometry;
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
@@ -61,6 +61,17 @@ internal class UserTestSeeder : ITestSeeder
                 seedData.ArtistManagerNoArtist,
                 seedData.Customer,
                 seedData.Admin);
+
+            // IDs are set by EF after AddRange
+            context.VenueManagerProfiles.AddRange(
+                new VenueManagerProfileEntity(seedData.VenueManager1.Id),
+                new VenueManagerProfileEntity(seedData.VenueManager2.Id));
+
+            context.ArtistManagerProfiles.AddRange(
+                new ArtistManagerProfileEntity(seedData.ArtistManager1.Id),
+                new ArtistManagerProfileEntity(seedData.ArtistManagerNoArtist.Id));
+
+            context.AdminProfiles.Add(new AdminProfileEntity(seedData.Admin.Id));
 
             await context.SaveChangesAsync(ct);
         });

@@ -6,12 +6,12 @@ public class SeedData
 {
     public const string TestPassword = "Password11!";
 
-    public VenueManagerEntity VenueManager1 { get; set; } = null!;
-    public VenueManagerEntity VenueManager2 { get; set; } = null!;
-    public ArtistManagerEntity ArtistManager1 { get; set; } = null!;
-    public ArtistManagerEntity ArtistManagerNoArtist { get; set; } = null!;
-    public CustomerEntity Customer { get; set; } = null!;
-    public AdminEntity Admin { get; set; } = null!;
+    public UserEntity VenueManager1 { get; set; } = null!;
+    public UserEntity VenueManager2 { get; set; } = null!;
+    public UserEntity ArtistManager1 { get; set; } = null!;
+    public UserEntity ArtistManagerNoArtist { get; set; } = null!;
+    public UserEntity Customer { get; set; } = null!;
+    public UserEntity Admin { get; set; } = null!;
 
     public IReadOnlyList<Guid> CustomerIds { get; set; } = [];
     public IReadOnlyList<Guid> ArtistManagerIds { get; set; } = [];

@@ -10,13 +10,13 @@ internal class UserController : ControllerBase
 {
     private readonly IUserService userService;
     private readonly ICurrentUser currentUser;
-    private readonly IUserMapper userMapper;
+    private readonly IUserModule userModule;
 
-    public UserController(IUserService userService, ICurrentUser currentUser, IUserMapper userMapper)
+    public UserController(IUserService userService, ICurrentUser currentUser, IUserModule userModule)
     {
         this.userService = userService;
         this.currentUser = currentUser;
-        this.userMapper = userMapper;
+        this.userModule = userModule;
     }
 
     [HttpPut("location")]
@@ -29,8 +29,8 @@ internal class UserController : ControllerBase
     [HttpGet("/api/auth/me")]
     public async Task<ActionResult<IUser>> Me()
     {
-        var entity = await userService.GetUserEntityByIdAsync(currentUser.GetId());
-        if (entity is null) return Unauthorized();
-        return Ok(userMapper.ToDto(entity));
+        var user = await userModule.GetByIdAsync(currentUser.GetId());
+        if (user is null) return Unauthorized();
+        return Ok(user);
     }
 }

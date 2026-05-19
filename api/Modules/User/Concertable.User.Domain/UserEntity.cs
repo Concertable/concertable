@@ -9,7 +9,7 @@ public class UserEntity : IGuidEntity, IEventRaiser
 
     protected UserEntity() { }
 
-    protected UserEntity(string email, string passwordHash, Role role)
+    private UserEntity(string email, string passwordHash, Role role)
     {
         Email = email;
         PasswordHash = passwordHash;
@@ -28,6 +28,9 @@ public class UserEntity : IGuidEntity, IEventRaiser
 
     public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
     public void ClearDomainEvents() => _events.Clear();
+
+    public static UserEntity Create(string email, string passwordHash, Role role) =>
+        new(email, passwordHash, role);
 
     public void VerifyEmail() => IsEmailVerified = true;
 
@@ -48,61 +51,4 @@ public class UserEntity : IGuidEntity, IEventRaiser
         Location = location;
         Address = address;
     }
-}
-
-public abstract class ManagerEntity : UserEntity
-{
-    protected ManagerEntity() { }
-
-    protected ManagerEntity(string email, string passwordHash, Role role)
-        : base(email, passwordHash, role) { }
-
-}
-
-public class VenueManagerEntity : ManagerEntity
-{
-    private VenueManagerEntity() { }
-
-    private VenueManagerEntity(string email, string passwordHash)
-        : base(email, passwordHash, Role.VenueManager) { }
-
-    public int? VenueId { get; private set; }
-
-    public static VenueManagerEntity Create(string email, string passwordHash) => new(email, passwordHash);
-
-    public void AssignVenue(int venueId) => VenueId = venueId;
-}
-
-public class ArtistManagerEntity : ManagerEntity
-{
-    private ArtistManagerEntity() { }
-
-    private ArtistManagerEntity(string email, string passwordHash)
-        : base(email, passwordHash, Role.ArtistManager) { }
-
-    public int? ArtistId { get; private set; }
-
-    public static ArtistManagerEntity Create(string email, string passwordHash) => new(email, passwordHash);
-
-    public void AssignArtist(int artistId) => ArtistId = artistId;
-}
-
-public class CustomerEntity : UserEntity
-{
-    private CustomerEntity() { }
-
-    private CustomerEntity(string email, string passwordHash)
-        : base(email, passwordHash, Role.Customer) { }
-
-    public static CustomerEntity Create(string email, string passwordHash) => new(email, passwordHash);
-}
-
-public class AdminEntity : UserEntity
-{
-    private AdminEntity() { }
-
-    private AdminEntity(string email, string passwordHash)
-        : base(email, passwordHash, Role.Admin) { }
-
-    public static AdminEntity Create(string email, string passwordHash) => new(email, passwordHash);
 }

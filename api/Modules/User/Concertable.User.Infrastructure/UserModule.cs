@@ -1,6 +1,4 @@
-using Concertable.User.Application.Mappers;
 using Concertable.User.Infrastructure.Data;
-using Concertable.User.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 
@@ -10,37 +8,43 @@ internal class UserModule : IUserModule
 {
     private readonly UserDbContext context;
     private readonly IUserRepository userRepository;
-    private readonly IUserMapper userMapper;
-    private readonly IUserLoader userLoader;
     private readonly IUserRegister userRegister;
 
     public UserModule(
         UserDbContext context,
         IUserRepository userRepository,
-        IUserMapper userMapper,
-        IUserLoader userLoader,
         IUserRegister userRegister)
     {
         this.context = context;
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.userLoader = userLoader;
         this.userRegister = userRegister;
     }
 
     public async Task<IUser?> GetByIdAsync(Guid id)
     {
         var user = await userRepository.GetByIdAsync(id);
-        return user is null ? null : userMapper.ToDto(user);
+        return user is null ? null : await MapToUserAsync(user);
     }
 
-    public async Task<IReadOnlyCollection<IUser>> GetByIdsAsync(IEnumerable<Guid> ids) =>
-        userMapper.ToDtos(await userRepository.GetByIdsAsync(ids)).ToList();
+    public async Task<IReadOnlyCollection<IUser>> GetByIdsAsync(IEnumerable<Guid> ids)
+    {
+        var users = await userRepository.GetByIdsAsync(ids);
+        var result = new List<IUser>(users.Count);
+        foreach (var user in users)
+            result.Add(await MapToUserAsync(user));
+        return result;
+    }
 
     public async Task<ManagerDto?> GetManagerByIdAsync(Guid userId)
     {
+        var isManager = await context.VenueManagerProfiles.AnyAsync(p => p.Sub == userId)
+            || await context.ArtistManagerProfiles.AnyAsync(p => p.Sub == userId)
+            || await context.AdminProfiles.AnyAsync(p => p.Sub == userId);
+
+        if (!isManager) return null;
+
         var user = await userRepository.GetByIdAsync(userId);
-        return user is ManagerEntity manager ? manager.ToDto() : null;
+        return user is null ? null : new ManagerDto { Id = user.Id, Email = user.Email, Avatar = user.Avatar };
     }
 
     public Task<bool> EmailExistsAsync(string email, Role role, CancellationToken ct = default) =>
@@ -128,6 +132,72 @@ internal class UserModule : IUserModule
         await context.SaveChangesAsync(ct);
         return true;
     }
+
+    private async Task<IUser> MapToUserAsync(UserEntity user) => user.Role switch
+    {
+        Role.VenueManager => await MapVenueManagerAsync(user),
+        Role.ArtistManager => await MapArtistManagerAsync(user),
+        Role.Customer => MapCustomer(user),
+        _ => MapAdmin(user),
+    };
+
+    private async Task<IUser> MapVenueManagerAsync(UserEntity user)
+    {
+        var profile = await context.VenueManagerProfiles.FindAsync(user.Id);
+        return new VenueManagerDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role,
+            Latitude = user.Location.ToLatitude(),
+            Longitude = user.Location.ToLongitude(),
+            County = user.Address?.County,
+            Town = user.Address?.Town,
+            VenueId = profile?.VenueId,
+            IsEmailVerified = user.IsEmailVerified,
+        };
+    }
+
+    private async Task<IUser> MapArtistManagerAsync(UserEntity user)
+    {
+        var profile = await context.ArtistManagerProfiles.FindAsync(user.Id);
+        return new ArtistManagerDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role,
+            Latitude = user.Location.ToLatitude(),
+            Longitude = user.Location.ToLongitude(),
+            County = user.Address?.County,
+            Town = user.Address?.Town,
+            ArtistId = profile?.ArtistId,
+            IsEmailVerified = user.IsEmailVerified,
+        };
+    }
+
+    private static IUser MapCustomer(UserEntity user) => new CustomerDto
+    {
+        Id = user.Id,
+        Email = user.Email,
+        Role = user.Role,
+        Latitude = user.Location.ToLatitude(),
+        Longitude = user.Location.ToLongitude(),
+        County = user.Address?.County,
+        Town = user.Address?.Town,
+        IsEmailVerified = user.IsEmailVerified,
+    };
+
+    private static IUser MapAdmin(UserEntity user) => new AdminDto
+    {
+        Id = user.Id,
+        Email = user.Email,
+        Role = user.Role,
+        Latitude = user.Location.ToLatitude(),
+        Longitude = user.Location.ToLongitude(),
+        County = user.Address?.County,
+        Town = user.Address?.Town,
+        IsEmailVerified = user.IsEmailVerified,
+    };
 
     private static string GenerateToken() =>
         Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))

@@ -1,4 +1,4 @@
-﻿using Concertable.User.Infrastructure.Data;
+using Concertable.User.Infrastructure.Data;
 
 namespace Concertable.User.Infrastructure.Services.Auth;
 
@@ -13,8 +13,9 @@ internal class ArtistManagerRegister : IUserRegister
 
     public async Task RegisterAsync(string email, string passwordHash, Role role)
     {
-        var manager = ArtistManagerEntity.Create(email, passwordHash);
-        context.Users.Add(manager);
+        var user = UserEntity.Create(email, passwordHash, Role.ArtistManager);
+        context.Users.Add(user);
+        context.ArtistManagerProfiles.Add(new ArtistManagerProfileEntity(user.Id));
         await context.SaveChangesAsync();
     }
 }
