@@ -231,7 +231,7 @@ If the repo ever splits poly-repo, both become NuGet packages published to a pri
 
 | Channel | Used for | Used between |
 |---|---|---|
-| **Async events on Azure Service Bus (MassTransit)** | Domain-event-driven projection updates, cross-service workflow coordination | B2B ↔ Customer (only mode); B2B/Customer → Search (projection feed); B2B/Customer ↔ Payment for webhooks |
+| **Async events on a broker (bus client TBD)** | Domain-event-driven projection updates, cross-service workflow coordination | B2B ↔ Customer (only mode); B2B/Customer → Search (projection feed); B2B/Customer ↔ Payment for webhooks |
 | **Sync HTTP to adapter services** | Payment operations (create intent, transfer, refund); Auth token validation | B2B/Customer/Search → Payment; all → Auth |
 | **Sync HTTP to read projection service** | Browse, autocomplete, header, detail-page reads | B2B SPAs → Search.Api; Customer SPA → Search.Api |
 | **Sync HTTP from clients to services** | SPA / mobile → service | Customer SPA → Customer.Api; B2B SPAs → B2B.Api; both → Search.Api |
@@ -279,8 +279,9 @@ The data-service side of the architecture is cross-service CQRS: write model on 
 4. SaveChanges interceptor reads pending domain events,
    writes VenueChangedEvent row into B2B's Outbox table,
    commits both in one DB transaction
-5. MassTransit EntityFrameworkOutbox processor drains Outbox,
-   publishes to Service Bus topic "venue-changed"
+5. Outbox processor (bus client TBD — MassTransit's EntityFrameworkOutbox
+   or a hand-rolled drain over the SDK) drains Outbox,
+   publishes to broker topic "venue-changed"
 6. Customer.Workers consumes the message:
    - Inbox table check (idempotency)
    - VenueProjectionHandler updates Customer DB's slim Venue projection
@@ -305,7 +306,7 @@ The same pattern runs Customer → B2B for analytics and settlement math:
 2. Sync call to Payment.Api → CreatePaymentIntent (PCI scope stays in Payment)
 3. Customer DB transaction: insert TicketEntity + decrement AvailableTickets on Concert projection
    + insert TicketPurchasedEvent row in Customer's outbox — one transaction
-4. MassTransit drains, publishes to Service Bus topic "ticket-purchased"
+4. Outbox processor drains, publishes to broker topic "ticket-purchased"
 5. B2B.Workers consumes: inbox check → update ConcertSalesProjection (soldCount, grossRevenue)
 6. Search.Workers consumes the same event: refresh Search's ConcertSearchModel "tickets left" display
 7. Venue/Artist dashboards (B2B) read ConcertSalesProjection; settlement math reads it too
@@ -441,14 +442,14 @@ The architecture is the *what*; this is the *how to build it as a learning proje
 1. **Dismantle the `Modules/User/` TPH.** Replace with flat per-persona profile entities owned by their respective modules; move identity authority into Auth (Duende). Strip role claims from issued tokens; derive role per-service from token audience + profile-table membership.
 2. **Clean Search's upstream refs.** Remove `Search.Infrastructure` references to `Artist.Infrastructure` / `Venue.Infrastructure`. Search consumes domain events only.
 3. **Extract Customer to its own service.** New solution folder, own `Program.cs`, own DbContext on its own SQL Server (or separate DB on same instance — same lesson). References only `Concertable.Contracts`.
-4. **MassTransit on in-memory transport** between B2B and Customer. Skip cloud broker latency while learning publish/subscribe semantics.
-5. **Transactional outbox** via MassTransit's `EntityFrameworkOutbox`. Lesson: "publish reliably exactly when the DB transaction commits." (§6 callout.)
+4. **Bus on in-memory transport** between B2B and Customer. Skip cloud broker latency while learning publish/subscribe semantics. Bus client choice (MassTransit vs Azure Service Bus SDK vs other) **open** — decide at the start of this step.
+5. **Transactional outbox.** Lesson: "publish reliably exactly when the DB transaction commits." (§6 callout.) Mechanism depends on Step 4 bus choice — `EntityFrameworkOutbox` if MassTransit, hand-rolled outbox table + dispatcher if SDK.
 6. **Idempotent consumers** with inbox state. Lesson: "events arrive at-least-once, sometimes out of order — handlers must be safe."
 7. **Extract Search to its own service.** Same playbook as Customer, but read-only and consumes events from both B2B and Customer.
 8. **Switch transport to RabbitMQ** in a Docker container. Operational layer without cloud cost.
 9. **Switch transport to Azure Service Bus.** Queues vs topics, subscriptions, dead-letter handling, sessions for ordering.
 10. **Extract Payment to its own service** with its own DB and webhook endpoint.
-11. **Build one saga** for the concert lifecycle (Posted → Settled). MassTransit's state machine. Lesson: long-running orchestration with persistent state.
+11. **Build one saga** for the concert lifecycle (Posted → Settled). Lesson: long-running orchestration with persistent state. Implementation depends on Step 4 bus choice (MassTransit state machine or hand-rolled).
 12. **OpenTelemetry distributed tracing** across services. Watch a flow end-to-end.
 13. **Hard event-schema migration.** Change an event's shape with consumers running both old and new versions.
 

@@ -40,8 +40,8 @@ Pre-execution doc work. No code refactor yet.
 > First cross-process boundary. Bus introduced. Outbox/inbox shows up.
 
 7. ~~**Extract `Concertable.Customer.Api` + `Concertable.Customer.Workers`** to their own host + own DB.~~ **DONE (code-level) 2026-05-19** — commits `8da35e0a` (7a–7e: ConcertChangedEvent expansion, Customer.Ticket off B2B nav chain, IPaymentSucceededProcessor dispatcher retired, Payment/Contract.Contracts/Concert refs trimmed) + `ea7ffecd` (7g/7h: Aspire CustomerDb resource + 4 module DbContexts bound to `ConnectionStrings:CustomerDb` + csproj audit). Plan + sub-step trace in `STEP_7_PLAN.md`. **Migration re-scaffold + dev seeder wiring deferred** — blocked by pre-existing ICustomerReviewModule DI gap (B2B ConcertModule still forwards review-facade methods); retiring those forwarders unblocks `./initial-migrations.ps1`. Customer.Web has no IDbInitializer yet.
-8. **MassTransit on in-memory transport** between B2B and Customer. Skip cloud broker latency while learning publish/subscribe semantics.
-9. **Transactional outbox** via MassTransit's `EntityFrameworkOutbox` in each service's own DB. Solves the dual-write problem (§6 callout).
+8. **Bus on in-memory transport** between B2B and Customer. Skip cloud broker latency while learning publish/subscribe semantics. **Bus choice open** (MassTransit vs Azure Service Bus SDK vs other) — decide at the start of this step.
+9. **Transactional outbox** in each service's own DB (mechanism depends on Step 8 choice — `EntityFrameworkOutbox` if MassTransit, direct outbox table + dispatcher if SDK). Solves the dual-write problem (§6 callout).
 10. **Idempotent consumers** with inbox state per service. Lesson: events arrive at-least-once, sometimes out of order — handlers must be safe.
 11. **Service-to-service auth** wired for the new Customer → B2B / Payment sync calls (where they exist). `client_credentials` via Duende per §5.5.
 
@@ -62,7 +62,7 @@ Pre-execution doc work. No code refactor yet.
 
 14. **Switch transport to Azure Service Bus.** Queues vs topics, subscriptions, dead-letter handling, sessions for ordering. Production broker.
 15. **Extract `Concertable.Payment.Api` + `Concertable.Payment.Workers`** to its own host + own DB + own Stripe webhook endpoint. PCI scope shrinks dramatically. Stripe webhook URL change in dashboard.
-16. **One saga** for the concert lifecycle (Posted → Settled) via MassTransit state machine. Lesson: long-running orchestration with persistent state.
+16. **One saga** for the concert lifecycle (Posted → Settled) — long-running orchestration with persistent state. Implementation depends on Step 8 bus choice (MassTransit state machine if MassTransit; otherwise hand-rolled state machine + storage).
 17. **OpenTelemetry distributed tracing** across all running services. Watch one ticket-purchase flow end-to-end through B2B + Customer + Payment + Search.
 
 **Exit criteria:** five services running on production-grade infra. PCI scope contained to Payment. Cross-service flows observable.

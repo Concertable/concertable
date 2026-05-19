@@ -8,14 +8,14 @@
 
 ## Sequencing decision
 
-MICROSERVICE_STEPS.md orders Step 7 ("extract to own host + own DB") **before** Step 8 ("MassTransit on in-memory transport"). That creates a gap: the moment Customer leaves the monolith process, its existing in-proc event handlers have nothing to subscribe to:
+MICROSERVICE_STEPS.md orders Step 7 ("extract to own host + own DB") **before** Step 8 ("bus on in-memory transport"). That creates a gap: the moment Customer leaves the monolith process, its existing in-proc event handlers have nothing to subscribe to:
 
 - `ConcertProjectionHandler` listens to `ConcertChangedEvent`
 - `CustomerProfileCreationHandler` listens to `CustomerRegisteredEvent`
 - `ReviewCreatedDomainEventHandler` raises `ReviewSubmittedEvent`
 - `TicketPaymentProcessor` consumes `PaymentSucceededEvent` via the keyed-dispatcher trick
 
-**Decision:** Step 7 = Customer code lives entirely in Customer modules and communicates with the rest of the system via the existing `IIntegrationEvent` / `IIntegrationEventHandler` contracts. The contracts stay; only the transport changes later (current in-proc dispatch → MT in-mem at Step 8 → RabbitMQ/ASB at Step 13). Step 7 is the **code organisation**, not the transport swap. Outbox/bus deferred.
+**Decision:** Step 7 = Customer code lives entirely in Customer modules and communicates with the rest of the system via the existing `IIntegrationEvent` / `IIntegrationEventHandler` contracts. The contracts stay; only the transport changes later (current in-proc dispatch → in-memory bus at Step 8 → broker at Step 13). Bus choice (MassTransit vs Azure Service Bus SDK vs other) is **open** — decided at Step 8. Step 7 is the **code organisation**, not the transport swap. Outbox/bus deferred.
 
 ---
 
@@ -136,8 +136,8 @@ No Customer csproj references any other service's `*.Application`, `*.Infrastruc
 
 ## Out of scope (Step 8+ work)
 
-- MassTransit on in-memory transport
-- Transactional outbox (`EntityFrameworkOutbox`)
+- Bus on in-memory transport (MassTransit vs Azure Service Bus SDK vs other — decided at Step 8)
+- Transactional outbox (mechanism depends on bus choice)
 - Idempotent consumers / inbox state
 - Service-to-service auth (`client_credentials` via Duende)
 - Physical process split — Customer.Web stops sharing `Concertable.AppHost`'s in-proc bus
