@@ -20,6 +20,4 @@ internal interface IConcertRepository : IIdRepository<ConcertEntity>
     Task<IEnumerable<int>> GetEndedConfirmedIdsAsync();
     Task<decimal> GetTotalRevenueByConcertIdAsync(int concertId);
     Task<int?> GetContractIdByIdAsync(int concertId);
-    Task<int> CountVenueUpcomingAsync(int venueId, CancellationToken ct = default);
-    Task<int> CountArtistUpcomingAsync(int artistId, CancellationToken ct = default);
 }

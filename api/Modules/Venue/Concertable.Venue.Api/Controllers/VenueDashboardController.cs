@@ -1,4 +1,3 @@
-using Concertable.Concert.Contracts;
 using Concertable.Venue.Application.DTOs;
 using Concertable.Venue.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -11,32 +10,17 @@ namespace Concertable.Venue.Api.Controllers;
 [Route("api/[controller]")]
 internal class VenueDashboardController : ControllerBase
 {
-    private readonly IVenueService venueService;
-    private readonly IConcertModule concertModule;
+    private readonly IVenueDashboardService dashboardService;
 
-    public VenueDashboardController(IVenueService venueService, IConcertModule concertModule)
+    public VenueDashboardController(IVenueDashboardService dashboardService)
     {
-        this.venueService = venueService;
-        this.concertModule = concertModule;
+        this.dashboardService = dashboardService;
     }
 
     [HttpGet("kpis")]
     public async Task<ActionResult<VenueDashboardKpisDto>> GetKpis(CancellationToken ct)
     {
-        var venueId = await venueService.GetIdForCurrentUserAsync();
-
-        var applicationsTask = concertModule.GetVenueApplicationsAwaitingReviewCountAsync(venueId, ct);
-        var openOpportunitiesTask = concertModule.GetVenueOpenOpportunitiesCountAsync(venueId, ct);
-        var upcomingConcertsTask = concertModule.GetVenueUpcomingConcertsCountAsync(venueId, ct);
-
-        await Task.WhenAll(applicationsTask, openOpportunitiesTask, upcomingConcertsTask);
-
-        return Ok(new VenueDashboardKpisDto(
-            ApplicationsToReview: applicationsTask.Result,
-            ApplicationsToReviewDelta: null,
-            OpenOpportunities: openOpportunitiesTask.Result,
-            UpcomingConcerts: upcomingConcertsTask.Result,
-            MtdRevenueCents: 0,
-            MtdRevenueDeltaPercent: null));
+        var kpis = await dashboardService.GetKpisAsync(ct);
+        return kpis is null ? NoContent() : Ok(kpis);
     }
 }

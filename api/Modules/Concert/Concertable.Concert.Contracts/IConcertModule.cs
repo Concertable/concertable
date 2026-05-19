@@ -9,10 +9,6 @@ public interface IConcertModule
     Task<bool> CanUserReviewArtistAsync(Guid userId, int artistId);
     Task<bool> CanUserReviewVenueAsync(Guid userId, int venueId);
 
-    Task<int> GetVenueApplicationsAwaitingReviewCountAsync(int venueId, CancellationToken ct = default);
-    Task<int> GetVenueOpenOpportunitiesCountAsync(int venueId, CancellationToken ct = default);
-    Task<int> GetVenueUpcomingConcertsCountAsync(int venueId, CancellationToken ct = default);
-
-    Task<int> GetArtistPendingApplicationsCountAsync(int artistId, CancellationToken ct = default);
-    Task<int> GetArtistUpcomingConcertsCountAsync(int artistId, CancellationToken ct = default);
+    Task<VenueDashboardCountsDto?> GetVenueDashboardCountsAsync(int venueId, CancellationToken ct = default);
+    Task<ArtistDashboardCountsDto?> GetArtistDashboardCountsAsync(int artistId, CancellationToken ct = default);
 }

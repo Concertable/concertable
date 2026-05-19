@@ -14,7 +14,6 @@
     <ProjectReference Include="..\Concertable.Venue.Contracts\Concertable.Venue.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Venue.Application\Concertable.Venue.Application.csproj" />
     <ProjectReference Include="..\Concertable.Venue.Infrastructure\Concertable.Venue.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Concert\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

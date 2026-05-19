@@ -9,5 +9,4 @@ internal interface IOpportunityRepository : IIdRepository<OpportunityEntity>
     Task<OpportunityEntity?> GetByApplicationIdAsync(int id);
     Task<Guid?> GetOwnerByIdAsync(int id);
     Task<int?> GetContractIdByIdAsync(int opportunityId);
-    Task<int> CountVenueOpenAsync(int venueId, CancellationToken ct = default);
 }

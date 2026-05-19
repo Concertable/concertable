@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.AddScoped<IArtistService, ArtistService>();
+        services.AddScoped<IArtistDashboardService, ArtistDashboardService>();
         services.AddScoped<IArtistReviewService, ArtistReviewService>();
         services.AddScoped<IArtistRepository, ArtistRepository>();
         services.AddScoped<IArtistModule, ArtistModule>();

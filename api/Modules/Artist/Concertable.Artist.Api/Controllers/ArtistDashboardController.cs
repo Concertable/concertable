@@ -1,6 +1,5 @@
 using Concertable.Artist.Application.DTOs;
 using Concertable.Artist.Application.Interfaces;
-using Concertable.Concert.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,30 +10,17 @@ namespace Concertable.Artist.Api.Controllers;
 [Route("api/[controller]")]
 internal class ArtistDashboardController : ControllerBase
 {
-    private readonly IArtistService artistService;
-    private readonly IConcertModule concertModule;
+    private readonly IArtistDashboardService dashboardService;
 
-    public ArtistDashboardController(IArtistService artistService, IConcertModule concertModule)
+    public ArtistDashboardController(IArtistDashboardService dashboardService)
     {
-        this.artistService = artistService;
-        this.concertModule = concertModule;
+        this.dashboardService = dashboardService;
     }
 
     [HttpGet("kpis")]
     public async Task<ActionResult<ArtistDashboardKpisDto>> GetKpis(CancellationToken ct)
     {
-        var artistId = await artistService.GetIdForCurrentUserAsync();
-
-        var pendingTask = concertModule.GetArtistPendingApplicationsCountAsync(artistId, ct);
-        var upcomingTask = concertModule.GetArtistUpcomingConcertsCountAsync(artistId, ct);
-
-        await Task.WhenAll(pendingTask, upcomingTask);
-
-        return Ok(new ArtistDashboardKpisDto(
-            PendingApplications: pendingTask.Result,
-            AcceptedAwaitingCheckout: 0,
-            UpcomingConcerts: upcomingTask.Result,
-            MtdPayoutsCents: 0,
-            MtdPayoutsDeltaPercent: null));
+        var kpis = await dashboardService.GetKpisAsync(ct);
+        return kpis is null ? NoContent() : Ok(kpis);
     }
 }

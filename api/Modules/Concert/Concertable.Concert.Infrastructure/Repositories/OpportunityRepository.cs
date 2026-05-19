@@ -1,5 +1,4 @@
-﻿using Concertable.Application.Interfaces.Specifications;
-using Concertable.Concert.Infrastructure.Data;
+﻿using Concertable.Concert.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Repositories;
@@ -7,15 +6,10 @@ namespace Concertable.Concert.Infrastructure.Repositories;
 internal class OpportunityRepository : Repository<OpportunityEntity>, IOpportunityRepository
 {
     private readonly TimeProvider timeProvider;
-    private readonly IUpcomingSpecification<OpportunityEntity> upcomingSpecification;
 
-    public OpportunityRepository(
-        ConcertDbContext context,
-        TimeProvider timeProvider,
-        IUpcomingSpecification<OpportunityEntity> upcomingSpecification) : base(context)
+    public OpportunityRepository(ConcertDbContext context, TimeProvider timeProvider) : base(context)
     {
         this.timeProvider = timeProvider;
-        this.upcomingSpecification = upcomingSpecification;
     }
 
     public async Task<IPagination<OpportunityEntity>> GetActiveByVenueIdAsync(int id, IPageParams pageParams)
@@ -84,11 +78,4 @@ internal class OpportunityRepository : Repository<OpportunityEntity>, IOpportuni
             .FirstOrDefaultAsync();
     }
 
-    public Task<int> CountVenueOpenAsync(int venueId, CancellationToken ct = default)
-    {
-        var query = context.Opportunities
-            .Where(o => o.VenueId == venueId)
-            .Where(o => !o.Applications.Any(a => a.Status == ApplicationStatus.Accepted));
-        return upcomingSpecification.Apply(query).CountAsync(ct);
-    }
 }

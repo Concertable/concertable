@@ -8,9 +8,7 @@ internal sealed class ConcertModule(
     IArtistReviewRepository artistReviewRepository,
     IVenueReviewRepository venueReviewRepository,
     IReviewValidator reviewValidator,
-    IApplicationRepository applicationRepository,
-    IOpportunityRepository opportunityRepository,
-    IConcertRepository concertRepository) : IConcertModule
+    IConcertDashboardRepository dashboardRepository) : IConcertModule
 {
     public Task<IPagination<ReviewDto>> GetReviewsByArtistAsync(int artistId, IPageParams pageParams) =>
         artistReviewRepository.GetByArtistAsync(artistId, pageParams);
@@ -24,18 +22,9 @@ internal sealed class ConcertModule(
     public Task<bool> CanUserReviewVenueAsync(Guid userId, int venueId) =>
         reviewValidator.CanUserReviewVenueAsync(userId, venueId);
 
-    public Task<int> GetVenueApplicationsAwaitingReviewCountAsync(int venueId, CancellationToken ct = default) =>
-        applicationRepository.CountVenueAwaitingReviewAsync(venueId, ct);
+    public Task<VenueDashboardCountsDto?> GetVenueDashboardCountsAsync(int venueId, CancellationToken ct = default) =>
+        dashboardRepository.GetVenueCountsAsync(venueId, ct);
 
-    public Task<int> GetVenueOpenOpportunitiesCountAsync(int venueId, CancellationToken ct = default) =>
-        opportunityRepository.CountVenueOpenAsync(venueId, ct);
-
-    public Task<int> GetVenueUpcomingConcertsCountAsync(int venueId, CancellationToken ct = default) =>
-        concertRepository.CountVenueUpcomingAsync(venueId, ct);
-
-    public Task<int> GetArtistPendingApplicationsCountAsync(int artistId, CancellationToken ct = default) =>
-        applicationRepository.CountArtistPendingAsync(artistId, ct);
-
-    public Task<int> GetArtistUpcomingConcertsCountAsync(int artistId, CancellationToken ct = default) =>
-        concertRepository.CountArtistUpcomingAsync(artistId, ct);
+    public Task<ArtistDashboardCountsDto?> GetArtistDashboardCountsAsync(int artistId, CancellationToken ct = default) =>
+        dashboardRepository.GetArtistCountsAsync(artistId, ct);
 }

@@ -8,6 +8,4 @@ internal interface IApplicationRepository : IIdRepository<ApplicationEntity>
     Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id);
     Task RejectAllExceptAsync(int opportunityId, int applicationId);
     Task<int?> GetContractIdByIdAsync(int applicationId);
-    Task<int> CountVenueAwaitingReviewAsync(int venueId, CancellationToken ct = default);
-    Task<int> CountArtistPendingAsync(int artistId, CancellationToken ct = default);
 }
