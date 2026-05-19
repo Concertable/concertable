@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -12,7 +12,7 @@
     <ProjectReference Include="..\..\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
     <ProjectReference Include="..\..\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
     <ProjectReference Include="..\..\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Infrastructure\Concertable.Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
   </ItemGroup>
 
 </Project>

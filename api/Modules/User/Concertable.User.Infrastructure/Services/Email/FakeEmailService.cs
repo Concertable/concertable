@@ -2,9 +2,9 @@ using Concertable.Application.Interfaces;
 using Concertable.User.Contracts;
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.Shared.Infrastructure.Services.Email;
+namespace Concertable.User.Infrastructure.Services.Email;
 
-public class FakeEmailService : IEmailService
+internal class FakeEmailService : IEmailService
 {
     private readonly ILogger<FakeEmailService> logger;
     private readonly IUserModule userModule;

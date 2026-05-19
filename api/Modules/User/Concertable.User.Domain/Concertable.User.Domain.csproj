@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
   </ItemGroup>
 
 </Project>

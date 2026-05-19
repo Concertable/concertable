@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -60,7 +60,7 @@
   <Target Name="StripReqnrollGeneratedTraits" AfterTargets="GenerateFeatureFileCodeBehindFiles" BeforeTargets="CoreCompile">
     <ItemGroup>
       <_ReqnrollFeatureCs Include="**\*.feature.cs" />
-    </ItemGroup>
+  </ItemGroup>
     <StripReqnrollTraits Files="@(_ReqnrollFeatureCs->'%(FullPath)')" />
   </Target>
 

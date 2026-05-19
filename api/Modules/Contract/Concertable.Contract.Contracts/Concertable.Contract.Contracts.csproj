@@ -5,10 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Contracts\Concertable.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Contracts\Concertable.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
   </ItemGroup>
 
 </Project>

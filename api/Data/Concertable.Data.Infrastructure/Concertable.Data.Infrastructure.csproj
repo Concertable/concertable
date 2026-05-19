@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -13,11 +13,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Data.Application\Concertable.Data.Application.csproj" />
-    <ProjectReference Include="..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
-    <ProjectReference Include="..\..\Shared\Concertable.Shared.Application\Concertable.Shared.Application.csproj" />
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\..\Modules\User\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Authorization\Concertable.Authorization.Contracts\Concertable.Authorization.Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
   </ItemGroup>
 
 </Project>

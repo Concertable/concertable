@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\Contract\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

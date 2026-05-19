@@ -34,11 +34,6 @@ public static class ServiceCollectionExtensions
         else
             services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
 
-        if (external.GetValue<bool>("UseRealEmail"))
-            services.AddScoped<IEmailService, EmailService>();
-        else
-            services.AddScoped<IEmailService, FakeEmailService>();
-
         services.AddScoped<IImageService, ImageService>();
 
         services.AddHttpClient("Geocoding", client =>

@@ -20,10 +20,13 @@
     <ProjectReference Include="..\Concertable.Contract.Contracts\Concertable.Contract.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Contract.Domain\Concertable.Contract.Domain.csproj" />
     <ProjectReference Include="..\Concertable.Contract.Application\Concertable.Contract.Application.csproj" />
-    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Domain\Concertable.Shared.Domain.csproj" />
     <ProjectReference Include="..\..\..\Data\Concertable.Data.Infrastructure\Concertable.Data.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <!-- TEMPORARY: legacy hosts retire as Payment + remaining Concertable.* extracts. -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,11 +1,14 @@
+using Concertable.Application.Interfaces;
 using Concertable.Artist.Contracts.Events;
 using Concertable.Data.Application;
 using Concertable.Data.Infrastructure.Data;
+using Concertable.Shared.Infrastructure.Services.Email;
 using Concertable.User.Application.Validators;
 using Concertable.User.Domain.Events;
 using Concertable.User.Infrastructure.Data;
 using Concertable.User.Infrastructure.Data.Seeders;
 using Concertable.User.Infrastructure.Events;
+using Concertable.User.Infrastructure.Services.Email;
 using Concertable.Venue.Contracts.Events;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +46,12 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IUserRegister, AdminRegister>(Role.Admin);
 
         services.AddScoped<IUserModule, UserModule>();
+
+        var external = configuration.GetSection("ExternalServices");
+        if (external.GetValue<bool>("UseRealEmail"))
+            services.AddScoped<IEmailService, EmailService>();
+        else
+            services.AddScoped<IEmailService, FakeEmailService>();
 
         services.AddScoped<IDomainEventHandler<UserCreatedDomainEvent>, UserCreatedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistManagerSyncHandler>();
