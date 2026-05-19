@@ -11,7 +11,7 @@ using Concertable.Contract.Api.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Payment.Api.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
-using Concertable.Messaging.Infrastructure.Extensions;
+using Concertable.Conversations.Infrastructure.Extensions;
 using Concertable.Customer.Api.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Authorization.Infrastructure.Extensions;
@@ -98,13 +98,13 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddContractDevSeeder();
     services.AddConcertDevSeeder();
     services.AddPaymentDevSeeder();
-    services.AddMessagingDevSeeder();
+    services.AddConversationsDevSeeder();
     services.AddCustomerDevSeeder();
 }
 services.AddServices(builder.Configuration);
 services.AddRepositories();
 services.AddNotificationModule();
-services.AddMessagingApi(builder.Configuration);
+services.AddConversationsApi(builder.Configuration);
 services.AddSearchApi(builder.Configuration);
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
