@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.IntegrationTests.Common.Mocks;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Interfaces.Webhook;

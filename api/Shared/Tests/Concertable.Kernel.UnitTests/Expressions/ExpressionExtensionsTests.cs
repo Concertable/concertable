@@ -1,4 +1,4 @@
-﻿using Concertable.Shared.Infrastructure.Expressions;
+﻿using Concertable.DataAccess.Infrastructure.Expressions;
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 

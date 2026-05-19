@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.User.Contracts;
 using Microsoft.Extensions.Logging;
 

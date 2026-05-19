@@ -1,8 +1,9 @@
 using Concertable.Authorization.Infrastructure.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
-using Concertable.Data.Infrastructure.Data;
-using Concertable.Data.Infrastructure.Extensions;
+using Concertable.DataAccess.Infrastructure;
+using Concertable.DataAccess.Infrastructure.Extensions;
+using Concertable.Shared.Blob.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
@@ -11,7 +12,7 @@ using Concertable.Notification.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Concertable.Data.Infrastructure;
+using Concertable.DataAccess.Infrastructure;
 
 namespace Workers;
 
@@ -20,6 +21,7 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSharedInfrastructure(configuration);
+        services.AddSharedBlob(configuration);
         services.AddMessaging();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();

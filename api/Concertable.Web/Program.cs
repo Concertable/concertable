@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Application.Serializers;
 using Concertable.Web;
 using Concertable.Artist.Api.Extensions;
@@ -18,7 +18,8 @@ using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Authorization.Infrastructure.Extensions;
 using Concertable.User.Api.Extensions;
 using Concertable.User.Infrastructure.Extensions;
-using Concertable.Data.Infrastructure.Extensions;
+using Concertable.DataAccess.Infrastructure.Extensions;
+using Concertable.Shared.Blob.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Api.Extensions;
@@ -87,6 +88,7 @@ var services = builder.Services;
 services.AddScoped<IKeyedServiceProvider>(sp => (IKeyedServiceProvider)sp);
 
 services.AddInfrastructure(builder.Configuration);
+services.AddSharedBlob(builder.Configuration);
 services.AddMessaging();
 if (!builder.Environment.IsEnvironment("Testing"))
 {

@@ -1,4 +1,4 @@
-using Concertable.Data.Infrastructure.Data;
+using Concertable.DataAccess.Infrastructure;
 using Concertable.Search.Application;
 using Concertable.Search.Domain.Models;
 using Concertable.Search.Application.Validators;

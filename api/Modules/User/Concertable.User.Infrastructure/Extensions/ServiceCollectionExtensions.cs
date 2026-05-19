@@ -1,7 +1,7 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
+using Concertable.DataAccess.Infrastructure;
+using Concertable.Seeding;
 using Concertable.Artist.Contracts.Events;
-using Concertable.Data.Application;
-using Concertable.Data.Infrastructure.Data;
 using Concertable.User.Application.Validators;
 using Concertable.User.Domain.Events;
 using Concertable.User.Infrastructure.Authorization;

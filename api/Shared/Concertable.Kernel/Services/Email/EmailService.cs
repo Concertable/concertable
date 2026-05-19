@@ -1,5 +1,5 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;

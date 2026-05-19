@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces.Specifications;
+using Concertable.DataAccess.Specifications;
 using Concertable.Concert.Contracts;
 using Concertable.Concert.Infrastructure.Data;
 using Concertable.Concert.Infrastructure.Mappers;

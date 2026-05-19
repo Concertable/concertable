@@ -1,12 +1,13 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
+using Concertable.Seeding;
 using Concertable.Customer.Application.Interfaces;
 using Concertable.Customer.Contracts;
 using Concertable.Customer.Infrastructure.Data;
 using Concertable.Customer.Infrastructure.Data.Seeders;
 using Concertable.Customer.Infrastructure.Repositories;
 using Concertable.Customer.Infrastructure.Services;
-using Concertable.Data.Infrastructure;
-using Concertable.Data.Infrastructure.Data;
+using Concertable.DataAccess.Infrastructure;
+using Concertable.DataAccess.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

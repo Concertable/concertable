@@ -1,4 +1,4 @@
-using Concertable.Data.Infrastructure.Data;
+using Concertable.DataAccess.Infrastructure;
 using Concertable.Venue.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 

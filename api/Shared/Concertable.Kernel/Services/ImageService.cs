@@ -1,5 +1,5 @@
-using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Blob;
+using Concertable.DataAccess;
+using Concertable.Shared.Blob;
 using Microsoft.AspNetCore.Http;
 
 namespace Concertable.Shared.Infrastructure.Services;

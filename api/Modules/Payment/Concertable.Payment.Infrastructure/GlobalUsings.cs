@@ -12,4 +12,4 @@ global using Concertable.User.Contracts;
 global using Concertable.Payment.Infrastructure.Repositories;
 global using Concertable.Payment.Infrastructure.Validators;
 global using Concertable.Contract.Contracts;
-global using Concertable.Data.Infrastructure;
+global using Concertable.DataAccess.Infrastructure;

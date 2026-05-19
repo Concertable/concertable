@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Notification.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.User.Contracts;
@@ -14,8 +14,8 @@ using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Infrastructure.Services;
-using Concertable.Data.Application;
-using Concertable.Data.Infrastructure.Extensions;
+using Concertable.DataAccess;
+using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;

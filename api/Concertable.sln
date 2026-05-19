@@ -213,6 +213,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Messaging.Azure
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Messaging.AzureServiceBus.UnitTests", "Concertable.Messaging\Tests\Concertable.Messaging.AzureServiceBus.UnitTests\Concertable.Messaging.AzureServiceBus.UnitTests.csproj", "{240C8C54-7AF5-48C3-8908-273DF85C1809}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Concertable.Shared.Blob", "Concertable.Shared.Blob", "{4B0CFC48-5B7D-A621-1B6A-0974C1A15CBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Shared.Blob.Application", "Shared\Concertable.Shared.Blob\Concertable.Shared.Blob.Application\Concertable.Shared.Blob.Application.csproj", "{35DC0125-3F64-4E5F-950F-32193063847E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Shared.Blob.Infrastructure", "Shared\Concertable.Shared.Blob\Concertable.Shared.Blob.Infrastructure\Concertable.Shared.Blob.Infrastructure.csproj", "{CB81BF04-F524-4580-BB71-4C4B14165939}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1195,6 +1201,30 @@ Global
 		{240C8C54-7AF5-48C3-8908-273DF85C1809}.Release|x64.Build.0 = Release|Any CPU
 		{240C8C54-7AF5-48C3-8908-273DF85C1809}.Release|x86.ActiveCfg = Release|Any CPU
 		{240C8C54-7AF5-48C3-8908-273DF85C1809}.Release|x86.Build.0 = Release|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Debug|x64.Build.0 = Debug|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Debug|x86.Build.0 = Debug|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Release|x64.ActiveCfg = Release|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Release|x64.Build.0 = Release|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Release|x86.ActiveCfg = Release|Any CPU
+		{35DC0125-3F64-4E5F-950F-32193063847E}.Release|x86.Build.0 = Release|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Debug|x64.Build.0 = Debug|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Debug|x86.Build.0 = Debug|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Release|x64.ActiveCfg = Release|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Release|x64.Build.0 = Release|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Release|x86.ActiveCfg = Release|Any CPU
+		{CB81BF04-F524-4580-BB71-4C4B14165939}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1299,6 +1329,9 @@ Global
 		{68EF7FF9-E23C-4C40-A074-08F1C6BC97B5} = {885AB5DF-9C86-3F8C-B9E9-EE8EB18F86DA}
 		{D87D10CB-8ED4-48B7-8086-ACF3C77813E5} = {885AB5DF-9C86-3F8C-B9E9-EE8EB18F86DA}
 		{240C8C54-7AF5-48C3-8908-273DF85C1809} = {885AB5DF-9C86-3F8C-B9E9-EE8EB18F86DA}
+		{4B0CFC48-5B7D-A621-1B6A-0974C1A15CBF} = {4F52FD11-658E-A102-6CD3-7D7C16FFA15B}
+		{35DC0125-3F64-4E5F-950F-32193063847E} = {4B0CFC48-5B7D-A621-1B6A-0974C1A15CBF}
+		{CB81BF04-F524-4580-BB71-4C4B14165939} = {4B0CFC48-5B7D-A621-1B6A-0974C1A15CBF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EF2B45BA-C520-4580-BAD9-D39B6FCE0DAF}
