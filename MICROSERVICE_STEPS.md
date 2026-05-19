@@ -2,7 +2,7 @@
 
 > **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md). That doc is the *what*; this one is *what order, in phases*.
 >
-> **Status:** Phase 1 in progress. Steps 1–2 complete; Customer not yet extracted.
+> **Status:** Phase 1 in progress. Steps 1–3 complete; Customer not yet extracted.
 >
 > **Rule:** Don't open Phase N until Phase N−1 is done. Half-done migrations are worse than no migration.
 
@@ -26,7 +26,7 @@ Pre-execution doc work. No code refactor yet.
 
 1. ~~**Decompose `ConcertEntity` in-place.**~~ **DONE `ad6b4c31`.** Split B2B workflow fields from customer-display fields per §4.5. Move `TicketEntity`, `ReviewEntity`, QR/PDF infra (`QRCoder`, `QuestPDF`) out of `Concert.Domain` into new `Customer.Domain`. Move `ConcertController.GetDetailsById`, `GetUpcoming*`, `GetHistory*`, `GetUnposted*`, header `Search` endpoints to Search's controllers. *Biggest refactor on the path (R7).* Ship in small PRs with integration tests covering both shapes during transition. *Note: Search-controller move is deferred to a follow-up; current commit landed the entity decomposition + Customer module moves.*
 2. ~~**Collapse `Concertable.Shared.*` to two csprojs.**~~ **DONE `7491498a`.** Per §4.8: `Concertable.Contracts` (wire) + `Concertable.Kernel` (framework). Six csprojs become two; `Concertable.Shared.UnitTests` becomes `Concertable.Kernel.UnitTests`. Cycle break en route: `FakeEmailService` moved Kernel → `User.Infrastructure` (it pulled `IUserModule`); email DI now inside `AddUserModule`. `GenreMappers` moved Contracts → Kernel so Contracts is zero-dep.
-3. **Delete `SharedDbContext` + move Genre to `Concertable.Contracts`.** Genre becomes an enum (or static `record GenreId`) in Contracts. Drop the `Genres` table in a migration. Per §4.6.
+3. ~~**Delete `SharedDbContext` + move Genre to `Concertable.Contracts`.**~~ **DONE `2832354b`.** Genre is a `JsonStringEnumConverter`-decorated enum in `Concertable.Contracts` with explicit int values (Rock=1..House=8). SharedDbContext, GenreEntity, GenreRepository, IGenreService, GenreService, GenreDto, GenreMappers, IGenreJoin, GenreJoinExtensions all deleted. EF stores as int, wire sends as string. Frontend: `Genre` TypeScript type is a string union; `genreLabel()` helper for display names. Migration re-scaffold deferred (ICustomerReviewModule DI gap is pre-existing; unblocked when Customer DI is wired in Step 1).
 4. **Dismantle `Modules/User/` TPH.** Replace with flat per-persona profile entities (`VenueManagerEntity`, `ArtistManagerEntity`, `AdminEntity` in B2B; `CustomerProfileEntity` in Customer). Each carries Auth `sub`. Per §4.5. Sequenced carefully so the monolith builds at each step (R6).
 5. **Auth becomes identity-only.** Delete `RoleEnforcingInteractionResponseGenerator`, `IClientRoleResolver`, `Concertable.User.Contracts.Role` enum. Auth issues tokens with `sub` + audience only. Per-service authorization rejects tokens whose `sub` isn't in the service's profile tables — that replaces the "user must have role X for client Y" Auth-side check.
 6. **Clean Search's upstream refs.** Remove `Search.Infrastructure` references to `Artist.Infrastructure` / `Venue.Infrastructure` (per `project_search_rating_projection_ownership` debt). Search consumes domain events only.
