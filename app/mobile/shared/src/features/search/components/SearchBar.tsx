@@ -14,7 +14,7 @@ export function SearchBar({ focused, onFocusChange, onOpenFilters }: Props) {
 
   const hasActiveFilters =
     filters.headerType !== "concert" ||
-    !!(filters.genreIds && (Array.isArray(filters.genreIds) ? filters.genreIds.length : true)) ||
+    !!(filters.genres && filters.genres.length) ||
     !!(filters.from || filters.to) ||
     filters.lat != null ||
     !!filters.orderBy;

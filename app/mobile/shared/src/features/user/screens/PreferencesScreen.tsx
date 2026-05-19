@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useMyPreferenceQuery, useUpdateMyPreferenceMutation, useCreateMyPreferenceMutation } from "@concertable/shared/features/customer";
 import { useGenresQuery } from "@concertable/shared/features/search";
+import type { Genre } from "@concertable/shared/types";
 import { GenreChips } from "@/components/ui/GenreChips";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +21,8 @@ export function PreferencesScreen() {
   const updatePreference = useUpdateMyPreferenceMutation();
   const createPreference = useCreateMyPreferenceMutation();
 
-  const [genreIds, setGenreIds] = useState<number[]>(() =>
-    preference?.genres.map((g) => g.id) ?? [],
+  const [selectedGenres, setSelectedGenres] = useState<Genre[]>(() =>
+    preference?.genres ?? [],
   );
   const [radiusKm, setRadiusKm] = useState<number>(() => preference?.radiusKm ?? 25);
 
@@ -34,7 +35,7 @@ export function PreferencesScreen() {
             id: preference.id,
             user: preference.user,
             radiusKm,
-            genres: (allGenres ?? []).filter((g) => genreIds.includes(g.id)),
+            genres: selectedGenres,
           },
         });
       } else {
@@ -82,9 +83,9 @@ export function PreferencesScreen() {
           {allGenres && (
             <GenreChips
               genres={allGenres}
-              selected={genreIds}
-              onToggle={(id) =>
-                setGenreIds((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]))
+              selected={selectedGenres}
+              onToggle={(genre) =>
+                setSelectedGenres((prev) => (prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]))
               }
             />
           )}

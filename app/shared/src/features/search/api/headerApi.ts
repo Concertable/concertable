@@ -24,7 +24,7 @@ const headerApi = {
       longitude: filters.lng,
       from: filters.from,
       to: filters.to,
-      genreIds: filters.genreIds,
+      genres: filters.genres,
       radiusKm: filters.radius,
       sort:
         filters.orderBy && filters.sortOrder

@@ -1,9 +1,10 @@
 using Concertable.Artist.Domain.Events;
+using Concertable.Shared;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Artist.Domain;
 
-public class ArtistEntity : IIdEntity, IHasName, IHasGenreJoins<ArtistGenreEntity>, IEventRaiser
+public class ArtistEntity : IIdEntity, IHasName, IEventRaiser
 {
     private readonly EventRaiser _events = new();
 
@@ -21,8 +22,6 @@ public class ArtistEntity : IIdEntity, IHasName, IHasGenreJoins<ArtistGenreEntit
 
     public HashSet<ArtistGenreEntity> ArtistGenres { get; private set; } = [];
 
-    HashSet<ArtistGenreEntity> IHasGenreJoins<ArtistGenreEntity>.GenreJoins => ArtistGenres;
-
     public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
     public void ClearDomainEvents() => _events.Clear();
 
@@ -35,7 +34,7 @@ public class ArtistEntity : IIdEntity, IHasName, IHasGenreJoins<ArtistGenreEntit
         Point location,
         Address address,
         string email,
-        IEnumerable<int> genreIds)
+        IEnumerable<Genre> genres)
     {
         Validate(name, about, bannerUrl, avatar, location, address, email);
 
@@ -51,13 +50,13 @@ public class ArtistEntity : IIdEntity, IHasName, IHasGenreJoins<ArtistGenreEntit
             Email = email
         };
 
-        artist.SyncGenresInternal(genreIds);
+        artist.SyncGenresInternal(genres);
         artist._events.Raise(new ArtistChangedDomainEvent(artist));
 
         return artist;
     }
 
-    public void Update(string name, string about, string bannerUrl, IEnumerable<int> genreIds)
+    public void Update(string name, string about, string bannerUrl, IEnumerable<Genre> genres)
     {
         Validate(name, about, bannerUrl, Avatar, Location, Address, Email);
 
@@ -65,13 +64,13 @@ public class ArtistEntity : IIdEntity, IHasName, IHasGenreJoins<ArtistGenreEntit
         About = about;
         BannerUrl = bannerUrl;
 
-        SyncGenresInternal(genreIds);
+        SyncGenresInternal(genres);
         _events.Raise(new ArtistChangedDomainEvent(this));
     }
 
-    public void SyncGenres(IEnumerable<int> genreIds)
+    public void SyncGenres(IEnumerable<Genre> genres)
     {
-        SyncGenresInternal(genreIds);
+        SyncGenresInternal(genres);
         _events.Raise(new ArtistChangedDomainEvent(this));
     }
 
@@ -99,8 +98,15 @@ public class ArtistEntity : IIdEntity, IHasName, IHasGenreJoins<ArtistGenreEntit
         _events.Raise(new ArtistChangedDomainEvent(this));
     }
 
-    private void SyncGenresInternal(IEnumerable<int> genreIds) =>
-        this.SyncGenres<ArtistGenreEntity>(genreIds);
+    private void SyncGenresInternal(IEnumerable<Genre> genres)
+    {
+        var target = genres.ToHashSet();
+        ArtistGenres.RemoveWhere(ag => !target.Contains(ag.Genre));
+        var existing = ArtistGenres.Select(ag => ag.Genre).ToHashSet();
+        foreach (var g in target)
+            if (!existing.Contains(g))
+                ArtistGenres.Add(new ArtistGenreEntity { Genre = g });
+    }
 
     private static void Validate(string name, string about, string bannerUrl, string avatar, Point location, Address address, string email)
     {

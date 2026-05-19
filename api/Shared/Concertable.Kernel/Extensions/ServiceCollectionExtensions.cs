@@ -44,7 +44,6 @@ public static class ServiceCollectionExtensions
 
         services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();
-        services.AddScoped<IGenreService, GenreService>();
 
         services.AddScoped(typeof(IUpcomingSpecification<>), typeof(UpcomingSpecification<>));
         services.AddScoped(typeof(IDateRangeSpecification<>), typeof(DateRangeSpecification<>));

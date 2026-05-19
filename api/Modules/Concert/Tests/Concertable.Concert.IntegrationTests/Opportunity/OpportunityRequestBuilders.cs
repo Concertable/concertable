@@ -1,19 +1,20 @@
-﻿using Concertable.Concert.Application.Requests;
+using Concertable.Concert.Application.Requests;
 using Concertable.IntegrationTests.Common;
+using Concertable.Shared;
 
 namespace Concertable.Concert.IntegrationTests.Opportunity;
 
 internal static class OpportunityRequestBuilders
 {
-    public static OpportunityRequest BuildRequest(IContract contract, int rockGenreId) =>
+    public static OpportunityRequest BuildRequest(IContract contract) =>
         new()
         {
             StartDate = DateTime.UtcNow.AddMonths(1),
             EndDate = DateTime.UtcNow.AddMonths(1).AddHours(3),
-            GenreIds = [rockGenreId],
+            Genres = [Genre.Rock],
             Contract = contract
         };
 
-    public static OpportunityRequest BuildDefaultRequest(int rockGenreId) =>
-        BuildRequest(new FlatFeeContract { PaymentMethod = PaymentMethod.Cash, Fee = 500 }, rockGenreId);
+    public static OpportunityRequest BuildDefaultRequest() =>
+        BuildRequest(new FlatFeeContract { PaymentMethod = PaymentMethod.Cash, Fee = 500 });
 }

@@ -35,6 +35,7 @@ import dayjs from "dayjs";
 import type { Opportunity, OpportunityDraft } from "../../types";
 import type { Contract, PaymentMethod } from "@/features/contracts";
 import type { Genre } from "@/types/common";
+import { genreLabel } from "@/types/common";
 
 interface EditCallbacks {
   onRemove: () => void;
@@ -91,10 +92,10 @@ function OpportunityRead({ opportunity, actions }: { opportunity: OpportunityDra
         <div className="flex flex-wrap gap-1.5">
           {opportunity.genres.map((genre) => (
             <span
-              key={genre.id}
+              key={genre}
               className="bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-xs"
             >
-              {genre.name}
+              {genreLabel(genre)}
             </span>
           ))}
         </div>
@@ -245,18 +246,18 @@ function EditView({ opportunity, onRemove, onSetDates, onSetContractType, onSetC
             <Label className="text-muted-foreground text-xs">Genres</Label>
             <div className="flex flex-wrap gap-2 pt-1">
               {genres?.map((genre) => {
-                const checked = opportunity.genres.some((g) => g.id === genre.id);
+                const checked = opportunity.genres.includes(genre);
                 return (
                   <label
-                    key={genre.id}
+                    key={genre}
                     className="bg-muted flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"
-                    data-testid={`opportunity-genre-${genre.name.toLowerCase()}`}
+                    data-testid={`opportunity-genre-${genre.toLowerCase()}`}
                   >
                     <Checkbox
                       checked={checked}
                       onCheckedChange={() => onToggleGenre(genre)}
                     />
-                    {genre.name}
+                    {genreLabel(genre)}
                   </label>
                 );
               })}

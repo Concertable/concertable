@@ -1,5 +1,6 @@
 using Bogus;
 using Concertable.Artist.Domain;
+using Concertable.Shared;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Seeding.Fakers;
@@ -14,10 +15,10 @@ public static class ArtistFaker
         Point location,
         Address address,
         string email,
-        IEnumerable<int> genreIds)
+        IEnumerable<Genre> genres)
     {
         return new Faker<ArtistEntity>()
             .CustomInstantiator(f =>
-                ArtistEntity.Create(userId, name, f.Lorem.Paragraph(7), bannerUrl, avatar, location, address, email, genreIds));
+                ArtistEntity.Create(userId, name, f.Lorem.Paragraph(7), bannerUrl, avatar, location, address, email, genres));
     }
 }

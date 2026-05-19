@@ -49,7 +49,7 @@ export const useOpportunitiesStore = create<OpportunitiesStore>()(
     setOpportunityPaymentMethod: (index, method) => set((s) => { s.opportunities[index].contract.paymentMethod = method; s.isDirty = true; }),
     toggleOpportunityGenre: (index, genre) => set((s) => {
       const genres = s.opportunities[index].genres;
-      const i = genres.findIndex((g) => g.id === genre.id);
+      const i = genres.indexOf(genre);
       if (i >= 0) genres.splice(i, 1); else genres.push(genre);
       s.isDirty = true;
     }),
@@ -60,7 +60,7 @@ export const useOpportunitiesStore = create<OpportunitiesStore>()(
     setDraftPaymentMethod: (index, method) => set((s) => { s.drafts[index].contract.paymentMethod = method; s.isDirty = true; }),
     toggleDraftGenre: (index, genre) => set((s) => {
       const genres = s.drafts[index].genres;
-      const i = genres.findIndex((g) => g.id === genre.id);
+      const i = genres.indexOf(genre);
       if (i >= 0) genres.splice(i, 1); else genres.push(genre);
       s.isDirty = true;
     }),

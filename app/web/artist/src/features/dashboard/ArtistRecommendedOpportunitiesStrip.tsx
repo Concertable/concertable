@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import dayjs from "dayjs";
 import { useArtistRecommendedOpportunities } from "./hooks";
 import { contractSummary } from "@concertable/shared/features/contracts";
+import { genreLabel } from "@concertable/shared/types";
 import { DashboardCard, WidgetEmpty, WidgetError, WidgetLoading } from "@/features/dashboard";
 
 export function ArtistRecommendedOpportunitiesStrip() {
@@ -46,7 +47,7 @@ export function ArtistRecommendedOpportunitiesStrip() {
                 {contractSummary(o.contract)}
               </div>
               <div className="text-muted-foreground line-clamp-1 text-[11px]">
-                {o.genres.map((g) => g.name).join(" · ")}
+                {o.genres.map((g) => genreLabel(g)).join(" · ")}
               </div>
             </Link>
           ))}

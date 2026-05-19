@@ -6,6 +6,7 @@ import { MapPin, X } from "lucide-react-native";
 import { useCurrentLocation } from "../../../hooks/useCurrentLocation";
 import { useSearchFiltersStore, useGenresQuery } from "@concertable/shared/features/search";
 import type { HeaderType, SearchFilters } from "@concertable/shared/features/search";
+import type { Genre } from "@concertable/shared/types";
 import { GenreChips } from "@/components/ui/GenreChips";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,6 @@ const SORT_OPTIONS = [
 
 type SortValue = "date" | "name" | "distance";
 
-function toGenreIdArray(genreIds: SearchFilters["genreIds"]): number[] {
-  if (!genreIds) return [];
-  return Array.isArray(genreIds) ? genreIds : [genreIds as number];
-}
-
 interface Props {}
 
 export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function SearchFilterSheet(_, ref) {
@@ -45,10 +41,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
   );
 
   const { filters, setFilters } = useSearchFiltersStore();
-  const { data: genres } = useGenresQuery();
+  const { data: allGenres } = useGenresQuery();
 
   const [headerType, setHeaderType] = useState<HeaderType>("concert");
-  const [genreIds, setGenreIds] = useState<number[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
   const [from, setFrom] = useState<string | undefined>();
   const [to, setTo] = useState<string | undefined>();
   const [lat, setLat] = useState<number | undefined>();
@@ -67,7 +63,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
     if (index >= 0) {
       const f = filtersRef.current;
       setHeaderType(f.headerType ?? "concert");
-      setGenreIds(toGenreIdArray(f.genreIds));
+      setGenres(f.genres ?? []);
       setFrom(f.from);
       setTo(f.to);
       setLat(f.lat);
@@ -123,7 +119,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
     setFilters({
       ...filtersRef.current,
       headerType,
-      genreIds: genreIds.length ? genreIds : undefined,
+      genres: genres.length ? genres : undefined,
       from,
       to,
       lat,
@@ -137,7 +133,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
 
   function handleReset() {
     setHeaderType("concert");
-    setGenreIds([]);
+    setGenres([]);
     setFrom(undefined);
     setTo(undefined);
     setLat(undefined);
@@ -149,8 +145,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
     internalRef.current?.dismiss();
   }
 
-  function toggleGenre(id: number) {
-    setGenreIds((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]));
+  function toggleGenre(genre: Genre) {
+    setGenres((prev) => (prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]));
   }
 
   return (
@@ -183,8 +179,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, Props>(function Se
         </Section>
 
         <Section title="Genres">
-          {genres && genres.length > 0 ? (
-            <GenreChips genres={genres} selected={genreIds} onToggle={toggleGenre} />
+          {allGenres && allGenres.length > 0 ? (
+            <GenreChips genres={allGenres} selected={genres} onToggle={toggleGenre} />
           ) : (
             <Text className="text-sm text-muted-foreground">Loading genres…</Text>
           )}

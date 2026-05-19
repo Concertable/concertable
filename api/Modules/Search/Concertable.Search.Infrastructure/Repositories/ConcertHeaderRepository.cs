@@ -65,8 +65,8 @@ internal class ConcertHeaderRepository : IConcertHeaderRepository
     {
         var query = context.Concerts.Active(timeProvider.GetUtcNow().DateTime);
 
-        if (concertParams.GenreIds.Any())
-            query = query.Where(c => c.ConcertGenres.Any(eg => concertParams.GenreIds.Contains(eg.GenreId)));
+        if (concertParams.Genres.Any())
+            query = query.Where(c => c.ConcertGenres.Any(eg => concertParams.Genres.Contains(eg.Genre)));
 
         query = geometrySpecification.Apply(query, concertParams);
 

@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces;
+using Concertable.Shared;
 
 namespace Concertable.Customer.Application.Interfaces;
 
@@ -10,5 +11,5 @@ internal interface IPreferenceRepository : IIdRepository<PreferenceEntity>
 
     Task<PreferenceEntity?> GetByUserIdAsync(Guid id);
 
-    Task<IEnumerable<PreferenceEntity>> GetByMatchingGenresAsync(IEnumerable<int> genreIds);
+    Task<IEnumerable<PreferenceEntity>> GetByMatchingGenresAsync(IEnumerable<Genre> genres);
 }

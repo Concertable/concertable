@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Customer.Infrastructure.Data.Seeders;
@@ -25,7 +26,7 @@ internal class CustomerTestSeeder : ITestSeeder
         await context.Preferences.SeedIfEmptyAsync(async () =>
         {
             context.Preferences.Add(
-                PreferenceEntity.Create(seedData.Customer.Id, 25, [seedData.Rock.Id]));
+                PreferenceEntity.Create(seedData.Customer.Id, 25, [Genre.Rock]));
 
             await context.SaveChangesAsync(ct);
         });

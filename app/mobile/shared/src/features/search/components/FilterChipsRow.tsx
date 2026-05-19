@@ -2,14 +2,13 @@ import { useMemo } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { MapPin, X } from "lucide-react-native";
 import dayjs from "dayjs";
-import { useGenresQuery, useSearchFiltersStore } from "@concertable/shared/features/search";
+import { useSearchFiltersStore } from "@concertable/shared/features/search";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import { HEADER_TYPE_OPTIONS } from "../constants";
 
 export function FilterChipsRow() {
   const { filters, setFilters } = useSearchFiltersStore();
-  const { data: genres } = useGenresQuery();
 
   const chips = useMemo(() => {
     const result: { key: string; label: string; icon?: boolean; onRemove: () => void }[] = [];
@@ -24,17 +23,12 @@ export function FilterChipsRow() {
         });
     }
 
-    if (filters.genreIds) {
-      const ids = Array.isArray(filters.genreIds) ? filters.genreIds : [filters.genreIds as number];
-      if (ids.length) {
-        const names = (genres ?? []).filter((g) => ids.includes(g.id)).map((g) => g.name);
-        if (names.length)
-          result.push({
-            key: "genres",
-            label: names.join(", "),
-            onRemove: () => setFilters({ ...filters, genreIds: undefined }),
-          });
-      }
+    if (filters.genres?.length) {
+      result.push({
+        key: "genres",
+        label: filters.genres.join(", "),
+        onRemove: () => setFilters({ ...filters, genres: undefined }),
+      });
     }
 
     if (filters.from || filters.to) {
@@ -66,7 +60,7 @@ export function FilterChipsRow() {
     }
 
     return result;
-  }, [filters, genres, setFilters]);
+  }, [filters, setFilters]);
 
   if (!chips.length) return null;
 

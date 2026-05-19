@@ -14,10 +14,5 @@ internal class ConcertGenreEntityConfiguration : IEntityTypeConfiguration<Concer
             .HasForeignKey(cg => cg.ConcertId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
-        builder.HasOne(cg => cg.Genre)
-            .WithMany()
-            .HasForeignKey(cg => cg.GenreId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
     }
 }

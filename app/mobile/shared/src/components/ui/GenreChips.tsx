@@ -1,11 +1,12 @@
 import { View, Text, Pressable } from "react-native";
 import type { Genre } from "@concertable/shared/types";
+import { genreLabel } from "@concertable/shared/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
   genres: Genre[];
-  selected?: number[];
-  onToggle?: (id: number) => void;
+  selected?: Genre[];
+  onToggle?: (genre: Genre) => void;
   max?: number;
   className?: string;
 }
@@ -17,26 +18,26 @@ export function GenreChips({ genres, selected, onToggle, max, className }: Reado
   return (
     <View className={cn("flex-row flex-wrap gap-1.5", className)}>
       {visible.map((genre) => {
-        const active = selected?.includes(genre.id) ?? false;
+        const active = selected?.includes(genre) ?? false;
         if (isSelectable) {
           return (
             <Pressable
-              key={genre.id}
-              onPress={() => onToggle!(genre.id)}
+              key={genre}
+              onPress={() => onToggle!(genre)}
               className={cn(
                 "rounded-full px-2.5 py-1 border",
                 active ? "bg-primary border-primary" : "border-border bg-background"
               )}
             >
               <Text className={cn("text-xs font-medium", active ? "text-primary-foreground" : "text-foreground")}>
-                {genre.name}
+                {genreLabel(genre)}
               </Text>
             </Pressable>
           );
         }
         return (
-          <View key={genre.id} className="rounded-full px-2.5 py-1 bg-muted">
-            <Text className="text-xs font-medium text-muted-foreground">{genre.name}</Text>
+          <View key={genre} className="rounded-full px-2.5 py-1 bg-muted">
+            <Text className="text-xs font-medium text-muted-foreground">{genreLabel(genre)}</Text>
           </View>
         );
       })}

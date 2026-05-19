@@ -1,6 +1,8 @@
-﻿namespace Concertable.Concert.Domain;
+using Concertable.Shared;
 
-public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntity>, IHasDateRange, IEquatable<OpportunityEntity>
+namespace Concertable.Concert.Domain;
+
+public class OpportunityEntity : IIdEntity, IHasDateRange, IEquatable<OpportunityEntity>
 {
     private OpportunityEntity() { }
 
@@ -12,9 +14,7 @@ public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntit
     public HashSet<ApplicationEntity> Applications { get; private set; } = [];
     public HashSet<OpportunityGenreEntity> OpportunityGenres { get; private set; } = [];
 
-    HashSet<OpportunityGenreEntity> IHasGenreJoins<OpportunityGenreEntity>.GenreJoins => OpportunityGenres;
-
-    public static OpportunityEntity Create(int venueId, DateRange period, int contractId, IEnumerable<int>? genreIds = null)
+    public static OpportunityEntity Create(int venueId, DateRange period, int contractId, IEnumerable<Genre>? genres = null)
     {
         var opportunity = new OpportunityEntity
         {
@@ -23,21 +23,28 @@ public class OpportunityEntity : IIdEntity, IHasGenreJoins<OpportunityGenreEntit
             ContractId = contractId
         };
 
-        if (genreIds is not null)
-            opportunity.SyncGenres(genreIds);
+        if (genres is not null)
+            opportunity.SyncGenres(genres);
 
         return opportunity;
     }
 
-    public void Update(DateRange period, int contractId, IEnumerable<int> genreIds)
+    public void Update(DateRange period, int contractId, IEnumerable<Genre> genres)
     {
         Period = period;
         ContractId = contractId;
-        SyncGenres(genreIds);
+        SyncGenres(genres);
     }
 
-    public void SyncGenres(IEnumerable<int> genreIds) =>
-        this.SyncGenres<OpportunityGenreEntity>(genreIds);
+    public void SyncGenres(IEnumerable<Genre> genres)
+    {
+        var target = genres.ToHashSet();
+        OpportunityGenres.RemoveWhere(og => !target.Contains(og.Genre));
+        var existing = OpportunityGenres.Select(og => og.Genre).ToHashSet();
+        foreach (var g in target)
+            if (!existing.Contains(g))
+                OpportunityGenres.Add(new OpportunityGenreEntity { Genre = g });
+    }
 
     public bool Equals(OpportunityEntity? other) => other is not null && Id == other.Id;
 

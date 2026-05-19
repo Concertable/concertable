@@ -1,6 +1,8 @@
+using Concertable.Shared;
+
 namespace Concertable.Customer.Domain;
 
-public class PreferenceEntity : IIdEntity, IHasGenreJoins<GenrePreferenceEntity>
+public class PreferenceEntity : IIdEntity
 {
     private PreferenceEntity() { }
 
@@ -9,21 +11,26 @@ public class PreferenceEntity : IIdEntity, IHasGenreJoins<GenrePreferenceEntity>
     public double RadiusKm { get; private set; }
     public HashSet<GenrePreferenceEntity> GenrePreferences { get; private set; } = [];
 
-    HashSet<GenrePreferenceEntity> IHasGenreJoins<GenrePreferenceEntity>.GenreJoins => GenrePreferences;
-
-    public static PreferenceEntity Create(Guid userId, double radiusKm, IEnumerable<int> genreIds)
+    public static PreferenceEntity Create(Guid userId, double radiusKm, IEnumerable<Genre> genres)
     {
         var preference = new PreferenceEntity { UserId = userId, RadiusKm = radiusKm };
-        preference.SyncGenres(genreIds);
+        preference.SyncGenres(genres);
         return preference;
     }
 
-    public void Update(double radiusKm, IEnumerable<int> genreIds)
+    public void Update(double radiusKm, IEnumerable<Genre> genres)
     {
         RadiusKm = radiusKm;
-        SyncGenres(genreIds);
+        SyncGenres(genres);
     }
 
-    public void SyncGenres(IEnumerable<int> genreIds) =>
-        this.SyncGenres<GenrePreferenceEntity>(genreIds);
+    public void SyncGenres(IEnumerable<Genre> genres)
+    {
+        var target = genres.ToHashSet();
+        GenrePreferences.RemoveWhere(gp => !target.Contains(gp.Genre));
+        var existing = GenrePreferences.Select(gp => gp.Genre).ToHashSet();
+        foreach (var g in target)
+            if (!existing.Contains(g))
+                GenrePreferences.Add(new GenrePreferenceEntity { Genre = g });
+    }
 }

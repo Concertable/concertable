@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Concertable.Shared;
 
 namespace Concertable.Customer.Domain;
 
 [Table("GenrePreferences")]
-public class GenrePreferenceEntity : IIdEntity, IGenreJoin
+public class GenrePreferenceEntity : IIdEntity
 {
     public int Id { get; private set; }
     public int PreferenceId { get; set; }
-    public int GenreId { get; set; }
-    public GenreEntity Genre { get; set; } = null!;
+    public Genre Genre { get; set; }
     public PreferenceEntity Preference { get; set; } = null!;
 }

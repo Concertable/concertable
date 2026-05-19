@@ -23,12 +23,6 @@ public class SeedData
     public string ArtistManager1StripeAccountId { get; set; } = null!;
     public string ArtistManager1StripeCustomerId { get; set; } = null!;
 
-
-    public GenreEntity Rock { get; set; } = null!;
-    public GenreEntity Jazz { get; set; } = null!;
-    public GenreEntity HipHop { get; set; } = null!;
-    public GenreEntity Electronic { get; set; } = null!;
-
     public ArtistEntity Artist { get; set; } = null!;
     public VenueEntity Venue { get; set; } = null!;
 

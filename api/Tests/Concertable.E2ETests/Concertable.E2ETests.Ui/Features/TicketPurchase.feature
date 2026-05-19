@@ -12,7 +12,7 @@ Feature: Ticket purchase happy path
     And the customer applies the filters
     Then concert results should be visible
     And the find URL should contain "headerType=concert"
-    And the find URL should contain "genreIds=1,6"
+    And the find URL should contain "genres=Rock,Indie"
     And the find URL should contain "radius=20"
     And at least 2 concert result cards should be visible
     When the customer clicks the first concert result

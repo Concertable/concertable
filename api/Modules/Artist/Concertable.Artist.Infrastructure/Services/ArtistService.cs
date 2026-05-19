@@ -59,7 +59,7 @@ internal class ArtistService : IArtistService
             location,
             address,
             user.Email,
-            request.Genres.Select(g => g.Id));
+            request.Genres);
 
         var createdArtist = await artistRepository.AddAsync(artist);
         await artistRepository.SaveChangesAsync();
@@ -79,7 +79,7 @@ internal class ArtistService : IArtistService
             ? await imageService.ReplaceAsync(request.Banner.File, request.Banner.Url)
             : artist.BannerUrl;
 
-        artist.Update(request.Name, request.About, bannerUrl, request.Genres.Select(g => g.Id));
+        artist.Update(request.Name, request.About, bannerUrl, request.Genres);
 
         var locationDto = await geocodingService.GetLocationAsync(request.Latitude, request.Longitude);
         artist.UpdateLocation(

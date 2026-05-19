@@ -1,6 +1,7 @@
 using Concertable.Application.Interfaces;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Customer.Infrastructure.Data.Seeders;
@@ -29,7 +30,7 @@ internal class CustomerDevSeeder : IDevSeeder
                 return;
 
             context.Preferences.AddRange(
-                PreferenceEntity.Create(customerIds[0], 10, [1]),
+                PreferenceEntity.Create(customerIds[0], 10, [Genre.Rock]),
                 PreferenceEntity.Create(customerIds[1], 25, []),
                 PreferenceEntity.Create(customerIds[2], 50, []));
 

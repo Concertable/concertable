@@ -25,8 +25,8 @@ internal class ConcertSearchSpecification : IConcertSearchSpecification
         if (searchParams.From != null)
             query = query.Where(e => DateOnly.FromDateTime(e.StartDate) >= searchParams.From);
 
-        if (searchParams.GenreIds?.Any() == true)
-            query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.GenreIds.Contains(eg.GenreId)));
+        if (searchParams.Genres?.Any() == true)
+            query = query.Where(e => e.ConcertGenres.Any(eg => searchParams.Genres.Contains(eg.Genre)));
 
         if (searchParams.ShowHistory == false)
             query = query.Where(e => e.StartDate >= timeProvider.GetUtcNow());

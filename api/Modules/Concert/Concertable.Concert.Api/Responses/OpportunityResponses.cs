@@ -8,7 +8,7 @@ internal record OpportunityResponse(
     IContract Contract,
     DateTime StartDate,
     DateTime EndDate,
-    IEnumerable<GenreDto> Genres,
+    IEnumerable<Genre> Genres,
     OpportunityActions Actions);
 
 internal record OpportunityActions(ActionLink? Checkout);

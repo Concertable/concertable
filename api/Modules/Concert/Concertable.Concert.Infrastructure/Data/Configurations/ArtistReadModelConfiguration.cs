@@ -24,11 +24,6 @@ internal class ArtistReadModelGenreConfiguration : IEntityTypeConfiguration<Arti
     public void Configure(EntityTypeBuilder<ArtistReadModelGenre> builder)
     {
         builder.ToTable("ArtistReadModelGenres", Schema.Name);
-        builder.HasKey(g => new { g.ArtistReadModelId, g.GenreId });
-        builder.HasOne(g => g.Genre)
-            .WithMany()
-            .HasForeignKey(g => g.GenreId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+        builder.HasKey(g => new { g.ArtistReadModelId, g.Genre });
     }
 }

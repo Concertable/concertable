@@ -22,7 +22,6 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
 
-        services.AddSharedDbContext(configuration);
         services.AddReadDbContext(configuration);
 
         services.AddAuthorizationModule();

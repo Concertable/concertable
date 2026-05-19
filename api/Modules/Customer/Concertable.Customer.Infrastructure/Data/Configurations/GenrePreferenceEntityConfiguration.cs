@@ -12,9 +12,6 @@ internal class GenrePreferenceEntityConfiguration : IEntityTypeConfiguration<Gen
             .WithMany(p => p.GenrePreferences)
             .HasForeignKey(gp => gp.PreferenceId)
             .OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne(gp => gp.Genre)
-            .WithMany()
-            .HasForeignKey(gp => gp.GenreId);
-        builder.HasIndex(gp => new { gp.PreferenceId, gp.GenreId }).IsUnique();
+        builder.HasIndex(gp => new { gp.PreferenceId, gp.Genre }).IsUnique();
     }
 }

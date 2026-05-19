@@ -77,7 +77,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
-        var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Rock.Id}");
+        var response = await client.GetAsync($"/api/concert/headers/recommended?genres={Genre.Rock}");
 
         await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
@@ -90,7 +90,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
     {
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
-        var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Jazz.Id}");
+        var response = await client.GetAsync($"/api/concert/headers/recommended?genres={Genre.Jazz}");
 
         await response.ShouldBe(HttpStatusCode.OK);
         var concerts = await response.Content.ReadAsync<ConcertHeaderDto[]>();
@@ -105,7 +105,7 @@ public class ConcertHeaderApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedData.Customer);
 
         // Act
-        var response = await client.GetAsync($"/api/concert/headers/recommended?genreIds={fixture.SeedData.Rock.Id},{fixture.SeedData.Jazz.Id}");
+        var response = await client.GetAsync($"/api/concert/headers/recommended?genres={Genre.Rock},{Genre.Jazz}");
 
         // Assert
         await response.ShouldBe(HttpStatusCode.OK);

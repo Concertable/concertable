@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SharedSchema = Concertable.Data.Infrastructure.Schema;
 
 namespace Concertable.Artist.Infrastructure.Data;
 
@@ -17,7 +16,5 @@ internal class ArtistDbContext(
         modelBuilder.HasDefaultSchema(Schema.Name);
 
         provider.Configure(modelBuilder);
-
-        modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());
     }
 }

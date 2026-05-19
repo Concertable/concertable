@@ -22,7 +22,6 @@ internal class ReadDbContext(
     public IQueryable<ConcertEntity> Concerts => Set<ConcertEntity>().AsNoTracking();
     public IQueryable<ConcertGenreEntity> ConcertGenres => Set<ConcertGenreEntity>().AsNoTracking();
     public IQueryable<ConcertImageEntity> ConcertImages => Set<ConcertImageEntity>().AsNoTracking();
-    public IQueryable<GenreEntity> Genres => Set<GenreEntity>().AsNoTracking();
     public IQueryable<OpportunityEntity> Opportunities => Set<OpportunityEntity>().AsNoTracking();
     public IQueryable<OpportunityGenreEntity> OpportunityGenres => Set<OpportunityGenreEntity>().AsNoTracking();
     public IQueryable<ApplicationEntity> Applications => Set<ApplicationEntity>().AsNoTracking();

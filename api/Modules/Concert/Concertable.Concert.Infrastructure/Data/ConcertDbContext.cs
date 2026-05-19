@@ -3,7 +3,6 @@ using Concertable.Concert.Domain;
 using Concertable.Data.Infrastructure;
 using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
-using SharedSchema = Concertable.Data.Infrastructure.Schema;
 
 namespace Concertable.Concert.Infrastructure.Data;
 
@@ -43,7 +42,5 @@ internal class ConcertDbContext(
             b.HasKey(p => p.VenueId);
             b.Property(p => p.VenueId).ValueGeneratedNever();
         });
-
-        modelBuilder.Entity<GenreEntity>().ToTable("Genres", SharedSchema.Name, t => t.ExcludeFromMigrations());
     }
 }

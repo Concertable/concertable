@@ -1,5 +1,6 @@
 using Concertable.Artist.Infrastructure.Data;
 using Concertable.Artist.Infrastructure.Mappers;
+using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Artist.Infrastructure.Repositories;
@@ -11,14 +12,12 @@ internal class ArtistRepository(ArtistDbContext context)
         await context.Artists
             .Where(a => a.UserId == id)
             .Include(a => a.ArtistGenres)
-                .ThenInclude(ag => ag.Genre)
             .FirstOrDefaultAsync();
 
     public async Task<ArtistEntity?> GetFullByIdAsync(int id) =>
         await context.Artists
             .Where(a => a.Id == id)
             .Include(a => a.ArtistGenres)
-                .ThenInclude(ag => ag.Genre)
             .FirstOrDefaultAsync();
 
     public async Task<ArtistSummaryDto?> GetSummaryAsync(int id) =>
@@ -45,9 +44,9 @@ internal class ArtistRepository(ArtistDbContext context)
             .ToDto(context.ArtistRatingProjections.AsNoTracking())
             .FirstOrDefaultAsync();
 
-    public async Task<IReadOnlySet<int>> GetGenreIdsAsync(int id) =>
+    public async Task<IReadOnlySet<Genre>> GetGenresAsync(int id) =>
         await context.Artists.AsNoTracking()
             .Where(a => a.Id == id)
-            .SelectMany(a => a.ArtistGenres.Select(ag => ag.GenreId))
+            .SelectMany(a => a.ArtistGenres.Select(ag => ag.Genre))
             .ToHashSetAsync();
 }

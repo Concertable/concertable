@@ -1,3 +1,4 @@
+using Concertable.Shared;
 using Concertable.User.Contracts;
 
 namespace Concertable.Customer.Contracts;
@@ -9,5 +10,5 @@ public interface ICustomerModule
     Task<IReadOnlyCollection<Guid>> GetUserIdsByLocationAndGenresAsync(
         double latitude,
         double longitude,
-        IEnumerable<int> genreIds);
+        IEnumerable<Genre> genres);
 }

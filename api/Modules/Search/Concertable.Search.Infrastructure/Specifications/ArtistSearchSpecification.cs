@@ -14,8 +14,8 @@ internal class ArtistSearchSpecification : IArtistSearchSpecification
 
     public IQueryable<ArtistSearchModel> Apply(IQueryable<ArtistSearchModel> query, SearchParams searchParams)
     {
-        if (searchParams.GenreIds?.Any() == true)
-            query = query.Where(a => a.ArtistGenres.Any(ag => searchParams.GenreIds.Contains(ag.GenreId)));
+        if (searchParams.Genres?.Any() == true)
+            query = query.Where(a => a.ArtistGenres.Any(ag => searchParams.Genres.Contains(ag.Genre)));
 
         return searchSpecification.Apply(query, searchParams.SearchTerm);
     }

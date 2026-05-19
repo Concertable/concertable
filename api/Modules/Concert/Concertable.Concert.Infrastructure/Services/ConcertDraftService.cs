@@ -31,14 +31,14 @@ internal class ConcertDraftService : IConcertDraftService
         var opportunity = bookingConcert.Application.Opportunity;
         var venue = opportunity.Venue;
 
-        var artistGenreIds = artist.Genres.Select(g => g.GenreId);
-        var opportunityGenreIds = opportunity.OpportunityGenres.Select(og => og.GenreId);
+        var artistGenres = artist.Genres.Select(g => g.Genre);
+        var opportunityGenres = opportunity.OpportunityGenres.Select(og => og.Genre);
 
-        var matchingGenreIds = opportunityGenreIds.Any()
-            ? artistGenreIds.Intersect(opportunityGenreIds)
-            : artistGenreIds;
+        var matchingGenres = opportunityGenres.Any()
+            ? artistGenres.Intersect(opportunityGenres)
+            : artistGenres;
 
-        if (!matchingGenreIds.Any())
+        if (!matchingGenres.Any())
         {
             logger.LogWarning(
                 "Concert draft creation failed for booking {BookingId}: artist {ArtistId} has no matching genres for opportunity {OpportunityId}",
@@ -53,7 +53,7 @@ internal class ConcertDraftService : IConcertDraftService
             opportunity.Period,
             $"{artist.Name} performing at {venue.Name}",
             venue.About,
-            matchingGenreIds);
+            matchingGenres);
 
         bookingConcert.Confirm(concert);
         await bookingRepository.SaveChangesAsync();

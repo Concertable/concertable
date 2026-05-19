@@ -19,7 +19,6 @@ public interface IReadDbContext
     IQueryable<ConcertEntity> Concerts { get; }
     IQueryable<ConcertGenreEntity> ConcertGenres { get; }
     IQueryable<ConcertImageEntity> ConcertImages { get; }
-    IQueryable<GenreEntity> Genres { get; }
     IQueryable<OpportunityEntity> Opportunities { get; }
     IQueryable<OpportunityGenreEntity> OpportunityGenres { get; }
     IQueryable<ApplicationEntity> Applications { get; }

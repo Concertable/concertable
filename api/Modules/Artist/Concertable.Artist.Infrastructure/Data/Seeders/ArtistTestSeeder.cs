@@ -2,6 +2,7 @@ using Concertable.Application.Interfaces.Geometry;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
+using Concertable.Shared;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +41,7 @@ internal class ArtistTestSeeder : ITestSeeder
                 geometryProvider.CreatePoint(51, 0),
                 new Address("Test County", "Test Town"),
                 seed.ArtistManager1.Email,
-                [seed.Rock.Id]).Generate();
+                [Genre.Rock]).Generate();
 
             context.Artists.Add(seed.Artist);
             await context.SaveChangesAsync(ct);

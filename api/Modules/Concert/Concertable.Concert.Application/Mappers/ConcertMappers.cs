@@ -11,7 +11,7 @@ internal static class ConcertMappers
         Avatar = artist.Avatar,
         County = artist.County ?? string.Empty,
         Town = artist.Town ?? string.Empty,
-        Genres = artist.Genres.Select(ag => ag.Genre.ToDto())
+        Genres = artist.Genres.Select(ag => ag.Genre)
     };
 
     private static ConcertVenueDto ToConcertVenueDto(this VenueReadModel venue) => new()
@@ -39,7 +39,7 @@ internal static class ConcertMappers
         EndDate = concert.Booking.Application.Opportunity.Period.End,
         Venue = concert.Booking.Application.Opportunity.Venue.ToConcertVenueDto(),
         Artist = concert.Booking.Application.Artist.ToConcertArtistDto(),
-        Genres = concert.ConcertGenres.Select(eg => eg.Genre.ToDto())
+        Genres = concert.ConcertGenres.Select(eg => eg.Genre)
     };
 
     public static ConcertSnapshot ToSnapshotDto(this ConcertEntity concert) => new()

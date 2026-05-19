@@ -8,5 +8,5 @@ public record ArtistSummaryDto
     public required string Name { get; set; }
     public string? Avatar { get; set; }
     public double Rating { get; set; }
-    public IEnumerable<GenreDto> Genres { get; set; } = [];
+    public IEnumerable<Genre> Genres { get; set; } = [];
 }

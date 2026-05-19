@@ -50,7 +50,7 @@ internal class OpportunityService : IOpportunityService
                 venueId,
                 new DateRange(request.StartDate, request.EndDate),
                 contractId,
-                request.GenreIds);
+                request.Genres);
             await opportunityRepository.AddAsync(entity);
             return entity;
         });
@@ -81,7 +81,7 @@ internal class OpportunityService : IOpportunityService
                     venueId,
                     new DateRange(request.StartDate, request.EndDate),
                     contractId,
-                    request.GenreIds);
+                    request.Genres);
                 await opportunityRepository.AddAsync(opportunity);
             }
         });
