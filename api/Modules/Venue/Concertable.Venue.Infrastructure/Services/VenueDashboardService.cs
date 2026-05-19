@@ -27,7 +27,7 @@ internal class VenueDashboardService : IVenueDashboardService
         if (counts is null) return null;
 
         return new VenueDashboardKpisDto(
-            ApplicationsToReview: counts.ApplicationsAwaitingReview,
+            ApplicationsToReview: counts.ApplicationsToReview,
             ApplicationsToReviewDelta: null,
             OpenOpportunities: counts.OpenOpportunities,
             UpcomingConcerts: counts.UpcomingConcerts,

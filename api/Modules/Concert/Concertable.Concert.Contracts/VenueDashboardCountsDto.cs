@@ -1,6 +1,6 @@
 namespace Concertable.Concert.Contracts;
 
 public record VenueDashboardCountsDto(
-    int ApplicationsAwaitingReview,
+    int ApplicationsToReview,
     int OpenOpportunities,
     int UpcomingConcerts);
