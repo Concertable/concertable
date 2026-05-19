@@ -7,7 +7,11 @@ $dirs = @(
     "Modules\Payment\Concertable.Payment.Infrastructure\Data\Migrations",
     "Modules\Customer\Concertable.Customer.Infrastructure\Data\Migrations",
     "Modules\Messaging\Concertable.Messaging.Infrastructure\Data\Migrations",
-    "Concertable.Auth\Data\Migrations"
+    "Concertable.Auth\Data\Migrations",
+    "Concertable.Customer\Modules\Concert\Concertable.Customer.Concert.Infrastructure\Data\Migrations",
+    "Concertable.Customer\Modules\Ticket\Concertable.Customer.Ticket.Infrastructure\Data\Migrations",
+    "Concertable.Customer\Modules\Review\Concertable.Customer.Review.Infrastructure\Data\Migrations",
+    "Concertable.Customer\Modules\Profile\Concertable.Customer.Profile.Infrastructure\Data\Migrations"
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
 
@@ -36,6 +40,18 @@ dotnet ef migrations add InitialCreate --context MessagingDbContext --project Mo
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --project Concertable.Auth --startup-project Concertable.Auth --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context TicketDbContext --project Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context ReviewDbContext --project Concertable.Customer/Modules/Review/Concertable.Customer.Review.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context ProfileDbContext --project Concertable.Customer/Modules/Profile/Concertable.Customer.Profile.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 Write-Host "All migrations scaffolded successfully."

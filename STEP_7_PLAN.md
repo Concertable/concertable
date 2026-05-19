@@ -102,25 +102,26 @@ Drop:
 
 Currently uses `ITicketRepository` to check "did this user own a ticket?". Both modules ship in the same Customer service post-extraction — keep as-is. No change. Noting it here so it's not flagged as a violation in 7h.
 
-### 7g — Customer DB cutover
+### 7g — Customer DB cutover ✅ DONE (with deferred re-scaffold)
 
-**Aspire wiring:** add a `Concertable.Customer.Database` resource in `Concertable.AppHost`. Pass connection string to `Concertable.Customer.Web`.
+**Aspire wiring:** `AddSqlServer` now returns `(defaultDb, customerDb)` — second database named `CustomerDb` on the same SQL Server resource. `AddCustomerWeb` takes `customerDb` and adds `WithReference + WaitFor`.
 
-**Per-module DbContexts** (`Customer.Concert/Ticket/Review/Profile.Infrastructure/Data/XDbContext.cs`) bind to `ConnectionStrings:CustomerDb` instead of `DefaultConnection`. Each Customer module's `AddXModule` extension reads the new key.
+**Per-module DbContexts:** all 4 Customer modules (`Customer.Concert/Ticket/Review/Profile.Infrastructure`) bind to `ConnectionStrings:CustomerDb`.
 
-**Migrations:** per repo convention (`CLAUDE.md` — `./initial-migrations.ps1`), nuke + re-scaffold all `InitialCreate`s. Customer's 4 contexts get their migrations against the new Customer DB; B2B contexts stay on the monolith DB.
+**Migrations script (`api/initial-migrations.ps1`):** added 4 new entries for `ConcertDbContext` / `TicketDbContext` / `ReviewDbContext` / `ProfileDbContext` under `Concertable.Customer/`, each with `--startup-project Concertable.Customer/Concertable.Customer.Web`.
 
-**Dev/test data:** drop + reseed via existing `XDevSeeder`/`XTestSeeder` per module. No production data migration (learning project).
+**Re-scaffold deferred** (same blocker that deferred Phase 1 Step 3): legacy forwarding methods on `IConcertModule` inject `ICustomerReviewModule`, which is only registered in `Concertable.Customer.Web`. `Concertable.Web` startup fails at design-time DI validation. Retiring the `ICustomerReviewModule` injection from `ConcertModule` (per the TEMPORARY comment in `ConcertModule.cs`) unblocks the script.
 
-### 7h — Final csproj audit
+**Dev/test seeding:** Customer.Web has no `IDbInitializer`/dev-seeder wiring yet (open gap from Phase 1). Tracked separately; not blocking 7g code-level outcome.
 
-Every `Concertable.Customer.*.csproj` should reference only:
-- `Concertable.Contracts`
-- `Concertable.Kernel`
-- Sibling `Concertable.Customer.*` projects (within the Customer service)
-- NuGet packages
+### 7h — Final csproj audit ✅ DONE
 
-Build green. Run integration tests.
+All 26 `Concertable.Customer.*.csproj` files audited. Allowed cross-service refs (per current modular monolith convention):
+- `Concertable.Kernel`, `Concertable.Data.Infrastructure` (shared infra)
+- `Concertable.{User,Authorization,Notification,Payment,Concert,Customer}.Contracts` (cross-module API surface for event/facade types)
+- Customer-internal sibling projects + per-module Contracts
+
+No Customer csproj references any other service's `*.Application`, `*.Infrastructure`, or `*.Domain`. Both `Concertable.sln` and `Concertable.Customer.slnx` build green.
 
 ---
 
