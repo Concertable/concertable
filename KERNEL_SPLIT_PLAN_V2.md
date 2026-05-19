@@ -1,5 +1,7 @@
 # Kernel Split Plan v2
 
+> **Status (2026-05-20):** Phases **A + C landed `952b75fb`** on `Refactor/Microservices`. Build green. DataAccess.{Application,Infrastructure} + Concertable.Seeding (IModuleSeeder relocation) + Concertable.Shared.Blob.{Application,Infrastructure} (incl. BlobDevSeeder) all extracted in one bundled commit. Phases B / D / E / F / G / H / I still pending.
+
 Supersedes `KERNEL_SPLIT_PLAN.md`. v1 treated this as "extract DataAccess and leave the rest of Kernel alone for a later pass." That approach broke down once we realised:
 
 - Bulk-sedding `Concertable.Application.Interfaces` → `Concertable.DataAccess` accidentally rewrote Kernel files that stayed in Kernel (`IImageService`, `IEmailService`, `IGeocodingService`, `IUriService`, `IPdfService` now declare themselves in the `Concertable.DataAccess` namespace while physically living in Kernel.dll — cross-assembly namespace pollution).
@@ -39,17 +41,17 @@ v2 plans the full split in one coherent pass.
 
 Each phase is one commit. Order matters — earlier phases unblock later ones.
 
-| Phase | Work | Rationale |
-|---|---|---|
-| **A** | Move `IModuleSeeder`/`IDevSeeder`/`ITestSeeder` from `DataAccess.Application` → `Concertable.Seeding`. Defer `BlobDevSeeder`; it lands in Phase C. | Cleans up DataAccess. Build still broken until Phase C — that's fine. |
-| **C** | Extract `Concertable.Shared.Blob`. `IBlobStorageService` → `.Application`. `BlobStorageService` + `FakeBlobStorageService` + `BlobStorageSettings` + `SeedImages` (resources) + **`BlobDevSeeder`** → `.Infrastructure`. | BlobDevSeeder lands in its forever home. Phase A finishes building. |
-| **B** | Extract `Concertable.Shared.Email`. `IEmailService` → `.Application`. `EmailService` + `FakeEmailService` → `.Infrastructure`. | Independent of others. |
-| **D** | Extract `Concertable.Shared.Geocoding`. `IGeocodingService` → `.Application`. `GeocodingService` + `GoogleGeocodeResponse`/`GoogleGeocodeResult`/`GoogleAddressComponent` → `.Infrastructure`. | Independent. |
-| **E** | Extract `Concertable.Shared.Imaging`. `IImageService` → `.Application`. `ImageService` → `.Infrastructure`. | Independent. |
-| **F** | Extract `Concertable.Shared.Pdf`. `IPdfService` → `.Application`. Locate current impl (likely `Concertable.Concert.Infrastructure` QuestPDF wrapper) → `.Infrastructure`. | Independent. |
-| **G** | Rename `Concertable.IntegrationTests.Common` (or `Concertable.Tests.Common` — confirm which) → `Concertable.Testing`. Single csproj, no clean-arch split. | Independent, cosmetic. |
-| **H** | Revert bogus namespace rewrites on remaining Kernel files. Fix any stragglers. | After all above moves, audit Kernel for cross-assembly namespace leaks. |
-| **I** | Delete `api/Data/` folder (now empty). Re-scaffold migrations (`./initial-migrations.ps1`). Commit. | Final cleanup. |
+| Phase | Status | Work | Rationale |
+|---|---|---|---|
+| **A** | ✅ `952b75fb` | Move `IModuleSeeder`/`IDevSeeder`/`ITestSeeder` from `DataAccess.Application` → `Concertable.Seeding`. Defer `BlobDevSeeder`; it lands in Phase C. | Cleans up DataAccess. Build still broken until Phase C — that's fine. |
+| **C** | ✅ `952b75fb` | Extract `Concertable.Shared.Blob`. `IBlobStorageService` → `.Application`. `BlobStorageService` + `FakeBlobStorageService` + `BlobStorageSettings` + `SeedImages` (resources) + **`BlobDevSeeder`** → `.Infrastructure`. | BlobDevSeeder lands in its forever home. Phase A finishes building. |
+| **B** | ⏳ pending | Extract `Concertable.Shared.Email`. `IEmailService` → `.Application`. `EmailService` + `FakeEmailService` → `.Infrastructure`. | Independent of others. |
+| **D** | ⏳ pending | Extract `Concertable.Shared.Geocoding`. `IGeocodingService` → `.Application`. `GeocodingService` + `GoogleGeocodeResponse`/`GoogleGeocodeResult`/`GoogleAddressComponent` → `.Infrastructure`. | Independent. |
+| **E** | ⏳ pending | Extract `Concertable.Shared.Imaging`. `IImageService` → `.Application`. `ImageService` → `.Infrastructure`. | Independent. Also drops the temporary Kernel → Shared.Blob.Application ref that ImageService introduced. |
+| **F** | ⏳ pending | Extract `Concertable.Shared.Pdf`. `IPdfService` → `.Application`. Locate current impl (likely `Concertable.Concert.Infrastructure` QuestPDF wrapper) → `.Infrastructure`. | Independent. |
+| **G** | ⏳ pending | Rename `Concertable.IntegrationTests.Common` (or `Concertable.Tests.Common` — confirm which) → `Concertable.Testing`. Single csproj, no clean-arch split. | Independent, cosmetic. |
+| **H** | ⏳ pending (incl. in commit) | Revert bogus namespace rewrites on remaining Kernel files. Fix any stragglers. | After all above moves, audit Kernel for cross-assembly namespace leaks. **Note:** the 5 originally-rewritten files (`IImageService.cs`, `IEmailService.cs`, `IGeocodingService.cs`, `IUriService.cs`, `IPdfService.cs`) were left in their rewritten state for Phase C; B/D/E/F will move them to their proper homes, dissolving the issue. |
+| **I** | ⏳ pending | Delete `api/Data/` folder (now empty). Re-scaffold migrations (`./initial-migrations.ps1`). Commit. | Final cleanup. |
 
 Deferred (separate doc):
 - `Concertable.BackgroundTasks` extraction (Plan B in v1, still pending).
@@ -256,6 +258,10 @@ Quickest path: just add `using Concertable.Seeding;` to every `XDevSeeder.cs`/`X
 
 ## In-flight working-tree state (as of pause)
 
+> **2026-05-20 update:** Phases A + C landed as commit `952b75fb` on `Refactor/Microservices` ("Refactor: extract DataAccess + Seeding + Shared.Blob from Kernel") — a bundled 181-file diff covering the v1 DataAccess scaffold + moves, Phase A `IModuleSeeder` relocation, and Phase C `Concertable.Shared.Blob` extraction. Build green on `Concertable.sln`. Working tree clean (except unrelated `.claude/worktrees/` submodule from the parallel ASB agent).
+>
+> The pre-commit notes below are kept as historical context for the in-flight state that preceded the commit.
+
 762 modified/moved files. Current branch: `Refactor/Microservices`, last commit `93c08e4b`. Build is broken.
 
 Done correctly:
@@ -306,17 +312,17 @@ Two options:
 
 ## Resume checklist
 
-1. Read this doc end to end.
-2. Pick Option 1 (continue) or Option 2 (reset).
-3. Execute Phase A finish (3-step Consumer rewrite for `IDevSeeder`/`ITestSeeder`).
-4. Execute Phase C (`Shared.Blob`) — bring BlobDevSeeder home.
-5. Build green checkpoint.
-6. Phase B (`Shared.Email`).
+1. ~~Read this doc end to end.~~ ✅
+2. ~~Pick Option 1 (continue) or Option 2 (reset).~~ ✅ Option 1 picked.
+3. ~~Execute Phase A finish (Consumer rewrite for `IDevSeeder`/`ITestSeeder`).~~ ✅ `952b75fb`
+4. ~~Execute Phase C (`Shared.Blob`) — bring BlobDevSeeder home.~~ ✅ `952b75fb`
+5. ~~Build green checkpoint.~~ ✅ 0 errors on Concertable.sln
+6. **Phase B** (`Shared.Email`) — next. Consolidate `FakeEmailService` duplicates from `Concertable.User.Infrastructure/Services/Email/` + `Concertable.Customer.Web/Services/`.
 7. Phase D (`Shared.Geocoding`) — resolve Geometry open question first.
-8. Phase E (`Shared.Imaging`).
+8. Phase E (`Shared.Imaging`) — also removes the temporary Kernel → Shared.Blob.Application ref.
 9. Phase F (`Shared.Pdf`) — resolve generic-vs-ticket open question first.
 10. Phase G (`Concertable.Testing` rename) — confirm which Tests.Common is live.
-11. Phase H — Kernel namespace audit. Grep for cross-assembly namespace leaks. Revert the 5 accidentally-rewritten files.
+11. Phase H — Kernel namespace audit. Grep for cross-assembly namespace leaks. The 5 originally-rewritten files (`IImageService.cs`, `IEmailService.cs`, `IGeocodingService.cs`, `IUriService.cs`, `IPdfService.cs`) get fixed implicitly via Phases B/D/E/F (they move to the right home with the right namespace) — Phase H is just an audit pass.
 12. Phase I — delete `api/Data/`, re-scaffold migrations (`./initial-migrations.ps1`), commit.
 
 Each phase: one commit. Commit message format `Refactor: extract Concertable.Shared.<Lib>` or `Refactor: relocate <X> to <Y>`. No co-authored-by trailers, no Claude generated trailers.
