@@ -30,22 +30,21 @@ The modular monolith already enforces the *internal* boundary correctly. The mic
 | Logical service | Category | Composition (deployable hosts) | DB | Owns |
 |---|---|---|---|---|
 | **B2B** | Data | `Concertable.B2B.Api` + `Concertable.B2B.Workers` | B2B SQL | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Organization, Messaging, manager/admin profiles. Manager + venue/artist SPA endpoints. Workers run settlement triggers, lifecycle transitions, payout reconciliation. |
-| **Customer** | Data | `Concertable.Customer.Api` + `Concertable.Customer.Workers` | Customer SQL | Tickets (with `AvailableTickets`), Preferences, Reviews, `CustomerProfileEntity`. Workers handle refund batching, projection rebuild from event replay. (Email moves to Notification.) |
+| **Customer** | Data | `Concertable.Customer.Api` + `Concertable.Customer.Workers` | Customer SQL | Tickets (with `AvailableTickets`), Preferences, Reviews, `CustomerProfileEntity`. Workers handle refund batching, projection rebuild from event replay. |
 | **Search** | Read projection | `Concertable.Search.Api` + `Concertable.Search.Workers` | Search SQL | `ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`. Browse/autocomplete/header/detail reads. Api read-only, sync-callable from B2B and Customer SPAs. Workers consume events from B2B and Customer to populate projections. |
 | **Payment** | Adapter | `Concertable.Payment.Api` + `Concertable.Payment.Workers` | Payment SQL | PayoutAccount, StripeCustomer refs, payment intent / transfer / refund ledger. Sole receiver of Stripe webhooks. Workers process webhooks and reconciliation. |
 | **Auth** | Adapter | `Concertable.Auth` (Duende IS, single host) | Duende DB | OIDC issuer. Identity authority (`sub`, password hash, email-verification). No role claims. Also issues service tokens for service-to-service auth (§5.5). |
-| **Notification** *(deferred — stays in-process until concrete need)* | Adapter | `Concertable.Notification.Workers` (Api optional for template admin) | Notification DB | Email delivery (identity + domain). Owns SMTP/SendGrid credentials, templates. Subscribes to events from Auth/B2B/Customer; sends emails. See §4.7. |
-
 **Non-deployables:**
 
 | | | |
 |---|---|---|
 | `Concertable.AppHost` | Aspire orchestrator | Local dev only. |
 | `Concertable.Contracts` | csproj (future NuGet if poly-repo) | The *wire*: event contracts, cross-service DTOs, `ICurrentUser`, static lookups (Genre). |
-| `Concertable.Kernel` | csproj (future NuGet if poly-repo) | The *framework*: `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers. |
+| `Concertable.Kernel` | csproj (future NuGet if poly-repo) | The *framework*: `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers. `IEmailSender` abstraction. |
+| `Concertable.Email` | csproj shared library | `IEmailSender` concrete impls (SendGrid, SMTP, Fake). Both B2B and Customer import this library directly — no network hop. See §4.7. |
 | Azure Service Bus | Managed broker | Async event substrate. |
 
-**Service count:** 6 logical services (5 at first deploy; Notification extracts later per §4.7). 11 deployable hosts at end-state.
+**Service count:** 5 logical services. 10 deployable hosts at end-state. Email/Notification is a shared library (`Concertable.Email`), not a service.
 
 ## 3. Service categories
 
@@ -53,7 +52,7 @@ A distinction that became load-bearing during the design conversation:
 
 | Category | Sync calls from other services OK? | Examples |
 |---|---|---|
-| **Adapter service** — wraps an external concern (Stripe, identity provider, email), owns operational state, exposes operations rather than data fetches | **Yes** — same shape as calling Stripe directly | Payment, Auth, Notification (future), Webhook Receiver (future) |
+| **Adapter service** — wraps an external concern (Stripe, identity provider), owns operational state, exposes operations rather than data fetches | **Yes** — same shape as calling the external thing directly | Payment, Auth |
 | **Data service** — owns canonical domain data that consumers think of as their own | **No** — distributed-monolith antipattern. Project via events. | B2B (Venue, Artist, Concert workflow), Customer (Tickets, Reviews, CustomerProfile) |
 | **Read projection service** — event-fed denormalised store, read-only from outside | Sync reads OK (it's a projection, not an authority) | Search |
 
@@ -169,7 +168,7 @@ public class ConcertEntity : BaseEntity<int> {
 | `Modules/Artist`, `Modules/Venue` | B2B (canonical owners) |
 | `Modules/Contract` | B2B |
 | `Modules/Messaging` (venue↔artist messaging) | B2B |
-| `Modules/Notification` | Stays in-process initially; future adapter service (deferred per §11 Q2) |
+| `Modules/Notification` | Becomes `Concertable.Email` shared library (see §4.7). Not a service. |
 | `Modules/Payment` | Already shaped as adapter service; extracts straight across |
 
 ## 4.6 Reference data ownership
@@ -182,25 +181,27 @@ Reference data is split by characteristic:
 
 Rule: ask "does this reference data need an admin UI?" If no, it's a contract, not a service. Resist the temptation to make a `Concertable.ReferenceData` service.
 
-## 4.7 Cross-cutting infrastructure: Notification
+## 4.7 Cross-cutting infrastructure: Email + Notification as shared libraries
 
-Email is the first cross-cutting concern that earns its own adapter service. `Concertable.Notification` is the 6th logical service.
+**Decision (2026-05-19):** Email and Notification are *shared libraries*, not services. Both B2B and Customer import the same library and invoke it in-process. No network hop; no 6th logical service.
 
-**Two flavors of email Notification handles:**
+**Why a library beats a service here:**
 
-- **Identity email** (verification, password reset) — Auth publishes `EmailVerificationRequestedEvent`, `PasswordResetRequestedEvent`; Notification subscribes.
-- **Domain email** (application accepted, ticket purchased, booking settled) — B2B/Customer publish their normal domain events; Notification subscribes to the same events that already drive projections.
+- Email sending is synchronous fire-and-forget — the caller doesn't need a round-trip to its own service boundary to do it.
+- Both B2B (booking accepted, settlement) and Customer (ticket purchased, verification) need to send emails. A library that both import is simpler than a bus event → Notification service → SMTP.
+- Vendor swap is still an internal-only change — the abstraction lives in the library, not the consumer.
+- Failure isolation is achievable at the library level with retry/queue within the library itself; a separate process doesn't add useful isolation for this use case.
 
-**Why a separate service** (same logic as Payment):
+**The abstraction:** `IEmailSender` (mirrors `Microsoft.AspNetCore.Identity`'s naming convention) lives in `Concertable.Kernel`. Concrete implementations (`SendGridEmailSender`, `SmtpEmailSender`, `FakeEmailSender`) live in a `Concertable.Email` csproj that each service references. Each service DI-wires the concrete implementation it wants.
 
-- SMTP/SendGrid credentials, email templates, deliverability tracking all live in one place
-- Vendor swap is an internal-only change
-- Notification crashes don't take down B2B's settlement workflow
-- Email volume can spike independently of write workload
+**Two flavors still exist — handled within each service:**
 
-**Extraction timing:** stays as `Modules/Notification` (in-process) until *after* Customer extracts. Pre-extraction, Auth talks to SMTP/SendGrid SDK directly — pragmatic, small refactor surface when Notification extracts later. Don't pre-extract Notification before there's measurable pressure.
+- **Identity email** (verification, password reset) — `User.Infrastructure` (B2B) calls `IEmailSender` directly after user creation / token issuance. Customer service does the same via `Customer.Profile`.
+- **Domain email** (booking accepted, ticket purchased) — the relevant module calls `IEmailSender` in its own event handler or service method.
 
-**Future cross-cutting adapters** (file storage, image CDN, geocoding) follow the same shape — but only *if* they grow beyond library wrappers. Until then, they're NuGet packages consumed in-process by each service.
+**Notification module:** the existing `Modules/Notification` module becomes the `Concertable.Email` library. `INotificationModule` consumers switch to calling `IEmailSender` directly (one less indirection). No extraction to a separate process planned.
+
+**Future cross-cutting adapters** (file storage, image CDN, geocoding) follow the same library-first principle — only extract to a service if measurable operational pressure demands it.
 
 ## 4.8 Resolution of `api/Shared/*`
 
@@ -473,7 +474,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 | R6 | `Modules/User/` TPH unwind (§4.5) touches every B2B controller that reads `ICurrentUser` for role/persona checks. Sequence carefully so the monolith builds at each step. | Mitigation: do the role-claim removal in Auth first, derive role from token audience + DB lookup per controller, *then* delete the TPH. |
 | R7 | `ConcertEntity` decomposition (Step 0) is the biggest in-monolith refactor on the path. Touches Concert + Customer + Search projections + every read path. | Mitigation: explicit migration step (§4.5) sequences the field moves; ship in small PRs; integration tests cover both old and new shapes during transition. |
 | ~~Q1~~ R8 *(was Q1)* | **Resolved 2026-05-19** — Search is its own service, sync-callable from both B2B and Customer SPAs. Single projection serves both audiences; no duplicate browse-projection tables in B2B and Customer. Updates stay with canonical owners. | — |
-| ~~Q2~~ R9 *(was Q2)* | **Resolved 2026-05-19** — Notification is the 6th logical adapter service (see §4.7). Stays in-process until after Customer extracts; then extracts as `Concertable.Notification`. Auth talks to SMTP/SendGrid directly pre-extraction. | — |
+| ~~Q2~~ R9 *(was Q2)* | **Re-resolved 2026-05-19** — Email/Notification is a *shared library* (`Concertable.Email`), not a service. Both B2B and Customer import it in-process. `IEmailSender` is the cross-service abstraction in `Concertable.Kernel`. See §4.7. | — |
 | Q3 | Do we eventually need a dedicated `Concertable.Webhooks.Stripe` service separate from Payment? | Only if Stripe event handling outgrows Payment. Defer. |
 | Q4 | Future B2B venue↔artist reviews — same `ReviewEntity` shape as customer reviews, or different? | Open. Default: separate table in B2B (different bounded context, even if conceptually similar). Same conceptual name `Review` is fine across services. |
 | ~~Q5~~ R10 *(was Q5)* | **Resolved 2026-05-19** — `ICurrentUser` and claim helpers live in `Concertable.Contracts` (the wire package). See §4.8. No central authorization service; each service makes its own authz decisions against tokens it validates. | — |
@@ -497,7 +498,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 - **2026-05-19** — Authentication and authorization explicitly separated. Auth issues tokens with `sub` + audience only, no role claim. Each service derives role from token audience (Customer audience ⇒ Customer role) + service-side profile-table membership (B2B looks up `sub` in manager/admin tables to determine persona). Reason: identity ("who are you") and authorization ("what can you do *here*") are different concerns; baking role claims into the identity token couples them and leaks per-service authorization rules into Auth.
 - **2026-05-19** — Future B2B venue↔artist reviews (post-gig counterparty feedback) will live as a separate B2B-owned table. Same conceptual name `Review` is fine because the two reviews live in different bounded contexts.
 - **2026-05-19** — Reference data ownership rule (§4.6): enum-like static data (Genre) lives in `Concertable.Contracts` as constants/enums, not as a DB table. The current `SharedDbContext.Genres` table gets deleted in Phase 1 (per `MICROSERVICE_STEPS.md`). Search projects genre names denormalized onto `*SearchModel`s. Reason: shipping reference data as a contract avoids both shared-DB coupling and a needless "reference data service."
-- **2026-05-19** — Notification confirmed as 6th logical adapter service (§4.7). Two flavors of email — identity (verification, password reset) from Auth and domain (booking accepted, ticket purchased) from B2B/Customer — both consumed by Notification via bus events. Extraction deferred until after Customer extracts; Auth uses SMTP/SendGrid SDK directly in the interim.
+- **2026-05-19** — Email/Notification reclassified as a *shared library* (`Concertable.Email`), not a service. `IEmailSender` abstraction lives in `Concertable.Kernel`; concrete impls (SendGrid, SMTP, Fake) in `Concertable.Email`. Both B2B and Customer import the library directly — no bus event needed for email sending. The existing `Modules/Notification` module becomes this library. Reason: email sending is synchronous fire-and-forget; a library saves a network hop for both services without sacrificing vendor-swap isolation.
 - **2026-05-19** — `api/Shared/*` six csprojs collapse to two (§4.8): `Concertable.Contracts` (the wire — event types, cross-service DTOs, `ICurrentUser`, Genre lookup) and `Concertable.Kernel` (the framework — `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers). Reason: two packages with distinct breaking-change semantics is the minimum useful split; six is monolith-era ergonomics.
 - **2026-05-19** — `SharedDbContext` deleted as part of §4.6 + §4.8 collapse. Genre moves to `Concertable.Contracts` as enum; `SharedDbContext` had no other tables worth keeping.
 - **2026-05-19** — Service-to-service auth (§5.5): OAuth2 `client_credentials` via Duende. Each service is a Client; service tokens carry scope (not roles); same JWT validation middleware as user tokens. Production posture = client_credentials on the wire + private network as defense-in-depth. Rejected: mTLS (operationally heavy for solo dev), API keys (no proper claims), VNet-only (soft-chewy-center antipattern).
