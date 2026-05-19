@@ -2,7 +2,7 @@
 
 > **Companion to** [MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md). Step 7 = first cross-process boundary.
 >
-> **Status:** All sub-steps DONE 2026-05-19 (commits `8da35e0a` for 7a–7e and `ea7ffecd` for 7g/7h). Migration re-scaffold deferred — see 7g notes.
+> **Status:** ✅ DONE 2026-05-19. All sub-steps + migration re-scaffold + Customer.Web composition root landed across 4 commits: `8da35e0a` (7a–7e), `ea7ffecd` (7g/7h), `e5676305` (forwarder retirement + endpoint relocation), `8573e472` (Payment + AuthorizationModule decoupling + Customer.Web wiring + all 13 contexts re-scaffolded). Customer-side dev seeders + `IDbInitializer` pipeline deferred to Step 8.
 
 ---
 
@@ -102,17 +102,22 @@ Drop:
 
 Currently uses `ITicketRepository` to check "did this user own a ticket?". Both modules ship in the same Customer service post-extraction — keep as-is. No change. Noting it here so it's not flagged as a violation in 7h.
 
-### 7g — Customer DB cutover ✅ DONE (with deferred re-scaffold)
+### 7g — Customer DB cutover ✅ DONE
 
 **Aspire wiring:** `AddSqlServer` now returns `(defaultDb, customerDb)` — second database named `CustomerDb` on the same SQL Server resource. `AddCustomerWeb` takes `customerDb` and adds `WithReference + WaitFor`.
 
 **Per-module DbContexts:** all 4 Customer modules (`Customer.Concert/Ticket/Review/Profile.Infrastructure`) bind to `ConnectionStrings:CustomerDb`.
 
-**Migrations script (`api/initial-migrations.ps1`):** added 4 new entries for `ConcertDbContext` / `TicketDbContext` / `ReviewDbContext` / `ProfileDbContext` under `Concertable.Customer/`, each with `--startup-project Concertable.Customer/Concertable.Customer.Web`.
+**Migrations script (`api/initial-migrations.ps1`):** 4 new entries for `ConcertDbContext` / `TicketDbContext` / `ReviewDbContext` / `ProfileDbContext` under `Concertable.Customer/`, each with `--startup-project Concertable.Customer/Concertable.Customer.Web`.
 
-**Re-scaffold deferred** (same blocker that deferred Phase 1 Step 3): legacy forwarding methods on `IConcertModule` inject `ICustomerReviewModule`, which is only registered in `Concertable.Customer.Web`. `Concertable.Web` startup fails at design-time DI validation. Retiring the `ICustomerReviewModule` injection from `ConcertModule` (per the TEMPORARY comment in `ConcertModule.cs`) unblocks the script.
+**Re-scaffold landed `8573e472`.** Unblocking required two cross-cutting decouplings (worth recording — they go beyond the immediate Step 7 framing):
 
-**Dev/test seeding:** Customer.Web has no `IDbInitializer`/dev-seeder wiring yet (open gap from Phase 1). Tracked separately; not blocking 7g code-level outcome.
+1. **Forwarder retirement (`e5676305`)** — `IConcertModule`'s 4 review-forward methods (`GetReviewsByArtistAsync` etc.) deleted; consumer-facing list+eligibility endpoints relocated from B2B `Artist/VenueReviewsController` to new controllers under `Customer.Review.Api`. B2B's review controllers keep `/summary` only (reads local rating projections). New `IArtistReviewService`/`IVenueReviewService` on the Customer.Review side.
+2. **Payment + AuthorizationModule decoupling (`8573e472`)** — `Payment.Infrastructure` drops `IUserModule`/`ICustomerModule` injection from `CustomerPaymentModule`, `ManagerPaymentModule`, `EscrowService`; email is now read from `PayoutAccountEntity.Email` (new required column populated through existing `CustomerRegisteredHandler`/`ManagerRegisteredHandler` integration event handlers). `FakeStripeAccountClient` gained symmetric `PayoutAccount` creation. `AddAuthorizationModule()` is now a clean shared library — dead `ICurrentUserResolver` (defined-but-unconsumed) deleted; `Authorization.Infrastructure` drops `User.Application`/`User.Domain` refs.
+
+**Customer.Web composition root (`8573e472`)** — `Program.cs` wires `AddSharedInfrastructure`, `AddNotificationModule`, `AddAuthorizationModule`, `AddPaymentModule`, `IKeyedServiceProvider`, `TimeProvider`, JWT auth, local `FakeEmailService`. DI graph validates end-to-end.
+
+**Open follow-up for Step 8:** Customer.Web has no `IDbInitializer` invocation at startup; no Customer-side dev/test seeders exist yet for the 4 Customer modules. Pick up alongside bus wiring.
 
 ### 7h — Final csproj audit ✅ DONE
 

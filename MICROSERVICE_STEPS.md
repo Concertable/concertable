@@ -39,7 +39,15 @@ Pre-execution doc work. No code refactor yet.
 
 > First cross-process boundary. Bus introduced. Outbox/inbox shows up.
 
-7. ~~**Extract `Concertable.Customer.Api` + `Concertable.Customer.Workers`** to their own host + own DB.~~ **DONE (code-level) 2026-05-19** — commits `8da35e0a` (7a–7e: ConcertChangedEvent expansion, Customer.Ticket off B2B nav chain, IPaymentSucceededProcessor dispatcher retired, Payment/Contract.Contracts/Concert refs trimmed) + `ea7ffecd` (7g/7h: Aspire CustomerDb resource + 4 module DbContexts bound to `ConnectionStrings:CustomerDb` + csproj audit). Plan + sub-step trace in `STEP_7_PLAN.md`. **Migration re-scaffold + dev seeder wiring deferred** — blocked by pre-existing ICustomerReviewModule DI gap (B2B ConcertModule still forwards review-facade methods); retiring those forwarders unblocks `./initial-migrations.ps1`. Customer.Web has no IDbInitializer yet.
+7. ~~**Extract `Concertable.Customer.Api` + `Concertable.Customer.Workers`** to their own host + own DB.~~ **DONE 2026-05-19** across 4 commits:
+   - `8da35e0a` (7a–7e: ConcertChangedEvent expansion, Customer.Ticket off B2B nav chain, IPaymentSucceededProcessor dispatcher retired, Payment/Contract.Contracts/Concert refs trimmed)
+   - `ea7ffecd` (7g/7h: Aspire CustomerDb resource + 4 module DbContexts bound to `ConnectionStrings:CustomerDb` + csproj audit)
+   - `e5676305` (forwarder retirement: `IConcertModule`'s 4 review-forward methods deleted; consumer-facing list+eligibility endpoints relocated from B2B `Artist/VenueReviewsController` to new controllers under `Customer.Review.Api`. B2B keeps `/summary` only)
+   - `8573e472` (Payment + AuthorizationModule decoupled from B2B service-specific facades; Customer.Web composition root wired; all 13 contexts re-scaffold cleanly via `./initial-migrations.ps1`)
+
+   Cross-cutting wins during Step 7: `Concertable.Authorization.Infrastructure` and `Concertable.Payment.Infrastructure` are now clean shared libraries — zero `IUserModule`/`ICustomerModule` injection. Payment owns its own email projection via `PayoutAccountEntity.Email` populated through integration events. Plan + sub-step trace in `STEP_7_PLAN.md`.
+
+   **Open follow-up (Step 8 territory):** Customer.Web has no `IDbInitializer` invocation at startup; no Customer-side dev/test seeders exist yet for Customer.Concert/Ticket/Review/Profile. Pick up alongside the bus + outbox work.
 8. **Bus on in-memory transport** between B2B and Customer. Skip cloud broker latency while learning publish/subscribe semantics. **Bus choice open** (MassTransit vs Azure Service Bus SDK vs other) — decide at the start of this step.
 9. **Transactional outbox** in each service's own DB (mechanism depends on Step 8 choice — `EntityFrameworkOutbox` if MassTransit, direct outbox table + dispatcher if SDK). Solves the dual-write problem (§6 callout).
 10. **Idempotent consumers** with inbox state per service. Lesson: events arrive at-least-once, sometimes out of order — handlers must be safe.
