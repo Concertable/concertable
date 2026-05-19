@@ -1,4 +1,4 @@
-﻿using Concertable.Data.Infrastructure;
+﻿using Concertable.DataAccess.Infrastructure;
 using Concertable.User.Infrastructure.Data;
 
 namespace Concertable.User.Infrastructure.Repositories;

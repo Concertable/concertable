@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Conversations.Contracts;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;

@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 
 namespace Concertable.Contract.Application.Interfaces;
 

@@ -1,5 +1,5 @@
 global using Concertable.Shared;
-global using Concertable.Shared.Infrastructure;
+global using Concertable.DataAccess.Infrastructure;
 global using Concertable.Search.Domain.Models;
 global using Concertable.Search.Application;
 global using Concertable.Search.Application.Interfaces;

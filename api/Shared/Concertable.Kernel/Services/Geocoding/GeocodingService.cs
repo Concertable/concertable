@@ -1,5 +1,5 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;

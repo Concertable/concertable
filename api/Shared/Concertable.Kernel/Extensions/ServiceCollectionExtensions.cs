@@ -1,15 +1,10 @@
-using Concertable.Application.Interfaces;
-using Concertable.Application.Interfaces.Blob;
-using Concertable.Application.Interfaces.Specifications;
+using Concertable.DataAccess;
 using Concertable.Shared.Infrastructure.Background;
-using Concertable.Shared.Infrastructure.Data.Seeders;
 using Concertable.Shared.Infrastructure.Events;
 using Concertable.Shared.Infrastructure.Services;
-using Concertable.Shared.Infrastructure.Services.Blob;
 using Concertable.Shared.Infrastructure.Services.Email;
 using Concertable.Shared.Infrastructure.Services.Geocoding;
 using Concertable.Shared.Infrastructure.Settings;
-using Concertable.Shared.Infrastructure.Specifications;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -24,15 +19,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
 
-        services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorage"));
-
-        var external = configuration.GetSection("ExternalServices");
-
-        if (external.GetValue<bool>("UseRealBlob"))
-            services.AddScoped<IBlobStorageService, BlobStorageService>();
-        else
-            services.AddScoped<IBlobStorageService, FakeBlobStorageService>();
-
         services.AddScoped<IImageService, ImageService>();
 
         services.AddHttpClient("Geocoding", client =>
@@ -44,15 +30,6 @@ public static class ServiceCollectionExtensions
         services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();
 
-        services.AddScoped(typeof(IUpcomingSpecification<>), typeof(UpcomingSpecification<>));
-        services.AddScoped(typeof(IDateRangeSpecification<>), typeof(DateRangeSpecification<>));
-
-        return services;
-    }
-
-    public static IServiceCollection AddBlobDevSeeder(this IServiceCollection services)
-    {
-        services.AddScoped<IDevSeeder, BlobDevSeeder>();
         return services;
     }
 

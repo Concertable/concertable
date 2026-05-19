@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Application.Interfaces;
+namespace Concertable.DataAccess;
 
 public interface IImageService
 {

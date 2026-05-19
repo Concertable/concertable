@@ -1,4 +1,4 @@
-using Concertable.Application.Diffing;
+using Concertable.DataAccess.Diffing;
 
 namespace Concertable.Concert.Infrastructure.Sync;
 

@@ -1,10 +1,10 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Application.Serializers;
-using Concertable.Data.Infrastructure.Data;
-using Concertable.Data.Infrastructure.Extensions;
+using Concertable.DataAccess.Infrastructure;
+using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
-using Concertable.Shared.Infrastructure.Repositories;
+using Concertable.DataAccess.Infrastructure.Repositories;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using FluentValidation;
 using FluentValidation.AspNetCore;

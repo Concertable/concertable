@@ -1,5 +1,5 @@
 global using Concertable.Shared;
-global using Concertable.Application.Interfaces;
+global using Concertable.DataAccess;
 global using Concertable.Concert.Domain;
 global using Concertable.Concert.Contracts;
 global using Concertable.Contract.Contracts;

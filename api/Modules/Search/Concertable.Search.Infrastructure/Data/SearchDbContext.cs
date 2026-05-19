@@ -1,6 +1,6 @@
 using Concertable.Artist.Domain;
 using Concertable.Concert.Domain;
-using Concertable.Data.Infrastructure;
+using Concertable.DataAccess.Infrastructure;
 using Concertable.Search.Domain.Models;
 using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;

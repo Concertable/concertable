@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Artist.Application.DTOs;
 using Concertable.Shared;
 

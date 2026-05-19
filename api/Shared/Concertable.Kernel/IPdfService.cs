@@ -1,4 +1,4 @@
-namespace Concertable.Application.Interfaces;
+namespace Concertable.DataAccess;
 
 public interface IPdfService
 {

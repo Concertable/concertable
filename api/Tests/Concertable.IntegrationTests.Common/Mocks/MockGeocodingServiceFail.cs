@@ -1,5 +1,5 @@
 using Concertable.Application.DTOs;
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.IntegrationTests.Common.Mocks;

@@ -1,4 +1,4 @@
-using Concertable.Application.Interfaces;
+using Concertable.DataAccess;
 using Concertable.Seeding;
 using Concertable.Seeding.Extensions;
 using Microsoft.EntityFrameworkCore;

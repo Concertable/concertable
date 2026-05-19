@@ -1,4 +1,4 @@
-global using Concertable.Data.Infrastructure;
+global using Concertable.DataAccess.Infrastructure;
 global using Concertable.Conversations.Application.DTOs;
 global using Concertable.Conversations.Application.Interfaces;
 global using Concertable.Conversations.Application.Mappers;
@@ -9,4 +9,4 @@ global using Concertable.Authorization.Contracts;
 global using Concertable.User.Contracts;
 global using Concertable.Notification.Contracts;
 global using Concertable.Shared;
-global using Concertable.Shared.Infrastructure;
+global using Concertable.DataAccess.Infrastructure;

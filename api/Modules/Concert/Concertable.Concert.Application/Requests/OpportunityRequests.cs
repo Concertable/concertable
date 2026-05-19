@@ -1,4 +1,4 @@
-using Concertable.Application.Diffing;
+using Concertable.DataAccess.Diffing;
 using Concertable.Concert.Application.Interfaces;
 using Concertable.Shared;
 

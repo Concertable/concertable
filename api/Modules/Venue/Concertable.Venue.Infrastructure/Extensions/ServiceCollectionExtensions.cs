@@ -1,5 +1,6 @@
 using Concertable.Concert.Contracts.Events;
-using Concertable.Data.Infrastructure.Data;
+using Concertable.DataAccess.Infrastructure;
+using Concertable.Seeding;
 using Concertable.Venue.Application.Validators;
 using Concertable.Venue.Domain.Events;
 using Concertable.Venue.Infrastructure.Data;
