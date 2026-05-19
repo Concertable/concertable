@@ -12,6 +12,7 @@ using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Payment.Api.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
+using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Customer.Api.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Authorization.Infrastructure.Extensions;
@@ -86,6 +87,7 @@ var services = builder.Services;
 services.AddScoped<IKeyedServiceProvider>(sp => (IKeyedServiceProvider)sp);
 
 services.AddInfrastructure(builder.Configuration);
+services.AddMessaging();
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     services.AddScoped<IDbInitializer, DevDbInitializer>();

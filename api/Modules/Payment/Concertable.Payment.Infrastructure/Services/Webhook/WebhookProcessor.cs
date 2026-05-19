@@ -8,14 +8,14 @@ namespace Concertable.Payment.Infrastructure.Services.Webhook;
 internal class WebhookProcessor : IWebhookProcessor
 {
     private readonly IStripeEventRepository stripeEventRepository;
-    private readonly IIntegrationEventBus integrationEventBus;
+    private readonly IBus integrationEventBus;
     private readonly IStripeHoldClient stripeHoldClient;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<WebhookProcessor> logger;
 
     public WebhookProcessor(
         IStripeEventRepository stripeEventRepository,
-        IIntegrationEventBus integrationEventBus,
+        IBus integrationEventBus,
         IStripeHoldClient stripeHoldClient,
         TimeProvider timeProvider,
         ILogger<WebhookProcessor> logger)
