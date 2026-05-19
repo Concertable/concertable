@@ -1,9 +1,10 @@
+using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
 
-internal class SettlementPaymentProcessor : IPaymentSucceededProcessor
+internal class SettlementPaymentProcessor : IIntegrationEventHandler<PaymentSucceededEvent>
 {
     private readonly IConcertWorkflowModule concertWorkflowModule;
     private readonly ILogger<SettlementPaymentProcessor> logger;
@@ -14,8 +15,11 @@ internal class SettlementPaymentProcessor : IPaymentSucceededProcessor
         this.logger = logger;
     }
 
-    public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct)
+    public async Task HandleAsync(PaymentSucceededEvent @event, CancellationToken ct = default)
     {
+        if (@event.Metadata.GetValueOrDefault("type") != TransactionTypes.Settlement)
+            return;
+
         var bookingId = int.Parse(@event.Metadata["bookingId"]);
         logger.LogDebug(
             "Settlement webhook received: payment intent {TransactionId} for booking {BookingId}",
