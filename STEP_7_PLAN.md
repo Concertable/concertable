@@ -2,7 +2,7 @@
 
 > **Companion to** [MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md). Step 7 = first cross-process boundary.
 >
-> **Status:** Not started. Plan drafted 2026-05-19 after Phase 1 wrap.
+> **Status:** All sub-steps DONE 2026-05-19 (commits `8da35e0a` for 7a–7e and `ea7ffecd` for 7g/7h). Migration re-scaffold deferred — see 7g notes.
 
 ---
 
