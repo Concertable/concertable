@@ -11,7 +11,7 @@ using Concertable.User.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
-using Concertable.Messaging.Infrastructure.Extensions;
+using Concertable.Conversations.Infrastructure.Extensions;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Infrastructure.Services;
 using Concertable.Data.Application;
@@ -89,7 +89,7 @@ public async Task InitializeAsync()
                 services.AddContractTestSeeder();
                 services.AddConcertTestSeeder();
                 services.AddPaymentTestSeeder();
-                services.AddMessagingTestSeeder();
+                services.AddConversationsTestSeeder();
                 services.AddCustomerTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>

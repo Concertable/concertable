@@ -48,7 +48,7 @@
     <ProjectReference Include="..\Modules\Contract\Concertable.Contract.Api\Concertable.Contract.Api.csproj" />
     <ProjectReference Include="..\Modules\Payment\Concertable.Payment.Api\Concertable.Payment.Api.csproj" />
     <ProjectReference Include="..\Modules\Notification\Concertable.Notification.Infrastructure\Concertable.Notification.Infrastructure.csproj" />
-    <ProjectReference Include="..\Modules\Messaging\Concertable.Messaging.Api\Concertable.Messaging.Api.csproj" />
+    <ProjectReference Include="..\Modules\Conversations\Concertable.Conversations.Api\Concertable.Conversations.Api.csproj" />
     <ProjectReference Include="..\Modules\Customer\Concertable.Customer.Api\Concertable.Customer.Api.csproj" />
     <ProjectReference Include="..\Modules\Customer\Concertable.Customer.Infrastructure\Concertable.Customer.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Search\Concertable.Search.Api\Concertable.Search.Api.csproj" />

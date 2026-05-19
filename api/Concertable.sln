@@ -117,17 +117,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Notification.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Notification.Infrastructure", "Modules\Notification\Concertable.Notification.Infrastructure\Concertable.Notification.Infrastructure.csproj", "{F2A3B4C5-6D7E-8F9A-0B1C-2D3E4F5A6B7C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Messaging", "Messaging", "{D3B4C5D6-7F8A-9B0C-1D2E-3F4A5B6C7D8E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Conversations", "Conversations", "{D3B4C5D6-7F8A-9B0C-1D2E-3F4A5B6C7D8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Messaging.Contracts", "Modules\Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj", "{E2F3A4B5-6C7D-8E9F-A0B1-C2D3E4F5A6B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Conversations.Contracts", "Modules\Conversations\Concertable.Conversations.Contracts\Concertable.Conversations.Contracts.csproj", "{E2F3A4B5-6C7D-8E9F-A0B1-C2D3E4F5A6B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Messaging.Domain", "Modules\Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj", "{F3A4B5C6-7D8E-9F0A-B1C2-D3E4F5A6B7C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Conversations.Domain", "Modules\Conversations\Concertable.Conversations.Domain\Concertable.Conversations.Domain.csproj", "{F3A4B5C6-7D8E-9F0A-B1C2-D3E4F5A6B7C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Messaging.Application", "Modules\Messaging\Concertable.Messaging.Application\Concertable.Messaging.Application.csproj", "{A4B5C6D7-8E9F-0A1B-C2D3-E4F5A6B7C8D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Conversations.Application", "Modules\Conversations\Concertable.Conversations.Application\Concertable.Conversations.Application.csproj", "{A4B5C6D7-8E9F-0A1B-C2D3-E4F5A6B7C8D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Messaging.Infrastructure", "Modules\Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj", "{B5C6D7E8-9F0A-1B2C-D3E4-F5A6B7C8D9E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Conversations.Infrastructure", "Modules\Conversations\Concertable.Conversations.Infrastructure\Concertable.Conversations.Infrastructure.csproj", "{B5C6D7E8-9F0A-1B2C-D3E4-F5A6B7C8D9E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Messaging.Api", "Modules\Messaging\Concertable.Messaging.Api\Concertable.Messaging.Api.csproj", "{C6D7E8F9-0A1B-2C3D-E4F5-A6B7C8D9E0F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Conversations.Api", "Modules\Conversations\Concertable.Conversations.Api\Concertable.Conversations.Api.csproj", "{C6D7E8F9-0A1B-2C3D-E4F5-A6B7C8D9E0F1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D}"
 EndProject

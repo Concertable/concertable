@@ -6,7 +6,7 @@ $dirs = @(
     "Modules\Contract\Concertable.Contract.Infrastructure\Data\Migrations",
     "Modules\Payment\Concertable.Payment.Infrastructure\Data\Migrations",
     "Modules\Customer\Concertable.Customer.Infrastructure\Data\Migrations",
-    "Modules\Messaging\Concertable.Messaging.Infrastructure\Data\Migrations",
+    "Modules\Conversations\Concertable.Conversations.Infrastructure\Data\Migrations",
     "Concertable.Auth\Data\Migrations",
     "Concertable.Customer\Modules\Concert\Concertable.Customer.Concert.Infrastructure\Data\Migrations",
     "Concertable.Customer\Modules\Ticket\Concertable.Customer.Ticket.Infrastructure\Data\Migrations",
@@ -36,7 +36,7 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context CustomerDbContext --project Modules/Customer/Concertable.Customer.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context MessagingDbContext --project Modules/Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context ConversationsDbContext --project Modules/Conversations/Concertable.Conversations.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --project Concertable.Auth --startup-project Concertable.Auth --output-dir Data/Migrations
