@@ -16,7 +16,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using QuestPDF.Infrastructure;
 using System.Data;
 
 namespace Concertable.Web.Extensions;
@@ -25,8 +24,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        QuestPDF.Settings.License = LicenseType.Community;
-
         services.AddSingleton(TimeProvider.System);
 
         services.AddKeyedSingleton<IGeometryProvider, GeographicGeometryProvider>(GeometryProviderType.Geographic, (_, _) =>

@@ -27,20 +27,25 @@ The modular monolith already enforces the *internal* boundary correctly. The mic
 
 ## 2. Service inventory
 
-| Service | Type | DB | Hosts |
-|---|---|---|---|
-| `Concertable.B2B.Api` | Data service | B2B SQL DB | Owns Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Organization, Messaging, manager/admin profiles. Manager + venue/artist SPA endpoints. |
-| `Concertable.B2B.Workers` | Worker | (shared with B2B.Api) | Background jobs: settlement triggers, lifecycle transitions, payout reconciliation. |
-| `Concertable.Customer.Api` | Data service | Customer SQL DB | Owns Tickets (with `AvailableTickets`), Preferences, Reviews, `CustomerProfileEntity`. Holds slim browse-projections of B2B's Venue/Artist/Concert *if not served by Search*. |
-| `Concertable.Customer.Workers` | Worker (optional) | (shared with Customer.Api) | Ticket email delivery, refund batching, projection rebuild from event replay. |
-| `Concertable.Search.Api` | Read projection service | Search SQL DB | Owns `ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`. Read-only, sync-callable from both B2B and Customer. Serves browse, autocomplete, header, and detail-page reads. Event-fed from canonical owners. |
-| `Concertable.Payment` | Adapter service | Payment SQL DB | Owns PayoutAccount (Connect refs), StripeCustomer refs, payment intent ledger, transfer ledger, refund ledger. Sole receiver of Stripe webhooks. |
-| `Concertable.Auth` | Adapter service | Duende IS DB | OIDC issuer for all audiences. Owns identity authority (`sub`, password hash, email-verification flow). **Does not emit role claims** — see §4 Identity row. |
-| `Concertable.AppHost` | Aspire orchestrator | — | Local dev orchestration. Already in place. |
-| `Concertable.Contracts` | NuGet/csproj | — | Shared event contracts and cross-service DTOs. Also home for `ICurrentUser` / authorization-claim helpers consumed per-service. Not a deployable. |
-| Azure Service Bus | Managed broker | — | Async event substrate between services. |
+| Logical service | Category | Composition (deployable hosts) | DB | Owns |
+|---|---|---|---|---|
+| **B2B** | Data | `Concertable.B2B.Api` + `Concertable.B2B.Workers` | B2B SQL | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Organization, Messaging, manager/admin profiles. Manager + venue/artist SPA endpoints. Workers run settlement triggers, lifecycle transitions, payout reconciliation. |
+| **Customer** | Data | `Concertable.Customer.Api` + `Concertable.Customer.Workers` | Customer SQL | Tickets (with `AvailableTickets`), Preferences, Reviews, `CustomerProfileEntity`. Workers handle refund batching, projection rebuild from event replay. (Email moves to Notification.) |
+| **Search** | Read projection | `Concertable.Search.Api` + `Concertable.Search.Workers` | Search SQL | `ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`. Browse/autocomplete/header/detail reads. Api read-only, sync-callable from B2B and Customer SPAs. Workers consume events from B2B and Customer to populate projections. |
+| **Payment** | Adapter | `Concertable.Payment.Api` + `Concertable.Payment.Workers` | Payment SQL | PayoutAccount, StripeCustomer refs, payment intent / transfer / refund ledger. Sole receiver of Stripe webhooks. Workers process webhooks and reconciliation. |
+| **Auth** | Adapter | `Concertable.Auth` (Duende IS, single host) | Duende DB | OIDC issuer. Identity authority (`sub`, password hash, email-verification). No role claims. Also issues service tokens for service-to-service auth (§5.5). |
+| **Notification** *(deferred — stays in-process until concrete need)* | Adapter | `Concertable.Notification.Workers` (Api optional for template admin) | Notification DB | Email delivery (identity + domain). Owns SMTP/SendGrid credentials, templates. Subscribes to events from Auth/B2B/Customer; sends emails. See §4.7. |
 
-**Service count:** 6 deployable services (B2B.Api, B2B.Workers, Customer.Api, Search.Api, Payment, Auth), optional 7th if Customer needs workers. Plus AppHost (dev only), Contracts package, and the managed broker.
+**Non-deployables:**
+
+| | | |
+|---|---|---|
+| `Concertable.AppHost` | Aspire orchestrator | Local dev only. |
+| `Concertable.Contracts` | csproj (future NuGet if poly-repo) | The *wire*: event contracts, cross-service DTOs, `ICurrentUser`, static lookups (Genre). |
+| `Concertable.Kernel` | csproj (future NuGet if poly-repo) | The *framework*: `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers. |
+| Azure Service Bus | Managed broker | Async event substrate. |
+
+**Service count:** 6 logical services (5 at first deploy; Notification extracts later per §4.7). 11 deployable hosts at end-state.
 
 ## 3. Service categories
 
@@ -93,10 +98,29 @@ Where current monolith code lands post-extraction. Sequence matters — most of 
 |---|---|
 | `BookingId`, `ContractType`, `CurrentStage`, `DatePosted` | B2B (workflow shape, canonical) |
 | `TotalTickets` (capacity) | B2B (set by venue when posting) → Search + Customer projections |
-| `AvailableTickets` (remaining) | **Customer** — moves off B2B's `ConcertEntity` entirely |
+| `AvailableTickets` (remaining) | **Customer** — moves off B2B's `ConcertEntity` entirely (see "Customer's ConcertEntity" below) |
 | `Name`, `About`, `Price`, `BannerUrl`, `Avatar`, `Period`, `Location` | B2B (canonical for editing) → Search (browse projection) |
 | `ConcertGenres`, `Images` | B2B (canonical) → Search (browse projection) |
 | `Tickets` collection | **Customer** — `TicketEntity` moves out of `Concert.Domain` |
+
+### Customer's `ConcertEntity` (new — Customer's bounded-context view)
+
+Customer gets its own `ConcertEntity` (same name as B2B's, different shape) — **not** a projection table named `ConcertTicketAvailability` or similar. Within Customer's bounded context, this row *is* a Concert: it has behavior (`DecrementAvailability(int)`), invariants (`AvailableTickets >= 0`, `AvailableTickets <= TotalTickets`), and a lifecycle.
+
+```csharp
+// Customer.Domain.Entities.ConcertEntity
+public class ConcertEntity : BaseEntity<int> {
+    public int TotalTickets { get; private set; }       // sourced from ConcertChangedEvent
+    public int AvailableTickets { get; private set; }    // Customer owns; decremented on purchase
+
+    public void DecrementAvailability(int qty) { ... }
+    public void RestoreAvailability(int qty) { ... }     // on refund
+}
+```
+
+**Naming rationale:** B2B's `ConcertEntity` and Customer's `ConcertEntity` share the same `Id` (so cross-context events correlate) but have entirely different shapes because each bounded context cares about different things — textbook §1 ("Customer's Concert ≠ B2B's Concert"). Naming Customer's row as a "projection" or "availability" would falsely imply it's data-only; in fact it owns business rules around ticket allocation. Different ubiquitous language per context is the DDD-correct outcome.
+
+**Namespace disambiguation at the code level:** `B2B.Concert.Domain.Entities.ConcertEntity` vs `Customer.Domain.Entities.ConcertEntity`. They never appear in the same file. Cross-service events use `Concertable.Contracts.ConcertId` for correlation, not either entity type.
 
 ### Whole-entity moves out of `Concert.Domain`
 
@@ -148,6 +172,60 @@ Where current monolith code lands post-extraction. Sequence matters — most of 
 | `Modules/Notification` | Stays in-process initially; future adapter service (deferred per §11 Q2) |
 | `Modules/Payment` | Already shaped as adapter service; extracts straight across |
 
+## 4.6 Reference data ownership
+
+Reference data is split by characteristic:
+
+- **Enum-like, static, never admin-CRUD'd** — lives as constants in `Concertable.Contracts`. No DB row in any service. **Genre is this case**: ~20–50 values, set when artist/concert is created, never edited at runtime. The current `SharedDbContext.Genres` table is **deleted**; Genre becomes a `record GenreId(int Value)` or `enum Genre` in `Concertable.Contracts`. Search projects genre names denormalized onto `*SearchModel`s — consumers never join on GenreId.
+- **Admin-editable reference data** (none in Concertable today) — owned by exactly one canonical service. Name denormalized onto outbound events. Treat like Venue.
+- **Per-service status enums** (`OpportunityStage`, `ContractType`) — stay local to the owning service. No cross-service sharing needed.
+
+Rule: ask "does this reference data need an admin UI?" If no, it's a contract, not a service. Resist the temptation to make a `Concertable.ReferenceData` service.
+
+## 4.7 Cross-cutting infrastructure: Notification
+
+Email is the first cross-cutting concern that earns its own adapter service. `Concertable.Notification` is the 6th logical service.
+
+**Two flavors of email Notification handles:**
+
+- **Identity email** (verification, password reset) — Auth publishes `EmailVerificationRequestedEvent`, `PasswordResetRequestedEvent`; Notification subscribes.
+- **Domain email** (application accepted, ticket purchased, booking settled) — B2B/Customer publish their normal domain events; Notification subscribes to the same events that already drive projections.
+
+**Why a separate service** (same logic as Payment):
+
+- SMTP/SendGrid credentials, email templates, deliverability tracking all live in one place
+- Vendor swap is an internal-only change
+- Notification crashes don't take down B2B's settlement workflow
+- Email volume can spike independently of write workload
+
+**Extraction timing:** stays as `Modules/Notification` (in-process) until *after* Customer extracts. Pre-extraction, Auth talks to SMTP/SendGrid SDK directly — pragmatic, small refactor surface when Notification extracts later. Don't pre-extract Notification before there's measurable pressure.
+
+**Future cross-cutting adapters** (file storage, image CDN, geocoding) follow the same shape — but only *if* they grow beyond library wrappers. Until then, they're NuGet packages consumed in-process by each service.
+
+## 4.8 Resolution of `api/Shared/*`
+
+The current six `Concertable.Shared.*` csprojs collapse into **two csprojs**: one for the wire, one for the framework.
+
+| Today | Post-split | Reason |
+|---|---|---|
+| `Concertable.Shared.Contracts` | → `Concertable.Contracts` | Event contracts + cross-service DTOs + Genre lookup + `ICurrentUser` |
+| `Concertable.Shared.Domain` | → `Concertable.Kernel` | `BaseEntity`, `ValueObject`, `Period`, `IEventRaiser`, `IDateRange` |
+| `Concertable.Shared.Application` | → `Concertable.Kernel` | `IUnitOfWork<TContext>`, `IUnitOfWorkBehavior`, base specification types |
+| `Concertable.Shared.Infrastructure` | → `Concertable.Kernel` | `DbContextBase`, `UnitOfWork<TContext>` impl, `BaseRepository`/`Repository`/`GuidRepository` bases |
+| `Concertable.Shared.Validation` | → `Concertable.Kernel` | FluentValidation extensions |
+| `Concertable.Shared.UnitTests` | → tests for `Concertable.Kernel` | — |
+| `SharedDbContext` (Genres only) | **Deleted** | Genre moves to `Concertable.Contracts` as enum |
+| `Modules/Authorization/` (`ICurrentUser`, claim helpers) | → `Concertable.Contracts` | Q5 resolved |
+
+**Two-package rule:**
+
+- **`Concertable.Contracts`** = the *wire*. What flows between services. Breaking changes = protocol changes.
+- **`Concertable.Kernel`** = the *framework*. Internal building blocks. Breaking changes = compile failures, not protocol breaks.
+
+Both are csprojs in the mono-repo (`api/Shared/Concertable.Contracts/` and `api/Shared/Concertable.Kernel/`). Each service references them via `<ProjectReference>`. The same csproj appears in multiple `.sln` files — normal in .NET mono-repos.
+
+If the repo ever splits poly-repo, both become NuGet packages published to a private feed; references become `<PackageReference>` with versioning. Mechanical conversion, zero architectural change.
+
 ## 5. Communication patterns
 
 | Channel | Used for | Used between |
@@ -165,6 +243,27 @@ Where current monolith code lands post-extraction. Sequence matters — most of 
 - **gRPC between services** — same antipattern risk as sync HTTP, with worse-fitting tooling.
 - **Cross-service joins, shared schemas, shared DBs** — each service has its own database.
 - **Project references between B2B modules and Customer modules** — only `Concertable.Contracts` (and the authorization-helpers library) may be referenced by both. Enforce via CI architecture tests.
+
+## 5.5 Service-to-service authentication
+
+**Decision: OAuth2 `client_credentials` via Duende.** Each service is registered as a Client in Auth with its own `client_id` + secret. When B2B needs to call Payment, B2B requests a service token from Auth (via the existing OIDC issuer), then presents it as `Authorization: Bearer <token>`. Payment validates audience + scope using the same JWT middleware it uses for user tokens.
+
+This works because Auth is already there for user tokens — Duende IS supports `client_credentials` grant natively. Adding service-to-service auth is "register one more Client per service" rather than a new authentication subsystem.
+
+**Alternatives considered:**
+
+| Option | Verdict | Reason |
+|---|---|---|
+| client_credentials via Duende | **Chosen** | Duende already there; same JWT plumbing as user auth; standard pattern; trivial to add |
+| mTLS | Rejected for now | Stronger identity but cert lifecycle is operationally heavy. Revisit if compliance ever demands it. |
+| API keys | Rejected | No proper claims model; rotation/revocation brittle; no audience scoping |
+| VNet only (no wire auth) | Rejected as primary | "Soft chewy center" — one network breach compromises everything. Used as defense-in-depth on top, not instead of |
+
+**Production posture:** client_credentials on the wire **+** private network (VNet/VPC) as defense-in-depth. Internal services aren't publicly addressable except via API gateway, *and* every internal call carries a service token.
+
+**Local dev:** Aspire AppHost wires the same client_credentials flow against the local Duende instance. No "skip auth in dev" mode — keeps the path tested.
+
+**Note on roles:** Service tokens carry **scope** (e.g., `payment:write`, `auth:read`), not roles. User tokens carry **`sub` + audience**, also no role claim. Roles are derived per-service from token audience + service-side profile-table membership (§4 Identity row). Auth never emits a role claim into either type of token.
 
 ## 6. Event-driven CQRS pattern
 
@@ -283,6 +382,56 @@ Concertable/
 
 If those hold, mono-repo → poly-repo is a folder move + replacing project references with NuGet feeds.
 
+## 8.5 Modular monolith inside each microservice
+
+The microservices split **does not retire the modular monolith pattern** — it shrinks the pattern's scope to the inside of each service. The current discipline (`IXModule` facades, per-module `XDbContext` with its own schema, in-process domain events between modules via `IEventRaiser`, module-owned `IEntityTypeConfiguration<T>`, NetArchTest boundary enforcement, `MODULAR_MONOLITH_RULES.md`) **carries forward verbatim into each microservice's internal structure**.
+
+**Inside `Concertable.B2B`:**
+
+```
+B2B/
+├── Concertable.B2B.Api/                (HTTP host — composition root)
+├── Concertable.B2B.Workers/            (background jobs host)
+└── Modules/
+    ├── Venue/        Api + Application + Domain + Infrastructure + Contracts
+    ├── Artist/       same shape
+    ├── Concert/      same shape (now lean post-decomposition)
+    ├── Contract/
+    ├── Booking/
+    ├── Application/
+    ├── Opportunity/
+    ├── Organization/
+    └── Messaging/
+```
+
+Same shape inside `Concertable.Customer` (modules: Ticket, Review, Preference, CustomerProfile), `Concertable.Search` (VenueSearchModel, ArtistSearchModel, ConcertSearchModel as projection modules), `Concertable.Payment` (Stripe integration, ledger), `Concertable.Notification` (templates, transport).
+
+**What stays:**
+
+- `IXModule` facade per module (cross-module access goes through it; no direct entity reach-in)
+- Per-module `XDbContext` with its own schema, owning only its tables (all DbContexts now point at the same B2B DB, but tables stay schema-isolated)
+- In-process domain events between modules (`IEventRaiser` + `XChangedDomainEvent`) — cheap, synchronous, no bus involvement for intra-service flows
+- Module-owned `IEntityTypeConfiguration<T>` in `Module.Infrastructure/Data/Configurations/`
+- Per-module `IDevSeeder` / `ITestSeeder` at `Order=N`
+- `InternalsVisibleTo` chains keeping `Module.Application` interfaces `internal`
+- Module per-context migrations (one history table per service's DB; modules within the service still have their own migrations)
+- NetArchTest rules enforcing cross-module discipline
+
+**What changes:**
+
+- Cross-service module access (e.g., Customer's Ticket module → B2B's Concert module) is **no longer in-process** — it goes via the bus (events for projection updates) or sync HTTP to adapter services. Within a single service, cross-module access remains in-process.
+- The "Concertable.Workers" composition host splits into per-service Workers hosts (`B2B.Workers`, `Customer.Workers`, etc.). Each Workers host loads only its own service's modules.
+- `Concertable.AppHost` orchestrates N service hosts in dev, where today it orchestrates one Web + one Workers.
+
+**Why this earns its keep:**
+
+- If a sub-module within a service later needs its own deployable (e.g., `Contract` grows to warrant a `Concertable.Contract.Api`), extraction is a packaging change because the internal boundary already exists.
+- In-process domain events between modules avoid the latency and operational complexity of the bus for flows that don't actually cross a service boundary.
+- The same patterns devs (or future-you) already know, scoped smaller.
+- `MODULAR_MONOLITH_RULES.md` doesn't get deleted — it gets cited *per service*.
+
+**What this is not:** an excuse to keep B2B and Customer modules together. The microservices split between bounded contexts (§1) is not negotiable. Inside a bounded context, the modular monolith pattern still applies.
+
 ## 9. Learning sequence
 
 The architecture is the *what*; this is the *how to build it as a learning project*. Each step teaches a specific concept. Steps 0–2 happen *in the monolith* before any process split — the lesson "shrink the boundary in-process first" is itself the point.
@@ -324,10 +473,13 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 | R6 | `Modules/User/` TPH unwind (§4.5) touches every B2B controller that reads `ICurrentUser` for role/persona checks. Sequence carefully so the monolith builds at each step. | Mitigation: do the role-claim removal in Auth first, derive role from token audience + DB lookup per controller, *then* delete the TPH. |
 | R7 | `ConcertEntity` decomposition (Step 0) is the biggest in-monolith refactor on the path. Touches Concert + Customer + Search projections + every read path. | Mitigation: explicit migration step (§4.5) sequences the field moves; ship in small PRs; integration tests cover both old and new shapes during transition. |
 | ~~Q1~~ R8 *(was Q1)* | **Resolved 2026-05-19** — Search is its own service, sync-callable from both B2B and Customer SPAs. Single projection serves both audiences; no duplicate browse-projection tables in B2B and Customer. Updates stay with canonical owners. | — |
-| Q2 | Where do Notifications live in the longer-term plan? | Probably its own adapter service, event-driven. Defer extraction until concrete need. |
+| ~~Q2~~ R9 *(was Q2)* | **Resolved 2026-05-19** — Notification is the 6th logical adapter service (see §4.7). Stays in-process until after Customer extracts; then extracts as `Concertable.Notification`. Auth talks to SMTP/SendGrid directly pre-extraction. | — |
 | Q3 | Do we eventually need a dedicated `Concertable.Webhooks.Stripe` service separate from Payment? | Only if Stripe event handling outgrows Payment. Defer. |
 | Q4 | Future B2B venue↔artist reviews — same `ReviewEntity` shape as customer reviews, or different? | Open. Default: separate table in B2B (different bounded context, even if conceptually similar). Same conceptual name `Review` is fine across services. |
-| Q5 | Where does the existing `Concertable.Authorization` (`ICurrentUser`, claim helpers) live post-split? | Default: shared library in `Concertable.Contracts` (or its own NuGet). Each service references it; no service owns the *authorization decisions* centrally. |
+| ~~Q5~~ R10 *(was Q5)* | **Resolved 2026-05-19** — `ICurrentUser` and claim helpers live in `Concertable.Contracts` (the wire package). See §4.8. No central authorization service; each service makes its own authz decisions against tokens it validates. | — |
+| Q6 | Service-to-service auth in `client_credentials` model: how are scopes structured? Per-callee service (`payment:write`, `auth:read`) or finer (`payment:intent:create`)? | Open. Default: start coarse (one scope per callee service), refine only if a service legitimately needs to distinguish caller intents. |
+| Q7 | Event schema versioning concrete mechanism. `V1`/`V2` type names? CloudEvents headers? Upcaster pattern? | Open. Decide at Step 13 of §9 with concrete migration in hand. |
+| Q8 | DB-per-service cutover when extracting Customer (Step 3 §9). One logical DB → N physical DBs operationally — backup/restore, logical export, tolerated downtime? | Open. Likely "fresh DB + replay events from B2B outbox to populate Customer's projections" since the boundary is fresh; but spike it before committing. |
 
 ## 12. Decision log
 
@@ -344,6 +496,14 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 - **2026-05-19** — `Modules/User/` TPH dismantled. Identity authority lives in Auth (Duende: `sub`, email, password hash, email-verification). Each service owns a flat per-persona profile entity carrying the `sub` (B2B: `VenueManagerEntity`/`ArtistManagerEntity`/`AdminEntity`; Customer: `CustomerProfileEntity`). Reason: customer data should not live in B2B; a TPH spanning two bounded contexts is the monolith leaking across the split.
 - **2026-05-19** — Authentication and authorization explicitly separated. Auth issues tokens with `sub` + audience only, no role claim. Each service derives role from token audience (Customer audience ⇒ Customer role) + service-side profile-table membership (B2B looks up `sub` in manager/admin tables to determine persona). Reason: identity ("who are you") and authorization ("what can you do *here*") are different concerns; baking role claims into the identity token couples them and leaks per-service authorization rules into Auth.
 - **2026-05-19** — Future B2B venue↔artist reviews (post-gig counterparty feedback) will live as a separate B2B-owned table. Same conceptual name `Review` is fine because the two reviews live in different bounded contexts.
+- **2026-05-19** — Reference data ownership rule (§4.6): enum-like static data (Genre) lives in `Concertable.Contracts` as constants/enums, not as a DB table. The current `SharedDbContext.Genres` table gets deleted in Phase 1 (per `MICROSERVICE_STEPS.md`). Search projects genre names denormalized onto `*SearchModel`s. Reason: shipping reference data as a contract avoids both shared-DB coupling and a needless "reference data service."
+- **2026-05-19** — Notification confirmed as 6th logical adapter service (§4.7). Two flavors of email — identity (verification, password reset) from Auth and domain (booking accepted, ticket purchased) from B2B/Customer — both consumed by Notification via bus events. Extraction deferred until after Customer extracts; Auth uses SMTP/SendGrid SDK directly in the interim.
+- **2026-05-19** — `api/Shared/*` six csprojs collapse to two (§4.8): `Concertable.Contracts` (the wire — event types, cross-service DTOs, `ICurrentUser`, Genre lookup) and `Concertable.Kernel` (the framework — `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers). Reason: two packages with distinct breaking-change semantics is the minimum useful split; six is monolith-era ergonomics.
+- **2026-05-19** — `SharedDbContext` deleted as part of §4.6 + §4.8 collapse. Genre moves to `Concertable.Contracts` as enum; `SharedDbContext` had no other tables worth keeping.
+- **2026-05-19** — Service-to-service auth (§5.5): OAuth2 `client_credentials` via Duende. Each service is a Client; service tokens carry scope (not roles); same JWT validation middleware as user tokens. Production posture = client_credentials on the wire + private network as defense-in-depth. Rejected: mTLS (operationally heavy for solo dev), API keys (no proper claims), VNet-only (soft-chewy-center antipattern).
+- **2026-05-19** — `RoleEnforcingInteractionResponseGenerator` + `IClientRoleResolver` + `Role` enum (`Concertable.User.Contracts.Role`) are pre-split artifacts and get **deleted** when Step 1 of `MICROSERVICE_STEPS.md` (TPH unwind + Auth identity-only) lands. Post-split Auth has no `role` concept — neither at login enforcement nor in issued tokens. Per-service authorization rejects tokens whose `sub` isn't in the service's profile tables; that replaces the "user must have role X for client Y" check. Reason: keeping role enforcement in Auth re-couples identity to per-service authorization rules.
+- **2026-05-19** — **Modular monolith pattern stays inside each microservice** (§8.5). `IXModule` facades, per-module `XDbContext` with own schema, in-process domain events between modules, module-owned EF configs, NetArchTest module-boundary rules, `MODULAR_MONOLITH_RULES.md` — all carry forward verbatim *inside* each service. The microservices split shrinks the pattern's scope to per-service; it does not retire the pattern. Cross-module access stays in-process for intra-service flows; only cross-*service* flows hit the bus. Reason: the discipline isn't throwaway, future sub-extraction stays cheap, and intra-service in-process events avoid bus overhead for flows that don't cross bounded contexts.
+- **2026-05-19** — Customer's slim concert row is named `ConcertEntity` (in `Customer.Domain.Entities`), not `ConcertTicketAvailability` or any "projection-ish" name. Same name as B2B's `ConcertEntity` but a different shape and different ubiquitous language — DDD-correct outcome of "Customer's Concert ≠ B2B's Concert" (§1). Customer's `ConcertEntity` owns behavior (`DecrementAvailability` / `RestoreAvailability`) and invariants (`AvailableTickets >= 0`, `<= TotalTickets`), not just data, so calling it a "projection" would mislead. Shared `Id` correlates events across contexts; namespace disambiguation handles the code-level naming overlap. See §4.5 "Customer's `ConcertEntity`".
 
 ## 13. Reference
 

@@ -55,29 +55,29 @@ internal class ConcertTestSeeder : ITestSeeder
 
             seed.FlatFeeApp = ApplicationFactory.Create(seed.Artist.Id, opps[0].Id, seed.FlatFeeAppContract.ContractType);
 
-            seed.ConfirmedBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Draft Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[1].Period.Start, opps[1].Period.End).Generate());
+            seed.ConfirmedBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Draft Concert", 0m, 100, seed.Artist.Id, seed.Venue.Id, opps[1].Period.Start, opps[1].Period.End).Generate());
             seed.ConfirmedApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[1].Id, seed.ConfirmedBooking);
 
-            seed.AwaitingPaymentBooking = BookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Unsettled Concert", 0m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[2].Period.Start, opps[2].Period.End).Generate());
+            seed.AwaitingPaymentBooking = BookingFactory.AwaitingPayment(ConcertFaker.GetFaker("Unsettled Concert", 0m, 100, seed.Artist.Id, seed.Venue.Id, opps[2].Period.Start, opps[2].Period.End).Generate());
             seed.AwaitingPaymentApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[2].Id, seed.AwaitingPaymentBooking);
 
             seed.VersusApp = ApplicationFactory.Create(seed.Artist.Id, opps[3].Id, seed.VersusAppContract.ContractType);
             seed.DoorSplitApp = ApplicationFactory.Create(seed.Artist.Id, opps[4].Id, seed.DoorSplitAppContract.ContractType);
             seed.VenueHireApp = ApplicationFactory.CreatePrepaid(seed.Artist.Id, opps[5].Id, seed.VenueHireAppContract.ContractType);
 
-            seed.PostedFlatFeeBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[6].Period.Start, opps[6].Period.End, now).Generate());
+            seed.PostedFlatFeeBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted FlatFee Concert", 10.00m, 100, seed.Artist.Id, seed.Venue.Id, opps[6].Period.Start, opps[6].Period.End, now).Generate());
             seed.PostedFlatFeeBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedFlatFeeApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[6].Id, seed.PostedFlatFeeBooking);
 
-            seed.PostedDoorSplitBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Posted DoorSplit Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[7].Period.Start, opps[7].Period.End, now).Generate());
+            seed.PostedDoorSplitBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Posted DoorSplit Concert", 10.00m, 100, seed.Artist.Id, seed.Venue.Id, opps[7].Period.Start, opps[7].Period.End, now).Generate());
             seed.PostedDoorSplitBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedDoorSplitApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[7].Id, seed.PostedDoorSplitBooking);
 
-            seed.PostedVersusBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Posted Versus Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[8].Period.Start, opps[8].Period.End, now).Generate());
+            seed.PostedVersusBooking = BookingFactory.ConfirmedDeferred(ConcertFaker.GetFaker("Posted Versus Concert", 10.00m, 100, seed.Artist.Id, seed.Venue.Id, opps[8].Period.Start, opps[8].Period.End, now).Generate());
             seed.PostedVersusBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedVersusApp = ApplicationFactory.Accepted(seed.Artist.Id, opps[8].Id, seed.PostedVersusBooking);
 
-            seed.PostedVenueHireBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted VenueHire Concert", 10.00m, 100, 100, seed.Artist.Id, seed.Venue.Id, opps[9].Period.Start, opps[9].Period.End, now).Generate());
+            seed.PostedVenueHireBooking = BookingFactory.Confirmed(ConcertFaker.GetFaker("Posted VenueHire Concert", 10.00m, 100, seed.Artist.Id, seed.Venue.Id, opps[9].Period.Start, opps[9].Period.End, now).Generate());
             seed.PostedVenueHireBooking.Concert!.ConcertGenres.Add(new ConcertGenreEntity { GenreId = seed.Rock.Id });
             seed.PostedVenueHireApp = ApplicationFactory.AcceptedPrepaid(seed.Artist.Id, opps[9].Id, seed.PostedVenueHireBooking);
 

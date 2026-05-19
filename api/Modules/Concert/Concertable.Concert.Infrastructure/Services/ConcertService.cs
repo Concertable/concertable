@@ -1,5 +1,4 @@
-﻿using Concertable.Concert.Application.Interfaces.Reviews;
-using Concertable.Customer.Contracts;
+﻿using Concertable.Customer.Contracts;
 using Concertable.Shared.Exceptions;
 using FluentResults;
 
@@ -12,7 +11,6 @@ internal class ConcertService : IConcertService
     private readonly ICurrentUser currentUser;
     private readonly IApplicationValidator applicationValidator;
     private readonly IEmailService emailService;
-    private readonly IConcertReviewRepository concertReviewRepository;
     private readonly ICustomerModule customerModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly TimeProvider timeProvider;
@@ -23,7 +21,6 @@ internal class ConcertService : IConcertService
         ICurrentUser currentUser,
         IApplicationValidator applicationValidator,
         IEmailService emailService,
-        IConcertReviewRepository concertReviewRepository,
         ICustomerModule customerModule,
         IConcertDraftService concertDraftService,
         TimeProvider timeProvider)
@@ -33,7 +30,6 @@ internal class ConcertService : IConcertService
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
         this.emailService = emailService;
-        this.concertReviewRepository = concertReviewRepository;
         this.customerModule = customerModule;
         this.concertDraftService = concertDraftService;
         this.timeProvider = timeProvider;
@@ -86,7 +82,7 @@ internal class ConcertService : IConcertService
             About = concertEntity.About,
             Price = concertEntity.Price,
             TotalTickets = concertEntity.TotalTickets,
-            AvailableTickets = concertEntity.AvailableTickets
+            AvailableTickets = 0 // moved to Customer.Concert; UI reads via Search projection in end-state
         };
     }
 
@@ -104,7 +100,9 @@ internal class ConcertService : IConcertService
         await concertRepository.SaveChangesAsync();
 
         var concertHeaderDto = concertEntity.ToSnapshotDto();
-        concertHeaderDto = concertHeaderDto with { Rating = (await concertReviewRepository.GetSummaryByConcertAsync(id)).AverageRating };
+        // BROKEN Phase 1: rating came from IConcertReviewRepository.GetSummaryByConcertAsync (moved to Customer.Review).
+        // Snapshot omits rating until B2B's ConcertRatingProjection (fed by ReviewSubmittedEvent) is read here, or
+        // the notification payload drops rating entirely. Posting-time rating is always null/zero anyway.
 
         var location = concertEntity.Booking.Application.Opportunity.Venue.Location;
 

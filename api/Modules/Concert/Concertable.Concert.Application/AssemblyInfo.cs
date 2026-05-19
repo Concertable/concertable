@@ -17,3 +17,7 @@ using System.Runtime.CompilerServices;
 // TEMPORARY: Concertable.Web (E2EEndpointExtensions injects ICompletionDispatcher; ServiceCollectionExtensions
 // keyed-registers ITicketPaymentStrategy impls). Retires when those move into Concert.Api / Payment.Infrastructure.
 [assembly: InternalsVisibleTo("Concertable.Web")]
+// TEMPORARY Phase 1: Customer.Ticket service was extracted but still injects Concert internals
+// (IConcertRepository, IContractLoader, IPaymentSucceededProcessor) until Phase 2 Step 8 replaces those
+// with MassTransit consumers + Customer-owned ConcertEntity projection. Retire then.
+[assembly: InternalsVisibleTo("Concertable.Customer.Ticket.Infrastructure")]

@@ -160,10 +160,14 @@ internal class ConcertRepository : Repository<ConcertEntity>, IConcertRepository
 
     public async Task<decimal> GetTotalRevenueByConcertIdAsync(int concertId)
     {
-        return await context.Concerts
+        // BROKEN Phase 1: sold count is now Customer.Concert.ConcertEntity (TotalTickets - AvailableTickets).
+        // Cross-IVT to Customer.Concert here, or query the future ConcertSalesProjection populated from
+        // TicketPurchasedEvent. Returning 0 until Phase 2.
+        var price = await context.Concerts
             .Where(c => c.Id == concertId)
-            .Select(c => c.Price * (c.TotalTickets - c.AvailableTickets))
+            .Select(c => c.Price)
             .FirstOrDefaultAsync();
+        return 0m;
     }
 
 }

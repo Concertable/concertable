@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.E2ETests.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Customer\Modules\Ticket\Concertable.Customer.Ticket.Application\Concertable.Customer.Ticket.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

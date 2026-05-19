@@ -22,4 +22,10 @@
 [assembly: InternalsVisibleTo("Concertable.Concert.Api")]
 // Concert integration tests deserialize TicketPaymentResponse + reference ITransaction via fixture round-trips.
 [assembly: InternalsVisibleTo("Concertable.Concert.IntegrationTests")]
+// Customer.Ticket extraction (Phase 1): ITicketService/Controller signatures still reference Payment-internal
+// TicketPaymentResponse + PurchaseCompleteDto. Retires when those types become Customer.Ticket-owned or
+// the ticket payment flow rewires through bus events.
+[assembly: InternalsVisibleTo("Concertable.Customer.Ticket.Application")]
+[assembly: InternalsVisibleTo("Concertable.Customer.Ticket.Infrastructure")]
+[assembly: InternalsVisibleTo("Concertable.Customer.Ticket.Api")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

@@ -27,8 +27,6 @@ internal class ReadDbContext(
     public IQueryable<OpportunityGenreEntity> OpportunityGenres => Set<OpportunityGenreEntity>().AsNoTracking();
     public IQueryable<ApplicationEntity> Applications => Set<ApplicationEntity>().AsNoTracking();
     public IQueryable<BookingEntity> Bookings => Set<BookingEntity>().AsNoTracking();
-    public IQueryable<ReviewEntity> Reviews => Set<ReviewEntity>().AsNoTracking();
-    public IQueryable<TicketEntity> Tickets => Set<TicketEntity>().AsNoTracking();
     public IQueryable<MessageEntity> Messages => Set<MessageEntity>().AsNoTracking();
     public IQueryable<TransactionEntity> Transactions => Set<TransactionEntity>().AsNoTracking();
     public IQueryable<TicketTransactionEntity> TicketTransactions => Set<TicketTransactionEntity>().AsNoTracking();

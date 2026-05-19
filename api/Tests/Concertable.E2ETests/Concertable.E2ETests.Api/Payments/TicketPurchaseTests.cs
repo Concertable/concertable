@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using Concertable.Concert.Application.DTOs;
+using Concertable.Customer.Ticket.Application.DTOs;
 using Concertable.Tests.Common;
 using Xunit;
 using Xunit.Abstractions;

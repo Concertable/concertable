@@ -33,7 +33,7 @@ internal static class ConcertMappers
         Avatar = concert.Avatar ?? concert.Booking.Application.Artist.Avatar,
         Price = concert.Price,
         TotalTickets = concert.TotalTickets,
-        AvailableTickets = concert.AvailableTickets,
+        AvailableTickets = 0, // moved to Customer.Concert.ConcertEntity (sub-step #11); UI reads from Search projection in end-state
         DatePosted = concert.DatePosted,
         StartDate = concert.Booking.Application.Opportunity.Period.Start,
         EndDate = concert.Booking.Application.Opportunity.Period.End,

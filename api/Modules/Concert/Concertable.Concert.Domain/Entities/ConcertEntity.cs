@@ -1,9 +1,10 @@
+using Concertable.Concert.Domain.Events;
 using Concertable.Shared;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Concert.Domain;
 
-public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, ILifecycleEntity
+public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, ILifecycleEntity, IEventRaiser
 {
     public int Id { get; private set; }
     public int BookingId { get; private set; }
@@ -15,7 +16,6 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
     public string? Avatar { get; private set; }
     public decimal Price { get; private set; }
     public int TotalTickets { get; private set; }
-    public int AvailableTickets { get; private set; }
     public DateRange Period { get; private set; } = null!;
     public DateTime? DatePosted { get; private set; }
     public Point? Location { get; set; }
@@ -24,9 +24,12 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
     public BookingEntity Booking { get; set; } = null!;
     public ArtistReadModel Artist { get; set; } = null!;
     public VenueReadModel Venue { get; set; } = null!;
-    public ICollection<TicketEntity> Tickets { get; } = [];
     public HashSet<ConcertGenreEntity> ConcertGenres { get; private set; } = [];
     public ICollection<ConcertImageEntity> Images { get; private set; } = [];
+
+    private readonly EventRaiser _events = new();
+    public IReadOnlyList<IDomainEvent> DomainEvents => _events.DomainEvents;
+    public void ClearDomainEvents() => _events.Clear();
 
     private ConcertEntity() { }
 
@@ -77,12 +80,11 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
 
     public void Update(string name, string about, decimal price, int totalTickets)
     {
-        int ticketsSold = TotalTickets - AvailableTickets;
         Name = name;
         About = about;
         Price = price;
         TotalTickets = totalTickets;
-        AvailableTickets = totalTickets - ticketsSold;
+        _events.Raise(new ConcertChangedDomainEvent(Id, totalTickets, price, Period, DatePosted));
     }
 
     public void Post(string name, string about, decimal price, int totalTickets, DateTime now)
@@ -91,12 +93,7 @@ public class ConcertEntity : IIdEntity, IHasName, IHasLocation, IHasDateRange, I
         About = about;
         Price = price;
         TotalTickets = totalTickets;
-        AvailableTickets = totalTickets;
         DatePosted = now;
-    }
-
-    public void SellTickets(int quantity)
-    {
-        AvailableTickets -= quantity;
+        _events.Raise(new ConcertChangedDomainEvent(Id, totalTickets, price, Period, now));
     }
 }

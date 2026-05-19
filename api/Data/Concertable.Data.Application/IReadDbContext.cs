@@ -24,8 +24,6 @@ public interface IReadDbContext
     IQueryable<OpportunityGenreEntity> OpportunityGenres { get; }
     IQueryable<ApplicationEntity> Applications { get; }
     IQueryable<BookingEntity> Bookings { get; }
-    IQueryable<ReviewEntity> Reviews { get; }
-    IQueryable<TicketEntity> Tickets { get; }
     IQueryable<MessageEntity> Messages { get; }
     IQueryable<TransactionEntity> Transactions { get; }
     IQueryable<TicketTransactionEntity> TicketTransactions { get; }

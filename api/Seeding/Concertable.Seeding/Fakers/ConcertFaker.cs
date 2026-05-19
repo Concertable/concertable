@@ -10,7 +10,6 @@ public static class ConcertFaker
         string name,
         decimal price,
         int totalTickets,
-        int availableTickets,
         int artistId,
         int venueId,
         DateTime startDate,
@@ -23,7 +22,6 @@ public static class ConcertFaker
             .RuleFor(e => e.About, f => f.Lorem.Paragraph(7))
             .RuleFor(e => e.Price, price)
             .RuleFor(e => e.TotalTickets, totalTickets)
-            .RuleFor(e => e.AvailableTickets, availableTickets)
             .RuleFor(e => e.ArtistId, artistId)
             .RuleFor(e => e.VenueId, venueId)
             .RuleFor(e => e.Period, new DateRange(startDate, endDate));
