@@ -12,6 +12,7 @@ using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Concertable.Notification.Infrastructure.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
@@ -30,7 +31,11 @@ internal static class ServiceCollectionExtensions
         services.AddSharedGeocoding();
         services.AddSharedImaging();
         services.AddSharedPdf();
-        services.AddMessaging();
+        services.AddInMemoryTransport();
+        services.AddDirectBusKeyed("webhook");
+        services.AddOutbox(
+            opt => opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")),
+            runDispatcher: false);
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();
 

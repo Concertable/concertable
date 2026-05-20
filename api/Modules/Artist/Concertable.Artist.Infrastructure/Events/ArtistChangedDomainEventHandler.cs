@@ -4,7 +4,7 @@ using Concertable.Artist.Domain.Events;
 namespace Concertable.Artist.Infrastructure.Events;
 
 internal class ArtistChangedDomainEventHandler(IBus bus)
-    : IDomainEventHandler<ArtistChangedDomainEvent>
+    : IPreCommitDomainEventHandler<ArtistChangedDomainEvent>
 {
     public Task HandleAsync(ArtistChangedDomainEvent e, CancellationToken ct = default)
     {

@@ -1,6 +1,7 @@
 ﻿using Concertable.Artist.Domain;
 using Concertable.Concert.Domain;
 using Concertable.DataAccess.Infrastructure;
+using Concertable.Messaging.Domain;
 using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,12 @@ internal class ConcertDbContext(
         modelBuilder.HasDefaultSchema(Schema.Name);
 
         provider.Configure(modelBuilder);
+
+        modelBuilder.Entity<OutboxMessageEntity>(b =>
+        {
+            b.ToTable("Outbox", "messaging", t => t.ExcludeFromMigrations());
+            b.Property(m => m.Id).ValueGeneratedNever();
+        });
 
         modelBuilder.Entity<ArtistRatingProjection>(b =>
         {

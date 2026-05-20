@@ -1,3 +1,4 @@
+using Concertable.Messaging.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Artist.Infrastructure.Data;
@@ -16,5 +17,11 @@ internal class ArtistDbContext(
         modelBuilder.HasDefaultSchema(Schema.Name);
 
         provider.Configure(modelBuilder);
+
+        modelBuilder.Entity<OutboxMessageEntity>(b =>
+        {
+            b.ToTable("Outbox", "messaging", t => t.ExcludeFromMigrations());
+            b.Property(m => m.Id).ValueGeneratedNever();
+        });
     }
 }

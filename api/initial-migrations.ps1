@@ -1,4 +1,5 @@
 $dirs = @(
+    "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations",
     "Modules\User\Concertable.User.Infrastructure\Data\Migrations",
     "Modules\Artist\Concertable.Artist.Infrastructure\Data\Migrations",
     "Modules\Venue\Concertable.Venue.Infrastructure\Data\Migrations",
@@ -14,6 +15,9 @@ $dirs = @(
     "Concertable.Customer\Modules\Profile\Concertable.Customer.Profile.Infrastructure\Data\Migrations"
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
+
+dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context UserDbContext --project Modules/User/Concertable.User.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }

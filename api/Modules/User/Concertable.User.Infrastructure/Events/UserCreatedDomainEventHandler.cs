@@ -5,7 +5,7 @@ using Concertable.Shared;
 namespace Concertable.User.Infrastructure.Events;
 
 internal class UserCreatedDomainEventHandler(IBus bus)
-    : IDomainEventHandler<UserCreatedDomainEvent>
+    : IPreCommitDomainEventHandler<UserCreatedDomainEvent>
 {
     public Task HandleAsync(UserCreatedDomainEvent e, CancellationToken ct = default)
     {

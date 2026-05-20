@@ -2,21 +2,26 @@ using Concertable.DataAccess;
 using Concertable.Application.Serializers;
 using Concertable.Web;
 using Concertable.Artist.Api.Extensions;
+using Concertable.Artist.Contracts.Events;
 using Concertable.Artist.Infrastructure.Extensions;
 using Concertable.Venue.Api.Extensions;
+using Concertable.Venue.Contracts.Events;
 using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Concert.Api.Extensions;
+using Concertable.Concert.Contracts.Events;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Api.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.Payment.Api.Extensions;
 using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
+using Concertable.Messaging.Application;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Customer.Api.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Authorization.Infrastructure.Extensions;
 using Concertable.User.Api.Extensions;
+using Concertable.User.Contracts.Events;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Shared.Blob.Infrastructure.Extensions;
@@ -30,6 +35,7 @@ using Concertable.Search.Api.Extensions;
 using Concertable.Web.Extensions;
 using Concertable.Notification.Infrastructure.Hubs;
 using Concertable.Notification.Infrastructure.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,7 +103,19 @@ services.AddSharedEmail(builder.Configuration);
 services.AddSharedGeocoding();
 services.AddSharedImaging();
 services.AddSharedPdf();
-services.AddMessaging();
+services.AddInMemoryTransport();
+services.AddDirectBusKeyed("webhook");
+
+var b2bRegistry = new MessageTypeRegistry();
+b2bRegistry.SubscribeTo<ArtistChangedEvent>();
+b2bRegistry.SubscribeTo<VenueChangedEvent>();
+b2bRegistry.SubscribeTo<ConcertChangedEvent>();
+b2bRegistry.SubscribeTo<CustomerRegisteredEvent>();
+b2bRegistry.SubscribeTo<VenueManagerRegisteredEvent>();
+b2bRegistry.SubscribeTo<ArtistManagerRegisteredEvent>();
+b2bRegistry.SubscribeTo<AdminRegisteredEvent>();
+services.AddSingleton(b2bRegistry);
+services.AddOutbox(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     services.AddScoped<IDbInitializer, DevDbInitializer>();

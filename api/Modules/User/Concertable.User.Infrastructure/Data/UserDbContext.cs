@@ -1,4 +1,5 @@
 using Concertable.DataAccess.Infrastructure;
+using Concertable.Messaging.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.User.Infrastructure.Data;
@@ -20,5 +21,11 @@ internal class UserDbContext(
         modelBuilder.HasDefaultSchema(Schema.Name);
 
         provider.Configure(modelBuilder);
+
+        modelBuilder.Entity<OutboxMessageEntity>(b =>
+        {
+            b.ToTable("Outbox", "messaging", t => t.ExcludeFromMigrations());
+            b.Property(m => m.Id).ValueGeneratedNever();
+        });
     }
 }

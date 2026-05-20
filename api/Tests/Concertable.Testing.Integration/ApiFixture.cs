@@ -134,6 +134,8 @@ public async Task InitializeAsync()
         ReadDbContext = scope.ServiceProvider.GetRequiredService<IReadDbContext>();
     }
 
+    public IServiceProvider Services => factory.Services;
+
     public HttpClient CreateClient(UserEntity user)
     {
         var client = factory.CreateClient();

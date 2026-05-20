@@ -1,5 +1,6 @@
 using Concertable.Payment.Contracts;
 using Concertable.Payment.Contracts.Events;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stripe;
 
@@ -15,7 +16,7 @@ internal class WebhookProcessor : IWebhookProcessor
 
     public WebhookProcessor(
         IStripeEventRepository stripeEventRepository,
-        IBus integrationEventBus,
+        [FromKeyedServices("webhook")] IBus integrationEventBus,
         IStripeHoldClient stripeHoldClient,
         TimeProvider timeProvider,
         ILogger<WebhookProcessor> logger)
