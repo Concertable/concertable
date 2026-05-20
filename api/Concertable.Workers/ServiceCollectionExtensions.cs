@@ -45,7 +45,7 @@ internal static class ServiceCollectionExtensions
         services.AddUserModule(configuration);
         services.AddConcertModule(configuration);
         services.AddContractModule(configuration);
-        services.AddPaymentModule(configuration);
+        services.AddPaymentInfrastructure(configuration);
         services.AddNotificationModule();
         services.AddConversationsModule(configuration);
 
