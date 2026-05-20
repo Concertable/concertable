@@ -1,5 +1,5 @@
-using Concertable.DataAccess;
 using Concertable.IntegrationTests.Common.Mocks;
+using Concertable.Shared.Geocoding;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Microsoft.Extensions.Configuration;

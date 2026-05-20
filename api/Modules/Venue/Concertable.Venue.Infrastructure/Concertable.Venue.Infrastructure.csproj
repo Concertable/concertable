@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\..\Concert\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Geocoding\Concertable.Shared.Geocoding.Application\Concertable.Shared.Geocoding.Application.csproj" />
     <ProjectReference Include="..\..\..\Concertable.Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj" />
   </ItemGroup>
 

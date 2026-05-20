@@ -1,5 +1,4 @@
-using Concertable.Application.DTOs;
-using Concertable.DataAccess;
+using Concertable.Shared.Geocoding;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 
