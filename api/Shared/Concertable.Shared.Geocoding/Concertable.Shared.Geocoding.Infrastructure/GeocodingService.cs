@@ -1,12 +1,10 @@
-using Concertable.Application.DTOs;
-using Concertable.DataAccess;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-namespace Concertable.Shared.Infrastructure.Services.Geocoding;
+namespace Concertable.Shared.Geocoding.Infrastructure;
 
-public class GeocodingService : IGeocodingService
+internal sealed class GeocodingService : IGeocodingService
 {
     private readonly IHttpClientFactory httpClientFactory;
     private readonly string apiKey;

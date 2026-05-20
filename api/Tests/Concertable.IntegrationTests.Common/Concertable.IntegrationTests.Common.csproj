@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\..\Modules\Payment\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
     <ProjectReference Include="..\..\Shared\Concertable.Shared.Email\Concertable.Shared.Email.Application\Concertable.Shared.Email.Application.csproj" />
+    <ProjectReference Include="..\..\Shared\Concertable.Shared.Geocoding\Concertable.Shared.Geocoding.Application\Concertable.Shared.Geocoding.Application.csproj" />
   </ItemGroup>
 
 </Project>

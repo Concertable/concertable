@@ -1,6 +1,5 @@
-using Concertable.Application.DTOs;
-using Concertable.DataAccess;
 using Concertable.Shared.Exceptions;
+using Concertable.Shared.Geocoding;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 

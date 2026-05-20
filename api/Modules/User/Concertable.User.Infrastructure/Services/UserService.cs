@@ -1,4 +1,5 @@
 using Concertable.Application.Interfaces.Geometry;
+using Concertable.Shared.Geocoding;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.User.Contracts;
 using Microsoft.Extensions.DependencyInjection;
