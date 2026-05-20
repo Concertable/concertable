@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
 
         var useRealEmail = configuration.GetSection("ExternalServices").GetValue<bool>("UseRealEmail");
         if (!useRealEmail)
-            services.AddScoped<IEmailService, AutoVerifyingFakeEmailService>();
+            services.AddScoped<IEmailSender, AutoVerifyingFakeEmailSender>();
 
         services.AddScoped<IDomainEventHandler<UserCreatedDomainEvent>, UserCreatedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistManagerSyncHandler>();

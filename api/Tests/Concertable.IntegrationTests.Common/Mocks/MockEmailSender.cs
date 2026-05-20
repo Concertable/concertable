@@ -1,21 +1,19 @@
-using Concertable.DataAccess;
+using Concertable.Shared.Email;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 
 public record SentEmail(string To, string Subject, string Body);
 
-public class MockEmailService : IMockEmailService
+public class MockEmailSender : IMockEmailSender
 {
     private readonly List<SentEmail> _sent = new();
     public IReadOnlyList<SentEmail> Sent => _sent;
 
-    public Task SendEmailAsync(string toEmail, string subject, string body)
+    public Task SendEmailAsync(string toEmail, string subject, string body, IReadOnlyList<EmailAttachment>? attachments = null)
     {
         _sent.Add(new SentEmail(toEmail, subject, body));
         return Task.CompletedTask;
     }
-
-    public Task SendTicketsToEmailAsync(string toEmail, IEnumerable<Guid> ticketIds) => Task.CompletedTask;
 
     public Task SendVerificationAsync(string toEmail, string token, string verifyBaseUrl, CancellationToken ct = default)
     {

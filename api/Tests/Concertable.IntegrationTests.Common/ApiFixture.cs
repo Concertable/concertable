@@ -41,7 +41,7 @@ public class ApiFixture : IAsyncLifetime
 
     public IMockNotificationService NotificationService { get; } = new MockNotificationService();
     public IMockStripeApiClient StripeApiClient { get; } = new MockStripeApiClient();
-    public IMockEmailService EmailService { get; } = new MockEmailService();
+    public IMockEmailSender EmailSender { get; } = new MockEmailSender();
     public IWebhookSimulator StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
     public IReadDbContext ReadDbContext { get; private set; } = null!;
@@ -75,8 +75,8 @@ public async Task InitializeAsync()
                 services.AddSingleton<IStripeApiClient>(StripeApiClient);
                 services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OnSession);
                 services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OffSession);
-                services.AddResettables(NotificationService, StripeApiClient, EmailService);
-                services.AddSingleton<IEmailService>(EmailService);
+                services.AddResettables(NotificationService, StripeApiClient, EmailSender);
+                services.AddSingleton<IEmailSender>(EmailSender);
 
                 services.AddScoped<IWebhookService, MockWebhookService>();
                 services.AddSingleton<IWebhookSimulator, MockWebhookSimulator>();

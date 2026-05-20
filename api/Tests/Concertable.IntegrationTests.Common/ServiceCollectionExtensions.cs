@@ -9,11 +9,11 @@ internal static class ServiceCollectionExtensions
         this IServiceCollection services,
         IMockNotificationService notificationService,
         IMockStripeApiClient stripePaymentClient,
-        IMockEmailService emailService)
+        IMockEmailSender emailSender)
     {
         services.AddSingleton<IResettable>(notificationService);
         services.AddSingleton<IResettable>(stripePaymentClient);
-        services.AddSingleton<IResettable>(emailService);
+        services.AddSingleton<IResettable>(emailSender);
         return services;
     }
 }

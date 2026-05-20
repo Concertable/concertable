@@ -23,6 +23,7 @@ using Concertable.Shared.Blob.Infrastructure.Extensions;
 using Concertable.Shared.Email.Infrastructure.Extensions;
 using Concertable.Shared.Geocoding.Infrastructure.Extensions;
 using Concertable.Shared.Imaging.Infrastructure.Extensions;
+using Concertable.Shared.Pdf.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Api.Extensions;
@@ -95,6 +96,7 @@ services.AddSharedBlob(builder.Configuration);
 services.AddSharedEmail(builder.Configuration);
 services.AddSharedGeocoding();
 services.AddSharedImaging();
+services.AddSharedPdf();
 services.AddMessaging();
 if (!builder.Environment.IsEnvironment("Testing"))
 {

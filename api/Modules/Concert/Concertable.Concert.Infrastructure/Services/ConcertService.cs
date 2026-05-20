@@ -11,7 +11,7 @@ internal class ConcertService : IConcertService
     private readonly IConcertValidator concertValidator;
     private readonly ICurrentUser currentUser;
     private readonly IApplicationValidator applicationValidator;
-    private readonly IEmailService emailService;
+    private readonly IEmailSender emailSender;
     private readonly ICustomerModule customerModule;
     private readonly IConcertDraftService concertDraftService;
     private readonly TimeProvider timeProvider;
@@ -21,7 +21,7 @@ internal class ConcertService : IConcertService
         IConcertValidator concertValidator,
         ICurrentUser currentUser,
         IApplicationValidator applicationValidator,
-        IEmailService emailService,
+        IEmailSender emailSender,
         ICustomerModule customerModule,
         IConcertDraftService concertDraftService,
         TimeProvider timeProvider)
@@ -30,7 +30,7 @@ internal class ConcertService : IConcertService
         this.concertValidator = concertValidator;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
-        this.emailService = emailService;
+        this.emailSender = emailSender;
         this.customerModule = customerModule;
         this.concertDraftService = concertDraftService;
         this.timeProvider = timeProvider;

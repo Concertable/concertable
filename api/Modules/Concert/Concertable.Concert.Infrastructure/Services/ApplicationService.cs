@@ -15,7 +15,7 @@ internal class ApplicationService : IApplicationService
     private readonly IApplicationValidator applicationValidator;
     private readonly IStripeValidator stripeValidator;
     private readonly IConversationsModule conversationsModule;
-    private readonly IEmailService emailService;
+    private readonly IEmailSender emailSender;
     private readonly IOpportunityService opportunityService;
     private readonly IOpportunityRepository opportunityRepository;
     private readonly IArtistModule artistModule;
@@ -31,7 +31,7 @@ internal class ApplicationService : IApplicationService
         IApplicationValidator applicationValidator,
         IStripeValidator stripeValidator,
         IConversationsModule conversationsModule,
-        IEmailService emailService,
+        IEmailSender emailSender,
         IOpportunityService opportunityService,
         IOpportunityRepository opportunityRepository,
         IArtistModule artistModule,
@@ -46,7 +46,7 @@ internal class ApplicationService : IApplicationService
         this.applicationValidator = applicationValidator;
         this.stripeValidator = stripeValidator;
         this.conversationsModule = conversationsModule;
-        this.emailService = emailService;
+        this.emailSender = emailSender;
         this.opportunityService = opportunityService;
         this.opportunityRepository = opportunityRepository;
         this.artistModule = artistModule;
@@ -147,7 +147,7 @@ internal class ApplicationService : IApplicationService
             content: $"{currentUser.Email} has applied to your concert opportunity",
             action: MessageAction.ApplicationReceived);
 
-        await emailService.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{currentUser.Email} has applied to your concert opportunity");
+        await emailSender.SendEmailAsync(opportunityOwner.Email!, "Concert Application", $"{currentUser.Email} has applied to your concert opportunity");
     }
 
     public async Task<Checkout> ApplyCheckoutAsync(int opportunityId)
@@ -185,7 +185,7 @@ internal class ApplicationService : IApplicationService
             content: "Your application has been accepted!",
             action: MessageAction.ApplicationAccepted);
 
-        await emailService.SendEmailAsync(artist.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
+        await emailSender.SendEmailAsync(artist.Email!, "Concert Application Accepted", "Your application was accepted! A concert has been scheduled for you.");
     }
 
     public async Task<(ArtistReadModel, VenueReadModel)?> GetArtistAndVenueByIdAsync(int id) =>

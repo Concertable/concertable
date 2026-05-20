@@ -2,7 +2,7 @@ using Concertable.Shared.Email;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 
-public interface IMockEmailService : IEmailService, IResettable
+public interface IMockEmailSender : IEmailSender, IResettable
 {
     IReadOnlyList<SentEmail> Sent { get; }
     string? ExtractToken(string email);

@@ -9,9 +9,9 @@ public static class ServiceCollectionExtensions
     {
         var useRealEmail = configuration.GetSection("ExternalServices").GetValue<bool>("UseRealEmail");
         if (useRealEmail)
-            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IEmailSender, EmailSender>();
         else
-            services.AddScoped<IEmailService, FakeEmailService>();
+            services.AddScoped<IEmailSender, FakeEmailSender>();
 
         return services;
     }
