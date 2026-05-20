@@ -23,6 +23,8 @@ internal class ConcertChangedDomainEventHandler(
         await bus.PublishAsync(new ConcertChangedEvent(
             concert.Id,
             concert.Name,
+            concert.Avatar,
+            e.TotalTickets,
             e.TotalTickets,
             e.Price,
             e.Period,
@@ -31,6 +33,9 @@ internal class ConcertChangedDomainEventHandler(
             artist.Name,
             venue.Id,
             venue.Name,
+            venue.Location.Y,
+            venue.Location.X,
+            concert.ConcertGenres.Select(g => g.Genre).ToArray(),
             payeeUserId,
             concert.ContractType.ToString()), ct);
     }

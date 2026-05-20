@@ -8,7 +8,7 @@ internal sealed class ArtistSearchModelConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<ArtistSearchModel> builder)
     {
-        builder.ToTable("Artists", "artist");
+        builder.ToTable("Artists", "search");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
         builder.Property(x => x.Location).HasColumnType("geography");

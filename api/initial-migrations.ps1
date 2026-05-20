@@ -1,11 +1,13 @@
 $dirs = @(
-    "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations",
+    "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Outbox",
+    "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Inbox",
+    "Modules\Search\Concertable.Search.Infrastructure\Data\Migrations",
     "Modules\User\Concertable.User.Infrastructure\Data\Migrations",
     "Modules\Artist\Concertable.Artist.Infrastructure\Data\Migrations",
     "Modules\Venue\Concertable.Venue.Infrastructure\Data\Migrations",
     "Modules\Concert\Concertable.Concert.Infrastructure\Data\Migrations",
     "Modules\Contract\Concertable.Contract.Infrastructure\Data\Migrations",
-    "Modules\Payment\Concertable.Payment.Infrastructure\Data\Migrations",
+    "Concertable.Payment\Concertable.Payment.Infrastructure\Data\Migrations",
     "Modules\Customer\Concertable.Customer.Infrastructure\Data\Migrations",
     "Modules\Conversations\Concertable.Conversations.Infrastructure\Data\Migrations",
     "Concertable.Auth\Data\Migrations",
@@ -16,7 +18,10 @@ $dirs = @(
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
 
-dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations/Outbox
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context InboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations/Inbox
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context UserDbContext --project Modules/User/Concertable.User.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
@@ -34,7 +39,7 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context ContractDbContext --project Modules/Contract/Concertable.Contract.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context PaymentDbContext --project Modules/Payment/Concertable.Payment.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context PaymentDbContext --project Concertable.Payment/Concertable.Payment.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context CustomerDbContext --project Modules/Customer/Concertable.Customer.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
@@ -56,6 +61,9 @@ dotnet ef migrations add InitialCreate --context ReviewDbContext --project Conce
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context ProfileDbContext --project Concertable.Customer/Modules/Profile/Concertable.Customer.Profile.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context SearchDbContext --project Modules/Search/Concertable.Search.Infrastructure --startup-project Concertable.Search/Concertable.Search.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 Write-Host "All migrations scaffolded successfully."

@@ -8,7 +8,7 @@ internal sealed class ArtistSearchModelGenreConfiguration : IEntityTypeConfigura
 {
     public void Configure(EntityTypeBuilder<ArtistSearchModelGenre> builder)
     {
-        builder.ToTable("ArtistGenres", "artist");
+        builder.ToTable("ArtistGenres", "search");
         builder.HasKey(x => new { x.ArtistId, x.Genre });
     }
 }

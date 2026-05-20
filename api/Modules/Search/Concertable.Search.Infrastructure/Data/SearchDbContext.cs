@@ -1,6 +1,6 @@
 using Concertable.Artist.Domain;
 using Concertable.Concert.Domain;
-using Concertable.DataAccess.Infrastructure;
+using Concertable.Messaging.Domain;
 using Concertable.Search.Domain.Models;
 using Concertable.Venue.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -12,31 +12,25 @@ internal class SearchDbContext(
     SearchConfigurationProvider provider)
     : DbContextBase(options), ISearchDbContext
 {
-    IQueryable<ArtistSearchModel> ISearchDbContext.Artists => Set<ArtistSearchModel>();
-    IQueryable<VenueSearchModel> ISearchDbContext.Venues => Set<VenueSearchModel>();
-    IQueryable<ConcertSearchModel> ISearchDbContext.Concerts => Set<ConcertSearchModel>();
-    IQueryable<ArtistRatingProjection> ISearchDbContext.ArtistRatingProjections => Set<ArtistRatingProjection>();
-    IQueryable<VenueRatingProjection> ISearchDbContext.VenueRatingProjections => Set<VenueRatingProjection>();
-    IQueryable<ConcertRatingProjection> ISearchDbContext.ConcertRatingProjections => Set<ConcertRatingProjection>();
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-        optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-    }
-
-    public override int SaveChanges() =>
-        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
-
-    public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
-        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
-
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
-
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) =>
-        throw new InvalidOperationException($"{nameof(SearchDbContext)} is read-only.");
+    IQueryable<ArtistSearchModel> ISearchDbContext.Artists => Set<ArtistSearchModel>().AsNoTracking();
+    IQueryable<VenueSearchModel> ISearchDbContext.Venues => Set<VenueSearchModel>().AsNoTracking();
+    IQueryable<ConcertSearchModel> ISearchDbContext.Concerts => Set<ConcertSearchModel>().AsNoTracking();
+    IQueryable<ArtistRatingProjection> ISearchDbContext.ArtistRatingProjections => Set<ArtistRatingProjection>().AsNoTracking();
+    IQueryable<VenueRatingProjection> ISearchDbContext.VenueRatingProjections => Set<VenueRatingProjection>().AsNoTracking();
+    IQueryable<ConcertRatingProjection> ISearchDbContext.ConcertRatingProjections => Set<ConcertRatingProjection>().AsNoTracking();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-        => provider.Configure(modelBuilder);
+    {
+        provider.Configure(modelBuilder);
+
+        modelBuilder.Entity<InboxMessageEntity>(b =>
+        {
+            b.ToTable("Inbox", "messaging", t => t.ExcludeFromMigrations());
+            b.HasKey(m => new { m.MessageId, m.ConsumerName });
+            b.Property(m => m.MessageId).ValueGeneratedNever();
+            b.Property(m => m.ConsumerName).IsRequired().HasMaxLength(256);
+            b.Property(m => m.MessageType).IsRequired().HasColumnType("nvarchar(450)");
+            b.Property(m => m.ReceivedAt).IsRequired();
+        });
+    }
 }

@@ -1,11 +1,9 @@
-using Concertable.DataAccess.Infrastructure;
 using Concertable.Search.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Search.Infrastructure.Data;
 
-internal sealed class SearchConfigurationProvider(
-    IEnumerable<IRatingProjectionConfigurationProvider> ratingProviders)
+internal sealed class SearchConfigurationProvider
 {
     public void Configure(ModelBuilder modelBuilder)
     {
@@ -14,8 +12,8 @@ internal sealed class SearchConfigurationProvider(
         modelBuilder.ApplyConfiguration(new VenueSearchModelConfiguration());
         modelBuilder.ApplyConfiguration(new ConcertSearchModelConfiguration());
         modelBuilder.ApplyConfiguration(new ConcertSearchModelGenreConfiguration());
-
-        foreach (var provider in ratingProviders)
-            provider.Configure(modelBuilder);
+        modelBuilder.ApplyConfiguration(new ArtistRatingProjectionConfiguration());
+        modelBuilder.ApplyConfiguration(new VenueRatingProjectionConfiguration());
+        modelBuilder.ApplyConfiguration(new ConcertRatingProjectionConfiguration());
     }
 }

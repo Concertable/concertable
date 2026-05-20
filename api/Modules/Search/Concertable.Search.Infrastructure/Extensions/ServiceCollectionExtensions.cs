@@ -1,11 +1,15 @@
+using Concertable.Artist.Contracts.Events;
+using Concertable.Concert.Contracts.Events;
 using Concertable.DataAccess.Infrastructure;
 using Concertable.Search.Application;
 using Concertable.Search.Domain.Models;
 using Concertable.Search.Application.Validators;
 using Concertable.Search.Infrastructure.Data;
+using Concertable.Search.Infrastructure.Handlers;
 using Concertable.Search.Infrastructure.Repositories;
 using Concertable.Search.Application.Services;
 using Concertable.Search.Infrastructure.Specifications;
+using Concertable.Venue.Contracts.Events;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +23,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<SearchDbContext>(opt =>
             opt.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
+                configuration.GetConnectionString("SearchDb"),
                 sqlOpt => sqlOpt.UseNetTopologySuite()));
         services.AddScoped<ISearchDbContext>(sp => sp.GetRequiredService<SearchDbContext>());
         services.AddSingleton<SearchConfigurationProvider>();
@@ -66,6 +70,15 @@ public static class ServiceCollectionExtensions
 
         services.AddValidatorsFromAssemblyContaining<SearchParamsValidator>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddSearchProjectionHandlers(this IServiceCollection services)
+    {
+        services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistProjectionHandler>();
+        services.AddScoped<IIntegrationEventHandler<VenueChangedEvent>, VenueProjectionHandler>();
+        services.AddScoped<IIntegrationEventHandler<ConcertChangedEvent>, ConcertProjectionHandler>();
+        services.AddScoped<IIntegrationEventHandler<ReviewSubmittedEvent>, RatingProjectionHandler>();
         return services;
     }
 }

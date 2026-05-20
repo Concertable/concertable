@@ -1,5 +1,6 @@
 using Concertable.Concert.Domain;
 using Concertable.Concert.Infrastructure.Data;
+using Concertable.Messaging.Domain;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
@@ -8,20 +9,33 @@ using NetTopologySuite.Geometries;
 
 namespace Concertable.Concert.Infrastructure.Handlers;
 
-internal class VenueReadModelProjectionHandler(ConcertDbContext db)
-    : IIntegrationEventHandler<VenueChangedEvent>
+internal class VenueReadModelProjectionHandler : IIntegrationEventHandler<VenueChangedEvent>
 {
     private static readonly GeometryFactory GeometryFactory =
         NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
 
-    public async Task HandleAsync(VenueChangedEvent e, CancellationToken ct = default)
+    private readonly ConcertDbContext context;
+
+    public VenueReadModelProjectionHandler(ConcertDbContext context)
     {
-        var venue = await db.VenueReadModels.FirstOrDefaultAsync(v => v.Id == e.VenueId, ct);
+        this.context = context;
+    }
+
+    public async Task HandleAsync(VenueChangedEvent e, MessageEnvelope envelope, CancellationToken ct = default)
+    {
+        if (await context.Set<InboxMessageEntity>().AnyAsync(
+            m => m.MessageId == envelope.MessageId && m.ConsumerName == nameof(VenueReadModelProjectionHandler), ct))
+            return;
+
+        context.Set<InboxMessageEntity>().Add(
+            InboxMessageEntity.Create(envelope.MessageId, nameof(VenueReadModelProjectionHandler), envelope.MessageType, DateTimeOffset.UtcNow));
+
+        var venue = await context.VenueReadModels.FirstOrDefaultAsync(v => v.Id == e.VenueId, ct);
         var location = GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude));
 
         if (venue is null)
         {
-            db.VenueReadModels.Add(new VenueReadModel
+            context.VenueReadModels.Add(new VenueReadModel
             {
                 Id = e.VenueId,
                 UserId = e.UserId,
@@ -42,6 +56,6 @@ internal class VenueReadModelProjectionHandler(ConcertDbContext db)
             venue.Location = location;
         }
 
-        await db.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
     }
 }

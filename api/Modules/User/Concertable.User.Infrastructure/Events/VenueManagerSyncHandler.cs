@@ -1,3 +1,4 @@
+using Concertable.Messaging.Domain;
 using Concertable.User.Infrastructure.Data;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
@@ -7,21 +8,35 @@ using NetTopologySuite.Geometries;
 
 namespace Concertable.User.Infrastructure.Events;
 
-internal class VenueManagerSyncHandler(UserDbContext db)
-    : IIntegrationEventHandler<VenueChangedEvent>
+internal class VenueManagerSyncHandler : IIntegrationEventHandler<VenueChangedEvent>
 {
     private static readonly GeometryFactory GeometryFactory =
         NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
 
-    public async Task HandleAsync(VenueChangedEvent e, CancellationToken ct = default)
-    {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == e.UserId, ct);
-        if (user is null) return;
+    private readonly UserDbContext db;
 
-        user.SyncFromManager(
-            e.Avatar,
-            GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude)),
-            new Address(e.County, e.Town));
+    public VenueManagerSyncHandler(UserDbContext db)
+    {
+        this.db = db;
+    }
+
+    public async Task HandleAsync(VenueChangedEvent e, MessageEnvelope envelope, CancellationToken ct = default)
+    {
+        if (await db.Set<InboxMessageEntity>().AnyAsync(
+            m => m.MessageId == envelope.MessageId && m.ConsumerName == nameof(VenueManagerSyncHandler), ct))
+            return;
+
+        db.Set<InboxMessageEntity>().Add(
+            InboxMessageEntity.Create(envelope.MessageId, nameof(VenueManagerSyncHandler), envelope.MessageType, DateTimeOffset.UtcNow));
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == e.UserId, ct);
+        if (user is not null)
+        {
+            user.SyncFromManager(
+                e.Avatar,
+                GeometryFactory.CreatePoint(new Coordinate(e.Longitude, e.Latitude)),
+                new Address(e.County, e.Town));
+        }
 
         var profile = await db.VenueManagerProfiles.FirstOrDefaultAsync(p => p.Sub == e.UserId, ct);
         profile?.AssignVenue(e.VenueId);
