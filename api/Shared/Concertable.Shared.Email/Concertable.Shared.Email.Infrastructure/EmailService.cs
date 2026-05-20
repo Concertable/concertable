@@ -1,13 +1,12 @@
-using Concertable.Application.DTOs;
 using Concertable.DataAccess;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 
-namespace Concertable.Shared.Infrastructure.Services.Email;
+namespace Concertable.Shared.Email.Infrastructure;
 
-public class EmailService : IEmailService
+internal sealed class EmailService : IEmailService
 {
     private readonly IPdfService pdfService;
     private readonly IConfiguration configuration;

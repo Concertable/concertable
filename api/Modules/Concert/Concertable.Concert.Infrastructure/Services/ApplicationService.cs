@@ -1,6 +1,7 @@
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Contracts;
 using Concertable.Conversations.Contracts;
+using Concertable.Shared.Email;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
 using Concertable.User.Contracts;
