@@ -2,7 +2,6 @@ using Concertable.DataAccess;
 using Concertable.Shared.Infrastructure.Background;
 using Concertable.Shared.Infrastructure.Events;
 using Concertable.Shared.Infrastructure.Services;
-using Concertable.Shared.Infrastructure.Services.Email;
 using Concertable.Shared.Infrastructure.Services.Geocoding;
 using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;

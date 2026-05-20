@@ -4,6 +4,7 @@ using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.DataAccess.Infrastructure;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Shared.Blob.Infrastructure.Extensions;
+using Concertable.Shared.Email.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
@@ -22,6 +23,7 @@ internal static class ServiceCollectionExtensions
     {
         services.AddSharedInfrastructure(configuration);
         services.AddSharedBlob(configuration);
+        services.AddSharedEmail(configuration);
         services.AddMessaging();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();

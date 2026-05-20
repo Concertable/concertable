@@ -1,6 +1,4 @@
-using Concertable.Application.DTOs;
-
-namespace Concertable.DataAccess;
+namespace Concertable.Shared.Email;
 
 public interface IEmailService
 {

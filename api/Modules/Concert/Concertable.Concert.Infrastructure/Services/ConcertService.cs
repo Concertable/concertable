@@ -1,4 +1,5 @@
 ﻿using Concertable.Customer.Contracts;
+using Concertable.Shared.Email;
 using Concertable.Shared.Exceptions;
 using FluentResults;
 

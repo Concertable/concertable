@@ -1,13 +1,13 @@
-namespace Concertable.Application.DTOs;
+namespace Concertable.Shared.Email.Infrastructure;
 
-public record AttachmentDto
+internal sealed record AttachmentDto
 {
     public required byte[] Content { get; set; }
     public required string FileName { get; set; }
     public string MimeType { get; set; } = "application/pdf";
 }
 
-public record EmailDto
+internal sealed record EmailDto
 {
     public required string To { get; set; }
     public string? Subject { get; set; }

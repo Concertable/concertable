@@ -1,4 +1,4 @@
-using Concertable.DataAccess;
+using Concertable.Shared.Email;
 
 namespace Concertable.IntegrationTests.Common.Mocks;
 

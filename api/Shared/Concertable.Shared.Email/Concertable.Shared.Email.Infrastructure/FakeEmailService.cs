@@ -1,6 +1,6 @@
-using Concertable.DataAccess;
+using Microsoft.Extensions.Logging;
 
-namespace Concertable.Customer.Web.Services;
+namespace Concertable.Shared.Email.Infrastructure;
 
 internal sealed class FakeEmailService : IEmailService
 {
@@ -25,7 +25,7 @@ internal sealed class FakeEmailService : IEmailService
 
     public Task SendVerificationAsync(string toEmail, string token, string verifyBaseUrl, CancellationToken ct = default)
     {
-        logger.LogInformation("[FakeEmail] Verification email skipped for {Email} (Customer.Web does not own auth flows)", toEmail);
+        logger.LogInformation("[FakeEmail] Verification email skipped for {Email}", toEmail);
         return Task.CompletedTask;
     }
 }

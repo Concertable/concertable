@@ -1,6 +1,7 @@
 using Concertable.DataAccess;
 using Concertable.DataAccess.Infrastructure;
 using Concertable.Seeding;
+using Concertable.Shared.Email;
 using Concertable.Artist.Contracts.Events;
 using Concertable.User.Application.Validators;
 using Concertable.User.Domain.Events;
@@ -34,11 +35,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserModule, UserModule>();
 
-        var external = configuration.GetSection("ExternalServices");
-        if (external.GetValue<bool>("UseRealEmail"))
-            services.AddScoped<IEmailService, EmailService>();
-        else
-            services.AddScoped<IEmailService, FakeEmailService>();
+        var useRealEmail = configuration.GetSection("ExternalServices").GetValue<bool>("UseRealEmail");
+        if (!useRealEmail)
+            services.AddScoped<IEmailService, AutoVerifyingFakeEmailService>();
 
         services.AddScoped<IDomainEventHandler<UserCreatedDomainEvent>, UserCreatedDomainEventHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistManagerSyncHandler>();

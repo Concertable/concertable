@@ -20,6 +20,7 @@ using Concertable.User.Api.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Shared.Blob.Infrastructure.Extensions;
+using Concertable.Shared.Email.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.Seeding.Fakers;
 using Concertable.Search.Api.Extensions;
@@ -89,6 +90,7 @@ services.AddScoped<IKeyedServiceProvider>(sp => (IKeyedServiceProvider)sp);
 
 services.AddInfrastructure(builder.Configuration);
 services.AddSharedBlob(builder.Configuration);
+services.AddSharedEmail(builder.Configuration);
 services.AddMessaging();
 if (!builder.Environment.IsEnvironment("Testing"))
 {

@@ -1,15 +1,15 @@
-using Concertable.DataAccess;
+using Concertable.Shared.Email;
 using Concertable.User.Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.User.Infrastructure.Services.Email;
 
-internal class FakeEmailService : IEmailService
+internal sealed class AutoVerifyingFakeEmailService : IEmailService
 {
-    private readonly ILogger<FakeEmailService> logger;
+    private readonly ILogger<AutoVerifyingFakeEmailService> logger;
     private readonly IUserModule userModule;
 
-    public FakeEmailService(ILogger<FakeEmailService> logger, IUserModule userModule)
+    public AutoVerifyingFakeEmailService(ILogger<AutoVerifyingFakeEmailService> logger, IUserModule userModule)
     {
         this.logger = logger;
         this.userModule = userModule;

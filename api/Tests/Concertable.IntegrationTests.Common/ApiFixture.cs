@@ -1,4 +1,5 @@
 using Concertable.DataAccess;
+using Concertable.Shared.Email;
 using Concertable.Notification.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.User.Contracts;
