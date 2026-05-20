@@ -1,17 +1,31 @@
 using Concertable.Artist.Contracts.Events;
 using Concertable.Concert.Domain;
 using Concertable.Concert.Infrastructure.Data;
+using Concertable.Messaging.Domain;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Concertable.Concert.Infrastructure.Handlers;
 
-internal class ArtistReadModelProjectionHandler(ConcertDbContext db)
-    : IIntegrationEventHandler<ArtistChangedEvent>
+internal class ArtistReadModelProjectionHandler : IIntegrationEventHandler<ArtistChangedEvent>
 {
-    public async Task HandleAsync(ArtistChangedEvent e, CancellationToken ct = default)
+    private readonly ConcertDbContext context;
+
+    public ArtistReadModelProjectionHandler(ConcertDbContext context)
     {
-        var artist = await db.ArtistReadModels
+        this.context = context;
+    }
+
+    public async Task HandleAsync(ArtistChangedEvent e, MessageEnvelope envelope, CancellationToken ct = default)
+    {
+        if (await context.Set<InboxMessageEntity>().AnyAsync(
+            m => m.MessageId == envelope.MessageId && m.ConsumerName == nameof(ArtistReadModelProjectionHandler), ct))
+            return;
+
+        context.Set<InboxMessageEntity>().Add(
+            InboxMessageEntity.Create(envelope.MessageId, nameof(ArtistReadModelProjectionHandler), envelope.MessageType, DateTimeOffset.UtcNow));
+
+        var artist = await context.ArtistReadModels
             .Include(a => a.Genres)
             .FirstOrDefaultAsync(a => a.Id == e.ArtistId, ct);
 
@@ -31,7 +45,7 @@ internal class ArtistReadModelProjectionHandler(ConcertDbContext db)
                     .Select(g => new ArtistReadModelGenre { ArtistReadModelId = e.ArtistId, Genre = g })
                     .ToList()
             };
-            db.ArtistReadModels.Add(artist);
+            context.ArtistReadModels.Add(artist);
         }
         else
         {
@@ -53,6 +67,6 @@ internal class ArtistReadModelProjectionHandler(ConcertDbContext db)
                 artist.Genres.Add(new ArtistReadModelGenre { ArtistReadModelId = e.ArtistId, Genre = g });
         }
 
-        await db.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
     }
 }

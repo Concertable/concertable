@@ -7,3 +7,7 @@ global using Concertable.Search.Infrastructure.Mappers;
 global using Concertable.Authorization.Contracts;
 global using Concertable.User.Contracts;
 global using Concertable.Concert.Domain;
+global using Concertable.Artist.Domain;
+global using Concertable.Venue.Domain;
+global using Concertable.Messaging;
+global using Concertable.Messaging.Domain;

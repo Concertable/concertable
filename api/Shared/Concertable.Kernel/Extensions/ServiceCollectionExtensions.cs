@@ -27,4 +27,13 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<QueueHostedService>();
         return services;
     }
+
+    public static IServiceCollection AddClientCredentials(
+        this IServiceCollection services,
+        Action<TokenServiceOptions> configure)
+    {
+        services.Configure(configure);
+        services.AddSingleton<ITokenService, ClientCredentialsTokenService>();
+        return services;
+    }
 }

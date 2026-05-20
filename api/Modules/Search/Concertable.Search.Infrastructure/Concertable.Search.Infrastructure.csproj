@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -12,13 +12,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Artist\Concertable.Artist.Contracts\Concertable.Artist.Contracts.csproj" />
     <ProjectReference Include="..\..\Artist\Concertable.Artist.Domain\Concertable.Artist.Domain.csproj" />
+    <ProjectReference Include="..\..\Venue\Concertable.Venue.Contracts\Concertable.Venue.Contracts.csproj" />
     <ProjectReference Include="..\..\Venue\Concertable.Venue.Domain\Concertable.Venue.Domain.csproj" />
+    <ProjectReference Include="..\..\Concert\Concertable.Concert.Contracts\Concertable.Concert.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Search.Application\Concertable.Search.Application.csproj" />
     <ProjectReference Include="..\Concertable.Search.Domain\Concertable.Search.Domain.csproj" />
     <ProjectReference Include="..\..\Concert\Concertable.Concert.Domain\Concertable.Concert.Domain.csproj" />
     <ProjectReference Include="..\..\..\Concertable.DataAccess\Concertable.DataAccess.Infrastructure\Concertable.DataAccess.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Messaging\Concertable.Messaging.Domain\Concertable.Messaging.Domain.csproj" />
   </ItemGroup>
 
 </Project>

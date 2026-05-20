@@ -8,7 +8,7 @@ internal sealed class VenueSearchModelConfiguration : IEntityTypeConfiguration<V
 {
     public void Configure(EntityTypeBuilder<VenueSearchModel> builder)
     {
-        builder.ToTable("Venues", "venue");
+        builder.ToTable("Venues", "search");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
         builder.Property(x => x.Location).HasColumnType("geography");
