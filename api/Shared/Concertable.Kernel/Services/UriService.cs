@@ -1,4 +1,3 @@
-using Concertable.DataAccess;
 using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 

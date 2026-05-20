@@ -1,4 +1,3 @@
-using Concertable.DataAccess;
 using Concertable.Shared.Infrastructure.Background;
 using Concertable.Shared.Infrastructure.Events;
 using Concertable.Shared.Infrastructure.Services;

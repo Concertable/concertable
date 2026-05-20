@@ -1,4 +1,4 @@
-namespace Concertable.DataAccess;
+namespace Concertable.Shared.Infrastructure.Services;
 
 public interface IUriService
 {
