@@ -2,6 +2,7 @@
 using Concertable.Artist.Application.Mappers;
 using Concertable.Artist.Application.Requests;
 using Concertable.Shared.Geocoding;
+using Concertable.Shared.Imaging;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.DependencyInjection;

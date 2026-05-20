@@ -1,4 +1,4 @@
-using Concertable.DataAccess;
+using Concertable.Shared.Imaging;
 using Microsoft.AspNetCore.Http;
 
 namespace Concertable.IntegrationTests.Common.Mocks;

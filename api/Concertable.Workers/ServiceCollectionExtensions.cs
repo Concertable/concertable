@@ -6,6 +6,7 @@ using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Shared.Blob.Infrastructure.Extensions;
 using Concertable.Shared.Email.Infrastructure.Extensions;
 using Concertable.Shared.Geocoding.Infrastructure.Extensions;
+using Concertable.Shared.Imaging.Infrastructure.Extensions;
 using Concertable.Shared.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
@@ -26,6 +27,7 @@ internal static class ServiceCollectionExtensions
         services.AddSharedBlob(configuration);
         services.AddSharedEmail(configuration);
         services.AddSharedGeocoding();
+        services.AddSharedImaging();
         services.AddMessaging();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventDispatchInterceptor>();

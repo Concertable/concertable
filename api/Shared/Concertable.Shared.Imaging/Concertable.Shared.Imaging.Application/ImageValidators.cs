@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 
-namespace Concertable.Shared.Validation;
+namespace Concertable.Shared.Imaging;
 
 public class ImageValidator : AbstractValidator<IFormFile>
 {

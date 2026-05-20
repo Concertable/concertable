@@ -1,5 +1,6 @@
 ﻿using Concertable.Application.Interfaces.Geometry;
 using Concertable.Shared.Geocoding;
+using Concertable.Shared.Imaging;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Shared.Exceptions;
 using Concertable.Venue.Application.Mappers;

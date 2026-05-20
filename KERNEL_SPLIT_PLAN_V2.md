@@ -1,6 +1,6 @@
 # Kernel Split Plan v2
 
-> **Status (2026-05-20):** Phases **A + C landed `952b75fb`**, **Phase B landed `6ba3735e`**, **Phase D landed next commit** on `Refactor/Microservices`. Build green. DataAccess + Seeding + Shared.Blob + Shared.Email + Shared.Geocoding all extracted. Phases E / F / G / H / I still pending. Geometry stays in Kernel (local math, no external adapter).
+> **Status (2026-05-20):** Phases **A + C `952b75fb`**, **B `6ba3735e`**, **D `d7d69ca4`**, **E landed next commit** on `Refactor/Microservices`. Build green. DataAccess + Seeding + Shared.Blob + Shared.Email + Shared.Geocoding + Shared.Imaging all extracted. Phases F / G / H / I still pending. Geometry stays in Kernel; temporary Kernel→Shared.Blob.Application ref dissolved.
 
 Supersedes `KERNEL_SPLIT_PLAN.md`. v1 treated this as "extract DataAccess and leave the rest of Kernel alone for a later pass." That approach broke down once we realised:
 
@@ -47,7 +47,7 @@ Each phase is one commit. Order matters — earlier phases unblock later ones.
 | **C** | ✅ `952b75fb` | Extract `Concertable.Shared.Blob`. `IBlobStorageService` → `.Application`. `BlobStorageService` + `FakeBlobStorageService` + `BlobStorageSettings` + `SeedImages` (resources) + **`BlobDevSeeder`** → `.Infrastructure`. | BlobDevSeeder lands in its forever home. Phase A finishes building. |
 | **B** | ✅ landed | Extract `Concertable.Shared.Email`. `IEmailService` → `.Application`. Real `EmailService` (MailKit) + generic logging `FakeEmailService` → `.Infrastructure` (both `internal sealed`). `EmailDto`/`AttachmentDto` moved out of `Concertable.Contracts` and into `.Infrastructure` as internal. User module's auto-verifying fake renamed to `AutoVerifyingFakeEmailService` and overrides `AddSharedEmail` when `UseRealEmail=false`. Customer.Web duplicate fake + User stub `EmailService` deleted. MailKit/MimeKit dropped from Kernel.csproj. `AddSharedEmail(IConfiguration)` wired into all 4 hosts. | Independent of others. |
 | **D** | ✅ landed | Extract `Concertable.Shared.Geocoding`. `IGeocodingService` + `LocationDto` → `.Application` (public). `GeocodingService` + Google* dtos → `.Infrastructure` (`internal sealed`). Dead `CoordinatesDto` deleted. `LocationDto`/Geocoding files removed from `Concertable.Contracts`. `Concert.Infrastructure` GlobalUsings dropped its stale `Concertable.Application.DTOs` global. `AddSharedGeocoding()` wired into all 4 hosts. Geometry kept in Kernel. | Independent. |
-| **E** | ⏳ pending | Extract `Concertable.Shared.Imaging`. `IImageService` → `.Application`. `ImageService` → `.Infrastructure`. | Independent. Also drops the temporary Kernel → Shared.Blob.Application ref that ImageService introduced. |
+| **E** | ✅ landed | Extract `Concertable.Shared.Imaging`. `IImageService` + `ImageValidator`/`Banner`/`Avatar` validators (pulled from Kernel/ImageValidators.cs) → `.Application` (public). `ImageService` → `.Infrastructure` (`internal sealed`). SixLabors.ImageSharp moved to Application (validators need it). Kernel's temporary `Shared.Blob.Application` projref + SixLabors.ImageSharp package dropped. `Concertable.Shared.Validation` namespace retired. `AddSharedImaging()` wired into all 4 hosts. Also added `System.Memory.Data` package to `Messaging.Application` (BinaryData transitive came via Kernel before; now explicit). | Independent. |
 | **F** | ⏳ pending | Extract `Concertable.Shared.Pdf`. `IPdfService` → `.Application`. Locate current impl (likely `Concertable.Concert.Infrastructure` QuestPDF wrapper) → `.Infrastructure`. | Independent. |
 | **G** | ⏳ pending | Rename `Concertable.IntegrationTests.Common` (or `Concertable.Tests.Common` — confirm which) → `Concertable.Testing`. Single csproj, no clean-arch split. | Independent, cosmetic. |
 | **H** | ⏳ pending (incl. in commit) | Revert bogus namespace rewrites on remaining Kernel files. Fix any stragglers. | After all above moves, audit Kernel for cross-assembly namespace leaks. **Note:** the 5 originally-rewritten files (`IImageService.cs`, `IEmailService.cs`, `IGeocodingService.cs`, `IUriService.cs`, `IPdfService.cs`) were left in their rewritten state for Phase C; B/D/E/F will move them to their proper homes, dissolving the issue. |
@@ -319,8 +319,8 @@ Two options:
 5. ~~Build green checkpoint.~~ ✅ 0 errors on Concertable.sln
 6. ~~Phase B (`Shared.Email`).~~ ✅ landed. Real MailKit + generic fake both `internal sealed` in `Shared.Email.Infrastructure`; User module keeps `AutoVerifyingFakeEmailService` as the auto-verify override.
 7. ~~Phase D (`Shared.Geocoding`).~~ ✅ landed. Geometry stayed in Kernel.
-8. Phase E (`Shared.Imaging`) — next. Also removes the temporary Kernel → Shared.Blob.Application ref.
-9. Phase F (`Shared.Pdf`) — resolve generic-vs-ticket open question first.
+8. ~~Phase E (`Shared.Imaging`).~~ ✅ landed. Temp Kernel→Shared.Blob.Application ref dissolved.
+9. Phase F (`Shared.Pdf`) — next. Resolve generic-vs-ticket open question first.
 10. Phase G (`Concertable.Testing` rename) — confirm which Tests.Common is live.
 11. Phase H — Kernel namespace audit. Grep for cross-assembly namespace leaks. The 5 originally-rewritten files (`IImageService.cs`, `IEmailService.cs`, `IGeocodingService.cs`, `IUriService.cs`, `IPdfService.cs`) get fixed implicitly via Phases B/D/E/F (they move to the right home with the right namespace) — Phase H is just an audit pass.
 12. Phase I — delete `api/Data/`, re-scaffold migrations (`./initial-migrations.ps1`), commit.

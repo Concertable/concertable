@@ -1,6 +1,7 @@
 using Concertable.DataAccess;
 using Concertable.Shared.Email;
 using Concertable.Shared.Geocoding;
+using Concertable.Shared.Imaging;
 using Concertable.Notification.Contracts;
 using Concertable.Payment.Contracts;
 using Concertable.User.Contracts;

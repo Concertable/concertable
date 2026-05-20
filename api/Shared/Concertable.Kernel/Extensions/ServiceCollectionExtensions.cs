@@ -5,6 +5,7 @@ using Concertable.Shared.Infrastructure.Services;
 using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Concertable.Shared.Infrastructure.Extensions;
 
@@ -15,8 +16,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
-
-        services.AddScoped<IImageService, ImageService>();
 
         services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();

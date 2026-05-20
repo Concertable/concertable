@@ -231,6 +231,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Shared.Geocodin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Shared.Geocoding.Infrastructure", "Shared\Concertable.Shared.Geocoding\Concertable.Shared.Geocoding.Infrastructure\Concertable.Shared.Geocoding.Infrastructure.csproj", "{7D001F83-0BBA-4420-AB7A-02D3E829C685}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Concertable.Shared.Imaging", "Concertable.Shared.Imaging", "{D2A745EB-47C5-F9E3-9A45-3299CA45A2B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Shared.Imaging.Application", "Shared\Concertable.Shared.Imaging\Concertable.Shared.Imaging.Application\Concertable.Shared.Imaging.Application.csproj", "{A0378D7F-3D01-431A-91F0-6950919C57DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Shared.Imaging.Infrastructure", "Shared\Concertable.Shared.Imaging\Concertable.Shared.Imaging.Infrastructure\Concertable.Shared.Imaging.Infrastructure.csproj", "{0418F125-6D81-47C4-917B-A1300A9E3AA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1285,6 +1291,30 @@ Global
 		{7D001F83-0BBA-4420-AB7A-02D3E829C685}.Release|x64.Build.0 = Release|Any CPU
 		{7D001F83-0BBA-4420-AB7A-02D3E829C685}.Release|x86.ActiveCfg = Release|Any CPU
 		{7D001F83-0BBA-4420-AB7A-02D3E829C685}.Release|x86.Build.0 = Release|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Debug|x64.Build.0 = Debug|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Debug|x86.Build.0 = Debug|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Release|x64.ActiveCfg = Release|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Release|x64.Build.0 = Release|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Release|x86.ActiveCfg = Release|Any CPU
+		{A0378D7F-3D01-431A-91F0-6950919C57DD}.Release|x86.Build.0 = Release|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Debug|x64.Build.0 = Debug|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Debug|x86.Build.0 = Debug|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Release|x64.ActiveCfg = Release|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Release|x64.Build.0 = Release|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Release|x86.ActiveCfg = Release|Any CPU
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1398,6 +1428,9 @@ Global
 		{99070EC7-0DB7-9BD8-BEB6-10E376111589} = {4F52FD11-658E-A102-6CD3-7D7C16FFA15B}
 		{EF8F163B-6803-4735-94E7-84C11C52AAFC} = {99070EC7-0DB7-9BD8-BEB6-10E376111589}
 		{7D001F83-0BBA-4420-AB7A-02D3E829C685} = {99070EC7-0DB7-9BD8-BEB6-10E376111589}
+		{D2A745EB-47C5-F9E3-9A45-3299CA45A2B5} = {4F52FD11-658E-A102-6CD3-7D7C16FFA15B}
+		{A0378D7F-3D01-431A-91F0-6950919C57DD} = {D2A745EB-47C5-F9E3-9A45-3299CA45A2B5}
+		{0418F125-6D81-47C4-917B-A1300A9E3AA0} = {D2A745EB-47C5-F9E3-9A45-3299CA45A2B5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EF2B45BA-C520-4580-BAD9-D39B6FCE0DAF}

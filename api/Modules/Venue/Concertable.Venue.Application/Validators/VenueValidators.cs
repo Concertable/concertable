@@ -1,4 +1,4 @@
-using Concertable.Shared.Validation;
+using Concertable.Shared.Imaging;
 using Concertable.Venue.Application.Requests;
 using FluentValidation;
 

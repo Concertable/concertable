@@ -1,5 +1,5 @@
 using Concertable.Artist.Application.Requests;
-using Concertable.Shared.Validation;
+using Concertable.Shared.Imaging;
 using FluentValidation;
 
 namespace Concertable.Artist.Application.Validators;

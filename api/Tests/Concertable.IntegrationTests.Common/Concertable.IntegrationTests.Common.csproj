@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\Modules\Payment\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
     <ProjectReference Include="..\..\Shared\Concertable.Shared.Email\Concertable.Shared.Email.Application\Concertable.Shared.Email.Application.csproj" />
     <ProjectReference Include="..\..\Shared\Concertable.Shared.Geocoding\Concertable.Shared.Geocoding.Application\Concertable.Shared.Geocoding.Application.csproj" />
+    <ProjectReference Include="..\..\Shared\Concertable.Shared.Imaging\Concertable.Shared.Imaging.Application\Concertable.Shared.Imaging.Application.csproj" />
   </ItemGroup>
 
 </Project>

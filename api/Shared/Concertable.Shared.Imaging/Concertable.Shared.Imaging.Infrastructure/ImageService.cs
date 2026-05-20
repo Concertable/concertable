@@ -1,10 +1,9 @@
-using Concertable.DataAccess;
 using Concertable.Shared.Blob;
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Shared.Infrastructure.Services;
+namespace Concertable.Shared.Imaging.Infrastructure;
 
-public class ImageService : IImageService
+internal sealed class ImageService : IImageService
 {
     private readonly IBlobStorageService blobStorageService;
 

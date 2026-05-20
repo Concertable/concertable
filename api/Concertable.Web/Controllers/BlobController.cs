@@ -1,5 +1,5 @@
-﻿using Concertable.DataAccess;
-using Concertable.Shared.Blob;
+﻿using Concertable.Shared.Blob;
+using Concertable.Shared.Imaging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 
