@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Workers.UnitTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.E2ETests.Api", "Tests\Concertable.E2ETests\Concertable.E2ETests.Api\Concertable.E2ETests.Api.csproj", "{E2FF7921-0449-4236-BB34-92142522B69E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Tests.Common", "Tests\Concertable.Tests.Common\Concertable.Tests.Common.csproj", "{83ED7AF0-B302-4C34-ABD0-E6435D3BC7C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Testing", "Tests\Concertable.Testing\Concertable.Testing.csproj", "{83ED7AF0-B302-4C34-ABD0-E6435D3BC7C0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Seeding", "Seeding\Concertable.Seeding\Concertable.Seeding.csproj", "{90E7AECC-4A56-49D3-B524-23A50A481A3B}"
 EndProject
@@ -153,7 +153,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Authorization.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Authorization.Infrastructure", "Modules\Authorization\Concertable.Authorization.Infrastructure\Concertable.Authorization.Infrastructure.csproj", "{3952A0CD-AEA0-4014-BB91-0090B765FC1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.IntegrationTests.Common", "Tests\Concertable.IntegrationTests.Common\Concertable.IntegrationTests.Common.csproj", "{C64D48C0-F0A4-4618-B9F5-3C8362931696}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Testing.Integration", "Tests\Concertable.Testing.Integration\Concertable.Testing.Integration.csproj", "{C64D48C0-F0A4-4618-B9F5-3C8362931696}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concertable.Venue.IntegrationTests", "Modules\Venue\Tests\Concertable.Venue.IntegrationTests\Concertable.Venue.IntegrationTests.csproj", "{1B814EC5-DFD2-49B5-8FDD-C321A92A8E80}"
 EndProject

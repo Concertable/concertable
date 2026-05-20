@@ -1,6 +1,6 @@
 # Kernel Split Plan v2
 
-> **Status (2026-05-20):** Phases **A + C `952b75fb`**, **B `6ba3735e`**, **D `d7d69ca4`**, **E `18ca38d4`**, **F landed next commit** on `Refactor/Microservices`. Build green. All Shared.X libs extracted: DataAccess, Seeding, Shared.Blob, Shared.Email (renamed `IEmailService`→`IEmailSender`), Shared.Geocoding, Shared.Imaging, Shared.Pdf. Phases G / H / I still pending.
+> **Status (2026-05-20):** Phases **A + C `952b75fb`**, **B `6ba3735e`**, **D `d7d69ca4`**, **E `18ca38d4`**, **F `858fcce6`**, **G landed next commit** on `Refactor/Microservices`. Build green. All Shared.X libs extracted: DataAccess, Seeding, Shared.Blob, Shared.Email (renamed `IEmailService`→`IEmailSender`), Shared.Geocoding, Shared.Imaging, Shared.Pdf. Test-helper rename done. Phases H / I still pending.
 
 Supersedes `KERNEL_SPLIT_PLAN.md`. v1 treated this as "extract DataAccess and leave the rest of Kernel alone for a later pass." That approach broke down once we realised:
 
@@ -26,7 +26,8 @@ v2 plans the full split in one coherent pass.
 | `Concertable.BackgroundTasks` | `IBackgroundTaskQueue`/`IBackgroundTaskRunner` + `QueueHostedService` | Single (3 files, no split warranted) |
 | `Concertable.AspNetCore` | Middleware, problem details, global exception handler, IUriService impl | 2-csproj |
 | `Concertable.Observability` | OTel setup, structured logging | 2-csproj, materialises at Phase 4 Step 17 |
-| `Concertable.Testing` | Testcontainers helpers + xUnit collection fixtures + ApiFixture | Single (rename of `Concertable.IntegrationTests.Common` / `Concertable.Tests.Common`) |
+| `Concertable.Testing` | Lightweight xUnit helpers (`FakeTimeProvider`, HTTP client/response helpers) — usable from unit tests | Single (rename of `Concertable.Tests.Common`) |
+| `Concertable.Testing.Integration` | Testcontainers helpers + xUnit collection fixtures + `ApiFixture` + mocks | Single (rename of `Concertable.IntegrationTests.Common`) |
 | `Concertable.Shared.Email` | Email adapter | 2-csproj |
 | `Concertable.Shared.Blob` | Blob storage adapter (includes `BlobDevSeeder`) | 2-csproj |
 | `Concertable.Shared.Geocoding` | Geocoding adapter | 2-csproj |
@@ -49,7 +50,7 @@ Each phase is one commit. Order matters — earlier phases unblock later ones.
 | **D** | ✅ landed | Extract `Concertable.Shared.Geocoding`. `IGeocodingService` + `LocationDto` → `.Application` (public). `GeocodingService` + Google* dtos → `.Infrastructure` (`internal sealed`). Dead `CoordinatesDto` deleted. `LocationDto`/Geocoding files removed from `Concertable.Contracts`. `Concert.Infrastructure` GlobalUsings dropped its stale `Concertable.Application.DTOs` global. `AddSharedGeocoding()` wired into all 4 hosts. Geometry kept in Kernel. | Independent. |
 | **E** | ✅ landed | Extract `Concertable.Shared.Imaging`. `IImageService` + `ImageValidator`/`Banner`/`Avatar` validators (pulled from Kernel/ImageValidators.cs) → `.Application` (public). `ImageService` → `.Infrastructure` (`internal sealed`). SixLabors.ImageSharp moved to Application (validators need it). Kernel's temporary `Shared.Blob.Application` projref + SixLabors.ImageSharp package dropped. `Concertable.Shared.Validation` namespace retired. `AddSharedImaging()` wired into all 4 hosts. Also added `System.Memory.Data` package to `Messaging.Application` (BinaryData transitive came via Kernel before; now explicit). | Independent. |
 | **F** | ✅ landed | Extract `Concertable.Shared.Pdf` as a **generic** QuestPDF wrapper. `IPdfService.Render(IDocument)` in `.Application` (public, QuestPDF.IDocument input); `PdfService` one-liner in `.Infrastructure` (`internal sealed`). Ticket-specific layer composes generic primitives: `ITicketPdfService` (Customer.Ticket.Application, internal) + `TicketPdfService` + `TicketReceiptDocument` (Customer.Ticket.Infrastructure/Pdf/, internal sealed). NEW `ITicketEmailSender` (Customer.Ticket.Application, internal) + `TicketEmailSender` (Infrastructure/Pdf/) — composes `IEmailSender` + `ITicketPdfService` so `TicketService.CompleteAsync` just calls `ticketEmailSender.SendTicketsAsync(email, ticketIds)`. Also **renamed `IEmailService`→`IEmailSender`** across the codebase (EmailService→EmailSender, FakeEmailService→FakeEmailSender, AutoVerifyingFakeEmailService→AutoVerifyingFakeEmailSender, MockEmailService→MockEmailSender, IMockEmailService→IMockEmailSender). Dropped `SendTicketsToEmailAsync` from `IEmailSender`; added `attachments` param to `SendEmailAsync` + new `EmailAttachment` record. Deleted `Concertable.Kernel/IPdfService.cs`. `Shared.Email.Infrastructure` no longer refs Kernel. `AddSharedPdf()` wired into 4 hosts. | Independent. |
-| **G** | ⏳ pending | Rename `Concertable.IntegrationTests.Common` (or `Concertable.Tests.Common` — confirm which) → `Concertable.Testing`. Single csproj, no clean-arch split. | Independent, cosmetic. |
+| **G** | ✅ landed | Both test-helper projects are live and distinct — renamed both: `Concertable.Tests.Common` (lightweight unit-test helpers, 16 consumers) → `Concertable.Testing`; `Concertable.IntegrationTests.Common` (Testcontainers/`ApiFixture`/mocks, 5 consumers) → `Concertable.Testing.Integration`. Single csproj each, no clean-arch split. Namespaces, ProjectReference paths, `<Using>` entries, Payment `InternalsVisibleTo`, and `Concertable.sln` entries all rewritten. | Independent, cosmetic. |
 | **H** | ⏳ pending (incl. in commit) | Revert bogus namespace rewrites on remaining Kernel files. Fix any stragglers. | After all above moves, audit Kernel for cross-assembly namespace leaks. **Note:** the 5 originally-rewritten files (`IImageService.cs`, `IEmailService.cs`, `IGeocodingService.cs`, `IUriService.cs`, `IPdfService.cs`) were left in their rewritten state for Phase C; B/D/E/F will move them to their proper homes, dissolving the issue. |
 | **I** | ⏳ pending | Delete `api/Data/` folder (now empty). Re-scaffold migrations (`./initial-migrations.ps1`). Commit. | Final cleanup. |
 
@@ -184,17 +185,20 @@ Csproj refs: Infrastructure → Application + `SixLabors.ImageSharp`.
 
 → **Open question for Phase F**: is `IPdfService` a generic PDF renderer or a ticket-specific renderer? If generic, full extraction. If ticket-specific, the interface itself should move to Concert and Shared.Pdf becomes empty (skip the phase).
 
-### `Concertable.Testing` (Phase G)
+### `Concertable.Testing` + `Concertable.Testing.Integration` (Phase G)
 
-Single csproj rename (no clean-arch split — user explicit). Source folder: check which of `api/Tests/Concertable.Tests.Common/` or `api/Tests/Concertable.IntegrationTests.Common/` is the live one (both currently exist — likely one is stale).
+Both source projects were live and non-overlapping (resolved at resume — neither was stale):
+- `Concertable.Tests.Common` — lightweight xUnit helpers (`FakeTimeProvider`, `HttpClientExtensions`, `HttpResponseAssertions`). Consumed by unit + integration + E2E projects. Carries no heavy package refs.
+- `Concertable.IntegrationTests.Common` — Testcontainers + `ApiFixture`/`SqlFixture` + webhook simulators + `Mocks/`. Consumed only by the 5 module integration-test projects.
+
+Merging them would force the unit-only consumers to drag in `Microsoft.AspNetCore.Mvc.Testing` / `Respawn` / `Testcontainers.MsSql`, so they stay separate — both renamed, no clean-arch split:
 
 ```
-api/Tests/Concertable.Testing/
-  Concertable.Testing.csproj   (renamed from existing)
-  …existing files unchanged besides namespace
+api/Tests/Concertable.Testing/             (renamed from Concertable.Tests.Common)
+api/Tests/Concertable.Testing.Integration/ (renamed from Concertable.IntegrationTests.Common)
 ```
 
-Namespace rewrite: `Concertable.IntegrationTests.Common` (or `Concertable.Tests.Common`) → `Concertable.Testing`.
+Namespace rewrites: `Concertable.Tests.Common` → `Concertable.Testing`; `Concertable.IntegrationTests.Common` → `Concertable.Testing.Integration` (incl. `.Mocks` sub-namespace). Consumer `<Using>` entries, ProjectReference paths, Payment `InternalsVisibleTo`, and `Concertable.sln` project entries updated to match.
 
 ---
 
@@ -232,7 +236,8 @@ Sed-rewrite consumer `using` statements + inline type references repo-wide. Appl
 | `Concertable.Shared.Infrastructure.Settings` | Split: `BlobStorageSettings` → `Concertable.Shared.Blob.Infrastructure`; `UrlSettings` → `Concertable.AspNetCore` *(future)* |
 | `Concertable.Shared.Infrastructure.Extensions` | *(stays in Kernel — `AddSharedInfrastructure` god-method, broken up phase-by-phase as adapters extract)* |
 | `Concertable.Shared.Infrastructure` *(plain — `PaginationExtensions`)* | `Concertable.DataAccess.Infrastructure` |
-| `Concertable.IntegrationTests.Common` *(or `Concertable.Tests.Common`)* | `Concertable.Testing` |
+| `Concertable.IntegrationTests.Common` | `Concertable.Testing.Integration` |
+| `Concertable.Tests.Common` | `Concertable.Testing` |
 
 ### Hard rules for bulk sed
 
@@ -321,8 +326,8 @@ Two options:
 7. ~~Phase D (`Shared.Geocoding`).~~ ✅ landed. Geometry stayed in Kernel.
 8. ~~Phase E (`Shared.Imaging`).~~ ✅ landed. Temp Kernel→Shared.Blob.Application ref dissolved.
 9. ~~Phase F (`Shared.Pdf`).~~ ✅ landed. Generic IPdfService + ticket-specific composition (ITicketPdfService + ITicketEmailSender) in Customer.Ticket. IEmailService→IEmailSender rename bundled in.
-10. Phase G (`Concertable.Testing` rename) — next. Confirm which Tests.Common is live.
-11. Phase H — Kernel namespace audit. Grep for cross-assembly namespace leaks. The 5 originally-rewritten files (`IImageService.cs`, `IEmailService.cs`, `IGeocodingService.cs`, `IUriService.cs`, `IPdfService.cs`) get fixed implicitly via Phases B/D/E/F (they move to the right home with the right namespace) — Phase H is just an audit pass.
+10. ~~Phase G (`Concertable.Testing` rename).~~ ✅ landed. Both test-helpers were live — renamed to `Concertable.Testing` + `Concertable.Testing.Integration`.
+11. Phase H — Kernel namespace audit — next. Grep for cross-assembly namespace leaks. The 5 originally-rewritten files (`IImageService.cs`, `IEmailService.cs`, `IGeocodingService.cs`, `IUriService.cs`, `IPdfService.cs`) get fixed implicitly via Phases B/D/E/F (they move to the right home with the right namespace) — Phase H is just an audit pass.
 12. Phase I — delete `api/Data/`, re-scaffold migrations (`./initial-migrations.ps1`), commit.
 
 Each phase: one commit. Commit message format `Refactor: extract Concertable.Shared.<Lib>` or `Refactor: relocate <X> to <Y>`. No co-authored-by trailers, no Claude generated trailers.

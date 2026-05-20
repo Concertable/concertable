@@ -21,7 +21,7 @@
     <ProjectReference Include="..\..\Concertable.Workers\Concertable.Workers.csproj" />
     <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
-    <ProjectReference Include="..\Concertable.Tests.Common\Concertable.Tests.Common.csproj" />
+    <ProjectReference Include="..\Concertable.Testing\Concertable.Testing.csproj" />
   </ItemGroup>
 
 </Project>

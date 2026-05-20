@@ -2,7 +2,7 @@ using System.Net;
 using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
-using Concertable.IntegrationTests.Common;
+using Concertable.Testing.Integration;
 using Concertable.Payment.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

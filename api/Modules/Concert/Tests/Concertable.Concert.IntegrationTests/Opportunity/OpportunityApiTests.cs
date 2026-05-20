@@ -2,7 +2,7 @@ using System.Net;
 using Concertable.Concert.Application.DTOs;
 
 using Concertable.Concert.Api.Responses;
-using Concertable.IntegrationTests.Common;
+using Concertable.Testing.Integration;
 using Concertable.Shared;
 using Xunit;
 using static Concertable.Concert.IntegrationTests.Opportunity.OpportunityRequestBuilders;

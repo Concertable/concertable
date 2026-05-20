@@ -1,6 +1,6 @@
 using System.Net;
 using Concertable.Concert.Api.Responses;
-using Concertable.Tests.Common;
+using Concertable.Testing;
 using Xunit;
 namespace Concertable.E2ETests.Api.Payments;
 

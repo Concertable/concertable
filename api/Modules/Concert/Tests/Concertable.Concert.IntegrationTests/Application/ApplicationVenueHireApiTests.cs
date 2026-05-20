@@ -4,7 +4,7 @@ using Concertable.Concert.Application.Requests;
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Api.Responses;
 using Concertable.Concert.Domain;
-using Concertable.IntegrationTests.Common;
+using Concertable.Testing.Integration;
 using Concertable.Payment.Contracts;
 using Concertable.Shared;
 using Microsoft.EntityFrameworkCore;

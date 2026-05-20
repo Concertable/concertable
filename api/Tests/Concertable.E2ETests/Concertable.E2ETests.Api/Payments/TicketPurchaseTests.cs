@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using Concertable.Customer.Ticket.Application.DTOs;
-using Concertable.Tests.Common;
+using Concertable.Testing;
 using Xunit;
 using Xunit.Abstractions;
 

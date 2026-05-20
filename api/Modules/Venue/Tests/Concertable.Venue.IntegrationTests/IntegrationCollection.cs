@@ -1,4 +1,4 @@
-using Concertable.IntegrationTests.Common;
+using Concertable.Testing.Integration;
 
 [CollectionDefinition("Integration")]
 public class IntegrationCollection : ICollectionFixture<ApiFixture>;

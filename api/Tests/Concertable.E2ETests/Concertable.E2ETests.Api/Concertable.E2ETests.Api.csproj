@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="Concertable.Tests.Common" />
+    <Using Include="Concertable.Testing" />
   </ItemGroup>
 
 </Project>

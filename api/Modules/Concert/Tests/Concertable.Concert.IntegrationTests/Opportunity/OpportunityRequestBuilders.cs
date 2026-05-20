@@ -1,5 +1,5 @@
 using Concertable.Concert.Application.Requests;
-using Concertable.IntegrationTests.Common;
+using Concertable.Testing.Integration;
 using Concertable.Shared;
 
 namespace Concertable.Concert.IntegrationTests.Opportunity;
