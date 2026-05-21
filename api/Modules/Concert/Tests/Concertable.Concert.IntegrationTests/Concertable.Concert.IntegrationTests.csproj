@@ -35,7 +35,6 @@
     <Using Include="Concertable.Payment.Domain" />
     <Using Include="Concertable.Concert.Domain" />
     <Using Include="Concertable.Shared" />
-    <Using Include="Concertable.Payment.Application.Interfaces" />
   </ItemGroup>
 
 </Project>

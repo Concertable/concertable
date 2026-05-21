@@ -9,7 +9,9 @@ using Concertable.Concert.Api.Extensions;
 using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Api.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
-using Concertable.Payment.Infrastructure.Extensions;
+using Concertable.Payment.Client.Extensions;
+using Concertable.Payment.Domain.Events;
+using Concertable.Messaging.Application;
 using Concertable.Conversations.Infrastructure.Extensions;
 using Concertable.Messaging.AzureServiceBus;
 using Concertable.Messaging.Infrastructure.Extensions;
@@ -109,7 +111,7 @@ services.AddAzureServiceBusTransport(
         opts.ConnectionString = builder.Configuration.GetConnectionString("asb") ?? "";
         opts.ServiceName = "concertable-b2b";
     },
-    _ => { });
+    reg => reg.SubscribeTo<PaymentSucceededEvent>());
 services.AddDirectBusKeyed("webhook");
 services.AddOutbox(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 services.AddInbox(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -135,7 +137,7 @@ services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
 services.AddConcertApi(builder.Configuration);
 services.AddContractApi(builder.Configuration);
-services.AddPaymentInfrastructure(builder.Configuration);
+services.AddPaymentClient(builder.Configuration);
 services.AddCustomerApi(builder.Configuration);
 services.AddQueueHostedService();
 services.AddAuthorizationModule();

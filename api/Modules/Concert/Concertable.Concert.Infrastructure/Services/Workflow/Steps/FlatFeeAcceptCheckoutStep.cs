@@ -1,7 +1,6 @@
 using Concertable.Concert.Application.Responses;
 using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Contract.Contracts;
-using Concertable.Payment.Contracts;
 using Concertable.Shared.Exceptions;
 
 namespace Concertable.Concert.Infrastructure.Services.Workflow.Steps;
@@ -10,16 +9,16 @@ internal class FlatFeeAcceptCheckoutStep : IAcceptCheckoutStep
 {
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
-    private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly IManagerPaymentClient managerPaymentClient;
 
     public FlatFeeAcceptCheckoutStep(
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
-        IManagerPaymentModule managerPaymentModule)
+        IManagerPaymentClient managerPaymentClient)
     {
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
-        this.managerPaymentModule = managerPaymentModule;
+        this.managerPaymentClient = managerPaymentClient;
     }
 
     public async Task<Checkout> ExecuteAsync(int applicationId)
@@ -36,7 +35,7 @@ internal class FlatFeeAcceptCheckoutStep : IAcceptCheckoutStep
             ["applicationId"] = applicationId.ToString()
         };
 
-        var session = await managerPaymentModule.CreateHoldSessionAsync(venueManagerId, contract.Fee, metadata);
+        var session = await managerPaymentClient.CreateHoldSessionAsync(venueManagerId, contract.Fee, metadata);
         return new Checkout(new FlatPayment(contract.Fee), artist, session, CheckoutLabels.Charge);
     }
 }

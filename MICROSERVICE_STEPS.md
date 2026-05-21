@@ -2,7 +2,7 @@
 
 > **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md). That doc is the *what*; this one is *what order, in phases*.
 >
-> **Status:** Phase 1 COMPLETE ✅. Phase 2 COMPLETE ✅ (Steps 7–11). Phase 3 COMPLETE ✅ (Steps 12–13). Next: Step 14 (Payment extraction).
+> **Status:** Phase 1 COMPLETE ✅. Phase 2 COMPLETE ✅ (Steps 7–11). Phase 3 COMPLETE ✅ (Steps 12–13). Phase 4 Step 14 COMPLETE ✅. Next: Step 15 (Concert lifecycle saga).
 >
 > **Rule:** Don't open Phase N until Phase N−1 is done. Half-done migrations are worse than no migration.
 
@@ -72,7 +72,7 @@ Pre-execution doc work. No code refactor yet.
 
 ## Phase 4 — Production-grade infrastructure
 
-14. **Extract `Concertable.Payment.Api` + `Concertable.Payment.Workers`** to its own host + own DB + own Stripe webhook endpoint. PCI scope shrinks dramatically. Stripe webhook URL change in dashboard. **IN PROGRESS 2026-05-20.** Steps 1–6 done: comms doc corrected, projects restructured to `Concertable.Payment/`, `Payment.Contracts` phased out (types redistributed to Domain/Application.DTOs/Payment.Client), `Payment.Client` classlib created with gRPC adapters (`IXClient`/`XClient` naming), `Payment.Web` host (gRPC + controllers, Kestrel Http1AndHttp2, ServiceToken policy), `Payment.Workers` host (ASB subscriber for 5 events, inbox + outbox). gRPC service classes (`EscrowGrpcService`, `ManagerPaymentGrpcService`, `CustomerPaymentGrpcService`) live in `Payment.Infrastructure/Grpc/`; `MapPaymentGrpcServices()` extension wires routes + policy. Both projects build clean and are in solution. Remaining: StripeAccountController IUserModule removal, B2B/Customer/Workers/AppHost wiring. Plan at `.claude/plans/shiny-strolling-alpaca.md`.
+14. ~~**Extract `Concertable.Payment.Api` + `Concertable.Payment.Workers`** to its own host + own DB + own Stripe webhook endpoint. PCI scope shrinks dramatically.~~ **DONE 2026-05-21.** `Payment.Contracts` phased out (types redistributed to `Payment.Domain`/`Payment.Application.DTOs`/`Payment.Client`). `Payment.Client` classlib with gRPC adapters (`IManagerPaymentClient`, `ICustomerPaymentClient`, `IEscrowClient`). `Payment.Web` host (gRPC + HTTP controllers, Kestrel Http1AndHttp2, ServiceToken policy). `Payment.Workers` host (ASB subscriber for 5 events, inbox + outbox). B2B and Customer updated to call `AddPaymentClient()` and inject `IXClient` interfaces. `FakeStripeTransferClient` added (fixes pre-existing DI validation bug in fake path). `PaymentDbContext` migration re-scaffolded against `Payment.Web` startup project. AppHost wired with `AddPaymentWeb`/`AddPaymentWorkers`, `PaymentDb`, 5 new ASB topics. Four audience-facing services (B2B, Customer, Search, Payment). PCI scope contained to `Payment.Web` + `Payment.Workers`.
 15. **One saga** for the concert lifecycle (Posted → Settled) — long-running orchestration with persistent state. Hand-rolled state machine + storage (own `IBusTransport` seam; no MassTransit).
 16. **OpenTelemetry distributed tracing** across all running services. Watch one ticket-purchase flow end-to-end through B2B + Customer + Payment + Search.
 

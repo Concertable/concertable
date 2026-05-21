@@ -32,7 +32,7 @@
     <ProjectReference Include="..\Shared\Concertable.Shared.Imaging\Concertable.Shared.Imaging.Infrastructure\Concertable.Shared.Imaging.Infrastructure.csproj" />
     <ProjectReference Include="..\Shared\Concertable.Shared.Pdf\Concertable.Shared.Pdf.Infrastructure\Concertable.Shared.Pdf.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
-    <ProjectReference Include="..\Concertable.Payment\Concertable.Payment.Infrastructure\Concertable.Payment.Infrastructure.csproj" />
+    <ProjectReference Include="..\Concertable.Payment\Concertable.Payment.Client\Concertable.Payment.Client.csproj" />
   </ItemGroup>
 
 </Project>

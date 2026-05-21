@@ -1,5 +1,3 @@
-using Concertable.Payment.Contracts;
-using Concertable.Payment.Contracts.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Concert.Infrastructure.Services.Payment;
