@@ -15,7 +15,7 @@ public class SqlFixture
 
     public async Task InitializeAsync(DistributedApplication app)
     {
-        var connectionString = await app.GetConnectionStringAsync("DefaultConnection");
+        var connectionString = await app.GetConnectionStringAsync("B2BDb");
         var builder = new SqlConnectionStringBuilder(connectionString) { MultipleActiveResultSets = true };
         connection = new SqlConnection(builder.ConnectionString);
         await connection.OpenAsync();

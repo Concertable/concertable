@@ -59,7 +59,7 @@ public async Task InitializeAsync()
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:DefaultConnection"] = sqlFixture.ConnectionString,
+                    ["ConnectionStrings:B2BDb"] = sqlFixture.ConnectionString,
                     ["ConnectionStrings:PaymentDb"] = sqlFixture.ConnectionString,
                     ["ExternalServices:UseRealStripe"] = "false",
                     ["ExternalServices:UseRealBlob"] = "false",
