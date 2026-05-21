@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.User.Application\Concertable.User.Application.csproj" />
     <ProjectReference Include="..\..\Artist\Concertable.Artist.Contracts\Concertable.Artist.Contracts.csproj" />
     <ProjectReference Include="..\..\Venue\Concertable.Venue.Contracts\Concertable.Venue.Contracts.csproj" />

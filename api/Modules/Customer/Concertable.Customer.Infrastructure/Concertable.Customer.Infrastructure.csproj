@@ -18,7 +18,6 @@
     <ProjectReference Include="..\Concertable.Customer.Contracts\Concertable.Customer.Contracts.csproj" />
     <ProjectReference Include="..\Concertable.Customer.Domain\Concertable.Customer.Domain.csproj" />
     <ProjectReference Include="..\Concertable.Customer.Application\Concertable.Customer.Application.csproj" />
-    <ProjectReference Include="..\..\User\Concertable.User.Contracts\Concertable.User.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Concertable.DataAccess\Concertable.DataAccess.Infrastructure\Concertable.DataAccess.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
