@@ -14,9 +14,9 @@
 
 ## Progress — updated 2026-05-21
 
-**Done (4/30):** OC2, DI1, DI2, OB1 — see each item's note below.
-**Verified:** `Concertable.B2B.Web` + `Concertable.Messaging.UnitTests` build clean (0 errors).
-**Next:** EH1 / EH2.
+**Done (6/30):** OC2, DI1, DI2, OB1, EH1, EH2 — see each item's note below.
+**Verified:** `Concertable.B2B.Web` + `Concertable.Messaging.UnitTests` build clean (0 errors); `Concert.Infrastructure` + `Customer.Ticket.Infrastructure` build clean after EH1/EH2.
+**Next:** EH3 / EH4.
 **Whole-solution build is NOT green — pre-existing, unrelated to these fixes:**
 - `Concertable.Organization.UnitTests`: `OrganizationEntity does not exist` compile error (pre-existing on the branch; Organization module untouched by this review).
 - `Concertable.E2ETests.dll`: file-lock from a stray `testhost` process — environmental, not a code error.
@@ -88,13 +88,11 @@
 
 ## 3. Event handler correctness
 
-- [ ] **EH1 — CRITICAL** — B2B `VerifyPaymentProcessor`, `EscrowPaymentProcessor`, `SettlementPaymentProcessor`, `BookingPaymentFailedProcessor`, `VerifyPaymentFailedProcessor`
-  None check `envelope.MessageId` against the inbox or write a dedup row. ASB at-least-once → double verify / double settle on redelivery.
-  **Fix:** Each handler delegates to a module facade (`concertWorkflowModule.VerifyAsync`/`SettleAsync`, `bookingService.FailPaymentAsync`, `concertNotifier`) that runs its own `SaveChanges` — the inbox guard can't trivially share that transaction. None of the 5 handlers inject a DbContext today. Decide approach (inbox check + insert inside the facade's unit of work, vs. a wrapping transaction) before editing.
+- [x] **EH1 — CRITICAL — DONE** — B2B `VerifyPaymentProcessor`, `EscrowPaymentProcessor`, `SettlementPaymentProcessor`, `BookingPaymentFailedProcessor`, `VerifyPaymentFailedProcessor`
+  *Done: each handler injects `ConcertDbContext` and checks `(MessageId, nameof(Handler))` against the inbox, returning on a hit. The 4 DB-writing handlers stage the inbox row on `ConcertDbContext` before delegating — the facade's single `SaveChangesAsync` (same scoped context as the repositories) commits the inbox row in the same transaction as the workflow write. `VerifyPaymentFailedProcessor` is notification-only with no DB write to ride: it sends the notification, then writes the inbox row + `SaveChanges` (send-then-record, so a crash between the two never loses the notification — at worst a duplicate on redelivery).*
 
-- [ ] **EH2 — CRITICAL** — Customer `TicketPaymentProcessor` + `TicketPaymentFailedProcessor`
-  No inbox guard — redelivered `PaymentSucceededEvent` creates duplicate tickets + double-decrements. `TicketDbContext` doesn't even map `InboxMessageEntity`.
-  **Fix:** Map `InboxMessageEntity` (ExcludeFromMigrations) on `TicketDbContext`; add inbox dedup to both handlers.
+- [x] **EH2 — CRITICAL — DONE** — Customer `TicketPaymentProcessor` + `TicketPaymentFailedProcessor`
+  *Done: `TicketDbContext` now maps `InboxMessageEntity` (`messaging.Inbox`, ExcludeFromMigrations) — mirrors `Customer.Concert.ConcertDbContext`. `TicketPaymentProcessor` checks the inbox, stages the dedup row on `TicketDbContext`; `TicketService.CompleteAsync`'s `ticketRepository.SaveChangesAsync()` commits it atomically with the ticket insert. NOTE: the concert-availability decrement is a separate `concertRepository.SaveChangesAsync()` — that cross-context split is OB2, still open; EH2 only adds the dedup. `TicketPaymentFailedProcessor` is notification-only: send-then-record.*
 
 - [ ] **EH3 — HIGH** — `DomainEventDispatchInterceptor.cs:11`
   `_pendingEvents` is an instance field on a scoped interceptor; a re-entrant `SaveChanges` overwrites it (outer call dispatches inner call's events). Latent now, landmine.
