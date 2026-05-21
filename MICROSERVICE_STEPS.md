@@ -2,7 +2,7 @@
 
 > **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md). That doc is the *what*; this one is *what order, in phases*.
 >
-> **Status:** Phase 1 COMPLETE ✅. Phase 2 COMPLETE ✅ (Steps 7–11). Phase 3 COMPLETE ✅ (Steps 12–13). Phase 4 Steps 14–15 COMPLETE ✅. Next: Step 16 (OpenTelemetry).
+> **Status:** Phase 1 COMPLETE ✅. Phase 2 COMPLETE ✅ (Steps 7–11). Phase 3 COMPLETE ✅ (Steps 12–13). Phase 4 COMPLETE ✅ (Steps 14–16). Next: Phase 5 (Step 17 — event schema versioning).
 >
 > **Rule:** Don't open Phase N until Phase N−1 is done. Half-done migrations are worse than no migration.
 
@@ -74,9 +74,9 @@ Pre-execution doc work. No code refactor yet.
 
 14. ~~**Extract `Concertable.Payment.Api` + `Concertable.Payment.Workers`** to its own host + own DB + own Stripe webhook endpoint. PCI scope shrinks dramatically.~~ **DONE 2026-05-21.** `Payment.Contracts` phased out (types redistributed to `Payment.Domain`/`Payment.Application.DTOs`/`Payment.Client`). `Payment.Client` classlib with gRPC adapters (`IManagerPaymentClient`, `ICustomerPaymentClient`, `IEscrowClient`). `Payment.Web` host (gRPC + HTTP controllers, Kestrel Http1AndHttp2, ServiceToken policy). `Payment.Workers` host (ASB subscriber for 5 events, inbox + outbox). B2B and Customer updated to call `AddPaymentClient()` and inject `IXClient` interfaces. `FakeStripeTransferClient` added (fixes pre-existing DI validation bug in fake path). `PaymentDbContext` migration re-scaffolded against `Payment.Web` startup project. AppHost wired with `AddPaymentWeb`/`AddPaymentWorkers`, `PaymentDb`, 5 new ASB topics. Four audience-facing services (B2B, Customer, Search, Payment). PCI scope contained to `Payment.Web` + `Payment.Workers`.
 15. ✅ **Handle `PaymentFailedEvent`** in B2B and Customer — closes the async failure gap opened by Step 14's Payment extraction. `BookingPaymentFailedProcessor` (settlement + escrow → `booking.FailPayment()`), `VerifyPaymentFailedProcessor` (notify venue manager), `TicketPaymentFailedProcessor` (notify customer). No domain model change or migration needed — `BookingStatus.PaymentFailed` already existed. ("Concert lifecycle saga" framing was wrong; the workflow state machine already existed.)
-16. **OpenTelemetry distributed tracing** across all running services. Watch one ticket-purchase flow end-to-end through B2B + Customer + Payment + Search.
+16. ✅ **OpenTelemetry distributed tracing** across all running services. `Concertable.ServiceDefaults` already had OTLP export wired via Aspire dashboard. Added `OpenTelemetry.Instrumentation.GrpcNetClient` 1.10.0-beta.1 + `.AddGrpcClientInstrumentation()` for B2B/Customer → Payment.Web gRPC spans, and `.AddSource("Azure.Messaging.ServiceBus")` to pick up the SDK's built-in send/process spans (W3C traceparent propagated via `Diagnostic-Id` in message properties automatically by SDK v7.18.2). No transport code changes needed. Aspire dashboard shows the full ticket-purchase trace: HTTP → gRPC → ASB send → ASB process in Customer + B2B.
 
-**Exit criteria:** five services running on production-grade infra. PCI scope contained to Payment. Cross-service flows observable.
+**Exit criteria:** ✅ Five services running on production-grade infra. PCI scope contained to Payment. Cross-service flows observable via Aspire dashboard OTLP traces.
 
 ---
 

@@ -18,9 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Concertable.Workers\Concertable.Workers.csproj" />
-    <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
-    <ProjectReference Include="..\..\Modules\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Concertable.B2B\Concertable.B2B.Workers\Concertable.B2B.Workers.csproj" />
+    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
+    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.Concert.Infrastructure\Concertable.Concert.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Testing\Concertable.Testing.csproj" />
   </ItemGroup>
 

@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\..\Concertable.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\..\Concertable.Web\appsettings.E2E.json')" />
+    <Content Include="..\..\..\Concertable.B2B\Concertable.B2B.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\..\Concertable.B2B\Concertable.B2B.Web\appsettings.E2E.json')" />
     <None Update="reqnroll.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures\*.png" CopyToOutputDirectory="PreserveNewest" />

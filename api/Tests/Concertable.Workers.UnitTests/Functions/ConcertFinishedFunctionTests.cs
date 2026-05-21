@@ -2,7 +2,7 @@ using Concertable.Concert.Infrastructure.Services.Completion;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Workers.Functions;
+using Concertable.B2B.Workers.Functions;
 using Xunit;
 
 namespace Concertable.Workers.UnitTests.Functions;
