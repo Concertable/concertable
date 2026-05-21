@@ -111,7 +111,11 @@ services.AddAzureServiceBusTransport(
         opts.ConnectionString = builder.Configuration.GetConnectionString("asb") ?? "";
         opts.ServiceName = "concertable-b2b";
     },
-    reg => reg.SubscribeTo<PaymentSucceededEvent>());
+    reg =>
+    {
+        reg.SubscribeTo<PaymentSucceededEvent>();
+        reg.SubscribeTo<PaymentFailedEvent>();
+    });
 services.AddDirectBusKeyed("webhook");
 services.AddOutbox(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 services.AddInbox(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

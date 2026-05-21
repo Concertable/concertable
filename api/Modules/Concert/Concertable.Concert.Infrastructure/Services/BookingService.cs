@@ -53,4 +53,12 @@ internal class BookingService : IBookingService
         booking.Complete();
         await bookingRepository.SaveChangesAsync();
     }
+
+    public async Task FailPaymentAsync(int bookingId, CancellationToken ct = default)
+    {
+        var booking = await bookingRepository.GetByIdAsync(bookingId)
+            ?? throw new NotFoundException("Booking not found");
+        booking.FailPayment();
+        await bookingRepository.SaveChangesAsync();
+    }
 }

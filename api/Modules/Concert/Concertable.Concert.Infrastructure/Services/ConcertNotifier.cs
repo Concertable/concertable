@@ -14,4 +14,7 @@ internal class ConcertNotifier : IConcertNotifier
 
     public Task ConcertPostedAsync(string userId, object payload) =>
         notifications.SendAsync(userId, "ConcertPosted", payload);
+
+    public Task VerifyPaymentFailedAsync(string userId, object payload) =>
+        notifications.SendAsync(userId, "VerifyPaymentFailed", payload);
 }
