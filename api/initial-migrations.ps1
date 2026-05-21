@@ -39,7 +39,7 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context ContractDbContext --project Modules/Contract/Concertable.Contract.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context PaymentDbContext --project Concertable.Payment/Concertable.Payment.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context PaymentDbContext --project Concertable.Payment/Concertable.Payment.Infrastructure --startup-project Concertable.Payment/Concertable.Payment.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context CustomerDbContext --project Modules/Customer/Concertable.Customer.Infrastructure --startup-project Concertable.Web --output-dir Data/Migrations

@@ -1,6 +1,5 @@
 ﻿using Concertable.Concert.Application.DTOs;
 using Concertable.Concert.Application.Responses;
-using Concertable.Payment.Contracts;
 
 namespace Concertable.Concert.Application.Interfaces;
 

@@ -1,6 +1,5 @@
 using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Contract.Contracts;
-using Concertable.Payment.Contracts;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -11,7 +10,7 @@ internal class VenueHireAcceptStep : ISimpleAcceptStep
 {
     private readonly IApplicationValidator applicationValidator;
     private readonly IBookingService bookingService;
-    private readonly IEscrowModule escrowModule;
+    private readonly IEscrowClient escrowClient;
     private readonly IPayerLookup payerLookup;
     private readonly IContractLoader contractLoader;
     private readonly IApplicationRepository applicationRepository;
@@ -20,7 +19,7 @@ internal class VenueHireAcceptStep : ISimpleAcceptStep
     public VenueHireAcceptStep(
         IApplicationValidator applicationValidator,
         IBookingService bookingService,
-        IEscrowModule escrowModule,
+        IEscrowClient escrowClient,
         IPayerLookup payerLookup,
         IContractLoader contractLoader,
         IApplicationRepository applicationRepository,
@@ -28,7 +27,7 @@ internal class VenueHireAcceptStep : ISimpleAcceptStep
     {
         this.applicationValidator = applicationValidator;
         this.bookingService = bookingService;
-        this.escrowModule = escrowModule;
+        this.escrowClient = escrowClient;
         this.payerLookup = payerLookup;
         this.contractLoader = contractLoader;
         this.applicationRepository = applicationRepository;
@@ -56,7 +55,7 @@ internal class VenueHireAcceptStep : ISimpleAcceptStep
             "Accepting application {ApplicationId} (booking {BookingId}): charging {Amount} GBP from {PayerId} on behalf of {PayeeId}",
             applicationId, booking.Id, contract.HireFee, artistManagerId, venueManagerId);
 
-        var hold = await escrowModule.DepositAsync(artistManagerId, venueManagerId, contract.HireFee, prepaid.PaymentMethodId, PaymentSession.OffSession, booking.Id);
+        var hold = await escrowClient.DepositAsync(artistManagerId, venueManagerId, contract.HireFee, prepaid.PaymentMethodId, PaymentSession.OffSession, booking.Id);
         if (hold.IsFailed)
             throw new BadRequestException(hold.Errors);
     }

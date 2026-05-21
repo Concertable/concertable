@@ -33,7 +33,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
-    <PackageReference Include="Stripe.net" Version="47.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -60,7 +59,7 @@
     <ProjectReference Include="..\Shared\Concertable.Shared.Pdf\Concertable.Shared.Pdf.Infrastructure\Concertable.Shared.Pdf.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Messaging\Concertable.Messaging.AzureServiceBus\Concertable.Messaging.AzureServiceBus.csproj" />
     <ProjectReference Include="..\Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
-    <ProjectReference Include="..\Concertable.Payment\Concertable.Payment.Infrastructure\Concertable.Payment.Infrastructure.csproj" />
+    <ProjectReference Include="..\Concertable.Payment\Concertable.Payment.Client\Concertable.Payment.Client.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://www.unpkg.com/wrangler/config-schema.json" /></VisualStudio></ProjectExtensions>

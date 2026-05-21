@@ -23,7 +23,6 @@ using Concertable.Concert.Infrastructure.Services.Completion;
 using Concertable.Concert.Infrastructure.Services.Payment;
 using Concertable.Concert.Infrastructure.Validators;
 using Concertable.DataAccess.Infrastructure;
-using Concertable.Payment.Contracts.Events;
 using Concertable.Shared;
 using Concertable.Venue.Contracts.Events;
 using FluentValidation;

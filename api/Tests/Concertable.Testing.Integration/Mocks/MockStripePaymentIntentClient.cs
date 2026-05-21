@@ -1,7 +1,7 @@
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Payment.Application.Requests;
-using Concertable.Payment.Contracts;
+using Concertable.Payment.Application.DTOs;
 using FluentResults;
 using Stripe;
 

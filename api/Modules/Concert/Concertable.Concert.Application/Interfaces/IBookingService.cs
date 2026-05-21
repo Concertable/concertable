@@ -7,4 +7,5 @@ internal interface IBookingService
     Task<BookingEntity> MarkAwaitingPaymentByConcertIdAsync(int concertId);
     Task<BookingEntity> CompleteByConcertIdAsync(int concertId);
     Task CompleteAsync(int bookingId);
+    Task FailPaymentAsync(int bookingId, CancellationToken ct = default);
 }

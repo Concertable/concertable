@@ -14,7 +14,8 @@ using Concertable.Conversations.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Concertable.Notification.Infrastructure.Extensions;
-using Concertable.Payment.Infrastructure.Extensions;
+using Concertable.Payment.Client.Extensions;
+using Concertable.Shared.Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Concertable.DataAccess.Infrastructure;
@@ -45,7 +46,13 @@ internal static class ServiceCollectionExtensions
         services.AddUserModule(configuration);
         services.AddConcertModule(configuration);
         services.AddContractModule(configuration);
-        services.AddPaymentInfrastructure(configuration);
+        services.AddClientCredentials(opts =>
+        {
+            opts.Authority = configuration["Auth:Authority"] ?? configuration["services__auth__https__0"] ?? "";
+            opts.ClientId = configuration["ServiceAuth:ClientId"] ?? "";
+            opts.ClientSecret = configuration["ServiceAuth:ClientSecret"] ?? "";
+        });
+        services.AddPaymentClient(configuration);
         services.AddNotificationModule();
         services.AddConversationsModule(configuration);
 

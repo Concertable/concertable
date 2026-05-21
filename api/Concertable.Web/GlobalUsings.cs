@@ -1,11 +1,4 @@
 global using Concertable.Shared;
-global using Concertable.Payment.Contracts;
-global using Concertable.Payment.Domain;
-global using Concertable.Payment.Application.Interfaces;
-global using Concertable.Payment.Application.Interfaces.Webhook;
-global using Concertable.Payment.Application.DTOs;
-global using Concertable.Payment.Application.Requests;
-global using Concertable.Payment.Application.Mappers;
 global using Concertable.Authorization.Contracts;
 global using Concertable.User.Contracts;
 global using Concertable.Conversations.Api.Extensions;

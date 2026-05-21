@@ -1,4 +1,3 @@
-using Concertable.Payment.Application.Interfaces;
 using Concertable.Contract.Contracts;
 using Concertable.Shared.Exceptions;
 
@@ -7,7 +6,6 @@ namespace Concertable.Concert.Infrastructure.Services;
 internal class OpportunityService : IOpportunityService
 {
     private readonly IOpportunityRepository opportunityRepository;
-    private readonly IStripeValidationFactory stripeValidationFactory;
     private readonly IVenueModule venueModule;
     private readonly IContractModule contractModule;
     private readonly IOpportunitySyncer syncer;
@@ -17,7 +15,6 @@ internal class OpportunityService : IOpportunityService
 
     public OpportunityService(
         IOpportunityRepository opportunityRepository,
-        IStripeValidationFactory stripeValidationFactory,
         IVenueModule venueModule,
         IContractModule contractModule,
         IOpportunitySyncer syncer,
@@ -26,7 +23,6 @@ internal class OpportunityService : IOpportunityService
         IUnitOfWorkBehavior uowBehavior)
     {
         this.opportunityRepository = opportunityRepository;
-        this.stripeValidationFactory = stripeValidationFactory;
         this.venueModule = venueModule;
         this.contractModule = contractModule;
         this.syncer = syncer;
@@ -37,9 +33,6 @@ internal class OpportunityService : IOpportunityService
 
     public async Task<OpportunityDto> CreateAsync(OpportunityRequest request)
     {
-        if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
-            throw new ForbiddenException("You do not have the required Stripe account set up");
-
         var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
 
@@ -63,12 +56,6 @@ internal class OpportunityService : IOpportunityService
     public async Task CreateMultipleAsync(IEnumerable<OpportunityRequest> requests)
     {
         var requestList = requests.ToList();
-        foreach (var request in requestList)
-        {
-            if (!await stripeValidationFactory.Create(request.Contract.ContractType).ValidateAsync())
-                throw new ForbiddenException("You do not have the required Stripe account set up");
-        }
-
         var venueId = await venueModule.GetVenueIdByUserIdAsync(currentUser.GetId())
             ?? throw new NotFoundException("Venue not found for current user");
 
@@ -106,10 +93,6 @@ internal class OpportunityService : IOpportunityService
 
         if (ownedVenueId != venueId)
             throw new ForbiddenException("You do not own this venue");
-
-        foreach (var req in desired)
-            if (!await stripeValidationFactory.Create(req.Contract.ContractType).ValidateAsync())
-                throw new ForbiddenException("You do not have the required Stripe account set up");
 
         var current = await opportunityRepository.GetActiveByVenueIdAsync(venueId);
 

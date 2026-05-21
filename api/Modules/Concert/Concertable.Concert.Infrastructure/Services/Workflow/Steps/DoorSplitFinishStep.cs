@@ -1,6 +1,5 @@
 using Concertable.Concert.Application.Workflow.Steps;
 using Concertable.Contract.Contracts;
-using Concertable.Payment.Contracts;
 using Concertable.Shared.Enums;
 using Concertable.Shared.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,7 @@ internal class DoorSplitFinishStep : IFinishStep
     private readonly IBookingRepository bookingRepository;
     private readonly IConcertRepository concertRepository;
     private readonly IContractLoader contractLoader;
-    private readonly IManagerPaymentModule managerPaymentModule;
+    private readonly IManagerPaymentClient managerPaymentClient;
     private readonly ILogger<DoorSplitFinishStep> logger;
 
     public DoorSplitFinishStep(
@@ -21,14 +20,14 @@ internal class DoorSplitFinishStep : IFinishStep
         IBookingRepository bookingRepository,
         IConcertRepository concertRepository,
         IContractLoader contractLoader,
-        IManagerPaymentModule managerPaymentModule,
+        IManagerPaymentClient managerPaymentClient,
         ILogger<DoorSplitFinishStep> logger)
     {
         this.bookingService = bookingService;
         this.bookingRepository = bookingRepository;
         this.concertRepository = concertRepository;
         this.contractLoader = contractLoader;
-        this.managerPaymentModule = managerPaymentModule;
+        this.managerPaymentClient = managerPaymentClient;
         this.logger = logger;
     }
 
@@ -55,7 +54,7 @@ internal class DoorSplitFinishStep : IFinishStep
             booking.Application.Opportunity.Venue.UserId,
             booking.Application.Artist.UserId);
 
-        var payment = await managerPaymentModule.PayAsync(
+        var payment = await managerPaymentClient.PayAsync(
             booking.Application.Opportunity.Venue.UserId,
             booking.Application.Artist.UserId,
             artistShare,

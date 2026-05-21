@@ -6,5 +6,5 @@ global using Concertable.Contract.Contracts;
 global using Concertable.User.Contracts;
 global using Concertable.Artist.Contracts;
 global using Concertable.Venue.Contracts;
-global using Concertable.Payment.Contracts;
+global using Concertable.Payment.Client;
 global using Concertable.Payment.Domain;

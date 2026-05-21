@@ -3,7 +3,12 @@ using Concertable.Shared.Email;
 using Concertable.Shared.Geocoding;
 using Concertable.Shared.Imaging;
 using Concertable.Notification.Contracts;
-using Concertable.Payment.Contracts;
+using Concertable.Payment.Domain;
+using Concertable.Payment.Client;
+using Concertable.Payment.Application.Interfaces;
+using Concertable.Payment.Application.Interfaces.Webhook;
+using Concertable.Payment.Infrastructure.Data;
+using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.User.Contracts;
 using Concertable.User.Domain;
 using Concertable.Testing.Integration.Mocks;
@@ -12,20 +17,17 @@ using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
-using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
-using Concertable.Payment.Application.Interfaces;
-using Concertable.Payment.Infrastructure.Services;
-using Concertable.DataAccess;
+using Concertable.DataAccess.Infrastructure;
 using Concertable.DataAccess.Infrastructure.Extensions;
-using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -58,6 +60,7 @@ public async Task InitializeAsync()
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     ["ConnectionStrings:DefaultConnection"] = sqlFixture.ConnectionString,
+                    ["ConnectionStrings:PaymentDb"] = sqlFixture.ConnectionString,
                     ["ExternalServices:UseRealStripe"] = "false",
                     ["ExternalServices:UseRealBlob"] = "false",
                     ["ExternalServices:UseRealEmail"] = "false",
@@ -77,6 +80,16 @@ public async Task InitializeAsync()
                 services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OffSession);
                 services.AddResettables(NotificationService, StripeApiClient, EmailSender);
                 services.AddSingleton<IEmailSender>(EmailSender);
+
+                services.AddSingleton<PaymentConfigurationProvider>();
+                services.AddDbContext<PaymentDbContext>((sp, opts) =>
+                    opts.UseSqlServer(sqlFixture.ConnectionString)
+                        .AddInterceptors(
+                            sp.GetRequiredService<AuditInterceptor>(),
+                            sp.GetRequiredService<DomainEventDispatchInterceptor>()));
+                services.AddScoped<IManagerPaymentClient, MockManagerPaymentClient>();
+                services.AddScoped<ICustomerPaymentClient, MockCustomerPaymentClient>();
+                services.AddScoped<IEscrowClient, MockEscrowClient>();
 
                 services.AddScoped<IWebhookService, MockWebhookService>();
                 services.AddSingleton<IWebhookSimulator, MockWebhookSimulator>();

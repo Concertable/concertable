@@ -1,5 +1,3 @@
-using Concertable.Payment.Application.Interfaces;
-using Concertable.Payment.Contracts;
 using Concertable.Conversations.Contracts;
 using Concertable.Shared.Email;
 using Concertable.Shared.Enums;
@@ -13,7 +11,6 @@ internal class ApplicationService : IApplicationService
     private readonly IApplicationRepository applicationRepository;
     private readonly ICurrentUser currentUser;
     private readonly IApplicationValidator applicationValidator;
-    private readonly IStripeValidator stripeValidator;
     private readonly IConversationsModule conversationsModule;
     private readonly IEmailSender emailSender;
     private readonly IOpportunityService opportunityService;
@@ -29,7 +26,6 @@ internal class ApplicationService : IApplicationService
         IApplicationRepository applicationRepository,
         ICurrentUser currentUser,
         IApplicationValidator applicationValidator,
-        IStripeValidator stripeValidator,
         IConversationsModule conversationsModule,
         IEmailSender emailSender,
         IOpportunityService opportunityService,
@@ -44,7 +40,6 @@ internal class ApplicationService : IApplicationService
         this.applicationRepository = applicationRepository;
         this.currentUser = currentUser;
         this.applicationValidator = applicationValidator;
-        this.stripeValidator = stripeValidator;
         this.conversationsModule = conversationsModule;
         this.emailSender = emailSender;
         this.opportunityService = opportunityService;
@@ -87,9 +82,6 @@ internal class ApplicationService : IApplicationService
 
     public async Task<ApplicationDto> ApplyAsync(int opportunityId)
     {
-        if (!await stripeValidator.ValidateAccountAsync())
-            throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
-
         var artistId = await ResolveArtistIdAsync();
         var opportunityOwner = await ValidateAndLoadOwnerAsync(opportunityId, artistId);
 
@@ -101,9 +93,6 @@ internal class ApplicationService : IApplicationService
 
     public async Task<ApplicationDto> ApplyAsync(int opportunityId, string paymentMethodId)
     {
-        if (!await stripeValidator.ValidateAccountAsync())
-            throw new ForbiddenException("You must have a verified Stripe account to apply for opportunities");
-
         var artistId = await ResolveArtistIdAsync();
         var opportunityOwner = await ValidateAndLoadOwnerAsync(opportunityId, artistId);
 
