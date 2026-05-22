@@ -157,6 +157,13 @@ public async Task InitializeAsync()
         return client;
     }
 
+    public HttpClient CreateClient(SeedCustomer customer)
+    {
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, customer.Id.ToString());
+        return client;
+    }
+
     public HttpClient CreateClient(UserEntity user, Action<TestClientOptions> configure)
     {
         var options = new TestClientOptions();
