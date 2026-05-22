@@ -24,7 +24,7 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Build solution
-        run: dotnet build api/Concertable.sln --configuration Release
+        run: dotnet build api/Concertable.slnx --configuration Release
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -33,11 +33,18 @@ jobs:
     strategy:
       matrix:
         project:
-          - api/Modules/Concert/Tests/Concertable.Concert.UnitTests/Concertable.Concert.UnitTests.csproj
-          - api/Modules/Contract/Tests/Concertable.Contract.UnitTests/Concertable.Contract.UnitTests.csproj
-          - api/Modules/Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj
-          - api/Modules/Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj
-          - api/Shared/Tests/Concertable.Shared.UnitTests/Concertable.Shared.UnitTests.csproj
+          - api/Concertable.B2B/Modules/Concert/Tests/Concertable.Concert.UnitTests/Concertable.Concert.UnitTests.csproj
+          - api/Concertable.B2B/Modules/Contract/Tests/Concertable.Contract.UnitTests/Concertable.Contract.UnitTests.csproj
+          - api/Concertable.B2B/Modules/Organization/Tests/Concertable.Organization.UnitTests/Concertable.Organization.UnitTests.csproj
+          - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.UnitTests/Concertable.Customer.Concert.UnitTests.csproj
+          - api/Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj
+          - api/Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.UnitTests/Concertable.Customer.Ticket.UnitTests.csproj
+          - api/Concertable.Customer/Modules/User/Tests/Concertable.Customer.User.UnitTests/Concertable.Customer.User.UnitTests.csproj
+          - api/Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj
+          - api/Concertable.Messaging/Tests/Concertable.Messaging.AzureServiceBus.UnitTests/Concertable.Messaging.AzureServiceBus.UnitTests.csproj
+          - api/Concertable.Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj
+          - api/Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj
+          - api/Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj
           - api/Tests/Concertable.Workers.UnitTests/Concertable.Workers.UnitTests.csproj
 
     steps:
@@ -58,11 +65,16 @@ jobs:
     strategy:
       matrix:
         project:
-          - api/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj
-          - api/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj
-          - api/Modules/Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
-          - api/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj
-          - api/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj
+          - api/Concertable.B2B/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj
+          - api/Concertable.B2B/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj
+          - api/Concertable.B2B/Modules/Organization/Tests/Concertable.Organization.IntegrationTests/Concertable.Organization.IntegrationTests.csproj
+          - api/Concertable.B2B/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj
+          - api/Concertable.B2B/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj
+          - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.IntegrationTests/Concertable.Customer.Concert.IntegrationTests.csproj
+          - api/Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.IntegrationTests/Concertable.Customer.Review.IntegrationTests.csproj
+          - api/Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.IntegrationTests/Concertable.Customer.Ticket.IntegrationTests.csproj
+          - api/Concertable.Customer/Modules/User/Tests/Concertable.Customer.User.IntegrationTests/Concertable.Customer.User.IntegrationTests.csproj
+          - api/Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
 
     steps:
       - uses: actions/checkout@v4
