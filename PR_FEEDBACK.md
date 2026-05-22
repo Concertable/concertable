@@ -12,11 +12,11 @@
 3. **HIGHs** — before merge.
 4. **Conventions (CV*)** — follow-up commit, lowest risk.
 
-## Progress — updated 2026-05-21
+## Progress — updated 2026-05-22
 
-**Done (6/30):** OC2, DI1, DI2, OB1, EH1, EH2 — see each item's note below.
+**Done (8/30):** OC2, DI1, DI2, OB1, EH1, EH2, EH3, EH4 — see each item's note below.
 **Verified:** `Concertable.B2B.Web` + `Concertable.Messaging.UnitTests` build clean (0 errors); `Concert.Infrastructure` + `Customer.Ticket.Infrastructure` build clean after EH1/EH2.
-**Next:** EH3 / EH4.
+**Next:** DI3 / DI4 / DI5.
 **Whole-solution build is NOT green — pre-existing, unrelated to these fixes:**
 - `Concertable.Organization.UnitTests`: `OrganizationEntity does not exist` compile error (pre-existing on the branch; Organization module untouched by this review).
 - `Concertable.E2ETests.dll`: file-lock from a stray `testhost` process — environmental, not a code error.
@@ -94,13 +94,11 @@
 - [x] **EH2 — CRITICAL — DONE** — Customer `TicketPaymentProcessor` + `TicketPaymentFailedProcessor`
   *Done: `TicketDbContext` now maps `InboxMessageEntity` (`messaging.Inbox`, ExcludeFromMigrations) — mirrors `Customer.Concert.ConcertDbContext`. `TicketPaymentProcessor` checks the inbox, stages the dedup row on `TicketDbContext`; `TicketService.CompleteAsync`'s `ticketRepository.SaveChangesAsync()` commits it atomically with the ticket insert. NOTE: the concert-availability decrement is a separate `concertRepository.SaveChangesAsync()` — that cross-context split is OB2, still open; EH2 only adds the dedup. `TicketPaymentFailedProcessor` is notification-only: send-then-record.*
 
-- [ ] **EH3 — HIGH** — `DomainEventDispatchInterceptor.cs:11`
-  `_pendingEvents` is an instance field on a scoped interceptor; a re-entrant `SaveChanges` overwrites it (outer call dispatches inner call's events). Latent now, landmine.
-  **Fix:** Use a local / `AsyncLocal` stack threaded `SavingChangesAsync` → `SavedChangesAsync`.
+- [x] **EH3 — HIGH — DONE** — `DomainEventDispatchInterceptor.cs:11`
+  *Done: replaced `_pendingEvents` field with `Stack<List<IDomainEvent>> pendingEventsStack`; `SavingChangesAsync` pushes, `SavedChangesAsync` pops. Re-entrant inner `SaveChanges` pushes its own list on top; outer call pops its original list untouched.*
 
-- [ ] **EH4 — HIGH** — all inbox handlers
-  `AnyAsync` pre-check → insert is a TOCTOU race under concurrent redelivery. Safe-effect, but no `catch (DbUpdateException)` → PK-violation noise + spurious message abandon.
-  **Fix:** Treat the composite-PK unique constraint as the gate; catch `DbUpdateException` on the inbox PK and return normally.
+- [x] **EH4 — HIGH — DONE** — all inbox handlers
+  *Done: added `catch (DbUpdateException ex) when (ex.IsDuplicateKey())` with `LogDebug` around the save-triggering call in all 7 handlers. DB-writing handlers wrap the module/service call; notification-only handlers wrap `context.SaveChangesAsync`. `AnyAsync` pre-check kept as fast-path.*
 
 - [ ] **EH5 — MEDIUM** — Payment `TicketTransactionHandler`, `VerifyTransactionHandler` (via `TransactionService.LogAsync`)
   `LogAsync` doesn't check for an existing transaction by `PaymentIntentId` → duplicate transaction rows on redelivery. (Escrow/Settlement handlers do guard.)
