@@ -73,7 +73,7 @@ public async Task InitializeAsync()
             {
                 services.AddScoped<IStripeAccountClient, MockStripeAccountClient>();
                 services.AddScoped<IStripeHoldClient, MockStripeHoldClient>();
-                services.AddSingleton<INotificationModule>(NotificationService);
+                services.AddSingleton<INotificationClient>(NotificationService);
                 services.AddSingleton<IMockStripeApiClient>(StripeApiClient);
                 services.AddSingleton<IStripeApiClient>(StripeApiClient);
                 services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OnSession);

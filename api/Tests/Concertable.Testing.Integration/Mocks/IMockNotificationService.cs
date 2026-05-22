@@ -2,7 +2,7 @@ using Concertable.Notification.Contracts;
 
 namespace Concertable.Testing.Integration.Mocks;
 
-public interface IMockNotificationService : INotificationModule, IResettable
+public interface IMockNotificationService : INotificationClient, IResettable
 {
     List<(string UserId, object Payload)> DraftCreated { get; }
     List<(string UserId, object Payload)> ConcertPosted { get; }
