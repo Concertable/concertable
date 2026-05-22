@@ -1,9 +1,11 @@
 using Concertable.Application.Interfaces.Geometry;
 using Concertable.Shared.Infrastructure.Background;
 using Concertable.Shared.Infrastructure.Events;
+using Concertable.Shared.Infrastructure.Identity;
 using Concertable.Shared.Infrastructure.Services;
 using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Shared.Infrastructure.Settings;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -47,6 +49,13 @@ public static class ServiceCollectionExtensions
     {
         services.Configure(configure);
         services.AddSingleton<ITokenService, ClientCredentialsTokenService>();
+        return services;
+    }
+
+    public static IServiceCollection AddCurrentUser(this IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUserAccessor>();
         return services;
     }
 }

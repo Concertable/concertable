@@ -14,9 +14,10 @@
 
 ## Progress — updated 2026-05-22
 
-**Done (8/30):** OC2, DI1, DI2, OB1, EH1, EH2, EH3, EH4 — see each item's note below.
+**Done (10/30):** OC2, DI1, DI2, OB1, EH1, EH2, EH3, EH4, DI3, DI4 — see each item's note below.
+**Wontfix (2):** DI5, OB5 — false findings; dispatcher requires `IDomainEventHandler<T>` registration and uses `IsAssignableFrom` to split phases.
 **Verified:** `Concertable.B2B.Web` + `Concertable.Messaging.UnitTests` build clean (0 errors); `Concert.Infrastructure` + `Customer.Ticket.Infrastructure` build clean after EH1/EH2.
-**Next:** DI3 / DI4 / DI5.
+**Next:** DI6 / DI7 / EH5.
 **Whole-solution build is NOT green — pre-existing, unrelated to these fixes:**
 - `Concertable.Organization.UnitTests`: `OrganizationEntity does not exist` compile error (pre-existing on the branch; Organization module untouched by this review).
 - `Concertable.E2ETests.dll`: file-lock from a stray `testhost` process — environmental, not a code error.
@@ -74,9 +75,8 @@
   Webhook path uses `AddDirectBusKeyed("webhook")` — non-outbox bus. `PaymentSucceeded/FailedEvent` bypass the outbox, not durable across a crash.
   **Fix:** Route webhook events through the outbox bus.
 
-- [ ] **OB5 — HIGH** — `Customer ReviewCreatedDomainEventHandler`
-  Publishes `ReviewSubmittedEvent` directly to `IBus`, bypassing the outbox; review save and publish can diverge.
-  **Fix:** Make it a proper `IPreCommitDomainEventHandler` so the publish goes through the outbox in the review's transaction. (See also DI5.)
+- [wontfix] **OB5** — `Customer ReviewCreatedDomainEventHandler`
+  *False finding (see DI5). Handler is registered under `IDomainEventHandler<T>` (correct — dispatcher requires this). `IPreCommitDomainEventHandler<T>` inherits `IDomainEventHandler<T>`; the dispatcher's `IsAssignableFrom` check gates it to the pre-commit phase. `DomainEventDispatchInterceptor` sets `contextAccessor.Context` before calling `DispatchPreCommitAsync`, so `bus.PublishAsync` stages the outbox row in the review's transaction.*
 
 - [ ] **OB6 — HIGH** — `OutboxDispatcher.DrainOnceAsync:57-86`
   Per-row status mutated in a loop, then a single `SaveChangesAsync` at the end. Failed batch save leaves published rows as `Pending` / stale in-memory status.
@@ -116,17 +116,14 @@
   Doesn't subscribe `ConcertChangedEvent` (→ `ConcertProjectionHandler` never runs) or `CustomerRegisteredEvent`. *Does* subscribe `ReviewSubmittedEvent` — its own outbound event (bug).
   **Fix:** Add `ConcertChangedEvent` + `CustomerRegisteredEvent` subscriptions; remove `ReviewSubmittedEvent`.
 
-- [ ] **DI3 — HIGH** — `Search AutocompleteServiceFactory.cs:16` + `Search ServiceCollectionExtensions.cs`
-  `GetRequiredKeyedService<IAutocompleteService>(null)` when `headerType` unset, but `AllAutocompleteService` is registered **unkeyed**. Throws on every default autocomplete call.
-  **Fix:** Register `AllAutocompleteService` as `AddKeyedScoped<IAutocompleteService>((HeaderType?)null)`.
+- [x] **DI3 — HIGH — DONE** — `Search AutocompleteServiceFactory.cs:16` + `Search ServiceCollectionExtensions.cs`
+  *Done: changed `AddScoped<IAutocompleteService, AllAutocompleteService>()` to `AddKeyedScoped<IAutocompleteService, AllAutocompleteService>((HeaderType?)null)` so `GetRequiredKeyedService<IAutocompleteService>(null)` resolves.*
 
-- [ ] **DI4 — HIGH** — `Search.Web/Program.cs` + `Search.Workers/Program.cs`
-  `TimeProvider` injected by `ConcertHeaderRepository`/`ConcertSearchSpecification` but never registered.
-  **Fix:** `services.AddSingleton(TimeProvider.System)` in `AddSearchModule` (covers both hosts).
+- [x] **DI4 — HIGH — DONE** — `Search.Web/Program.cs` + `Search.Workers/Program.cs`
+  *Done: added `services.AddSingleton(TimeProvider.System)` in `AddSearchModule` — covers both Search.Web and Search.Workers.*
 
-- [ ] **DI5 — HIGH** — `Customer Review ServiceCollectionExtensions.cs:38`
-  `ReviewCreatedDomainEventHandler` registered as `IDomainEventHandler<T>` but class implements `IPreCommitDomainEventHandler<T>` → dispatched at wrong phase or not at all.
-  **Fix:** Register under the interface the class actually implements (and resolve OB5 together).
+- [wontfix] **DI5** — `Customer Review ServiceCollectionExtensions.cs:38`
+  *False finding. `DomainEventDispatcher.DispatchPhaseAsync` resolves all `IDomainEventHandler<T>` services then filters by `IPreCommitDomainEventHandler<T>.IsAssignableFrom(handler.GetType())` — registration under the base interface is required and correct. Registering under `IPreCommitDomainEventHandler<T>` would cause `GetServices(IDomainEventHandler<T>)` to miss the handler entirely.*
 
 - [ ] **DI6 — MEDIUM** — `B2B.Web/Program.cs:122`
   `AddInbox(...)` registers an `InboxDbContext` nothing uses at runtime (handlers write inbox rows via their own module contexts).

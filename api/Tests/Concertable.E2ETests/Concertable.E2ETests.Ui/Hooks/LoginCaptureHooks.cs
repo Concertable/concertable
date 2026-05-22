@@ -17,7 +17,6 @@ public static class LoginCaptureHooks
         var seed = fixture.App.SeedData;
         var (email, password, spaUrl) = role switch
         {
-            Role.Customer      => (seed.Customer.Email,       seed.TestPassword, fixture.App.CustomerSpaUrl),
             Role.VenueManager  => (seed.VenueManager1.Email,  seed.TestPassword, fixture.App.VenueSpaUrl),
             Role.ArtistManager => (seed.ArtistManager1.Email, seed.TestPassword, fixture.App.ArtistSpaUrl),
             _ => throw new ArgumentOutOfRangeException(nameof(role))

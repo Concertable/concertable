@@ -3,6 +3,7 @@
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/Concertable.Auth.csproj" />
+    <Project Path="Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj" />
   </Folder>
   <Folder Name="/B2B/">
     <Project Path="Concertable.B2B/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
@@ -15,10 +16,6 @@
     <Project Path="Concertable.B2B/Modules/Artist/Concertable.Artist.Domain/Concertable.Artist.Domain.csproj" />
     <Project Path="Concertable.B2B/Modules/Artist/Concertable.Artist.Infrastructure/Concertable.Artist.Infrastructure.csproj" />
     <Project Path="Concertable.B2B/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj" />
-  </Folder>
-  <Folder Name="/B2B/Modules/Authorization/">
-    <Project Path="Concertable.B2B/Modules/Authorization/Concertable.Authorization.Contracts/Concertable.Authorization.Contracts.csproj" />
-    <Project Path="Concertable.B2B/Modules/Authorization/Concertable.Authorization.Infrastructure/Concertable.Authorization.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Concert/">
     <Project Path="Concertable.B2B/Modules/Concert/Concertable.Concert.Api/Concertable.Concert.Api.csproj" />

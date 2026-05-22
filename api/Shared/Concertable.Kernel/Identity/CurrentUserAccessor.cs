@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Authorization.Infrastructure;
+namespace Concertable.Shared.Infrastructure.Identity;
 
-internal class CurrentUserAccessor : ICurrentUser
+internal sealed class CurrentUserAccessor : ICurrentUser
 {
     private readonly IHttpContextAccessor httpContextAccessor;
 

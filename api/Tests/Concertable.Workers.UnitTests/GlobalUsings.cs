@@ -1,5 +1,5 @@
 global using Concertable.Shared;
-global using Concertable.Authorization.Contracts;
+global using Concertable.Shared.Infrastructure.Identity;
 global using Concertable.User.Contracts;
 global using Concertable.User.Domain;
 global using Concertable.Payment.Domain;
