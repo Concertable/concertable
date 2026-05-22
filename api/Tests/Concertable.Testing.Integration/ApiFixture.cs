@@ -17,7 +17,6 @@ using Concertable.Concert.Infrastructure.Extensions;
 using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
-using Concertable.Customer.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
 using Concertable.DataAccess.Infrastructure;
 using Concertable.DataAccess.Infrastructure.Extensions;
@@ -106,7 +105,6 @@ public async Task InitializeAsync()
                 services.AddConcertTestSeeder();
                 services.AddPaymentTestSeeder();
                 services.AddConversationsTestSeeder();
-                services.AddCustomerTestSeeder();
 
                 services.PostConfigure<AuthenticationOptions>(opts =>
                 {
