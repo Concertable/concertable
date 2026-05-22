@@ -84,10 +84,10 @@ public class SignUpSteps
     [When(@"they register as (.*)")]
     public async Task RegisterAsRole(string role)
     {
+        _ = role;
         state.SignUpEmail = $"signup-{Guid.NewGuid():N}@e2e.test";
         state.SignUpPassword = "P@ssw0rd!";
-        var parsedRole = Enum.Parse<Role>(role);
-        await registerPage.RegisterAsync(state.SignUpEmail!, state.SignUpPassword!, parsedRole);
+        await registerPage.RegisterAsync(state.SignUpEmail!, state.SignUpPassword!);
         await registerPage.ClickSignInAsync();
     }
 

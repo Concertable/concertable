@@ -10,14 +10,14 @@ public class SeedData
     public UserEntity VenueManager2 { get; set; } = null!;
     public UserEntity ArtistManager1 { get; set; } = null!;
     public UserEntity ArtistManagerNoArtist { get; set; } = null!;
-    public UserEntity Customer { get; set; } = null!;
     public UserEntity Admin { get; set; } = null!;
 
-    public IReadOnlyList<Guid> CustomerIds { get; set; } = [];
+    public SeedCustomer Customer => SeedCustomers.Customer1;
+    public IReadOnlyList<Guid> CustomerIds { get; } = [.. SeedCustomers.All.Select(c => c.Id)];
+
     public IReadOnlyList<Guid> ArtistManagerIds { get; set; } = [];
     public IReadOnlyList<Guid> VenueManagerIds { get; set; } = [];
 
-    public IReadOnlyList<string> CustomerEmails { get; set; } = [];
     public IReadOnlyList<string> ArtistManagerEmails { get; set; } = [];
     public IReadOnlyList<string> VenueManagerEmails { get; set; } = [];
 

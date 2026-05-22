@@ -1,23 +1,21 @@
+using Concertable.Auth.Data.Entities;
 using Concertable.DataAccess.Infrastructure;
 using Concertable.Messaging.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.User.Infrastructure.Data;
+namespace Concertable.Auth.Data;
 
-internal class UserDbContext(
-    DbContextOptions<UserDbContext> options,
-    UserConfigurationProvider provider)
+internal class AuthDbContext(
+    DbContextOptions<AuthDbContext> options,
+    AuthConfigurationProvider provider)
     : DbContextBase(options)
 {
-    public DbSet<UserEntity> Users => Set<UserEntity>();
-    public DbSet<VenueManagerProfileEntity> VenueManagerProfiles => Set<VenueManagerProfileEntity>();
-    public DbSet<ArtistManagerProfileEntity> ArtistManagerProfiles => Set<ArtistManagerProfileEntity>();
-    public DbSet<AdminProfileEntity> AdminProfiles => Set<AdminProfileEntity>();
+    public DbSet<CredentialEntity> Credentials => Set<CredentialEntity>();
+    public DbSet<EmailVerificationTokenEntity> EmailVerificationTokens => Set<EmailVerificationTokenEntity>();
+    public DbSet<PasswordResetTokenEntity> PasswordResetTokens => Set<PasswordResetTokenEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(Schema.Name);
-
         provider.Configure(modelBuilder);
 
         modelBuilder.Entity<OutboxMessageEntity>(b =>
