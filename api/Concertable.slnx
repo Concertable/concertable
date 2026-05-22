@@ -1,5 +1,8 @@
 <Solution>
   <Project Path="Concertable.AppHost/Concertable.AppHost.csproj" />
+  <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
+  <Project Path="Concertable.B2B/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj" />
+  <Project Path="Concertable.Customer/Concertable.Customer.AppHost/Concertable.Customer.AppHost.csproj" />
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/Concertable.Auth.csproj" />

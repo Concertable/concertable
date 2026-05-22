@@ -1,64 +1,85 @@
+using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
+using Aspire.Hosting.Azure.ServiceBus;
 using Aspire.Hosting.DevTunnels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-internal record SqlResources(
-    IResourceBuilder<SqlServerDatabaseResource> B2BDb,
-    IResourceBuilder<SqlServerDatabaseResource> AuthDb,
-    IResourceBuilder<SqlServerDatabaseResource> CustomerDb,
-    IResourceBuilder<SqlServerDatabaseResource> SearchDb,
-    IResourceBuilder<SqlServerDatabaseResource> PaymentDb);
-
-internal static class DistributedApplicationBuilderExtensions
+public static class DistributedApplicationBuilderExtensions
 {
-    public static SqlResources AddSqlServer(this IDistributedApplicationBuilder builder)
+    public static IResourceBuilder<SqlServerServerResource> AddSqlServer(
+        this IDistributedApplicationBuilder builder,
+        string dataVolumeName = "concertable-sql-data")
     {
-        var sql = builder.AddSqlServer("sql").WithDataVolume("concertable-sql-data");
-        return new SqlResources(
-            sql.AddDatabase("B2BDb"),
-            sql.AddDatabase("AuthDb"),
-            sql.AddDatabase("CustomerDb"),
-            sql.AddDatabase("SearchDb"),
-            sql.AddDatabase("PaymentDb"));
+        return builder.AddSqlServer("sql").WithDataVolume(dataVolumeName);
     }
 
-    public static IResourceBuilder<AzureServiceBusResource> AddServiceBus(this IDistributedApplicationBuilder builder)
+    public static IResourceBuilder<AzureServiceBusResource> AddServiceBus(
+        this IDistributedApplicationBuilder builder,
+        bool b2b = false,
+        bool customer = false,
+        bool search = false,
+        bool payment = false)
     {
         var asb = builder.AddAzureServiceBus("asb");
 
-        var artistChanged = asb.AddServiceBusTopic("event-artistchangedevent");
-        artistChanged.AddServiceBusSubscription("search-artist-changed", "concertable-search");
+        // Published by B2B, consumed by search + customer
+        if (b2b || search || customer)
+        {
+            var concertChanged = asb.AddServiceBusTopic("event-concertchangedevent");
+            if (search) concertChanged.AddServiceBusSubscription("search-concert-changed", "concertable-search");
+            if (customer) concertChanged.AddServiceBusSubscription("customer-concert-changed", "concertable-customer");
+        }
 
-        var venueChanged = asb.AddServiceBusTopic("event-venuechangedevent");
-        venueChanged.AddServiceBusSubscription("search-venue-changed", "concertable-search");
+        // Published by customer, consumed by b2b
+        if (customer || b2b)
+        {
+            var reviewSubmitted = asb.AddServiceBusTopic("event-reviewsubmittedevent");
+            if (b2b) reviewSubmitted.AddServiceBusSubscription("b2b-review-submitted", "concertable-b2b");
+        }
 
-        var concertChanged = asb.AddServiceBusTopic("event-concertchangedevent");
-        concertChanged.AddServiceBusSubscription("search-concert-changed", "concertable-search");
-        concertChanged.AddServiceBusSubscription("customer-concert-changed", "concertable-customer");
+        // Published by B2B, consumed by search
+        if (b2b || search)
+        {
+            var artistChanged = asb.AddServiceBusTopic("event-artistchangedevent");
+            if (search) artistChanged.AddServiceBusSubscription("search-artist-changed", "concertable-search");
 
-        asb.AddServiceBusTopic("event-reviewsubmittedevent").AddServiceBusSubscription("b2b-review-submitted", "concertable-b2b");
-        asb.AddServiceBusTopic("event-artistratingupdatedevent").AddServiceBusSubscription("search-artist-rating-updated", "concertable-search");
-        asb.AddServiceBusTopic("event-venueratingupdatedevent").AddServiceBusSubscription("search-venue-rating-updated", "concertable-search");
-        asb.AddServiceBusTopic("event-concertratingupdatedevent").AddServiceBusSubscription("search-concert-rating-updated", "concertable-search");
+            var venueChanged = asb.AddServiceBusTopic("event-venuechangedevent");
+            if (search) venueChanged.AddServiceBusSubscription("search-venue-changed", "concertable-search");
+        }
+
+        // Published by customer (after review), consumed by search
+        if (customer || search)
+        {
+            var artistRating = asb.AddServiceBusTopic("event-artistratingupdatedevent");
+            if (search) artistRating.AddServiceBusSubscription("search-artist-rating-updated", "concertable-search");
+
+            var venueRating = asb.AddServiceBusTopic("event-venueratingupdatedevent");
+            if (search) venueRating.AddServiceBusSubscription("search-venue-rating-updated", "concertable-search");
+
+            var concertRating = asb.AddServiceBusTopic("event-concertratingupdatedevent");
+            if (search) concertRating.AddServiceBusSubscription("search-concert-rating-updated", "concertable-search");
+        }
+
+        // Published by auth, consumed by b2b + customer + payment
         var credentialRegistered = asb.AddServiceBusTopic("event-credentialregisteredevent");
-        credentialRegistered.AddServiceBusSubscription("b2b-credential-registered", "concertable-b2b");
-        credentialRegistered.AddServiceBusSubscription("customer-credential-registered", "concertable-customer");
-        credentialRegistered.AddServiceBusSubscription("payment-credential-registered", "concertable-payment");
+        if (b2b) credentialRegistered.AddServiceBusSubscription("b2b-credential-registered", "concertable-b2b");
+        if (customer) credentialRegistered.AddServiceBusSubscription("customer-credential-registered", "concertable-customer");
+        if (payment) credentialRegistered.AddServiceBusSubscription("payment-credential-registered", "concertable-payment");
 
+        // Published by payment, consumed by b2b + customer + payment
         var paymentSucceeded = asb.AddServiceBusTopic("event-paymentsucceededevent");
-        paymentSucceeded.AddServiceBusSubscription("b2b-payment-succeeded", "concertable-b2b");
-        paymentSucceeded.AddServiceBusSubscription("customer-payment-succeeded", "concertable-customer");
-        paymentSucceeded.AddServiceBusSubscription("payment-payment-succeeded", "concertable-payment");
+        if (b2b) paymentSucceeded.AddServiceBusSubscription("b2b-payment-succeeded", "concertable-b2b");
+        if (customer) paymentSucceeded.AddServiceBusSubscription("customer-payment-succeeded", "concertable-customer");
+        if (payment) paymentSucceeded.AddServiceBusSubscription("payment-payment-succeeded", "concertable-payment");
 
         var paymentFailed = asb.AddServiceBusTopic("event-paymentfailedevent");
-        paymentFailed.AddServiceBusSubscription("b2b-payment-failed", "concertable-b2b");
-        paymentFailed.AddServiceBusSubscription("customer-payment-failed", "concertable-customer");
-        paymentFailed.AddServiceBusSubscription("payment-payment-failed", "concertable-payment");
+        if (b2b) paymentFailed.AddServiceBusSubscription("b2b-payment-failed", "concertable-b2b");
+        if (customer) paymentFailed.AddServiceBusSubscription("customer-payment-failed", "concertable-customer");
+        if (payment) paymentFailed.AddServiceBusSubscription("payment-payment-failed", "concertable-payment");
 
         return asb.RunAsEmulator();
     }
@@ -71,13 +92,14 @@ internal static class DistributedApplicationBuilderExtensions
         return (storage, blobs);
     }
 
-    public static IResourceBuilder<ProjectResource> AddAuth(
+    public static IResourceBuilder<ProjectResource> AddAuth<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<SqlServerDatabaseResource> authDb,
         IResourceBuilder<SqlServerDatabaseResource> b2bDb,
         IResourceBuilder<AzureServiceBusResource> asb)
+        where TProject : IProjectMetadata, new()
     {
-        var auth = builder.AddProject<Projects.Concertable_Auth>("auth")
+        var auth = builder.AddProject<TProject>("auth")
                           .WithReference(authDb)
                           .WaitFor(authDb)
                           .WithReference(b2bDb)
@@ -100,7 +122,7 @@ internal static class DistributedApplicationBuilderExtensions
         return auth;
     }
 
-    public static IResourceBuilder<ProjectResource> AddApi(
+    public static IResourceBuilder<ProjectResource> AddApi<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<SqlServerDatabaseResource> sql,
         IResourceBuilder<ProjectResource> auth,
@@ -108,9 +130,10 @@ internal static class DistributedApplicationBuilderExtensions
         IResourceBuilder<AzureBlobStorageResource> blobs,
         IResourceBuilder<AzureServiceBusResource> asb,
         IResourceBuilder<ProjectResource> paymentWeb)
+        where TProject : IProjectMetadata, new()
     {
         var b2bSecret = builder.Configuration["ServiceAuth:B2BClientSecret"];
-        return builder.AddProject<Projects.Concertable_B2B_Web>("api")
+        return builder.AddProject<TProject>("api")
                       .WithReference(sql)
                       .WaitFor(sql)
                       .WithReference(auth)
@@ -127,22 +150,26 @@ internal static class DistributedApplicationBuilderExtensions
                       .AddSecrets(builder, "Stripe:SecretKey");
     }
 
-    public static IResourceBuilder<AzureFunctionsProjectResource> AddWorkers(this IDistributedApplicationBuilder builder, IResourceBuilder<SqlServerDatabaseResource> sql)
+    public static IResourceBuilder<AzureFunctionsProjectResource> AddWorkers<TProject>(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<SqlServerDatabaseResource> sql)
+        where TProject : IProjectMetadata, new()
     {
-        return builder.AddAzureFunctionsProject<Projects.Concertable_B2B_Workers>("workers")
+        return builder.AddAzureFunctionsProject<TProject>("workers")
                       .WithReference(sql)
                       .WaitFor(sql);
     }
 
-    public static IResourceBuilder<ProjectResource> AddCustomerWeb(
+    public static IResourceBuilder<ProjectResource> AddCustomerWeb<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ProjectResource> auth,
         IResourceBuilder<SqlServerDatabaseResource> customerDb,
         IResourceBuilder<AzureServiceBusResource> asb,
         IResourceBuilder<ProjectResource> paymentWeb)
+        where TProject : IProjectMetadata, new()
     {
         var customerSecret = builder.Configuration["ServiceAuth:CustomerClientSecret"];
-        return builder.AddProject<Projects.Concertable_Customer_Web>("customer-web")
+        return builder.AddProject<TProject>("customer-web")
                       .WithReference(auth)
                       .WaitFor(auth)
                       .WithReference(customerDb)
@@ -156,12 +183,13 @@ internal static class DistributedApplicationBuilderExtensions
                       .WithEnvironment("ServiceAuth__ClientSecret", customerSecret ?? "");
     }
 
-    public static IResourceBuilder<ProjectResource> AddSearchWeb(
+    public static IResourceBuilder<ProjectResource> AddSearchWeb<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ProjectResource> auth,
         IResourceBuilder<SqlServerDatabaseResource> searchDb)
+        where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<Projects.Concertable_Search_Web>("search-web")
+        return builder.AddProject<TProject>("search-web")
                       .WithReference(auth)
                       .WaitFor(auth)
                       .WithReference(searchDb)
@@ -169,25 +197,27 @@ internal static class DistributedApplicationBuilderExtensions
                       .WithEnvironment("Auth__Authority", auth.GetEndpoint("https"));
     }
 
-    public static IResourceBuilder<ProjectResource> AddSearchWorkers(
+    public static IResourceBuilder<ProjectResource> AddSearchWorkers<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<SqlServerDatabaseResource> searchDb,
         IResourceBuilder<AzureServiceBusResource> asb)
+        where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<Projects.Concertable_Search_Workers>("search-workers")
+        return builder.AddProject<TProject>("search-workers")
                       .WithReference(searchDb)
                       .WaitFor(searchDb)
                       .WithReference(asb)
                       .WaitFor(asb);
     }
 
-    public static IResourceBuilder<ProjectResource> AddPaymentWeb(
+    public static IResourceBuilder<ProjectResource> AddPaymentWeb<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ProjectResource> auth,
         IResourceBuilder<SqlServerDatabaseResource> paymentDb,
         IResourceBuilder<AzureServiceBusResource> asb)
+        where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<Projects.Concertable_Payment_Web>("payment-web")
+        return builder.AddProject<TProject>("payment-web")
                       .WithReference(paymentDb)
                       .WaitFor(paymentDb)
                       .WithReference(auth)
@@ -198,12 +228,13 @@ internal static class DistributedApplicationBuilderExtensions
                       .AddSecrets(builder, "Stripe:SecretKey", "Stripe:WebhookSecret", "ExternalServices:UseRealStripe");
     }
 
-    public static IResourceBuilder<ProjectResource> AddPaymentWorkers(
+    public static IResourceBuilder<ProjectResource> AddPaymentWorkers<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<SqlServerDatabaseResource> paymentDb,
         IResourceBuilder<AzureServiceBusResource> asb)
+        where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<Projects.Concertable_Payment_Workers>("payment-workers")
+        return builder.AddProject<TProject>("payment-workers")
                       .WithReference(paymentDb)
                       .WaitFor(paymentDb)
                       .WithReference(asb)
@@ -211,26 +242,46 @@ internal static class DistributedApplicationBuilderExtensions
                       .AddSecrets(builder, "Stripe:SecretKey", "ExternalServices:UseRealStripe");
     }
 
-    public static IResourceBuilder<NodeAppResource> AddCustomerSpa(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth) =>
-        AddSpaSurface(builder, api, auth, "customer", 5174);
+    public static IResourceBuilder<NodeAppResource> AddCustomerSpa(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> backend,
+        IResourceBuilder<ProjectResource> auth) =>
+        AddSpaSurface(builder, backend, auth, "customer", 5174);
 
-    public static IResourceBuilder<NodeAppResource> AddVenueSpa(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth) =>
-        AddSpaSurface(builder, api, auth, "venue", 5175);
+    public static IResourceBuilder<NodeAppResource> AddVenueSpa(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> backend,
+        IResourceBuilder<ProjectResource> auth) =>
+        AddSpaSurface(builder, backend, auth, "venue", 5175);
 
-    public static IResourceBuilder<NodeAppResource> AddArtistSpa(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth) =>
-        AddSpaSurface(builder, api, auth, "artist", 5176);
+    public static IResourceBuilder<NodeAppResource> AddArtistSpa(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> backend,
+        IResourceBuilder<ProjectResource> auth) =>
+        AddSpaSurface(builder, backend, auth, "artist", 5176);
 
-    public static IResourceBuilder<NodeAppResource> AddBusinessSpa(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth) =>
-        AddSpaSurface(builder, api, auth, "business", 5177);
+    public static IResourceBuilder<NodeAppResource> AddBusinessSpa(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> backend,
+        IResourceBuilder<ProjectResource> auth) =>
+        AddSpaSurface(builder, backend, auth, "business", 5177);
 
-    private static IResourceBuilder<NodeAppResource> AddSpaSurface(IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth, string surface, int port) =>
+    private static IResourceBuilder<NodeAppResource> AddSpaSurface(
+        IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> backend,
+        IResourceBuilder<ProjectResource> auth,
+        string surface,
+        int port) =>
         builder.AddNpmApp(surface, $"../../app/web/{surface}", "dev")
                .WithHttpsEndpoint(port: port, isProxied: false)
-               .WithReference(api)
+               .WithReference(backend)
                .WithReference(auth)
-               .WaitFor(api);
+               .WaitFor(backend);
 
-    public static void AddMobile(this IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> api, IResourceBuilder<ProjectResource> auth)
+    public static void AddMobile(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> api,
+        IResourceBuilder<ProjectResource> auth)
     {
         if (!builder.Configuration.GetValue<bool>("RunMobile"))
             return;
@@ -250,6 +301,50 @@ internal static class DistributedApplicationBuilderExtensions
         AddMobileSurface(builder, api, auth, tunnel, lanIp, "business");
     }
 
+    public static void AddMobileB2B(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> api,
+        IResourceBuilder<ProjectResource> auth)
+    {
+        if (!builder.Configuration.GetValue<bool>("RunMobile"))
+            return;
+
+        var tunnel = builder.AddDevTunnel("b2b-dev").WithAnonymousAccess();
+        var lanIp = builder.Configuration["MobileLanIp"] ?? "localhost";
+
+        tunnel.WithReference(auth, allowAnonymous: true);
+        tunnel.WithReference(api, allowAnonymous: true);
+        auth.WithEnvironment(ctx =>
+        {
+            if (ctx.EnvironmentVariables.TryGetValue("services__auth__https__0", out var authUrl))
+                ctx.EnvironmentVariables["Auth__PublicUrl"] = authUrl;
+        });
+
+        AddMobileSurface(builder, api, auth, tunnel, lanIp, "business");
+    }
+
+    public static void AddMobileCustomer(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ProjectResource> customerWeb,
+        IResourceBuilder<ProjectResource> auth)
+    {
+        if (!builder.Configuration.GetValue<bool>("RunMobile"))
+            return;
+
+        var tunnel = builder.AddDevTunnel("customer-dev").WithAnonymousAccess();
+        var lanIp = builder.Configuration["MobileLanIp"] ?? "localhost";
+
+        tunnel.WithReference(auth, allowAnonymous: true);
+        tunnel.WithReference(customerWeb, allowAnonymous: true);
+        auth.WithEnvironment(ctx =>
+        {
+            if (ctx.EnvironmentVariables.TryGetValue("services__auth__https__0", out var authUrl))
+                ctx.EnvironmentVariables["Auth__PublicUrl"] = authUrl;
+        });
+
+        AddMobileSurface(builder, customerWeb, auth, tunnel, lanIp, "customer");
+    }
+
     private static IResourceBuilder<NodeAppResource> AddMobileSurface(
         IDistributedApplicationBuilder builder,
         IResourceBuilder<ProjectResource> api,
@@ -258,6 +353,7 @@ internal static class DistributedApplicationBuilderExtensions
         string lanIp,
         string surface)
     {
+        var apiEnvKey = $"services__{api.Resource.Name.Replace('-', '_')}__https__0";
         var mobile = builder.AddNpmApp($"mobile-{surface}", $"../../app/mobile/{surface}", "start:ci")
                .WithEnvironment("REACT_NATIVE_PACKAGER_HOSTNAME", lanIp)
                .WithReference(api, tunnel)
@@ -266,7 +362,7 @@ internal static class DistributedApplicationBuilderExtensions
                .WaitFor(tunnel)
                .WithEnvironment(ctx =>
                {
-                   if (ctx.EnvironmentVariables.TryGetValue("services__api__https__0", out var apiUrl))
+                   if (ctx.EnvironmentVariables.TryGetValue(apiEnvKey, out var apiUrl))
                        ctx.EnvironmentVariables["EXPO_PUBLIC_API_URL"] = apiUrl;
                    if (ctx.EnvironmentVariables.TryGetValue("services__auth__https__0", out var authUrl))
                        ctx.EnvironmentVariables["EXPO_PUBLIC_AUTH_AUTHORITY"] = authUrl;
@@ -357,8 +453,8 @@ internal static class DistributedApplicationBuilderExtensions
     }
 
     private static IResourceBuilder<ProjectResource> AddSecrets(
-        this IResourceBuilder<ProjectResource> resource, 
-        IDistributedApplicationBuilder builder, 
+        this IResourceBuilder<ProjectResource> resource,
+        IDistributedApplicationBuilder builder,
         params string[] keys)
     {
         foreach (var key in keys)
