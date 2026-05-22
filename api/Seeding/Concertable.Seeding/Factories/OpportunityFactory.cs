@@ -12,7 +12,7 @@ public static class OpportunityFactory
             .With(nameof(OpportunityEntity.Period), period)
             .With(nameof(OpportunityEntity.ContractId), contractId);
         if (genres is not null)
-            opp.SyncGenres(genres);
+            opp.With(nameof(OpportunityEntity.Genres), genres.ToList());
         return opp;
     }
 }
