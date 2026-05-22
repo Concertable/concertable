@@ -1,4 +1,4 @@
-﻿using Concertable.Artist.Domain;
+using Concertable.Artist.Domain;
 using Concertable.Concert.Domain;
 using Concertable.Contract.Domain;
 using Concertable.User.Domain;
