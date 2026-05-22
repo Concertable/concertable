@@ -1,10 +1,13 @@
+using Concertable.Application.Interfaces.Geometry;
 using Concertable.Shared.Infrastructure.Background;
 using Concertable.Shared.Infrastructure.Events;
 using Concertable.Shared.Infrastructure.Services;
+using Concertable.Shared.Infrastructure.Services.Geometry;
 using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using NetTopologySuite;
 
 namespace Concertable.Shared.Infrastructure.Extensions;
 
@@ -19,6 +22,16 @@ public static class ServiceCollectionExtensions
         services.Configure<UrlSettings>(configuration.GetSection("Urls"));
         services.AddScoped<IUriService, UriService>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddGeometry(this IServiceCollection services)
+    {
+        services.AddKeyedSingleton<IGeometryProvider, GeographicGeometryProvider>(GeometryProviderType.Geographic, (_, _) =>
+            new GeographicGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326)));
+        services.AddKeyedSingleton<IGeometryProvider, MetricGeometryProvider>(GeometryProviderType.Metric, (_, _) =>
+            new MetricGeometryProvider(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857)));
+        services.AddSingleton<IGeometryCalculator, GeometryCalculator>();
         return services;
     }
 

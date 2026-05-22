@@ -86,7 +86,7 @@ public class AppFixture : IAsyncLifetime
 
         Sql = new SqlFixture();
         await Sql.InitializeAsync(app);
-        Db = new TestDb(Sql.Connection);
+        Db = new TestDb(Sql.Connection, Sql.PaymentConnection);
 
         logger.LogInformation("E2E test fixture ready");
     }
@@ -97,6 +97,33 @@ public class AppFixture : IAsyncLifetime
         await Sql.ResetAsync();
         var response = await Client.PostAsync("/e2e/reseed");
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
+        await PopulateStripeIdsAsync();
+    }
+
+    private async Task PopulateStripeIdsAsync()
+    {
+        var customer = await ResolvePayoutAccountAsync(SeedData.Customer.Id, requiresAccount: false);
+        SeedData.Customer.StripeCustomerId = customer.StripeCustomerId!;
+
+        var venueManager = await ResolvePayoutAccountAsync(SeedData.VenueManager1.Id, requiresAccount: true);
+        SeedData.VenueManager1.StripeCustomerId = venueManager.StripeCustomerId!;
+        SeedData.VenueManager1.StripeAccountId = venueManager.StripeAccountId!;
+
+        var artistManager = await ResolvePayoutAccountAsync(SeedData.ArtistManager1.Id, requiresAccount: true);
+        SeedData.ArtistManager1.StripeCustomerId = artistManager.StripeCustomerId!;
+        SeedData.ArtistManager1.StripeAccountId = artistManager.StripeAccountId!;
+    }
+
+    private async Task<PayoutAccountRow> ResolvePayoutAccountAsync(Guid userId, bool requiresAccount)
+    {
+        var account = await Polling.UntilAsync(
+            () => Db.Payment.GetPayoutAccountByUserIdAsync(userId),
+            row => row is not null
+                && row.StripeCustomerId is not null
+                && (!requiresAccount || row.StripeAccountId is not null),
+            timeout: TimeSpan.FromSeconds(60),
+            interval: TimeSpan.FromSeconds(1));
+        return account!;
     }
 
     public async Task<HttpClient> CreateAuthenticatedClientAsync(string email)
