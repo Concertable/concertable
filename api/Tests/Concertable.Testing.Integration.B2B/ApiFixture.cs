@@ -1,4 +1,5 @@
 using Concertable.DataAccess;
+using Concertable.Messaging;
 using Concertable.Shared.Email;
 using Concertable.Shared.Geocoding;
 using Concertable.Shared.Imaging;
@@ -30,6 +31,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Concertable.Testing.Integration;
@@ -70,6 +72,13 @@ public async Task InitializeAsync()
 
             builder.ConfigureTestServices(services =>
             {
+                var asbDescriptors = services
+                    .Where(d => d.ServiceType == typeof(IHostedService) &&
+                                d.ImplementationType?.Name == "AzureServiceBusReceiver")
+                    .ToList();
+                foreach (var d in asbDescriptors)
+                    services.Remove(d);
+                services.Replace(ServiceDescriptor.Singleton<IBusTransport, MockBusTransport>());
                 services.AddScoped<IStripeAccountClient, MockStripeAccountClient>();
                 services.AddScoped<IStripeHoldClient, MockStripeHoldClient>();
                 services.AddSingleton<INotificationClient>(NotificationService);
@@ -81,6 +90,7 @@ public async Task InitializeAsync()
                 services.AddSingleton<IEmailSender>(EmailSender);
 
                 services.AddSingleton<PaymentConfigurationProvider>();
+                services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<PaymentConfigurationProvider>());
                 services.AddDbContext<PaymentDbContext>((sp, opts) =>
                     opts.UseSqlServer(sqlFixture.ConnectionString)
                         .AddInterceptors(
@@ -90,7 +100,6 @@ public async Task InitializeAsync()
                 services.AddScoped<ICustomerPaymentClient, MockCustomerPaymentClient>();
                 services.AddScoped<IEscrowClient, MockEscrowClient>();
 
-                services.AddScoped<IWebhookService, MockWebhookService>();
                 services.AddSingleton<IWebhookSimulator, MockWebhookSimulator>();
                 services.Replace(ServiceDescriptor.Singleton<IHttpClientFactory>(_ => new WebApplicationHttpClientFactory(factory)));
                 services.AddScoped<IGeocodingService, MockGeocodingService>();
