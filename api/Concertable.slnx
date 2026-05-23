@@ -1,3 +1,6 @@
+<!-- Umbrella solution — loads every project across all microservices and the monolith in one place.
+     Use this when you need to browse, refactor, or search the entire repo at once.
+     Each microservice also has its own .slnx (e.g. Concertable.B2B/Concertable.B2B.slnx) for focused work. -->
 <Solution>
   <Project Path="Concertable.AppHost/Concertable.AppHost.csproj" />
   <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
@@ -11,6 +14,7 @@
   <Folder Name="/B2B/">
     <Project Path="Concertable.B2B/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
     <Project Path="Concertable.B2B/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj" />
+    <Project Path="Concertable.B2B/Concertable.B2B.DataAccess/Concertable.B2B.DataAccess.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Artist/">
     <Project Path="Concertable.B2B/Modules/Artist/Concertable.B2B.Artist.Api/Concertable.B2B.Artist.Api.csproj" />
@@ -76,6 +80,13 @@
   <Folder Name="/Customer/">
     <Project Path="Concertable.Customer/Concertable.Customer.Web/Concertable.Customer.Web.csproj" />
   </Folder>
+  <Folder Name="/Customer/Modules/Artist/">
+    <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Api/Concertable.Customer.Artist.Api.csproj" />
+    <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Application/Concertable.Customer.Artist.Application.csproj" />
+    <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Contracts/Concertable.Customer.Artist.Contracts.csproj" />
+    <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Domain/Concertable.Customer.Artist.Domain.csproj" />
+    <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Infrastructure/Concertable.Customer.Artist.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/Customer/Modules/Concert/">
     <Project Path="Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Api/Concertable.Customer.Concert.Api.csproj" />
     <Project Path="Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Application/Concertable.Customer.Concert.Application.csproj" />
@@ -102,6 +113,12 @@
     <Project Path="Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.IntegrationTests/Concertable.Customer.Review.IntegrationTests.csproj" />
     <Project Path="Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/Customer/Modules/Preference/">
+    <Project Path="Concertable.Customer/Modules/Preference/Concertable.Customer.Preference.Api/Concertable.Customer.Preference.Api.csproj" />
+    <Project Path="Concertable.Customer/Modules/Preference/Concertable.Customer.Preference.Application/Concertable.Customer.Preference.Application.csproj" />
+    <Project Path="Concertable.Customer/Modules/Preference/Concertable.Customer.Preference.Domain/Concertable.Customer.Preference.Domain.csproj" />
+    <Project Path="Concertable.Customer/Modules/Preference/Concertable.Customer.Preference.Infrastructure/Concertable.Customer.Preference.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/Customer/Modules/Ticket/">
     <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Api/Concertable.Customer.Ticket.Api.csproj" />
     <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Application/Concertable.Customer.Ticket.Application.csproj" />
@@ -109,6 +126,13 @@
     <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Infrastructure/Concertable.Customer.Ticket.Infrastructure.csproj" />
     <Project Path="Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.IntegrationTests/Concertable.Customer.Ticket.IntegrationTests.csproj" />
     <Project Path="Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.UnitTests/Concertable.Customer.Ticket.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Customer/Modules/Venue/">
+    <Project Path="Concertable.Customer/Modules/Venue/Concertable.Customer.Venue.Api/Concertable.Customer.Venue.Api.csproj" />
+    <Project Path="Concertable.Customer/Modules/Venue/Concertable.Customer.Venue.Application/Concertable.Customer.Venue.Application.csproj" />
+    <Project Path="Concertable.Customer/Modules/Venue/Concertable.Customer.Venue.Contracts/Concertable.Customer.Venue.Contracts.csproj" />
+    <Project Path="Concertable.Customer/Modules/Venue/Concertable.Customer.Venue.Domain/Concertable.Customer.Venue.Domain.csproj" />
+    <Project Path="Concertable.Customer/Modules/Venue/Concertable.Customer.Venue.Infrastructure/Concertable.Customer.Venue.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/DataAccess/">
     <Project Path="Concertable.DataAccess/Concertable.DataAccess.Application/Concertable.DataAccess.Application.csproj" />

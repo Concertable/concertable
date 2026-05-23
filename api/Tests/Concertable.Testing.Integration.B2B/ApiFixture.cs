@@ -1,4 +1,3 @@
-using Concertable.DataAccess;
 using Concertable.B2B.Notification.Contracts;
 using Concertable.Payment.Domain;
 using Concertable.Payment.Client;
@@ -35,6 +34,7 @@ using Concertable.Shared.Email.Application;
 using Concertable.Shared.Geocoding.Application;
 using Concertable.Shared.Imaging.Application;
 using Concertable.Testing.Integration.B2B.Mocks;
+using Concertable.B2B.DataAccess;
 
 namespace Concertable.Testing.Integration.B2B;
 

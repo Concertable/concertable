@@ -22,4 +22,4 @@ Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheck
 
 ## Module rules
 
-See [MODULAR_MONOLITH_RULES.md](./MODULAR_MONOLITH_RULES.md).
+See [MODULAR_MONOLITH_RULES.md](./api/docs/MODULAR_MONOLITH_RULES.md).
