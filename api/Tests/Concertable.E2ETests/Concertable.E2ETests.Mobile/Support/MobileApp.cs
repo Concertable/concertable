@@ -33,7 +33,7 @@ public class MobileApp : IAsyncDisposable, IDisposable
         driver = new AndroidDriver(fixture.AppiumServerUri, options, TimeSpan.FromSeconds(180));
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.Zero;
 
-        logger.LogInformation("Appium session started for app {Package}", fixture.AppPackage);
+        logger.AppiumSessionStarted(fixture.AppPackage);
         return Task.CompletedTask;
     }
 
@@ -47,11 +47,11 @@ public class MobileApp : IAsyncDisposable, IDisposable
             var safeTitle = string.Join("_", scenarioTitle.Split(Path.GetInvalidFileNameChars()));
             var path = $"mobile-traces/screenshot-{safeTitle}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.png";
             screenshot.SaveAsFile(path);
-            logger.LogInformation("Screenshot saved to {Path}", path);
+            logger.ScreenshotSaved(path);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to capture screenshot");
+            logger.FailedToCaptureScreenshot(ex);
         }
     }
 
@@ -60,7 +60,7 @@ public class MobileApp : IAsyncDisposable, IDisposable
     public ValueTask DisposeAsync()
     {
         try { driver?.Quit(); }
-        catch (Exception ex) { logger.LogWarning(ex, "Failed to quit Appium driver"); }
+        catch (Exception ex) { logger.FailedToQuitAppiumDriver(ex); }
         driver?.Dispose();
         driver = null!;
         return ValueTask.CompletedTask;

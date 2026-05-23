@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Stripe;
+using System.Net;
 using System.Net.Http.Headers;
 using Xunit.Abstractions;
 
@@ -67,7 +68,7 @@ public class AppFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        logger.LogInformation("Initializing E2E test fixture");
+        logger.InitializingE2ETestFixture();
 
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
@@ -88,7 +89,7 @@ public class AppFixture : IAsyncLifetime
         await Sql.InitializeAsync(app);
         Db = new TestDb(Sql.Connection, Sql.PaymentConnection);
 
-        logger.LogInformation("E2E test fixture ready");
+        logger.E2ETestFixtureReady();
     }
 
     public async Task ResetAsync()
@@ -147,18 +148,18 @@ public class AppFixture : IAsyncLifetime
 
     private async Task WaitForAppAsync()
     {
-        logger.LogInformation("Waiting for app to become healthy at {Url}/health", ApiBaseUrl);
+        logger.WaitingForAppToBeHealthy(ApiBaseUrl);
 
         await Polling.UntilAsync(async () =>
         {
             var response = await Client.GetAsync("/health");
-            logger.LogDebug("Health check: {StatusCode}", response.StatusCode);
+            logger.HealthCheck(response.StatusCode);
             return response.IsSuccessStatusCode;
         },
         timeout: TimeSpan.FromMinutes(3),
         interval: TimeSpan.FromSeconds(1));
 
-        logger.LogInformation("App is healthy");
+        logger.AppIsHealthy();
     }
 
     private static ILoggerFactory BuildMessageSinkLoggerFactory(IMessageSink messageSink) =>

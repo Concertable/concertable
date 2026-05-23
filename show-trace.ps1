@@ -1,8 +1,10 @@
-$latest = Get-ChildItem -Recurse -Filter "trace-*.zip" "$PSScriptRoot/api/Tests/Concertable.E2ETests" |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
+$all = Get-ChildItem -Recurse -Filter "trace-*.zip" "$PSScriptRoot/api/Tests/Concertable.E2ETests"
 
-if (-not $latest) { Write-Error "No trace files found."; exit 1 }
+if (-not $all) { Write-Error "No trace files found under api/Tests/Concertable.E2ETests."; exit 1 }
 
-Write-Host "Opening: $($latest.FullName)"
+$latest = $all | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+Write-Host "Found $($all.Count) trace(s). Opening newest:" -ForegroundColor DarkGray
+Write-Host "  $($latest.FullName)" -ForegroundColor Cyan
+Write-Host "  Last modified: $($latest.LastWriteTime)" -ForegroundColor DarkGray
 npx playwright show-trace $latest.FullName

@@ -29,7 +29,7 @@ public class PollingService : IPollingService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Condition check failed");
+                _logger.ConditionCheckFailed(ex);
             }
 
             try
@@ -67,7 +67,7 @@ public class PollingService : IPollingService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Polling action failed");
+                _logger.PollingActionFailed(ex);
             }
 
             try

@@ -1,4 +1,5 @@
 using Concertable.Contracts;
+using Concertable.Kernel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -26,8 +27,9 @@ public class QueueHostedService : BackgroundService
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred executing background work item.");
+                logger.BackgroundWorkItemError(ex);
             }
         }
     }
 }
+

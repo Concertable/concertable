@@ -20,6 +20,10 @@ Validators stay named `XValidators` regardless.
 
 Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).
 
+## Seeders
+
+`IDevSeeder` runs in dev/E2E environments via `DevDbInitializer`. `ITestSeeder` runs in integration tests only — never in E2E or dev startup. Do not create an `IDevSeeder` for data that should be created via domain events (e.g. Stripe payout accounts — those are provisioned when `CredentialRegisteredEvent` fires on user registration). Fix the event flow, don't add a seeder that bypasses it.
+
 ## Module rules
 
 See [MODULAR_MONOLITH_RULES.md](./api/docs/MODULAR_MONOLITH_RULES.md).
