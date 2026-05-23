@@ -1,0 +1,11 @@
+<!-- If user is verified -->
+<div *ngIf="isVerified">
+  <p>Your Stripe account is verified and ready for payouts.</p>
+  <button mat-raised-button color="primary" (click)="startOnboarding()">Update Details</button>
+</div>
+
+<!-- If user is NOT verified -->
+<div *ngIf="!isVerified">
+  <p>You need to complete your Stripe onboarding.</p>
+  <button mat-raised-button color="primary" (click)="startOnboarding()">Complete Onboarding</button>
+</div>

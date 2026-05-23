@@ -1,0 +1,17 @@
+<div class="icon-text">
+    <ng-container *ngIf="!editMode">
+      {{ price | currency: 'GBP':'symbol':'1.2-2' }}
+    </ng-container>
+  
+    <ng-container *ngIf="editMode">
+      <input
+        type="number"
+        [(ngModel)]="price"
+        (ngModelChange)="onPriceChange($event)"
+        step="0.01"
+        min="0"
+        placeholder="0.00"
+      />
+    </ng-container>
+  </div>
+  

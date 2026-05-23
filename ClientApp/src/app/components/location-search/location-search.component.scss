@@ -1,0 +1,25 @@
+
+::ng-deep .white-outline {
+    --mdc-outlined-text-field-outline-color: white !important;
+    --mdc-outlined-text-field-hover-outline-color: white !important;
+    --mdc-outlined-text-field-focused-outline-color: white !important;
+  }
+  
+  // Input text
+  ::ng-deep .white-outline .mat-mdc-input-element {
+    color: white !important;
+    caret-color: white !important;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.8) !important; // slightly darkder white
+    }
+  }
+  
+  // Label
+  ::ng-deep .white-outline .mdc-floating-label {
+    color: white !important;
+  }
+  
+  ::ng-deep mat-form-field.white-outline .mat-icon {
+    color: white !important;
+  }

@@ -1,0 +1,21 @@
+
+<app-card >
+    <div class="container">
+        <img 
+            [src]="blobService.getUrl(artist?.imageUrl)" 
+            [alt]="'Artist Image'"
+            width="170"
+            height="170" />
+        <div class="info">
+        <h2 class="text-[var(--primary-color)]">{{ artist?.name }}</h2>
+        <app-genres *ngIf="artist" [genres]="artist.genres"></app-genres>
+        <p class="icon-text"><mat-icon small light>location_on</mat-icon> {{ artist?.county }}</p>
+        <button color="secondary" class="mt-2" mat-fab extended (click)="onViewDetails()">
+            <mat-icon>visibility</mat-icon>View details
+        </button>
+        <button *ngIf="showAccept" color="primary" class="mt-2" mat-fab extended (click)="onAccept()">
+            <mat-icon>check</mat-icon>Accept
+        </button>
+        </div>
+    </div>
+</app-card>

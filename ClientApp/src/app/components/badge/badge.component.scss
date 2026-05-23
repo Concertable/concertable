@@ -1,0 +1,31 @@
+.container {
+    display: flex;
+    align-items: center;
+    background-color: #e9ecef;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    color: #333;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 5px;
+  }
+
+  .label {
+    white-space: nowrap;
+  }
+
+  .btn-remove {
+    color: var(--error-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+  }

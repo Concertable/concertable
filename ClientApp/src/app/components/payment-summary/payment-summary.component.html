@@ -1,0 +1,36 @@
+<app-card [isEmpty]="summaryItems.length === 0">
+  <div class="payment-summary">
+    <h4>{{ title }}</h4>
+
+    <ng-container *ngFor="let item of summaryItems; let i = index">
+      <div *ngIf="item.label === 'Quantity'">
+        <div class="summary-item ">
+          <span class="label">{{ item.label }}:</span>
+          <span class="value ">
+            <button 
+              (click)="onQuantityDecrement(i)"
+              class="btn-quantity">−</button>
+
+            {{ item.value }}
+
+            <button 
+              (click)="onQuantityIncrement(i)"
+              class="btn-quantity">+</button>
+          </span>
+        </div>
+      </div>
+
+      <!-- Divider at the last item -->
+      <mat-divider class="light" *ngIf="i === summaryItems.length - 1"></mat-divider>
+
+      <div *ngIf="item.label !== 'Quantity'">
+        <div class="summary-item">
+          <span class="label">{{ item.label }}:</span>
+          <span class="value">
+            {{ item.isCost ? (item.value | currency: 'GBP': true:'1.2-2') : item.value }}
+          </span>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</app-card>

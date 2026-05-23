@@ -1,0 +1,14 @@
+@if (editMode) {
+    <input
+      type="number"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChange.emit(value)"
+      (input)="onInputChange(value)"
+      [min]="1"
+      [max]="500"
+      [step]="1"
+    />
+  } @else {
+    {{ value ?? 'Not set' }}
+  }
+  

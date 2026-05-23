@@ -1,0 +1,25 @@
+@if(venue) {
+    <app-dashboard-layout>
+        <div section-one>
+            <h2 class="title">Listings</h2>
+            <h3>Your Listings</h3>
+            <app-listings [venueId]="venue.id"></app-listings>
+        </div>
+        <div section-two>
+            <h2 class="title">Event</h2>
+            <h3>Upcoming Events</h3>
+            <app-venue-events [venue]="venue" [viewType]="EventViewType.Upcoming"></app-venue-events>
+            <h3>Unposted Events</h3>
+            <app-venue-events [venue]="venue" [viewType]="EventViewType.Unposted"></app-venue-events>
+            <h3>Event History</h3>
+            <app-venue-events [venue]="venue" [viewType]="EventViewType.History"></app-venue-events>
+        </div>
+        <div section-three>
+            <h2 class="title">Finance</h2>
+            <app-transactions></app-transactions>
+        </div>
+    </app-dashboard-layout>
+} @else {
+    <app-config-item-not-found [itemName]="'Venue'"></app-config-item-not-found>
+}
+

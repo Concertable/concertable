@@ -1,0 +1,31 @@
+<app-auth-layout [imageSrc]="'assets/images/register.jpg'" [title]="title">
+    <div class="container">
+      <h1 class="title">Register</h1>
+      <form (ngSubmit)="register()" #form="ngForm">
+        <div class="form-container">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" [(ngModel)]="credentials.email" required>
+        </div>
+        <div class="form-container">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" [(ngModel)]="credentials.password" required>
+        </div>
+        <div class="form-container">
+          <mat-form-field appearance="outline">
+            <mat-label>I am a:</mat-label>
+              <mat-select [(ngModel)]="credentials.role" name="role" required>
+                <mat-option value="Customer">Customer</mat-option>
+                <mat-option value="ArtistManager">Artist Manager</mat-option>
+                <mat-option value="VenueManager">Venue Manager</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        <button mat-flat-button type="submit" class="submit" [disabled]="form.invalid">Submit</button>
+        <p class="mt-2">
+          Already have an account?
+          <a routerLink="/login" class="text-[var(--secondary-color)]">Login</a>
+        </p>
+        
+      </form>
+    </div>
+  </app-auth-layout>

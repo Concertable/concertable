@@ -1,0 +1,11 @@
+.container {
+    container-type: inline-size;
+}
+  
+  @container (width < 700px) {
+    .btn-label {
+      display: none;
+    }
+  }
+  
+  

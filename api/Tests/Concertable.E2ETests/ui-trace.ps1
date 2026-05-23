@@ -1,4 +1,4 @@
-$all = Get-ChildItem -Recurse -Filter "trace-*.zip" "$PSScriptRoot/api/Tests/Concertable.E2ETests"
+$all = Get-ChildItem -Recurse -Filter "trace-*.zip" $PSScriptRoot
 
 if (-not $all) { Write-Error "No trace files found under api/Tests/Concertable.E2ETests."; exit 1 }
 

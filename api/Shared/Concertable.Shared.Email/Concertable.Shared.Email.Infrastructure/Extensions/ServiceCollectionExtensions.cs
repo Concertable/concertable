@@ -12,7 +12,10 @@ public static class ServiceCollectionExtensions
         if (useRealEmail)
             services.AddScoped<IEmailSender, EmailSender>();
         else
+        {
+            services.AddHttpClient();
             services.AddScoped<IEmailSender, FakeEmailSender>();
+        }
 
         return services;
     }

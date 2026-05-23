@@ -26,6 +26,8 @@ function ReviewSectionSkeleton() {
 }
 
 export function ReviewSection({ type, id }: Readonly<Props>) {
+  if (!id) return null;
+
   const { reviews, isLoading, params, nextPage, prevPage } = useReviews(
     type,
     id,

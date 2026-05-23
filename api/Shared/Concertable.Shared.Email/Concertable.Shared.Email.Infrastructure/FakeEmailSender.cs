@@ -5,10 +5,12 @@ namespace Concertable.Shared.Email.Infrastructure;
 
 internal sealed class FakeEmailSender : IEmailSender
 {
+    private readonly IHttpClientFactory httpClientFactory;
     private readonly ILogger<FakeEmailSender> logger;
 
-    public FakeEmailSender(ILogger<FakeEmailSender> logger)
+    public FakeEmailSender(IHttpClientFactory httpClientFactory, ILogger<FakeEmailSender> logger)
     {
+        this.httpClientFactory = httpClientFactory;
         this.logger = logger;
     }
 
@@ -19,10 +21,10 @@ internal sealed class FakeEmailSender : IEmailSender
         return Task.CompletedTask;
     }
 
-    public Task SendVerificationAsync(string toEmail, string token, string verifyBaseUrl, CancellationToken ct = default)
+    public async Task SendVerificationAsync(string toEmail, string token, string verifyBaseUrl, CancellationToken ct = default)
     {
-        logger.FakeVerificationEmailSkipped(toEmail);
-        return Task.CompletedTask;
+        var client = httpClientFactory.CreateClient();
+        await client.GetAsync($"{verifyBaseUrl}?token={Uri.EscapeDataString(token)}", ct);
     }
 }
 

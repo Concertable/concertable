@@ -1,0 +1,21 @@
+<app-card>
+    <div class="payment-summary">
+      <h4>Payment Summary</h4>
+  
+      <div class="summary-item">
+        <span class="label">Artist you're paying to perform:</span>
+        <span class="value">{{ artistName }}</span>
+      </div>
+  
+      <div class="summary-item">
+        <span class="label">Amount:</span>
+        <span class="value">{{ amount | currency: 'GBP': true : '1.2-2' }}</span>
+      </div>
+  
+      <div class="summary-item">
+        <span class="label"><strong>Total:</strong></span>
+        <span class="value"><strong>{{ amount | currency: 'GBP': true : '1.2-2' }}</strong></span>
+      </div>
+    </div>
+  </app-card>
+  

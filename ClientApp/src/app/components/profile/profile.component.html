@@ -1,0 +1,42 @@
+@if (authService.currentUser$ | async; as user) {
+    <!-- Profile Button (Triggers the Menu) -->
+    <button class="btn-profile" mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon class="account-icon">person</mat-icon>
+    </button>
+
+    <mat-menu #menu="matMenu">
+        <div class="info">
+            <mat-icon>account_circle</mat-icon>
+            <div class="details">
+                <h4>{{ user.email }}</h4>
+                <p>Role: {{user.role}}</p>
+            </div>
+        </div>
+        <ng-container *ngIf="authService.isRole('Customer')">
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="onEditProfile()">
+                <mat-icon fontIcon="confirmation_number"></mat-icon>
+                <span>View Tickets</span>
+            </button>
+        </ng-container>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="onProfile()">
+            <mat-icon>person</mat-icon>
+            <span>Profile</span>
+        </button>
+        <button mat-menu-item (click)="onViewProfile()">
+            <mat-icon>visibility</mat-icon>
+            <span>View Profile</span>
+        </button>
+        <button mat-menu-item (click)="onEditProfile()">
+            <mat-icon>edit</mat-icon>
+            <span>Edit Profile</span>
+        </button>
+        <button mat-menu-item (click)="onLogOut()">
+            <mat-icon fontIcon="logout"></mat-icon>
+            <span>Logout</span>
+        </button>
+    </mat-menu>
+} @else {
+    <a routerLink="/login">Log in</a> / <a routerLink="/register">Register</a>
+}
