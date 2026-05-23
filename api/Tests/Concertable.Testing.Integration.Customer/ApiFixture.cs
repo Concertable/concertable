@@ -9,6 +9,7 @@ using Concertable.Payment.Client;
 using Concertable.Seeding;
 using Concertable.Shared;
 using Concertable.Shared.Email;
+using Concertable.Shared.Geocoding;
 using Concertable.Testing.Integration;
 using Concertable.Testing.Integration.Mocks;
 using Microsoft.AspNetCore.Authentication;
@@ -57,6 +58,7 @@ public class ApiFixture : IAsyncLifetime
                     services.Remove(d);
 
                 services.Replace(ServiceDescriptor.Singleton<IBusTransport, MockBusTransport>());
+                services.Replace(ServiceDescriptor.Scoped<IGeocodingService, MockGeocodingService>());
                 services.AddScoped<ICustomerPaymentClient, MockCustomerPaymentClient>();
                 services.AddSingleton<IEmailSender, MockEmailSender>();
 
@@ -161,7 +163,7 @@ public class ApiFixture : IAsyncLifetime
         var ticket = Concertable.Customer.Ticket.Domain.TicketEntity.Create(
             Guid.CreateVersion7(), userId, concertId,
             [], DateTime.UtcNow,
-            "Test Concert", 15.00m, period, "Test Venue", "Test Artist");
+            "Test Concert", 15.00m, period, 1, "Test Artist", 1, "Test Venue");
         db.Tickets.Add(ticket);
         await db.SaveChangesAsync();
         return ticket;
