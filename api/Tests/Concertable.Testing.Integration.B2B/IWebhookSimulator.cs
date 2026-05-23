@@ -1,4 +1,4 @@
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 public interface IWebhookSimulator
 {

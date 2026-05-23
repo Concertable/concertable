@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Shared.Infrastructure.Identity;
+namespace Concertable.Kernel.Identity;
 
 internal sealed class CurrentUserAccessor : ICurrentUser
 {

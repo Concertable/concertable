@@ -1,6 +1,6 @@
 using NetTopologySuite.Geometries;
 
-namespace Concertable.Application.Mappers;
+namespace Concertable.Kernel;
 
 public static class PointMappers
 {

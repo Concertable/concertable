@@ -1,4 +1,4 @@
-namespace Concertable.Shared.Email;
+namespace Concertable.Shared.Email.Application;
 
 public interface IEmailSender
 {

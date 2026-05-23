@@ -1,9 +1,9 @@
 using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Domain;
-using Concertable.Shared.Exceptions;
+using Concertable.Kernel.Exceptions;
 
-namespace Concertable.Testing.Integration.Mocks;
+namespace Concertable.Testing.Integration.B2B.Mocks;
 
 internal class MockStripeAccountClientFail : IStripeAccountClient
 {

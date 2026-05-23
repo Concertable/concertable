@@ -1,4 +1,5 @@
-using Concertable.Shared.Exceptions;
+using Concertable.Kernel.Exceptions;
+using Concertable.Shared.Geocoding.Application;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 

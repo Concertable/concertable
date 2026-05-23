@@ -1,4 +1,4 @@
-namespace Concertable.Shared.Infrastructure.Services.Geometry;
+namespace Concertable.Kernel.Services.Geometry;
 
 public enum GeometryProviderType
 {

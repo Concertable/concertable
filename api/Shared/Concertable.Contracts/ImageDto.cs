@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Shared;
+namespace Concertable.Contracts;
 
 public record ImageDto
 {

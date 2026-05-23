@@ -1,7 +1,8 @@
+using Concertable.Testing.Integration.B2B.Mocks;
 using Concertable.Testing.Integration.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 internal static class ServiceCollectionExtensions
 {

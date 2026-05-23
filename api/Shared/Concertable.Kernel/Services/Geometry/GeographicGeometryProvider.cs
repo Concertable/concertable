@@ -1,7 +1,7 @@
-using Concertable.Application.Interfaces.Geometry;
+using Concertable.Kernel.Geometry;
 using NetTopologySuite.Geometries;
 
-namespace Concertable.Shared.Infrastructure.Services.Geometry;
+namespace Concertable.Kernel.Services.Geometry;
 
 public class GeographicGeometryProvider : IGeometryProvider
 {

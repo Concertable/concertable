@@ -1,4 +1,4 @@
-namespace Concertable.Shared.Geocoding;
+namespace Concertable.Shared.Geocoding.Application;
 
 public interface IGeocodingService
 {

@@ -1,4 +1,6 @@
-using Concertable.Shared;
+using Concertable.Concert.Domain.Entities;
+using Concertable.Contracts;
+using Concertable.Kernel;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Factories;

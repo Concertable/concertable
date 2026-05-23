@@ -1,6 +1,6 @@
 using QuestPDF.Infrastructure;
 
-namespace Concertable.Shared.Pdf;
+namespace Concertable.Shared.Pdf.Application;
 
 public interface IPdfService
 {

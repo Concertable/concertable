@@ -1,6 +1,6 @@
 using Concertable.Payment.Application.Interfaces.Webhook;
 
-namespace Concertable.Testing.Integration.Mocks;
+namespace Concertable.Testing.Integration.B2B.Mocks;
 
 public interface IMockStripeApiClient : IStripeApiClient, IResettable
 {

@@ -2,7 +2,7 @@
 using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
-namespace Concertable.Shared.UnitTests.Expressions;
+namespace Concertable.Kernel.UnitTests.Expressions;
 public class ExpressionExtensionsTests
 {
     [Fact]

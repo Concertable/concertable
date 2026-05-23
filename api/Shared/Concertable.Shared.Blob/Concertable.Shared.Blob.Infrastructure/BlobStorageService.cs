@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Concertable.Shared.Blob.Application;
 using Microsoft.Extensions.Options;
 
 namespace Concertable.Shared.Blob.Infrastructure;

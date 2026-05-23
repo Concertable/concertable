@@ -1,4 +1,5 @@
-global using Concertable.Shared;
+global using Concertable.Kernel;
+global using Concertable.Contracts;
 global using Concertable.User.Contracts;
 global using Concertable.User.Domain;
 global using Concertable.Artist.Domain;

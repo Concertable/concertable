@@ -1,8 +1,8 @@
 using System.Net.Http.Headers;
-using Concertable.Shared;
+using Concertable.Contracts;
 using Microsoft.AspNetCore.Http;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 public static class ImageMappers
 {

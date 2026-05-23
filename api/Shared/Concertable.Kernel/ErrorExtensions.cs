@@ -1,6 +1,6 @@
 using FluentResults;
 
-namespace Concertable.Shared;
+namespace Concertable.Kernel;
 
 public static class ErrorExtensions
 {

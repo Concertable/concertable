@@ -3,7 +3,7 @@ using Concertable.Payment.Domain;
 using FluentResults;
 using Stripe;
 
-namespace Concertable.Testing.Integration.Mocks;
+namespace Concertable.Testing.Integration.B2B.Mocks;
 
 internal class MockManagerPaymentClient : IManagerPaymentClient
 {

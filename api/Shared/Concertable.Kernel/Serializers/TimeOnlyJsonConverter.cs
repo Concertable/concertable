@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Concertable.Application.Serializers;
+namespace Concertable.Kernel.Serializers;
 
 public class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
 {

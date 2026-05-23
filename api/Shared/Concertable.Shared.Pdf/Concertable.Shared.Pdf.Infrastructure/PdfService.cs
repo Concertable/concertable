@@ -1,3 +1,4 @@
+using Concertable.Shared.Pdf.Application;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 

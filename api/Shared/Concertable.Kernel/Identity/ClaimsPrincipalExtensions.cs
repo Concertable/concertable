@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace Concertable.Shared.Infrastructure.Identity;
+namespace Concertable.Kernel.Identity;
 
 public static class ClaimsPrincipalExtensions
 {

@@ -1,4 +1,4 @@
-namespace Concertable.Shared.Blob;
+namespace Concertable.Shared.Blob.Application;
 
 public interface IBlobStorageService
 {

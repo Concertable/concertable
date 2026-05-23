@@ -1,15 +1,17 @@
 using Concertable.Customer.Artist.Infrastructure.Data;
+using Concertable.Kernel;
+using Concertable.Customer.Concert.Domain.Entities;
 using Concertable.Customer.Concert.Infrastructure.Data;
 using Concertable.Customer.Review.Infrastructure.Data;
+using Concertable.Customer.Ticket.Domain.Entities;
 using Concertable.Customer.Ticket.Infrastructure.Data;
 using Concertable.Customer.User.Infrastructure.Data;
 using Concertable.Customer.Venue.Infrastructure.Data;
-using Concertable.Messaging;
+using Concertable.Messaging.Contracts;
 using Concertable.Payment.Client;
 using Concertable.Seeding;
-using Concertable.Shared;
-using Concertable.Shared.Email;
-using Concertable.Shared.Geocoding;
+using Concertable.Shared.Email.Application;
+using Concertable.Shared.Geocoding.Application;
 using Concertable.Testing.Integration;
 using Concertable.Testing.Integration.Mocks;
 using Microsoft.AspNetCore.Authentication;
@@ -130,7 +132,7 @@ public class ApiFixture : IAsyncLifetime
         return artist;
     }
 
-    public async Task<Concertable.Customer.Concert.Domain.ConcertReadModel> SeedConcertAsync(
+    public async Task<ConcertReadModel> SeedConcertAsync(
         int id = 1,
         bool posted = true,
         int availableTickets = 100,
@@ -140,7 +142,7 @@ public class ApiFixture : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<ConcertDbContext>();
         var start = startDate ?? DateTime.UtcNow.AddDays(7);
         var period = new DateRange(start, start.AddHours(3));
-        var concert = Concertable.Customer.Concert.Domain.ConcertReadModel.Create(
+        var concert = ConcertReadModel.Create(
             id, "Test Concert", "About the concert",
             null, null, availableTickets, 15.00m, period,
             posted ? DateTime.UtcNow.AddDays(-1) : null,
@@ -151,7 +153,7 @@ public class ApiFixture : IAsyncLifetime
         return concert;
     }
 
-    public async Task<Concertable.Customer.Ticket.Domain.TicketEntity> SeedTicketAsync(
+    public async Task<TicketEntity> SeedTicketAsync(
         Guid userId,
         int concertId,
         bool upcoming = true)
@@ -160,7 +162,7 @@ public class ApiFixture : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<TicketDbContext>();
         var concertStart = upcoming ? DateTime.UtcNow.AddDays(7) : DateTime.UtcNow.AddDays(-7);
         var period = new DateRange(concertStart, concertStart.AddHours(3));
-        var ticket = Concertable.Customer.Ticket.Domain.TicketEntity.Create(
+        var ticket = TicketEntity.Create(
             Guid.CreateVersion7(), userId, concertId,
             [], DateTime.UtcNow,
             "Test Concert", 15.00m, period, 1, "Test Artist", 1, "Test Venue");

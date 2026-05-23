@@ -1,5 +1,6 @@
 using Azure.Storage.Blobs;
 using Concertable.Seeding;
+using Concertable.Shared.Blob.Application;
 using Concertable.Shared.Blob.Infrastructure.Resources;
 using Microsoft.Extensions.Options;
 

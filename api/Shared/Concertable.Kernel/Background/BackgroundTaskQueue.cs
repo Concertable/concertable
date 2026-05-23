@@ -1,6 +1,7 @@
+using Concertable.Contracts;
 using System.Threading.Channels;
 
-namespace Concertable.Shared.Infrastructure.Background;
+namespace Concertable.Kernel.Background;
 
 public class BackgroundTaskQueue : IBackgroundTaskQueue
 {

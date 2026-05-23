@@ -1,12 +1,13 @@
 using Concertable.Testing.Integration.Mocks;
-using Concertable.Shared.Geocoding;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Interfaces.Webhook;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Concertable.Shared.Geocoding.Application;
+using Concertable.Testing.Integration.B2B.Mocks;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 public class TestClientOptions
 {

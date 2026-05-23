@@ -1,3 +1,4 @@
+using Concertable.Shared.Imaging.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Shared.Imaging.Infrastructure.Extensions;

@@ -1,3 +1,4 @@
+using Concertable.Shared.Email.Application;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

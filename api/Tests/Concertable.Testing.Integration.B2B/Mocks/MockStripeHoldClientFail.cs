@@ -1,7 +1,7 @@
 using Concertable.Payment.Application.Interfaces;
-using Concertable.Shared.Exceptions;
+using Concertable.Kernel.Exceptions;
 
-namespace Concertable.Testing.Integration.Mocks;
+namespace Concertable.Testing.Integration.B2B.Mocks;
 
 internal class MockStripeHoldClientFail : IStripeHoldClient
 {

@@ -1,7 +1,7 @@
-﻿using Concertable.Shared.Infrastructure.Services.Geometry;
+﻿using Concertable.Kernel.Services.Geometry;
 using NetTopologySuite;
 
-namespace Concertable.Shared.UnitTests.Services;
+namespace Concertable.Kernel.UnitTests.Services;
 public class GeometryProviderTests
 {
     private readonly GeographicGeometryProvider sut;

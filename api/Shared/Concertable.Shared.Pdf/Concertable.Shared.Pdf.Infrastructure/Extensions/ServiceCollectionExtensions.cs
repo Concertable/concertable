@@ -1,3 +1,4 @@
+using Concertable.Shared.Pdf.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Shared.Pdf.Infrastructure.Extensions;
