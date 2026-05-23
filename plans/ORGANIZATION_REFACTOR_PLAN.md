@@ -2,7 +2,7 @@
 
 > **Status:** Draft, ready for review. Phases are independently shippable — each ends with a green build and passing tests.
 >
-> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [MODULAR_MONOLITH_RULES.md](MODULAR_MONOLITH_RULES.md), [api/Modules/Contract/LEGAL_REQUIREMENTS.md](api/Modules/Contract/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [MODULAR_MONOLITH_RULES.md](../api/docs/MODULAR_MONOLITH_RULES.md), [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md).
 
 ---
 

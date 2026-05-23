@@ -1,6 +1,6 @@
 # Microservice Communication
 
-> **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md) and [MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md).
+> **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md) and [MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md).
 > Those cover *what services exist* and *what order they extract*. This one covers *how they talk*.
 >
 > **Rule:** the protocol is chosen by the **consumer**, not by preference. If you can name who calls an endpoint, the protocol is already decided.
@@ -15,7 +15,7 @@
 | Browser / mobile / SPA (`Customer.Web`, B2B SPA) | **HTTP/JSON** | Browsers cannot open a raw gRPC connection — hard limitation, not a choice |
 | Third party calling in (Stripe webhooks) | **HTTP/JSON** | Stripe dictates the protocol; it sends HTTP POSTs and always will |
 | OIDC / OAuth token endpoints (Auth / Duende) | **HTTP/JSON** | OAuth is HTTP by specification |
-| Event-driven / fire-and-forget | **Azure Service Bus** | Already the seam — see [MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md) Steps 8–10 |
+| Event-driven / fire-and-forget | **Azure Service Bus** | Already the seam — see [MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md) Steps 8–10 |
 
 **Default is gRPC.** HTTP appears only at the three forced boundaries above — every one is a case where something *outside our control* (a browser, Stripe, the OAuth spec) dictates the wire format.
 
@@ -43,7 +43,7 @@ Where HTTP is required, the host serves it alongside gRPC in the same Kestrel ap
 
 ## Async communication
 
-Unchanged from [MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md). Azure Service Bus via the `IBus` / `IBusTransport` seam handles event-driven and fire-and-forget flows (outbox/inbox, Steps 8–10). gRPC is for *synchronous request/response only* — if the caller doesn't need an answer right now, it's a message, not a gRPC call.
+Unchanged from [MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md). Azure Service Bus via the `IBus` / `IBusTransport` seam handles event-driven and fire-and-forget flows (outbox/inbox, Steps 8–10). gRPC is for *synchronous request/response only* — if the caller doesn't need an answer right now, it's a message, not a gRPC call.
 
 ---
 

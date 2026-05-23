@@ -1,6 +1,6 @@
 # Modular Monolith Rules
 
-Concrete conventions. The *what goes where* doc. Companion to [MM_NORTH_STAR.md](MM_NORTH_STAR.md)
+Concrete conventions. The *what goes where* doc. Companion to [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md)
 (the *why*).
 
 Applies to **modules** in the monolith (`Concert`, `Customer`, `Payment`, ...) AND **shared
@@ -97,7 +97,7 @@ Shared libs sit at `api/Shared/Concertable.<Name>/` and follow the same per-laye
   across boundaries.
 - Shared reference data (Genres, etc.) FKs into `SharedDbContext`. See MM_NORTH_STAR §6.
 
-Full set of corollaries + rationale in [MM_NORTH_STAR.md](MM_NORTH_STAR.md).
+Full set of corollaries + rationale in [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md).
 
 ---
 

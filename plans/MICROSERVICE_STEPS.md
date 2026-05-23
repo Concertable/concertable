@@ -1,6 +1,6 @@
 # Microservice Migration Steps
 
-> **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md). That doc is the *what*; this one is *what order, in phases*.
+> **Companion to** [MICROSERVICES_ARCHITECTURE.md](/api/docs/MICROSERVICES_ARCHITECTURE.md). That doc is the *what*; this one is *what order, in phases*.
 >
 > **Status:** Phase 1 COMPLETE ✅. Phase 2 COMPLETE ✅ (Steps 7–11). Phase 3 COMPLETE ✅ (Steps 12–13). Phase 4 COMPLETE ✅ (Steps 14–16). Next: Phase 5 (Step 17 — event schema versioning).
 >
