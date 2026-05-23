@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Concertable.DataAccess.Infrastructure.Expressions;
+namespace Concertable.Kernel.Expressions;
 
 internal sealed class ParameterReplacer(ParameterExpression target, Expression replacement)
     : ExpressionVisitor
