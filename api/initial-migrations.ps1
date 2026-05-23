@@ -2,14 +2,14 @@ $dirs = @(
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Outbox",
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Inbox",
     "Concertable.Search\Concertable.Search.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\User\Concertable.User.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\Organization\Concertable.Organization.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\Artist\Concertable.Artist.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\Venue\Concertable.Venue.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\Concert\Concertable.Concert.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\Contract\Concertable.Contract.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\User\Concertable.B2B.User.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\Organization\Concertable.B2B.Organization.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\Artist\Concertable.B2B.Artist.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\Venue\Concertable.B2B.Venue.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\Concert\Concertable.B2B.Concert.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\Contract\Concertable.B2B.Contract.Infrastructure\Data\Migrations",
     "Concertable.Payment\Concertable.Payment.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\Conversations\Concertable.Conversations.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\Conversations\Concertable.B2B.Conversations.Infrastructure\Data\Migrations",
     "Concertable.Customer\Modules\Preference\Concertable.Customer.Preference.Infrastructure\Data\Migrations",
     "Concertable.Auth\Data\Migrations",
     "Concertable.Customer\Modules\Concert\Concertable.Customer.Concert.Infrastructure\Data\Migrations",
@@ -27,28 +27,28 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context InboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations/Inbox
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context UserDbContext --project Concertable.B2B/Modules/User/Concertable.User.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context UserDbContext --project Concertable.B2B/Modules/User/Concertable.B2B.User.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context OrganizationDbContext --project Concertable.B2B/Modules/Organization/Concertable.Organization.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context OrganizationDbContext --project Concertable.B2B/Modules/Organization/Concertable.B2B.Organization.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context ArtistDbContext --project Concertable.B2B/Modules/Artist/Concertable.Artist.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context ArtistDbContext --project Concertable.B2B/Modules/Artist/Concertable.B2B.Artist.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context VenueDbContext --project Concertable.B2B/Modules/Venue/Concertable.Venue.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context VenueDbContext --project Concertable.B2B/Modules/Venue/Concertable.B2B.Venue.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.B2B/Modules/Concert/Concertable.Concert.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.B2B/Modules/Concert/Concertable.B2B.Concert.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context ContractDbContext --project Concertable.B2B/Modules/Contract/Concertable.Contract.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context ContractDbContext --project Concertable.B2B/Modules/Contract/Concertable.B2B.Contract.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context PaymentDbContext --project Concertable.Payment/Concertable.Payment.Infrastructure --startup-project Concertable.Payment/Concertable.Payment.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context ConversationsDbContext --project Concertable.B2B/Modules/Conversations/Concertable.Conversations.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context ConversationsDbContext --project Concertable.B2B/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --project Concertable.Auth --startup-project Concertable.Auth --output-dir Data/Migrations/Duende
