@@ -15,7 +15,9 @@ $dirs = @(
     "Concertable.Customer\Modules\Concert\Concertable.Customer.Concert.Infrastructure\Data\Migrations",
     "Concertable.Customer\Modules\Ticket\Concertable.Customer.Ticket.Infrastructure\Data\Migrations",
     "Concertable.Customer\Modules\Review\Concertable.Customer.Review.Infrastructure\Data\Migrations",
-    "Concertable.Customer\Modules\User\Concertable.Customer.User.Infrastructure\Data\Migrations"
+    "Concertable.Customer\Modules\User\Concertable.Customer.User.Infrastructure\Data\Migrations",
+    "Concertable.Customer\Modules\Venue\Concertable.Customer.Venue.Infrastructure\Data\Migrations",
+    "Concertable.Customer\Modules\Artist\Concertable.Customer.Artist.Infrastructure\Data\Migrations"
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
 
@@ -71,6 +73,12 @@ dotnet ef migrations add InitialCreate --context PreferenceDbContext --project C
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context SearchDbContext --project Concertable.Search/Concertable.Search.Infrastructure --startup-project Concertable.Search/Concertable.Search.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context VenueDbContext --project Concertable.Customer/Modules/Venue/Concertable.Customer.Venue.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+dotnet ef migrations add InitialCreate --context ArtistDbContext --project Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 Write-Host "All migrations scaffolded successfully."
