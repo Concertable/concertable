@@ -1,4 +1,4 @@
-using Concertable.Concert.Infrastructure.Services.Completion;
+using Concertable.B2B.Concert.Infrastructure.Services.Completion;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Moq;

@@ -1,1 +1,1 @@
-global using Concertable.User.Contracts;
+global using Concertable.B2B.User.Contracts;

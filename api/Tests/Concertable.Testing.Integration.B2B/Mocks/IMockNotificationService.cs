@@ -1,4 +1,4 @@
-using Concertable.Notification.Contracts;
+using Concertable.B2B.Notification.Contracts;
 
 namespace Concertable.Testing.Integration.B2B.Mocks;
 

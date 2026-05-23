@@ -1,5 +1,5 @@
 using Bogus;
-using Concertable.Artist.Domain;
+using Concertable.B2B.Artist.Domain;
 using Concertable.Contracts;
 using Concertable.Kernel;
 using Concertable.Seeding.Extensions;

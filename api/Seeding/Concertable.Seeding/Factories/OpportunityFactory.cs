@@ -1,4 +1,4 @@
-using Concertable.Concert.Domain.Entities;
+using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.Contracts;
 using Concertable.Kernel;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;

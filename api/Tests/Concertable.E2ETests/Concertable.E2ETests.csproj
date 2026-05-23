@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.Concert.Application\Concertable.Concert.Application.csproj" />
-    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.Concert.Api\Concertable.Concert.Api.csproj" />
+    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.B2B.Concert.Application\Concertable.B2B.Concert.Application.csproj" />
+    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.B2B.Concert.Api\Concertable.B2B.Concert.Api.csproj" />
     <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
     <ProjectReference Include="..\Concertable.Testing\Concertable.Testing.csproj" />
     <ProjectReference Include="..\..\Concertable.AppHost\Concertable.AppHost.csproj" />
