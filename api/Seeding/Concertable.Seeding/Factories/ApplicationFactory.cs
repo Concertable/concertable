@@ -1,6 +1,6 @@
-using Concertable.Concert.Domain.Entities;
-using Concertable.Concert.Domain.Enums;
-using Concertable.Contract.Contracts;
+using Concertable.B2B.Concert.Domain.Entities;
+using Concertable.B2B.Concert.Domain.Enums;
+using Concertable.B2B.Contract.Contracts;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Factories;

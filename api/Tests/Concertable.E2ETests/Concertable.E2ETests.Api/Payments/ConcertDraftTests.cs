@@ -1,10 +1,10 @@
 ﻿using System.Net;
-using Concertable.Concert.Application.DTOs;
-using Concertable.Concert.Api.Responses;
+using Concertable.B2B.Concert.Application.DTOs;
+using Concertable.B2B.Concert.Api.Responses;
 using Concertable.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using Concertable.Concert.Domain.Enums;
+using Concertable.B2B.Concert.Domain.Enums;
 
 namespace Concertable.E2ETests.Api.Payments;
 

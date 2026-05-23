@@ -34,8 +34,8 @@
     <Using Include="Xunit" />
     <Using Include="Concertable.E2ETests" />
     <Using Include="Concertable.Testing" />
-    <Using Include="Concertable.User.Contracts" />
-    <Using Include="Concertable.User.Domain" />
+    <Using Include="Concertable.B2B.User.Contracts" />
+    <Using Include="Concertable.B2B.User.Domain" />
     <Using Include="Microsoft.Playwright" />
     <Using Include="Reqnroll" />
   </ItemGroup>

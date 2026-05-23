@@ -1,6 +1,6 @@
-﻿using Concertable.Concert.Domain.Entities;
-using Concertable.Contract.Domain.Entities;
-using Concertable.Venue.Domain;
+﻿using Concertable.B2B.Concert.Domain.Entities;
+using Concertable.B2B.Contract.Domain.Entities;
+using Concertable.B2B.Venue.Domain;
 
 namespace Concertable.Seeding;
 

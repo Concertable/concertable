@@ -1,7 +1,7 @@
 using Bogus;
 using Concertable.Kernel;
 using Concertable.Seeding.Extensions;
-using Concertable.Venue.Domain;
+using Concertable.B2B.Venue.Domain;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Seeding.Fakers;
