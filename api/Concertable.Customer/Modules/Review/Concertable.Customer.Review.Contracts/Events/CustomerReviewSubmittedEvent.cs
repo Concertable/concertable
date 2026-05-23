@@ -1,9 +1,9 @@
 using Concertable.Messaging;
-using Concertable.Shared;
 
-namespace Concertable.Concert.Contracts.Events;
+namespace Concertable.Customer.Review.Contracts.Events;
 
-public record ReviewSubmittedEvent(
+public record CustomerReviewSubmittedEvent(
+    Guid TicketId,
     int ArtistId,
     int VenueId,
     int ConcertId,
