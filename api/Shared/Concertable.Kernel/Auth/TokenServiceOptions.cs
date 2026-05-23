@@ -1,4 +1,4 @@
-namespace Concertable.Shared.Infrastructure.Settings;
+namespace Concertable.Kernel.Auth;
 
 public class TokenServiceOptions
 {

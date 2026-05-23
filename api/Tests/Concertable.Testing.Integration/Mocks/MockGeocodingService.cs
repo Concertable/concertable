@@ -1,4 +1,4 @@
-using Concertable.Shared.Geocoding;
+using Concertable.Shared.Geocoding.Application;
 
 namespace Concertable.Testing.Integration.Mocks;
 

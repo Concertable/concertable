@@ -1,6 +1,7 @@
+using Concertable.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Shared.Infrastructure.Background;
+namespace Concertable.Kernel.Background;
 
 public class BackgroundTaskRunner : IBackgroundTaskRunner
 {

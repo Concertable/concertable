@@ -1,4 +1,5 @@
-using Concertable.Concert.Domain;
+using Concertable.Concert.Domain.Entities;
+using Concertable.Concert.Domain.Enums;
 using Concertable.Contract.Contracts;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 

@@ -1,14 +1,14 @@
-using Concertable.DataAccess;
-using Concertable.Application.Interfaces.Geometry;
 using Concertable.Messaging.Infrastructure.Inbox;
 using Concertable.Messaging.Infrastructure.Outbox;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
-using Concertable.Shared.Infrastructure.Services.Geometry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Concertable.DataAccess.Application;
+using Concertable.Kernel.Geometry;
+using Concertable.Kernel.Services.Geometry;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 public class TestDbInitializer : IDbInitializer
 {

@@ -1,4 +1,4 @@
-namespace Concertable.Shared.Enums;
+namespace Concertable.Kernel.Enums;
 
 public enum ErrorType
 {

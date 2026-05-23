@@ -1,4 +1,4 @@
-using Concertable.Shared;
+using Concertable.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Concertable.Shared.Api.Controllers;

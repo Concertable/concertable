@@ -1,3 +1,4 @@
+using Concertable.Shared.Email.Application;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;

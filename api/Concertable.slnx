@@ -169,6 +169,7 @@
     <Project Path="Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/Concertable.E2ETests.Ui.csproj" />
     <Project Path="Tests/Concertable.Testing/Concertable.Testing.csproj" />
     <Project Path="Tests/Concertable.Testing.Integration/Concertable.Testing.Integration.csproj" />
+    <Project Path="Tests/Concertable.Testing.Integration.B2B/Concertable.Testing.Integration.B2B.csproj" />
     <Project Path="Tests/Concertable.Testing.Integration.Customer/Concertable.Testing.Integration.Customer.csproj" />
     <Project Path="Tests/Concertable.Testing.Integration.Search/Concertable.Testing.Integration.Search.csproj" />
     <Project Path="Tests/Concertable.Workers.UnitTests/Concertable.Workers.UnitTests.csproj" />

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 public static class ImageFileBuilder
 {

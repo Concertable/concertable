@@ -1,8 +1,8 @@
-using Concertable.Shared.Enums;
+using Concertable.Kernel.Enums;
 using FluentResults;
 using System.Net;
 
-namespace Concertable.Shared.Exceptions;
+namespace Concertable.Kernel.Exceptions;
 
 public class BadRequestException : HttpException
 {

@@ -1,17 +1,19 @@
-using Concertable.Application.Interfaces.Geometry;
-using Concertable.Shared.Infrastructure.Background;
-using Concertable.Shared.Infrastructure.Events;
-using Concertable.Shared.Infrastructure.Identity;
-using Concertable.Shared.Infrastructure.Services;
-using Concertable.Shared.Infrastructure.Services.Geometry;
-using Concertable.Shared.Infrastructure.Settings;
+using Concertable.Contracts;
+using Concertable.Kernel.Auth;
+using Concertable.Kernel.Background;
+using Concertable.Kernel.Events;
+using Concertable.Kernel.Geometry;
+using Concertable.Kernel.Identity;
+using Concertable.Kernel.Services;
+using Concertable.Kernel.Services.Geometry;
+using Concertable.Kernel.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NetTopologySuite;
 
-namespace Concertable.Shared.Infrastructure.Extensions;
+namespace Concertable.Kernel.Extensions;
 
 public static class ServiceCollectionExtensions
 {

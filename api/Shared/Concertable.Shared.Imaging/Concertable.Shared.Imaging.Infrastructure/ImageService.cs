@@ -1,4 +1,5 @@
-using Concertable.Shared.Blob;
+using Concertable.Shared.Blob.Application;
+using Concertable.Shared.Imaging.Application;
 using Microsoft.AspNetCore.Http;
 
 namespace Concertable.Shared.Imaging.Infrastructure;

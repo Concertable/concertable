@@ -1,3 +1,4 @@
+using Concertable.Shared.Geocoding.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Shared.Geocoding.Infrastructure.Extensions;

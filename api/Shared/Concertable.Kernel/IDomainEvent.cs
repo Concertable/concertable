@@ -1,3 +1,3 @@
-namespace Concertable.Shared;
+namespace Concertable.Kernel;
 
 public interface IDomainEvent { }

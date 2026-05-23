@@ -1,9 +1,9 @@
-using Concertable.Messaging;
+using Concertable.Messaging.Contracts;
 using Concertable.Payment.Domain.Events;
-using Concertable.Testing.Integration.Mocks;
+using Concertable.Testing.Integration.B2B.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 internal class MockWebhookSimulatorFail : IWebhookSimulator
 {

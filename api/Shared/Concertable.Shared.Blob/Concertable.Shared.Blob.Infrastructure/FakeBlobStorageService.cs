@@ -1,3 +1,5 @@
+using Concertable.Shared.Blob.Application;
+
 namespace Concertable.Shared.Blob.Infrastructure;
 
 public class FakeBlobStorageService : IBlobStorageService

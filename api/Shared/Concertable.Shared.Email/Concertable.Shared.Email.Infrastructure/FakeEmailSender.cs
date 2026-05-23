@@ -1,3 +1,4 @@
+using Concertable.Shared.Email.Application;
 using Microsoft.Extensions.Logging;
 
 namespace Concertable.Shared.Email.Infrastructure;

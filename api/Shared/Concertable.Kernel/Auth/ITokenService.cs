@@ -1,4 +1,4 @@
-namespace Concertable.Shared.Infrastructure.Services;
+namespace Concertable.Kernel.Auth;
 
 public interface ITokenService
 {

@@ -1,4 +1,5 @@
 using Bogus;
+using Concertable.Kernel;
 using Concertable.Seeding.Extensions;
 using Concertable.Venue.Domain;
 using NetTopologySuite.Geometries;

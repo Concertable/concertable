@@ -1,8 +1,7 @@
 using System.Text.Json;
-using Concertable.Shared.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Concertable.Shared.Infrastructure.Services;
+namespace Concertable.Kernel.Auth;
 
 internal sealed class ClientCredentialsTokenService : ITokenService
 {

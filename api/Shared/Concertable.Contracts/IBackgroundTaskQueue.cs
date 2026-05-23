@@ -1,4 +1,4 @@
-namespace Concertable.Shared;
+namespace Concertable.Contracts;
 
 public interface IBackgroundTaskQueue
 {

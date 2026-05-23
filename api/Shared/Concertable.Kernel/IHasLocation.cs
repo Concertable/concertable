@@ -1,6 +1,6 @@
 using NetTopologySuite.Geometries;
 
-namespace Concertable.Shared;
+namespace Concertable.Kernel;
 
 public interface IHasLocation
 {

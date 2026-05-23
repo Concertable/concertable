@@ -1,7 +1,7 @@
-using Concertable.Shared.Enums;
+using Concertable.Kernel.Enums;
 using System.Net;
 
-namespace Concertable.Shared.Exceptions;
+namespace Concertable.Kernel.Exceptions;
 
 public class HttpException : Exception
 {

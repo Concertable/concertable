@@ -1,5 +1,5 @@
 using Bogus;
-using Concertable.Shared;
+using Concertable.Concert.Domain.Entities;
 using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
 namespace Concertable.Seeding.Fakers;

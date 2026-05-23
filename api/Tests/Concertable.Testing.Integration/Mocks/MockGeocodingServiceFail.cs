@@ -1,5 +1,5 @@
-using Concertable.Shared.Exceptions;
-using Concertable.Shared.Geocoding;
+using Concertable.Kernel.Exceptions;
+using Concertable.Shared.Geocoding.Application;
 
 namespace Concertable.Testing.Integration.Mocks;
 

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 public class WebApplicationHttpClientFactory : IHttpClientFactory
 {

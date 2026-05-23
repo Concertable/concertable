@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Shared.Infrastructure.Events;
+namespace Concertable.Kernel.Events;
 
 public class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEventDispatcher
 {

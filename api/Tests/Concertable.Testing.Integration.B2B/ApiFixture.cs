@@ -1,8 +1,4 @@
 using Concertable.DataAccess;
-using Concertable.Messaging;
-using Concertable.Shared.Email;
-using Concertable.Shared.Geocoding;
-using Concertable.Shared.Imaging;
 using Concertable.Notification.Contracts;
 using Concertable.Payment.Domain;
 using Concertable.Payment.Client;
@@ -19,7 +15,6 @@ using Concertable.Contract.Infrastructure.Extensions;
 using Concertable.User.Infrastructure.Extensions;
 using Concertable.Venue.Infrastructure.Extensions;
 using Concertable.Conversations.Infrastructure.Extensions;
-using Concertable.DataAccess.Infrastructure;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
@@ -33,8 +28,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using Concertable.DataAccess.Application;
+using Concertable.DataAccess.Infrastructure.Data;
+using Concertable.Messaging.Contracts;
+using Concertable.Shared.Email.Application;
+using Concertable.Shared.Geocoding.Application;
+using Concertable.Shared.Imaging.Application;
+using Concertable.Testing.Integration.B2B.Mocks;
 
-namespace Concertable.Testing.Integration;
+namespace Concertable.Testing.Integration.B2B;
 
 public class ApiFixture : IAsyncLifetime
 {

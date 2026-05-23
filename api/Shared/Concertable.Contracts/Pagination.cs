@@ -1,4 +1,4 @@
-namespace Concertable.Shared;
+namespace Concertable.Contracts;
 
 public class Pagination<T> : IPagination<T>
 {
