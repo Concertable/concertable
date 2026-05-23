@@ -55,7 +55,7 @@ public class Browser : IAsyncDisposable, IDisposable
         {
             Path = $"playwright-traces/trace-{currentRole}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.zip",
         });
-        logger.LogInformation("Playwright trace saved to playwright-traces/");
+        logger.PlaywrightTraceSaved();
         await Context.DisposeAsync();
         Context = null!;
     }
