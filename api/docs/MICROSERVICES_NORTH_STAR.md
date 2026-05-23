@@ -1,6 +1,6 @@
 # Microservices North Star
 
-> **The canonical vision.** What we're building toward, principle-first. Companion to [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md) (the implementation detail) and [MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md) (the migration order). Read this first — the others fill in the *how* and the *when*.
+> **The canonical vision.** What we're building toward, principle-first. Companion to [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md) (the implementation detail) and [MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md) (the migration order). Read this first — the others fill in the *how* and the *when*.
 
 ## 1. The vision in one paragraph
 
@@ -69,7 +69,7 @@ If those four rules hold, mono-repo → poly-repo is a folder move + replacing `
 ## 7. What this doc deliberately does not cover
 
 - **Entity migration map**, communication-pattern tables, event-flow diagrams, decision log → **[MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md)**
-- **Phase ordering, what-to-do-when, exit criteria, calendar estimates** → **[MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md)**
+- **Phase ordering, what-to-do-when, exit criteria, calendar estimates** → **[MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md)**
 - **Risks and open questions** → ARCHITECTURE.md §11
 
 This doc is target-state principles. The other two docs are the path and the detail.

@@ -4,7 +4,7 @@
 >
 > **Updated:** 2026-05-18
 >
-> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md), [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md), [api/Modules/Contract/LEGAL_REQUIREMENTS.md](api/Modules/Contract/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md), [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md), [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md).
 
 ---
 
@@ -198,9 +198,9 @@ These need answers but aren't urgent yet:
 - [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md) — full legal/business setup checklist
 - [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md) — Swim-lane B detail
 - [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
-- [api/Modules/Contract/LEGAL_REQUIREMENTS.md](api/Modules/Contract/LEGAL_REQUIREMENTS.md) — workflow-level legal requirements (currently aspirational; needs PRS line removed)
-- [api/Modules/Contract/CONTRACT_ARCHITECTURE.md](api/Modules/Contract/CONTRACT_ARCHITECTURE.md) — contract + workflow architecture
-- [MODULAR_MONOLITH_RULES.md](MODULAR_MONOLITH_RULES.md) — module boundary rules
+- [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) — workflow-level legal requirements (currently aspirational; needs PRS line removed)
+- [../api/Concertable.B2B/Modules/Contract/CONTRACT_ARCHITECTURE.md](../api/Concertable.B2B/Modules/Contract/CONTRACT_ARCHITECTURE.md) — contract + workflow architecture
+- [MODULAR_MONOLITH_RULES.md](../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
 
 ## Decision log
 
